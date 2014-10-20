@@ -1,0 +1,37 @@
+{% extends "landing/base.html" %}{% load compress %}
+
+{% block js_scripts %}{{block.super}}
+<script type="text/javascript" src="//www.prefinery.com/javascripts/widget.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+    {% include "landing/_header.html" %}
+
+    <div class="page_section">
+        {% include "landing/_marketing_bullets.html" %}
+
+		<div class="section_forms">	
+			{% include "landing/_browser_supported.html" %}
+			<div class="clearfix"></div>
+			<div class="form_title">
+				<h2>Log in to SEED Platform</h2>
+				{% if 'setup_complete' in request.GET %}<p>Thank you for creating your account! Please sign in below.{% endif %}
+                                    {% if 'logout' in request.GET %}<p>You have successfully logged out. You may log in again below.{% endif %}
+				<form action="{% url "landing:login" %}?next={% url "seed:home" %}" method="POST" class="signup_form">{% csrf_token %}
+				    <table class="signup_table">
+				        {{login_form.as_table}}
+				    </table>
+				    <input type="submit" class="btn btn-primary" value="Log In"/>
+				    <input type="reset" class="btn btn-default" value="Cancel"/>
+				    <a class="forgot_password" href="{% url "landing:password_reset" %}">Forgot password?</a>
+				</form>
+			</div>
+		</div>
+		<!-- END .section_forms -->
+	</div>
+	<!-- END .page_section .content -->
+
+</div>
+<!-- END .page -->
+{% endblock %}

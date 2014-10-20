@@ -1,0 +1,19 @@
+<div class="modal-header">
+  <button type="button" class="close" ng-click="cancel()"><i class="fa fa-times"></i></button>
+  <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state == 'delete'">Delete your Buildings</h4>
+  <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state == 'prepare'">Preparing your buildings for deletion</h4>
+  <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state == 'success'">Success!</h4>
+</div>
+<div class="modal-body row" style="padding-bottom: 0;">
+    <div class="col-sm-12" ng-show="delete_state == 'delete'">
+        Are you sure you want to delete <strong>{$ number_to_delete() $}</strong> buildings?
+    </div>
+    <div class="col-sm-12" ng-show="delete_state == 'success'">
+            Your buildings have been deleted
+    </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" ng-show="delete_state == 'delete'" ng-click="cancel()">Cancel</button>
+  <button type="button" class="btn btn-default" ng-show="delete_state == 'success'" ng-click="close()">Close</button>
+  <button type="button" class="btn btn-danger" ng-click="delete_buildings()" ng-show="delete_state == 'delete'">Yes, Delete Buildings</button>
+</div>

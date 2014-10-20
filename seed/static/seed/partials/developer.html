@@ -1,0 +1,51 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+        </div>
+        <div class="page_title">
+            <h1>{$ username $}</h1>
+        </div>
+        <div class="right page_action_container">
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav">
+        <a ng-href="#/profile">Profile Info</a><a ng-href="#/profile/security">Security</a><a ng-href="#/profile/admin" ng-show="auth.requires_superuser">Admin</a><a ng-href="#/profile/developer" class="active">Developer</a>
+    </div>
+</div>
+<div class="section">
+    <div class="section_header_container">
+        <div class="section_header">
+            <h2><i class="fa fa-code" style="font-weight: bold;"></i> API Key</h2>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content with_padding">
+            <div class="row">
+                <div class="section_form_container col-sm-8">
+                    <p>Manage Your API Key</p>          
+                    <div class="table_list_container">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>API Key</th>
+                                    <th>Username</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><pre>{$ user.api_key $}</pre></td>
+                                    <td>{$ user.email $}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table_footer">
+                        <button type="submit" class="btn btn-primary" ng-click="generate_api_key()">Get a New API Key <i class="fa fa-check" ng-show="new_key_generated"></i></button> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

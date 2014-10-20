@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://naesb.org/espi espi.xsd">
+  <id>urn:uuid:5762c9e8-4e65-3b0c-83b3-7874683f3dbe</id>
+  <link href="/v1/espi_third_party_batch_feed" rel="self">
+  </link>
+  <title type="text">Opower ESPI Third Party Batch Feed v1</title>
+  <updated>2014-01-31T02:31:22.717Z</updated>
+  <entry>
+    <id>urn:uuid:491d3cae-ff0b-37fa-84d7-c0c888868579</id>
+    <link href="/v1/User/2247002/UsagePoint/4864658" rel="self">
+    </link>
+    <link href="/v1/User/2247002/UsagePoint/4864658/MeterReading/1" rel="related">
+    </link>
+    <title type="text">635 ELM ST EL CERRITO CA 94530-3120</title>
+    <updated>2014-01-31T02:31:22.717Z</updated>
+    <published>2011-11-30T12:00:00.000Z</published>
+    <content type="xml">
+      <UsagePoint xmlns="http://naesb.org/espi">
+        <ServiceCategory>
+          <kind>1</kind>
+        </ServiceCategory>
+      </UsagePoint>
+    </content>
+  </entry>
+  <entry>
+    <id>urn:uuid:b62de40c-8252-3c81-aac9-edcf1f9a74f8</id>
+    <link href="/v1/User/2247002/UsagePoint/4864658/MeterReading/1" rel="self">
+    </link>
+    <link href="/v1/ReadingType/1" rel="related">
+    </link>
+    <link href="/v1/User/2247002/UsagePoint/4864658/MeterReading/1/IntervalBlock/1" rel="related">
+    </link>
+    <updated>2014-01-31T02:31:22.717Z</updated>
+    <published>2011-11-30T12:00:00.000Z</published>
+    <content type="xml">
+      <MeterReading xmlns="http://naesb.org/espi">
+      </MeterReading>
+    </content>
+  </entry>
+  <entry>
+    <id>urn:uuid:4e1226d5-5172-3fdf-adf6-4001aee94849</id>
+    <link href="/v1/ReadingType/1" rel="self">
+    </link>
+    <updated>2014-01-31T02:31:22.717Z</updated>
+    <published>2011-11-30T12:00:00.000Z</published>
+    <content type="xml">
+      <ReadingType xmlns="http://naesb.org/espi">
+        <currency>840</currency>
+        <powerOfTenMultiplier>-3</powerOfTenMultiplier>
+        <uom>169</uom>
+      </ReadingType>
+    </content>
+  </entry>
+  <entry>
+    <id>urn:uuid:c536930a-8f95-3cda-8b45-b56a94da938f</id>
+    <link href="/v1/User/2247002/UsagePoint/4864658/MeterReading/1/IntervalBlock/1" rel="self">
+    </link>
+    <content type="xml">
+      <IntervalBlock xmlns="http://naesb.org/espi">
+        <interval>
+          <duration>31622400</duration>
+          <start>1357027200</start>
+        </interval>
+        <IntervalReading>
+          <cost>190923</cost>
+          <timePeriod>
+            <duration>86400</duration>
+            <start>1357027200</start>
+          </timePeriod>
+          <value>2083</value>
+        </IntervalReading>
+        <IntervalReading>
+          <cost>190923</cost>
+          <timePeriod>
+            <duration>86400</duration>
+            <start>1357113600</start>
+          </timePeriod>
+          <value>2083</value>
+        </IntervalReading>
+      </IntervalBlock>
+    </content>
+  </entry>
+</feed>

@@ -1,0 +1,54 @@
+<div class="modal-header" >
+  <button type="button" class="pull-right btn btn-primary" data-dismiss="modal" ng-click="save_settings()">Save Settings</button>
+  <h4 class="modal-title" id="newCustomViewModalLabel">Building List Settings</h4>
+</div>
+
+<div class="modal-body form-horizontal">
+  <div class="form-group">
+      <div class="col-sm-12">
+          <p> Select which columns to include in the list:</p>
+          <div class="row column_container">
+	          <div class="form_column col-sm-4">
+	          	<ul class="column">
+	          		<li ng-repeat="f in fields_1">
+			          <div class="checkbox">
+			            <label>
+			              <input type="checkbox" ng-model="f.checked" ng-disabled="f.static">
+			              {$ f.title $}
+			            </label>
+			          </div>
+	          		</li>
+	          	</ul>
+			  </div>
+			  <div class="form_column col-sm-4">
+	          	<ul class="column">
+	          		<li ng-repeat="f in fields_2">
+			          <div class="checkbox">
+			            <label>
+			              <input type="checkbox" ng-model="f.checked" ng-disabled="f.static">
+			              {$ f.title $}
+			            </label>
+			          </div>
+	          		</li>
+	          	</ul>
+			  </div>
+			  <div class="form_column col-sm-4">
+	          	<ul class="column">
+	          		<li ng-repeat="f in fields_3">
+			          <div class="checkbox">
+			            <label>
+			              <input type="checkbox" ng-model="f.checked" ng-disabled="f.static">
+			              {$ f.title $}
+			            </label>
+			          </div>
+	          		</li>
+	          	</ul>
+			  </div>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-primary" ng-click="save_settings()">Save Settings</button>
+</div>

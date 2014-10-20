@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# assumes node/npm are install: see bin/node-and-npm-in-30s.sh to install
+echo "-----> downloading and installing JS dependencies..."
+bash bin/install_javascript_dependencies.sh 2>&1 | sed "s/^/        /"
+
+echo "-----> Making the s3 bucket..."
+python manage.py create_s3_bucket 2>&1 | sed "s/^/        /"
+
+echo "-----> Collecting static..."
+rm -rf collected_static
+mkdir -p collected_static
+
+# this deletes uploaded files at the moment
+# python manage.py collectstatic --noinput --clear --verbosity 1 2>&1 | sed "s/^/        /"
+
+python manage.py collectstatic --noinput -i node_modules --verbosity 1 2>&1 | sed "s/^/        /"
+
+echo "-----> Compressing..."
+rm -rf ~/collected_static/CACHE/
+python manage.py compress --force --verbosity 1 --settings=BE.settings.compress 2>&1 | sed "s/^/        /"
+
+echo "-----> Syncing static..."
+python manage.py sync_static --gzip --expires 2>&1 | sed "s/^/        /"
+
+echo "-----> Grabbing static manifest..."
+rm -f ~/collected_static/CACHE/manifest.json
+python manage.py grab_manifest --force 2>&1 | sed "s/^/        /"
+
+echo "-----> Setting the s3 bucket AngularJS partial expires headers..."
+python manage.py set_s3_expires_headers_for_angularjs_partials --verbosity=3 2>&1 | sed "s/^/        /"
+
+echo "-----> Syncdb and migrate..."
+python manage.py syncdb --noinput 2>&1 | sed "s/^/        /"
+python manage.py migrate --noinput --merge 2>&1 | sed "s/^/        /"
+
+echo "-----> Restarting uwsgi..."
+touch ../touch-reload
+
+echo "-----> Post-compile done."

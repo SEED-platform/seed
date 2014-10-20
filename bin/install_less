@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+if [ ! -f /usr/bin/lessc ];
+then
+    npm install -g less@1.4.2
+fi

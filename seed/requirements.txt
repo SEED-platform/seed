@@ -1,0 +1,3 @@
+django-autoslug==1.7.1
+django-extensions==1.2.5
+django-organizations==0.1.8

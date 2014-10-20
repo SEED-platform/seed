@@ -1,0 +1,92 @@
+{% extends "landing/base.html" %}{% load compress %}
+
+
+
+{% block js %}{{block.super}}
+<script type="text/javascript">
+
+$(document).ready(function () {
+    $('#id_new_password1').focus();
+    $('#id_new_password1').attr('placeholder', 'Password');
+    $('#id_new_password2').attr('placeholder', 'Password again');
+
+});
+
+</script>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="page login">
+    {% include "landing/_header.html" %}
+
+    <div class="page_section">
+        {% include "landing/_marketing_bullets.html" %}
+        <!-- END .section_marketing -->
+        <div class="section_forms"> 
+            <div class="form_title">
+                <h2>Create Your Account</h2>
+
+                <form id="AuthNewPassword" class="signup_form" action="" method="post">
+                {% csrf_token %}
+                <table class="signup_table">
+	                <tr>
+                    {% if validlink %}
+                    	<td>
+	                    	<p>{% block password_set_instructions %}To set up your account, enter your password twice in the form below.{% endblock %}</p>
+	                    </td>
+                    {% else %}
+                    	<td>
+                    		<p>The invite link was invalid, possibly because it has already been used.  Please request a new invitation.
+                    	</td>
+                    {% endif %}
+	                </tr>
+                    
+                    {% if validlink %}
+                    <tr>
+                    	<th>
+                    		<label for="id_new_password1">New password</label>
+                    	</th>
+                    	<td>
+	                        {% if form.new_password1.errors %}
+	                        <div class="form-error">
+	                            {% firstof form.new_password1.errors %}
+	                        </div>
+	                        {% endif %}
+	                        {{ form.new_password1 }}
+                    	</td>
+                    </tr>
+
+                    <tr>
+                    	<th>
+                        	<label for="id_new_password2">Confirm</label>
+                    	</th>
+                    	<td>
+	                        {% if form.new_password2.errors %}
+	                        <div class="form-error">
+	                            {% firstof form.new_password2.errors %}
+	                        </div>
+	                        {% endif %}
+	                        {{ form.new_password2 }}
+                    	</td>
+                    </tr>
+                    {% endif %}
+                </table>
+                {% if validlink %}
+                <div>   
+                	<input class="btn btn-primary" type="submit" value="{% block password_submit %}Create my account{% endblock %}">
+                	<a href="{% url "landing:landing_page" %}" type="submit" class="btn btn-cancel">Cancel</a>
+                </div>
+                {% endif %}
+            </form>
+            </div>
+        </div>
+        <!-- END .section_forms -->
+    </div>
+    <!-- END .page_section .content -->
+</div>
+<!-- END .page -->
+{% endblock %}
+
+

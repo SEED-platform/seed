@@ -1,0 +1,40 @@
+{% extends "landing/base.html" %}{% load compress %}
+
+{% block js %}{{block.super}}
+<script type="text/javascript">
+$(document).ready(function () {
+    $("#id_email").focus();
+    BEHome.actions.check_unsupported_browser();
+});
+
+</script>
+{% endblock %}
+{% block content %}
+<div class="page login">
+    {% include "landing/_header.html" %}
+
+    <div class="page_section">
+        {% include "landing/_marketing_bullets.html" %}
+        <!-- END .section_marketing -->
+        <div class="section_forms"> 
+            {% include "landing/_browser_supported.html" %}
+            <div class="clearfix"></div>
+            <div class="form_title">
+                <h2>Log in</h2>
+                {% block login-pretext %}{% endblock %}
+                <form action="" method="POST" class="signup_form login_form">{% csrf_token %}
+                    <table class="signup_table">
+                        {{form.as_table}}
+                    </table>
+                    <input type="submit" class="btn btn-primary" value="Log In"/>
+                    <a href="{% url "landing:landing_page" %}" type="submit" class="btn btn-default">Cancel</a>
+                    <a class="forgot_password" href="{% url "landing:password_reset" %}">Forgot password?</a>
+                </form>
+            </div>
+        </div>
+        <!-- END .section_forms -->
+    </div>
+    <!-- END .page_section .content -->
+</div>
+<!-- END .page -->
+{% endblock %}

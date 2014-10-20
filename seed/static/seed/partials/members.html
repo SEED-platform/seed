@@ -1,0 +1,78 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+			<a href="#/accounts" class="page_action"><i class="fa fa-chevron-left"></i> Organizations</a>
+          
+        </div>
+        <div class="page_title">
+            <h1>{$ org.name $}</h1>
+        </div>
+        <div class="right page_action_container">
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav">
+        <a ng-href="#/accounts/{$ org.id $}" ng-if="auth.requires_owner">Settings</a><a ng-href="#/accounts/{$ org.id $}/sharing" ng-if="org.is_parent && auth.requires_owner">Sharing</a><a ng-href="#/accounts/{$ org.id $}/sub_org" ng-show="org.is_parent && auth.requires_owner">Sub-Organizations</a><a ng-href="#/accounts/{$ org.id $}/members" class="active">Members</a>
+    </div>
+</div>
+<div class="section">
+    <div class="section_header_container">
+        <div class="section_header fixed_height_short">
+            <div class="left section_action_container"><h2><i class="fa fa-user"></i> Members</h2></div>
+            <div class="right_wide section_action_container"><a href="javascript:void(0);" ng-click="new_member_modal()" ng-if="auth.can_invite_member">Invite a new member</a><span ng-hide="true">&nbsp;&nbsp;|&nbsp;&nbsp;<a href="javascript:void(0);" ng-click="existing_members_modal()">Add members from a list</a></span></div>
+        </div>
+    </div>
+        <div class="section_content_container">
+        <div class="section_content">
+            <div class="table_list_container">
+                <table class="table table-striped table_highlight_first">
+                    <thead>
+                        <tr>
+                            <th>Member Name</th>
+                            <th>Member Email</th>
+                            <th>Member Role</th>
+                            <th ng-if="auth.can_remove_member"></th>
+                        </tr>
+                        <tr class="sub_head">
+                            <th class="sub_head">
+                                <input type="text" placeholder="member name" class="form-control input-sm" ng-model="filter_params.name" ng-class="{active: filter_params.name.length > 0}">
+                            </th>
+                            <th class="sub_head">
+                                <input type="text" placeholder="member email" class="form-control input-sm" ng-model="filter_params.email" ng-class="{active: filter_params.email.length > 0}">
+                            </th>
+                            <th class="sub_head">
+                                <input type="text" placeholder="member role" class="form-control input-sm" ng-model="filter_params.role" ng-class="{active: filter_params.role.length > 0}">
+                            </th>
+                            <th class="sub_head" ng-if="auth.can_remove_member"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="u in users  | filter:filter_params:strict">
+                            <td>
+                                {$ u.name $}
+                            </td>
+                            <td>
+                                {$ u.email $}
+                            </td>
+                            <td>
+                            	<div class="row">
+                            		<div class="form-group">
+										<div class="col-sm-12">
+											<select class="form-control input-sm" ng-model="u.role" ng-options="role for role in roles" ng-change="update_role(u)" ng-if="auth.requires_owner">
+                                            </select>
+                                            <span ng-if="!auth.requires_owner">{$ u.role $}</span>
+										</div>
+									</div>
+                            	</div>
+                            </td>
+                            <td ng-if="auth.can_remove_member">
+                            	<a href="javascript:void(0);" ng-click="remove_member(u)">Remove</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

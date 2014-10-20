@@ -1,0 +1,115 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a href="#/projects"class="page_action"><i class="fa fa-chevron-left"></i> Projects</a>
+        </div>
+        <div class="page_title">
+            <h1>Create a New Project</h1>
+        </div>
+        <div class="right page_action_container">
+            
+        </div>
+    </div>
+</div>
+
+<div class="section">
+	<div class="alert_container" ng-show="alert_error">
+		<div class="alert alert-danger">
+        	<button type="button" class="close" ng-click="alert_error = false">&times;</button>
+        	Sorry. The project name <strong>{$ project.name $}</strong> is already in use.
+	    </div>
+	</div>
+    <form novalidate name="project_form" class="form-horizontal" role="form">
+        <div class="section_header_container">
+            <div class="section_header">
+                <h2><i class="fa fa-info-circle"></i> Project Information</h2>
+            </div>
+        </div>
+        <div class="section_content_container">
+            <div class="section_content">
+                <div class="add_project_container">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="projectName">Project Name</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="projectName" ng-model="project.name" placeholder="Project Name" required>
+                        </div>
+                    </div>
+                    <!--
+<div class="form-group">
+                        <label class="col-sm-2 control-label" for="projectDescription">Project Description</label>
+                        <div class="col-sm-4">
+                            <textarea class="form-control" id="projectDescription" rows="3" ng-model="project.description"></textarea>                                                         </div>
+                    </div>
+-->
+                </div>
+            </div>
+        </div>
+        <div class="section_header_container">
+            <div class="section_header">
+                <h2><i class="fa fa-check-circle"></i> Compliance</h2>
+            </div>
+        </div>
+        <div class="section_content_container">
+            <div class="section_content">
+                <div class="add_project_container">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="projectCompliance">Submittal Type</label>
+                        <div class="col-sm-4">
+                            <select class="form-control" id="projectCompliance" ng-model="project.compliance_type">
+                              <option>Benchmarking</option>
+                              <option>Auditing</option>
+                              <option>Retro Commissioning</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="projectStartDate">Year Ending Date</label>
+                        <div class="col-sm-4">
+                            <input type="month" class="form-control" id="projectStartDate" ng-model="project.end_date">
+                            <span class="help-block">Choose the year ending month for report period. </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="projectDeadline">Reporting Deadline</label>
+                        <div class="col-sm-4">
+                            <input type="date" class="form-control" id="projectDeadline" ng-model="project.deadline_date">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section_header_container" ng-hide="true">
+            <div class="section_header">
+                <h2><i class="fa fa-filter"></i> Building Filters</h2>
+            </div>
+        </div>
+        <div class="section_content_container" >
+            <div class="section_content" >
+                <div class="add_project_container">
+                    <div class="form-group" ng-hide="true">
+                        <label class="col-sm-2 control-label" for="minSqFt">Minimum Sq Ft</label>
+                        <div class="col-sm-4">
+                            <input type="number" class="form-control" id="minSqFt" placeholder="Min Sq/Ft">
+                            <span class="help-block">Enter the minimum square footage for report period. </span>
+                        </div>
+                    </div>
+                    <div class="form-group" ng-hide="true">
+                        <label class="col-sm-2 control-label" for="projectClassificationType">Classification Type</label>
+                        <div class="col-sm-2">
+                            <select class="form-control" id="projectClassificationType">
+                              <option>Commercial</option>
+                              <option>Residential</option>
+                              <option>Both</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group submit">
+                        <div class="col-sm-offset-2 col-sm-10">
+                          <button type="submit" class="btn btn-primary" ng-disabled="project_form.$invalid" ng-click="create_project()">Create Project</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

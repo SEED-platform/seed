@@ -1,0 +1,70 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a class="page_action" ng-href="#/data/{$ import_file.dataset.id $}"><i class="fa fa-chevron-left"></i> {$ import_file.dataset.name $}</a>
+        </div>
+        <div class="page_title">
+            <h1>Data Matching ({$ import_file.dataset.name $})</h1>
+        </div>
+        <div class="right page_action_container"></div>
+    </div>
+</div>
+
+<div class="section" ng-cloak>
+
+    <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{$ alert.msg $}</alert>
+
+	<div class="section_tab_container">
+	  <tabset>
+	    <tab heading="Auto Matching">
+	    	<div class="row">
+	    		<div class="col-lg-6 col-sm-6 tab_content wide">
+	    			<p><strong>HOW THE SYSTEM AUTO-MATCHES YOUR BUILDINGS:</strong></p>
+					<p>Your source data file(s) are presented in the table on the left. All buildings where a possible data match exists are presented in a table on the right. The system attempts to auto-match building records using shared unique IDs like: PM Proprty ID, Tax Lot ID, and Custom IDs as well as Address information. Where the system believes a match exists between a record in your source file and an existing building record it will auto-check the 'match' <i class="fa fa-check-square-o"></i> checkbox &mdash; effectively making a match between these buildings. A confidence number (0 - 100%) is included to indicate the systems confidence that this match is correct.</p>
+				</div>
+				<div class="col-lg-6 col-sm-6 key tab_content wide">
+		    		<p class="important-tip"><strong>FIELDS NEEDED TO MAKE BUILDING MATCHES:</strong></p>
+		    		<p>The following is a list of the fields we use to match up buildings between different records. The more data you have in these four (4) fields the better our system will auto-match your buildings.</p>
+					<p><span class="label label-warning">Tax Lot ID</span> <span class="label label-warning">PM Property ID</span></p>
+					<p><span class="label label-warning">Custom ID</span> <span class="label label-warning">Address Line 1</span></p>
+				</div>
+	    	</div>
+	    </tab>
+	    <tab heading="Manual Matching" active="tab.active" disabled="tab.disabled">
+	      <div class="row">
+		      <div class="col-lg-6 col-sm-6 tab_content wide">
+		      	<p><strong>HOW TO MANUALLY MATCH YOUR BUILDINGS:</strong></p>
+					<p>You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual building record you are attempting to match. Underneath this building is a searchable list of all potential existing building matches. Use this table to explore all your building records and to select single or multiple building records to match you source data to. </p>
+		      </div>
+		      <div class="col-lg-6 col-sm-6 tab_content wide">
+	    			<p><strong>EDIT COLUMNS</strong></p>
+	    			<p>You can customize the columns displayed in the table below by clicking the 'Edit Columns' button and then selecting the column headers you want to review from the modal window.</p>
+	    		</div>
+	      </div>
+
+	    </tab>
+	    <tab class="pull-right" heading="Collapse Tabs"></tab>
+	  </tabset>
+	</div>
+	<div class="section_header_container has_no_border">
+        <div class="section_header fixed_height">
+            <div class="left section_action_container row matching_toggle">
+            	<div class="col-sm-2" ng-hide="show_building_list">
+	            <button type="button" class="btn btn-primary btn-sm" ng-disabled="duplicates_present()" ng-click="back_to_list()"><i class="fa fa-chevron-left"></i>Back to List</button>
+            	</div>
+            </div>
+            <div class="right section_action_container section_action_btn">
+            	<button type="button" class="btn btn-default btn-sm" ng-click="open_edit_columns_modal()"><i class="fa fa-columns"></i>Edit Columns</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- matching list contanier -->
+    <ng-include src="urls.static_url + 'seed/partials/matching_list_table.html'" ng-show="show_building_list">
+    </ng-include>
+    
+    <!-- matching detail contanier -->
+    <ng-include src="urls.static_url + 'seed/partials/matching_detail_table.html'" ng-hide="show_building_list">
+        <!-- matching detail table loads here -->
+    </ng-include>
+</div>

@@ -1,0 +1,88 @@
+<div class="table_list_container">
+    <table class="table table-striped sortable">
+        <thead>
+            <tr>
+                <th class="check is_aligned_center" ng-if="search.has_checkbox">
+                    <input type="checkbox" ng-model="search.select_all_checkbox" ng-change="search.select_all_changed()">
+                </th>
+                <th ng-repeat="c in columns" class="{$ c.title_class $}" ng-click="c.toggle_sort()" ng-class="c.sorted_class()">{$ c.title $} <span class="subtitle">{$ c.subtitle $}</span>
+                </th>
+            </tr>
+            <tr class="sub_head">
+                <th class="sub_head check_row" ng-if="search.has_checkbox"></th>
+                <th class="sub_head" ng-repeat="c in columns" style="min-width: 140px;">
+                    <!-- for string filters -->
+                    <input ng-if="c.type == 'string' || c.type == 'link'" type="text" class="form-control input-sm show" ng-class="{active: search.filter_params[c.sort_column].length > 0}" placeholder="{$ c.title $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.sort_column]">
+
+                    <!-- for range filters -->
+                    <div ng-if="c.type == 'number' || c.type == 'date' || c.type == 'floor_area'" class="col-xs-6">
+                        <input ng-if="c.type == 'date'" type="date" class="form-control input-sm" placeholder="Min" ng-change="search.filter_search()" ng-model="search.filter_params[c.min]" ng-class="{active: search.filter_params[c.min].length > 0}">
+                        <input ng-if="c.type != 'date'" type="number" class="form-control input-sm" placeholder="Min" ng-change="search.filter_search()" ng-model="search.filter_params[c.min]" ng-class="{active: search.filter_params[c.min].length > 0}">
+                    </div>
+                    <div ng-if="c.type == 'number' || c.type == 'date' || c.type == 'floor_area'" class="col-xs-6">
+                        <input ng-if="c.type == 'date'" type="date" class="form-control input-sm" placeholder="Max" ng-change="search.filter_search()" ng-model="search.filter_params[c.max]" ng-class="{active: search.filter_params[c.max].length > 0}">
+                        <input ng-if="c.type != 'date'" type="number" class="form-control input-sm" placeholder="Max" ng-change="search.filter_search()" ng-model="search.filter_params[c.max]" ng-class="{active: search.filter_params[c.max].length > 0}">
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="b in search.buildings">
+                <td class="check is_aligned_center" ng-if="search.has_checkbox">
+                    <input type="checkbox" value="" ng-model="b.checked" ng-change="search.add_remove_to_list(b)">
+                </td>
+                <td ng-repeat="c in columns" class="{$ c.class $}" ng-class="{sorted: search.sort_column == c.sort_column}">
+                    <span ng-if="c.link && is_project && c.is_extra_data">
+                        <a ng-href="#/projects/{$ user.project_id $}/{$ b.canonical_building $}">{$ b.extra_data[c.sort_column] | stripImportPrefix $}</a>
+                    </span>
+                    <span ng-if="c.link && is_project && !c.is_extra_data">
+                        <a ng-href="#/projects/{$ user.project_id $}/{$ b.canonical_building $}">{$ b[c.sort_column] | stripImportPrefix $}</a>
+                    </span>
+                    <span ng-if="c.link && !is_project && c.is_extra_data">
+                        <a ng-href="#/buildings/{$ b.canonical_building $}">{$ b.extra_data[c.sort_column] | stripImportPrefix $}</a>
+                    </span>
+                    <span ng-if="c.link && !is_project && !c.is_extra_data">
+                        <a ng-href="#/buildings/{$ b.canonical_building $}">{$ b[c.sort_column] | stripImportPrefix $}</a>
+                    </span>
+                    <span ng-if="!c.link && !c.is_label() && c.type == 'date' && c.sort_column != 'year_built' && c.is_extra_data">
+                        {$ b.extra_data[c.sort_column] | date:'shortDate' $}
+                    </span>
+                    <span ng-if="!c.link && !c.is_label() && c.type == 'date' && c.sort_column != 'year_built' && !c.is_extra_data">
+                        {$ b[c.sort_column] | date:'shortDate' $}
+                    </span>
+                    <span ng-if="!c.link && !c.is_label() && c.type != 'date' && c.is_extra_data">
+                        <!-- typedNumber handles c.sort_column == 'year_built' not getting commas -->
+                        {$ b.extra_data[c.sort_column] | typedNumber:c.type:c.sort_column:0 $}
+                    </span>
+                    <span ng-if="!c.link && !c.is_label() && c.type != 'date' && !c.is_extra_data">
+                        <!-- typedNumber handles c.sort_column == 'year_built' not getting commas -->
+                        {$ b[c.sort_column] | typedNumber:c.type:c.sort_column:0 $}
+                    </span>
+                    <span ng-if="!c.link && c.is_label(b)">
+                        <be-label name="{$ b[c.sort_column].name $}" color="{$ b[c.sort_column].color $}"></be-label>
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="table_footer">
+    <div class="display_number_entries col-sm-3 col-md-3">
+         <div class="display_number_entries_text">Display:</div>
+         <div class="display_number_entries_select">
+            <select class="form-control input-sm col-xs-2" name="number_per_page_select" id="number_per_page_select" ng-options="number_per_page_option for number_per_page_option in search.number_per_page_options" ng-model="search.number_per_page_options_model" ng-change="search.update_number_per_page()">
+            </select>
+        </div>
+        <div class="display_number_entries_text">buildings</div>
+    </div>
+    <div class="counts col-sm-6 col-md-6">
+        <span>Showing {$ search.showing.start | number:0 $} to {$ search.showing.end | number:0 $} of {$ search.number_matching_search | number:0 $} buildings</span>
+    </div>
+    <div class="pager_container col-sm-3 col-md-3">
+        <ul class="pager">
+          <li ng-class="{disabled: search.prev_page_disabled}"><a href="javascript:void(0);" ng-click="search.prev_page()"><i class="fa fa-angle-double-left"></i> Previous</a></li>
+
+          <li ng-class="{disabled: search.next_page_disabled}"><a href="javascript:void(0);" ng-click="search.next_page()">Next <i class="fa fa-angle-double-right"></i></a></li>
+        </ul>
+    </div>
+</div>

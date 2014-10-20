@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+if [ ! -f ~/.heroku/vendor/node/bin/npm ];
+then
+    NODE_VERSION=0.8.9
+    NODE_BASENAME=node-v${NODE_VERSION}-linux-x64
+    NODE_ARCHIVE="http://nodejs.org/dist/v0.8.9/${NODE_BASENAME}.tar.gz"
+
+    # make a temp directory
+    tempdir="$( mktemp -t node_XXXX )"
+    rm -rf $tempdir
+    mkdir -p $tempdir
+
+    pushd $tempdir > /dev/null
+    curl -s -L -o tmp-nodejs.tar.gz $NODE_ARCHIVE
+    tar -zxvf tmp-nodejs.tar.gz > /dev/null
+    rm tmp-nodejs.tar.gz
+    popd > /dev/null
+
+    mkdir -p ~/.heroku/vendor
+    pushd ~/.heroku/vendor > /dev/null
+    rm -rf node
+    mv $tempdir/$NODE_BASENAME node
+    popd > /dev/null
+
+    mkdir -p ~/.heroku/vendor/bin
+    ln -s ~/.heroku/vendor/node/bin/node ~/.heroku/vendor/bin/node
+    ln -s ~/.heroku/vendor/node/bin/node-waf ~/.heroku/vendor/bin/node-waf
+    ln -s ~/.heroku/vendor/node/bin/npm ~/.heroku/vendor/bin/npm
+fi

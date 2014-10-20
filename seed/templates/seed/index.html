@@ -1,0 +1,31 @@
+{% extends "seed/base.html" %}{% load compress %}
+
+{% block js %}{{block.super}}
+{% endblock %}
+
+{% block content %}
+<div ng-controller="seed_menu_controller">
+	
+	{% include "seed/_sidebar.html" %}
+    
+    <div class="display">
+        <div ng-class="{narrow: narrow_controller, wide: wide_controller, content: true}">
+
+            {% include "seed/_header.html" %}
+
+            <div class="page">
+                <div class="alert warning" ng-show="menu.route_load_error">
+                    <div class="alert alert-danger">
+                        <button type="button" class="close" ng-click="menu.route_load_error = false">&times;</button>
+                        {$ menu.error_message || 'There was an error loading the page' $}
+                    </div>
+                </div>
+                <div data-ng-view="" id="ng-view"></div>
+            </div>
+            
+            {% include "seed/_footer.html" %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

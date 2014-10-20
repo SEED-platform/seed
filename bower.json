@@ -1,0 +1,14 @@
+{
+  "name": "seed-core",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "seed/static/vendors/bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "fine-uploader": "3.9.1"
+  }
+}

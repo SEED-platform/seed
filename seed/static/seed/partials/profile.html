@@ -1,0 +1,56 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+        </div>
+        <div class="page_title">
+            <h1>{$ username $}</h1>
+        </div>
+        <div class="right page_action_container">
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav">
+        <a ng-href="#/profile" class="active">Profile Info</a><a ng-href="#/profile/security">Security</a><a ng-href="#/profile/admin" ng-show="auth.requires_superuser">Admin</a><a ng-href="#/profile/developer">Developer</a>
+    </div>
+</div>
+<div class="section">
+    <div class="section_header_container">
+        <div class="section_header">
+            <h2><i class="fa fa-info-circle"></i> Profile Information</h2>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content with_padding">          
+            <div class="row">
+                <div class="section_form_container col-sm-3">
+                    <form name="profile_form" role="form" ng-submit="submit_form(profile_form.$valid)" novalidate>
+                        <div class="form-group" ng-class="{ 'has-error' : profile_form.first_name.$invalid && !profile_form.first_name.$pristine }">
+                            <label class="control-label" for="newMemberFirstName">First Name:</label>
+                            <div class="">
+                                <input type="text" class="form-control" name="first_name" id="newMemberFirstName" placeholder="Enter first name" ng-model="user.first_name" required>
+                                 <p ng-show="profile_form.first_name.$invalid && !profile_form.first_name.$pristine" class="help-block">First name is required.</p>
+                            </div>
+                        </div>
+                        <div class="form-group"  ng-class="{ 'has-error' : profile_form.last_name.$invalid && !profile_form.last_name.$pristine }">
+                            <label class="control-label" for="newMemberLastName">Last Name:</label>
+                            <div class="">
+                                <input type="text" class="form-control" name="last_name" placeholder="Enter last name" ng-model="user.last_name" required>
+                                 <p ng-show="profile_form.last_name.$invalid && !profile_form.last_name.$pristine" class="help-block">Last name is required.</p>
+                            </div>
+                        </div>
+                        <div class="form-group"  ng-class="{ 'has-error' : profile_form.email.$invalid && !profile_form.email.$pristine }">
+                            <label class="control-label" for="newMemberEmail">Email Address:</label>
+                            <div class="">
+                                <input type="email" class="form-control" name="email" placeholder="Enter Email Address" ng-model="user.email" required>
+                                <p ng-show="profile_form.email.$invalid && !profile_form.email.$pristine" class="help-block">Enter a valid email address.</p>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" ng-disabled="profile_form.$invalid">Save Changes <i class="fa fa-check" ng-show="user_updated"></i></button>
+                        <button type="button" class="btn btn-default" ng-click="reset_form()">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

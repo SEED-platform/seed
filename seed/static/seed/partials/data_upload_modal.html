@@ -1,0 +1,192 @@
+<div class="modal-header" ng-switch on="step.number">
+    <button type="button" class="close" aria-hidden="true" ng-click="cancel()"><i class="fa fa-times"></i></button>
+    <h4 class="modal-title" ng-switch-when="1">Create a New Data Set.</h4>
+    <h4 class="modal-title" ng-switch-when="2">Upload your building data.</h4>
+    <h4 class="modal-title" ng-switch-when="3">Successful upload!</h4>
+    <h4 class="modal-title" ng-switch-when="4">Upload your energy data.</h4>
+    <h4 class="modal-title" ng-switch-when="5">Successful upload!</h4>
+    <h4 class="modal-title" ng-switch-when="6">What type of file would you like to upload?</h4>
+    <h4 class="modal-title" ng-switch-when="7">Finding building matches.</h4>
+    <h4 class="modal-title" ng-switch-when="8">{$ matched_buildings|number:0 $} building matches found.</h4>
+    <h4 class="modal-title" ng-switch-when="9">Add files to {$ dataset.name $}.</h4>
+    <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|titleCase $}</h4>
+    <h4 class="modal-title" ng-switch-when="11">Confirm Save Mappings?</h4>
+</div>
+<div class="modal-body no_bottom_padding" ng-switch on="step.number">
+	<!-- Step 1 -->
+	<div class="data_upload_steps form-horizontal" ng-switch-when="1">
+    	<div class="alert alert-danger alert-dismissable" ng-show="dataset.alert">
+	    	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+	    	The data set <strong>name "{$ dataset.name $}" already exists</strong>. Please select a new one.
+	    </div>   
+        <div class="form-group" ng-class="{'has-error': dataset.alert, 'has-feedback': dataset.alert}">
+        	<label class="control-label col-lg-3 col-sm-3" for="inputDataUploadName">Data Set Name</label>
+        	<div class="col-lg-8 col-sm-8">
+	        	<input type="text" class="form-control" id="inputDataUploadName" ng-model="dataset.name" placeholder="your data set name" be-enter="create_dataset(dataset.name)" required>
+        	</div>
+        </div>
+	</div>
+    <!-- Step 2: load Covered Buildings Assessor data -->
+	<div class="data_upload_steps" ng-switch-when="2">
+	    <div class="row">
+	    	<div class="alert alert-danger alert-dismissable" ng-show="uploader.invalid_extension_alert">
+		    <button type="button" class="close" ng-click="uploader.invalid_extension_alert = false" aria-hidden="true">&times;</button>
+		    <strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong> files are supported.
+		    </div>
+		    <div class="form-group col-lg-12 col-sm-12">
+		    	<div class="row">
+		        	<div class="col-lg-4" be-uploader sourcetype="Assessed Raw" importrecord="dataset.id" buttontext="Upload a spreadsheet" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+					<div class="col-lg-8 green_button" be-uploader sourcetype="Green Button Raw" importrecord="dataset.id" buttontext="Upload Green Button Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+		    	</div>
+		        <div class="progress_bar_container" ng-show="uploader.in_progress">
+		        	<div class="progress_bar_copy_top">Uploading <strong>{$ dataset.filename $}</strong></div>
+
+					<progressbar class="progress-striped active" value="uploader.progress" type="success"></progressbar>
+					<div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ uploader.status_message $}</div>
+				</div>
+			</div>
+	    </div>
+	    <div class="row" ng-hide="uploader.in_progress">
+		    <div class="col-lg-12 col-sm-12">
+		    	<div>
+		    		<p>File types supported: <strong>.csv</strong>, <strong>.xls</strong> and <strong>.xlsx</strong> and <strong>.xml</strong>.</p> 
+		    		<p><strong>Note:</strong> multi-tabbed MS Excel files are not currently supported.</p>
+		    	</div>
+		    </div>
+	    </div>
+	</div>
+	<!-- Step 3 -->
+	<div class="data_upload_steps" ng-switch-when="3">
+	    <div class="row">
+		    <div class="alert alert-success alert-dismissable">
+		    	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+		    	<strong>{$ dataset.filename $}</strong> has been uploaded to <strong>{$ dataset.name $}</strong>.
+		    </div>
+	    </div>
+	</div>
+    <!-- Step 4: load Portfolio Manager report data -->
+	<div class="data_upload_steps" ng-switch-when="4">
+	    <div class="row">
+	    	<div class="alert alert-danger alert-dismissable" ng-show="uploader.invalid_extension_alert">
+		    	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+		    	<strong>Sorry!</strong> SEED doesn't currently support that file format. Only .csv, .xls, .xlsx files are supported.
+		    </div>
+		    <div class="form-group col-lg-12 col-sm-12">
+		        <div be-uploader sourcetype="Portfolio Raw" importrecord="dataset.id" buttontext="Upload your energy data file(s)" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+		        <div class="progress_bar_container" ng-show="uploader.in_progress">
+		        	<div class="progress_bar_copy_top">Uploading <strong>{$ dataset.filename $}</strong></div>
+
+					<progressbar class="progress-striped active" value="uploader.progress" type="success"></progressbar>
+					<div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ uploader.status_message $}</div>
+				</div>
+		    </div>
+	    </div>
+	</div>
+	<!-- Step 5 -->
+	<div class="data_upload_steps" ng-switch-when="5">
+		<div class="row">
+		    <div class="alert alert-success alert-dismissable" ng-show="uploader.complete">
+		    	<button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
+		    	<strong>{$ dataset.filename $}</strong> has been uploaded to <strong>{$ dataset.name $}</strong>.
+		    </div>
+	    </div>
+	</div>
+	<!-- Step 6 -->
+	<div class="data_upload_steps" ng-switch-when="6">
+		<div class="row">
+			<div class="form-group col-lg-12 col-sm-12">
+				<button type="button" class="btn btn-primary" ng-click="goto_step(2)">Buildings list file</button>
+				<button type="button" class="btn btn-primary" ng-click="goto_step(4)">Energy data file</button>
+			</div>
+		</div>
+	</div>
+	<!-- Step 7: Finding building matches -->
+	<div class="data_upload_steps" ng-switch-when="7">
+		<div class="row">
+		    <div class="form-group col-lg-12 col-sm-12">
+		        <div class="progress_bar_container">
+		        	<div class="progress_bar_copy_top">Finding building matches for <strong>{$ dataset.filename $}</strong></div>
+					<progressbar class="progress-striped active" value="uploader.progress" type="success"></progressbar>
+					<div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% Complete</div>
+				</div>
+		    </div>
+		</div>
+	</div>
+	<!-- Step 8: Review matches -->
+    <div class="data_upload_steps" ng-switch-when="8">
+        <div class="row">
+            <div class="alert alert-success alert-dismissable">
+                <button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
+                SEED successfully matched <strong>{$ matched_buildings|number:0 $}</strong> of the <strong>{$ (matched_buildings + unmatched_buildings)|number:0 $}</strong> buildings from your <strong>{$ dataset.filename $}</strong> file.
+            </div>
+        </div>
+    </div>
+    <!-- Step 9: Select the type of file to upload. -->
+    <div class="data_upload_steps" ng-switch-when="9">
+        <div class="row">
+            <div class="form-group col-lg-12 col-sm-12">
+                Select the type of file(s) you would like to add to {$ dataset.name $}.
+            </div>
+        </div>
+    </div>
+    <!-- Step 10: No matches -->
+	<div class="data_upload_steps" ng-switch-when="10">
+		<div class="row">
+		    <div class="alert alert-{$ step_10_style $} alert-dismissable">
+                <button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
+                    <span ng-show="step_10_error_message">{$ step_10_error_message $}</span>
+                    <span ng-hide="step_10_error_message">SEED could not locate any matches. Would you like to add another file?</span>
+            </div>
+            <div class="form-group col-lg-12 col-sm-12">
+            </div>
+		</div>
+	</div>
+	<!-- Step 11: Save Mappings Permanently  -->
+	<div class="data_upload_steps" ng-switch-when="11">
+		<div class="row">
+		    <div class="alert alert-warning alert-dismissable">
+                <button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
+                    Did you review your mappings? It's a good idea to double check your mappings. Once SEED matches your buildings you can not undo or edit these mappings.
+            </div>
+		</div>
+	</div>
+</div>
+
+<div class="modal-footer" ng-switch on="step.number">
+    <div ng-switch-when="1">
+    	<button class="btn btn-default" ng-click="cancel()">Cancel</button>
+    	<button type="button" class="btn btn-primary" ng-click="create_dataset(dataset.name)" ng-disabled="dataset.disabled()">Create Data Set</button>
+    </div>
+    <div ng-switch-when="2">
+    </div>
+    <div ng-switch-when="3">
+    	<!-- Leaving this out for now as I'm not sure we want to allow the user to do this right here.
+    	<button type="button" class="btn btn-default">Upload another building list file</button> -->
+    	<button type="button" class="btn btn-primary" ng-click="goto_data_mapping()">Continue to data mapping</button>
+    </div>
+    <div ng-switch-when="4">
+    </div>
+    <div ng-switch-when="5">
+    	<button type="button" class="btn btn-default" ng-click="goto_step(4)">Upload another energy data file</button>
+    	<button type="button" class="btn btn-primary" ng-click="goto_data_matching()">Continue to data matching</button>
+    </div>
+    <div ng-switch-when="7">
+    </div>
+    <div ng-switch-when="8">
+    	<button type="button" class="btn btn-default" ng-click="view_my_buildings()">View my buildings</button>
+    	<button type="button" class="btn btn-primary" ng-click="goto_data_matching()">Review matches</button>
+    </div>
+    <div ng-switch-when="9">
+        <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+        <button type="button" class="btn btn-primary" ng-click="goto_step(2)">Add another file</button>
+    </div>
+    <div ng-switch-when="10">
+    	<button class="btn btn-default" ng-click="cancel()">Cancel</button>
+    	<button type="button" class="btn btn-primary" ng-click="goto_step(2)">Add another file</button>
+        <button type="button" class="btn btn-primary" ng-click="view_my_buildings()">View my buildings</button>
+    </div>
+    <div ng-switch-when="11">
+    	<button class="btn btn-default" ng-click="cancel()">Let me review again.</button>
+        <button type="button" class="btn btn-primary" ng-click="goto_step(7); find_matches();">Confirm mappings &amp; start matching</button>
+    </div>
+</div>

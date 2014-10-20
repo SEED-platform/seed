@@ -1,0 +1,26 @@
+{% extends "landing/base.html" %}{% load compress %}
+
+{% block content %}
+<div class="page">
+    {% include "landing/_header.html" %}
+
+    <div class="page_section">
+        {% include "landing/_marketing_bullets.html" %}
+        <!-- END .section_marketing -->
+        <div class="section_forms"> 
+            <div class="signup_form">
+                <div class="form_title">
+                    <h2>Thank you!</h2>
+                </div>
+                <div class="thank_you">
+	                <div class="thank_you_text">Thank you for your interest in joining the Buildings Performance Database. Our site is in beta and your request is being reviewed for access.</div>
+	                <a href="{% url "landing:landing_page" %}" type="submit" class="btn">Back</a>
+                </div>
+            </div>
+        </div>
+        <!-- END .section_forms -->
+    </div>
+    <!-- END .page_section .content -->
+</div>
+<!-- END .page -->
+{% endblock %}

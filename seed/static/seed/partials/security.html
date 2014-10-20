@@ -1,0 +1,50 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+        </div>
+        <div class="page_title">
+            <h1>{$ username $}</h1>
+        </div>
+        <div class="right page_action_container">
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav">
+        <a ng-href="#/profile">Profile Info</a><a ng-href="#/profile/security" class="active">Security</a><a ng-href="#/profile/admin" ng-show="auth.requires_superuser">Admin</a><a ng-href="#/profile/developer">Developer</a>
+    </div>
+</div>
+<div class="section">
+    <div class="section_header_container">
+        <div class="section_header">
+            <h2><i class="fa fa-lock"></i> Change Password</h2>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content with_padding">          
+            <div class="row">
+                <div class="section_form_container col-sm-3">
+                    <form role="form">
+                        <div class="form-group" ng-class="{ 'has-error': error_message == 'current password is not valid' }">
+                            <label for="currentPawword">Current password</label>
+                            <input type="password" class="form-control" id="editCurrentPawword" ng-model="current_password">
+                            <p ng-show=" error_message == 'current password is not valid' " class="help-block">{$ error_message $}</p>
+                        </div>
+                        <div class="form-group" ng-class="{ 'has-error': error_message == 'entered password do not match' }">
+                            <label for="newPassword">New password</label>
+                            <input type="password" class="form-control" id="editNewPassword" ng-model="password_1">
+                            <p ng-show=" error_message == 'entered password do not match' " class="help-block">{$ error_message $}</p>
+                        </div>
+                        <div class="form-group" ng-class="{ 'has-error': error_message != 'current password is not valid' && error_message.length > 0}">
+                            <label for="confirmNewPassword">Confirm new password</label>
+                            <input type="password" class="form-control" id="editConfirmNewPassword" ng-model="password_2">
+                            <p ng-show=" error_message != 'current password is not valid' " class="help-block">{$ error_message $}</p>
+                        </div>
+                        <button type="submit" class="btn btn-primary" ng-click="change_password()">Change Password <i class="fa fa-check" ng-show="password_updated"></i></button>
+                        <button type="button" class="btn btn-default">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

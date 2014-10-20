@@ -1,0 +1,64 @@
+{% load compress %}
+{% compress js %}
+<script src="{{STATIC_URL}}seed/js/seed.js"></script>
+
+<script src="{{STATIC_URL}}seed/js/filters/district.js"></script>
+<script src="{{STATIC_URL}}seed/js/filters/ignoremap.js"></script>
+<script src="{{STATIC_URL}}seed/js/filters/fromNow.js"></script>
+<script src="{{STATIC_URL}}seed/js/filters/stripImportPrefix.js"></script>
+<script src="{{STATIC_URL}}seed/js/filters/titleCase.js"></script>
+<script src="{{STATIC_URL}}seed/js/filters/typedNumber.js"></script>
+
+<script src="{{STATIC_URL}}seed/js/directives/beEnter.js"></script>
+<script src="{{STATIC_URL}}seed/js/directives/beLabel.js"></script>
+<script src="{{STATIC_URL}}seed/js/directives/beUploader.js"></script>
+
+<script src="{{STATIC_URL}}seed/js/controllers/accounts_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/admin_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/building_list_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/building_detail_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/buildings_settings_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/concat_modal_ctrl.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/create_note_modal_ctrl.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/create_organization_modal_ctrl.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/data_upload_modal_ctrl.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/dataset_list_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/dataset_detail_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/delete_modal_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/developer_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/edit_label_modal_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/edit_project_modal_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/export_modal_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/mapping_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/matching_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/matching_detail_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/members_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/menu_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/new_member_modal_ctrl.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/organization_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/profile_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/project_list_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/settings_controller.js"></script>
+<script src="{{STATIC_URL}}seed/js/controllers/security_controller.js"></script>
+
+<script src="{{STATIC_URL}}seed/js/services/audit_service.js"></script>
+<script src="{{STATIC_URL}}seed/js/services/auth_service.js"></script>
+<script src="{{STATIC_URL}}seed/js/services/building_service.js"></script>
+<script src="{{STATIC_URL}}seed/js/services/dataset_service.js"></script>
+<script src="{{STATIC_URL}}seed/js/services/export_service.js"></script>
+<script src="{{STATIC_URL}}seed/js/services/label_helper_service.js"></script>
+<script src="{{STATIC_URL}}seed/js/services/mapping_service.js"></script>
+<script src="{{STATIC_URL}}seed/js/services/matching_service.js"></script>
+<script src="{{STATIC_URL}}seed/js/services/organization_service.js"></script>
+<script src="{{STATIC_URL}}seed/js/services/project_service.js"></script>
+<script src="{{STATIC_URL}}seed/js/services/uploader_service.js"></script>
+<script src="{{STATIC_URL}}seed/js/services/user_service.js"></script>
+<script src="{{STATIC_URL}}seed/js/services/validators.js"></script>
+<script src="{{STATIC_URL}}seed/js/services/search_service.js"></script>
+{% endcompress %}
+
+{% comment %}
+{# minified using: uglifyjs ./*.js --source-map app.min.js.map -o app.min.js -m c #}
+        <script src="{{STATIC_URL}}seed/js/app.min.js"></script>
+        <script src="{{STATIC_URL}}seed/js/app.min.js.map"></script>
+{% endcomment %}

@@ -1,0 +1,158 @@
+{% extends "seed/base.html" %}{% load compress %}
+
+{% block js %}{{block.super}}
+<script src="{{STATIC_URL}}seed/js/menu_controller.js"></script>
+{% endblock %}
+
+{% block content %}
+<div ng-controller="seed_menu_controller">
+	
+	{% include "seed/_sidebar.html" %}
+
+    
+    <div class="display">
+        <div ng-class="{narrow: narrow_controller, wide: wide_controller, content: true}">
+
+            {% include "seed/_header.html" %}
+
+            <div class="page">
+                <div class="page_header_container">
+                    <div class="page_header">
+                        <div class="left page_action_container">
+                            <a class="page_action"><i class="fa fa-chevron-left"></i> Buildings</a>
+                        </div>
+                        <div class="page_title">
+                            <h1>Mayflower Park Hotel</h1>
+                        </div>
+                        <div class="right page_action_container page_action_btn">
+                            <div class="btn-group">
+								<button type="button" class="btn btn-primary btn-sm"><i class="fa fa-eye"></i></button>
+								<button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+							    	<span class="caret"></span>
+							    	<span class="sr-only">Toggle Dropdown</span>
+							    </button>
+							    <ul class="dropdown-menu pull-right" role="menu">
+							    	<li><a href="#">Activity</a></li>
+							    	<li><a href="#">Export</a></li>
+							    	<li><a href="#">Delete</a></li>
+							    	<li><a href="#">Retire</a></li>
+							    	<li class="divider"></li>
+							    	<li><a href="#">Add to a Project</a></li>
+							    </ul>
+							</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section_header_container">
+                        <div class="section_header">
+                            <h2><i class="fa fa-building-o"></i> Building Information</h2>
+                            <a class="badge active">All</a>
+                            <a class="badge">Master</a>
+                            <a class="badge">Assessor Data</a>
+                        </div>
+                    </div>
+                    <div class="section_content_container">
+                    	<div class="section_content">
+                    		<div class="table_list_container">
+                    			<table class="table table-striped table_highlight_first">
+                    				<thead>
+                    					<tr>
+                    						<th>Field</th>
+                    						<th>Master</th>
+                    						<th>Assessor Data</th>
+                    					</tr>
+                    				</thead>
+                    				<tbody>
+                       					<tr>
+                    						<td>ID</td>
+                    						<td>2</td>
+                    						<td class="success">2</td>
+                    					</tr>
+                    					<tr>
+                    						<td>Block #</td>
+                    						<td>32</td>
+                    						<td class="success">32</td>
+                    					</tr>
+                    					<tr>
+                    						<td>Name</td>
+                    						<td>Mayflower Park Hotel</td>
+                    						<td class="success">Mayflower Park Hotel</td>
+                    					</tr>
+                    					<tr>
+                    						<td>Street Address</td>
+                    						<td>405 Olive Way</td>
+                    						<td class="success">405 Olive Way</td>
+                    					</tr>
+                    					<tr>
+                    						<td>County</td>
+                    						<td>King</td>
+                    						<td class="success">King</td>
+                    					</tr>
+                    					<tr>
+                    						<td>Zip Code</td>
+                    						<td>98101</td>
+                    						<td class="success">98101</td>
+                    					</tr>
+                    					<tr>
+                    						<td>Square Footage</td>
+                    						<td>88,4343</td>
+                    						<td class="success">88,4343</td>
+                    					</tr>
+                    					<tr>
+                    						<td>Year Built</td>
+                    						<td>1972</td>
+                    						<td class="success">1972</td>
+                    					</tr>
+                    					<tr>
+                    						<td>Use Type</td>
+                    						<td>Hotal</td>
+                    						<td class="success">Hotal</td>
+                    					</tr>
+                    				</tbody>
+                    			</table>
+                    		</div>
+                    	</div>
+                    </div>
+                </div>
+                <div class="section">
+	                <div class="section_header_container">
+	                    <div class="section_header">
+	                        <h2><i class="fa fa-home"></i> Projects</h2>
+	                    </div>
+	                </div>
+	                <div class="section_content_container">
+	                	<div class="section_content">
+	                		<div class="table_list_container">
+	                			<table class="table table-striped table_highlight_first">
+	                				<thead>
+	                					<tr>
+	                						<th>Project</th>
+	                						<th>Added</th>
+	                						<th>Deadline</th>
+	                						<th>Status</th>
+	                						<th>Approval Date</th>
+	                						<th>Approved By</th>
+	                					</tr>
+	                				</thead>
+	                				<tbody>
+	                   					<tr>
+	                						<td><a href="#">2012 Benchmarking</a></td>
+	                						<td>Oct 8, 2013</td>
+	                						<td>Nov 1, 2013</td>
+	                						<td class="success"><i class="fa fa-check-circle"></i> Complied</td>
+	                						<td>Oct 10, 2013</td>
+	                						<td>Sam Brown</td>
+	                					</tr>
+	                				</tbody>
+	                			</table>
+	                		</div>
+	                	</div>
+	                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,45 @@
+<div class="modal-header">
+  <button type="button" class="close" ng-click="cancel()"><i class="fa fa-times"></i></button>
+  <h4 class="modal-title" id="exportModalLabel" ng-show="export_state == 'create'">Export your Buildings</h4>
+  <h4 class="modal-title" id="exportModalLabel" ng-show="export_state == 'prepare'">Preparing your buildings for export</h4>
+  <h4 class="modal-title" id="exportModalLabel" ng-show="export_state == 'success'">Success!</h4>
+</div>
+<div class="modal-body form-horizontal" style="padding-bottom: 0;">
+	<div class="form-group" ng-show="export_state == 'create'">
+		<label class="control-label col-sm-3" for="fileName" >Export Name</label>
+		<div class="col-sm-8" ng-show="export_state == 'create'">
+		  <input type="text" class="form-control" id="fileName" ng-model="building_export.export_name" placeholder="File Name" required>
+		</div>
+	</div>
+	<div class="form-group" style="margin-bottom: 0;" ng-show="export_state == 'create'">
+		<div class="col-sm-offset-3 col-sm-8 export_radio">
+			<label class="radio radio-inline">
+				<input type="radio" name="optionsRadio" id="optionsRadio1" value="csv" ng-model="building_export.export_type"> CSV
+			</label>
+			<label class="radio radio-inline">
+				<input type="radio" name="optionsRadio" id="optionsRadio2" value="xls" ng-model="building_export.export_type"> XLS
+			</label>
+		</div>
+	</div>
+	<div class="form-group" ng-show="export_state == 'prepare'">
+		<div class="col-sm-7">
+			<div class="progress">
+				<progressbar class="progress-striped active" value="progress_percentage" type="success"></progressbar>
+			</div>
+		</div>
+		<div class="col-sm-5">
+			{$ progress_numerator | number:0 $} / {$ progress_denominator | number:0 $} Buildings
+		</div>
+	</div>
+	<div class="form-group" ng-show="export_state == 'success'">
+		<div class="col-sm-12" >
+			If for any reason a download of your file does not complete, click the 'retry export' button to retry.
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" ng-show="export_state == 'create'" ng-click="cancel()">Cancel</button>
+  <button type="button" class="btn btn-default" ng-show="export_state == 'success'" ng-click="close()">Close</button>
+  <button type="button" class="btn btn-primary" ng-click="export_buildings()" ng-show="export_state == 'create'" ng-disabled="building_export.export_name == undefined || building_export.export_name.length == 0">Export</button>
+  <button type="button" class="btn btn-primary" ng-click="export_buildings()" ng-show="export_state == 'success'">Retry Export</button>
+</div>

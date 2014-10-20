@@ -1,0 +1,70 @@
+<!-- newProjectModal -->
+<div class="modal fade" id="newProjectModalIndex" tabindex="-1" role="dialog" aria-labelledby="newProjectModalLabel" aria-hidden="true" ng-cloak>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times"></i></button>
+        <h4 class="modal-title" id="newProjectModalLabel">Create a New Project</h4>
+      </div>
+      <div class="modal-body form-horizontal" style="padding-bottom: 0;">
+        <div class="alert alert-danger" ng-show="menu.create_project_error">
+            {$ menu.create_project_error_message $}</a>.
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-3" for="projectName">Project Name</label>
+            <div class="col-sm-8" ng-show="menu.create_project_state == 'create'">
+                <input type="text" class="form-control" id="projectName" ng-model="menu.project.name" placeholder="Project Name" required>
+            </div>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <!-- <label class="control-label col-sm-3" for="projectCompliance">Compliance Project?</label> -->
+            <div class="col-sm-offset-3 col-sm-8">
+	            <div class="checkbox complianceCheckbox">
+		        	<label>
+			        	<input type="checkbox" value="complianceProject"> Add compliance information.
+			        </label>
+			    </div>
+            </div>
+        </div>
+      </div>
+    <div class="modal-header">
+    	<h4 class="modal-title" id="newProjectComplianceModalLabel">Compliance Information</h4>
+    </div>
+    <div class="modal-body form-horizontal">
+        <div class="form-group" ng-show="menu.create_project_state == 'create'">
+            <label class="control-label col-sm-3" for="projectCompliance">Submittal Type</label>
+            <div class="col-sm-8">
+                <select class="form-control" id="projectCompliance" ng-model="menu.project.compliance_type">
+                  <option>Benchmarking</option>
+                  <option>Auditing</option>
+                  <option>Retro Commissioning</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group" ng-show="menu.create_project_state == 'create'">
+            <label class="control-label col-sm-3" for="projectStartDate">Year Ending Date</label>
+            <div class="col-sm-8">
+                <input type="month" class="form-control" id="projectStartDate" ng-model="menu.project.end_date">
+                <span class="help-block">Choose the year ending month for report period. </span>
+            </div>
+        </div>
+        <div class="form-group" ng-show="menu.create_project_state == 'create'">
+            <label class="control-label col-sm-3" for="projectDeadline">Reporting Deadline</label>
+            <div class="col-sm-8">
+                <input type="date" class="form-control" id="projectDeadline" ng-model="menu.project.deadline_date">
+            </div>
+        </div>
+
+        <div class="alert alert-success" ng-show="menu.create_project_state == 'success'">
+        Project <a data-dismiss="modal" ng-click="menu.go_to_project()"><strong>{$ menu.project.name $}</strong></a> created.
+    </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" ng-show="menu.create_project_state == 'create'">Cancel</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal" ng-show="menu.create_project_state == 'success'">Close</button>
+        <button type="button" class="btn btn-primary" ng-click="menu.create_project()" ng-show="menu.create_project_state == 'create'">Create Project</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="menu.go_to_project()" ng-show="menu.create_project_state == 'success'">View Project</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

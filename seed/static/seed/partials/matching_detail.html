@@ -1,0 +1,117 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a class="page_action" ng-href="#/data/matching/{$ import_file.id $}"><i class="fa fa-chevron-left"></i> Matching</a>
+        </div>
+        <div class="page_title">
+            <h1>Matching ({$ import_file.file_name $})</h1>
+        </div>
+        <div class="right page_action_container">
+            
+        </div>
+    </div>
+</div>
+
+<div class="section" ng-cloak>
+    <div class="section_content_container">
+        <div class="section_content">
+            <div class="table_list_container matching">
+                <div class="file_to_import ng-cloak">    
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th class="source_data blank"></th>
+                                <th class="source_data" colspan="7">Building from: {$ import_file.file_name $}</th>
+                            </tr>
+                            <tr>
+                                <th class="is_aligned_center">Match</th>
+                                <th width="20%">Tax Lot ID</th>
+                                <th width="10%">Custom ID 1</th>
+                                <th width="10%">Name</th>
+                                <th width="15%">Address</th>
+                                <th width="15%">Year Built</th>
+                                <th width="10%">Postal Code</th>
+                                <th width="20%">Floor Area</th>
+                            </tr>
+                            <tr>
+                                <th class="sub_head"></th>
+                                <th class="sub_head">
+                                    <input type="text" class="form-control input-sm show" placeholder="ID" ng-model="filter_params.property_id" ng-class="{active: filter_params.property_id.length > 0}">
+                                </th>
+                                <th class="sub_head">
+                                    <input type="text" class="form-control input-sm show" placeholder="Custom ID" ng-model="filter_params.property_name" ng-class="{active: filter_params.property_name.length > 0}">
+                                </th>
+                                <th class="sub_head">
+                                    <input type="text" class="form-control input-sm show" placeholder="Name" ng-model="filter_params.property_name" ng-class="{active: filter_params.property_name.length > 0}">
+                                </th>
+                                 <th class="sub_head">
+                                    <input type="text" class="form-control input-sm show" placeholder="Address" ng-model="filter_params.address_line_1" ng-class="{active: filter_params.address_line_1.length > 0}">
+                                </th>
+                                <th class="sub_head">
+                                    <input type="text" class="form-control input-sm show" placeholder="Year Built" ng-model="filter_params.year_built" ng-class="{active: filter_params.year_built.length > 0}">
+                                </th>
+                                <th class="sub_head">
+                                    <input type="text" class="form-control input-sm show" placeholder="Postal Code" ng-model="filter_params.postal_code" ng-class="{active: filter_params.postal_code.length > 0}">
+                                </th>
+                                <th class="sub_head">
+                                    <input type="text" class="form-control input-sm show" placeholder="Floor Area" ng-model="filter_params.gross_floor_area" ng-class="{active: filter_params.gross_floor_area.length > 0}">
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                             <tr>
+		                        <td class="to_match check is_aligned_center" ng-show="!building.matched"><i class="fa fa-question-circle"></i></td>
+		                        <td class="to_match check is_aligned_center" ng-show="building.matched"><i class="fa fa-check"></i></td>
+		
+		                        <td class="to_match">{$ building.property_id $}</td>
+		                        <td class="to_match">{$ building.extra_data['Custom Property ID 1 - ID'] $}</td>
+		                        <td class="to_match">{$ building.property_name $}</td>
+		                        <td class="to_match">{$ building.address_line_1 $}</td>
+		                        <td class="to_match">{$ building.year_built $}</td>
+		                        <td class="to_match">{$ building.postal_code $}</td>
+		                        <td class="to_match">{$ building.property_floor_area_bldg_park | number:0 $}</td>
+		                    </tr>
+		                    <tr ng-repeat="b in assessed_buildings | filter:filter_params:strict">
+                                <td class="is_aligned_center">
+                                    <input type="checkbox" ng-model="b.matched" ng-change="toggle_match(b)">
+                                </td>
+                                <td class="is_aligned_center">
+                                    <span class="badge low_confidence" ng-show="b.calculated_confidence < 0.4">low</span>
+                                    <span class="badge med_confidence" ng-show="b.calculated_confidence >= 0.4 && b.calculated_confidence < 0.7">medium</span>
+                                    <span class="badge high_confidence" ng-show="b.calculated_confidence >= 0.7">high</span>
+                                </td>
+                                <td>{$ b.property_id | stripImportPrefix $}</td>
+                                <td>{$ b.property_name $}</td>
+                                <td>{$ b.address_line_1 $}</td>
+                                <td>{$ b.year_built $}</td>
+                                <td>{$ b.postal_code $}</td>
+                                <td>{$ b.gross_floor_area | number:0 $}</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table_footer">
+                <div class="display_number_entries col-sm-3 col-md-3" ng-hide="true">
+                     <div class="display_number_entries_text">Display:</div>
+                     <div class="display_number_entries_select">
+                        <select class="form-control input-sm col-xs-2" name="number_per_page_select" id="number_per_page_select" ng-options="number_per_page_option for number_per_page_option in number_per_page_options" ng-model="number_per_page_options_model" ng-change="update_number_per_page()">
+                        </select>
+                    </div>
+                    <div class="display_number_entries_text">buildings</div>
+                </div>
+            <div class="counts col-sm-6 col-md-6">
+                <span>{$ assessed_buildings.length | number:0 $} possible matches</span>
+            </div>
+            <div class="pager_container col-sm-3 col-md-3" ng-hide="true">
+                <ul class="pager">
+                  <li ng-class="{disabled: prev_page_disabled}"><a ng-click="prev_page()"><i class="fa fa-angle-double-left"></i> Previous</a></li>
+        
+                  <li ng-class="{disabled: next_page_disabled}"><a ng-click="next_page()">Next <i class="fa fa-angle-double-right"></i></a></li>
+                </ul>
+            </div>
+        </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,215 @@
+{% extends "seed/base.html" %}{% load compress %}
+
+{% block js_scripts %}{{block.super}}
+{% endblock %}
+
+{% block content %}
+
+<div ng-controller="seed_admin_controller">
+
+<div class="display">
+	<div class="content">
+			<div class="page">
+				<div class="page_header_container">
+			    <div class="page_header">
+			        <div class="left page_action_container">
+			            
+			        </div>
+			        <div class="page_title">
+			            <h1>Admin</h1>
+			        </div>
+			        <div class="right page_action_container">
+			            
+			        </div>
+			    </div>
+			</div>
+		    <div class="section">
+			    <div class="alert {$ alert.css $}" ng-show="alert.show">
+			        <button type="button" class="close" ng-click="alert.show = false">&times;</button>
+			        {$ alert.message $}
+			    </div>
+			    <div class="section_header_container has_btm_margin">
+                    <div class="section_header">
+                        <h2><i class="fa fa-users"></i> Create an organization</h2>
+                    </div>
+                </div>
+                <div class="section_content_container org_form">
+	                <div class="section_content">
+		            	<form  name="orgForm" novalidate class="form-horizontal css-form" role="form">
+			            	<div class="form-group">
+				            	<label class="col-sm-2 control-label" for="org_name">Organization Name:</label>
+				            	<div class="col-sm-4">
+				                	<input type="text" class="form-control" id="org_name" ng-model="org.name" placeholder="Organization Name" required />
+				            	</div>
+			            	</div>
+				            <div class="form-group">
+				            	<label class="col-sm-2 control-label" for="user_emails">User E-mail:</label>
+				            	<div class="col-sm-4">
+				            		<select class="form-control" name="user_emails" id="user_emails" ng-options="u as u.email for u in org.users" ng-model="org.email" >
+				            		</select>
+				            	</div>
+				            </div>
+				            <div class="form-group">
+				            	<div class="col-sm-offset-2 col-sm-10">
+					            	<button class="btn btn-default" type="button" ng-click="org_form.reset()">Reset</button>
+					            	<button class="btn btn-primary" ng-click="org_form.add(org)" ng-disabled="orgForm.$invalid || org_form.not_ready()">Create</button>
+				            	</div>
+				            </div>
+			            </form>
+			            <div ng-show="org_form.invalid">Error:
+				            <span>{$ org_form.message $}</span>
+				        </div>
+				    </div>
+                </div>
+                <div class="section_header_container has_btm_margin">
+                    <div class="section_header">
+                        <h2><i class="fa fa-user"></i> Create a user</h2>
+                    </div>
+                </div>
+                <div class="section_content_container user_admin">
+	                <div class="section_content">
+			            <form name="userForm" novalidate class="form-horizontal css-form" role="form">
+			            	<div class="form-group">
+			            		<label class="col-sm-2 control-label" for="first_name">User First Name:</label>
+			            		<div class="col-sm-4">
+				            		<input type="text" id="first_name" class="form-control" ng-model="user.first_name" placeholder="First Name" required />
+			            		</div>
+			            	</div>
+			            	<div class="form-group">
+			            		<label class="col-sm-2 control-label" for="last_name">User Last Name:</label>
+			            		<div class="col-sm-4">
+				            		<input type="text" id="last_name" class="form-control" ng-model="user.last_name" placeholder="Last Name" required />
+			            		</div>
+			            	</div>
+			            	<div class="form-group">
+			            		<label class="col-sm-2 control-label" for="user_email">User E-mail:</label>
+			            		<div class="col-sm-4">
+				            		<input type="email" id="user_email" class="form-control" ng-model="user.email" placeholder="User Email" required />
+			            		</div>
+			            	</div>
+			            	<div class="form-group">
+			            		<label class="col-sm-2 control-label" for="new_user_org_select">Choose Existing Organization:</label>
+			            		<div class="col-sm-4">
+				            		<select name="new_user_orgs" class="form-control" id="orgs" ng-options="o as o.name for o in org_user.organizations" ng-model="user.organization" ng-change="get_organizations_users(org_user.organization)"></select>
+			            		</div>
+							</div>
+							<div class="form-group">
+				            	<label class="col-sm-2 control-label" for="org_name_from_user">Or Create New (With User as Head):</label>
+				            	<div class="col-sm-4">
+				                	<input type="text" class="form-control" id="new_user_org_name" ng-model="user.org_name" placeholder="Organization Name" />
+				            	</div>
+									
+			            	</div>
+			            	<div class="form-group">
+				            	<div class="col-sm-offset-2 col-sm-10">
+					            	<button class="btn btn-default" ng-click="user_form.reset()">Reset</button>
+					            	<button class="btn btn-primary" ng-click="user_form.add(user)" ng-disabled="userForm.$invalid">Create</button>
+				            	</div>
+			            	</div>
+			            </form>
+			            <div ng-show="user_form.invalid">Error:
+			                <span>{$ user_form.message $}</span>
+			            </div>
+			        </div>
+			    </div>
+			    <div class="section_header_container has_btm_margin">
+                    <div class="section_header">
+                        <h2><i class="fa fa-plus-circle"></i> Add/Remove a user to an organization</h2>
+                    </div>
+                </div>
+                <div class="section_content_container org_user_admin">
+	                <div class="section_content row">
+		            	<div class="col-sm-6 col-md-6">
+			            	<form name="addRemoveForm" novalidate class="form-horizontal css-form" role="form">
+			            		<div class="form-group">
+				            		<label class="col-sm-4 control-label" for="orgs">Organizations:</label>
+				            		<div class="col-sm-8">
+					            		<select name="orgs" class="form-control" id="orgs" ng-options="o as o.name for o in org_user.organizations" ng-model="org_user.organization" ng-change="get_organizations_users(org_user.organization)"></select>
+				            		</div>
+			            		</div>
+			            		
+			            		<div class="form-group">
+				            		<label class="col-sm-4 control-label" for="add_emails">Add user to organization:</label>
+				            		<div class="col-sm-8">
+					            		<select name="user_emails" class="form-control" id="user_emails" ng-options="u as u.email for u in org.users" ng-model="org_user.user" ></select>
+				            		</div>
+			            		</div>
+			            		<div class="form-group">
+					            	<div class="col-sm-offset-4 col-sm-8">
+						            	<button class="btn btn-primary" ng-click="org_user.add()">Add user</button>
+					            	</div>
+			            		</div>
+			            	</form>
+		            	</div>
+		            	<div class="table_list_container col-sm-5 col-md-5">
+				            <table class="table table-striped">
+				                <thead>
+				                    <tr>
+				                        <th>User</th>
+				                        <th></th>
+				
+				                    </tr>
+				                </thead>
+				                <tbody>
+				                    <tr ng-repeat="user in org_user.users">
+				                        <td>{$ user.email $}</td>
+				                        <td><button class="btn btn-default" ng-click="org_user.remove_user(user.user_id, org_user.organization.org_id)">Remove User</button></td>
+				                    </tr>
+				                </tbody>
+				            </table>
+	            		</div>		
+	                </div>
+		        </div>
+		        <div class="section_header_container has_btm_margin">
+                    <div class="section_header">
+                        <h2><i class="fa fa-trash-o"></i> Remove all buildings from an organization</h2>
+                    </div>
+                </div>
+                <div class="section_content_container org_user_admin">
+	                <div class="section_content row">
+		            	<div class="table_list_container col-sm-5 col-md-5">
+				            <table class="table table-striped">
+				                <thead>
+				                    <tr>
+				                        <th>Organization</th>
+				                        <th>Users</th>
+				                        <th>Building Count</th>
+				                        <th></th>
+				
+				                    </tr>
+				                </thead>
+				                <tbody>
+				                    <tr ng-repeat="o in org_user.organizations">
+				                        <td>{$ o.name $}</td>
+				                        <td><span ng-repeat="u in o.users">{$ u $}<br /></span></td>
+				                        <td><strong>{$ o.buildings_count | number:0 $}</strong> <span class="subtitle">({$ o.total_buildings_count | number:0 $})</span></td>
+				                        <td>
+				                        	<div style="width: 150px;">
+					                        	<button class="btn btn-danger" ng-click="confirm_delete(o)" ng-hide="o.progress > -1 || o.total_buildings_count == 0">Remove Buildings</button>
+					                        	<progressbar class="progress-striped active" value="o.progress" type="danger" ng-show="o.progress > -1">{$ o.remove_message $}</progressbar>
+					                        </div>
+				                        </td>
+				                    </tr>
+				                </tbody>
+				            </table>
+	            		</div>		
+	                </div>
+		        </div>
+
+
+		    </div>
+		</div>
+	</div>
+</div>
+
+<style type="text/css">
+      .css-form input.ng-invalid.ng-dirty {
+        background-color: #FA787E;
+      }
+    
+      .css-form input.ng-valid.ng-dirty {
+        background-color: #78FA89;
+      }
+    </style>
+
+{% endblock %}

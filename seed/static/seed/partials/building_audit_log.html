@@ -1,0 +1,39 @@
+<div class="section">
+    <div class="section_header_container">
+        <div class="section_header fixed_height_short has_no_padding">
+            <div class="section_action_container left">
+            	<h2><i class="fa fa-list-ul"></i> Audit Log &amp; Notes </h2>
+            </div>
+            <div class="section_action_container right" ng-hide="building.edit_form_showing">
+                <a href="javascript:void(0);" ng-click="open_create_note_modal()" ng-show="user_role !== 'viewer'"><i class="fa fa-comment"></i> Add a note</a>
+            </div>
+            <div class="section_action_container right section_action_btn" ng-show="building.edit_form_showing">
+            	<a roll="button" class="btn btn-default btn-sm" href="javascript:void(0);" ng-click="building.edit_form_showing = false; restore_building()">Cancel</a>
+				<a roll="button" class="btn btn-primary btn-sm" href="javascript:void(0);" ng-click="building.edit_form_showing = false; save_building()">Save Changes</a>
+            </div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content">
+            <div class="table_list_container">
+                <table class="table table-striped table_highlight_first">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th width=50%>Action</th>
+                            <th>Date (Timestamp)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+	                    <tr ng-repeat="entry in audit_logs">
+	                        <td class="align_to_top has_no_min_width">{$ entry.user.first_name $} {$ entry.user.last_name $}</td>
+                            <td class="align_to_top" ng-if="entry.audit_type == 'Log'">{$ entry.action_note || entry.action $}</td>
+	                        <td class="align_to_top whitespace note" ng-if="entry.audit_type == 'Note'"><label class="label label-info"><i class="fa fa-comment"></i> note</label> {$ entry.action_note $}  <a href="javascript:void(0);" class="note_edit pull-right" ng-click="open_create_note_modal(entry)" ng-show="user_role !== 'viewer'" ng-if="entry.audit_type == 'Note'">edit</a></td>
+	                        <td class="align_to_top">{$ entry.created | date:"MM/dd/yyyy 'at' h:mma" $}</td>
+	                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

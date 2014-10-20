@@ -1,0 +1,24 @@
+{% extends "landing/base.html" %}{% load compress %}
+{% load url from future %}
+{% block content %}
+<div class="page terms_of_service">
+
+<h1>Our Terms of Service have changed.</h1>
+<p>{{ tos.created|date:"SHORT_DATE_FORMAT" }}</p>
+
+<div class="terms">
+{{ tos.content|safe }}
+</div>
+
+<h2>Accept Terms of Service?</h2>
+
+<form method="post" action="{% url "tos_check_tos" %}">
+    {% csrf_token %}
+    {% if next %}
+        <input type="hidden" name="next" value="{{next}}">
+    {% endif %}
+    <input class="btn btn-primary" type="submit" name="accept" value="accept">
+    <input class="btn btn-default" type="submit" name="accept" value="reject">
+</form>
+</div>
+{% endblock %}

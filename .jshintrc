@@ -1,0 +1,13 @@
+{
+	// all variables must be defined (i.e. var x, not just x)
+	"undef": true,
+	// prefedined variables (i.e. jquery, angularjs, etc)
+ 	"predef": [
+	  	"angular", "console", "window", "BE", "moment", "qq", "document",
+		"alert", "$", "confirm"
+	],
+	// all code blocks much have curly braces
+	"curly": true,
+	// must use === and !==
+	"eqeqeq": true
+}

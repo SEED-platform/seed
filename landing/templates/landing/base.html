@@ -1,0 +1,21 @@
+{% extends "seed/base.html" %}{% load compress %}
+
+{% block css %}{{block.super}}
+{% compress css %}
+
+<link rel="stylesheet" type="text/less" href="{{STATIC_URL}}landing/less/landing.less" />
+{% endcompress %}
+{% endblock %}
+{% block title %}SEED Platform{% endblock %}
+
+{% block js %}
+{{block.super}}
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-placeholder/2.0.7/jquery.placeholder.min.js"></script>
+{% compress js %}
+<script src="{{STATIC_URL}}landing/js/landing.js" ></script>
+{% endcompress %}
+{% endblock %}
+
+{% block body %}
+{% block content %}{% endblock %}
+{% endblock %}

@@ -1,0 +1,80 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+           
+        </div>
+        <div class="page_title">
+            <h1><i class="fa fa-building-o"></i> Buildings</h1>
+        </div>
+        <div class="right page_action_container page_action_btn">
+	        
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+	<div class="section_nav">
+		<a ng-href="#/buildings">Buildings List</a><a ng-href="#/buildings/settings" class="active">List Settings</a>
+	</div>
+</div>
+<div class="section">
+    <div class="section_header_container">
+        <div class="section_header has_no_padding fixed_height_short">
+        	<div class="section_action_container left">
+        		<h2><i class="fa fa-cogs"></i> Building List Settings</h2>
+        	</div>
+        	<div class="section_action_container right section_action_btn">
+        		<button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">Save Changes <i class="fa fa-check align_right" ng-show="settings_updated"></i></button>
+        	</div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content with_padding">
+        	<h3>Add Shared Buildings.</h3>
+			<div class="checkbox">
+	          	<label>
+	          		<input type="checkbox" ng-model="user.show_shared_buildings">
+	          		Include in your buildings list all buildings shared with you.
+	          	</label>
+			</div>
+			<h3>There are {$ fields.length | number $} columns of data available to you.</h3>
+            <p>Select columns from the list below to make them appear in your Buildings List table.</p>
+        </div>
+		<div class="section_content with_padding">
+        	<div class="table_list_container has_borders">
+                <table class="table table-striped has_no_btm_margin table_highlight_first">
+                	<thead>
+                        <tr>
+                            <th class="check is_aligned_center"><input type="checkbox" ng-model="controls.select_all" ng-change="select_all_clicked()"></th>
+                            <th>Column Name</th>
+                        </tr>
+                        <tr class="sub_head">
+                        	<th class="sub_head check_row"></th>
+                        	<th class="sub_head">
+								<input type="text" class="form-control input-sm" ng-model="filter_params.title" placeholder="Search column name" ng-class="{active: filter_params.title.length > 0}">
+                        	</th>
+                        </tr>
+                	</thead>
+                </table>
+                <div class="vert_table_scroll_container">
+                    <table class="table has_no_btm_margin table-striped table_scroll">
+                    	<tbody>
+                    		<tr ng-repeat="field in fields | filter:filter_params:strict">
+    	                		<td class="check is_aligned_center" style="width: 5%; min-width: 30px;">
+    								<input type="checkbox" ng-model="field.checked">
+    							</td>
+    							<td>
+    								<span>{$ field.title $}</span>
+    							</td>
+                    		</tr>
+                    	</tbody>
+                    </table>
+                </div>
+        	</div>
+        </div>
+    </div>
+    <div class="section_content_container has_top_margin">
+        <div class="section_content with_padding">
+        	<button type="button" class="btn btn-primary" ng-click="save_settings()">Save Changes <i class="fa fa-check align_right" ng-show="settings_updated"></i></button>
+        </div>
+    </div>
+</div>
