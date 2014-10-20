@@ -2,7 +2,7 @@ This is a brief description of how to drop and re-create the database
 for the seed application.
 
 There is a convenience script located at
-seed-core/bin/drop_create_db.sh that will run these commands with
+seed/bin/drop_create_db.sh that will run these commands with
 the defaults of username='demo@buildingenergy.com', password='demo',
 and organization='demo'.
 
