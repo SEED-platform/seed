@@ -1,14 +1,18 @@
 
-## Standard Energy Efficiency Data (SEED)
+## Standard Energy Efficiency Data (SEED) Platform™
 
+The SEED Platform is a web-based application that helps organizations easily manage data on the energy performance of large groups of buildings. Users can combine data from multiple sources, clean and validate it, and share the information with others. The software application provides an easy, flexible, and cost-effective method to improve the quality and availability of data to help demonstrate the economic and environmental benefits of energy efficiency, to implement programs, and to target investment activity.
 
-See [AWS.setup.rst](docs/source/AWS.setup.rst) for the Amazon Web Services setup guide.
+The SEED application is written in Python/Django, with AngularJS, Bootstrap, and other javascript libraries used for the front-end. The back-end database is required to be PostgreSQL.
 
-Both Django and AngurlarJS used for url routing.
-Angular and Django both use `{{` and `}}` as variable delimiters, and thus the angular variable delimiters are renamed `{$` and `$}`.
+The SEED web application provides both a browser-based interface for users to upload and manage their building data, as well as a full set of APIs that app developers can use to access these same data management functions.
+
+### Installation
+See [Installation Notes](http://www.github.com/seed-platform/seed/wiki/Installation) for setup on Amazon Web Services or a local server.
 
 ### Django notes
-routes in `SEED/urls/py`
+Both Django and AngurlarJS are used for url routing.
+Django routes are in `SEED/urls/main.py`
 
 Amazon AWS S3 Expires headers should be set on the AngularJS partials if using S3 with the management command: set_s3_expires_headers_for_angularjs_partials
  usage: `python manage.py set_s3_expires_headers_for_angularjs_partials --verbosity=3`
@@ -23,7 +27,7 @@ SERVER_EMAIL = 'no-reply@buildingenergy.com'
 
 ### AngularJS notes
 #### template tags
-For compatibility in partials with Django template tags (i.e. `{{` and `}}`), we renamed AngularJS variable delimiters or curly braces to `{$` and `$}`.
+Angular and Django both use `{{` and `}}` as variable delimiters, and thus the AngularJS variable delimiters are renamed `{$` and `$}`.
 
 ```
 window.BE.apps.seed = angular.module('BE.seed', ['ngRoute', "ngCookies"], function ($interpolateProvider) {
@@ -129,7 +133,7 @@ If running on AWS, the `bin/start_flower.sh` will start flower on port `8080` an
 
 
 ### dev setup:
-* `git clone git@github.com:buildingenergy/seed.git`
+* `git clone git@github.com:seed-platform/seed.git`
 * install Postgres 9.3 and redis for cache and message broker
 * use a virtualenv if desired
 * create a `local_untracked.py` in the `BE/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
@@ -152,9 +156,6 @@ can also create other superusers.
 ./manage.py create_default_user --username=demo2@be.com --organization=be --password=demo123
 ```
 
-### Copyright:
-Copyright ©  2014 Building Energy Inc.
-
 ### Logs :
 Information about  error logging can be found here - https://docs.djangoproject.com/en/1.7/topics/logging/
 
@@ -169,3 +170,6 @@ A logger is configured to have a log level. This log level describes the severit
     CRITICAL: Information describing a critical problem that has occurred.
 
 Each message that is written to the logger is a Log Record. The log record is stored in the webserver & Celery
+
+### Copyright:
+Copyright ©  2014 Building Energy Inc.
