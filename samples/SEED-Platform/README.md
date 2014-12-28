@@ -31,11 +31,12 @@ See the instructions at /seed/LINUX.setup.rst for further instructions as to how
 
 ###### copy local_untracked.py to /seed/BE/settings/local_untracked.py
 
-###### Javascript Dependencis installation
-The installation of the Javascript dependencies to the Vagrant instance requires script install_javascript_dependencies_vagrant.sh
-###### copy file install_javascript_dependencie_vagrants.sh to /seed/bin/install_javascript_dependencies_vagrant.sh
+##### Javascript Dependencies installation
+The installation of the Javascript dependencies to the Vagrant instance requires script 
+#### install_javascript_dependencies_vagrant.sh
+### copy file install_javascript_dependencie_vagrants.sh to /seed/bin/install_javascript_dependencies_vagrant.sh
 
-##### Vagrant install
+#### Vagrant install
 Change directory to the Vagrant instance(i.e SEED-Platform)
 Create the vagrant instance
 
