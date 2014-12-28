@@ -1,5 +1,5 @@
 
-## SEED Vagrant instalation instructions
+## SEED Vagrant installation instructions
 
 ### Installation
 See [Installation Notes](http://www.github.com/seed-platform/seed/wiki/Installation) for setup on Amazon Web Services or a local server.
@@ -13,7 +13,7 @@ Copy the Vagrantfile to /SEED-Platform
 
 ###### GitHub notes
 ##### Local host development is done in the /seed directory UNDER the Vagrant instance(i.e /SEED_Platformt/seed).
-All changes and commits performed on the host are automatically updated on the Vagrant instance(/vagrant/seed).  
+#### All changes and commits performed on the host are automatically updated on the Vagrant instance(/vagrant/seed).  
 
 Initialize your working github repository.
 
