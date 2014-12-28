@@ -5,7 +5,7 @@
 
         </div>
         <div class="page_title">
-            <h1>Data Mapping &amp; Validation ({$ import_file.name $})</h1>
+            <h1>Data Mapping (Testing)&amp; Validation ({$ import_file.name $})</h1>
         </div>
         <div class="right page_action_container"></div>
     </div>
@@ -91,8 +91,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="tcm in raw_columns" ng-class="{'ignored_row': !tcm.mapped_row}">
-                            <td class="check is_aligned_center">
+						<tr ng-repeat="tcm in raw_columns | unique: 'tcm.mapped_row'" ng-class="{'ignored_row': !tcm.mapped_row}">
+<!--->					<tr ng-repeat="tcm in raw_columns" ng-class="{'ignored_row': !tcm.mapped_row}">   -->
+                          <td class="check is_aligned_center">
 								<input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
 							</td>
                 			<td ng-class="{'danger': tcm.is_duplicate == true}">

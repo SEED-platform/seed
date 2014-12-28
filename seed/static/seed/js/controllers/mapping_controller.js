@@ -341,7 +341,7 @@ angular.module('BE.seed.controller.mapping', [])
         temp_columns.push(tcm);
         tcm.find_suggested_mapping($scope.suggested_mappings);
         tcm.mapped_row = tcm.suggestion !== '';
-        $scope.validate_data(tcm); // Validate our system-suggestions.
+    //    $scope.validate_data(tcm); // Validate our system-suggestions.
       });
       // Set the first_five to be an attribute of tcm.
       $scope.raw_columns = temp_columns;
