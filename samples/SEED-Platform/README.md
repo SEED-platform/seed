@@ -63,3 +63,6 @@ Login using the following credentials
     username=seeddevl@lbl.gov  password=demo123
 
 You should now be able to use the SEED Platform
+
+##### Log Files
+Vagrant_install_log containes the complete log file for the vagrant install   
