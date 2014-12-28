@@ -27,15 +27,17 @@ This will create the /seed directory in the root for your Vagrant installation.
 Edit file local_untracked.py file and configure those settings that are unique for your individual testing.
 See the instructions at /seed/LINUX.setup.rst for further instructions as to how to configure. 
 
-rename /seed/BE/settings/local_untracked.py to local_untracked.py-backup
+###### rename /seed/BE/settings/local_untracked.py to local_untracked.py-backup
 
-copy local_untracked.py to /seed/BE/settings/local_untracked.py
+###### copy local_untracked.py to /seed/BE/settings/local_untracked.py
 
-copy file install_javascript_dependencies.sh to /seed/bin.
+###### Javascript Dependencis installation
+The installation of the Javascript dependencies to the Vagrant instance requires script install_javascript_dependencies_vagrant.sh
+###### copy file install_javascript_dependencie_vagrants.sh to /seed/bin/install_javascript_dependencies_vagrant.sh
 
 ##### Vagrant install
-1. Change directory to the Vagrant instance(i.e SEED-Platform)
-2. Create the vagrant instance
+Change directory to the Vagrant instance(i.e SEED-Platform)
+Create the vagrant instance
 
    vagrant up —provider=virtualbox
 
@@ -52,11 +54,11 @@ The first time build may take up to 20 minutes.
     source /vagrant/.virtualenvs/seed/bin/activate
     ./start_seed.sh
 
-3. Clear the browser history if necessary
+Clear the browser history if necessary
 
-4. Browse to http://localhost:8888
+Browse to http://localhost:8888
 
-5. Login using the following credentials
+Login using the following credentials
 
     username=seeddevl@lbl.gov  password=demo123
 
