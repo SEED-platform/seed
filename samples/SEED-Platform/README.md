@@ -12,7 +12,7 @@ Create a directory for the Virtual Box installation(for instance mkdir SEED-Plat
 Copy the Vagrantfile to /SEED-Platform
 
 ###### GitHub notes
-Note: Local host development is done in the /seed directory UNDER the Vagrant instance(SEED_Development/seed).
+Note: ##### Local host development is done in the /seed directory UNDER the Vagrant instance(i.e /SEED_Platformt/seed).
 All changes and commits performed on the host are automatically updated on the Vagrant instance(/vagrant/seed).  
 
 Initialize your working github repository.
