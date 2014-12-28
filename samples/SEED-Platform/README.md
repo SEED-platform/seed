@@ -23,7 +23,7 @@ Create a working version of the SEED platform from the github repository using t
 
 This will create the /seed directory in the root for your Vagrant installation.
 
-#####Django Database Configuration notes
+##### Django Database Configuration notes
 Edit file local_untracked.py file and configure those settings that are unique for your individual testing.
 See the instructions at /seed/LINUX.setup.rst for further instructions as to how to configure. 
 
@@ -32,11 +32,10 @@ See the instructions at /seed/LINUX.setup.rst for further instructions as to how
 ###### copy local_untracked.py to /seed/BE/settings/local_untracked.py
 
 ##### Javascript Dependencies installation
-The installation of the Javascript dependencies to the Vagrant instance requires script 
-#### install_javascript_dependencies_vagrant.sh
-### copy file install_javascript_dependencie_vagrants.sh to /seed/bin/install_javascript_dependencies_vagrant.sh
+The installation of the Javascript dependencies to the Vagrant instance requires script install_javascript_dependencies_vagrant.sh
+###### copy file install_javascript_dependencie_vagrants.sh to /seed/bin/install_javascript_dependencies_vagrant.sh
 
-#### Vagrant install
+##### Vagrant install
 Change directory to the Vagrant instance(i.e SEED-Platform)
 Create the vagrant instance
 
