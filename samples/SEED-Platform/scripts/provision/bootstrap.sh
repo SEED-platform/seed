@@ -15,7 +15,7 @@ fi
 #apt-get update --fix-missing
 #apt-get upgrade -y
 apt-get install -y python-software-properties
-add-apt-repository ppa:pi-rho/dev
+add-apt-repository ppa:pi-rho/dev -y
 
 # SEED dependencies
 apt-get install -y python-pip python-dev libatlas-base-dev gfortran \
@@ -89,7 +89,7 @@ service postgresql restart
 #
 # Python, Pip, Django install
 
-add-apt-repository ppa:fkrull/deadsnakes
+add-apt-repository ppa:fkrull/deadsnakes -y
 apt-get install -y python2.7-dev python-virtualenv python-setuptools python-pip 
 
 # Upgrade Pip before installing anything with it.
