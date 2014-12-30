@@ -1,7 +1,8 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
-angular.module('BE.seed.controller.mapping', [])
+//  gcw Added ui and ui.filters for unique attribute in ng-repeat 
+angular.module('BE.seed.controller.mapping', ['ui', 'ui.filters'])
 .controller('mapping_controller', [
   '$scope',
   'import_file_payload',
