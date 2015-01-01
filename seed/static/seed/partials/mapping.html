@@ -5,7 +5,7 @@
 
         </div>
         <div class="page_title">
-            <h1>Data Mapping (Testing)&amp; Validation ({$ import_file.name $})</h1>
+            <h1>Data Mapping &amp; Validation ({$ import_file.name $})</h1>
         </div>
         <div class="right page_action_container"></div>
     </div>
@@ -73,7 +73,7 @@
                         <tr>
                             <th class="source_data blank"></th>
                             <th class="source_data">SEED</th>
-                            <th class="source_data blank"></th>
+                            <th class="source_data blank">Greg White Testing</th>
                              <th class="source_data blank"></th>
                             <th colspan="99" class="source_data" colspan="4">{$ import_file.name $}</th>
                         </tr>
@@ -91,15 +91,13 @@
                         </tr>
                     </thead>
                     <tbody>
-<!--- gcw Need to include ui and ui.filters in mapping_controllers.js in order for unique: to work  -->						
-						<tr ng-repeat="tcm in raw_columns | unique: 'tcm.mapped_row'" ng-class="{'ignored_row': !tcm.mapped_row}">
-<!--- Original Code		<tr ng-repeat="tcm in raw_columns" ng-class="{'ignored_row': !tcm.mapped_row}">   -->
-                          <td class="check is_aligned_center">
+                           <tr ng-repeat="tcm in raw_columns" ng-class="{'ignored_row': !tcm.mapped_row}">   
+						   <tr ng-repeat="tcm in raw_columns track by tcm.name" ng-class="{'ignored_row': !tcm.mapped_row}">   
+					       <td class="check is_aligned_center">
 								<input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
 							</td>
                 			<td ng-class="{'danger': tcm.is_duplicate == true}">
-<!--- gcw  Limit the filer to a specific property(i.e name) and not the whole object -->	
- 					           <input type="text" typeahead="column for column in typeahead_columns | filter:{name:$ viewValue} | limitTo:20" ng-model="tcm.suggestion" class="form-control 									input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)'/>
+                                <input type="text" typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)'/>
                             </td>
                             <td class="is_aligned_center">
                                 <i class="fa fa-check-circle green" ng-show="is_suggestion_BEDES(tcm.suggestion)"></i>
