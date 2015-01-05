@@ -2,7 +2,7 @@
  * :copyright: (c) 2014 Building Energy Inc
  */
 //  gcw Added ui and ui.filters for unique attribute in ng-repeat 
-angular.module('BE.seed.controller.mapping', ['ui', 'ui.filters'])
+angular.module('BE.seed.controller.mapping', [])
 .controller('mapping_controller', [
   '$scope',
   'import_file_payload',
@@ -41,8 +41,8 @@ angular.module('BE.seed.controller.mapping', ['ui', 'ui.filters'])
     $filter
 ) {
     $scope.typeahead_columns = suggested_mappings_payload.building_columns;
-    var original_columns = angular.copy($scope.typeahead_columns);
-
+	var original_columns = angular.copy($scope.typeahead_columns);
+    
     // the first 37 columns are the SEED (potentially non-BEDES)
     // fields stored as columns in the DB model and not as
     // extra_data JSON
@@ -164,7 +164,9 @@ angular.module('BE.seed.controller.mapping', ['ui', 'ui.filters'])
             }
         }
     };
-
+	
+// scope variable find_duplicates is way overkill here  		
+/*
     $scope.find_duplicates = function (array, element) {
         var indicies = [];
         var idx = array.indexOf(element);
@@ -174,12 +176,15 @@ angular.module('BE.seed.controller.mapping', ['ui', 'ui.filters'])
         }
         return indicies;
     };
-
+*/
+	
     /*
      * Returns true if a TCM row is duplicated elsewhere.
      */
-    $scope.is_tcm_duplicate = function(tcm) {
+	
+    $scope.is_tcm_duplicate  = function(tcm) {
         var suggestions = [];
+		var dups = 0;
         for (var i = 0; i < $scope.raw_columns.length; i++){
             var potential = $scope.raw_columns[i].suggestion;
             if (typeof potential === 'undefined' ||
@@ -188,15 +193,26 @@ angular.module('BE.seed.controller.mapping', ['ui', 'ui.filters'])
             ) {
                 continue;
             }
-            suggestions.push($scope.raw_columns[i].suggestion);
-        }
-        var dups = $scope.find_duplicates(suggestions, tcm.suggestion);
-        if (dups.length > 1) {
-            return true;
-        }
-        return false;
-    };
+	     suggestions.push($scope.raw_columns[i].suggestion);
+		}  // end for var i = 0)
 
+		return check_duplicates(suggestions, tcm.suggestion) 
+      
+    };
+	
+ 	function check_duplicates(array, element) {
+        var indicies = [];
+        var idx = array.indexOf(element);
+        while (idx !== -1) {
+            indicies.push(idx);
+            idx = array.indexOf(element, idx + 1);
+        }
+		if (indicies.length > 1)
+		   return true;
+		
+		return false;
+	}
+	
     /**
      * determines if a suggestion is BEDES or not
      */
