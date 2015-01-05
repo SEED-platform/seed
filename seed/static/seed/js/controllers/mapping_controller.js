@@ -165,7 +165,7 @@ angular.module('BE.seed.controller.mapping', [])
         }
     };
 	
-// scope variable find_duplicates is way overkill here  		
+/*  01-04-2015 scope variable find_duplicates is way overkill here is causing angular to generate many $watch statements   */		
 /*
     $scope.find_duplicates = function (array, element) {
         var indicies = [];
@@ -181,7 +181,8 @@ angular.module('BE.seed.controller.mapping', [])
     /*
      * Returns true if a TCM row is duplicated elsewhere.
      */
-	
+/*  01-14-2015   - addded check_for_duplicates */
+		
     $scope.is_tcm_duplicate  = function(tcm) {
         var suggestions = [];
 		var dups = 0;
@@ -199,6 +200,8 @@ angular.module('BE.seed.controller.mapping', [])
 		return check_duplicates(suggestions, tcm.suggestion) 
       
     };
+	
+/*  01-14-2015   - addded check_for_duplicates */	
 	
  	function check_duplicates(array, element) {
         var indicies = [];
