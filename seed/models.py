@@ -2,6 +2,7 @@
 :copyright: (c) 2014 Building Energy Inc
 """
 # system imports
+import sys
 import json
 import unicodedata
 
@@ -1314,8 +1315,56 @@ class BuildingSnapshot(TimeStampedModel):
 
     objects = JsonManager()
 
+    def save(self, *args, **kwargs):
+        print "-------------------- SAVE"
+        if self.tax_lot_id:
+            self.tax_lot_id = self.tax_lot_id[:128]
+        if self.pm_property_id:
+            self.pm_property_id = self.pm_property_id[:128]
+        if self.custom_id_1:
+            self.custom_id_1 = self.custom_id_1[:128]
+        if self.lot_number:
+            self.lot_number = self.lot_number[:128]
+        if self.block_number:
+            self.block_number = self.block_number[:128]
+        if self.district:
+            self.district = self.district[:128]
+        if self.owner:
+            self.owner = self.owner[:128]
+        if self.owner_email:
+            self.owner_email = self.owner_email[:128]
+        if self.owner_telephone:
+            self.owner_telephone = self.owner_telephone[:128]
+        if self.owner_address:
+            self.owner_address = self.owner_address[:128]
+        if self.owner_city_state:
+            self.owner_city_state = self.owner_city_state[:128]
+        if self.owner_postal_code:
+            self.owner_postal_code = self.owner_postal_code[:128]
+            
+        if self.property_name:
+            self.property_name = self.property_name[:255]
+        if self.address_line_1:
+            self.address_line_1 = self.address_line_1[:255]
+        if self.address_line_2:
+            self.address_line_2 = self.address_line_2[:255]
+        if self.city:
+            self.city = self.city[:255]
+        if self.postal_code:
+            self.postal_code = self.postal_code[:255]
+        if self.state_province:
+            self.state_province = self.state_province[:255]
+        if self.building_certification:
+            self.building_certification = self.building_certification[:255]
+        
+        super(BuildingSnapshot, self).save(*args, **kwargs)
+        
     def clean(self, *args, **kwargs):
         super(BuildingSnapshot, self).clean(*args, **kwargs)
+
+        # if self.owner:
+        #     self.owner = self.owner[:128]
+            
         date_field_names = (
             'year_ending',
             'generation_date',
