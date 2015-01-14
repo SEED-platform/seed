@@ -262,7 +262,7 @@ angular.module('BE.seed.controller.mapping', [])
         // Verify that we don't have any duplicate mappings.
         for (var i = 0; i < $scope.raw_columns.length; i++) {
             var inner_tcm = $scope.raw_columns[i];
-            inner_tcm.is_duplicate = is_tcm_duplicate(inner_tcm);
+  //          inner_tcm.is_duplicate = is_tcm_duplicate(inner_tcm);
         }
     };
 

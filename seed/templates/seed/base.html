@@ -75,7 +75,10 @@
             <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.28/angular.js"></script>
             <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.28/angular-cookies.min.js"></script>
             <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.28/angular-route.min.js"></script>
-            <script src="{{STATIC_URL}}vendors/angular-ui/ui-bootstrap-tpls-0.12.0-SNAPSHOT.min.js"></script>
+          <!---  <script src="{{STATIC_URL}}vendors/angular-ui/ui-bootstrap-tpls-0.12.0-SNAPSHOT.min.js"></script> -->  
+
+           <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.12.0/ui-bootstrap-tpls.js"></script>  
+
             <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.3.1/moment.min.js"></script>
 
             {% ifequal FILE_UPLOAD_DESTINATION 'S3' %}
