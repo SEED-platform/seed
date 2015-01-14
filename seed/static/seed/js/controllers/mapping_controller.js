@@ -120,7 +120,7 @@ angular.module('BE.seed.controller.mapping', [])
      * @param tcm: table column mapping object.
      * @param to_validate: array of strings, values from example data.
      */
-    $scope.get_validity = function(tcm) {
+    function get_validity(tcm) {
         var diff = tcm.raw_data.length - tcm.invalids.length;
         // Used to display the state of the row overall.
         if (typeof(tcm.invalids) === "undefined") {
@@ -165,25 +165,9 @@ angular.module('BE.seed.controller.mapping', [])
         }
     };
 	
-/*  01-04-2015 scope variable find_duplicates is way overkill here is causing angular to generate many $watch statements   */		
-/*
-    $scope.find_duplicates = function (array, element) {
-        var indicies = [];
-        var idx = array.indexOf(element);
-        while (idx !== -1) {
-            indicies.push(idx);
-            idx = array.indexOf(element, idx + 1);
-        }
-        return indicies;
-    };
-*/
-	
-    /*
-     * Returns true if a TCM row is duplicated elsewhere.
-     */
-/*  01-14-2015   - addded check_for_duplicates */
-		
-    $scope.is_tcm_duplicate  = function(tcm) {
+/* 01-13-2015 Chaged to handle duplicate checking locally  */
+			
+	function is_tcm_duplicate(tcm) {
         var suggestions = [];
 		var dups = 0;
         for (var i = 0; i < $scope.raw_columns.length; i++){
@@ -200,8 +184,9 @@ angular.module('BE.seed.controller.mapping', [])
 		return check_duplicates(suggestions, tcm.suggestion) 
       
     };
+		
 	
-/*  01-14-2015   - addded check_for_duplicates */	
+/*  01-14-2015   - addded localcheck_for_duplicates */	
 	
  	function check_duplicates(array, element) {
         var indicies = [];
@@ -234,7 +219,10 @@ angular.module('BE.seed.controller.mapping', [])
      * @param tcm: a table column mapping object.
      * @modifies: attributes on that mapping object.
      */
-    $scope.validate_data = function(tcm) {
+
+/* 01-13-2014  Changed to handle validate_data locally  */
+	 	
+    function validate_data(tcm) {
         tcm.user_suggestion = true;
         if (typeof(tcm.suggestion) !== "undefined" && tcm.suggestion !== '') {
             var type;
@@ -250,7 +238,7 @@ angular.module('BE.seed.controller.mapping', [])
             tcm.invalids = $scope.validator_service.validate(
                 tcm.raw_data, type
             );
-            tcm.validity = $scope.get_validity(tcm);
+            tcm.validity = get_validity(tcm);
         } else {
             tcm.validity = null;
             tcm.invalids = [];
@@ -270,11 +258,11 @@ angular.module('BE.seed.controller.mapping', [])
      */
     $scope.change = function(tcm) {
         // Validate that the example data will convert.
-        $scope.validate_data(tcm);
+        validate_data(tcm);
         // Verify that we don't have any duplicate mappings.
         for (var i = 0; i < $scope.raw_columns.length; i++) {
             var inner_tcm = $scope.raw_columns[i];
-            inner_tcm.is_duplicate = $scope.is_tcm_duplicate(inner_tcm);
+            inner_tcm.is_duplicate = is_tcm_duplicate(inner_tcm);
         }
     };
 
@@ -361,7 +349,7 @@ angular.module('BE.seed.controller.mapping', [])
         temp_columns.push(tcm);
         tcm.find_suggested_mapping($scope.suggested_mappings);
         tcm.mapped_row = tcm.suggestion !== '';
-           $scope.validate_data(tcm); // Validate our system-suggestions.
+           validate_data(tcm); // Validate our system-suggestions.
       });
       // Set the first_five to be an attribute of tcm.
       $scope.raw_columns = temp_columns;
