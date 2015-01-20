@@ -1,3 +1,4 @@
+import sys
 from django.test import TestCase
 from seed.models import BuildingSnapshot
 
@@ -15,6 +16,17 @@ class TestBuildingSnapshot(TestCase):
         self.bs.tax_lot_id = '-' * 130
         self.bs.save()
         self.assertEqual(len(self.bs.tax_lot_id), 128)
+
+    def test_tax_lot_id_int(self):
+        """
+        """
+        self.bs.tax_lot_id = 123123123
+        self.bs.save()
+        self.assertEqual(self.bs.tax_lot_id, 123123123)
+
+        # Check that the data is converted correctly
+        bs2 = BuildingSnapshot.objects.get(pk=self.bs.pk)
+        self.assertEqual(bs2.tax_lot_id, u'123123123')
 
     def test_pm_property_id(self):
         """
