@@ -181,7 +181,7 @@ angular.module('BE.seed.controller.mapping', [])
 	     suggestions.push($scope.raw_columns[i].suggestion);
 		}  // end for var i = 0)
 
-		return check_duplicates(suggestions, tcm.suggestion) 
+//		return check_duplicates(suggestions, tcm.suggestion) 
       
     };
 		
