@@ -186,7 +186,7 @@ angular.module('BE.seed.controller.mapping', [])
     };
 		
 	
-/*  01-14-2015   - addded localcheck_for_duplicates */	
+/*  01-204-2015   - Not needed */	
 	
  	function check_duplicates(array, element) {
         var indicies = [];
