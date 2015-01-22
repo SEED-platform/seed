@@ -95,9 +95,10 @@
 					       <td class="check is_aligned_center">
 								<input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
 							</td>
+ <!--  01-22-2015 Changes for slow typeahead  -->                           
                 			<td ng-class="{'danger': tcm.is_duplicate == true}">
                                  <input type="text" autocomplete="off" typeahead="column for column in typeahead_columns | filter:$viewValue |  
-                               limitTo:10" typeahead-items="2" typeahead-min-length="2" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)"/>
+                               limitTo:10" typeahead-items="2" typeahead-min-length="2" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" beEnter="handleSelected(tcm)"/>
                             </td>
                             <td class="is_aligned_center">
                                 <i class="fa fa-check-circle green" ng-show="is_suggestion_BEDES(tcm.suggestion)"></i>

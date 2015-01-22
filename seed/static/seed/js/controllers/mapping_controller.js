@@ -5,6 +5,7 @@
 angular.module('BE.seed.controller.mapping', [])
 .controller('mapping_controller', [
   '$scope',
+  '$rootScope',
   'import_file_payload',
   'suggested_mappings_payload',
   'raw_columns_payload',
@@ -23,6 +24,7 @@ angular.module('BE.seed.controller.mapping', [])
   '$filter',
   function (
     $scope,
+    $rootScope,
     import_file_payload,
     suggested_mappings_payload,
     raw_columns_payload,
@@ -41,7 +43,8 @@ angular.module('BE.seed.controller.mapping', [])
     $filter
 ) {
     $scope.typeahead_columns = suggested_mappings_payload.building_columns;
-	var original_columns = angular.copy($scope.typeahead_columns);
+    
+	  var original_columns = angular.copy($scope.typeahead_columns);
     
     // the first 37 columns are the SEED (potentially non-BEDES)
     // fields stored as columns in the DB model and not as
@@ -165,11 +168,11 @@ angular.module('BE.seed.controller.mapping', [])
         }
     };
 	
-/* 01-13-2015 Chaged to handle duplicate checking locally  */
+/* 01-22-2015 Chaged to handle duplicate checking locally  */
 			
 	function is_tcm_duplicate(tcm) {
         var suggestions = [];
-		var dups = 0;
+		   
         for (var i = 0; i < $scope.raw_columns.length; i++){
             var potential = $scope.raw_columns[i].suggestion;
             if (typeof potential === 'undefined' ||
@@ -181,12 +184,22 @@ angular.module('BE.seed.controller.mapping', [])
 	     suggestions.push($scope.raw_columns[i].suggestion);
 		}  // end for var i = 0)
 
-//		return check_duplicates(suggestions, tcm.suggestion) 
-      
+/* 01-22-2015   Called once during init  */
+/* 01-22-2015   and on ENTER key         */
+
+      if ($rootScope.initmapping == 1) 
+          var dupes = check_duplicates(suggestions, tcm.suggestion); 
+            
+      if (dupes.length > 1) {
+        return true;
+      }
+
+      return false;  
+
     };
 		
 	
-/*  01-204-2015   - Not needed */	
+/*  01-22-2015  */	
 	
  	function check_duplicates(array, element) {
         var indicies = [];
@@ -195,10 +208,7 @@ angular.module('BE.seed.controller.mapping', [])
             indicies.push(idx);
             idx = array.indexOf(element, idx + 1);
         }
-		if (indicies.length > 1)
-		   return true;
-		
-		return false;
+		   return indicies;
 	}
 	
     /**
@@ -220,7 +230,7 @@ angular.module('BE.seed.controller.mapping', [])
      * @modifies: attributes on that mapping object.
      */
 
-/* 01-13-2014  Changed to handle validate_data locally  */
+/* 01-22-2014  Changed to handle validate_data locally  */
 	 	
     function validate_data(tcm) {
         tcm.user_suggestion = true;
@@ -256,14 +266,26 @@ angular.module('BE.seed.controller.mapping', [])
      * @param tcm: table column mapping object. Represents the BS <-> raw
      *  relationship.
      */
+
     $scope.change = function(tcm) {
         // Validate that the example data will convert.
         validate_data(tcm);
         // Verify that we don't have any duplicate mappings.
         for (var i = 0; i < $scope.raw_columns.length; i++) {
             var inner_tcm = $scope.raw_columns[i];
+            $rootScope.initmapping == 0;  
             inner_tcm.is_duplicate = is_tcm_duplicate(inner_tcm);
         }
+    };
+
+/* 01-22-2015 ENTER Key for selected item - Process duplicates one more time */
+
+    $scope.handleselected = function(tcm) {
+      for (var i = 0; i < $scope.raw_columns.length; i++) {
+          var inner_tcm = $scope.raw_columns[i];
+          $rootScope.initmapping == 1;  
+          inner_tcm.is_duplicate = is_tcm_duplicate(inner_tcm);
+      }
     };
 
     /*
@@ -553,8 +575,10 @@ angular.module('BE.seed.controller.mapping', [])
     };
 
     var init = function() {
+        $scope.initialize = true;
         update_raw_columns();
     };
+
     init();
 
     /*

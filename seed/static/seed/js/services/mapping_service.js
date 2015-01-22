@@ -4,10 +4,11 @@
 // mapping services
 angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
   '$http',
+  '$rootScope',
   '$q',
   '$timeout',
   'user_service',
-  function ($http, $q, $timeout, user_service) {
+  function ($http, $rootScope, $q, $timeout, user_service) {
     var mapping_factory = {};
 
     /*
@@ -33,11 +34,14 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
               'org_id': user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
+/* 01-22-2015 Called during init   */
+            $rootScope.initmapping = 1;
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
         return defer.promise;
+       
     };
 
 
