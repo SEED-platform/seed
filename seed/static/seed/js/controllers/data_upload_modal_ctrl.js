@@ -333,6 +333,13 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         }
         $timeout(function(name) {
             angular.element('#inputDataUploadName').focus();
+
+            //suppress the dismissing of the data upload modal when the background is clicked
+            //the default dismiss leads to confusion about whether the upload was canceled - megha 1/22
+            if($scope.step.number === 2) {
+                angular.element('.modal').off('click');
+            }
+
         }, 50);
     };
     init();
