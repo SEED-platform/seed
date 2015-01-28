@@ -30,10 +30,24 @@
                             <th class="source_data" colspan="{$ columns.length $}" ng-hide="filter_params.children__isnull">Matched Buildings</th>
                         </tr>
                         <tr>
-                            <th ng-repeat="c in columns">{$ c.title $} <span class="subtitle">{$ c.subtitle $}</span></th>
+                            <th ng-repeat="c in columns" class="pointer" ng-click="reverse=!reverse;order_by_field(c.sort_column, reverse)">
+                                {$ c.title $} 
+                                <span class="subtitle">{$ c.subtitle $}</span>
+                                <span ng-hide="reverse" class="fa fa-caret-up"></span>
+                                <span ng-hide="!reverse" class="fa fa-caret-down"></span>
+                            </th>
                             <th class="sub_head is_aligned_center" ng-hide="filter_params.children__isnull">Match</th>
-                            <th class="sub_head is_aligned_center" ng-hide="filter_params.children__isnull">Confidence</th>
-                            <th ng-repeat="c in columns" ng-hide="filter_params.children__isnull">{$ c.title $} <span class="subtitle">{$ c.subtitle $}</span></th>
+                            <th class="sub_head is_aligned_center pointer" ng-hide="filter_params.children__isnull" ng-click="reverse=!reverse;order_by_field('confidence', reverse)">
+                                Confidence
+                                <span ng-hide="reverse" class="fa fa-caret-up"></span>
+                                <span ng-hide="!reverse" class="fa fa-caret-down"></span>
+                            </th>
+                            <th ng-repeat="c in columns" class="pointer" ng-hide="filter_params.children__isnull" ng-click="reverse=!reverse;order_by_field(c.sort_column, reverse)">
+                                {$ c.title $} 
+                                <span class="subtitle">{$ c.subtitle $}</span>
+                                <span ng-hide="reverse" class="fa fa-caret-up"></span>
+                                <span ng-hide="!reverse" class="fa fa-caret-down"></span>
+                            </th>
                         </tr>
                         <tr>
                             <th class="sub_head" ng-repeat="c in columns">

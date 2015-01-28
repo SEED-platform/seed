@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.matching', [])
     '$log',
     'search_service',
     'matching_service',
+    '$filter',
     function(
         $scope,
         import_file_payload,
@@ -25,7 +26,8 @@ angular.module('BE.seed.controller.matching', [])
         $modal,
         $log,
         search_service,
-        matching_service
+        matching_service, 
+        $filter
     ) {
     $scope.search = angular.copy(search_service);
     $scope.search.url = urls.search_buildings;
@@ -62,7 +64,7 @@ angular.module('BE.seed.controller.matching', [])
     $scope.file_select.file = $scope.import_file.dataset.importfiles[0];
     $scope.detail = $scope.detail || {};
     $scope.detail.match_tree = [];
-
+    var order_by = $filter('orderBy');
 
     /*
      * filter_search: searches TODO(ALECK): use the search_service for search
@@ -284,6 +286,14 @@ angular.module('BE.seed.controller.matching', [])
     $scope.back_to_list = function() {
         $scope.show_building_list = true;
     };
+
+    /*
+    * order_by_field: toggle between ordering table rows in ascending or descending order of field value
+    */
+
+    $scope.order_by_field = function(field, reverse) {
+        $scope.buildings = order_by($scope.buildings, field, reverse);
+    }
 
     /**
      * init: sets the default pagination, gets the columns that should be displayed
