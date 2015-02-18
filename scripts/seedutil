@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+"""
+Run utility functions from a command-line driver
+"""
+import argparse
+import logging
+import sys
+from seed.common import util, mapper
+
+DEBUG = True
+
+_log = logging.getLogger("seed.util")
+_log.addHandler(logging.StreamHandler())
+if DEBUG:
+    _log.setLevel(logging.DEBUG)
+else:
+    _log.setLevel(logging.WARN)
+
+def error(msg):
+    _log.error(msg)
+    if DEBUG:
+        import traceback
+        traceback.print_exc()
+
+def create_map(args):
+    util.create_map(args.input, args.output)
+
+def apply_map(args):
+    out_fp = sys.stdout if args.output == '-' else open(args.output, "w")
+    util.apply_map(args.mapping, args.data, out_fp)
+
+def main():
+    p = argparse.ArgumentParser()
+    subp = p.add_subparsers()
+    # command: create => create a mapping
+    p1 = subp.add_parser("create", help="Create mapping from CSV file")
+    p1.add_argument("input")
+    p1.add_argument("output")
+    p1.set_defaults(func=create_map)
+    # command: map => apply a mapping to a data file
+    p2 = subp.add_parser("map", help="Apply a mapping to data")
+    p2.add_argument("mapping", help="JSON mapping file")
+    p2.add_argument("data", help="CSV data file")
+    p2.add_argument("output", help="CSV output file")
+    p2.set_defaults(func=apply_map)
+    # parse & run
+    args = p.parse_args()
+    result = 0
+    try:
+        args.func(args)
+    except Exception, err:
+        error("In '{}': {}".format(args.func.__name__, err))
+        result = -1
+    return result
+
+
+if __name__ == '__main__':
+    sys.exit(main())
