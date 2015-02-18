@@ -1,4 +1,8 @@
-"""API Testing for SEED Hosts."""
+"""
+API Testing for remote SEED installations.
+:copyright (c) 2014, The Regents of the University of California, Department of Energy contract-operators of the Lawrence Berkeley National Laboratory.
+:author Claudine Custodio
+"""
 
 import os
 import requests

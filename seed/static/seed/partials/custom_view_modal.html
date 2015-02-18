@@ -3,50 +3,41 @@
   <h4 class="modal-title" id="newCustomViewModalLabel">Building List Settings</h4>
 </div>
 
+</div-->
 <div class="modal-body form-horizontal">
-  <div class="form-group">
-      <div class="col-sm-12">
-          <p> Select which columns to include in the list:</p>
-          <div class="row column_container">
-	          <div class="form_column col-sm-4">
-	          	<ul class="column">
-	          		<li ng-repeat="f in fields_1">
-			          <div class="checkbox">
-			            <label>
-			              <input type="checkbox" ng-model="f.checked" ng-disabled="f.static">
-			              {$ f.title $}
-			            </label>
-			          </div>
-	          		</li>
-	          	</ul>
-			  </div>
-			  <div class="form_column col-sm-4">
-	          	<ul class="column">
-	          		<li ng-repeat="f in fields_2">
-			          <div class="checkbox">
-			            <label>
-			              <input type="checkbox" ng-model="f.checked" ng-disabled="f.static">
-			              {$ f.title $}
-			            </label>
-			          </div>
-	          		</li>
-	          	</ul>
-			  </div>
-			  <div class="form_column col-sm-4">
-	          	<ul class="column">
-	          		<li ng-repeat="f in fields_3">
-			          <div class="checkbox">
-			            <label>
-			              <input type="checkbox" ng-model="f.checked" ng-disabled="f.static">
-			              {$ f.title $}
-			            </label>
-			          </div>
-	          		</li>
-	          	</ul>
-			  </div>
-          </div>
-      </div>
-  </div>
+    <div class="form-group">
+        <div class="col-sm-12">
+            <p> Select which columns to include in the list:</p>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="check is_aligned_center ">
+                            <input type="checkbox" ng-model="controls.select_all" ng-change="select_all_clicked()" name="select-all">
+                            <label for="select-all">Select All Columns</label>
+                        </th>
+                        <th class="sub_head">
+                            <span class="glyphicon glyphicon-search search-icon"></span>
+                            <input type="text" class="form-control input-sm" ng-model="filter_columns.title" placeholder="Search column name" ng-class="{active: filter_columns.title.length > 0}">
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+            <div class="row column_container">
+                <div class="form_column col-sm-12">
+                    <ul class="column">
+                        <li ng-repeat="f in fields | filter:filter_columns:strict">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" ng-model="f.checked" ng-disabled="f.static">
+                                    {$ f.title $}
+                                </label>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="modal-footer">
