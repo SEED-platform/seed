@@ -514,6 +514,13 @@ angular.module('BE.seed.controller.mapping', [])
       );
     };
 
+    $scope.monitor_typeahead_list =function() {
+      var dropdown = angular.element('.dropdown-menu.ng-scope');
+
+      if(dropdown.length == 0 || dropdown.css('display') == 'none') {
+        return $scope.duplicates_present();
+      }
+    };
 
     /*
      * duplicates_present: used to disable or enable the 'show & review
