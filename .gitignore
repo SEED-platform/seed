@@ -44,3 +44,5 @@ src/
 *node_modules*
 /seed/static/vendors/bower_components/fine-uploader/
 docs/build/
+.project
+.pydevproject
