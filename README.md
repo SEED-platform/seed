@@ -7,6 +7,36 @@ The SEED application is written in Python/Django, with AngularJS, Bootstrap, and
 
 The SEED web application provides both a browser-based interface for users to upload and manage their building data, as well as a full set of APIs that app developers can use to access these same data management functions.
 
+## Docker quckstart
+
+[Install Docker](https://docs.docker.com/installation/)
+**Note, if you are installing on VirtualBox, you will need to setup nat port forwarding for port 8000**
+``` VBoxManage controlvm boot2docker-vm natpf1 "8000,tcp,0.0.0.0,8000,,8000" ```
+
+#### Build the seed platform image ####
+```
+docker build -t seed-platform .
+```
+#### start the redis and postgres services ####
+```
+docker run --name seed-redis -d redis
+docker run --name seed-postgres -e POSTGRES_PASSWORD=seed -d postgres
+```
+#### Setup the initial demo user ####
+```
+docker exec -ti seed-postgres createdb -U postgres seed
+docker run -v $HOME/seed_data:/seed/collected_static --link seed-redis:redis --link seed-postgres:postgres seed-platform /seed/bin/setup_database.sh
+```
+#### Start the Web and Celery services ####
+```
+docker run -d -name seed-uwsgi -v $HOME/seed_data:/seed/collected_static --link seed-redis:redis --link seed-postgres:postgres -p 8000:8000 seed-platform /seed/bin/start_uwsgi_docker.sh
+docker run -d -name seed-celery -v $HOME/seed_data:/seed/collected_static --link seed-redis:redis --link seed-postgres:postgres seed-platform /seed/bin/start_celery_docker.sh
+```
+#### Your done!! ####
+Point your browser at [http://localhost:8000](http://localhost:8000) and log in with the account
+ * **username**: demo@buildingenergy.com
+ * **password**: demo
+
 ### Installation
 See [Installation Notes](http://www.github.com/seed-platform/seed/wiki/Installation) for setup on Amazon Web Services or a local server.
 

@@ -55,3 +55,4 @@ Sphinx==1.2.2
 unicodecsv==0.9.4
 xlwt==0.7.5
 xmltodict==0.9.0
+uwsgi==2.0.9
