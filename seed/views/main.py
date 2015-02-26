@@ -3,7 +3,9 @@
 """
 # system imports
 import json
+import logging
 import datetime
+import os
 import uuid
 
 # django imports
@@ -66,6 +68,9 @@ from seed.utils.mapping import get_mappable_types, get_mappable_columns
 from .. import search
 from .. import exporter
 
+from BE.settings.dev import SEED_DATADIR
+from seed.common import mapper
+
 DEFAULT_CUSTOM_COLUMNS = [
     'project_id',
     'project_building_snapshots__status_label__name',
@@ -74,6 +79,8 @@ DEFAULT_CUSTOM_COLUMNS = [
     'state_province',
 ]
 
+
+_log = logging.getLogger(__name__)
 
 @render_to('seed/jasmine_tests/AngularJSTests.html')
 def angular_js_tests(request):
@@ -144,6 +151,70 @@ def home(request):
 
     return locals()
 
+def _api_error(reason):
+    return {'success': False, 'reason': reason}
+
+def _missing_request_keys(keys, body):
+    missing = [k for k in keys if not k in body]
+    if not missing:
+        return None
+    msg = "Required key{} '{}' is missing".format(
+        's' if len(missing) > 1 else '', ','.join(missing))
+    return msg
+
+def _api_success(**kwargs):
+    d = {'success': True}
+    d.update(kwargs)
+    return d
+
+@api_endpoint
+@ajax_request
+@login_required
+def create_pm_mapping(request):
+    """Create a mapping for PortfolioManager input columns.
+
+    Payload::
+
+        {
+            columns: [ "name1", "name2", ... , "nameN"],
+        }
+
+    Returns::
+
+        {
+            success: true,
+            mapping: [
+                ["name1", "mapped1", {bedes: true|false, numeric: true|false}],
+                ["name2", "mapped2", {bedes: true|false, numeric: true|false}],
+                ...
+                ["nameN", "mappedN", {bedes: true|false, numeric: true|false}]
+            ]
+        }
+        -- OR --
+        {
+            success: false,
+            reason: "message goes here"
+        }
+    """
+    _log.info("create_pm_mapping: request.body='{}'".format(request.body))
+    body = json.loads(request.body)
+
+    # validate inputs
+    invalid = _missing_request_keys(['columns'], body)
+    if invalid:
+        return _api_error(invalid)
+
+    # compute mapping
+    #XXX: do a lookup in a directory, using version number
+    f = open(os.path.join(SEED_DATADIR, "pm-mapping.json"))
+    pm_mapping = mapper.Mapping(f)
+    result = []
+    for col in body['columns']:
+        item = pm_mapping[col].as_json()
+        result.append([col] + item)
+
+    # return result
+    return _api_success(mapping=result)
 
 @api_endpoint
 @ajax_request

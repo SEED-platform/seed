@@ -3,6 +3,7 @@
 
 """
 from BE.settings.common import *  # noqa
+import os
 import sys
 
 DEBUG = True
@@ -49,31 +50,34 @@ else:
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': True,
-        # set up some log message handers to chose from
-        'handlers': {
-            'sentry': {
-                'level': 'ERROR',
-                'class': 'raven.contrib.django.handlers.SentryHandler',
+        'formatters': {
+            'verbose': {
+                'format': "%(levelname)s %(asctime)s %(name)s:%(lineno)d - %(message)s"
             },
+        },
+        'handlers': {
             'console': {
                 'level': 'INFO',
-                'class': 'logging.StreamHandler'
-            }
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose',
+                },
+            'tmpfile': {
+                'level': 'DEBUG',
+                'class': 'logging.FileHandler',
+                'formatter': 'verbose',
+                'filename': '/tmp/seed-dev.log'
+            },
         },
         'loggers': {
-            # the name of the logger, if empty, then this is the default logger
+            'django': {
+                'level': 'DEBUG',
+                'handlers': ['console', 'tmpfile'],
+                },
             '': {
                 'level': 'INFO',
-                'handlers': ['console'],
-            },
-            # sentry.errors are any error messages associated with failed
-            # connections to sentry
-            'sentry.errors': {
-                'level': 'DEBUG',
-                'handlers': ['console'],
-                'propagate': False,
-            },
-        },
+                'handlers': ['console']
+            }
+        }
     }
 # redis celery/message broker config
 from kombu import Exchange, Queue
@@ -131,7 +135,7 @@ LETTUCE_AVOID_APPS = (
     'djcelery',
     'debug_toolbar',
     'django_nose',
-    'raven.contrib.django',
+    # 'raven.contrib.django',
     'south',
     'salad',
     'django_extensions',
@@ -164,3 +168,6 @@ if 'local_untracked_exists' in locals():
 else:
     print >>sys.stderr, "Unable to find the local_untracked module in BE/setti\
         ngs/local_untracked.py"
+
+# Set data directory here
+SEED_DATADIR = os.path.join(os.getcwd(), 'seed', 'data')
