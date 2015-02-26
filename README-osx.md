@@ -140,7 +140,16 @@ You need a Django admin (super) user.
     ./manage.py create_default_user --username=admin@my.org --organization=lbnl --password=badpass
     
 Of course, you need to save this user/password somewhere, since this is what you will use to login to the SEED website.
-    
+
+If you want to do any API testing (and of course you do!), you will
+need to add an API KEY for this user.
+You can do this in postgresql directly:
+
+    psql94 seeddb seeduser
+    seeddb=> update landing_seeduser set api_key='DEADBEEF' where id=1;
+
+The 'secret' key DEADBEEF is hard-coded into the test scripts.
+
 ### Install Redis
 
 You need to manually install Redis for Celery to work.

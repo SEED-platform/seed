@@ -12,7 +12,7 @@ import requests
 host, port = '127.0.0.1', 8000
 url_template = "http://{host}:{port:d}/app/create_pm_mapping/"
 url = url_template.format(host=host, port=port)
-user, apikey = 'admin', 'DEADBEEF'
+user, apikey = 'admin@my.org', 'DEADBEEF'
 auth = {'authorization': '{}:{}'.format(user, apikey)}
 
 def get_mapping(columns):
