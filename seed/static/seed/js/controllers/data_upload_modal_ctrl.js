@@ -96,7 +96,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
      */
     $scope.goto_step = function (step) {
         $scope.step.number = step;
-        check_suppress_click();
     };
     /**
      * close: closes the modal, routes to the close function of the parent scope
@@ -319,12 +318,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         });
     };
 
-    var check_suppress_click = function() {
-        if($scope.step.number === 2) {
-            angular.element('.modal').off('click');
-        }
-    };
-
     /**
      * init: ran upon the controller load
      */
@@ -347,8 +340,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 angular.element('.modal').off('click');
             }
 
-            check_suppress_click();
-            
         }, 50);
     };
     init();
