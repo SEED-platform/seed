@@ -319,6 +319,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         });
     };
 
+    //check for step number in order to prevent modal dismiss
     var check_suppress_click = function() {
         if($scope.step.number === 2) {
             angular.element('.modal').off('click');
