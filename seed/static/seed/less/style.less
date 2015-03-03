@@ -1441,12 +1441,18 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 
 								
-// hides data uploaded processing files text
-.qq-drop-processing {
-	display: none;
-}
+// hide
 
 // New styles for better modal living.
+.modal-dialog {
+	max-width: 500px;
+
+	@media (max-width: 768px) {
+		margin: 30px auto;
+	}
+}
+
+
 .modal-header {
 	
 	.close {
@@ -1474,6 +1480,20 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	.alert {
 		margin-left: 15px;
 		margin-right: 15px;
+	}
+
+	
+
+	.file-type-select {
+		float: none;
+
+		optgroup {
+			font-size: 36px;
+		}
+
+		@media (max-width: 768px) {
+			width: 85%;
+		}
 	}
 	.form-group {
 		
@@ -1661,6 +1681,10 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 .qq-upload-button {
 	font-weight: bold;
+	width: 100%;
+}
+.qq-drop-processing {
+	display: none;
 }
 .alert {
 	.alert_instructions {
@@ -1808,3 +1832,12 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 		}
 	}
 }
+
+/** Helper classes **/
+
+.center-align {
+	float: none;
+	margin: 0 auto;
+}
+
+/** Helper classes **/
