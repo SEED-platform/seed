@@ -28,6 +28,7 @@ from django.contrib.auth.models import User
 from BE.utils import de_camel_case
 from data_importer.managers import NotDeletedManager
 from organizations.models import Organization
+from seed.common import mapper
 
 from superperms.orgs.models import Organization as SuperOrganization
 
@@ -808,6 +809,10 @@ class ImportFile(NotDeletableModel):
     source_type = models.CharField(
         null=True, blank=True, max_length=63,
     )
+    # program names should match a value in common.mapper.Programs
+    source_program = models.CharField(blank=True, max_length=80)
+    # program version is in format "x.y[.z]"
+    source_program_version = models.CharField(blank=True, max_length=40)
 
     def __unicode__(self):
         return "%s" % self.file.name
@@ -820,6 +825,10 @@ class ImportFile(NotDeletableModel):
         except ImportRecord.DoesNotExist:
             pass
             # If we're deleting.
+
+    @property
+    def from_portfolio_manager(self):
+        return self.source_program == mapper.Programs.PM
 
     @property
     def local_file(self):

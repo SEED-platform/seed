@@ -41,7 +41,7 @@ from public.models import INTERNAL, PUBLIC, SharedBuildingField
 _log = logging.getLogger(__name__)
 
 def _dict_org(request, organizations):
-    """returns a dictionary of an organization's data."""
+    """returns a dicti  onary of an organization's data."""
     orgs = []
     for o in organizations:
         # We don't wish to double count sub organization memberships.

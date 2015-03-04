@@ -4,11 +4,67 @@ SEED mapping objects.
 __author__ = 'Dan Gunter <dkgunter@lbl.gov>'
 __date__ = '2/13/15'
 
+from fnmatch import fnmatchcase
 import json
+import os
 import re
+
+from BE.settings.dev import SEED_DATADIR
 
 LINEAR_UNITS = set([u'ft', u'm', u'in'])  # ??more??
 
+def get_pm_mapping(version, columns):
+    """Create and return Portfolio Manager (PM) mapping for
+    a given version of PM and the given list of column names.
+
+    Args:
+      version (str): Version in format 'x.y[.z]'
+      columns (list): A list of strings
+    """
+    conf = MappingConfiguration()
+    version_parts = version.split('.')
+    mp = conf.pm(version_parts)
+    result = [[col] + mp[col].as_json() for col in columns]
+    return result
+
+class Programs(object):
+    """Enumeration of program names.
+    """
+    PM = "PortfolioManager"
+
+class MappingConfiguration(object):
+    """Factory for creating Mapping objects
+    from configurations.
+    """
+
+    def __init__(self):
+        f = open(os.path.join(SEED_DATADIR, "mappings.conf"))
+        self.conf = json.load(f)
+
+    def pm(self, version):
+        """Get Portfolio Manager mapping for given version.
+
+        Args:
+          version (tuple): A list of ints/strings (major, minor, ..)
+        Raises:
+          ValueError, if no mapping is found
+        """
+        files = self.conf[Programs.PM]
+        filename = self._match_version(version, files)
+        if filename is None:
+            raise ValueError("No PortfolioManager mapping found "
+                             "for version {}".format(version))
+        path = os.path.join(SEED_DATADIR, filename)
+        f = open(path, 'r')
+        return Mapping(f)
+
+    def _match_version(self, version, file_list):
+        str_ver = '.'.join(map(str, version))
+        for f in file_list:
+            ver = f['version']
+            if fnmatchcase(str_ver, ver):
+                return f['file']
+        return None
 
 class Mapping(object):
     """Mapping from one set of fields to another.

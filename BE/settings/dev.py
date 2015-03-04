@@ -170,4 +170,4 @@ else:
         ngs/local_untracked.py"
 
 # Set data directory here
-SEED_DATADIR = os.path.join(os.getcwd(), 'seed', 'data')
+SEED_DATADIR = os.path.join(SITE_ROOT, 'seed', 'data')

@@ -69,7 +69,9 @@ from .. import search
 from .. import exporter
 
 from BE.settings.dev import SEED_DATADIR
-from seed.common import mapper
+
+from seed.common import mapper as simple_mapper
+from seed.common import views as vutil
 
 DEFAULT_CUSTOM_COLUMNS = [
     'project_id',
@@ -151,22 +153,6 @@ def home(request):
 
     return locals()
 
-def _api_error(reason):
-    return {'success': False, 'reason': reason}
-
-def _missing_request_keys(keys, body):
-    missing = [k for k in keys if not k in body]
-    if not missing:
-        return None
-    msg = "Required key{} '{}' is missing".format(
-        's' if len(missing) > 1 else '', ','.join(missing))
-    return msg
-
-def _api_success(**kwargs):
-    d = {'success': True}
-    d.update(kwargs)
-    return d
-
 @api_endpoint
 @ajax_request
 @login_required
@@ -200,21 +186,15 @@ def create_pm_mapping(request):
     body = json.loads(request.body)
 
     # validate inputs
-    invalid = _missing_request_keys(['columns'], body)
+    invalid = vutil.missing_request_keys(['columns'], body)
     if invalid:
-        return _api_error(invalid)
+        return vutil.api_error(invalid)
 
-    # compute mapping
-    #XXX: do a lookup in a directory, using version number
-    f = open(os.path.join(SEED_DATADIR, "pm-mapping.json"))
-    pm_mapping = mapper.Mapping(f)
-    result = []
-    for col in body['columns']:
-        item = pm_mapping[col].as_json()
-        result.append([col] + item)
-
-    # return result
-    return _api_success(mapping=result)
+    try:
+        result = simple_mapper.get_pm_mapping((1, 0), body['columns'])
+    except ValueError as err:
+        return vutil.api_error(str(err))
+    return vutil.api_success(mapping=result)
 
 @api_endpoint
 @ajax_request
@@ -1208,10 +1188,21 @@ def get_column_mapping_suggestions(request):
         thresh=20  # percentage match we require
     )
 
+    # replace None with empty string for column names
     for m in suggested_mappings:
         dest, conf = suggested_mappings[m]
         if dest is None:
             suggested_mappings[m][0] = u''
+
+    # For PortfolioManager input,
+    # override suggestions with direct mapping where possible.
+    if import_file.from_portfolio_manager:
+        mp = simple_mapper.get_pm_mapping(import_file.source_program_version,
+                                          import_file.first_row_columns)
+        for field in suggested_mappings:
+            value = mp.get(field, None)
+            if value is not None:
+                suggested_mappings[field] = (value, 1)
 
     result['suggested_column_mappings'] = suggested_mappings
     result['building_columns'] = building_columns
@@ -1437,6 +1428,10 @@ def create_dataset(request):
         {
          "name": Name of new dataset, e.g. "2013 city compliance dataset"
          "organization_id": ID of the org this dataset belongs to
+         "source": { // optional, source if known
+            "program": Value from common.mapper.Programs
+            "version": e.g. "4.1"
+         }
         }
 
     Returns::
@@ -1447,8 +1442,28 @@ def create_dataset(request):
         }
     """
     body = json.loads(request.body)
+
+    # validate inputs
+    invalid = vutil.missing_request_keys(['organization_id'], body)
+    if invalid:
+        return vutil.api_error(invalid)
+    invalid = vutil.typeof_request_values({'organization_id': int}, body)
+    if invalid:
+        return vutil.api_error(invalid)
+
+    org_id = int(body['organization_id'])
+
+    source = {"program": "", "version": ""}
+    if 'source' in body:
+        source = body['source']
+        invalid = vutil.missing_request_keys(['program', 'version'],
+                                             source)
+        if invalid:
+            return vutil.api_error(invalid)
+
     try:
-        org = Organization.objects.get(pk=body['organization_id'])
+        _log.info("create_dataset: getting Organization for id=({})".format(org_id))
+        org = Organization.objects.get(pk=org_id)
     except Organization.DoesNotExist:
         return {"status": 'error',
                 'message': 'organization_id not provided'}
@@ -1460,6 +1475,8 @@ def create_dataset(request):
         last_modified_by=request.user,
         super_organization=org,
         owner=request.user,
+        source_program=source['program'],
+        source_program_version=source['version']
     )
 
     return {
