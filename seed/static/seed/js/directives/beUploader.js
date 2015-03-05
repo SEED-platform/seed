@@ -310,7 +310,9 @@ angular.module('beUploader', []).directive('beUploader', function() {
             buttontext: "@",
             sourcetype: "@",
             eventfunc: "&",
-            importrecord: "="
+            importrecord: "=",
+            sourceprog: "@",
+            sourcever: "="
         },
         restrict: 'A',
         link: function (scope, element, attrs) {
