@@ -74,7 +74,7 @@ else:
                 'handlers': ['console', 'tmpfile'],
                 },
             '': {
-                'level': 'INFO',
+                'level': 'DEBUG',
                 'handlers': ['console']
             }
         }

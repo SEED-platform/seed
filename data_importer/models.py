@@ -828,7 +828,15 @@ class ImportFile(NotDeletableModel):
 
     @property
     def from_portfolio_manager(self):
-        return self.source_program == mapper.Programs.PM
+        return self._strcmp(self.source_program, mapper.Programs.PM)
+
+    def _strcmp(self, a, b, ignore_ws=True, ignore_case=True):
+        """Easily controlled loose string-matching."""
+        if ignore_ws:
+            a, b = a.strip(), b.strip()
+        if ignore_case:
+            a, b = a.lower(), b.lower()
+        return a == b
 
     @property
     def local_file(self):

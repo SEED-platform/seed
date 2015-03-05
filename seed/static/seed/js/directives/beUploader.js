@@ -67,7 +67,9 @@ var makeS3Uploader = function(scope, element, attrs, filename) {
         params: {
             'csrfmiddlewaretoken': BE.csrftoken,
             'import_record': scope.importrecord,
-            'source_type': scope.sourcetype
+            'source_type': scope.sourcetype,
+            'source_program': scope.sourceprog,
+            'source_program_version': scope.sourcever
         }
     },
     iframeSupport: {
@@ -124,7 +126,9 @@ var makeS3Uploader = function(scope, element, attrs, filename) {
                         file: {
                             filename: fileName,
                             file_id: responseJSON.import_file_id,
-                            source_type: scope.sourcetype
+                            source_type: scope.sourcetype,
+                            source_program: scope.sourceprog,
+                            source_program_version: scope.sourcever
                         }
                     }
                 );
@@ -227,8 +231,9 @@ var makeFileSystemUploader = function(scope, element, attrs, filename) {
                         csrf_xname: 'X-CSRFToken',
                         import_record: scope.importrecord,
                         qqfilename: fileName,
-                        source_type: scope.sourcetype
-
+                        source_type: scope.sourcetype,
+                        source_program: scope.sourceprog,
+                        source_program_version: scope.sourcever
                 };
                 
                 uploader.setParams(params); //wtf fineuploader
@@ -252,7 +257,9 @@ var makeFileSystemUploader = function(scope, element, attrs, filename) {
                             file: {
                                 filename: fileName,
                                 file_id: responseJSON.import_file_id,
-                                source_type: scope.sourcetype
+                                source_type: scope.sourcetype,
+                                source_program: scope.sourceprog,
+                                source_program_version: scope.sourcever
                             }
                         }
                     );

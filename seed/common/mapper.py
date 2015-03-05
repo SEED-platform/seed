@@ -6,10 +6,13 @@ __date__ = '2/13/15'
 
 from fnmatch import fnmatchcase
 import json
+import logging
 import os
 import re
 
 from BE.settings.dev import SEED_DATADIR
+
+_log = logging.getLogger(__name__)
 
 LINEAR_UNITS = set([u'ft', u'm', u'in'])  # ??more??
 
@@ -25,6 +28,7 @@ def get_pm_mapping(version, columns):
     version_parts = version.split('.')
     mp = conf.pm(version_parts)
     result = [[col] + mp[col].as_json() for col in columns]
+    _log.debug("get_pm_mapping: result={}".format(result))
     return result
 
 class Programs(object):

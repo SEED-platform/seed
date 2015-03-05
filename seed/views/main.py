@@ -1428,10 +1428,6 @@ def create_dataset(request):
         {
          "name": Name of new dataset, e.g. "2013 city compliance dataset"
          "organization_id": ID of the org this dataset belongs to
-         "source": { // optional, source if known
-            "program": Value from common.mapper.Programs
-            "version": e.g. "4.1"
-         }
         }
 
     Returns::
@@ -1453,14 +1449,6 @@ def create_dataset(request):
 
     org_id = int(body['organization_id'])
 
-    source = {"program": "", "version": ""}
-    if 'source' in body:
-        source = body['source']
-        invalid = vutil.missing_request_keys(['program', 'version'],
-                                             source)
-        if invalid:
-            return vutil.api_error(invalid)
-
     try:
         _log.info("create_dataset: getting Organization for id=({})".format(org_id))
         org = Organization.objects.get(pk=org_id)
@@ -1475,8 +1463,6 @@ def create_dataset(request):
         last_modified_by=request.user,
         super_organization=org,
         owner=request.user,
-        source_program=source['program'],
-        source_program_version=source['version']
     )
 
     return {
