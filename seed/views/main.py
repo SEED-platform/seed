@@ -1180,29 +1180,33 @@ def get_column_mapping_suggestions(request):
         }
     column_types.update(db_columns)
 
-    suggested_mappings = mapper.build_column_mapping(
-        import_file.first_row_columns,
-        column_types.keys(),
-        previous_mapping=get_column_mapping,
-        map_args=[import_file.import_record.super_organization],
-        thresh=20  # percentage match we require
-    )
-
-    # replace None with empty string for column names
-    for m in suggested_mappings:
-        dest, conf = suggested_mappings[m]
-        if dest is None:
-            suggested_mappings[m][0] = u''
-
-    # For PortfolioManager input,
-    # override suggestions with direct mapping where possible.
     if import_file.from_portfolio_manager:
-        mp = simple_mapper.get_pm_mapping(import_file.source_program_version,
-                                          import_file.first_row_columns)
-        for field in suggested_mappings:
-            value = mp.get(field, None)
-            if value is not None:
-                suggested_mappings[field] = (value, 1)
+        # Portfolio Manager inputs
+        _log.info("map Portfolio Manager input file")
+        suggested_mappings = {}
+        ver = import_file.source_program_version
+        for item in simple_mapper.get_pm_mapping(
+                ver, import_file.first_row_columns,
+                include_none=True):
+            col, fld, meta = item
+            if fld is None:
+                suggested_mappings[col] = (col, 0)
+            else:
+                suggested_mappings[col] = (fld, 1)
+    else:
+        # All other input types
+        suggested_mappings = mapper.build_column_mapping(
+            import_file.first_row_columns,
+            column_types.keys(),
+            previous_mapping=get_column_mapping,
+            map_args=[import_file.import_record.super_organization],
+            thresh=20  # percentage match we require
+        )
+        # replace None with empty string for column names
+        for m in suggested_mappings:
+            dest, conf = suggested_mappings[m]
+            if dest is None:
+                suggested_mappings[m][0] = u''
 
     result['suggested_column_mappings'] = suggested_mappings
     result['building_columns'] = building_columns

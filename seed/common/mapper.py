@@ -16,18 +16,26 @@ _log = logging.getLogger(__name__)
 
 LINEAR_UNITS = set([u'ft', u'm', u'in'])  # ??more??
 
-def get_pm_mapping(version, columns):
+def get_pm_mapping(version, columns, include_none=False):
     """Create and return Portfolio Manager (PM) mapping for
     a given version of PM and the given list of column names.
 
     Args:
       version (str): Version in format 'x.y[.z]'
-      columns (list): A list of strings
+      columns (list): A list of [column_name, field, {metadata}]
+      include_none (bool): If True, add [column_name, None, None] for
+                           columns that had no match.
     """
     conf = MappingConfiguration()
     version_parts = version.split('.')
     mp = conf.pm(version_parts)
-    result = [[col] + mp[col].as_json() for col in columns]
+    result = []
+    for col in columns:
+        mapped = mp.get(col, None)
+        if mapped:
+            result.append([col] + mp[col].as_json())
+        elif include_none:
+            result.append([col, None, None])
     _log.debug("get_pm_mapping: result={}".format(result))
     return result
 
@@ -84,7 +92,7 @@ class Mapping(object):
         """Initialize/create mapping from an input file-like object.
         Format of the file must be JSON, specifically:
 
-        { 'source_field': ['target_field', {metadaa}],  .. }
+        { 'source_field': ['target_field', {metadata}],  .. }
 
         :param fileobj: Object that can be wrapped with `json.load()`
         :param encoding str: Name of encoding of input keys. This
@@ -118,6 +126,10 @@ class Mapping(object):
         if spc_or_underscore:
             self._transforms.append(self._space_or_underscore)
 
+    def __str__(self):
+        return "Length: {length}, Use-Regex={re}".format(length=len(self.json),
+                                                         re=self._regex)
+
     def __getitem__(self, key):
         """Get value for corresponding key.
 
@@ -136,8 +148,8 @@ class Mapping(object):
             if val is None:
                 raise KeyError(key)
         else:
-            val = self.json[k]
-        return MapItem(k, val)
+            val = self.json[key]
+        return MapItem(key, val)
 
     def get(self, key, default=None):
         """Wrapper around __getitem__ that will return the default instead
