@@ -25,7 +25,9 @@ def get_pm_mapping(version, columns, include_none=False):
       columns (list): A list of [column_name, field, {metadata}]
       include_none (bool): If True, add {column:None} for unmatched columns.
     Return:
-       map of {column:MapItem}
+       (dict) of {column:MapItem}, where `column` is one of the values in
+       the input list. If `include_none` was True, then all columns should
+       be in the output.
     """
     conf = MappingConfiguration()
     version_parts = version.split('.')
@@ -39,7 +41,9 @@ def get_pm_mapping(version, columns, include_none=False):
             result[col] = None
         else:
             pass # nothing added to result
-    _log.debug("get_pm_mapping: result={}".format(result))
+    _log.debug("get_pm_mapping: result={}".format(
+        '\n'.join(['{:40s} => {}'.format(k[:40],v) for k,v in result.iteritems()])))
+
     return result
 
 class Programs(object):
@@ -261,3 +265,6 @@ class MapItem(object):
     def as_json(self):
         return [self.field, {Mapping.META_BEDES: self.is_bedes,
                              Mapping.META_NUMERIC: self.is_numeric}]
+
+    def __str__(self):
+        return json.dumps(self.as_json())

@@ -1192,7 +1192,8 @@ def get_column_mapping_suggestions(request):
             if item is None:
                 suggested_mappings[col] = (col, 0)
             else:
-                suggested_mappings[col] = (item.field, 100)
+                cleaned_field = item.field.replace('-', ' ')
+                suggested_mappings[col] = (cleaned_field, 100)
     else:
         # All other input types
         suggested_mappings = mapper.build_column_mapping(
