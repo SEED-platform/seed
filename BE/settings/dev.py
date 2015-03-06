@@ -57,7 +57,7 @@ else:
         },
         'handlers': {
             'console': {
-                'level': 'INFO',
+                'level': 'DEBUG',
                 'class': 'logging.StreamHandler',
                 'formatter': 'verbose',
                 },
@@ -70,10 +70,10 @@ else:
         },
         'loggers': {
             'django': {
-                'level': 'DEBUG',
+                'level': 'INFO',
                 'handlers': ['console', 'tmpfile'],
                 },
-            '': {
+            'seed': {
                 'level': 'DEBUG',
                 'handlers': ['console']
             }
