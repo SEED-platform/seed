@@ -191,10 +191,11 @@ def create_pm_mapping(request):
         return vutil.api_error(invalid)
 
     try:
-        result = simple_mapper.get_pm_mapping((1, 0), body['columns'])
+        result = simple_mapper.get_pm_mapping('1.0', body['columns'])
     except ValueError as err:
         return vutil.api_error(str(err))
-    return vutil.api_success(mapping=result)
+    json_result = [[c] + v.as_json() for c, v in result.items()]
+    return vutil.api_success(mapping=json_result)
 
 @api_endpoint
 @ajax_request
@@ -1185,14 +1186,13 @@ def get_column_mapping_suggestions(request):
         _log.info("map Portfolio Manager input file")
         suggested_mappings = {}
         ver = import_file.source_program_version
-        for item in simple_mapper.get_pm_mapping(
+        for col, item in simple_mapper.get_pm_mapping(
                 ver, import_file.first_row_columns,
-                include_none=True):
-            col, fld, meta = item
-            if fld is None:
+                include_none=True).items():
+            if item is None:
                 suggested_mappings[col] = (col, 0)
             else:
-                suggested_mappings[col] = (fld, 1)
+                suggested_mappings[col] = (item.field, 100)
     else:
         # All other input types
         suggested_mappings = mapper.build_column_mapping(

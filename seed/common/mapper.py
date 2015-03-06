@@ -23,19 +23,22 @@ def get_pm_mapping(version, columns, include_none=False):
     Args:
       version (str): Version in format 'x.y[.z]'
       columns (list): A list of [column_name, field, {metadata}]
-      include_none (bool): If True, add [column_name, None, None] for
-                           columns that had no match.
+      include_none (bool): If True, add {column:None} for unmatched columns.
+    Return:
+       map of {column:MapItem}
     """
     conf = MappingConfiguration()
     version_parts = version.split('.')
     mp = conf.pm(version_parts)
-    result = []
+    result = {}
     for col in columns:
         mapped = mp.get(col, None)
         if mapped:
-            result.append([col] + mp[col].as_json())
+            result[col] = mapped
         elif include_none:
-            result.append([col, None, None])
+            result[col] = None
+        else:
+            pass # nothing added to result
     _log.debug("get_pm_mapping: result={}".format(result))
     return result
 
