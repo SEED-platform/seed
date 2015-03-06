@@ -49,17 +49,19 @@ def create_map(path_in, path_out):
     outfile = open(path_out, "w")
     json.dump(map, outfile)
 
-def apply_map(path_map, path_data, file_out):
+def apply_map(map_path, data_path, out_file):
     """Apply a JSON mapping to data, and write the output.
 
-    :param path_map:
-    :param path_data:
-    :param file_out:
-    :return:
+    Args:
+      map_path (str): Path to mapping file
+      data_path (str): Path to data file
+      out_file (file): output stream
+    Return:
+      None
     """
-    map_file = open(path_map, "r")
+    map_file = open(map_path, "r")
     mapping = mapper.Mapping(map_file, encoding='latin_1')
-    data_file = open(path_data, "rU")
+    data_file = open(data_path, "rU")
     data_csv = csv.reader(data_file)
     # map each field
     d = {}
@@ -73,7 +75,7 @@ def apply_map(path_map, path_data, file_out):
         d[field] = mapper.MapItem(field, None).as_json()
     # write mapping as a JSON
     try:
-        json.dump(d, file_out, ensure_ascii=True)
+        json.dump(d, out_file, ensure_ascii=True)
     except:
         #print("** Error: While writing:\n{}".format(d))
         pass
@@ -81,3 +83,40 @@ def apply_map(path_map, path_data, file_out):
     print("Mapped {} fields: {} OK and {} did not match".format(
         len(input_fields),  len(matched), len(nomatch)))
 
+
+def find_duplicates(map_path, data_path, out_file):
+    """Find duplicates created by a given mapping on a given input file.
+
+    Args:
+      map_path (str): Path to mapping file
+      data_path (str): Path to data file
+      out_file (file): output stream
+    Return:
+      None
+    """
+    map_file = open(map_path, "r")
+    mapping = mapper.Mapping(map_file, encoding='latin-1')
+    data_file = open(data_path, "rU")
+    data_csv = csv.reader(data_file)
+    hdr = data_csv.next()
+    seen_values, dup = {}, {}
+    for src in hdr:
+        value = mapping.get(src, None)
+        if value is None:
+            continue
+        dst = value.field
+        if dst in seen_values: # this is a duplicate
+            if src in dup: # we already have >= 1 duplicates
+                # add new duplicate to list
+                dup[dst].append(src)
+            else: # first duplicate
+                # add both keys to list
+                seen_key = seen_values[dst]
+                dup[dst] = [seen_key, src]
+        else:
+            seen_values[dst] = src
+    # print results
+    for value, keys in dup.items():
+        keylist = ' | '.join(keys)
+        out_file.write("({n:d}) {v}: {kl}\n".format(n=len(keys), v=value,
+                                                        kl=keylist))

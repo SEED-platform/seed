@@ -115,7 +115,7 @@ class Mapping(object):
         :param normalize_units bool: If true, allow superscripts etc. in units
         :raises: Exceptions from `json.load()` of invalid input file
         """
-        self.json = json.load(fileobj)
+        self.data = json.load(fileobj)
         # figure out whether we will be using a regular expression
         self._regex = regex or ignore_case or spc_or_underscore
         # set up regex
@@ -134,7 +134,7 @@ class Mapping(object):
             self._transforms.append(self._space_or_underscore)
 
     def __str__(self):
-        return "Length: {length}, Use-Regex={re}".format(length=len(self.json),
+        return "Length: {length}, Use-Regex={re}".format(length=len(self.data),
                                                          re=self._regex)
 
     def __getitem__(self, key):
@@ -148,14 +148,14 @@ class Mapping(object):
             key = t(key)
         if self._regex:
             re_key, val = re.compile(key, flags=self._regex_flags), None
-            for k, value in self.json.items():
+            for k, value in self.data.items():
                 if re_key.match(k):
                     val = value
                     break
             if val is None:
                 raise KeyError(key)
         else:
-            val = self.json[key]
+            val = self.data[key]
         return MapItem(key, val)
 
     def get(self, key, default=None):
@@ -166,6 +166,19 @@ class Mapping(object):
             return self[key]
         except KeyError:
             return default
+
+    def keys(self):
+        """Get list of source keys.
+
+        Return:
+           (list) Source keys
+        """
+        tkeys = []
+        for key in self.data.keys():
+            for t in self._transforms:
+                key = t(key)
+            tkeys.append(key)
+        return tkeys
 
     def apply(self, keys):
         """Get value for a list of keys.
@@ -187,6 +200,8 @@ class Mapping(object):
     ## --- Transforms ----
 
     def _to_unicode(self, key):
+        if isinstance(key, unicode):
+            return key
         return unicode(key, self._encoding)
 
     def _fix_superscripts(self, key):
