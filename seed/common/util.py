@@ -6,6 +6,8 @@ __date__ = '2/13/15'
 
 import csv
 import json
+import sys
+
 from . import mapper
 
 # use this to recognize when to remove from mapping
@@ -27,6 +29,8 @@ def create_map(path_in, path_out):
     assert len(header) >= 5
     map = {}
     for row in infile:
+        if len(row) < 5:
+            break
         meta = {bedes_flag: True}
         if len(row[1]) > 0:
             if row[1] == REMOVE_KEY:
@@ -46,8 +50,11 @@ def create_map(path_in, path_out):
                 else:
                     field = value
                 map[key] = [value, meta]
-    outfile = open(path_out, "w")
-    json.dump(map, outfile)
+    if path_out == '-':
+        outfile = sys.stdout
+    else:
+        outfile = open(path_out, "w")
+    json.dump(map, outfile, encoding='latin_1')
 
 def apply_map(map_path, data_path, out_file):
     """Apply a JSON mapping to data, and write the output.
