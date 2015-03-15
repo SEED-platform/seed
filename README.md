@@ -32,7 +32,7 @@ docker run -v $HOME/seed_data:/seed/collected_static --link seed-redis:redis --l
 docker run -d -name seed-uwsgi -v $HOME/seed_data:/seed/collected_static --link seed-redis:redis --link seed-postgres:postgres -p 8000:8000 seed-platform /seed/bin/start_uwsgi_docker.sh
 docker run -d -name seed-celery -v $HOME/seed_data:/seed/collected_static --link seed-redis:redis --link seed-postgres:postgres seed-platform /seed/bin/start_celery_docker.sh
 ```
-#### Your done!! ####
+#### You're done!! ####
 Point your browser at [http://localhost:8000](http://localhost:8000) and log in with the account
  * **username**: demo@buildingenergy.com
  * **password**: demo
