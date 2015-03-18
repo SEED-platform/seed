@@ -28,7 +28,7 @@ Install Postgres 9.4
     
 Finish initializing the DB
 
-    sudo su postgres - c '/opt/local/lib/postgresql94/bin/initdb -D /opt/local/var/db/postgresql94/defaultdb'
+    sudo su postgres -c '/opt/local/lib/postgresql94/bin/initdb -D /opt/local/var/db/postgresql94/defaultdb'
 
 At this point, you may want to add start/stop scripts or aliases to ~/.bashrc or your virtualenv ``postactivate`` script (in ``~/.virtualenvs/{env-name}/bin/postactivate``).
 
