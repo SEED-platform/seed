@@ -745,7 +745,7 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
     building_pk = unmatched_list[b_idx][0]  # First element is PK
 
     bs = save_snapshot_match(
-        can_snap_pk, building_pk, confidence=confidence, match_type=match_type
+        can_snap_pk, building_pk, confidence=confidence, match_type=match_type, default_pk=building_pk
     )
     canon = bs.canonical_building
     AuditLog.objects.create(
@@ -839,7 +839,8 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
             unmatched_bs.pk,
             confidence=0.9,  # TODO(gavin) represent conf better.
             match_type=SYSTEM_MATCH,
-            user=import_file.import_record.owner
+            user=import_file.import_record.owner,
+            default_pk=unmatched_bs.pk
         )
         canon = unmatched_bs.canonical_building
         canon.canonical_snapshot = unmatched_bs
