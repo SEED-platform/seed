@@ -91,11 +91,64 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="tcm in raw_columns" ng-class="{'ignored_row': !tcm.mapped_row}">
+                        <tr ng-repeat="tcm in raw_columns| filter: {is_duplicate: 'true'} | orderBy: 'suggestion'" ng-class="{'ignored_row': !tcm.mapped_row}">
+                            <td class="check is_aligned_center">
+                                <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
+                            </td>
+                            <td ng-class="{'danger': tcm.is_duplicate == true}">
+                                <input type="text" typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)'/>
+                            </td>
+                            <td class="is_aligned_center">
+                                <i class="fa fa-check-circle green" ng-show="is_suggestion_BEDES(tcm.suggestion)"></i>
+                            </td>
+                            <td class="check is_aligned_center">
+                                <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
+                                <label class="label label-{$ tcm.label_status() $}" ng-if="!tcm.is_duplicate">{$ tcm.validity $}</label>
+                            </td>
+                            <td>
+                                <strong>{$tcm.name$}</strong>
+                            </td>
+                            <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning', 'success': set_td_class(tcm, cell_value) == 'success'}" >
+                                {$ cell_value $}
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        <tr><td>Invalids</td></tr>
+                    </tbody>
+                    <tbody>
+                        <tr ng-repeat="tcm in raw_columns| filter: {validity: 'invalid', is_duplicate: 'false'} | orderBy: ['-is_duplicate', 'suggestion']" ng-class="{'ignored_row': !tcm.mapped_row}">
                             <td class="check is_aligned_center">
 								<input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
 							</td>
                 			<td ng-class="{'danger': tcm.is_duplicate == true}">
+                                <input type="text" typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)'/>
+                            </td>
+                            <td class="is_aligned_center">
+                                <i class="fa fa-check-circle green" ng-show="is_suggestion_BEDES(tcm.suggestion)"></i>
+                            </td>
+                            <td class="check is_aligned_center">
+                                <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
+                                <label class="label label-{$ tcm.label_status() $}" ng-if="!tcm.is_duplicate">{$ tcm.validity $}</label>
+                            </td>
+                            <td>
+                                <strong>{$tcm.name$}</strong>
+                            </td>
+                            <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning', 'success': set_td_class(tcm, cell_value) == 'success'}" >
+                                {$ cell_value $}
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <td>Mapped Fields</td>
+                        </tr>
+                    <tbody>
+                        <tr ng-repeat="tcm in raw_columns| filter: {validity: '!invalid', is_duplicate: 'false'} | orderBy: ['suggestion','validity']" ng-class="{'ignored_row': !tcm.mapped_row}">
+                            <td class="check is_aligned_center">
+                                <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
+                            </td>
+                            <td ng-class="{'danger': tcm.is_duplicate == true}">
                                 <input type="text" typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)'/>
                             </td>
                             <td class="is_aligned_center">
