@@ -65,10 +65,15 @@ Change to a virtualenv (using virtualenvwrapper) or do the following as a superu
 Make sure PostgreSQL command line scripts are in your PATH
 
     export PATH=$PATH:/opt/local/lib/postgresql94/bin
+
+Some packages (uWSGI) may need to find your C compiler. Make sure you have 'gcc' on your system, and then also export this to the `CC` environment variable:
+
+    export CC=gcc
     
 Install requirements with `pip`
 
     pip install -r requirements.txt
+
     
 Install library with `setup.py`
 
