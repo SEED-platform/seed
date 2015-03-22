@@ -317,7 +317,7 @@ def clean_canonicals(b1, b2, new_snapshot):
 
 
 def save_snapshot_match(
-    b1_pk, b2_pk, confidence=None, user=None, match_type=None
+    b1_pk, b2_pk, confidence=None, user=None, match_type=None, default_pk = None
 ):
     """Saves a match between two models as a new snapshot; updates Canonical.
 
@@ -341,6 +341,8 @@ def save_snapshot_match(
     # No point in linking the same building together.
     if b1_pk == b2_pk:
         return
+    
+    default_pk = default_pk or b1_pk
 
     b1 = BuildingSnapshot.objects.get(pk=b1_pk)
     b2 = BuildingSnapshot.objects.get(pk=b2_pk)
@@ -348,6 +350,8 @@ def save_snapshot_match(
     # we don't want to match in the middle of the tree, so get the tip
     b1 = b1.tip
     b2 = b2.tip
+    
+    default_building = b1 if default_pk == b1_pk else b2
 
     new_snapshot = BuildingSnapshot.objects.create()
     new_snapshot = seed_mapper.merge_building(
@@ -356,6 +360,7 @@ def save_snapshot_match(
         b2,
         seed_mapper.get_building_attrs([b1, b2]),
         conf=confidence,
+        default=default_building,
         match_type=match_type
     )
 
@@ -455,7 +460,7 @@ def unmatch_snapshot_tree(building_pk):
     bachelor = root
     newborn_child = None
     for bereaved_parent in coparents_to_keep:
-        newborn_child = save_snapshot_match(bachelor.pk, bereaved_parent.pk)
+        newborn_child = save_snapshot_match(bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk)
         bachelor = newborn_child
 
     # set canonical_snapshot for root's canonical building

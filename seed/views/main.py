@@ -798,7 +798,7 @@ def save_match(request):
 
     if create:
         child_id = save_snapshot_match(
-            b1_pk, b2_pk, user=request.user, match_type=2
+            b1_pk, b2_pk, user=request.user, match_type=2, default_pk=b2_pk
         )
         child_id = child_id.pk
         cb = CanonicalBuilding.objects.get(buildingsnapshot__id=child_id)
