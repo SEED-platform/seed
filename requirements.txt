@@ -58,3 +58,4 @@ xmltodict==0.9.0
 uwsgi==2.0.9
 unittest2
 pytest
+street-address==0.2.1

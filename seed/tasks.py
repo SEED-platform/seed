@@ -29,7 +29,7 @@ from mcm.data.ESPM import espm as espm_schema
 from mcm.data.SEED import seed as seed_schema
 from mcm.utils import batch
 import ngram
-
+import streetaddress as sa
 from data_importer.models import (
     ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
 )
