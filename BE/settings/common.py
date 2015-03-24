@@ -49,7 +49,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    #'raven.contrib.django.middleware.Sentry404CatchMiddleware',
+    'raven.contrib.django.middleware.Sentry404CatchMiddleware',
     'pagination.middleware.PaginationMiddleware',
 )
 
@@ -90,7 +90,7 @@ INSTALLED_APPS = (
     'django_extensions',
     'organizations',
     'superperms.orgs',
-    #'raven.contrib.django',
+    'raven.contrib.django',
     'south',
     'tos',
     'public',
@@ -175,48 +175,42 @@ LOGGING = {
         },
     },
     'handlers': {
-        # 'sentry': {
-        #     'level': 'ERROR',
-        #     'class': 'raven.contrib.django.handlers.SentryHandler',
-        #     'formatter': 'verbose'
-        # },
+        'sentry': {
+            'level': 'ERROR',
+            'class': 'raven.contrib.django.handlers.SentryHandler',
+            'formatter': 'verbose'
+        },
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
-        'tmpfile' : {
+        'abbreviated_console': {
             'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'formatter': 'verbose',
-            'filename': '/tmp/seed-dev.log'
+            'class': 'logging.StreamHandler',
+            'formatter': 'abbreviated',
         },
-        # 'abbreviated_console': {
-        #     'level': 'DEBUG',
-        #     'class': 'logging.StreamHandler',
-        #     'formatter': 'abbreviated',
-        # },
-        # 'verbose_console': {
-        #     'level': 'DEBUG',
-        #     'class': 'logging.StreamHandler',
-        #     'formatter': 'verbose',
-        # },
-        # 'console': {
-        #     'level': 'DEBUG',
-        #     'class': 'logging.StreamHandler',
-        #     'formatter': 'verbose',
-        # },
+        'verbose_console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         '': {
-            'level': 'DEBUG',
-            'handlers': ['console', 'tmpfile'],
+            'level': 'WARNING',
+            'handlers': ['sentry'],
         },
-        # 'sentry.errors': {
-        #     'level': 'DEBUG',
-        #     'handlers': ['console'],
-        #     'propagate': False,
-        # },
+        'sentry.errors': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
     }
 }
 
