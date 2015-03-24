@@ -863,10 +863,11 @@ def _finish_matching(import_file, progress_key):
     import_file.save()
     cache.set(progress_key, 100)
 
-
-
 def _normalize_address_str(address_val):
     """Normalize the address to conform to short abbreviations."""
+    #if this string is empty the regular expression in the sa wont like it, and fail, so leave returning nothing
+    if not address_val:
+        return
     # so the parse function uses a regular expression defined in Regexes to make sure that the address conforms to a standard format, 
     # the function does not recognize an address unless it has more than just  an address line, so this hack below adds a fake post code, 
     # a more elegant solution would be to  change the regular expression so that a simple address is ok
@@ -881,12 +882,14 @@ def _normalize_address_str(address_val):
         NormalizedAddress=NormalizedAddress+' '+addr['street']  
     if addr.has_key('type'):
         NormalizedAddress=NormalizedAddress+' '+addr['type']    
-    return NormalizedAddress
+    return NormalizedAddress.lower()
     
 def _findMatches(un_m_address,canonical_buildings_addresses):
     match_list = []
+    if not un_m_address:
+        return match_list
     for cb in canonical_buildings_addresses:
-        if un_m_address==cb:
+        if un_m_address.lower()==cb.lower(): #this second lower may be obsolete now
             match_list.append((un_m_address, 1))
     return  match_list    
 
@@ -895,6 +898,7 @@ def _findMatches(un_m_address,canonical_buildings_addresses):
 @lock_and_track
 def _match_buildings(file_pk, user_pk):
     """ngram search against all of the canonical_building snapshots for org."""
+#     assert True
     min_threshold = settings.MATCH_MIN_THRESHOLD
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
@@ -921,9 +925,6 @@ def _match_buildings(file_pk, user_pk):
         return
     #here we are going to normalize the addresses to match on address_1 field, this is not ideal because you could match on two locations with same address_1 but different city
 #     unmatched_normalized_addresses=[]
-#     for unmatched in unmatched_buildings:
-#         unmatched_normalized_addresses.append(_normalize_address_str(unmatched[4]))
-        
     
     unmatched_normalized_addresses = [
         _normalize_address_str(unmatched[4]) for unmatched in unmatched_buildings
@@ -954,7 +955,7 @@ def _match_buildings(file_pk, user_pk):
     
     # This allows us to retrieve the PK for a given NGram after a match.
     can_rev_idx = {
-        _stringify(value[1:]): value[0] for value in canonical_buildings
+        _normalize_address_str(value[4]): value[0] for value in canonical_buildings
     }
     # (SD) This loads up an ngram object with all the canonical buildings. The values are the lists of identifying data for each building
     # (SD) the stringify is given all but the first item in the values list and it concatenates each item with a space in the middle
@@ -971,7 +972,8 @@ def _match_buildings(file_pk, user_pk):
 # sd we now use the address
 #    num_unmatched = len(unmatched_ngrams) or 1
     num_unmatched = len(unmatched_normalized_addresses) or 1
-    increment = 1.0 / num_unmatched * 100
+    #this code below seemed to be unclear when I was debugging so I added the brackets
+    increment = (1.0 / num_unmatched) * 100
 
     # PKs when we have a match.
     import_file.mapping_completion = 0
@@ -997,6 +999,7 @@ def _match_buildings(file_pk, user_pk):
     _finish_matching(import_file, prog_key)
     
     return {'status': 'success'}
+    
 
 
 @task
