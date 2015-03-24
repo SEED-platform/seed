@@ -1,5 +1,4 @@
 <div class="modal-header" ng-switch on="step.number">
-    <button type="button" class="close" aria-hidden="true" ng-click="cancel()"><i class="fa fa-times"></i></button>
     <h4 class="modal-title" ng-switch-when="1">Create a New Data Set.</h4>
     <h4 class="modal-title" ng-switch-when="2">Upload your building data.</h4>
     <h4 class="modal-title" ng-switch-when="3">Successful upload!</h4>
@@ -156,39 +155,58 @@
 
 <div class="modal-footer" ng-switch on="step.number">
     <div ng-switch-when="1">
-    	<button class="btn btn-default" ng-click="cancel()">Cancel</button>
-    	<button type="button" class="btn btn-primary" ng-click="create_dataset(dataset.name)" ng-disabled="dataset.disabled()">Create Data Set</button>
+        <div class="row text-center">
+    	   <button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="create_dataset(dataset.name)" ng-disabled="dataset.disabled()">Create Data Set</button>
+        </div>    
     </div>
     <div ng-switch-when="2">
     </div>
     <div ng-switch-when="3">
     	<!-- Leaving this out for now as I'm not sure we want to allow the user to do this right here.
     	<button type="button" class="btn btn-default">Upload another building list file</button> -->
-    	<button type="button" class="btn btn-primary" ng-click="goto_data_mapping()">Continue to data mapping</button>
+        <div class="row text-center">
+        	<button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_data_mapping()">Continue to data mapping</button>
+        </div>
     </div>
     <div ng-switch-when="4">
     </div>
     <div ng-switch-when="5">
-    	<button type="button" class="btn btn-default" ng-click="goto_step(4)">Upload another energy data file</button>
-    	<button type="button" class="btn btn-primary" ng-click="goto_data_matching()">Continue to data matching</button>
+        <div class="row text-center">
+    	   <button type="button" class="btn btn-default col-sm-6 col-lg-6 col-md-6" center-block ng-click="goto_step(4)">Upload another energy data file</button>
+        </div>
+        <div class="row text-center">
+        	<button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_data_matching()">Continue to data matching</button>
+        </div>
     </div>
     <div ng-switch-when="7">
     </div>
     <div ng-switch-when="8">
-    	<button type="button" class="btn btn-default" ng-click="view_my_buildings()">View my buildings</button>
-    	<button type="button" class="btn btn-primary" ng-click="goto_data_matching()">Review matches</button>
+        <div class="row text-center">
+        	<button type="button" class="btn btn-default col-sm-6 col-lg-6 col-md-6 center-block" ng-click="view_my_buildings()">View my buildings</button>
+        </div>
+        <div class="row text-center">
+        	<button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_data_matching()">Review matches</button>
+        </div>
     </div>
     <div ng-switch-when="9">
-        <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-        <button type="button" class="btn btn-primary" ng-click="goto_step(2)">Add another file</button>
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_step(2)">Add another file</button>
+        </div>
     </div>
     <div ng-switch-when="10">
-    	<button class="btn btn-default" ng-click="cancel()">Cancel</button>
-    	<button type="button" class="btn btn-primary" ng-click="goto_step(2)">Add another file</button>
-        <button type="button" class="btn btn-primary" ng-click="view_my_buildings()">View my buildings</button>
+        <div class="row text-center">
+        	<button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_step(2)">Add another file</button>
+        </div>
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="view_my_buildings()">View my buildings</button>
+        </div>
     </div>
     <div ng-switch-when="11">
-    	<button class="btn btn-default" ng-click="cancel()">Let me review again.</button>
-        <button type="button" class="btn btn-primary" ng-click="goto_step(7); find_matches();">Confirm mappings &amp; start matching</button>
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_step(7); find_matches();">Confirm mappings &amp; start matching</button>
+        </div>
+    </div>
+    <div class="row text-center">
+        <button class="btn btn-default col-sm-6 col-lg-6 col-md-6 center-block" ng-click="cancel()">Cancel</button>
     </div>
 </div>

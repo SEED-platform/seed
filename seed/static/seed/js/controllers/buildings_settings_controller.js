@@ -84,6 +84,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
             //resolve promise
             $scope.settings_updated = true;
             $modalInstance.close(columns);
+            location.reload();
         });
     };
 
