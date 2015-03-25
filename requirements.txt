@@ -59,3 +59,4 @@ uwsgi==2.0.9
 unittest2
 pytest
 pytest-django
+street-address==0.2.1
