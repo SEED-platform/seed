@@ -120,7 +120,7 @@ angular.module('BE.seed.controller.mapping', [])
      * @param to_validate: array of strings, values from example data.
      */
     $scope.get_validity = function(tcm) {
-        var diff = tcm.raw_data.length - tcm.invalids.length;
+        /*var diff = tcm.raw_data.length - tcm.invalids.length;
         // Used to display the state of the row overall.
         if (typeof(tcm.invalids) === "undefined") {
             return undefined;
@@ -133,8 +133,8 @@ angular.module('BE.seed.controller.mapping', [])
         }
         if (diff < 1) {
             return 'invalid';
-        }
-
+        }*/
+        return 'valid';
      };
 
     /*
@@ -447,26 +447,27 @@ angular.module('BE.seed.controller.mapping', [])
      *   after saving column mappings, deletes unmatched buildings
      */
     $scope.remap_buildings = function(){
-      $scope.import_file.progress = 0;
-      $scope.save_mappings = true;
-      $scope.review_mappings = true;
+        $scope.import_file.progress = 0;
+        $scope.save_mappings = true;
+        $scope.review_mappings = true;
+        $scope.raw_columns = $scope.valids.concat($scope.duplicates);
 
-      mapping_service.save_mappings(
-        $scope.import_file.id,
-        get_untitle_cased_mappings()
-      )
-      .then(function (data){
-        // start re-mapping
-        mapping_service.remap_buildings($scope.import_file.id).then(function(data){
-          if (data.status === "error" || data.status === "warning") {
-            $scope.$emit('app_error', data);
-            $scope.get_mapped_buildings();
-          } else {
-            // save maps start mapping data
-            check_mapping(data.progress_key);
-          }
+        mapping_service.save_mappings(
+          $scope.import_file.id,
+          get_untitle_cased_mappings()
+        )
+        .then(function (data){
+          // start re-mapping
+          mapping_service.remap_buildings($scope.import_file.id).then(function(data){
+            if (data.status === "error" || data.status === "warning") {
+              $scope.$emit('app_error', data);
+              $scope.get_mapped_buildings();
+            } else {
+              // save maps start mapping data
+              check_mapping(data.progress_key);
+            }
+          });
         });
-      });
     };
 
     /**
@@ -484,13 +485,38 @@ angular.module('BE.seed.controller.mapping', [])
       );
     };
 
+    /*
+     * monitor_typeahead_list: decide if duplicate checking is required in
+     * order to enable or disable map data button
+     */
     $scope.monitor_typeahead_list =function() {
       var dropdown = angular.element('.dropdown-menu.ng-scope');
 
-      if(dropdown.length == 0 || dropdown.css('display') == 'none') {
-        return $scope.duplicates_present();
+      //if dropdown menu is not shown - i.e., the user has typed
+      //a new field name and a duplicate field is encountered in the
+      //header fields list do a dups check. otherwise disable the button
+      if($scope.duplicates.length > 0) {
+        for(var i=0; i < $scope.duplicates.length; i++) {
+          if($scope.duplicates[i].is_duplicate) {
+            return true;
+          }
+        }
       }
-      else return true;
+      else {
+        if(dropdown.length == 0 || dropdown.css('display') == 'none') {
+          var input_focus = $(document.activeElement);
+
+          $('.header-field').each(function(){
+
+            if(!$(this).is(input_focus) && $(this).val() == input_focus.val()) {
+              return $scope.duplicates_present();
+            }
+          });
+          
+        }
+
+        else return true;
+      }
     };
 
     /*
@@ -554,6 +580,11 @@ angular.module('BE.seed.controller.mapping', [])
 
     var init = function() {
         update_raw_columns();
+
+        $scope.duplicates_present();
+        $scope.duplicates = $filter('filter')($scope.raw_columns, {is_duplicate: true});
+        $scope.duplicates = $filter('orderBy')($scope.duplicates, 'suggestion', false);
+        $scope.valids = $filter('filter')($scope.raw_columns, {is_duplicate: false});
     };
     init();
 
