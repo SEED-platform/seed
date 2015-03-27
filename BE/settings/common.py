@@ -8,7 +8,8 @@ import logging
 from os.path import abspath, join, dirname
 
 SITE_ROOT = abspath(join(dirname(__file__), "..", ".."))
-sys.path.insert(0, SITE_ROOT)
+
+SEED_DATADIR = join(SITE_ROOT,'seed','data')
 
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True

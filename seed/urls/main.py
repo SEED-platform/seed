@@ -17,6 +17,8 @@ urlpatterns = patterns(
     url(r'^$', 'home', name='home'),
 
     # ajax routes
+    url(r'^create_pm_mapping/$', 'create_pm_mapping', name='create_pm_mapping'),
+
     url(
         r'^get_total_number_of_buildings_for_user/$',
         'get_total_number_of_buildings_for_user',
