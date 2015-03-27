@@ -879,8 +879,7 @@ def _normalize_address_str(address_val):
     if not address_val:
         return None
 
-    # now parse the address into number, street name and street type,
-    # and normalize all street types to be
+    # now parse the address into number, street name and street type
     parser = StreetAddressParser()
     addr = parser.parse(str(address_val))  # TODO: should probably use unicode()
     normalized_address = ''
