@@ -80,8 +80,8 @@
                         <tr>
                             <th class="sub_head is_aligned_center">Map <a popover="{$MAP_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th>
                             <th class="mapping_field">header</th>
-                            <th class="sub_head is_aligned_center">BEDES <a popover="{$BEDES_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th>
-                            <th class="sub_head is_aligned_center">Validate <a popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th>
+                            <!--th class="sub_head is_aligned_center">BEDES <a popover="{$BEDES_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
+                            <th class="sub_head is_aligned_center">Duplicate <a popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th>
                             <th class="import_column_name"> header</th>
                             <th>Row 1</th>
                             <th>Row 2</th>
@@ -91,16 +91,23 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="tcm in raw_columns| filter: {is_duplicate: 'true'} | orderBy: 'suggestion'" ng-class="{'ignored_row': !tcm.mapped_row}">
+
+                        <tr>
+                            <td></td>
+                            <td colspan="5"><h3>Duplicates</h3></td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        <tr ng-repeat="tcm in duplicates" ng-class="{'ignored_row': !tcm.mapped_row}">
                             <td class="check is_aligned_center">
-                                <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
+								<input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
+							</td>
+                			<td ng-class="{'danger': tcm.is_duplicate == true}">
+                                <input type="text" typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control header-field input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)'/>
                             </td>
-                            <td ng-class="{'danger': tcm.is_duplicate == true}">
-                                <input type="text" typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)'/>
-                            </td>
-                            <td class="is_aligned_center">
+                            <!--td class="is_aligned_center">
                                 <i class="fa fa-check-circle green" ng-show="is_suggestion_BEDES(tcm.suggestion)"></i>
-                            </td>
+                            </td-->
                             <td class="check is_aligned_center">
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="!tcm.is_duplicate">{$ tcm.validity $}</label>
@@ -113,24 +120,42 @@
                             </td>
                         </tr>
                     </tbody>
+                    
                     <tbody>
-                        <tr><td>Invalids</td></tr>
+                        <tr>
+                            <td></td>
+                            <td colspan="5"><h3>Mapped Fields</h3></td>
+                        </tr>
                     </tbody>
+                    <thead>
+                        <tr>
+                            <th class="sub_head is_aligned_center">Map <a popover="{$MAP_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th>
+                            <th class="mapping_field">header</th>
+                            <th class="sub_head is_aligned_center">BEDES <a popover="{$BEDES_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th>
+                            <!--th class="sub_head is_aligned_center">Duplicate <a popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
+                            <th class="import_column_name"> header</th>
+                            <th>Row 1</th>
+                            <th>Row 2</th>
+                            <th>Row 3</th>
+                            <th>Row 4</th>
+                            <th>Row 5</th>
+                        </tr>
+                    </thead>
                     <tbody>
-                        <tr ng-repeat="tcm in raw_columns| filter: {validity: 'invalid', is_duplicate: 'false'} | orderBy: ['-is_duplicate', 'suggestion']" ng-class="{'ignored_row': !tcm.mapped_row}">
+                        <tr ng-repeat="tcm in valids" ng-class="{'ignored_row': !tcm.mapped_row}">
                             <td class="check is_aligned_center">
-								<input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
-							</td>
-                			<td ng-class="{'danger': tcm.is_duplicate == true}">
+                                <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
+                            </td>
+                            <td ng-class="{'danger': tcm.is_duplicate == true}">
                                 <input type="text" typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)'/>
                             </td>
                             <td class="is_aligned_center">
                                 <i class="fa fa-check-circle green" ng-show="is_suggestion_BEDES(tcm.suggestion)"></i>
                             </td>
-                            <td class="check is_aligned_center">
+                            <!--td class="check is_aligned_center">
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="!tcm.is_duplicate">{$ tcm.validity $}</label>
-                            </td>
+                            </td-->
                             <td>
                                 <strong>{$tcm.name$}</strong>
                             </td>
