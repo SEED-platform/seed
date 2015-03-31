@@ -69,7 +69,7 @@
             <div class="table_list_container mapping" ng-cloak>
                 <div class="alert warning file_error_messages" ng-show="has_mapping_error_messages()" ng-bind-html="mapping_error_messages"></div>
                 <table class="table table-striped" ng-hide="review_mappings">
-                    <thead>
+                    <thead >
                         <tr>
                             <th class="source_data blank"></th>
                             <th class="source_data">SEED</th>
@@ -77,7 +77,7 @@
                              <th class="source_data blank"></th>
                             <th colspan="99" class="source_data" colspan="4">{$ import_file.name $}</th>
                         </tr>
-                        <tr>
+                        <tr ng-show="duplicates.length > 0">
                             <th class="sub_head is_aligned_center">Map <a popover="{$MAP_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th>
                             <th class="mapping_field">header</th>
                             <!--th class="sub_head is_aligned_center">BEDES <a popover="{$BEDES_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
@@ -94,7 +94,7 @@
 
                         <tr>
                             <td></td>
-                            <td colspan="5"><h3>Duplicates</h3></td>
+                            <td colspan="8"><h3>Duplicates</h3></td>
                         </tr>
                     </tbody>
                     <tbody>
@@ -124,7 +124,7 @@
                     <tbody>
                         <tr>
                             <td></td>
-                            <td colspan="5"><h3>Mapped Fields</h3></td>
+                            <td colspan="8"><h3>Mapped Fields</h3></td>
                         </tr>
                     </tbody>
                     <thead>
