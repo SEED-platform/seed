@@ -630,13 +630,28 @@ def cache_first_rows(import_file, parser):
         if row:
             validation_rows.append(row)
 
-    import_file.cached_second_to_fifth_row = "\n".join(
-        [
-            ROW_DELIMITER.join(map(lambda x: str(x), r.values()))
-            for r in validation_rows
-        ]
-    )
-    first_row = rows.next().keys()
+    #This is a fix for issue #24 to use original field order when importing
+    #This is ultimately not the correct place for this fix.  The correct fix 
+    #is to update the mcm code to a newer version where the readers in mcm/reader.py
+    #have a headers() function defined and then just do
+    #first_row = paserser.headers()
+    #But until we can patch the mcm code this should fix the issue.
+    local_reader = parser.reader
+    if isinstance(local_reader, reader.ExcelParser):
+        first_row = local_reader.sheet.row_values(local_reader.header_row)        
+    elif isinstance(local_reader, reader.CSVParser):
+        first_row = local_reader.csvreader.fieldnames        
+    else:
+        #default to the original behavior if a new type of parser for lack of anything better
+        first_row = rows.next().keys()
+    
+    tmp = []
+    for r in validation_rows:
+        tmp.append(ROW_DELIMITER.join([str(r[x]) for x in first_row]))
+    
+        
+    import_file.cached_second_to_fifth_row = "\n".join(tmp)
+    
     if first_row:
         first_row = ROW_DELIMITER.join(first_row)
     import_file.cached_first_row = first_row or ''
