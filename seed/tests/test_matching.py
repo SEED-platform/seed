@@ -31,4 +31,13 @@ class NormalizeStreetAddressTest(TestCase):
     def test_integer_address(self):
         normalized_addr = _normalize_address_str(123)
         self.assertEqual('123', normalized_addr)
-
+    
+    def test_strip_leading_zeros(self):
+        """
+        Some of the addresses we receive have leading zeros.
+        E.G. 240102 N Hazel Alley might be 0000240102 N Hazel Alley
+        This tests the change to _normaliz
+        """
+        normalized_addr = _normalize_address_str("0000123")
+        self.assertEqual(normalized_addr, "123")
+        

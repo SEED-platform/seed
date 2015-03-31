@@ -888,7 +888,7 @@ def _normalize_address_str(address_val):
         return None
 
     if 'house' in addr and addr['house'] is not None:
-        normalized_address = addr['house']
+        normalized_address = addr['house'].lstrip("0") #some addresses have leading zeros, strip them here
 
     if 'street_name' in addr and addr['street_name'] is not None:
         normalized_address = normalized_address + ' ' + addr['street_name']
