@@ -5,7 +5,7 @@ Run utility functions from a command-line driver
 import argparse
 import logging
 import sys
-from seed.common import util, mapper
+from seed.common import util
 
 DEBUG = True
 
@@ -29,6 +29,10 @@ def apply_map(args):
     out_fp = sys.stdout if args.output == '-' else open(args.output, "w")
     util.apply_map(args.mapping, args.data, out_fp)
 
+def find_duplicates(args):
+    out_fp = sys.stdout
+    util.find_duplicates(args.mapping, args.data, out_fp)
+
 def main():
     p = argparse.ArgumentParser()
     subp = p.add_subparsers()
@@ -43,6 +47,11 @@ def main():
     p2.add_argument("data", help="CSV data file")
     p2.add_argument("output", help="CSV output file")
     p2.set_defaults(func=apply_map)
+    # command: dup => find duplicates in a mapping
+    p3 = subp.add_parser("dup", help="Apply a mapping to data")
+    p3.add_argument("mapping", help="JSON mapping file")
+    p3.add_argument("data", help="CSV data file")
+    p3.set_defaults(func=find_duplicates)
     # parse & run
     args = p.parse_args()
     result = 0

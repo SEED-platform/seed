@@ -6,13 +6,14 @@ Standard Energy Efficiency Data (SEED)
 Getting Started:
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   install
-   api
-   license
-   data_model
-   help
+    install
+    api
+    data_model
+    How mapping works <mapping>
+    license
+    help
 
 
 Updating this documentation

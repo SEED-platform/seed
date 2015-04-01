@@ -28,7 +28,8 @@ from mcm import cleaners, mapper, reader
 from mcm.data.ESPM import espm as espm_schema
 from mcm.data.SEED import seed as seed_schema
 from mcm.utils import batch
-import ngram
+# import ngram
+from streetaddress import StreetAddressParser
 
 from data_importer.models import (
     ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
@@ -629,13 +630,28 @@ def cache_first_rows(import_file, parser):
         if row:
             validation_rows.append(row)
 
-    import_file.cached_second_to_fifth_row = "\n".join(
-        [
-            ROW_DELIMITER.join(map(lambda x: str(x), r.values()))
-            for r in validation_rows
-        ]
-    )
-    first_row = rows.next().keys()
+    #This is a fix for issue #24 to use original field order when importing
+    #This is ultimately not the correct place for this fix.  The correct fix 
+    #is to update the mcm code to a newer version where the readers in mcm/reader.py
+    #have a headers() function defined and then just do
+    #first_row = paserser.headers()
+    #But until we can patch the mcm code this should fix the issue.
+    local_reader = parser.reader
+    if isinstance(local_reader, reader.ExcelParser):
+        first_row = local_reader.sheet.row_values(local_reader.header_row)        
+    elif isinstance(local_reader, reader.CSVParser):
+        first_row = local_reader.csvreader.fieldnames        
+    else:
+        #default to the original behavior if a new type of parser for lack of anything better
+        first_row = rows.next().keys()
+    
+    tmp = []
+    for r in validation_rows:
+        tmp.append(ROW_DELIMITER.join([str(r[x]) for x in first_row]))
+    
+        
+    import_file.cached_second_to_fifth_row = "\n".join(tmp)
+    
     if first_row:
         first_row = ROW_DELIMITER.join(first_row)
     import_file.cached_first_row = first_row or ''
@@ -745,7 +761,7 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
     building_pk = unmatched_list[b_idx][0]  # First element is PK
 
     bs = save_snapshot_match(
-        can_snap_pk, building_pk, confidence=confidence, match_type=match_type
+        can_snap_pk, building_pk, confidence=confidence, match_type=match_type, default_pk=building_pk
     )
     canon = bs.canonical_building
     AuditLog.objects.create(
@@ -839,7 +855,8 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
             unmatched_bs.pk,
             confidence=0.9,  # TODO(gavin) represent conf better.
             match_type=SYSTEM_MATCH,
-            user=import_file.import_record.owner
+            user=import_file.import_record.owner,
+            default_pk=unmatched_bs.pk
         )
         canon = unmatched_bs.canonical_building
         canon.canonical_snapshot = unmatched_bs
@@ -863,17 +880,62 @@ def _finish_matching(import_file, progress_key):
     cache.set(progress_key, 100)
 
 
+def _normalize_address_str(address_val):
+    """
+    Normalize the address to conform to short abbreviations.
+
+    If an invalid address_val is provided, None is returned.
+
+    If a valid address is provided, a normalized version is returned.
+    """
+
+    # if this string is empty the regular expression in the sa wont
+    # like it, and fail, so leave returning nothing
+    if not address_val:
+        return None
+
+    # now parse the address into number, street name and street type
+    parser = StreetAddressParser()
+    addr = parser.parse(str(address_val))  # TODO: should probably use unicode()
+    normalized_address = ''
+
+    if not addr:
+        return None
+
+    if 'house' in addr and addr['house'] is not None:
+        normalized_address = addr['house'].lstrip("0") #some addresses have leading zeros, strip them here
+
+    if 'street_name' in addr and addr['street_name'] is not None:
+        normalized_address = normalized_address + ' ' + addr['street_name']
+
+    if 'street_type' in addr and addr['street_type'] is not None:
+        normalized_address = normalized_address + ' ' + addr['street_type']
+
+    return normalized_address.lower().strip()
+
+
+def _findMatches(un_m_address,canonical_buildings_addresses):
+    match_list = []
+    if not un_m_address:
+        return match_list
+    for cb in canonical_buildings_addresses:
+        if un_m_address.lower()==cb.lower(): #this second lower may be obsolete now
+            match_list.append((un_m_address, 1))
+    return  match_list    
+
+
 @task
 @lock_and_track
 def _match_buildings(file_pk, user_pk):
     """ngram search against all of the canonical_building snapshots for org."""
+#     assert True
     min_threshold = settings.MATCH_MIN_THRESHOLD
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
     org = Organization.objects.filter(
         users=import_file.import_record.owner
     )[0]
-
+    test=''
     unmatched_buildings = find_unmatched_buildings(import_file)
 
     newly_matched_building_pks = []
@@ -891,11 +953,17 @@ def _match_buildings(file_pk, user_pk):
     if not unmatched_buildings:
         _finish_matching(import_file, prog_key)
         return
-
-    # Here we want all the values not related to the BS id for doing comps.
-    unmatched_ngrams = [
-        _stringify(list(values)[1:]) for values in unmatched_buildings
+    #here we are going to normalize the addresses to match on address_1 field, this is not ideal because you could match on two locations with same address_1 but different city
+#     unmatched_normalized_addresses=[]
+    
+    unmatched_normalized_addresses = [
+        _normalize_address_str(unmatched[4]) for unmatched in unmatched_buildings
     ]
+    # Here we want all the values not related to the BS id for doing comps.
+    # dont do this now
+#     unmatched_ngrams = [
+#         _stringify(list(values)[1:]) for values in unmatched_buildings
+#     ]
 
     canonical_buildings = find_canonical_building_values(org)
     if not canonical_buildings:
@@ -904,7 +972,7 @@ def _match_buildings(file_pk, user_pk):
         hydrated_unmatched_buildings = BuildingSnapshot.objects.filter(
             pk__in=[item[0] for item in unmatched_buildings]
         )
-        num_unmatched = len(unmatched_ngrams) or 1
+        num_unmatched = len(unmatched_normalized_addresses) or 1
         increment = 1.0 / num_unmatched * 100
         for (i, unmatched) in enumerate(hydrated_unmatched_buildings):
             initialize_canonical_building(unmatched, user_pk)
@@ -913,25 +981,36 @@ def _match_buildings(file_pk, user_pk):
 
         _finish_matching(import_file, prog_key)
         return
-
+    #print value[]
+    
     # This allows us to retrieve the PK for a given NGram after a match.
     can_rev_idx = {
-        _stringify(value[1:]): value[0] for value in canonical_buildings
+        _normalize_address_str(value[4]): value[0] for value in canonical_buildings
     }
-    n = ngram.NGram(
-        [_stringify(values[1:]) for values in canonical_buildings]
-    )
-
+    # (SD) This loads up an ngram object with all the canonical buildings. The values are the lists of identifying data for each building
+    # (SD) the stringify is given all but the first item in the values list and it concatenates each item with a space in the middle
+    
+    #we no longer need to
+#     n = ngram.NGram(
+#         [_stringify(values[1:]) for values in canonical_buildings]
+#     )
+    #here we are going to normalize the addresses to match on address_1 field, this is not ideal because you could match on two locations with same address_1 but different city
+    canonical_buildings_addresses = [
+        _normalize_address_str(values[4]) for values in canonical_buildings
+    ]
     # For progress tracking
-
-    num_unmatched = len(unmatched_ngrams) or 1
-    increment = 1.0 / num_unmatched * 100
+# sd we now use the address
+#    num_unmatched = len(unmatched_ngrams) or 1
+    num_unmatched = len(unmatched_normalized_addresses) or 1
+    #this code below seemed to be unclear when I was debugging so I added the brackets
+    increment = (1.0 / num_unmatched) * 100
 
     # PKs when we have a match.
     import_file.mapping_completion = 0
     import_file.save()
-    for i, building in enumerate(unmatched_ngrams):
-        results = n.search(building, min_threshold)
+    # this section spencer changed to make the exact match
+    for i,un_m_address in enumerate(unmatched_normalized_addresses):
+        results =_findMatches(un_m_address,canonical_buildings_addresses)
         if results:
             handle_results(
                 results, i, can_rev_idx, unmatched_buildings, user_pk
@@ -948,7 +1027,9 @@ def _match_buildings(file_pk, user_pk):
             import_file.save()
 
     _finish_matching(import_file, prog_key)
+    
     return {'status': 'success'}
+    
 
 
 @task

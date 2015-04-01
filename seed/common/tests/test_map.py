@@ -61,3 +61,8 @@ def test_units(jsonfile):
     assert m['caret ft^2'].field == 'value8'
     assert m['super ft_'].field == 'value9'
     assert m[(u"super ft" + u'\u00B2').encode('latin_1')].field == 'value9'
+
+def test_mapping_conf():
+    conf = mapper.MappingConfiguration()
+    pm_mapping = conf.pm((1,0))
+    assert isinstance(pm_mapping, mapper.Mapping)

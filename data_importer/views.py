@@ -6,6 +6,7 @@ import base64
 import json
 import hmac
 import hashlib
+import logging
 
 from annoying.decorators import ajax_request
 from django.conf import settings
@@ -21,6 +22,7 @@ from seed.utils.api import api_endpoint
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ImproperlyConfigured
 
+_log = logging.getLogger(__name__)
 
 @api_endpoint
 @ajax_request
@@ -40,6 +42,9 @@ def handle_s3_upload_complete(request):
 
         source_type: The source of the file.
             E.g. 'Assessed Raw' or 'Portfolio Raw'
+
+        source_program: Optional value from common.mapper.Programs
+        source_version: e.g. "4.1"
 
         import_record: The ID of the ImportRecord this file belongs to.
 
@@ -63,10 +68,16 @@ def handle_s3_upload_complete(request):
 
     filename = request.REQUEST['key']
     source_type = request.REQUEST['source_type']
+    # Add Program & Version fields (empty string if not given)
+    kw_fields = {field:request.REQUEST.get(field, '')
+        for field in ['source_program', 'source_program_version']}
 
     f = ImportFile.objects.create(import_record=record,
                                   file=filename,
-                                  source_type=source_type)
+                                  source_type=source_type,
+                                  **kw_fields)
+    _log.info("Created ImportFile. kw_fields={} from-PM={}"
+              .format(kw_fields, f.from_portfolio_manager))
     return {'success': True, "import_file_id": f.pk}
 
 
@@ -100,9 +111,18 @@ class DataImportBackend(LocalUploadBackend):
 
         source_type = request.REQUEST['source_type']
 
+        # Add Program & Version fields (empty string if not given)
+        kw_fields = {field: request.REQUEST.get(field, '')
+                     for field in ['source_program', 'source_program_version']}
+
         f = ImportFile.objects.create(import_record=record,
                                       file=self.path,
-                                      source_type=source_type)
+                                      source_type=source_type,
+                                      **kw_fields)
+
+        _log.info("Created ImportFile. kw_fields={} from-PM={}"
+                  .format(kw_fields, f.from_portfolio_manager))
+
         return {'success': True, "import_file_id": f.pk}
 
 #this actually creates the django view for handling local file uploads.

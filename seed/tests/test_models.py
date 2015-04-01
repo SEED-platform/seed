@@ -249,8 +249,8 @@ class TestBuildingSnapshot(TestCase):
 
         test_mapping, _ = seed_models.get_column_mappings(org)
         self.assertDictEqual(test_mapping, expected)
-
-    def test_save_snapshot_match(self):
+        
+    def _check_save_snapshot_match_with_default(self, default_pk):
         """Test good case for saving a snapshot match."""
         self.assertEqual(seed_models.BuildingSnapshot.objects.all().count(), 2)
         bs2_canon = seed_models.CanonicalBuilding.objects.create(
@@ -259,17 +259,19 @@ class TestBuildingSnapshot(TestCase):
 
         self.bs2.canonical_building = bs2_canon
         self.bs2.save()
+        
+        default_building = self.bs1 if default_pk == self.bs1.pk else self.bs2
 
         seed_models.save_snapshot_match(
-            self.bs1.pk, self.bs2.pk, confidence=0.9, user=self.fake_user
+            self.bs1.pk, self.bs2.pk, confidence=0.9, user=self.fake_user, default_pk=default_pk
         )
         # We made an entirely new snapshot!
         self.assertEqual(seed_models.BuildingSnapshot.objects.all().count(), 3)
         result = seed_models.BuildingSnapshot.objects.all()[0]
         # Affirm that we give preference to the first BS passed
         # into our method.
-        self.assertEqual(result.property_name, self.bs1.property_name)
-        self.assertEqual(result.property_name_source, self.bs1)
+        self.assertEqual(result.property_name, default_building.property_name)
+        self.assertEqual(result.property_name_source, default_building)
 
         # Ensure that we transfer the meter relationship to merged children.
         self.assertEqual([r.pk for r in result.meters.all()], [self.meter.pk])
@@ -287,6 +289,14 @@ class TestBuildingSnapshot(TestCase):
         )
         refreshed_bs2_canon = refreshed_bs2.canonical_building
         self.assertFalse(refreshed_bs2_canon.active)
+
+    def test_save_snapshot_match_default_to_first_building(self):
+        """Test good case for saving a snapshot match with the first building as default."""
+        self._check_save_snapshot_match_with_default(self.bs1.pk)
+        
+    def test_save_snapshot_match_default_to_second_building(self):
+        """Test good case for saving a snapshot match with the second building as default."""
+        self._check_save_snapshot_match_with_default(self.bs2.pk)
 
     def test_merge_extra_data_no_data(self):
         """Test edgecase where there is no extra_data to merge."""
