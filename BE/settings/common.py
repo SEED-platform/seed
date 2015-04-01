@@ -269,7 +269,9 @@ NOSE_PLUGINS = [
 
 # Django 1.5+ way of doing user profiles
 AUTH_USER_MODEL = 'landing.SEEDUser'
-NOSE_ARGS = ['--exclude-dir=libs/dal', '--exclude-dir=data_importer']
+NOSE_ARGS = ['--exclude-dir=libs/dal',
+             '--exclude-dir=data_importer',
+             '--exclude-dir=seed/common']
 
 
 # Matching Settings

@@ -28,8 +28,9 @@ from mcm import cleaners, mapper, reader
 from mcm.data.ESPM import espm as espm_schema
 from mcm.data.SEED import seed as seed_schema
 from mcm.utils import batch
-import ngram
-import streetaddress as sa
+# import ngram
+from streetaddress import StreetAddressParser
+
 from data_importer.models import (
     ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
 )
@@ -629,13 +630,28 @@ def cache_first_rows(import_file, parser):
         if row:
             validation_rows.append(row)
 
-    import_file.cached_second_to_fifth_row = "\n".join(
-        [
-            ROW_DELIMITER.join(map(lambda x: str(x), r.values()))
-            for r in validation_rows
-        ]
-    )
-    first_row = rows.next().keys()
+    #This is a fix for issue #24 to use original field order when importing
+    #This is ultimately not the correct place for this fix.  The correct fix 
+    #is to update the mcm code to a newer version where the readers in mcm/reader.py
+    #have a headers() function defined and then just do
+    #first_row = paserser.headers()
+    #But until we can patch the mcm code this should fix the issue.
+    local_reader = parser.reader
+    if isinstance(local_reader, reader.ExcelParser):
+        first_row = local_reader.sheet.row_values(local_reader.header_row)        
+    elif isinstance(local_reader, reader.CSVParser):
+        first_row = local_reader.csvreader.fieldnames        
+    else:
+        #default to the original behavior if a new type of parser for lack of anything better
+        first_row = rows.next().keys()
+    
+    tmp = []
+    for r in validation_rows:
+        tmp.append(ROW_DELIMITER.join([str(r[x]) for x in first_row]))
+    
+        
+    import_file.cached_second_to_fifth_row = "\n".join(tmp)
+    
     if first_row:
         first_row = ROW_DELIMITER.join(first_row)
     import_file.cached_first_row = first_row or ''
@@ -863,27 +879,41 @@ def _finish_matching(import_file, progress_key):
     import_file.save()
     cache.set(progress_key, 100)
 
+
 def _normalize_address_str(address_val):
-    """Normalize the address to conform to short abbreviations."""
-    #if this string is empty the regular expression in the sa wont like it, and fail, so leave returning nothing
+    """
+    Normalize the address to conform to short abbreviations.
+
+    If an invalid address_val is provided, None is returned.
+
+    If a valid address is provided, a normalized version is returned.
+    """
+
+    # if this string is empty the regular expression in the sa wont
+    # like it, and fail, so leave returning nothing
     if not address_val:
-        return
-    # so the parse function uses a regular expression defined in Regexes to make sure that the address conforms to a standard format, 
-    # the function does not recognize an address unless it has more than just  an address line, so this hack below adds a fake post code, 
-    # a more elegant solution would be to  change the regular expression so that a simple address is ok
-    address_val=address_val +', 95472'
-    #now parse the address into number, street name and street type, and normalize all street types to be
-    addr=sa.parse(address_val)
+        return None
+
+    # now parse the address into number, street name and street type
+    parser = StreetAddressParser()
+    addr = parser.parse(str(address_val))  # TODO: should probably use unicode()
+    normalized_address = ''
+
     if not addr:
-        return
-    if addr.has_key('number'): 
-        NormalizedAddress=addr['number']
-    if addr.has_key('street'): 
-        NormalizedAddress=NormalizedAddress+' '+addr['street']  
-    if addr.has_key('type'):
-        NormalizedAddress=NormalizedAddress+' '+addr['type']    
-    return NormalizedAddress.lower()
-    
+        return None
+
+    if 'house' in addr and addr['house'] is not None:
+        normalized_address = addr['house'].lstrip("0") #some addresses have leading zeros, strip them here
+
+    if 'street_name' in addr and addr['street_name'] is not None:
+        normalized_address = normalized_address + ' ' + addr['street_name']
+
+    if 'street_type' in addr and addr['street_type'] is not None:
+        normalized_address = normalized_address + ' ' + addr['street_type']
+
+    return normalized_address.lower().strip()
+
+
 def _findMatches(un_m_address,canonical_buildings_addresses):
     match_list = []
     if not un_m_address:

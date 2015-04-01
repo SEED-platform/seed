@@ -101,7 +101,7 @@ try:
     NOSE_PLUGINS = [
         'nose_exclude.NoseExclude',
     ]
-    NOSE_ARGS = ['--exclude-dir=data_importer']
+    NOSE_ARGS = ['--exclude-dir=data_importer', '--exclude-dir=seed/common']
 
 except:
     if "collectstatic" not in sys.argv:
