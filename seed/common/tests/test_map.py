@@ -66,3 +66,13 @@ def test_mapping_conf():
     conf = mapper.MappingConfiguration()
     pm_mapping = conf.pm((1,0))
     assert isinstance(pm_mapping, mapper.Mapping)
+
+def test_mapping_pm_bedes():
+    expected = {"Address 1": "Address Line 1",
+                "Property ID": "PM Property ID",
+                "Portfolio Manager Property ID":
+                    "Portfolio Manager Property Identifier"}
+    pm = mapper.get_pm_mapping("1.0", expected.keys())
+    for src, tgt in expected.items():
+        assert pm[src].field == tgt
+        assert pm[src].is_bedes == True
