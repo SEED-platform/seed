@@ -489,34 +489,21 @@ angular.module('BE.seed.controller.mapping', [])
      * monitor_typeahead_list: decide if duplicate checking is required in
      * order to enable or disable map data button
      */
-    $scope.monitor_typeahead_list =function() {
-      var dropdown = angular.element('.dropdown-menu.ng-scope');
 
+    $scope.monitor_typeahead_list =function() {
       //if dropdown menu is not shown - i.e., the user has typed
       //a new field name and a duplicate field is encountered in the
       //header fields list do a dups check. otherwise disable the button
-      if($scope.duplicates.length > 0) {
-        for(var i=0; i < $scope.duplicates.length; i++) {
-          if($scope.duplicates[i].is_duplicate) {
-            return true;
-          }
+      var dropdown = angular.element('.dropdown-menu.ng-scope');
+
+      if(dropdown.length == 0 || dropdown.css('display') == 'none') {
+        $('.header-field').each(function(){
+
+        if(!$(this).is(input_focus) && $(this).val() == input_focus.val()) {
+          return $scope.duplicates_present();
         }
       }
-      else {
-        if(dropdown.length == 0 || dropdown.css('display') == 'none') {
-          var input_focus = $(document.activeElement);
-
-          $('.header-field').each(function(){
-
-            if(!$(this).is(input_focus) && $(this).val() == input_focus.val()) {
-              return $scope.duplicates_present();
-            }
-          });
-          
-        }
-
-        else return true;
-      }
+      else return true;
     };
 
     /*
