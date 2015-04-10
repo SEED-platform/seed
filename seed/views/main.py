@@ -1181,38 +1181,34 @@ def get_column_mapping_suggestions(request):
         }
     column_types.update(db_columns)
 
-    # All inputs
+    # Portfolio manager files have their own mapping scheme
     if import_file.from_portfolio_manager:
         _log.info("map Portfolio Manager input file")
-    suggested_mappings = {}
-    ver = import_file.source_program_version
-    for col, item in simple_mapper.get_pm_mapping(
-            ver, import_file.first_row_columns,
-            include_none=True).items():
-        if item is None:
-            suggested_mappings[col] = (col, 0)
-        else:
-            cleaned_field = item.field.replace('-', ' ')
-            suggested_mappings[col] = (cleaned_field, 100)
+        suggested_mappings = {}
+        ver = import_file.source_program_version
+        for col, item in simple_mapper.get_pm_mapping(
+                ver, import_file.first_row_columns,
+                include_none=True).items():
+            if item is None:
+                suggested_mappings[col] = (col, 0)
+            else:
+                cleaned_field = item.field.replace('-', ' ')
+                suggested_mappings[col] = (cleaned_field, 100)
 
-    # This old, "fuzzy" matching procedure has been completely
-    # removed. However, the previous_mapping part of it will be
-    # restored in future versions.
-    # else:
+    else:
     #     # All other input types
-    #     suggested_mappings = mapper.build_column_mapping(
-    #         import_file.first_row_columns,
-    #         column_types.keys(),
-    #         previous_mapping=get_column_mapping,
-    #         map_args=[import_file.import_record.super_organization],
-    #         thresh=20  # percentage match we require
-    #     )
-    #     # replace None with empty string for column names
-    #     for m in suggested_mappings:
-    #         dest, conf = suggested_mappings[m]
-    #         if dest is None:
-    #             suggested_mappings[m][0] = u''
-
+        suggested_mappings = mapper.build_column_mapping(
+             import_file.first_row_columns,
+             column_types.keys(),
+             previous_mapping=get_column_mapping,
+             map_args=[import_file.import_record.super_organization],
+             thresh=20  # percentage match we require
+         )
+        # replace None with empty string for column names
+        for m in suggested_mappings:
+            dest, conf = suggested_mappings[m]
+            if dest is None:
+                suggested_mappings[m][0] = u''
     result['suggested_column_mappings'] = suggested_mappings
     result['building_columns'] = building_columns
     result['building_column_types'] = column_types
