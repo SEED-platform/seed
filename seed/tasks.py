@@ -641,6 +641,7 @@ def cache_first_rows(import_file, parser):
         first_row = local_reader.sheet.row_values(local_reader.header_row)        
     elif isinstance(local_reader, reader.CSVParser):
         first_row = local_reader.csvreader.fieldnames        
+        first_row = [local_reader._clean_super(x) for x in first_row]
     else:
         #default to the original behavior if a new type of parser for lack of anything better
         first_row = rows.next().keys()
