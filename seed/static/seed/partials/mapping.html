@@ -37,8 +37,8 @@
 	    			<p>Do the selected SEED headers map correctly to the data from your columns? If not, go back to mapping and edit your selections. It's important at this step that you are confident in your mapping decisions. When you move onto the next step: 'Data Matching', the buildings from this data set will be available in your buildings list but you will no longer be able to edit the data mappings.</p>
 	    		</div>
 	    		<div class="col-lg-5 col-sm-5 key tab_content wide">
-	    			<p class="tip"><strong>EDIT COLUMNS</strong></p>
-	    			<p>You can customize the columns displayed in the table below by clicking the 'Edit Columns' button and then selecting the column headers you want to review from the modal window.</p>
+	    			<p class="tip"><strong>VIEW/HIDE COLUMNS</strong></p>
+	    			<p>You can customize the columns displayed in the table below by clicking the 'View/Hide Columns' button and then selecting the column headers you want to review from the modal window.</p>
 	    		</div>
 	    	</div>
 	    </tab>
@@ -184,7 +184,7 @@
 	            <button type="button" class="btn btn-primary" ng-click="review_mappings=false; show_mapped_buildings=false"><i class="fa fa-chevron-left"></i> Back to Mapping</button>
             </div>
             <div class="right_wide section_action_container section_action_btn">
-            	<button type="button" class="btn btn-default" ng-click="open_edit_columns_modal()"><i class="fa fa-columns"></i>Edit Columns</button>
+            	<button type="button" class="btn btn-default" ng-click="open_edit_columns_modal()"><i class="fa fa-columns"></i>View/Hide Columns</button>
             	<a ng-href="#/data/mapping/{$ import_file.id $}"><button type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button></a>
             </div>
         </div>
