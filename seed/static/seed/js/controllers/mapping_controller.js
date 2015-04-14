@@ -534,6 +534,16 @@ angular.module('BE.seed.controller.mapping', [])
       return false;
     };
 
+    $scope.disable_mapping_button = function() {
+      if(angular.element('.disable-mapping-btn').length > 0) {
+        angular.element('.mapping-button').prop('disabled', true);
+        console.log('here');
+      }
+      else {
+        angular.element('.mapping-button').prop('disabled', false);
+      }
+    };
+
     /**
      * open_edit_columns_modal: modal to set which columns a user has in the
      *   table
