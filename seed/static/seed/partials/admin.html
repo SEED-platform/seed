@@ -124,7 +124,7 @@
                                 <div class="form-group">
                                     <label class="col-sm-4 control-label" for="add_emails">Add user to organization:</label>
                                     <div class="col-sm-8">
-                                        <select name="user_emails" class="form-control" id="user_emails" ng-options="u as u.email for u in org.users" ng-model="org_user.user" ></select>
+                                        <select name="user_emails" class="form-control" id="user_emails" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org_user.user" ></select>
                                     </div>
                                 </div>
                                 <div class="form-group">
