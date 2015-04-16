@@ -29,7 +29,7 @@ from mcm.data.ESPM import espm as espm_schema
 from mcm.data.SEED import seed as seed_schema
 from mcm.utils import batch
 # import ngram
-from streetaddress import StreetAddressParser
+from streetaddress import StreetAddressParser, StreetAddressFormatter
 
 from data_importer.models import (
     ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
@@ -912,6 +912,9 @@ def _normalize_address_str(address_val):
     if 'street_type' in addr and addr['street_type'] is not None:
         normalized_address = normalized_address + ' ' + addr['street_type']
 
+    formatter = StreetAddressFormatter()
+    normalized_address = formatter.abbrev_street_avenue_etc(normalized_address)
+ 
     return normalized_address.lower().strip()
 
 
