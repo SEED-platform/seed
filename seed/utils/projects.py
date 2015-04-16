@@ -96,7 +96,7 @@ def apply_label(project_slug, buildings, select_all, label, search_params,
     """adds or updates a label for a ProjectBuilding related to a
        project and building in the buildings list of source_facility_ids
 
-       :param project_slug: str, a slug to get a Project isnt.
+       :param project_slug: str, a slug to get a Project inst.
        :param buildings: list, list of source_facility_id as str to get
        BuildingSnapshot inst.
        :param select_all: bool, if the select all checkbox was
@@ -136,8 +136,8 @@ def transfer_buildings(source_project_slug, target_project_slug, buildings,
                        select_all, search_params, user, copy_flag=False):
     """copies or moves buildings from one project to another
 
-       :param source_project_slug: str, a slug to get a Project isnt.
-       :param target_project_slug: str, a slug to get a Project isnt.
+       :param source_project_slug: str, a slug to get a Project inst.
+       :param target_project_slug: str, a slug to get a Project inst.
        :param buildings: list, list of source_facility_id as str to get
        BuildingSnapshot inst.
        :param select_all: bool, if the select all checkbox was
@@ -171,8 +171,8 @@ def copy_buildings(source_project, target_project, buildings,
                    select_all, search_params, user):
     """copies buildings from source project to target project
 
-       :param source_project_slug: str, a slug to get a Project isnt.
-       :param target_project_slug: str, a slug to get a Project isnt.
+       :param source_project_slug: str, a slug to get a Project inst.
+       :param target_project_slug: str, a slug to get a Project inst.
        :param buildings: list, list of source_facility_id as str to get
        BuildingSnapshot inst.
        :param select_all: bool, if the select all checkbox was
@@ -204,8 +204,8 @@ def move_buildings(source_project, target_project, buildings,
                    select_all, search_params, user):
     """moves buildings from source project to target project
 
-       :param source_project_slug: str, a slug to get a Project isnt.
-       :param target_project_slug: str, a slug to get a Project isnt.
+       :param source_project_slug: str, a slug to get a Project inst.
+       :param target_project_slug: str, a slug to get a Project inst.
        :param buildings: list, list of source_facility_id as str to get
        BuildingSnapshot inst.
        :param select_all: bool, if the select all checkbox was
@@ -231,7 +231,7 @@ def delete_matching_buildings(project, buildings,
                               select_all, search_params, user):
     """deletes buildings in a project that match search search params
 
-       :param project_slug: str, a slug to get a Project isnt.
+       :param project_slug: str, a slug to get a Project inst.
        :param buildings: list, list of source_facility_id as str to get
        BuildingSnapshot inst.
        :param select_all: bool, if the select all checkbox was
@@ -260,8 +260,8 @@ def get_transfer_buildings(source_project, target_project, buildings,
                            select_all, search_params, user):
     """generates move or copy buildings queryset
 
-       :param source_project_slug: str, a slug to get a Project isnt.
-       :param target_project_slug: str, a slug to get a Project isnt.
+       :param source_project_slug: str, a slug to get a Project inst.
+       :param target_project_slug: str, a slug to get a Project inst.
        :param buildings: list, list of source_facility_id as str to get
        BuildingSnapshot inst.
        :param select_all: bool, if the select all checkbox was

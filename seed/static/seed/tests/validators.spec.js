@@ -38,7 +38,7 @@ describe("The MappingValidatorService", function() {
         expect(mvs.validate(date_data, 'date')).toEqual(['huh?']);
     });
 
-    it('recongnizes invalid data', function() {
+    it('recognizes invalid data', function() {
         // Cases where the data is *all* wrong.
         var float_data = ['', 'not a float', 'NaN'];
         var date_data = ['', 'huh?', 'what?'];

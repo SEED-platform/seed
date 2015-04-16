@@ -503,7 +503,7 @@ angular.module('BE.seed.controller.mapping', [])
         }
       }
       else {
-        if(dropdown.length == 0 || dropdown.css('display') == 'none') {
+        if(dropdown.length === 0 || dropdown.css('display') == 'none') {
           var input_focus = $(document.activeElement);
 
           $('.header-field').each(function(){

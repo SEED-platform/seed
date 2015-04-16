@@ -58,7 +58,7 @@ describe("controller: data_upload_modal_ctrl", function(){
                     return $q.when(
                         {
                             "status": "success",
-                            "progress": "25.0",
+                            "progress": "25.0"
                         }
                     );
                 }
@@ -92,13 +92,13 @@ describe("controller: data_upload_modal_ctrl", function(){
                         return $q.when(
                             {
                                 "status": "success",
-                                "file_id": 3,
+                                "file_id": 3
                             }
                         );
                     } else {
                         return $q.reject(
                             {
-                                "status": "error",
+                                "status": "error"
                             }
                         );
                     }
@@ -111,13 +111,13 @@ describe("controller: data_upload_modal_ctrl", function(){
                         return $q.when(
                             {
                                 "status": "success",
-                                "file_id": 3,
+                                "file_id": 3
                             }
                         );
                     } else {
                         return $q.reject(
                             {
-                                "status": "error",
+                                "status": "error"
                             }
                         );
                     }
@@ -129,7 +129,7 @@ describe("controller: data_upload_modal_ctrl", function(){
                 return $q.when(
                     {
                         "status": "success",
-                        "file_id": 3,
+                        "file_id": 3
                     }
                 );
             });
@@ -158,7 +158,7 @@ describe("controller: data_upload_modal_ctrl", function(){
      * Test scenarios
      */
 
-    it("should close the modal when the close funtion is called", function() {
+    it("should close the modal when the close function is called", function() {
         // arrange
         create_data_upload_modal_controller();
 
@@ -170,7 +170,7 @@ describe("controller: data_upload_modal_ctrl", function(){
         expect(modal_state).toBe("close");
     });
 
-    it("should cancel the modal when the cancel funtion is called", function() {
+    it("should cancel the modal when the cancel function is called", function() {
         // arrange
         create_data_upload_modal_controller();
 

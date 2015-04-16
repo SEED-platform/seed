@@ -67,8 +67,8 @@ window.BE.apps.seed = angular.module('BE.seed', ['ngRoute', "ngCookies"], functi
 );
 ```
 
-#### Django CSFR token and AJAX requests
-For ease of making angular `$http` requests, we automatically add the CSFR token to all `$http` requests as recommended by http://django-angular.readthedocs.org/en/latest/integration.html#xmlhttprequest
+#### Django CSRF token and AJAX requests
+For ease of making angular `$http` requests, we automatically add the CSRF token to all `$http` requests as recommended by http://django-angular.readthedocs.org/en/latest/integration.html#xmlhttprequest
 
 ```
 window.BE.apps.seed.run(function ($http, $cookies) {

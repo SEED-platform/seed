@@ -15,11 +15,11 @@ class SEEDFactory(DjangoFunctionalFactory):
         """creates an BuildingSnapshot inst.
 
            if canonical_building (CanonicalBuilding inst.) is None, then a
-           CanonicalBuilding inst. is created and a BuildingSnapshot isnt. is
+           CanonicalBuilding inst. is created and a BuildingSnapshot inst. is
            created and linked to the CanonicalBuilding inst.
 
            Usage:
-            ab = SEEDFactory.assessed_buidling()
+            ab = SEEDFactory.assessed_building()
             cb = ab.canonical_building
             b_snapshot = cb.canonical_snapshot
             print ab.year_built == b_snapshot.year_built  # True

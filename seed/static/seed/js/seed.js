@@ -16,8 +16,8 @@ angular.module('BE.seed.vendor_dependencies', [
 angular.module('BE.seed.controllers', [
     'BE.seed.controller.accounts',
     'BE.seed.controller.admin',
-    'BE.seed.controller.buiding_detail',
-    'BE.seed.controller.buiding_list',
+    'BE.seed.controller.building_detail',
+    'BE.seed.controller.building_list',
     'BE.seed.controller.buildings_settings',
     'BE.seed.controller.concat_modal',
     'BE.seed.controller.create_note_modal',
@@ -54,7 +54,7 @@ angular.module('BE.seed.filters', [
 angular.module('BE.seed.directives', [
     'beEnter',
     'beUploader',
-    'beLabel',
+    'beLabel'
     ]);
 angular.module('BE.seed.services', [
     'BE.seed.service.audit',

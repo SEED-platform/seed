@@ -36,7 +36,7 @@ angular.module('BE.seed.controller.concat_modal', [])
         var target_raw_data = [];
         // This is where we'll store intermediate data before we concat
         var concat_data = [
-            [], [], [], [], [],
+            [], [], [], [], []
         ];
         for (var i = 0; i < $scope.concat_columns.length; i++) {
             $scope.concat_columns[i].is_concat_parameter = true;

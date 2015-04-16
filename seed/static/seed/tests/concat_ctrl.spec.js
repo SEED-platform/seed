@@ -49,7 +49,7 @@ describe("controller: concat_modal_ctrl", function(){
             suggestion: 'city',
             confidence: 1,
             raw_data: [
-                'Mega City', 'Mega City', 'Mega City', 'Mega City', 'Mega City',
+                'Mega City', 'Mega City', 'Mega City', 'Mega City', 'Mega City'
             ],
             is_concatenated: false,
             is_a_concat_parameter: false
@@ -59,11 +59,11 @@ describe("controller: concat_modal_ctrl", function(){
             suggestion: '',
             confidence: 0,
             raw_data: [
-                '234233', '234233', '234233', '234233', '234233',
+                '234233', '234233', '234233', '234233', '234233'
             ],
             is_concatenated: false,
             is_a_concat_parameter: false
-        },
+        }
     ];
 
     // this is outside the beforeEach so it can be configured by each unit test
@@ -79,7 +79,7 @@ describe("controller: concat_modal_ctrl", function(){
                 }
             },
             building_column_types: mock_building_column_types,
-            raw_columns: mock_raw_columns,
+            raw_columns: mock_raw_columns
         });
     }
 

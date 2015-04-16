@@ -64,7 +64,7 @@ describe("The beUploader directive", function() {
         expect(func._options.multiple).toBe(false);
     });
 
-    it('Uses the callback function for invalide file types', function() {
+    it('Uses the callback function for invalid file types', function() {
         // arrange
         var element = $compile(uploader_html)($rootScope);
         var func = beUploaderFineUploader($rootScope, element, "", "test_file.jpeg");

@@ -68,7 +68,7 @@ describe("controller: matching_controller", function(){
                 }
             ],
             number_matching_search: 1,
-            number_returned: 1,
+            number_returned: 1
         };
         matching_ctrl = controller('matching_controller', {
             $scope: matching_ctrl_scope,

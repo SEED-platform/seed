@@ -1,7 +1,7 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
-angular.module('BE.seed.controller.buiding_detail', [])
+angular.module('BE.seed.controller.building_detail', [])
 .controller('building_detail_controller', [
   '$scope',
   '$routeParams',

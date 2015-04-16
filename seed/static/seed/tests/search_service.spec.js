@@ -61,7 +61,7 @@ describe("The search_service service", function() {
         });
     });
 
-    it('serach_buildings uses the argument `query`', function() {
+    it('search_buildings uses the argument `query`', function() {
         saas.query = "hotels";
         saas.search_buildings("not hotels");
 
@@ -80,7 +80,7 @@ describe("The search_service service", function() {
         expect(saas.search_buildings).toHaveBeenCalled();
     });
 
-    it('serach_buildings function will default to its query if' +
+    it('search_buildings function will default to its query if' +
         ' no query is passed as an argument', function() {
         saas.query = "hotels";
         saas.search_buildings();
@@ -88,7 +88,7 @@ describe("The search_service service", function() {
         expect(saas.query).toEqual("hotels");
     });
 
-    it('serach_buildings hits the set url', function() {
+    it('search_buildings hits the set url', function() {
         test_url = "/my-search-url";
         saas.url = test_url;
         saas.search_buildings();
@@ -96,7 +96,7 @@ describe("The search_service service", function() {
         httpBackend.flush();
     });
 
-    it('serach_buildings POSTs the query data as `q`', function() {
+    it('search_buildings POSTs the query data as `q`', function() {
         // arrange
         test_url = "https://mytest.com";
         saas.url = test_url;
@@ -126,7 +126,7 @@ describe("The search_service service", function() {
         ).respond(201, "");
         httpBackend.flush();
     });
-    it('serach_buildings updates its `buildings` model', function() {
+    it('search_buildings updates its `buildings` model', function() {
         // arrange
         test_url = "https://mytest.com";
         saas.url = test_url;
@@ -640,10 +640,10 @@ describe("The search_service service", function() {
             all_columns, column_headers, saas.column_prototype
         );
 
-        // assert that columns are extended off the protptype and only have
+        // assert that columns are extended off the prototype and only have
         // "id"
         expect(columns.length).toEqual(1);
-        expect(columns[0]['sort_column']).toEqual("id");
+        expect(columns[0].sort_column).toEqual("id");
         expect(columns[0].is_unsorted()).toEqual(true);
         saas.sort_column = "id";
         expect(columns[0].is_unsorted()).toEqual(false);

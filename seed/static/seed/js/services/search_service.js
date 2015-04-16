@@ -8,10 +8,10 @@
  * initial work: http://plnkr.co/edit/Vm5MR9KYYXl3pkIKyWsd?p=preview
  *
  * search_service: include the module 'BE.seed.service.search' in your app
- *                 to have acces to ``search_service``. ``search_service``
+ *                 to have access to ``search_service``. ``search_service``
  *                 should be extended by a controller's scope to gain access
  *                 to a smattering of common variables and functions needed to
- *                 use a sever-side search. Assuming a table within a
+ *                 use a server-side search. Assuming a table within a
  *                 controller's scope follows the same conventions, extending
  *                 search across an app should be less painful.
  *
