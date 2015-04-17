@@ -2,7 +2,7 @@
 # flake8: noqa
 
 '''
-These field names will have everything in paretheses stripped off and stores internally as units by migration 0030.
+These field names will have everything in parentheses stripped off and stores internally as units by migration 0030.
 So, this file was manually edited to include some of that information in the field name after stripping, causing some redundancy.
 For instance, 'Annual Fuel Use Consistent Units (Consistent Units)'
 '''

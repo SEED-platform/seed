@@ -146,11 +146,11 @@ def add_buildings(project_slug, project_dict, user_pk):
        then the the search parameters within project_dict are used to determine
        the total set
        of buildings.
-       also creates a Compliance inst. if sastifying params are present
+       also creates a Compliance inst. if satisfying params are present
 
        :param str project_slug: a project's slug used to get the project
        :param dict project_dict: contains search params, and browser state
-       infomation
+       information
        :user_pk int or str: the user's pk or id
 
     """
@@ -272,7 +272,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
 
        :param str project_slug: a project's slug used to get the project
        :param dict project_dict: contains search params, and browser state
-           infomation
+           information
        :user_pk int or str: the user's pk or id
     """
     project = Project.objects.get(slug=project_slug)
@@ -362,7 +362,7 @@ def add_cache_increment_parameter(tasks):
     denom = len(tasks) or 1
     increment = 1.0 / denom * 100
     # This is kind of terrible. Once we know how much progress each task
-    # yeilds, we must pass that value into the Signature for the sub tassks.
+    # yields, we must pass that value into the Signature for the sub tasks.
     for _task in tasks:
         _task.args = _task.args + (increment,)
 
@@ -573,7 +573,7 @@ def _map_data(file_pk, *args, **kwargs):
 def map_data(file_pk, *args, **kwargs):
     """Small wrapper to ensure we isolate our mapping process from requests."""
     _map_data.delay(file_pk, *args, **kwargs)
-    return {'status': 'succuss'}
+    return {'status': 'success'}
 
 
 @task
@@ -634,7 +634,7 @@ def cache_first_rows(import_file, parser):
     #This is ultimately not the correct place for this fix.  The correct fix 
     #is to update the mcm code to a newer version where the readers in mcm/reader.py
     #have a headers() function defined and then just do
-    #first_row = paserser.headers()
+    #first_row = parser.headers()
     #But until we can patch the mcm code this should fix the issue.
     local_reader = parser.reader
     if isinstance(local_reader, reader.ExcelParser):
@@ -837,7 +837,7 @@ def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
 
 
 def handle_id_matches(unmatched_bs, import_file, user_pk):
-    """"Deals with exact maches in the IDs of buildings."""
+    """"Deals with exact matches in the IDs of buildings."""
     id_matches = get_canonical_id_matches(
         unmatched_bs.super_organization_id,
         unmatched_bs.pm_property_id,
@@ -1036,7 +1036,7 @@ def _match_buildings(file_pk, user_pk):
 @task
 @lock_and_track
 def _remap_data(import_file_pk):
-    """The delecate parts of deleting and remapping data for a file.
+    """The delicate parts of deleting and remapping data for a file.
 
     :param import_file_pk: int, the ImportFile primary key.
     :param mapping_cache_key: str, the cache key for this file's mapping prog.
@@ -1158,7 +1158,7 @@ def _delete_canonical_buildings(ids, chunk_size=300):
 @task
 def log_deleted_buildings(ids, user_pk, chunk_size=300):
     """
-    AudigLog logs a delete entry for the canonical building or each
+    AuditLog logs a delete entry for the canonical building or each
     BuildingSnapshot in ``ids``
     """
     for del_ids in batch(ids, chunk_size):

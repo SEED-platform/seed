@@ -49,7 +49,7 @@ def lock_and_track(fn, *args, **kwargs):
         lock_key = _get_lock_key(func_name, import_file_pk)
         prog_key = get_prog_key(func_name, import_file_pk)
         is_locked = cache.get(lock_key)
-        # If we're already processig a given task, don't proceed.
+        # If we're already processing a given task, don't proceed.
         if is_locked:
             return {'error': 'locked'}
 

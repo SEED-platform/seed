@@ -23,7 +23,7 @@ angular.module('BE.seed.service.audit', []).factory('audit_service', [
             'params': {
                 'organization_id': user_service.get_organization().id,
                 'building_id': building_id
-            },
+            }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -49,7 +49,7 @@ angular.module('BE.seed.service.audit', []).factory('audit_service', [
                 'organization_id': user_service.get_organization().id,
                 'building_id': building_id,
                 'action_note': action_note
-            },
+            }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -74,7 +74,7 @@ angular.module('BE.seed.service.audit', []).factory('audit_service', [
                 'organization_id': user_service.get_organization().id,
                 'action_note': action_note,
                 'audit_log_id': audit_log_id
-            },
+            }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {

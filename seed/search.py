@@ -29,7 +29,7 @@ def convert_to_js_timestamp(timestamp):
 
 
 def get_building_fieldnames():
-    """returs a list of field names for the BuildingSnapshot class/model that
+    """returns a list of field names for the BuildingSnapshot class/model that
     will be searched against
     """
     return [
@@ -236,7 +236,7 @@ def parse_body(request):
 
     :params request: django wsgi request object
     :returns: dict {
-        'exlude': dict, exclude dict for django queryset
+        'exclude': dict, exclude dict for django queryset
         'order_by': str, query order_by, defaults to 'tax_lot_id'
         'sort_reverse': bool, True if ASC, False if DSC
         'page': int, pagination page
@@ -329,7 +329,7 @@ def build_json_params(order_by, sort_reverse):
 
 
 def get_orgs_w_public_fields():
-    """retrns a list of orgs that have publicly shared fields"""
+    """returns a list of orgs that have publicly shared fields"""
     return list(Organization.objects.filter(
         sharedbuildingfield__field_type=PUBLIC
     ).distinct())
@@ -388,7 +388,7 @@ def create_building_queryset(
     """creates a querset of buildings within orgs. If ``other_orgs``, buildings
     in both orgs and other_orgs will be represented in the queryset.
 
-    :param orgs: queryset of Organiazation inst.
+    :param orgs: queryset of Organization inst.
     :param exclude: django query exclude dict.
     :param order_by: django query order_by str.
     :param other_orgs: list of other orgs to ``or`` the query

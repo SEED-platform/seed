@@ -42,7 +42,7 @@ def build_address_q(address, b_attr):
     if street_num:
         address_q = Q(**{'{0}__icontains'.format(b_attr): street_num})
 
-    # Because we don't know which parts are ommitted, we OR these.
+    # Because we don't know which parts are omitted, we OR these.
     for street_id in street_ids:
         street_info_q |= Q(**{'{0}__icontains'.format(b_attr): street_id})
 

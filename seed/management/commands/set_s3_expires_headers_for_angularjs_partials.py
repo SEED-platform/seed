@@ -2,7 +2,7 @@
 :copyright: (c) 2014 Building Energy Inc
 """
 """
-This should be excuted after S3 bucket and CORS are set as last step and called in post_compile script. 
+This should be executed after S3 bucket and CORS are set as last step and called in post_compile script.
 """
 # stdlib
 from datetime import datetime

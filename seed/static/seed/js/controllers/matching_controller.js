@@ -293,7 +293,7 @@ angular.module('BE.seed.controller.matching', [])
 
     $scope.order_by_field = function(field, reverse) {
         $scope.buildings = order_by($scope.buildings, field, reverse);
-    }
+    };
 
     /**
      * init: sets the default pagination, gets the columns that should be displayed

@@ -42,7 +42,7 @@ RUN npm update && npm install -g bower && bower install --allow-root
 WORKDIR /seed/seed/static/vendors/bower_components/fine-uploader
 RUN npm install -g grunt-cli
 
-### There is a depencency issue with fine-uploader 3.1.9.  Everything compiles fine in later versions.  
+### There is a dependency issue with fine-uploader 3.1.9.  Everything compiles fine in later versions.
 ### Everything but karma installs, so grunt will still build the dist. 
 
 RUN if npm install; then echo "installed"; else true; fi
