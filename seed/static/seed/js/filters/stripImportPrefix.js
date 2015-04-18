@@ -10,11 +10,11 @@ angular.module('stripImportPrefix', []).filter('stripImportPrefix', [
   function($filter) {
     /** ids are sometime prefixed by the Import Record id.
     * e.g. import 28 would prefix all assessor data ids with 'IMP28-' and 
-    *      stripImportPrefix would stip out the 'IMP28-'s from the html and only
+    *      stripImportPrefix would strip out the 'IMP28-'s from the html and only
     *      display the ids. 
     *
     * Usage: building.id = "IMP12-007"
-    *        HTML: <span> {{ buidling.id | stripImportPrefix }} </span>
+    *        HTML: <span> {{ building.id | stripImportPrefix }} </span>
     *         compiles to: <span> 007 </span>
     *        JS  : stripImportPrefix(building.id)
     *         returns: "007"
