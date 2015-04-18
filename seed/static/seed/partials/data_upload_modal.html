@@ -10,6 +10,7 @@
     <h4 class="modal-title" ng-switch-when="9">Add files to {$ dataset.name $}.</h4>
     <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|titleCase $}</h4>
     <h4 class="modal-title" ng-switch-when="11">Confirm Save Mappings?</h4>
+    <h4 class="modal-title" ng-switch-when="12">Error Processing Data</h4>
 </div>
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
 	<!-- Step 1 -->
@@ -29,8 +30,8 @@
 	<div class="data_upload_steps" ng-switch-when="2">
 	    <div class="row">
 	    	<div class="alert alert-danger alert-dismissable" ng-show="uploader.invalid_extension_alert">
-		    <button type="button" class="close" ng-click="uploader.invalid_extension_alert = false" aria-hidden="true">&times;</button>
-		    <strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong> files are supported.
+		        <button type="button" class="close" ng-click="uploader.invalid_extension_alert = false" aria-hidden="true">&times;</button>
+		        <strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported.
 		    </div>
 		    <div class="form-group col-lg-12 col-sm-12">
 		    	<div class="row">
@@ -50,7 +51,7 @@
 	    <div class="row" ng-hide="uploader.in_progress">
 		    <div class="col-lg-12 col-sm-12">
 		    	<div>
-		    		<p>File types supported: <strong>.csv</strong>, <strong>.xls</strong> and <strong>.xlsx</strong> and <strong>.xml</strong>.</p> 
+		    		<p>File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong>.</p>
 		    		<p><strong>Note:</strong> multi-tabbed MS Excel files are not currently supported.</p>
 		    	</div>
 		    </div>
@@ -70,7 +71,7 @@
 	    <div class="row">
 	    	<div class="alert alert-danger alert-dismissable" ng-show="uploader.invalid_extension_alert">
 		    	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-		    	<strong>Sorry!</strong> SEED doesn't currently support that file format. Only .csv, .xls, .xlsx files are supported.
+		    	<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported.
 		    </div>
 		    <div class="form-group col-lg-12 col-sm-12">
 		        <div be-uploader sourcetype="Portfolio Raw" importrecord="dataset.id" buttontext="Upload your energy data file(s)" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
@@ -150,6 +151,17 @@
                     Did you review your mappings? It's a good idea to double check your mappings. Once SEED matches your buildings you can not undo or edit these mappings.
             </div>
 		</div>
+	</div>
+	<!-- Step 12: Error Processing Data  -->
+	<div class="data_upload_steps" ng-switch-when="12">
+		<div class="row">
+		    <div class="col-lg-12 col-sm-12">
+		    	<div>
+		    		<p>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
+		    		<pre class="pre-scrollable" ng-show="step_12_error_message">{$ step_12_error_message $}</pre>
+		    	</div>
+		    </div>
+	    </div>
 	</div>
 </div>
 
