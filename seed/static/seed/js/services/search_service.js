@@ -195,6 +195,24 @@ angular.module('BE.seed.service.search', [])
     };
 
     /**
+    * first_page: triggered when the `first` paging button is clicked, it
+    *   sets the page to the first in the results, and fetches that page
+    */
+    search_service.first_page = function() {
+      this.current_page = 1;
+      this.search_buildings();
+    };
+
+    /**
+    * last_page: triggered when the `last` paging button is clicked, it
+    *   sets the page to the last in the results, and fetches that page
+    */
+    search_service.last_page = function() {
+      this.current_page = this.num_pages;
+      this.search_buildings();
+    };
+
+    /**
      * next_page: triggered when the `next` paging button is clicked, it
      *   increments the page of the results, and fetches that page
      */

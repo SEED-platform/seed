@@ -57,10 +57,12 @@
 		        </table>
 		        <div class="table_footer">
 		            <div class="display_number_entries col-sm-3 col-md-3"></div>
-		            <div class="pager_container col-sm-3 col-md-3" ng-show="more_than_one_page()">
+		            <div class="pager_container col-sm-5 col-md-5" ng-show="more_than_one_page()">
 		                <ul class="pager">
-		                <li><a href="" ng-click="prev_page()" ng-show="current_page != 1"><i class="fa fa-angle-double-left"></i> Previous</a></li>
-		                <li><a href="" ng-click="next_page()" ng-show="current_page != num_pages">Next <i class="fa fa-angle-double-right"></i></a></li>
+							<li><a href="" ng-click="first_page()" ng-show="current_page != 1"><i class="fa fa-angle-double-left"></i> First</a></li>
+							<li><a href="" ng-click="prev_page()" ng-show="current_page != 1"><i class="fa fa-angle-left"></i> Previous</a></li>
+							<li><a href="" ng-click="next_page()" ng-show="current_page != num_pages">Next <i class="fa fa-angle-right"></i></a></li>
+							<li><a href="" ng-click="last_page()" ng-show="current_page != num_pages">Last <i class="fa fa-angle-double-right"></i></a></li>
 		                </ul>
 		            </div>
 		        </div>

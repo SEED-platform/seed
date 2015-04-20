@@ -125,14 +125,16 @@
                 </div>
                 <div class="display_number_entries_text">buildings</div>
             </div>
-            <div class="counts col-sm-6 col-md-6">
+            <div class="counts col-sm-4 col-md-4">
                 <span>Showing {$ showing.start | number:0 $} to {$ showing.end | number:0 $} of {$ number_matching_search | number:0 $} buildings <span class="number_unmatched">({$ unmatched_buildings $} unmatched)</span></span>
             </div>
-            <div class="pager_container col-sm-3 col-md-3">
+            <div class="pager_container col-sm-5 col-md-5">
                 <ul class="pager">
-                  <li ng-class="{disabled: prev_page_disabled}"><a href="javascript:void(0);" ng-click="pagination.prev_page()"><i class="fa fa-angle-double-left"></i> Previous</a></li>
+                    <li ng-class="{disabled: prev_page_disabled}"><a href="javascript:void(0);" ng-click="pagination.first_page()"><i class="fa fa-angle-double-left"></i> First</a></li>
+                    <li ng-class="{disabled: prev_page_disabled}"><a href="javascript:void(0);" ng-click="pagination.prev_page()"><i class="fa fa-angle-left"></i> Previous</a></li>
 
-                  <li ng-class="{disabled: next_page_disabled}"><a href="javascript:void(0);" ng-click="pagination.next_page()">Next <i class="fa fa-angle-double-right"></i></a></li>
+                    <li ng-class="{disabled: next_page_disabled}"><a href="javascript:void(0);" ng-click="pagination.next_page()">Next <i class="fa fa-angle-right"></i></a></li>
+                    <li ng-class="{disabled: next_page_disabled}"><a href="javascript:void(0);" ng-click="pagination.last_page()">Last <i class="fa fa-angle-double-right"></i></a></li>
                 </ul>
             </div>
         </div>
