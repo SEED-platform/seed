@@ -8,6 +8,7 @@ Search methods pertaining to buildings.
 # python
 import operator
 import json
+import re
 
 # django
 from django.db.models import Q
@@ -187,21 +188,34 @@ def filter_other_params(queryset, other_params, db_columns):
         else:
             return False
 
-    query_dict = {}
+    # Build query as Q objects so we can AND and OR.
+    query_filters = Q()
     for k, v in other_params.iteritems():
         in_columns = is_column(k, db_columns)
-        if in_columns and k != 'q' and v is not None and v != '':
-            if ('__lt' in k or
+        if in_columns and k != 'q' and v is not None:
+
+            # Is this query a string?
+            is_string_query = isinstance(v, basestring)
+
+            # Is this query surrounded by matching quotes?
+            exact_match = re.match(r"""^(["'])(.+)\1$""", v) if is_string_query else False
+            empty_match = re.match(r"""^(["'])\1$""", v) if is_string_query else False
+
+            if exact_match:
+                query_filters &= Q(**{"%s__exact" % k: exact_match.group(2)})
+            elif empty_match:
+                query_filters &= Q(**{"%s__exact" % k: ''}) | Q(**{"%s__isnull" % k: True})
+            elif ('__lt' in k or
                 '__lte' in k or
                 '__gt' in k or
                 '__gte' in k or
                 '__isnull' in k or
                k == 'import_file_id' or k == 'source_type'):
-                query_dict["%s" % k] = v
+                query_filters &= Q(**{"%s" % k: v})
             else:
-                query_dict["%s__icontains" % k] = v
+                query_filters &= Q(**{"%s__icontains" % k: v})
 
-    queryset = queryset.filter(**query_dict)
+    queryset = queryset.filter(query_filters)
 
     # handle extra_data with json_query
     for k, v in other_params.iteritems():
