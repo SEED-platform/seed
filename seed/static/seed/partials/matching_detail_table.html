@@ -62,14 +62,16 @@
                 </div>
                 <div class="display_number_entries_text">buildings</div>
             </div>
-            <div class="counts col-sm-6 col-md-6">
+            <div class="counts col-sm-4 col-md-4">
                 <span>{$ search.number_matching_search | number:0 $} search results</span>
             </div>
-            <div class="pager_container col-sm-3 col-md-3" ng-hide="false">
+            <div class="pager_container col-sm-5 col-md-5" ng-hide="false">
                 <ul class="pager">
-                  <li ng-class="{disabled: search.prev_page_disabled}"><a ng-click="search.prev_page()"><i class="fa fa-angle-double-left"></i> Previous</a></li>
+                    <li ng-class="{disabled: search.prev_page_disabled}"><a href="javascript:void(0);" ng-click="search.first_page()"><i class="fa fa-angle-double-left"></i> First Record</a></li>
+                    <li ng-class="{disabled: search.prev_page_disabled}"><a href="javascript:void(0);" ng-click="search.prev_page()"><i class="fa fa-angle-left"></i> Previous</a></li>
 
-                  <li ng-class="{disabled: search.next_page_disabled}"><a ng-click="search.next_page()">Next <i class="fa fa-angle-double-right"></i></a></li>
+                    <li ng-class="{disabled: search.next_page_disabled}"><a href="javascript:void(0);" ng-click="search.next_page()">Next <i class="fa fa-angle-right"></i></a></li>
+                    <li ng-class="{disabled: search.next_page_disabled}"><a href="javascript:void(0);" ng-click="search.last_page()">Last Record <i class="fa fa-angle-double-right"></i></a></li>
                 </ul>
             </div>
         </div>
