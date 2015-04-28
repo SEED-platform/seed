@@ -24,7 +24,7 @@ describe("controller: seed_admin_controller", function(){
                     // return $q.reject for error scenario
                     return $q.when(
                         {
-                            "status": "success",
+                            "status": "success"
                         }
                     );
                 }

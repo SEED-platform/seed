@@ -21,7 +21,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
             'url': urls.projects.get_projects,
             'params': {
                 'organization_id': user_service.get_organization().id
-            },
+            }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -182,7 +182,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
             'url': urls.seed.get_datasets_count,
             'params': {
                 'organization_id': user_service.get_organization().id
-            },
+            }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -199,7 +199,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
             'url': urls.projects.get_projects_count,
             'params': {
                 'organization_id': user_service.get_organization().id
-            },
+            }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {

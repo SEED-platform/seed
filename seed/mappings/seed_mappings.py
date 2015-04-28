@@ -6,7 +6,7 @@ How to map dataset attributes to CanonicalBuilding.
 
 If the first element in the tuple is a callable, it will be passed
 a model instance for that type of mapping (AssessedBuilding for
-AssessdBuilding_to_CanonicalBuilding, etc.)
+AssessedBuilding_to_CanonicalBuilding, etc.)
 
 """
 

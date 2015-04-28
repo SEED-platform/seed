@@ -155,6 +155,22 @@ class TestTasks(TestCase):
             'address_line_1': u'Address Line 1',
             'year_built': u'Year Built'
         }
+        
+    def test_cached_first_row_order(self):
+        """Tests to make sure the first row is saved in the correct order.  It should be the order of the headers in the original file."""
+        with patch.object(
+            ImportFile, 'cache_first_rows', return_value=None
+        ) as mock_method:
+            tasks._save_raw_data(
+                self.import_file.pk,
+                'fake_cache_key',
+                1
+            )
+        expected_first_row = u"Property Id|#*#|Property Name|#*#|Year Ending|#*#|Property Floor Area (Buildings and Parking) (ft2)|#*#|Address 1|#*#|Address 2|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|National Median Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date"
+        
+        import_file = ImportFile.objects.get(pk=self.import_file.pk)
+        first_row = import_file.cached_first_row
+        self.assertEqual(first_row, expected_first_row)
 
     def test_save_raw_data(self):
         """Save information in extra_data, set other attrs."""
@@ -166,7 +182,7 @@ class TestTasks(TestCase):
                 'fake_cache_key',
                 1
             )
-
+            
         raw_saved = BuildingSnapshot.objects.filter(
             import_file=self.import_file,
         )

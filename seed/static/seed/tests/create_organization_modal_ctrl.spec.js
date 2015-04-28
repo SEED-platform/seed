@@ -65,7 +65,7 @@ describe("controller: create_organization_modal_ctrl", function(){
                 },
                 {
                     name: "my shiny new org",
-                    email: "jb.smooth@be.com",
+                    email: "jb.smooth@be.com"
                 }
             );
     });

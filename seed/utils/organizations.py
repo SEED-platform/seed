@@ -9,7 +9,7 @@ def create_organization(user, org_name='', *args, **kwargs):
 
     :param user: user inst.
     :param org_name: str, name of Organization we'd like to create.
-    :param (optional) kwargs: 'role', int; 'staus', str.
+    :param (optional) kwargs: 'role', int; 'status', str.
 
     """
     org = SuperOrganization.objects.create(

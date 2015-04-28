@@ -112,7 +112,7 @@ class JsonQuerySet(QuerySet):
         qs = self
         excludes = kw.get('excludes', [])
         field = kw.get('field', self.primary)
-        # Order_by_rev=True means order decending.
+        # Order_by_rev=True means order descending.
         if not key:
             return qs.none()
         if value and not cond:

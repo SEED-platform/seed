@@ -3,7 +3,9 @@
 """
 # system imports
 import json
+import logging
 import datetime
+import os
 import uuid
 
 # django imports
@@ -66,6 +68,11 @@ from seed.utils.mapping import get_mappable_types, get_mappable_columns
 from .. import search
 from .. import exporter
 
+from BE.settings.dev import SEED_DATADIR
+
+from seed.common import mapper as simple_mapper
+from seed.common import views as vutil
+
 DEFAULT_CUSTOM_COLUMNS = [
     'project_id',
     'project_building_snapshots__status_label__name',
@@ -74,6 +81,8 @@ DEFAULT_CUSTOM_COLUMNS = [
     'state_province',
 ]
 
+
+_log = logging.getLogger(__name__)
 
 @render_to('seed/jasmine_tests/AngularJSTests.html')
 def angular_js_tests(request):
@@ -144,6 +153,49 @@ def home(request):
 
     return locals()
 
+@api_endpoint
+@ajax_request
+@login_required
+def create_pm_mapping(request):
+    """Create a mapping for PortfolioManager input columns.
+
+    Payload::
+
+        {
+            columns: [ "name1", "name2", ... , "nameN"],
+        }
+
+    Returns::
+
+        {
+            success: true,
+            mapping: [
+                ["name1", "mapped1", {bedes: true|false, numeric: true|false}],
+                ["name2", "mapped2", {bedes: true|false, numeric: true|false}],
+                ...
+                ["nameN", "mappedN", {bedes: true|false, numeric: true|false}]
+            ]
+        }
+        -- OR --
+        {
+            success: false,
+            reason: "message goes here"
+        }
+    """
+    _log.info("create_pm_mapping: request.body='{}'".format(request.body))
+    body = json.loads(request.body)
+
+    # validate inputs
+    invalid = vutil.missing_request_keys(['columns'], body)
+    if invalid:
+        return vutil.api_error(invalid)
+
+    try:
+        result = simple_mapper.get_pm_mapping('1.0', body['columns'])
+    except ValueError as err:
+        return vutil.api_error(str(err))
+    json_result = [[c] + v.as_json() for c, v in result.items()]
+    return vutil.api_success(mapping=json_result)
 
 @api_endpoint
 @ajax_request
@@ -798,7 +850,7 @@ def save_match(request):
 
     if create:
         child_id = save_snapshot_match(
-            b1_pk, b2_pk, user=request.user, match_type=2
+            b1_pk, b2_pk, user=request.user, match_type=2, default_pk=b2_pk
         )
         child_id = child_id.pk
         cb = CanonicalBuilding.objects.get(buildingsnapshot__id=child_id)
@@ -1129,19 +1181,34 @@ def get_column_mapping_suggestions(request):
         }
     column_types.update(db_columns)
 
-    suggested_mappings = mapper.build_column_mapping(
-        import_file.first_row_columns,
-        column_types.keys(),
-        previous_mapping=get_column_mapping,
-        map_args=[import_file.import_record.super_organization],
-        thresh=20  # percentage match we require
-    )
+    # Portfolio manager files have their own mapping scheme
+    if import_file.from_portfolio_manager:
+        _log.info("map Portfolio Manager input file")
+        suggested_mappings = {}
+        ver = import_file.source_program_version
+        for col, item in simple_mapper.get_pm_mapping(
+                ver, import_file.first_row_columns,
+                include_none=True).items():
+            if item is None:
+                suggested_mappings[col] = (col, 0)
+            else:
+                cleaned_field = item.field
+                suggested_mappings[col] = (cleaned_field, 100)
 
-    for m in suggested_mappings:
-        dest, conf = suggested_mappings[m]
-        if dest is None:
-            suggested_mappings[m][0] = u''
-
+    else:
+    #     # All other input types
+        suggested_mappings = mapper.build_column_mapping(
+             import_file.first_row_columns,
+             column_types.keys(),
+             previous_mapping=get_column_mapping,
+             map_args=[import_file.import_record.super_organization],
+             thresh=20  # percentage match we require
+         )
+        # replace None with empty string for column names
+        for m in suggested_mappings:
+            dest, conf = suggested_mappings[m]
+            if dest is None:
+                suggested_mappings[m][0] = u''
     result['suggested_column_mappings'] = suggested_mappings
     result['building_columns'] = building_columns
     result['building_column_types'] = column_types
@@ -1376,8 +1443,20 @@ def create_dataset(request):
         }
     """
     body = json.loads(request.body)
+
+    # validate inputs
+    invalid = vutil.missing_request_keys(['organization_id'], body)
+    if invalid:
+        return vutil.api_error(invalid)
+    invalid = vutil.typeof_request_values({'organization_id': int}, body)
+    if invalid:
+        return vutil.api_error(invalid)
+
+    org_id = int(body['organization_id'])
+
     try:
-        org = Organization.objects.get(pk=body['organization_id'])
+        _log.info("create_dataset: getting Organization for id=({})".format(org_id))
+        org = Organization.objects.get(pk=org_id)
     except Organization.DoesNotExist:
         return {"status": 'error',
                 'message': 'organization_id not provided'}

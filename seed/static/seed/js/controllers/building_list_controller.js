@@ -1,7 +1,7 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
-angular.module('BE.seed.controller.buiding_list', [])
+angular.module('BE.seed.controller.building_list', [])
 .controller('building_list_controller', [
   '$scope',
   '$routeParams',

@@ -145,12 +145,28 @@ You need a Django admin (super) user.
     ./manage.py create_default_user --username=admin@my.org --organization=lbnl --password=badpass
     
 Of course, you need to save this user/password somewhere, since this is what you will use to login to the SEED website.
-    
+
+If you want to do any API testing (and of course you do!), you will
+need to add an API KEY for this user.
+You can do this in postgresql directly:
+
+    psql94 seeddb seeduser
+    seeddb=> update landing_seeduser set api_key='DEADBEEF' where id=1;
+
+The 'secret' key DEADBEEF is hard-coded into the test scripts.
+
 ### Install Redis
 
 You need to manually install Redis for Celery to work.
 
     sudo port install redis
+
+### Install Javascript dependencies
+
+The JS dependencies are installed using node.js package management (npm), with
+a helper package called `bower`. 
+
+    ./bin/install_javascript_dependencies.sh
 
 ## Run the development server
 
@@ -158,17 +174,21 @@ You should put the following statement in ~/.bashrc or add it to the virtualenv 
 
     export DJANGO_SETTINGS_MODULE=BE.settings.dev
 
-If you haven't already, you need to start the Redis server. For development, it is convenient to run it as yourself, logging to /tmp
+The combination of Redis, Celery, and Django have been encapsulated in a 
+single shell script, which examines existing processes and doesn't start
+duplicate instances:
 
-    # run in background
-    redis-server >/tmp/redis-server.log 2>&1 &
-
-Next start Celery, also in the background and logging to /tmp
-
-    ./manage.py celery worker -B -c 2 --loglevel=INFO -E --maxtasksperchild=1000 >/tmp/celery.log 2>&1 &
+    ./bin/start-seed.sh
     
-Finally, run the Django standalone server
+When this script is done, the Django stand-alone server will be running in 
+the foreground.
 
-    ./manage.py runserver --settings=BE.settings.dev
-    
+### Login to the web page
+
+Open your browser and navigate to [127.0.0.1:8000](http://127.0.0.1:8000) .
+
 Login with the user/password you created before, e.g., `admin@my.org` and `badpass`.
+
+Note that these steps have been combined into a script called `start-seed.sh`.
+The script will also try to not start Celery or Redis if they already seem
+to be running.

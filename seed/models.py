@@ -18,7 +18,7 @@ from autoslug import AutoSlugField
 # app imports
 from audit_logs.models import AuditLog, LOG
 from landing.models import SEEDUser as User
-# provides created and modifed fields
+# provides created and modified fields
 from django_extensions.db.models import TimeStampedModel
 from djorm_pgjson.fields import JSONField
 
@@ -280,7 +280,7 @@ def get_or_create_canonical(b1, b2=None):
 def initialize_canonical_building(snapshot, user_pk):
     """Called to create a Canonicalbuilding from a single snapshot.
 
-    :param snapshot: BuidingSnapshot inst.
+    :param snapshot: BuildingSnapshot inst.
     :param user_pk: The user id of the user initiating the CanonicalBuilding
 
     """
@@ -317,13 +317,13 @@ def clean_canonicals(b1, b2, new_snapshot):
 
 
 def save_snapshot_match(
-    b1_pk, b2_pk, confidence=None, user=None, match_type=None
+    b1_pk, b2_pk, confidence=None, user=None, match_type=None, default_pk = None
 ):
     """Saves a match between two models as a new snapshot; updates Canonical.
 
     :param b1_pk: int, id for building snapshot.
     :param b2_pk: int, id for building snapshot.
-    :param confidence: (optional) float, liklihood that two models are linked.
+    :param confidence: (optional) float, likelihood that two models are linked.
     :param user: (optional) User inst, last_modified_by for BuildingSnapshot.
     :rtype: BuildingSnapshot instance, post save.
 
@@ -341,6 +341,8 @@ def save_snapshot_match(
     # No point in linking the same building together.
     if b1_pk == b2_pk:
         return
+    
+    default_pk = default_pk or b1_pk
 
     b1 = BuildingSnapshot.objects.get(pk=b1_pk)
     b2 = BuildingSnapshot.objects.get(pk=b2_pk)
@@ -348,6 +350,8 @@ def save_snapshot_match(
     # we don't want to match in the middle of the tree, so get the tip
     b1 = b1.tip
     b2 = b2.tip
+    
+    default_building = b1 if default_pk == b1_pk else b2
 
     new_snapshot = BuildingSnapshot.objects.create()
     new_snapshot = seed_mapper.merge_building(
@@ -356,6 +360,7 @@ def save_snapshot_match(
         b2,
         seed_mapper.get_building_attrs([b1, b2]),
         conf=confidence,
+        default=default_building,
         match_type=match_type
     )
 
@@ -381,7 +386,7 @@ def unmatch_snapshot_tree(building_pk):
     .. warning::
 
         ``unmatch_snapshot_tree`` potentially modifies *years* of
-        merged data. Anything decended from the ``building_pk`` will
+        merged data. Anything descended from the ``building_pk`` will
         be deleted. The intent is to completely separate ``building_pk``'s
         influence on the resultant canonical_snapshot. The user is saying
         that these are separate entities afterall, yes?
@@ -455,7 +460,7 @@ def unmatch_snapshot_tree(building_pk):
     bachelor = root
     newborn_child = None
     for bereaved_parent in coparents_to_keep:
-        newborn_child = save_snapshot_match(bachelor.pk, bereaved_parent.pk)
+        newborn_child = save_snapshot_match(bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk)
         bachelor = newborn_child
 
     # set canonical_snapshot for root's canonical building
@@ -532,7 +537,7 @@ def update_building(old_snapshot, updated_values, user, *args, **kwargs):
     # Move the meta data over.
     for meta_val in meta:
         setattr(new_snapshot, meta_val, meta[meta_val])
-    # Insert new_snapshot into the inheritence chain
+    # Insert new_snapshot into the inheritance chain
     old_snapshot.children.add(new_snapshot)
     new_snapshot.import_file_id = old_snapshot.import_file_id
 
@@ -575,7 +580,7 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
         whether we're looking at a mapping from the perspective of
         a raw_column (like we do when creating a mapping), or mapped_column,
         (like when we're applying that mapping).
-    :returns: list of mapped items, float repreresentation of confidence.
+    :returns: list of mapped items, float representation of confidence.
 
     """
     from seed.utils.mapping import _get_column_names
@@ -651,7 +656,7 @@ def save_column_names(bs, mapping=None):
     """
     from seed.utils import mapping as mapping_utils
     for key in bs.extra_data:
-        # Assertain if our key is ``extra_data`` or not.
+        # Ascertain if our key is ``extra_data`` or not.
         is_extra_data = key not in mapping_utils.get_mappable_columns()
         Column.objects.get_or_create(
             organization=bs.super_organization,
@@ -904,7 +909,7 @@ class Column(models.Model):
 class ColumnMapping(models.Model):
     """Stores previous user-defined column mapping.
 
-    We'll pull from this when pulling from varried, dynamic
+    We'll pull from this when pulling from varied, dynamic
     source data to present the user with previous choices for that
     same field in subsequent data loads.
 
@@ -1067,7 +1072,7 @@ class BuildingSnapshot(TimeStampedModel):
     )
 
     # Denormalized Data and sources.
-    # e.g. which model does this denormalized data come frome?
+    # e.g. which model does this denormalized data come from?
 
     tax_lot_id = models.CharField(
         max_length=128, null=True, blank=True, db_index=True
