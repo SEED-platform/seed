@@ -4,18 +4,27 @@ These instructions are for installing and running SEED on Mac OSX in development
 
 ## Prerequisites
 
-These instructions assume you have/use [Macports](https://www.macports.org/).
+These instructions assume you have/use [Macports](https://www.macports.org/). The workflow has been testing with homebrew as well, but is not directly supported. You system should have the following dependencies already installed:
 
-Although you _could_ install Python packages globally, the easiest way to install Python packages is with [virtualenv](https://virtualenv.pypa.io/en/latest/) and [virtualenvwrapper](https://virtualenvwrapper.readthedocs.org/en/latest/). Setting these up first will help avoid polluting your base Python installation and make it much easier to switch between different versions of the code.
+* git (`port install git` or `brew install git`)
+* Mercurial (`port install hg` or `brew install mercurial`)
 
-Once you have these installed, creating and entering a new virtualenv called "``seed``" for SEED development is as easy as:
+(Recommended)
 
-    mkvirtualenv --python=python2.7 seed
-    
+* [virtualenv](https://virtualenv.pypa.io/en/latest/) and [virtualenvwrapper](https://virtualenvwrapper.readthedocs.org/en/latest/).
+    * Although you _could_ install Python packages globally, this is the easiest way to install Python packages. Setting these up first will help avoid polluting your base Python installation and make it much easier to switch between different versions of the code.
+
+        pip install virtualenv
+        pip install virtualenvwrapper
+
+    * Follow instructions on [virtualenvwrapper](https://virtualenvwrapper.readthedocs.org/en/latest/) to setup your environment.
+    * Once you have these installed, creating and entering a new virtualenv called "``seed``" for SEED development is as easy as:
+
+        mkvirtualenv --python=python2.7 seed
 
 ## Install PostgreSQL 9.4
 
-Perform the following commands as 'root'
+Perform the following commands as 'root' if using port
 
     sudo su - root
     
@@ -25,7 +34,12 @@ Install Postgres 9.4
     # init db
     mkdir -p /opt/local/var/db/postgresql94/defaultdb
     chown postgres:postgres /opt/local/var/db/postgresql94/defaultdb
-    
+
+    # homebrew
+    brew install postgres
+    # follow the post install instructions to add to launchagents or call manually with `postgres -D /usr/local/var/postgres`
+    # Skip the remaining Postgres instructions
+
 Finish initializing the DB
 
     sudo su postgres -c '/opt/local/lib/postgresql94/bin/initdb -D /opt/local/var/db/postgresql94/defaultdb'
@@ -44,11 +58,10 @@ Start Postgres
   
 Switch to postgres user
 
-      sudo su - postgres
-      PATH=$PATH:/opt/local/lib/postgresql94/bin/
+    sudo su - postgres
+    PATH=$PATH:/opt/local/lib/postgresql94/bin/
       
-Configure Postgresql. Replace 'seeddb', 'seeduser' with desired db/user.
-seedpass
+Configure PostgreSQL. Replace 'seeddb', 'seeduser' with desired db/user. By default use password `seedpass` when prompted
 
     createdb seeddb
     createuser -P seeduser
@@ -60,9 +73,11 @@ Now exit any root environments, becoming just yourself (even though it's not tha
 
 Run these commands as your normal user id.
 
-Change to a virtualenv (using virtualenvwrapper) or do the following as a superuser. A virtualenv is usually better for development.
+Change to a virtualenv (using virtualenvwrapper) or do the following as a superuser. A virtualenv is usually better for development. Set the virtualenv to seed.
 
-Make sure PostgreSQL command line scripts are in your PATH
+    workon seed
+
+Make sure PostgreSQL command line scripts are in your PATH (if using port)
 
     export PATH=$PATH:/opt/local/lib/postgresql94/bin
 
@@ -85,13 +100,11 @@ Install library with `setup.py`
 
 First, install [npm](https://www.npmjs.com/) if you haven't already. You can do this by installing from [nodejs.org](http://nodejs.org/), or use Macports:
 
+    # port
     sudo port install npm
 
-### Install libraries
-
-Then run, from the top-level, a script to install the JS libraries:
-
-    ./bin/install_javascript_dependencies.sh
+    # homebrew
+    brew install npm
 
 ## Configure Django and its back-end DBs
 
@@ -150,7 +163,7 @@ If you want to do any API testing (and of course you do!), you will
 need to add an API KEY for this user.
 You can do this in postgresql directly:
 
-    psql94 seeddb seeduser
+    psql seeddb seeduser
     seeddb=> update landing_seeduser set api_key='DEADBEEF' where id=1;
 
 The 'secret' key DEADBEEF is hard-coded into the test scripts.
@@ -159,7 +172,12 @@ The 'secret' key DEADBEEF is hard-coded into the test scripts.
 
 You need to manually install Redis for Celery to work.
 
+    # port
     sudo port install redis
+
+    # homebrew
+    brew install redis
+    # follow the post install instructions to add to launchagents or call manually with `redis-server`
 
 ### Install Javascript dependencies
 
