@@ -20,8 +20,7 @@
                         {$ menu.error_message || 'There was an error loading the page' $}
                     </div>
                 </div>
-                <div class="section_tab_container" ng-show="menu.loading"><p>Please wait while your data is loaded...</p></div>
-                <div ng-hide="menu.loading" data-ng-view="" id="ng-view"></div>
+                <div data-ng-view="" id="ng-view"></div>
             </div>
             
             {% include "seed/_footer.html" %}
