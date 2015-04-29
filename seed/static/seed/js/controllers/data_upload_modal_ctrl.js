@@ -25,6 +25,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 .controller('data_upload_modal_ctrl', [
   '$scope',
   '$modalInstance',
+  '$log',
   'step',
   'dataset',
   '$timeout',
@@ -36,6 +37,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
   function (
     $scope,
     $modalInstance,
+    $log,
     step,
     dataset,
     $timeout,
@@ -275,7 +277,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             }, $scope.uploader);
         }, function(data){
             $scope.step_12_error_message = data.message;
-            console.error($scope.step_12_error_message);
+            $log.error(data.stacktrace);
             $scope.step.number = 12;
         });
     };

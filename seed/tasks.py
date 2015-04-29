@@ -10,6 +10,8 @@ import operator
 import os
 import traceback
 
+from _csv import Error
+
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
@@ -702,8 +704,7 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
 @lock_and_track
 def _save_raw_data(file_pk, *args, **kwargs):
     """Chunk up the CSV and save data into the DB raw."""
-    status = ''
-    error_msg = ''
+    status = error_msg = stacktrace = None
     try:
         import_file = ImportFile.objects.get(pk=file_pk)
 
@@ -736,23 +737,36 @@ def _save_raw_data(file_pk, *args, **kwargs):
 
         status = 'success'
     except StopIteration:
-        error_msg = traceback.format_exc()
+        error_msg = 'StopIteration Exception'
+        stacktrace = traceback.format_exc()
+        status = 'error'
+    except Error as e:
+        error_msg = 'CSV Error: ' + e.message
+        stacktrace = traceback.format_exc()
+        logger.info(error_msg)
+        status = 'error'
+    except KeyError as e:
+        error_msg = 'Invalid Column Name: "' + e.message + '"'
+        stacktrace = traceback.format_exc()
+        logger.info(error_msg)
+        status = 'error'
+    except Exception as e:
+        error_msg = 'Unhandled Error: ' + e.message
+        stacktrace = traceback.format_exc()
+        logger.info(error_msg)
         status = 'error'
 
     if status == 'success':
         return {'status': status}
     else:
-        return {'status': status, 'message': error_msg}
+        return {'status': status, 'message': error_msg, 'stacktrace': stacktrace}
 
 
 @task
 @lock_and_track
 def save_raw_data(file_pk, *args, **kwargs):
     response = _save_raw_data.delay(file_pk, *args, **kwargs)
-    if response.result['status'] == 'success':
-        return {'status': response.result['status']}
-    else:
-        return {'status': response.result['status'], 'message': response.result['message']}
+    return response.result
 
 
 def _stringify(values):
