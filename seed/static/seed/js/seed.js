@@ -256,8 +256,16 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'search_payload': ['building_services', '$route', function(building_services, $route){
                     var params = $route.current.params;
                     var q = params.q || "";
+
+                    // Check session storage for order and sort values.
+                    var orderBy = (typeof(Storage) !== "undefined" && sessionStorage.getItem('seedBuildingOrderBy') !== null) ?
+                        sessionStorage.getItem('seedBuildingOrderBy') : "";
+
+                    var sortReverse = (typeof(Storage) !== "undefined" && sessionStorage.getItem('seedBuildingSortReverse') !== null) ?
+                        JSON.parse(sessionStorage.getItem('seedBuildingSortReverse')) : false;
+
                     // params: (query, number_per_page, page_number, order_by, sort_reverse, other_params, project_id)
-                    return building_services.search_buildings(q, 10, 1, "", false, params, null);
+                    return building_services.search_buildings(q, 10, 1, orderBy, sortReverse, params, null);
                 }],
                 'default_columns': ['user_service', function(user_service){
                     return user_service.get_default_columns();
