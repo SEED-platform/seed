@@ -8,6 +8,9 @@ import re
 import string
 import operator
 import os
+import traceback
+
+from _csv import Error
 
 from django.core.mail import send_mail
 from django.conf import settings
@@ -21,6 +24,7 @@ from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse_lazy
 
 from celery.task import task, chord
+from celery.utils.log import get_task_logger
 
 from audit_logs.models import AuditLog
 from landing.models import SEEDUser as User
@@ -70,6 +74,8 @@ from superperms.orgs.models import Organization
 
 from . import exporter
 
+
+logger = get_task_logger(__name__)
 
 # Maximum number of possible matches under which we'll allow a system match.
 MAX_SEARCH = 5
@@ -626,9 +632,13 @@ def cache_first_rows(import_file, parser):
 
     validation_rows = []
     for i in range(5):
-        row = rows.next()
-        if row:
-            validation_rows.append(row)
+        try:
+            row = rows.next()
+            if row:
+                validation_rows.append(row)
+        except StopIteration:
+            """Less than 5 rows in file"""
+            break
 
     #This is a fix for issue #24 to use original field order when importing
     #This is ultimately not the correct place for this fix.  The correct fix 
@@ -694,43 +704,69 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
 @lock_and_track
 def _save_raw_data(file_pk, *args, **kwargs):
     """Chunk up the CSV and save data into the DB raw."""
-    import_file = ImportFile.objects.get(pk=file_pk)
+    status = error_msg = stacktrace = None
+    try:
+        import_file = ImportFile.objects.get(pk=file_pk)
 
-    if import_file.raw_save_done:
-        return {'status': 'warning', 'message': 'raw data already saved'}
+        if import_file.raw_save_done:
+            return {'status': 'warning', 'message': 'raw data already saved'}
 
-    if import_file.source_type == "Green Button Raw":
-        return _save_raw_green_button_data(file_pk, *args, **kwargs)
+        if import_file.source_type == "Green Button Raw":
+            return _save_raw_green_button_data(file_pk, *args, **kwargs)
 
-    parser = reader.MCMParser(import_file.local_file)
-    cache_first_rows(import_file, parser)
-    rows = parser.next()
-    import_file.num_rows = 0
+        parser = reader.MCMParser(import_file.local_file)
+        cache_first_rows(import_file, parser)
+        rows = parser.next()
+        import_file.num_rows = 0
 
-    prog_key = get_prog_key('save_raw_data', file_pk)
+        prog_key = get_prog_key('save_raw_data', file_pk)
 
-    tasks = []
-    for chunk in batch(rows, 100):
-        import_file.num_rows += len(chunk)
-        tasks.append(_save_raw_data_chunk.subtask((chunk, file_pk, prog_key)))
+        tasks = []
+        for chunk in batch(rows, 100):
+            import_file.num_rows += len(chunk)
+            tasks.append(_save_raw_data_chunk.subtask((chunk, file_pk, prog_key)))
 
-    tasks = add_cache_increment_parameter(tasks)
-    import_file.num_columns = parser.num_columns()
-    import_file.save()
+        tasks = add_cache_increment_parameter(tasks)
+        import_file.num_columns = parser.num_columns()
+        import_file.save()
 
-    if tasks:
-        chord(tasks, interval=15)(finish_raw_save.subtask([file_pk]))
+        if tasks:
+            chord(tasks, interval=15)(finish_raw_save.subtask([file_pk]))
+        else:
+            finish_raw_save.task(file_pk)
+
+        status = 'success'
+    except StopIteration:
+        error_msg = 'StopIteration Exception'
+        stacktrace = traceback.format_exc()
+        status = 'error'
+    except Error as e:
+        error_msg = 'CSV Error: ' + e.message
+        stacktrace = traceback.format_exc()
+        logger.info(error_msg)
+        status = 'error'
+    except KeyError as e:
+        error_msg = 'Invalid Column Name: "' + e.message + '"'
+        stacktrace = traceback.format_exc()
+        logger.info(error_msg)
+        status = 'error'
+    except Exception as e:
+        error_msg = 'Unhandled Error: ' + e.message
+        stacktrace = traceback.format_exc()
+        logger.info(error_msg)
+        status = 'error'
+
+    if status == 'success':
+        return {'status': status}
     else:
-        finish_raw_save.task(file_pk)
-
-    return {'status': 'success'}
+        return {'status': status, 'message': error_msg, 'stacktrace': stacktrace}
 
 
 @task
 @lock_and_track
 def save_raw_data(file_pk, *args, **kwargs):
-    _save_raw_data.delay(file_pk, *args, **kwargs)
-    return {'status': 'success'}
+    response = _save_raw_data.delay(file_pk, *args, **kwargs)
+    return response.result
 
 
 def _stringify(values):
