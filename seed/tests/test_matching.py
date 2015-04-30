@@ -44,17 +44,17 @@ class NormalizeStreetAddressTest(TestCase):
         
     def test_abbrev_street_types(self):
         """
-	Catches the spelled out street types e.g., "Street" == "St"  
-	"""
+        Catches the spelled out street types e.g., "Street" == "St"  
+        """
 
-	normalized_addr = _normalize_address_str("STREET")
+        normalized_addr = _normalize_address_str("STREET")
         self.assertEqual(normalized_addr, "st")
-	
+    
         normalized_addr = _normalize_address_str("Street")
         self.assertEqual(normalized_addr, "st")
 
-	normalized_addr = _normalize_address_str("Boulevard")
+        normalized_addr = _normalize_address_str("Boulevard")
         self.assertEqual(normalized_addr, "blvd")
-	
+    
         normalized_addr = _normalize_address_str("avenue")
         self.assertEqual(normalized_addr, "ave")
