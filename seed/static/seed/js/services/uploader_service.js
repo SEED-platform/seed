@@ -136,7 +136,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
           }, 750);
         }, function (data, status) {
           // reject promise
-          console.error(data, status);
+          console.log(data, status);
         });
     };
 

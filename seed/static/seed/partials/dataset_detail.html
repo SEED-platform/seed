@@ -33,9 +33,9 @@
                                 <td>    
                                     <a href="javascript:void(0);" class="delete_link" ng-click="confirm_delete(f)"><i class="fa fa-trash-o"></i></a>
                                 </td>
-                                <td class="is_aligned_right">{$ f.num_rows || 0 $}</td>
-                                <td><a role="button" class="btn btn-sm btn-primary" ng-href="#/data/mapping/{$ f.id $}" ng-disabled="!f.num_rows">{$ f.number_of_mappings $} Data Mapping</a></td>
-                                <td><a role="button" class="btn btn-sm btn-primary" ng-href="#/data/matching/{$ f.id $}" ng-disabled="!f.num_rows">{$ f.number_of_matchings $} Data Matching</a></td>
+                                <td class="is_aligned_right">{$ f.num_rows $}</td>                                
+                                <td><a role="button" class="btn btn-sm btn-primary" ng-href="#/data/mapping/{$ f.id $}">{$ f.number_of_mappings $} Data Mapping</a></td>
+                                <td><a role="button" class="btn btn-sm btn-primary" ng-href="#/data/matching/{$ f.id $}">{$ f.number_of_matchings $} Data Matching</a></td>
                             </tr>
                         </tbody>
                     </table>

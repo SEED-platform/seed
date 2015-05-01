@@ -18,14 +18,11 @@
  * ng-switch-when="8" == Add files to your Data Set.
  * ng-switch-when="9" == Add files to {$ dataset.name $}
  * ng-switch-when="10" == No matches found
- * ng-switch-when="11" == Confirm Save Mappings?
- * ng-switch-when="12" == Error Processing Data
  */
 angular.module('BE.seed.controller.data_upload_modal', [])
 .controller('data_upload_modal_ctrl', [
   '$scope',
   '$modalInstance',
-  '$log',
   'step',
   'dataset',
   '$timeout',
@@ -37,7 +34,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
   function (
     $scope,
     $modalInstance,
-    $log,
     step,
     dataset,
     $timeout,
@@ -165,6 +161,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         }
         if (event_message === "upload_complete") {
             var current_step = $scope.step.number;
+            var data_is_green_button = 
           
             $scope.uploader.status_message = "upload complete";
             $scope.dataset.import_file_id = file.file_id;
@@ -275,10 +272,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 }
 
             }, $scope.uploader);
-        }, function(data){
-            $scope.step_12_error_message = data.message;
-            $log.error(data.stacktrace);
-            $scope.step.number = 12;
         });
     };
 
