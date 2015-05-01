@@ -49,7 +49,7 @@ else:
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': True,
-        # set up some log message handlers to choose from
+        # set up some log message handers to chose from
         'handlers': {
             'sentry': {
                 'level': 'ERROR',
