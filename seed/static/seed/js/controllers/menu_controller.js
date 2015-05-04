@@ -63,7 +63,7 @@ angular.module('BE.seed.controller.menu', [])
     });
     $scope.$on("$routeChangeStart", function($event, next, current) {
         $scope.menu.loading = next.controller === "mapping_controller";
-    })
+    });
     $scope.$on("$routeChangeSuccess", function() {
         $scope.menu.loading = false;
         $scope.menu.route_load_error = false;

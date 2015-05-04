@@ -162,6 +162,8 @@ angular.module('BE.seed.controller.admin', [])
                 function(data){  //success fn
                   org.remove_message = "success";
                   get_organizations();
+                }, function(data){  //failure fn
+                  // Do nothing
                 },
                 org  // progress bar obj
             );
