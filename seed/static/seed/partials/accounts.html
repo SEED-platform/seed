@@ -12,29 +12,29 @@
     </div>
 </div>
 <div class="section">
-	<div class="section_header_container" ng-if="NEEDS_IMPLEMENTATION">
+    <div class="section_header_container" ng-if="NEEDS_IMPLEMENTATION">
         <div class="section_header">
             <h2><i class="fa fa-users"></i> Pending Organization Invites</h2>
         </div>
     </div>
     <div class="section_content_container" ng-if="NEEDS_IMPLEMENTATION">
         <div class="section_content">
-        	<div class="table_list_container">
+            <div class="table_list_container">
                 <table class="table table-striped table_highlight_first">
-                	<thead>
+                    <thead>
                         <tr>
                             <th class="account_pending left">Name of Pending Organization</th>
                             <th class="account_pending right"></th>
                         </tr>
-                	</thead>
-                	<tbody>
-                		<tr>
-	                		<td class="account_pending left">Julie Daily (<strong>Owner</strong>) would like to add you in the role of <strong>Member</strong> to this organization.</td>
-	                		<td class="account_pending right" style="text-align:right;"><a class="btn btn-primary" href="">Accept</a> <a class="btn btn-default" href="">Reject</a>
-                		</tr>
-                	</tbody>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="account_pending left">Julie Daily (<strong>Owner</strong>) would like to add you in the role of <strong>Member</strong> to this organization.</td>
+                            <td class="account_pending right" style="text-align:right;"><a class="btn btn-primary" href="">Accept</a> <a class="btn btn-default" href="">Reject</a>
+                        </tr>
+                    </tbody>
                 </table>
-        	</div>
+            </div>
         </div>
     </div>
     <div class="section_header_container" ng-show="orgs_I_own.length > 0">
@@ -44,32 +44,32 @@
     </div>
     <div class="section_content_container" ng-show="orgs_I_own.length > 0">
         <div class="section_content">
-        	<div class="table_list_container">
+            <div class="table_list_container">
                 <table class="table table-striped table_highlight_first" ng-repeat="org in orgs_I_own">
-                	<thead>
+                    <thead>
                         <tr>
                             <th colspan="2">Organization</th>
                             <!-- <th>Org Level</th> -->
                         </tr>
-                	</thead>
-                	<tbody>
-                		<tr>
-	                		<td class="account_org parent_org"><a ng-href="#/accounts/{$ org.id $}/members">{$ org.name $}</td>
-	                		<td class="account_org right">
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="account_org parent_org"><a ng-href="#/accounts/{$ org.id $}/members">{$ org.name $}</td>
+                            <td class="account_org right">
                                 <a href="#/accounts/{$ org.id $}"><i class="fa fa-cogs"></i>Settings</a> <a href="#/accounts/{$ org.id $}/sharing" ng-show="org.is_parent"><i class="fa fa-share-square-o"></i>Sharing</a><a href="#/accounts/{$ org.id $}/sub_org" ng-show="org.is_parent"><i class="fa fa-users"></i>Sub-Organizations</a> <a href="#/accounts/{$ org.id $}/members"><i class="fa fa-user"></i>Members</a> <a href="" ng-if="false"><i class="fa fa-times"></i>Remove</a> <i class="fa fa-cog"></i>
                             </td>
-                		</tr>
-                		<tr ng-show="org.is_parent">
+                        </tr>
+                        <tr ng-show="org.is_parent">
                             <th class="sub_head sub_org">Sub-Organizations</th>
                             <th class="sub_head sub_org right"><a href="javascript:void(0);" ng-click="create_organization_modal(org)"><i class="fa fa-plus"></i>Create new sub-organization</a> <i class="fa fa-cog"></i></th>
                         </tr>
-                		<tr ng-repeat="sub_org in org.sub_orgs">
-	                		<td class="account_org left"><a ng-href="#/accounts/{$ sub_org.id $}/members">{$ sub_org.name $}</td>
-	                		<td class="account_org right"><a ng-href="#/accounts/{$ sub_org.id $}/members"><i class="fa fa-user"></i>Members</a> <a href="javascript:void(0);" ng-click="remove_sub_org(sub_org)" ng-if="false"><i class="fa fa-times"></i>Remove</a> <i class="fa fa-cog"></i></td>
-                		</tr>
-                	</tbody>
+                        <tr ng-repeat="sub_org in org.sub_orgs">
+                            <td class="account_org left"><a ng-href="#/accounts/{$ sub_org.id $}/members">{$ sub_org.name $}</td>
+                            <td class="account_org right"><a ng-href="#/accounts/{$ sub_org.id $}/members"><i class="fa fa-user"></i>Members</a> <a href="javascript:void(0);" ng-click="remove_sub_org(sub_org)" ng-if="false"><i class="fa fa-times"></i>Remove</a> <i class="fa fa-cog"></i></td>
+                        </tr>
+                    </tbody>
                 </table>
-        	</div>
+            </div>
         </div>
     </div>
     <div class="section_header_container">
@@ -79,33 +79,33 @@
     </div>
     <div class="section_content_container">
         <div class="section_content">
-        	<div class="table_list_container">
+            <div class="table_list_container">
                 <table class="table table-striped table_highlight_first">
-                	<thead>
+                    <thead>
                         <tr>
                             <th>Organization Name</th>
                             <th>Number of Buildings</th>
                             <th>Your Role</th>
                             <th>Organization Owner(s)</th>
                         </tr>
-                	</thead>
-                	<tbody>
+                    </thead>
+                    <tbody>
                         <tr ng-repeat="org in orgs">
-	                		<td class="align_to_top">
+                            <td class="align_to_top">
                                 <a ng-href="#/accounts/{$ org.id $}/members" ng-if="org.user_role !== 'viewer'">{$ org.name $}</a>
                                 <span ng-if="org.user_role === 'viewer'">{$ org.name $}</span>
                             </td>
                             <td class="align_to_top">
                                 <span>{$ org.num_buildings $}</span>
                             </td>
-	                		<td class="align_to_top">{$ org.user_role || "-" $}</td>
-	                		<td>
+                            <td class="align_to_top">{$ org.user_role || "-" $}</td>
+                            <td>
                                 <span ng-repeat="owner in org.owners">{$ owner.first_name $} {$ owner.last_name $}<br /></span>
                             </td>
-                		</tr>
-                	</tbody>
+                        </tr>
+                    </tbody>
                 </table>
-        	</div>
+            </div>
         </div>
     </div>
 </div>
