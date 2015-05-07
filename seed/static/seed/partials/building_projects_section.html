@@ -2,14 +2,14 @@
     <div class="section_header_container">
         <div class="section_header fixed_height_short has_no_padding">
             <div class="section_action_container left_wide">
-            	<h2><i class="fa fa-folder-o"></i> Projects That Include This Building</h2>
+                <h2><i class="fa fa-folder-o"></i> Projects That Include This Building</h2>
             </div>
             <div class="section_action_container right" ng-hide="building.edit_form_showing">
                 <a href="javascript:void(0);" ng-click="building.edit_form_showing = true; save_building_state()" ng-show="user_role !== 'viewer'" ><i class="fa fa-pencil"></i> Edit</a>
             </div>
             <div class="section_action_container right section_action_btn" ng-show="building.edit_form_showing">
-            	<a roll="button" class="btn btn-default btn-sm" href="javascript:void(0);" ng-click="building.edit_form_showing = false; restore_building()">Cancel</a>
-				<a roll="button" class="btn btn-primary btn-sm" href="javascript:void(0);" ng-click="building.edit_form_showing = false; save_building()">Save Changes</a>
+                <a roll="button" class="btn btn-default btn-sm" href="javascript:void(0);" ng-click="building.edit_form_showing = false; restore_building()">Cancel</a>
+                <a roll="button" class="btn btn-primary btn-sm" href="javascript:void(0);" ng-click="building.edit_form_showing = false; save_building()">Save Changes</a>
             </div>
         </div>
     </div>
