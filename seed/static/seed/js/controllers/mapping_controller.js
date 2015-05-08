@@ -480,6 +480,8 @@ angular.module('BE.seed.controller.mapping', [])
         1.0,  // progress multiplier
         function(data){  //success fn
           $scope.get_mapped_buildings();
+        }, function(data) {  //failure fn
+          // Do nothing
         },
         $scope.import_file  // progress bar obj
       );

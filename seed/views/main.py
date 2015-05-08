@@ -1928,10 +1928,16 @@ def progress(request):
 
     progress_key = json.loads(request.body).get('progress_key')
 
-    return {
-        'progress_key': progress_key,
-        'progress': cache.get(progress_key) or 0
-    }
+    if cache.get(progress_key):
+        result = cache.get(progress_key)
+        result['progress_key'] = progress_key
+        return result
+    else:
+        return {
+            'progress_key': progress_key,
+            'progress': 0,
+            'status': 'waiting'
+        }
 
 
 @api_endpoint
@@ -1946,7 +1952,7 @@ def update_building(request):
     :PUT:
 
         {
-        'organization_id': organzation id,
+        'organization_id': organization id,
         'building':
             {
             'canonical_building': The canonical building ID

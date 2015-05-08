@@ -22,6 +22,7 @@ def _get_lock_key(func_name, import_file_pk):
 
 
 def get_prog_key(func_name, import_file_pk):
+    """Return the progress key for the cache"""
     return _get_cache_key(
         PROGRESS_CACHE_PREFIX.format(func_name), import_file_pk
     )
@@ -29,14 +30,14 @@ def get_prog_key(func_name, import_file_pk):
 
 def increment_cache(key, increment):
     """Increment cache by value increment, never exceed 100."""
-    value = cache.get(key) or 0.0
-    value = float(value)
+    value = cache.get(key) or {'status': 'parsing', 'progress': 0.0}
+    value = float(value['progress'])
     if value + increment >= 100.0:
         value = 100.0
     else:
         value += increment
 
-    cache.set(key, value)
+    cache.set(key, {'status': 'parsing', 'progress': value})
 
 
 def lock_and_track(fn, *args, **kwargs):
