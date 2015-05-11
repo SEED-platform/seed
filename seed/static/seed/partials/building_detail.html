@@ -14,6 +14,7 @@
         <a ng-href="" style="cursor: pointer;" ng-class="{active: section == 'building' || !section}" ng-click="set_location('building')">Building Info</a>
         <a ng-href="" style="cursor: pointer;" ng-class="{active: section == 'projects'}" ng-click="set_location('projects')">Projects</a>
         <a ng-href="" style="cursor: pointer;" ng-class="{active: section == 'audit'}" ng-click="set_location('audit')">Log &amp Notes</a>
+        <a ng-href="" style="cursor: pointer;" ng-class="{active: section == 'energy'}" ng-click="set_location('energy')">Energy</a>
     </div>
 </div>
 <div ng-include="urls.static_url + 'seed/partials/building_detail_section.html'" ng-show="section=='building' || !section"></div>
