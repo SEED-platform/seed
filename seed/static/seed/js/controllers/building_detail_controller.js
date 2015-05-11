@@ -36,7 +36,7 @@ angular.module('BE.seed.controller.building_detail', [])
 
     // gather green button filenames
     building_payload.imported_buildings.forEach(function(e) {
-        if (e.source_type == 5) { // GREEN_BUTTON_RAW
+        if (e.source_type == 6) { // GREEN_BUTTON_BS
             $scope.green_button_filenames.push(e.import_file_name);
         }
     });

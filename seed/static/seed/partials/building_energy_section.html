@@ -26,6 +26,9 @@
             </tr>
           </thead>
           <tbody>
+            <tr ng-show="!green_button_filenames.length">
+              <td>There are no green button files for this building</td>
+            </tr>
             <tr ng-repeat="f in green_button_filenames">
               <td>{$ f $}</td>
             </tr>
