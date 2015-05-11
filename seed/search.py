@@ -185,21 +185,30 @@ def filter_other_params(queryset, other_params, db_columns):
         sanitized = strip_suffixes(k, ['__lt', '__gt', '__lte', '__gte'])
         if sanitized in columns:
             return True
-        else:
-            return False
+        return False
+
+    def is_string_query(q):
+        return isinstance(q, basestring)
+
+    def is_exact_match(q):
+        if is_string_query(q):
+            return re.match(r"""^(["'])(.+)\1$""", q)
+        return False
+
+    def is_empty_match(q):
+        if is_string_query(q):
+            return re.match(r"""^(["'])\1$""", q)
+        return False
 
     # Build query as Q objects so we can AND and OR.
     query_filters = Q()
     for k, v in other_params.iteritems():
         in_columns = is_column(k, db_columns)
-        if in_columns and k != 'q' and v is not None:
-
-            # Is this query a string?
-            is_string_query = isinstance(v, basestring)
+        if in_columns and k != 'q' and v:
 
             # Is this query surrounded by matching quotes?
-            exact_match = re.match(r"""^(["'])(.+)\1$""", v) if is_string_query else False
-            empty_match = re.match(r"""^(["'])\1$""", v) if is_string_query else False
+            exact_match = is_exact_match(v)
+            empty_match = is_empty_match(v)
 
             if exact_match:
                 query_filters &= Q(**{"%s__exact" % k: exact_match.group(2)})
@@ -219,28 +228,47 @@ def filter_other_params(queryset, other_params, db_columns):
 
     # handle extra_data with json_query
     for k, v in other_params.iteritems():
-        if (not is_column(k, db_columns)) and k != 'q' and v != '':
-            if k.endswith(('__gt', '__gte')):
+        if (not is_column(k, db_columns)) and k != 'q' and v:
+
+            # Is this query surrounded by matching quotes?
+            exact_match = is_exact_match(v)
+            empty_match = is_empty_match(v)
+
+
+            # If querying for empty matches, do a hack-y 'contains' query on
+            # the json field to check if the field exists. We're checking 
+            # existence because empty mapped fields are not saved in the
+            # extra_data json field if they contain no data.
+            #
+            # When we bump to Django 1.7, we can switch to the newer
+            # django-pgjson package, and use the new "HAS" operator syntax.
+            # - nicholasserra
+            if empty_match:
+                queryset = queryset.exclude(extra_data__contains='"%s":' % k)
+                continue
+
+            conditions = {
+                'value': v
+            }
+
+            if exact_match:
+                conditions['value'] = exact_match.group(2)
+                conditions['key_cast'] = 'text'
+            elif k.endswith(('__gt', '__gte')):
                 k = strip_suffixes(k, ['__gt', '__gte'])
-                cond = '>'
-                key_cast = 'float'
+                conditions['cond'] = '>'
+                conditions['key_cast'] = 'float'
             elif k.endswith(('__lt', '__lte')):
                 k = strip_suffixes(k, ['__lt', '__lte'])
-                cond = '<'
-                key_cast = 'float'
+                conditions['cond'] = '<'
+                conditions['key_cast'] = 'float'
             else:
-                cond = 'LIKE'
-                key_cast = 'text'
-                v = "%{0}%".format(v)
-            case_insensitive = key_cast == 'text'
+                conditions['cond'] = 'LIKE'
+                conditions['key_cast'] = 'text'
+                conditions['value'] = "%{0}%".format(v)
+                conditions['case_insensitive'] = True
 
-            queryset = queryset.json_query(
-                k,
-                cond=cond,
-                key_cast=key_cast,
-                value=v,
-                case_insensitive=case_insensitive,
-            )
+            queryset = queryset.json_query(k, **conditions)
 
     return queryset
 
