@@ -1218,6 +1218,39 @@ class BuildingDetailViewTests(TestCase):
             places=1,
         )
 
+    def test_get_building_imported_buildings_includes_green_button(self):
+        # arrange
+        self.parent_2.source_type = 6
+        self.parent_2.save()
+        child = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
+
+        url = reverse_lazy("seed:get_building")
+        get_data = {
+            'building_id': child.canonical_building.pk,
+            'organization_id': self.org.pk,
+        }
+
+        # act
+        response = self.client.get(
+            url,
+            get_data,
+            content_type='application/json',
+        )
+        json_string = response.content
+        data = json.loads(json_string)
+
+        self.assertEqual(2,len(data['imported_buildings']))
+
+        # both parents link to their import file
+        self.assertEqual(
+            data['imported_buildings'][0]['import_file'],
+            self.import_file_1.pk
+        )
+        self.assertEqual(
+            data['imported_buildings'][1]['import_file'],
+            self.import_file_2.pk
+        )
+
     def test_update_building_audit_log(self):
         """tests that a building update logs an audit_log"""
         # arrange

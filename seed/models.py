@@ -152,15 +152,16 @@ def get_ancestors(building):
        source_type {
            2: ASSESSED_BS,
            3: PORTFOLIO_BS,
-           4: COMPOSITE_BS
+           4: COMPOSITE_BS,
+           6: GREEN_BUTTON_BS
        }
 
        :param building: BuildingSnapshot inst.
        :returns: list of BuildingSnapshot inst., ancestors of building
     """
     ancestors = []
-    parents = building.parents.filter(source_type__in=[2, 3, 4])
-    ancestors.extend(parents.filter(source_type__in=[2, 3]))
+    parents = building.parents.filter(source_type__in=[2, 3, 4, 6])
+    ancestors.extend(parents.filter(source_type__in=[2, 3, 6]))
     for p in parents:
         ancestors.extend(get_ancestors(p))
     return ancestors
