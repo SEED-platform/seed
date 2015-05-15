@@ -1930,6 +1930,9 @@ def progress(request):
 
     if cache.get(progress_key):
         result = cache.get(progress_key)
+        # The following if statement can be removed once all progress endpoints have been updated to the new json syntax
+        if type(result) != dict:
+            result = {'progress': result}
         result['progress_key'] = progress_key
         return result
     else:
