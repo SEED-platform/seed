@@ -1147,15 +1147,15 @@ def get_column_mapping_suggestions(request):
     field_mappings = get_mappable_types()
     field_names = field_mappings.keys()
     column_types = {}
-    for c in Column.objects.filter(
-        Q(mapped_mappings__super_organization=org_id) |
-        Q(organization__isnull=True)
-    ).exclude(
-        # mappings get created to mappable types
-        # but we deal with them manually so don't
-        # include them here
-        column_name__in=field_names
-    ):
+
+    # Note on exclude:
+    # mappings get created to mappable types but we deal with them manually
+    # so don't include them here
+    columns = Column.objects.select_related('unit').prefetch_related('schemas') \
+        .filter(Q(mapped_mappings__super_organization=org_id) | Q(organization__isnull=True)) \
+        .exclude(column_name__in=field_names)
+
+    for c in columns:
         if c.unit:
             unit = c.unit.get_unit_type_display()
         else:
@@ -1192,7 +1192,7 @@ def get_column_mapping_suggestions(request):
             if item is None:
                 suggested_mappings[col] = (col, 0)
             else:
-                cleaned_field = item.field.replace('-', ' ')
+                cleaned_field = item.field
                 suggested_mappings[col] = (cleaned_field, 100)
 
     else:
@@ -1928,10 +1928,19 @@ def progress(request):
 
     progress_key = json.loads(request.body).get('progress_key')
 
-    return {
-        'progress_key': progress_key,
-        'progress': cache.get(progress_key) or 0
-    }
+    if cache.get(progress_key):
+        result = cache.get(progress_key)
+        # The following if statement can be removed once all progress endpoints have been updated to the new json syntax
+        if type(result) != dict:
+            result = {'progress': result}
+        result['progress_key'] = progress_key
+        return result
+    else:
+        return {
+            'progress_key': progress_key,
+            'progress': 0,
+            'status': 'waiting'
+        }
 
 
 @api_endpoint
@@ -1946,7 +1955,7 @@ def update_building(request):
     :PUT:
 
         {
-        'organization_id': organzation id,
+        'organization_id': organization id,
         'building':
             {
             'canonical_building': The canonical building ID

@@ -18,11 +18,14 @@
  * ng-switch-when="8" == Add files to your Data Set.
  * ng-switch-when="9" == Add files to {$ dataset.name $}
  * ng-switch-when="10" == No matches found
+ * ng-switch-when="11" == Confirm Save Mappings?
+ * ng-switch-when="12" == Error Processing Data
  */
 angular.module('BE.seed.controller.data_upload_modal', [])
 .controller('data_upload_modal_ctrl', [
   '$scope',
   '$modalInstance',
+  '$log',
   'step',
   'dataset',
   '$timeout',
@@ -34,6 +37,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
   function (
     $scope,
     $modalInstance,
+    $log,
     step,
     dataset,
     $timeout,
@@ -161,7 +165,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         }
         if (event_message === "upload_complete") {
             var current_step = $scope.step.number;
-            var data_is_green_button = 
           
             $scope.uploader.status_message = "upload complete";
             $scope.dataset.import_file_id = file.file_id;
@@ -216,6 +219,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             mapping_service.start_mapping(file_id).then(function (dataa){
                 monitor_mapping(dataa.progress_key, file_id);
             });
+        }, function(data) {
+            // Do nothing
         }, $scope.uploader);
     };
 
@@ -232,6 +237,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             matching_service.start_system_matching(file_id).then(function (dataa){
                 monitor_matching(dataa.progress_key, file_id);
             });
+        }, function(data) {
+            // Do nothing
         }, $scope.uploader);
     };
 
@@ -248,6 +255,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.uploader.in_progress = false;
             $scope.uploader.progress = 1;
             $scope.step.number = 5;
+        }, function(data) {
+            // Do nothing
         }, $scope.uploader);
     };
 
@@ -271,6 +280,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                     $scope.step.number = 3;
                 }
 
+            }, function(data){
+                $log.error(data.message);
+                if (data.hasOwnProperty('stacktrace')) $log.error(data.stacktrace);
+                $scope.step_12_error_message = data.message;
+                $scope.step.number = 12;
             }, $scope.uploader);
         });
     };
@@ -311,6 +325,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                                 $scope.step.number = 10;
                             }
                         });
+                    }, function(data) {
+                        // Do nothing
                     },
                     $scope.uploader
                 );

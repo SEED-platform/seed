@@ -6,23 +6,23 @@
                         <tr>
                             <th class="source_data" colspan="{$ columns.length $}">
                                 <div ng-show="show_building_list">
-	                                <form class="form-inline" role="form">
-	                                	<div class="form-group">
-	                                		<label class="control-label">File Source:</label>
-	                                		<select ng-model="file_select.file" ng-options="f.name for f in import_file.dataset.importfiles" ng-change="filter_search()"></select>
-	                                	</div>
-				            			<div class="form-group">
+                                    <form class="form-inline" role="form">
+                                        <div class="form-group">
+                                            <label class="control-label">File Source:</label>
+                                            <select ng-model="file_select.file" ng-options="f.name for f in import_file.dataset.importfiles" ng-change="filter_search()"></select>
+                                        </div>
+                                        <div class="form-group">
 
-					            			<div class="col-sm-10 matching_toggle">
-												<label class="radio-inline" ng-click="filter_by_unmatched()">
-													<input type="radio" name="matchingRadios" id="matchingRadios1" value="unmatched"> <strong>{$ unmatched_buildings $}</strong> Unmatched
-												</label>
-												<label class="radio-inline" ng-click="filter_by_matched()">
-													<input type="radio" name="matchingRadios" id="matchingRadios2" value="matched"> <strong>{$ matched_buildings $}</strong> Matched
-												</label>
-					            			</div>
-				            			</div>
-									</form>
+                                            <div class="col-sm-10 matching_toggle">
+                                                <label class="radio-inline" ng-click="filter_by_unmatched()">
+                                                    <input type="radio" name="matchingRadios" id="matchingRadios1" value="unmatched"> <strong>{$ unmatched_buildings $}</strong> Unmatched
+                                                </label>
+                                                <label class="radio-inline" ng-click="filter_by_matched()">
+                                                    <input type="radio" name="matchingRadios" id="matchingRadios2" value="matched"> <strong>{$ matched_buildings $}</strong> Matched
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </form>
                                 </div>
                             </th>
                             <th class="source_data blank" ng-hide="filter_params.children__isnull"></th>
@@ -88,7 +88,7 @@
                                 </label>
                             </td>
                             <td class="is_aligned_center has_no_padding" ng-hide="filter_params.children__isnull">
-                            	<span>{$ b.confidence * 100 | number:0 $}%</span>
+                                <span>{$ b.confidence * 100 | number:0 $}%</span>
                             </td>
                             <td ng-repeat="c in columns" ng-hide="filter_params.children__isnull">
                                 <span ng-switch on="c.type">
@@ -125,14 +125,16 @@
                 </div>
                 <div class="display_number_entries_text">buildings</div>
             </div>
-            <div class="counts col-sm-6 col-md-6">
+            <div class="counts col-sm-4 col-md-4">
                 <span>Showing {$ showing.start | number:0 $} to {$ showing.end | number:0 $} of {$ number_matching_search | number:0 $} buildings <span class="number_unmatched">({$ unmatched_buildings $} unmatched)</span></span>
             </div>
-            <div class="pager_container col-sm-3 col-md-3">
+            <div class="pager_container col-sm-5 col-md-5">
                 <ul class="pager">
-                  <li ng-class="{disabled: prev_page_disabled}"><a href="javascript:void(0);" ng-click="pagination.prev_page()"><i class="fa fa-angle-double-left"></i> Previous</a></li>
+                    <li ng-class="{disabled: prev_page_disabled}"><a href="javascript:void(0);" ng-click="pagination.first_page()"><i class="fa fa-angle-double-left"></i> First Record</a></li>
+                    <li ng-class="{disabled: prev_page_disabled}"><a href="javascript:void(0);" ng-click="pagination.prev_page()"><i class="fa fa-angle-left"></i> Previous</a></li>
 
-                  <li ng-class="{disabled: next_page_disabled}"><a href="javascript:void(0);" ng-click="pagination.next_page()">Next <i class="fa fa-angle-double-right"></i></a></li>
+                    <li ng-class="{disabled: next_page_disabled}"><a href="javascript:void(0);" ng-click="pagination.next_page()">Next <i class="fa fa-angle-right"></i></a></li>
+                    <li ng-class="{disabled: next_page_disabled}"><a href="javascript:void(0);" ng-click="pagination.last_page()">Last Record <i class="fa fa-angle-double-right"></i></a></li>
                 </ul>
             </div>
         </div>

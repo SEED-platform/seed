@@ -115,28 +115,29 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * @param {number} offset: where to start the progress bar
      * @param {number} multiplier: multiplier for progress val
      * @param {fn} success_fn: function to call when progress is done
+     * @param {fn} failure_fn: function to call when progress is done and the result was not success
      * @param {obj} progress_bar_obj: progress bar object, attr 'progress'
      *   is set with the progress
      */
-    uploader_factory.check_progress_loop = function(progress_key, offset, multiplier, success_fn, progress_bar_obj, debug) {
+    uploader_factory.check_progress_loop = function(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj, debug) {
         if (typeof debug === 'undefined') {
-          debug = false;
+            debug = false;
         }
         uploader_factory.check_progress(progress_key).then(function (data){
-          if (debug) {
-            console.log({progress: data.progress});
-          }
-          var stop = $timeout(function(){
-              progress_bar_obj.progress = (data.progress * multiplier) + offset;
-              if (data.progress < 100) {
-                uploader_factory.check_progress_loop(progress_key, offset, multiplier, success_fn, progress_bar_obj, debug);
-              } else {
-                  success_fn(data);
-              }
-          }, 750);
-        }, function (data, status) {
-          // reject promise
-          console.log(data, status);
+            if (debug) {
+                console.log({progress: data.progress});
+            }
+            var stop = $timeout(function(){
+                progress_bar_obj.progress = (data.progress * multiplier) + offset;
+                if (data.progress < 100) {
+                    uploader_factory.check_progress_loop(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj, debug);
+                } else {
+                    success_fn(data);
+                }
+            }, 750);
+        }, function (data) {
+            // reject promise
+            failure_fn(data);
         });
     };
 

@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-			<a href="#/accounts" class="page_action"><i class="fa fa-chevron-left"></i> Organizations</a>
+            <a href="#/accounts" class="page_action"><i class="fa fa-chevron-left"></i> Organizations</a>
           
         </div>
         <div class="page_title">
@@ -56,18 +56,18 @@
                                 {$ u.email $}
                             </td>
                             <td>
-                            	<div class="row">
-                            		<div class="form-group">
-										<div class="col-sm-12">
-											<select class="form-control input-sm" ng-model="u.role" ng-options="role for role in roles" ng-change="update_role(u)" ng-if="auth.requires_owner">
+                                <div class="row">
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <select class="form-control input-sm" ng-model="u.role" ng-options="role for role in roles" ng-change="update_role(u)" ng-if="auth.requires_owner">
                                             </select>
                                             <span ng-if="!auth.requires_owner">{$ u.role $}</span>
-										</div>
-									</div>
-                            	</div>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                             <td ng-if="auth.can_remove_member">
-                            	<a href="javascript:void(0);" ng-click="remove_member(u)">Remove</a>
+                                <a href="javascript:void(0);" ng-click="remove_member(u)">Remove</a>
                             </td>
                         </tr>
                     </tbody>

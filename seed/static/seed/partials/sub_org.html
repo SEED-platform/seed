@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-			<a href="#/accounts" class="page_action"><i class="fa fa-chevron-left"></i> Organizations</a>
+            <a href="#/accounts" class="page_action"><i class="fa fa-chevron-left"></i> Organizations</a>
           
         </div>
         <div class="page_title">
@@ -44,10 +44,10 @@
                                 <span ng-repeat="owner in sub_org.owners">{$ owner.first_name $} {$ owner.last_name $}<br /></span>
                             </td>
                             <td>
-                            	<span ng-repeat="owner in sub_org.owners">{$ owner.email $}<br /></span>
+                                <span ng-repeat="owner in sub_org.owners">{$ owner.email $}<br /></span>
                             </td>
                             <td ng-if="false">
-                            	<a href="javascript:void(0);" ng-click="remove_sub_org(sub_org)">Remove</a>
+                                <a href="javascript:void(0);" ng-click="remove_sub_org(sub_org)">Remove</a>
                             </td>
                         </tr>
                     </tbody>

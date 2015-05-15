@@ -1,40 +1,37 @@
 <div class="section">
-  <div class="section_header_container">
-    <div class="section_header fixed_height_short has_no_padding">
-      <div class="section_action_container left">
-        <h2><i class="fa fa-lightbulb-o"></i> Energy Data</h2>
-      </div>
-      <div class="section_action_container right" ng-hide="building.edit_form_showing">
-        <a href="javascript:void(0);" ng-click="building.edit_form_showing = true; save_building_state()"
-                                      ng-show="user_role !== 'viewer'" ><i class="fa fa-pencil"></i> Edit</a>
-      </div>
-      <div class="section_action_container right section_action_btn" ng-show="building.edit_form_showing">
-        <a role="button" class="btn btn-default btn-sm" href="javascript:void(0);"
-                                                        ng-click="building.edit_form_showing = false; restore_building()">Cancel</a>
-        <a role="button" class="btn btn-primary btn-sm" href="javascript:void(0);"
-                                                        ng-click="building.edit_form_showing = false; save_building()">Save Changes</a>
-      </div>
+    <div class="section_header_container">
+        <div class="section_header fixed_height_short has_no_padding">
+            <div class="section_action_container left">
+                <h2><i class="fa fa-lightbulb-o"></i> Energy Data</h2>
+            </div>
+            <div class="section_action_container right" ng-hide="building.edit_form_showing">
+                <a href="javascript:void(0);" ng-click="building.edit_form_showing = true; save_building_state()" ng-show="user_role !== 'viewer'" ><i class="fa fa-pencil"></i> Edit</a>
+            </div>
+            <div class="section_action_container right section_action_btn" ng-show="building.edit_form_showing">
+                <a roll="button" class="btn btn-default btn-sm" href="javascript:void(0);" ng-click="building.edit_form_showing = false; restore_building()">Cancel</a>
+                <a roll="button" class="btn btn-primary btn-sm" href="javascript:void(0);" ng-click="building.edit_form_showing = false; save_building()">Save Changes</a>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="section_content_container">
-    <div class="section_content">
-      <div class="table_list_container">
-        <table class="table table-striped table_highlight_first">
-          <thead>
-            <tr>
-              <th>Uploaded Green Button Files</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr ng-show="!green_button_filenames.length">
-              <td>There are no green button files for this building</td>
-            </tr>
-            <tr ng-repeat="f in green_button_filenames">
-              <td>{$ f $}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="section_content_container">
+        <div class="section_content">
+            <div class="table_list_container">
+               <table class="table table-striped table_highlight_first">
+                   <thead>
+                       <tr>
+                           <th>Uploaded Green Button Files</th>
+                       </tr>
+                   </thead>
+                   <tbody>
+                       <tr ng-show="!green_button_filenames.length">
+                           <td>There are no green button files for this building</td>
+                       </tr>
+                       <tr ng-repeat="f in green_button_filenames">
+                           <td>{$ f $}</td>
+                       </tr>
+                   </tbody>
+               </table>
+           </div>
+        </div>
     </div>
-  </div>
 </div>
