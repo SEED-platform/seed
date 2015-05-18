@@ -457,6 +457,11 @@ def get_building(request):
     building_dict = building.to_dict(exportable_field_names)
 
     ancestors = get_ancestors(building)
+
+    # Add child node (in case it hasn't yet been matched with any other
+    # buildings). When this happens, ancestors should also be the empty list.
+    if building.source_type in [ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS]:
+        ancestors.append(building)
     imported_buildings_list = []
     for b in ancestors:
         d = b.to_dict(exportable_field_names)
