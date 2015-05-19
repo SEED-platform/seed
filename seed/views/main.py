@@ -1152,15 +1152,15 @@ def get_column_mapping_suggestions(request):
     field_mappings = get_mappable_types()
     field_names = field_mappings.keys()
     column_types = {}
-
-    # Note on exclude:
-    # mappings get created to mappable types but we deal with them manually
-    # so don't include them here
-    columns = Column.objects.select_related('unit').prefetch_related('schemas') \
-        .filter(Q(mapped_mappings__super_organization=org_id) | Q(organization__isnull=True)) \
-        .exclude(column_name__in=field_names)
-
-    for c in columns:
+    for c in Column.objects.filter(
+        Q(mapped_mappings__super_organization=org_id) |
+        Q(organization__isnull=True)
+    ).exclude(
+        # mappings get created to mappable types
+        # but we deal with them manually so don't
+        # include them here
+        column_name__in=field_names
+    ):
         if c.unit:
             unit = c.unit.get_unit_type_display()
         else:
