@@ -7,38 +7,38 @@
             <h1><i class="fa fa-building-o"></i> {$ search.number_matching_search | number:0 $} Buildings</h1>
         </div>
         <div class="right page_action_container page_action_btn">
-	        
+            
         </div>
     </div>
 </div>
 <div class="section_nav_container">
-	<div class="section_nav">
-		<a ng-href="#/buildings" class="active">Buildings List</a><a ng-href="#/buildings/settings">List Settings</a>
-	</div>
+    <div class="section_nav">
+        <a ng-href="#/buildings" class="active">Buildings List</a><a ng-href="#/buildings/settings">List Settings</a>
+    </div>
 </div>
 <div class="section">
-	<div class="alert_container" ng-show="show_alert">
-		<div class="alert alert-success">
-        	<button type="button" class="close" ng-click="show_alert = false">&times;</button>
-        	You successfully created the project <a href="#"><strong>{$ project.name $}</strong></a>.
-	    </div>
-	</div>
+    <div class="alert_container" ng-show="show_alert">
+        <div class="alert alert-success">
+            <button type="button" class="close" ng-click="show_alert = false">&times;</button>
+            You successfully created the project <a href="#"><strong>{$ project.name $}</strong></a>.
+        </div>
+    </div>
     <div class="section_header_container">
         <div class="section_header fixed_height">
             <div class="left section_action_container">
-            	<div class="check_action">
-	                <div class="btn-group" ng-style="nothing_selected_cursor()">
-	                  <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" ng-disabled="nothing_selected()">
-	                    Building Actions <span class="caret"></span>
-	                  </button>
-	                  <ul class="dropdown-menu" role="menu">
-	                    <li ng-hide="menu.user.organization.user_role === 'viewer'"><a href="javascript:void(0);" data-toggle="modal" data-target="#newProjectModal" ng-click="set_initial_project_state()">Create a new project</a></li>
-	                    <li ng-hide="menu.user.organization.user_role === 'viewer'"><a href="javascript:void(0);" data-toggle="modal" data-target="#existingProjectModal" ng-click="create_project_state='create'">Add to an existing project</a></li>
+                <div class="check_action">
+                    <div class="btn-group" ng-style="nothing_selected_cursor()">
+                      <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" ng-disabled="nothing_selected()">
+                        Building Actions <span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu" role="menu">
+                        <li ng-hide="menu.user.organization.user_role === 'viewer'"><a href="javascript:void(0);" data-toggle="modal" data-target="#newProjectModal" ng-click="set_initial_project_state()">Create a new project</a></li>
+                        <li ng-hide="menu.user.organization.user_role === 'viewer'"><a href="javascript:void(0);" data-toggle="modal" data-target="#existingProjectModal" ng-click="create_project_state='create'">Add to an existing project</a></li>
                       <li ng-hide="menu.user.organization.user_role === 'viewer'"><a href="javascript:void(0);" ng-click="open_delete_modal()">Delete Buildings</a></li>
                       <li><a href="javascript:void(0);" ng-click="open_export_modal()">Export Buildings</a></li>
-	                  </ul>
-	                </div>
-            	</div>
+                      </ul>
+                    </div>
+                </div>
             </div>
             <div class="right section_action_container section_action_btn"></div>
         </div>
@@ -57,80 +57,80 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <form>
-	      <div class="modal-header">
-	        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times"></i></button>
-	        <h4 class="modal-title" id="newProjectModalLabel" ng-show="create_project_state == 'create'">Create a New Project</h4>
-	        <h4 class="modal-title" id="newProjectModalLabel" ng-show="create_project_state == 'adding'">Adding buildings to project '{$ project.name $}'</h4>
-	        <h4 class="modal-title" id="newProjectModalLabel" ng-show="create_project_state == 'success'">Success!</h4>
-	      </div>
-	      <div class="modal-body no_bottom_padding form-horizontal">
-	        <div class="alert alert-danger" ng-show="create_project_error">
-	            {$ create_project_error_message $}</a>.
-	        </div>
-	        <div class="form-group" ng-show="create_project_state == 'create'">
-	            <label class="control-label col-sm-3" for="projectName">Project Name</label>
-	            <div class="col-sm-8">
-	                <input type="text" class="form-control" id="projectName" ng-model="project.name" placeholder="Project Name" required>
-	            </div>
-	        </div>
-	        <div class="form-group row" ng-show="create_project_state == 'create'">
-		        <div class="col-sm-offset-3 col-sm-8">
-		            <div class="checkbox complianceCheckbox">
-		                <label>
-		                    <input type="checkbox" ng-model="project.is_compliance"> Add compliance information.
-		                </label>
-		            </div>
-		        </div>
-	        </div>
-	      </div>
-	      <div class="modal-header" ng-show="project.is_compliance && create_project_state == 'create'">
-	            <h4 class="modal-title" id="editProjectComplianceModalLabel">Compliance Information</h4>
-	      </div>
-	      <div class="modal-body no_bottom_padding form-horizontal" ng-show="project.is_compliance && create_project_state == 'create'">
-	        <div class="form-group">
-	            <label class="control-label col-sm-3" for="projectCompliance">Submittal Type</label>
-	            <div class="col-sm-8">
-	                <select class="form-control" id="projectCompliance" ng-model="project.compliance_type">
-	                  <option>Benchmarking</option>
-	                  <option>Auditing</option>
-	                  <option>Retro Commissioning</option>
-	                </select>
-	            </div>
-	        </div>
-	        <div class="form-group">
-	            <label class="control-label col-sm-3" for="projectStartDate">Year Ending Date</label>
-	            <div class="col-sm-8">
-	                <input type="month" class="form-control" id="projectStartDate" ng-model="project.end_date">
-	                <span class="help-block">Choose the year ending month for report period. </span>
-	            </div>
-	        </div>
-	        <div class="form-group">
-	            <label class="control-label col-sm-3" for="projectDeadline">Reporting Deadline</label>
-	            <div class="col-sm-8">
-	                <input type="date" class="form-control" id="projectDeadline" ng-model="project.deadline_date">
-	            </div>
-	        </div>
-	      </div>
-			<div class="col-sm-7" ng-show="create_project_state == 'adding'">
-				<div class="progress">
-		            <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: {$ progress_percentage | number: 0 $}%;">
-		            <span class="sr-only">40% Complete</span>
-		          </div>
-		        </div>
-			</div>
-			<div class="col-sm-5" ng-show="create_project_state == 'adding'">
-				{$ progress_numerator $} / {$ progress_denominator $} Buildings
-			</div>
-			<div class="alert alert-success" ng-show="create_project_state == 'success'">
-	            {$ progress_denominator $} buildings added to the project <a data-dismiss="modal" ng-click="go_to_project()"><strong>{$ project.name $}</strong></a>.
-	        </div>
-	      <div class="modal-footer">
-	        <button type="button" class="btn btn-default" data-dismiss="modal" ng-show="create_project_state == 'create'">Cancel</button>
-	        <button type="button" class="btn btn-default" data-dismiss="modal" ng-show="create_project_state == 'success'">Close</button>
-	        <input type="submit" class="btn btn-primary" ng-click="create_project()" ng-show="create_project_state == 'create'" value="Create Project" />
-	        <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="go_to_project()" ng-show="create_project_state == 'success'">View Project</button>
-	      </div>
-	    </form>
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times"></i></button>
+            <h4 class="modal-title" id="newProjectModalLabel" ng-show="create_project_state == 'create'">Create a New Project</h4>
+            <h4 class="modal-title" id="newProjectModalLabel" ng-show="create_project_state == 'adding'">Adding buildings to project '{$ project.name $}'</h4>
+            <h4 class="modal-title" id="newProjectModalLabel" ng-show="create_project_state == 'success'">Success!</h4>
+          </div>
+          <div class="modal-body no_bottom_padding form-horizontal">
+            <div class="alert alert-danger" ng-show="create_project_error">
+                {$ create_project_error_message $}</a>.
+            </div>
+            <div class="form-group" ng-show="create_project_state == 'create'">
+                <label class="control-label col-sm-3" for="projectName">Project Name</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="projectName" ng-model="project.name" placeholder="Project Name" required>
+                </div>
+            </div>
+            <div class="form-group row" ng-show="create_project_state == 'create'">
+                <div class="col-sm-offset-3 col-sm-8">
+                    <div class="checkbox complianceCheckbox">
+                        <label>
+                            <input type="checkbox" ng-model="project.is_compliance"> Add compliance information.
+                        </label>
+                    </div>
+                </div>
+            </div>
+          </div>
+          <div class="modal-header" ng-show="project.is_compliance && create_project_state == 'create'">
+                <h4 class="modal-title" id="editProjectComplianceModalLabel">Compliance Information</h4>
+          </div>
+          <div class="modal-body no_bottom_padding form-horizontal" ng-show="project.is_compliance && create_project_state == 'create'">
+            <div class="form-group">
+                <label class="control-label col-sm-3" for="projectCompliance">Submittal Type</label>
+                <div class="col-sm-8">
+                    <select class="form-control" id="projectCompliance" ng-model="project.compliance_type">
+                      <option>Benchmarking</option>
+                      <option>Auditing</option>
+                      <option>Retro Commissioning</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3" for="projectStartDate">Year Ending Date</label>
+                <div class="col-sm-8">
+                    <input type="month" class="form-control" id="projectStartDate" ng-model="project.end_date">
+                    <span class="help-block">Choose the year ending month for report period. </span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3" for="projectDeadline">Reporting Deadline</label>
+                <div class="col-sm-8">
+                    <input type="date" class="form-control" id="projectDeadline" ng-model="project.deadline_date">
+                </div>
+            </div>
+          </div>
+            <div class="col-sm-7" ng-show="create_project_state == 'adding'">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: {$ progress_percentage | number: 0 $}%;">
+                    <span class="sr-only">40% Complete</span>
+                  </div>
+                </div>
+            </div>
+            <div class="col-sm-5" ng-show="create_project_state == 'adding'">
+                {$ progress_numerator $} / {$ progress_denominator $} Buildings
+            </div>
+            <div class="alert alert-success" ng-show="create_project_state == 'success'">
+                {$ progress_denominator $} buildings added to the project <a data-dismiss="modal" ng-click="go_to_project()"><strong>{$ project.name $}</strong></a>.
+            </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal" ng-show="create_project_state == 'create'">Cancel</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal" ng-show="create_project_state == 'success'">Close</button>
+            <input type="submit" class="btn btn-primary" ng-click="create_project()" ng-show="create_project_state == 'create'" value="Create Project" />
+            <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="go_to_project()" ng-show="create_project_state == 'success'">View Project</button>
+          </div>
+        </form>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
@@ -149,11 +149,11 @@
         </div>
       <div class="modal-body">
         <div class="form-group" ng-show="create_project_state == 'create'">
-			<label class="sr-only" for="projectName">Project Name</label>
-			<div class="col-sm-8">
-				<select class="form-control" id="existingProjectName" ng-options="p as p.name for p in projects" ng-model="project"></select>
-			</div>
-		</div>
+            <label class="sr-only" for="projectName">Project Name</label>
+            <div class="col-sm-8">
+                <select class="form-control" id="existingProjectName" ng-options="p as p.name for p in projects" ng-model="project"></select>
+            </div>
+        </div>
         <div class="col-sm-7" ng-show="create_project_state == 'adding'">
             <div class="progress">
                 <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: {$ progress_percentage | number: 0 $}%;">

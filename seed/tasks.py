@@ -8,6 +8,9 @@ import re
 import string
 import operator
 import os
+import traceback
+
+from _csv import Error
 
 from django.core.mail import send_mail
 from django.conf import settings
@@ -21,6 +24,7 @@ from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse_lazy
 
 from celery.task import task, chord
+from celery.utils.log import get_task_logger
 
 from audit_logs.models import AuditLog
 from landing.models import SEEDUser as User
@@ -70,6 +74,8 @@ from superperms.orgs.models import Organization
 
 from . import exporter
 
+
+logger = get_task_logger(__name__)
 
 # Maximum number of possible matches under which we'll allow a system match.
 MAX_SEARCH = 5
@@ -607,7 +613,7 @@ def finish_raw_save(results, file_pk):
     import_file.raw_save_done = True
     import_file.save()
     prog_key = get_prog_key('save_raw_data', file_pk)
-    cache.set(prog_key, 100)
+    cache.set(prog_key, {'status': 'success', 'progress': 100})
 
 
 def cache_first_rows(import_file, parser):
@@ -626,9 +632,13 @@ def cache_first_rows(import_file, parser):
 
     validation_rows = []
     for i in range(5):
-        row = rows.next()
-        if row:
-            validation_rows.append(row)
+        try:
+            row = rows.next()
+            if row:
+                validation_rows.append(row)
+        except StopIteration:
+            """Less than 5 rows in file"""
+            break
 
     #This is a fix for issue #24 to use original field order when importing
     #This is ultimately not the correct place for this fix.  The correct fix 
@@ -638,21 +648,20 @@ def cache_first_rows(import_file, parser):
     #But until we can patch the mcm code this should fix the issue.
     local_reader = parser.reader
     if isinstance(local_reader, reader.ExcelParser):
-        first_row = local_reader.sheet.row_values(local_reader.header_row)        
+        first_row = local_reader.sheet.row_values(local_reader.header_row)
     elif isinstance(local_reader, reader.CSVParser):
-        first_row = local_reader.csvreader.fieldnames        
+        first_row = local_reader.csvreader.fieldnames
         first_row = [local_reader._clean_super(x) for x in first_row]
     else:
         #default to the original behavior if a new type of parser for lack of anything better
         first_row = rows.next().keys()
-    
+
     tmp = []
     for r in validation_rows:
         tmp.append(ROW_DELIMITER.join([str(r[x]) for x in first_row]))
-    
-        
+
     import_file.cached_second_to_fifth_row = "\n".join(tmp)
-    
+
     if first_row:
         first_row = ROW_DELIMITER.join(first_row)
     import_file.cached_first_row = first_row or ''
@@ -694,36 +703,59 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
 @lock_and_track
 def _save_raw_data(file_pk, *args, **kwargs):
     """Chunk up the CSV and save data into the DB raw."""
-    import_file = ImportFile.objects.get(pk=file_pk)
 
-    if import_file.raw_save_done:
-        return {'status': 'warning', 'message': 'raw data already saved'}
-
-    if import_file.source_type == "Green Button Raw":
-        return _save_raw_green_button_data(file_pk, *args, **kwargs)
-
-    parser = reader.MCMParser(import_file.local_file)
-    cache_first_rows(import_file, parser)
-    rows = parser.next()
-    import_file.num_rows = 0
-
+    result = {'status': 'success', 'progress': 100}
     prog_key = get_prog_key('save_raw_data', file_pk)
+    try:
+        import_file = ImportFile.objects.get(pk=file_pk)
 
-    tasks = []
-    for chunk in batch(rows, 100):
-        import_file.num_rows += len(chunk)
-        tasks.append(_save_raw_data_chunk.subtask((chunk, file_pk, prog_key)))
+        if import_file.raw_save_done:
+            result['status'] = 'warning'
+            result['message'] = 'Raw data already saved'
+            cache.set(prog_key, result)
+            return result
 
-    tasks = add_cache_increment_parameter(tasks)
-    import_file.num_columns = parser.num_columns()
-    import_file.save()
+        if import_file.source_type == "Green Button Raw":
+            return _save_raw_green_button_data(file_pk, *args, **kwargs)
 
-    if tasks:
-        chord(tasks, interval=15)(finish_raw_save.subtask([file_pk]))
-    else:
-        finish_raw_save.task(file_pk)
+        parser = reader.MCMParser(import_file.local_file)
+        cache_first_rows(import_file, parser)
+        rows = parser.next()
+        import_file.num_rows = 0
 
-    return {'status': 'success'}
+        tasks = []
+        for chunk in batch(rows, 100):
+            import_file.num_rows += len(chunk)
+            tasks.append(_save_raw_data_chunk.subtask((chunk, file_pk, prog_key)))
+
+        tasks = add_cache_increment_parameter(tasks)
+        import_file.num_columns = parser.num_columns()
+        import_file.save()
+
+        if tasks:
+            chord(tasks, interval=15)(finish_raw_save.subtask([file_pk]))
+        else:
+            finish_raw_save.task(file_pk)
+
+    except StopIteration:
+        result['status'] = 'error'
+        result['message'] = 'StopIteration Exception'
+        result['stacktrace'] = traceback.format_exc()
+    except Error as e:
+        result['status'] = 'error'
+        result['message'] = 'File Content Error: ' + e.message
+        result['stacktrace'] = traceback.format_exc()
+    except KeyError as e:
+        result['status'] = 'error'
+        result['message'] = 'Invalid Column Name: "' + e.message + '"'
+        result['stacktrace'] = traceback.format_exc()
+    except Exception as e:
+        result['status'] = 'error'
+        result['message'] = 'Unhandled Error: ' + e.message
+        result['stacktrace'] = traceback.format_exc()
+
+    cache.set(prog_key, result)
+    return result
 
 
 @task
@@ -777,7 +809,7 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
 @task
 @lock_and_track
 def match_buildings(file_pk, user_pk):
-    """kicks off system matching, returns progress key"""
+    """kicks off system matching, returns progress key #NL -- this seems to return a JSON--not a progress key?"""
     import_file = ImportFile.objects.get(pk=file_pk)
     if import_file.matching_done:
         prog_key = get_prog_key('match_buildings', file_pk)
@@ -925,7 +957,7 @@ def _findMatches(un_m_address,canonical_buildings_addresses):
     for cb in canonical_buildings_addresses:
         if un_m_address.lower()==cb.lower(): #this second lower may be obsolete now
             match_list.append((un_m_address, 1))
-    return  match_list    
+    return match_list
 
 
 @task

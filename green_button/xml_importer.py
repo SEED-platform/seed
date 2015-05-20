@@ -119,7 +119,7 @@ def interval_data(reading_xml_data):
     :returns: dictionary representing a time series reading with keys
     'cost', 'value', 'start_time', and 'duration'.
     """
-    cost = reading_xml_data['cost']
+    cost = reading_xml_data.get('cost')
     value = reading_xml_data['value']
 
     time_period = reading_xml_data['timePeriod']
@@ -155,8 +155,8 @@ def meter_data(raw_meter_meta):
     # this function currently assumes those types are present and does
     # not check for any other types
 
-    currency = params_data['currency']
-    power_of_ten_multiplier = params_data['powerOfTenMultiplier']
+    currency = params_data.get('currency')
+    power_of_ten_multiplier = params_data.get('powerOfTenMultiplier')
     uom = params_data['uom']
 
     result = {

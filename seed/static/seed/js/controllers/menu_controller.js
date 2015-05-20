@@ -50,16 +50,22 @@ angular.module('BE.seed.controller.menu', [])
     $scope.menu.create_project_error = false;
     $scope.menu.create_project_error_message = "";
     $scope.saving_indicator = false;
+    $scope.menu.loading = false;
     $scope.menu.route_load_error = false;
     $scope.menu.user = {};
 
     $scope.$on("$routeChangeError", function(event, current, previous, rejection) {
+	$scope.menu.loading = false;
         $scope.menu.route_load_error = true;
         if (rejection === "not authorized" || rejection === "Your page could not be located!") {
             $scope.menu.error_message = rejection;
         }
     });
+    $scope.$on("$routeChangeStart", function($event, next, current) {
+        $scope.menu.loading = next.controller === "mapping_controller";
+    });
     $scope.$on("$routeChangeSuccess", function() {
+	$scope.menu.loading = false;
         $scope.menu.route_load_error = false;
     });
     $scope.$on('app_error', function(event, data){

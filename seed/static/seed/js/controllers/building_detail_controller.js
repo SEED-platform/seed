@@ -32,6 +32,15 @@ angular.module('BE.seed.controller.building_detail', [])
     $scope.building_copy = {};
     $scope.data_columns = [];
     $scope.audit_logs = audit_payload.audit_logs;
+    $scope.green_button_filenames = [];
+
+    // gather green button filenames
+    building_payload.imported_buildings.forEach(function(e) {
+        if (e.source_type == 6) { // GREEN_BUTTON_BS
+            $scope.green_button_filenames.push(e.import_file_name);
+        }
+    });
+
     // set the tab
     $scope.section = $location.hash();
     /**

@@ -11,7 +11,7 @@
  *              `message` - string - options: "upload_submitted",
  *              "upload_in_progress", "upload_complete", and "invalid_extension"
  *              `filename` - string name of the file uploaded
- *              `progress` - JS object with keys `loaded` and `total` wehere
+ *              `progress` - JS object with keys `loaded` and `total` where
  *                           `loaded` / `total` * 100.0 is the percent uploaded
  *  importrecord - int or string - id of import record or dataset
  *  
@@ -111,7 +111,7 @@ var makeS3Uploader = function(scope, element, attrs, filename) {
          * onComplete: overloaded callback that calls the callback defined
          * in the element attribute unless the upload failed, which will
          * fire a window alert. Passes as arguments to the callback
-         * a message indicating upload has copmleted, "upload_complete", and
+         * a message indicating upload has completed, "upload_complete", and
          * the filename. 
          */
         onComplete: function(id, fileName, responseJSON) {
@@ -242,7 +242,7 @@ var makeFileSystemUploader = function(scope, element, attrs, filename) {
              * onComplete: overloaded callback that calls the callback defined
              * in the element attribute unless the upload failed, which will
              * fire a window alert. Passes as arguments to the callback
-             * a message indicating upload has copmleted, "upload_complete", and
+             * a message indicating upload has completed, "upload_complete", and
              * the filename. 
              */
             onComplete: function(id, fileName, responseJSON) {

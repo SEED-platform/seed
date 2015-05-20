@@ -130,6 +130,29 @@ angular.module('BE.seed.controller.matching', [])
         $scope.next_page_disabled = $scope.current_page === $scope.num_pages;
 
     };
+
+    /**
+     * first_page: triggered when the `first` paging button is clicked, it
+     *   sets the results to the first page and shows that page
+     */
+    $scope.pagination.first_page = function() {
+        $scope.current_page = 1;
+        $scope.filter_search();
+    };
+
+    /**
+     * last_page: triggered when the `last` paging button is clicked, it
+     *   sets the results to the last page and shows that page
+     */
+    $scope.pagination.last_page = function() {
+        $scope.current_page = $scope.num_pages;
+        $scope.filter_search();
+    };
+
+    /**
+     * next_page: triggered when the `next` paging button is clicked, it
+     *   increments the page of the results, and fetches that page
+     */
     $scope.pagination.next_page = function() {
         $scope.current_page += 1;
         if ($scope.current_page > $scope.num_pages) {
@@ -137,6 +160,11 @@ angular.module('BE.seed.controller.matching', [])
         }
         $scope.filter_search();
     };
+
+    /**
+     * prev_page: triggered when the `previous` paging button is clicked, it
+     *   decrements the page of the results, and fetches that page
+     */
     $scope.pagination.prev_page = function() {
         $scope.current_page -= 1;
         if ($scope.current_page < 1) {

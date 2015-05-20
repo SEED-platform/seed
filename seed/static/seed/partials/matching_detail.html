@@ -59,19 +59,19 @@
                             </tr>
                         </thead>
                         <tbody>
-                             <tr>
-		                        <td class="to_match check is_aligned_center" ng-show="!building.matched"><i class="fa fa-question-circle"></i></td>
-		                        <td class="to_match check is_aligned_center" ng-show="building.matched"><i class="fa fa-check"></i></td>
-		
-		                        <td class="to_match">{$ building.property_id $}</td>
-		                        <td class="to_match">{$ building.extra_data['Custom Property ID 1 - ID'] $}</td>
-		                        <td class="to_match">{$ building.property_name $}</td>
-		                        <td class="to_match">{$ building.address_line_1 $}</td>
-		                        <td class="to_match">{$ building.year_built $}</td>
-		                        <td class="to_match">{$ building.postal_code $}</td>
-		                        <td class="to_match">{$ building.property_floor_area_bldg_park | number:0 $}</td>
-		                    </tr>
-		                    <tr ng-repeat="b in assessed_buildings | filter:filter_params:strict">
+                            <tr>
+                                <td class="to_match check is_aligned_center" ng-show="!building.matched"><i class="fa fa-question-circle"></i></td>
+                                <td class="to_match check is_aligned_center" ng-show="building.matched"><i class="fa fa-check"></i></td>
+        
+                                <td class="to_match">{$ building.property_id $}</td>
+                                <td class="to_match">{$ building.extra_data['Custom Property ID 1 - ID'] $}</td>
+                                <td class="to_match">{$ building.property_name $}</td>
+                                <td class="to_match">{$ building.address_line_1 $}</td>
+                                <td class="to_match">{$ building.year_built $}</td>
+                                <td class="to_match">{$ building.postal_code $}</td>
+                                <td class="to_match">{$ building.property_floor_area_bldg_park | number:0 $}</td>
+                            </tr>
+                            <tr ng-repeat="b in assessed_buildings | filter:filter_params:strict">
                                 <td class="is_aligned_center">
                                     <input type="checkbox" ng-model="b.matched" ng-change="toggle_match(b)">
                                 </td>
@@ -92,25 +92,27 @@
                     </table>
                 </div>
                 <div class="table_footer">
-                <div class="display_number_entries col-sm-3 col-md-3" ng-hide="true">
-                     <div class="display_number_entries_text">Display:</div>
-                     <div class="display_number_entries_select">
-                        <select class="form-control input-sm col-xs-2" name="number_per_page_select" id="number_per_page_select" ng-options="number_per_page_option for number_per_page_option in number_per_page_options" ng-model="number_per_page_options_model" ng-change="update_number_per_page()">
-                        </select>
+                    <div class="display_number_entries col-sm-3 col-md-3" ng-hide="true">
+                        <div class="display_number_entries_text">Display:</div>
+                        <div class="display_number_entries_select">
+                            <select class="form-control input-sm col-xs-2" name="number_per_page_select" id="number_per_page_select" ng-options="number_per_page_option for number_per_page_option in number_per_page_options" ng-model="number_per_page_options_model" ng-change="update_number_per_page()">
+                            </select>
+                        </div>
+                        <div class="display_number_entries_text">buildings</div>
                     </div>
-                    <div class="display_number_entries_text">buildings</div>
+                    <div class="counts col-sm-4 col-md-4">
+                        <span>{$ assessed_buildings.length | number:0 $} possible matches</span>
+                    </div>
+                    <div class="pager_container col-sm-5 col-md-5" ng-hide="true">
+                        <ul class="pager">
+                            <li ng-class="{disabled: prev_page_disabled}"><a ng-click="first_page()"><i class="fa fa-angle-double-left"></i> First Record</a></li>
+                            <li ng-class="{disabled: prev_page_disabled}"><a ng-click="prev_page()"><i class="fa fa-angle-left"></i> Previous</a></li>
+
+                            <li ng-class="{disabled: next_page_disabled}"><a ng-click="next_page()">Next <i class="fa fa-angle-right"></i></a></li>
+                            <li ng-class="{disabled: next_page_disabled}"><a ng-click="last_page()">Last Record <i class="fa fa-angle-double-right"></i></a></li>
+                        </ul>
+                    </div>
                 </div>
-            <div class="counts col-sm-6 col-md-6">
-                <span>{$ assessed_buildings.length | number:0 $} possible matches</span>
-            </div>
-            <div class="pager_container col-sm-3 col-md-3" ng-hide="true">
-                <ul class="pager">
-                  <li ng-class="{disabled: prev_page_disabled}"><a ng-click="prev_page()"><i class="fa fa-angle-double-left"></i> Previous</a></li>
-        
-                  <li ng-class="{disabled: next_page_disabled}"><a ng-click="next_page()">Next <i class="fa fa-angle-double-right"></i></a></li>
-                </ul>
-            </div>
-        </div>
             </div>
         </div>
     </div>

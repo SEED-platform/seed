@@ -78,6 +78,18 @@ angular.module('BE.seed.service.search', [])
      * functions
      */
 
+    search_service.init_storage = function () {
+        // Check session storage for order and sort values.
+        if (typeof(Storage) !== "undefined" && sessionStorage.getItem('seedBuildingOrderBy') !== null) {
+            saas.order_by = sessionStorage.getItem('seedBuildingOrderBy');
+            saas.sort_column = sessionStorage.getItem('seedBuildingOrderBy');
+        }
+
+        if (typeof(Storage) !== "undefined" && sessionStorage.getItem('seedBuildingSortReverse') !== null) {
+            saas.sort_reverse = JSON.parse(sessionStorage.getItem('seedBuildingSortReverse'));
+        }
+    };
+
     /**
      * sanitize_params: removes filter params with null or undefined values
      */
@@ -195,6 +207,24 @@ angular.module('BE.seed.service.search', [])
     };
 
     /**
+    * first_page: triggered when the `first` paging button is clicked, it
+    *   sets the page to the first in the results, and fetches that page
+    */
+    search_service.first_page = function() {
+      this.current_page = 1;
+      this.search_buildings();
+    };
+
+    /**
+    * last_page: triggered when the `last` paging button is clicked, it
+    *   sets the page to the last in the results, and fetches that page
+    */
+    search_service.last_page = function() {
+      this.current_page = this.num_pages;
+      this.search_buildings();
+    };
+
+    /**
      * next_page: triggered when the `next` paging button is clicked, it
      *   increments the page of the results, and fetches that page
      */
@@ -306,6 +336,12 @@ angular.module('BE.seed.service.search', [])
                     saas.sort_column = this.sort_column;
                 }
             }
+
+            if (typeof(Storage) !== "undefined") {
+                sessionStorage.setItem('seedBuildingOrderBy', saas.sort_column);
+                sessionStorage.setItem('seedBuildingSortReverse', saas.sort_reverse);
+            }
+
             saas.order_by = this.sort_column;
             saas.current_page = 1;
             saas.search_buildings();
