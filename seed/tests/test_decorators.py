@@ -38,19 +38,19 @@ class TestDecorators(TestCase):
         increment = 25.0
         # Fresh increment, this initializes the value.
         decorators.increment_cache(test_key, increment)
-        self.assertEqual(float(cache.get(test_key)), expected)
+        self.assertEqual(float(cache.get(test_key)['progress']), expected)
 
         # Increment an existing key
         decorators.increment_cache(test_key, increment)
         expected = 50.0
-        self.assertEqual(float(cache.get(test_key)), expected)
+        self.assertEqual(float(cache.get(test_key)['progress']), expected)
 
         # This should put us well over 100.0 in incrementation w/o bounds check.
         for i in range(10):
             decorators.increment_cache(test_key, increment)
 
         expected = 100.0
-        self.assertEqual(float(cache.get(test_key)), expected)
+        self.assertEqual(float(cache.get(test_key)['progress']), expected)
 
     #
     ## Tests for decorators themselves.
@@ -94,4 +94,4 @@ class TestDecorators(TestCase):
 
         fake_func(self.pk)
 
-        self.assertEqual(float(cache.get(key, 0.0)), expected)
+        self.assertEqual(float(cache.get(key, 0.0)['progress']), expected)
