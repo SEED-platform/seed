@@ -3,7 +3,6 @@
 """
 import json
 
-from django.contrib.auth.models import User
 from django.utils.unittest import TestCase
 from django.http import HttpResponse, HttpResponseForbidden
 
@@ -15,6 +14,8 @@ from superperms.orgs.models import (
     Organization,
     OrganizationUser,
 )
+
+from landing.models import SEEDUser as User
 
 #
 # Copied wholesale from django-brake's tests

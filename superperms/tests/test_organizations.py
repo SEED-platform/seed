@@ -1,7 +1,6 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
-from django.contrib.auth.models import User
 from django.utils.unittest import TestCase
 
 from superperms.orgs.exceptions import TooManyNestedOrgs
@@ -14,6 +13,8 @@ from superperms.orgs.models import (
     Organization,
     OrganizationUser,
 )
+
+from landing.models import SEEDUser as User
 
 
 class TestOrganizationUser(TestCase):
