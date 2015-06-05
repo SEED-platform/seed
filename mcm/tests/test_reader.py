@@ -3,6 +3,7 @@
 """
 from unittest import TestCase
 
+import os
 import unicodecsv
 
 from mcm import reader
@@ -11,7 +12,8 @@ from mcm.tests import utils
 
 class TestCSVParser(TestCase):
     def setUp(self):
-        self.csv_f = open('test_data/test_espm.csv', 'rb')
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm.csv'
+        self.csv_f = open(test_file, 'rb')
         self.parser = reader.CSVParser(self.csv_f)
 
     def tearDown(self):
@@ -52,7 +54,8 @@ class TestCSVParser(TestCase):
 
 class TestMCMParserCSV(TestCase):
     def setUp(self):
-        self.csv_f = open('test_data/test_espm.csv', 'rb')
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm.csv'
+        self.csv_f = open(test_file, 'rb')
         self.parser = reader.MCMParser(self.csv_f)
         self.total_callbacks = 0
 
@@ -83,13 +86,14 @@ class TestMCMParserCSV(TestCase):
         # There's always at least one batch per file.
         self.assertEqual(self.total_callbacks, 1)
 
-    def test_num_colums(self):
+    def test_num_columns(self):
         self.assertEqual(self.parser.num_columns(), 250)
 
 
 class TestMCMParserXLS(TestCase):
     def setUp(self):
-        self.xls_f = open('test_data/test_espm.xls', 'rb')
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm.xls'
+        self.xls_f = open(test_file, 'rb')
         self.parser = reader.MCMParser(self.xls_f)
         self.total_callbacks = 0
 
@@ -120,13 +124,14 @@ class TestMCMParserXLS(TestCase):
         # There's always at least one batch per file.
         self.assertEqual(self.total_callbacks, 1)
 
-    def test_num_colums(self):
+    def test_num_columns(self):
         self.assertEqual(self.parser.num_columns(), 250)
 
 
 class TestMCMParserXLSX(TestCase):
     def setUp(self):
-        self.xlsx_f = open('test_data/test_espm.xlsx', 'rb')
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm.xlsx'
+        self.xlsx_f = open(test_file, 'rb')
         self.parser = reader.MCMParser(self.xlsx_f)
         self.total_callbacks = 0
 
@@ -157,5 +162,5 @@ class TestMCMParserXLSX(TestCase):
         # There's always at least one batch per file.
         self.assertEqual(self.total_callbacks, 1)
 
-    def test_num_colums(self):
+    def test_num_columns(self):
         self.assertEqual(self.parser.num_columns(), 250)
