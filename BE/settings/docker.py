@@ -178,5 +178,4 @@ except:
 if 'local_untracked_exists' in locals():
     from BE.settings.local_untracked import *  # noqa
 else:
-    print >>sys.stderr, "Unable to find the local_untracked module in BE/setti\
-        ngs/local_untracked.py"
+    print >>sys.stderr, "Unable to find the local_untracked module in BE/settings/local_untracked.py"

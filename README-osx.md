@@ -4,7 +4,7 @@ These instructions are for installing and running SEED on Mac OSX in development
 
 ## Prerequisites
 
-These instructions assume you have/use [Macports](https://www.macports.org/). The workflow has been testing with homebrew as well, but is not directly supported. You system should have the following dependencies already installed:
+These instructions assume you have/use [Macports](https://www.macports.org/). The workflow has been tested with homebrew as well, but is not directly supported. You system should have the following dependencies already installed:
 
 * git (`port install git` or `brew install git`)
 * Mercurial (`port install hg` or `brew install mercurial`)
@@ -38,7 +38,7 @@ Install Postgres 9.4
     # homebrew
     brew install postgres
     # follow the post install instructions to add to launchagents or call manually with `postgres -D /usr/local/var/postgres`
-    # Skip the remaining Postgres instructions
+    # Skip the remaining Postgres instructions!
 
 Finish initializing the DB
 
@@ -66,6 +66,8 @@ Configure PostgreSQL. Replace 'seeddb', 'seeduser' with desired db/user. By defa
     createdb seeddb
     createuser -P seeduser
     psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO seeduser;'
+    psql -c 'ALTER USER seeduser CREATEDB;'
+    psql -c 'ALTER USER seeduser CREATEROLE;'
 
 Now exit any root environments, becoming just yourself (even though it's not that easy being green..), for the remainder of these instructions.
 
