@@ -6,6 +6,10 @@ LBNL
 - Claudine Custodio (https://github.com/cycustodio)
 
 ---
+Obispo Technology Group
+- Miles Clark (https://github.com/mmclark)
+
+---
 QuickLeft
 - Aaron Rubin	Manager	(arubin@quickleft.com)
 - Nicholas Serra	(nserra@quickleft.com)
@@ -50,7 +54,3 @@ Building Energy
 - Jed Clinger (noonian)
 - Swetha Varadharajan (swetha.vara@buildingenergy.com)
 - Michael Dougherty (michael.dougherty@buildingenergy.com)
-
----
-Independent Developers 
-- Miles Clark 
