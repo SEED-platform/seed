@@ -32,7 +32,6 @@ before_script:
   - cp BE/settings/local_untracked.py.dist BE/settings/local_untracked.py
 
 script:
-  - python manage.py test
   - coverage run manage.py test
   - coverage report -m
 
