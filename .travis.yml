@@ -36,6 +36,6 @@ script:
   - coverage run manage.py test
   - coverage report -m
 
-after_success:
+after_script:
   - coveralls
 
