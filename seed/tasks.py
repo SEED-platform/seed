@@ -1017,8 +1017,7 @@ def _match_buildings(file_pk, user_pk):
 
         _finish_matching(import_file, prog_key)
         return
-    #print value[]
-    
+
     # This allows us to retrieve the PK for a given NGram after a match.
     can_rev_idx = {
         _normalize_address_str(value[4]): value[0] for value in canonical_buildings

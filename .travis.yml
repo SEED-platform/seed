@@ -1,0 +1,40 @@
+language: python
+
+python:
+  - 2.7
+
+addons:
+  postgresql: '9.4'
+
+services:
+  - redis-server
+
+env:
+  - DJANGO=1.6.7
+
+before_install:
+  - export DJANGO_SETTINGS_MODULE=BE.settings.travis
+  - export PIP_USE_MIRRORS=true
+
+install:
+  - pip install -r requirements.txt
+  - pip install django==$DJANGO --quiet
+  - pip install psycopg2 --quiet
+
+install:
+  - pip install -q -e .
+  - pip install -r requirements.txt
+  - pip install coveralls
+
+before_script:
+  - psql -c "create database seeddb;" -U postgres
+  - ./bin/install_javascript_dependencies.sh
+  - cp BE/settings/local_untracked.py.dist BE/settings/local_untracked.py
+
+script:
+  - coverage run manage.py test
+  - coverage report -m
+
+after_script:
+  - coveralls
+

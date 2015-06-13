@@ -216,7 +216,9 @@ class DefaultColumnsViewTests(TestCase):
         # test building list columns
         response = self.client.get(
             url,
-            {'organization_id': self.org.id}
+            {
+                'organization_id': self.org.id
+            }
         )
         data = json.loads(response.content)
         self.assertEqual(data['fields'][0], {

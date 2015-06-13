@@ -15,7 +15,6 @@ from seed.models import(
     set_initial_sources,
 )
 
-
 def make_fake_mappings(mappings, org):
     """Takes a dict and saves a ColumnMapping object for each key"""
     for mapped, raw in mappings.items():
@@ -36,9 +35,10 @@ def make_fake_mappings(mappings, org):
         column_mapping = ColumnMapping.objects.create(
             super_organization=org
         )
-        column_mapping.column_raw.add(*columns_raw)
+        # For some reason the splat operator was causing problems here, just add them one at a time
+        for col in columns_raw:
+            column_mapping.column_raw.add(col)
         column_mapping.column_mapped.add(column_mapped)
-
 
 def make_fake_snapshot(
     import_file, init_data, bs_type, is_canon=False, org=None

@@ -542,7 +542,6 @@ class TestBuildingSnapshot(TestCase):
         self.assertEqual(bs2.has_children, False)
         self.assertEqual(canon2.active, True)
 
-
 class TestCanonicalBuilding(TestCase):
     """Test the clean methods on CanonicalBuildingModel."""
 

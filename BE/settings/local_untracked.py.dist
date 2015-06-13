@@ -8,15 +8,12 @@ seed local_untracked.py
         - run with dev settings (add this line to the .bashrc):
             $ export DJANGO_SETTINGS_MODULE=BE.settings.dev
             or
-            $ DJANGO_SETTINGS_MODULE=BE.settings.dev ./manage.py runserver
+            $ ./manage.py runserver --settings=BE.settings.dev
         - add your setting to the DATABASES, AWS S3 config, 
             CACHES, and BROKER_URL
             i.e. everthing here starting with 'your-'
-    For local dev, all these services can run locally on localhost or 127.0.0.1
-    except for S3.
+    For local dev, all these services can run locally on localhost or 127.0.0.1 except for S3.
 """
-
-
 # postgres DB config
 DATABASES = {
     'default': {

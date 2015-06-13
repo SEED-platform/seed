@@ -150,6 +150,7 @@ if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
 ALLOWED_HOSTS = ['*']
 
 # use imp module to find the local_untracked file rather than a hard-coded path
+# TODO: There seems to be a bunch of loading of other files in these settings. First this loads the common, then this, then anything in the untracked file
 try:
     import imp
     import BE.settings
@@ -162,5 +163,4 @@ except:
 if 'local_untracked_exists' in locals():
     from BE.settings.local_untracked import *  # noqa
 else:
-    print >>sys.stderr, "Unable to find the local_untracked module in BE/setti\
-        ngs/local_untracked.py"
+    print >>sys.stderr, "Unable to find the local_untracked module in BE/settings/local_untracked.py"
