@@ -70,7 +70,7 @@ class Exporter:
                 file_storage.save(self.filename(), f)
                 f.close()
             else:
-                s3_key = default_storage.bucket.new_key(self.filename())
+                s3_key = DefaultStorage().bucket.new_key(self.filename())
                 s3_key.set_contents_from_file(self.tempfile)
                 os.remove(self.tempfile)
 
