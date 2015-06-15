@@ -113,8 +113,6 @@ class Exporter:
         :return: String of the subdirectory
         """
         path = os.path.join("exports", self.export_id)
-        if not os.path.exists(path):
-            os.makedirs(path)
 
         return path
 
