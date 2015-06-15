@@ -1,0 +1,248 @@
+"""
+:copyright: (c) 2014 Building Energy Inc
+
+Refactored 6/12/15 to make this a class
+"""
+
+import os
+import tempfile
+import unicodecsv as csv
+import xlwt
+
+from django.conf import settings
+from django.db.models.fields import FieldDoesNotExist
+from django.core.files.storage import DefaultStorage
+
+
+from django.db.models import Manager
+from django.db.models.fields.related import (
+    ForeignRelatedObjectsDescriptor,
+    ReverseSingleRelatedObjectDescriptor
+)
+
+class Exporter:
+    """
+    Class to handle the exporting of buildings
+    """
+
+    def __init__(self, export_id, export_name, export_type):
+        """
+        Initialize the exporter object by a few variables
+
+        :param export_id: unique id of the export (used for the directory)
+        :param export_name: Name of the file to export (without the extension)
+        :param export_type: csv or xls
+        :return: Exporter instance
+        """
+
+        # initialize a bunch of member variables
+        self.export_id = export_id
+        self.export_name = export_name
+        self.export_type = export_type
+        self.tempfile = None  # where the temp file is saved after export
+
+    def valid_export_type(self):
+        return (self.export_type.lower() == 'csv') or (self.export_type.lower() == 'xls')
+
+    def export(self, buildings, fields, row_cb):
+        """
+        The main method of export. Uses the export type defined by the initializer
+
+        :param buildings: Array of building ids to export
+        :param fields: Array of fields to export
+        :param row_cb: ID for row cache
+        :return:
+        """
+
+        export_method = getattr(self, "export_%s" % self.export_type, None)
+        if export_method:
+            export_method(buildings, fields, row_cb)
+        else:
+            return None
+
+        # save the tempfile to the file storage location (s3 or local)
+        if not self.tempfile == None:
+            if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
+                # This is non-ideal. We should just save the file in the right location to start with
+                # or return the file from the "export". This was done to avoid changing the exporter code 'too much'.
+                file_storage = DefaultStorage()
+                f = open(self.tempfile, 'r')
+                file_storage.save(self.filename(), f)
+                f.close()
+            else:
+                s3_key = default_storage.bucket.new_key(self.filename())
+                s3_key.set_contents_from_file(self.tempfile)
+                os.remove(self.tempfile)
+
+        return self.filename
+
+    @staticmethod
+    def subdirectory_from_export_id(export_id):
+        """
+        Return the subdirectory as constructed by the instance method.
+
+        :param export_id: The export ID
+        :return: String of the path to the exported file
+        """
+
+        dummy_class = Exporter(export_id, None, None)
+        return dummy_class.subdirectory()
+
+
+    def subdirectory(self):
+        """
+        Create and return the subdirectory
+
+        :return: String of the subdirectory
+        """
+        path = os.path.join("exports", self.export_id)
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        return path
+
+    def filename(self):
+        """
+        The expected file name based on the export_id, export_name, and export_type
+
+        :return: String of the expected filename
+        """
+        return os.path.join(self.subdirectory(), "%s.%s" % (self.export_name, self.export_type))
+
+
+    # Old methods that should be converted into private methods (will require test changes)
+
+    def _make_object_row(self, obj, fields):
+        """
+        Creates an exportable row of data from an object and a list of fields.
+        Ignores nones and instances of the Django Manager object, replacing them
+        with blank unicode strings.
+        """
+        row = []
+        for field in fields:
+            value = self._get_field_value(field, obj)
+            if isinstance(value, Manager) or value is None:
+                row.append(u'')
+            else:
+                row.append(unicode(value))
+        return row
+
+    def _get_fields_from_queryset(self, qs):
+        """
+        Creates a list of all accessible fields on a model based off of a queryset.
+        """
+        fields = qs.model._meta.get_all_field_names()
+        for field in fields:
+            try:
+                qs.model._meta.get_field(field)
+                yield field
+            except FieldDoesNotExist:
+                continue
+
+    def _get_field_name(self, field, qs):
+        """
+        Takes a field name like "building_snapshot__state" and returns the verbose
+        field name as set in django, to be used as the header in exported files.
+
+        :param field:
+        :param qs:
+        :return:
+        """
+        par = qs.model
+        components = field.split("__")
+        for component in components[:-1]:  # iterate through the parent models
+            par = getattr(par, component)
+
+            # If the component resolves to a Manager or Descriptor,
+            # we have to get to the model differently than a standard field
+            if isinstance(par, (Manager,
+                                ForeignRelatedObjectsDescriptor)):
+                par = par.related.model
+
+            # Special case for status_label in project exports, where we want
+            # the name from the relation field -- not the field the value comes
+            # from.
+            elif component == 'status_label':
+                components[-1] = component
+                par = par.field.model
+
+            # Reverse descriptors also have some special ways to get to the model
+            elif isinstance(par, ReverseSingleRelatedObjectDescriptor):
+                par = par.field.related_field.model
+
+        # Use unicode to force this to something the XLS writer can handle properly
+        try:
+            name = unicode(par._meta.get_field(components[-1]).verbose_name)
+        except FieldDoesNotExist:
+            name = unicode(components[-1])
+
+        return name
+
+    def _get_field_value(self, field, obj):
+        """
+        Does some deep deiving to find the right value given a string like
+        "building_snapshot__state"
+        """
+        par = obj
+        components = field.split("__")
+        for component in components[:-1]:
+            par = getattr(par, component)
+            if par is None:
+                break
+
+        try:
+            return getattr(par, components[-1]) if par else None
+        except AttributeError:
+            # try extra_data JSONField
+            return par.extra_data.get(components[-1])
+
+    def export_csv(self, qs, fields=[], cb=None):
+        self.tempfile = tempfile.mktemp('.csv')
+        export_file = open(self.tempfile, 'w')
+        writer = csv.writer(export_file)
+
+        if not fields:
+            fields = list(self._get_fields_from_queryset(qs))
+
+        header = []
+        for field in fields:
+            field_name = self._get_field_name(field, qs)
+            header.append(field_name)
+        writer.writerow(header)
+
+        i = 0
+        for obj in qs:
+            row = self._make_object_row(obj, fields)
+            writer.writerow(row)
+            if cb:
+                cb(i)
+            i += 1
+
+        export_file.close()
+
+        return self.tempfile
+
+    def export_xls(self, qs, fields=[], cb=None):
+        workbook = xlwt.Workbook()
+        worksheet = workbook.add_sheet('Exported SEED Data')
+
+        if not fields:
+            fields = list(self._get_fields_from_queryset(qs))
+
+        for i in range(len(fields)):
+            header = self._get_field_name(fields[i], qs)
+            worksheet.write(0, i, header)
+
+        i = 0
+        for obj in qs:
+            row = self._make_object_row(obj, fields)
+            for j in range(len(row)):
+                worksheet.write(i + 1, j, row[j])
+            if cb:
+                cb(i)
+            i += 1
+
+        self.tempfile = tempfile.mktemp('.xls')
+        workbook.save(self.tempfile)
+
+        return self.tempfile

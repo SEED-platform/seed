@@ -5,11 +5,9 @@ import os
 
 from django.test import TestCase
 from django.db.models import Manager
-
 from seed.models import CanonicalBuilding, BuildingSnapshot
 from seed.factory import SEEDFactory
-from seed.exporter import export_csv, export_xls, _get_fields_from_queryset
-
+from seed.lib.exporter import export_csv, export_xls, _get_fields_from_queryset
 import xlrd
 import unicodecsv as csv
 
