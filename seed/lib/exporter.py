@@ -88,6 +88,23 @@ class Exporter:
         dummy_class = Exporter(export_id, None, None)
         return dummy_class.subdirectory()
 
+    @staticmethod
+    def fields_from_queryset(qs):
+        """
+        Creates a list of all accessible fields on a model based off of a queryset.
+
+        This method should not be here. It seems that is should be on the building snapshot model. Not moved yet
+        because I am unsure if the qs argument is more than one data type (i.e. BuildingSnapshot and/or ?)
+
+        """
+        fields = qs.model._meta.get_all_field_names()
+        for field in fields:
+            try:
+                qs.model._meta.get_field(field)
+                yield field
+            except FieldDoesNotExist:
+                continue
+
 
     def subdirectory(self):
         """
@@ -127,17 +144,6 @@ class Exporter:
                 row.append(unicode(value))
         return row
 
-    def _get_fields_from_queryset(self, qs):
-        """
-        Creates a list of all accessible fields on a model based off of a queryset.
-        """
-        fields = qs.model._meta.get_all_field_names()
-        for field in fields:
-            try:
-                qs.model._meta.get_field(field)
-                yield field
-            except FieldDoesNotExist:
-                continue
 
     def _get_field_name(self, field, qs):
         """
@@ -202,7 +208,7 @@ class Exporter:
         writer = csv.writer(export_file)
 
         if not fields:
-            fields = list(self._get_fields_from_queryset(qs))
+            fields = list(Exporter.fields_from_queryset(qs))
 
         header = []
         for field in fields:
@@ -227,7 +233,7 @@ class Exporter:
         worksheet = workbook.add_sheet('Exported SEED Data')
 
         if not fields:
-            fields = list(self._get_fields_from_queryset(qs))
+            fields = list(Exporter.fields_from_queryset(qs))
 
         for i in range(len(fields)):
             header = self._get_field_name(fields[i], qs)
