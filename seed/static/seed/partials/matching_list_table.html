@@ -1,5 +1,5 @@
 <div class="section_content_container">
-        <div class="section_content">
+        <div class="section_content with_padding">
             <div class="table_list_container matching" ng-cloak>
                 <table class="table table-striped">
                     <thead>
@@ -14,13 +14,33 @@
                                         <div class="form-group">
 
                                             <div class="col-sm-10 matching_toggle">
+
+                                                 <select    id="showHideFilterSelect" 
+                                                            ng-init="filter_options.selected = filter_options[0].id"
+                                                            ng-model="filter_options.selected" 
+                                                            ng-options="option.id as option.value for option in filter_options"
+                                                            ng-change="update_show_filter(filter_options.selected)">
+                                                </select>
+
+                                                <!--
+                                                <select ng-model="show_filter_selection" ng-change="update_show_filter()">                                                
+                                                  <option value="0">Show All</option>
+                                                  <option value="1">Show Matched</option>
+                                                  <option value="2">Show Unmatched</option>
+                                                </select>
+                                                -->
+
+                                                <!--
                                                 <label class="radio-inline" ng-click="filter_by_unmatched()">
                                                     <input type="radio" name="matchingRadios" id="matchingRadios1" value="unmatched"> <strong>{$ unmatched_buildings $}</strong> Unmatched
                                                 </label>
                                                 <label class="radio-inline" ng-click="filter_by_matched()">
                                                     <input type="radio" name="matchingRadios" id="matchingRadios2" value="matched"> <strong>{$ matched_buildings $}</strong> Matched
                                                 </label>
+                                                -->
                                             </div>
+
+
                                         </div>
                                     </form>
                                 </div>
