@@ -9,13 +9,17 @@
                                     <form class="form-inline" role="form">
                                         <div class="form-group">
                                             <label class="control-label">File Source:</label>
-                                            <select ng-model="file_select.file" ng-options="f.name for f in import_file.dataset.importfiles" ng-change="filter_search()"></select>
+                                            <select     ng-model="file_select.file" 
+                                                        ng-options="f.name for f in import_file.dataset.importfiles" 
+                                                        class="form-control" 
+                                                        ng-change="filter_search()"></select>
                                         </div>
                                         <div class="form-group">
 
                                             <div class="col-sm-10 matching_toggle">
 
                                                  <select    id="showHideFilterSelect" 
+                                                            class="form-control" 
                                                             ng-init="filter_options.selected = filter_options[0].id"
                                                             ng-model="filter_options.selected" 
                                                             ng-options="option.id as option.value for option in filter_options"
