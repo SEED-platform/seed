@@ -158,7 +158,7 @@ def is_not_whitelist_building(parent_org, building, whitelist_orgs):
     """
     return (parent_org and building.super_organization not in whitelist_orgs)
 
-import pdb
+
 def filter_other_params(queryset, other_params, db_columns):
     """applyes a dictionary filter to the query set. Does some domain specific
     parsing,
@@ -224,9 +224,7 @@ def filter_other_params(queryset, other_params, db_columns):
             else:
                 query_filters &= Q(**{"%s__icontains" % k: v})
 
-    
     queryset = queryset.filter(query_filters)
-    
 
     # handle extra_data with json_query
     for k, v in other_params.iteritems():
@@ -272,7 +270,6 @@ def filter_other_params(queryset, other_params, db_columns):
 
             queryset = queryset.json_query(k, **conditions)
 
-    
     return queryset
 
 
