@@ -1,9 +1,9 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
-describe("controller: matching_controller", function(){
+describe("Controller: matching_controller", function(){
     // globals set up and used in each test scenario
-    var mock_buildging_services, scope, controller, delete_called;
+    var mock_building_services, scope, controller, delete_called;
     var matching_ctrl, matching_ctrl_scope, modalInstance, labels;
 
 
@@ -14,14 +14,13 @@ describe("controller: matching_controller", function(){
     });
 
     // inject AngularJS dependencies for the controller
-    beforeEach(inject(
-        function($controller, $rootScope, $modal, urls, $q, building_services) {
+    beforeEach(inject(function($controller, $rootScope, $modal, urls, $q, building_services) {
             controller = $controller;
             scope = $rootScope;
             matching_ctrl_scope = $rootScope.$new();
 
-            mock_buildging_services = building_services;
-            spyOn(mock_buildging_services, "get_PM_filter_by_counts")
+            mock_building_services = building_services;
+            spyOn(mock_building_services, "get_PM_filter_by_counts")
                 .andCallFake(function(import_file){
                     return $q.when(
                         {
@@ -32,7 +31,7 @@ describe("controller: matching_controller", function(){
                     );
                 }
             );
-            spyOn(mock_buildging_services, "save_match")
+            spyOn(mock_building_services, "save_match")
                 .andCallFake(function(b1, b2, create){
                     return $q.when(
                         {
@@ -40,6 +39,51 @@ describe("controller: matching_controller", function(){
                             "child_id": 3
                         }
                     );
+                }
+            );
+            spyOn(mock_building_services, "search_matching_buildings")
+                .andCallFake(function(q, number_per_page, current_page, order_by, sort_reverse, 
+                                        filter_params, file_id ){
+                    
+                    if(filter_params.children__isnull === undefined){                        
+                        var bldgs = [
+                            {
+                                pm_property_id: 1
+                            },
+                            {
+                                pm_property_id: 2
+                            }
+                            ,
+                            {
+                                pm_property_id: 3
+                            }
+                        ];
+                    } else if (filter_params.children__isnull === false){
+                        var bldgs = [
+                            {
+                                pm_property_id: 1
+                            }
+                        ];
+                    } else if (filter_params.children__isnull === true){
+                        var bldgs = [
+                            {
+                                pm_property_id: 2
+                            },
+                            {
+                                pm_property_id: 3
+                            }
+                        ];
+                    }
+
+                    var deferred = $q.defer();
+                    deferred.resolve({
+                            "status": "success",
+                            "number_returned": bldgs.length,
+                            "number_matching_search": bldgs.length,
+                            "buildings": bldgs
+                        });
+                    return deferred.promise;                        
+
                 }
             );
         }
@@ -99,6 +143,8 @@ describe("controller: matching_controller", function(){
         });
     }
 
+
+
     /*
      * Test scenarios
      */
@@ -116,7 +162,7 @@ describe("controller: matching_controller", function(){
         expect(b.coparent.children).toEqual(b.children);
     });
 
-    it("should show the number matched or unmatched", function() {
+    it("should provide to the view scope variables representing the number matched and the number of unmatched buildings", function() {
         // arrange
         create_dataset_detail_controller();
 
@@ -155,7 +201,7 @@ describe("controller: matching_controller", function(){
         expect(matching_ctrl_scope.number_matching_search).toEqual(1);
         expect(matching_ctrl_scope.number_returned).toEqual(1);
         expect(matching_ctrl_scope.num_pages).toEqual(1);
-        expect(mock_buildging_services.get_PM_filter_by_counts).toHaveBeenCalled();
+        expect(mock_building_services.get_PM_filter_by_counts).toHaveBeenCalled();
     });
     it("should match a building in the matching list", function() {
         // arrange
@@ -179,9 +225,50 @@ describe("controller: matching_controller", function(){
         matching_ctrl_scope.$digest();
 
         // assertions
-        expect(mock_buildging_services.save_match).toHaveBeenCalledWith(b1.id, b2.id, true);
-        expect(mock_buildging_services.get_PM_filter_by_counts).toHaveBeenCalled();
+        expect(mock_building_services.save_match).toHaveBeenCalledWith(b1.id, b2.id, true);
+        expect(mock_building_services.get_PM_filter_by_counts).toHaveBeenCalled();
         expect(b1.children[0]).toEqual(3);
     });
+    it("Should update the list of buildings correctly when 'Show Matched' is selected", function() {
+        //arrange
+        create_dataset_detail_controller();
+
+        //act
+        matching_ctrl_scope.update_show_filter("Show Matched") //DMcQ: This really should be a ref to the 'constant' defined in the controller, but not sure how to do that yet...      
+        matching_ctrl_scope.$digest();
+
+        //assertions
+        //expect(mock_building_services.search_matching_buildings).toHaveBeenCalled();
+        expect(matching_ctrl_scope.buildings.length).toEqual(1);
+        expect(matching_ctrl_scope.number_returned).toEqual(1);
+    });
+    it("Should update the list of buildings correctly when 'Show Unmatched' is selected",  function() {
+        //arrange
+        create_dataset_detail_controller();
+
+        //act
+        matching_ctrl_scope.update_show_filter("Show Unmatched") //DMcQ: This really should be a ref to the 'constant' defined in the controller, but not sure how to do that yet...
+        matching_ctrl_scope.$digest();
+        
+        //assertions
+        //expect(mock_building_services.search_matching_buildings).toHaveBeenCalled();
+        expect(matching_ctrl_scope.buildings.length).toEqual(2);
+        expect(matching_ctrl_scope.number_returned).toEqual(2);
+    });
+    it("Should update the list of buildings correctly when 'Show All' is selected", function() {
+        //arrange
+        create_dataset_detail_controller();
+
+        //act
+        matching_ctrl_scope.update_show_filter("Show All") //DMcQ: This really should be a ref to the 'constant' defined in the controller, but not sure how to do that yet...
+        matching_ctrl_scope.$digest();
+
+        //assertions
+        //expect(mock_building_services.search_matching_buildings).toHaveBeenCalled();
+        expect(matching_ctrl_scope.buildings.length).toEqual(3);
+        expect(matching_ctrl_scope.number_returned).toEqual(3);
+    });
+
+
 
 });
