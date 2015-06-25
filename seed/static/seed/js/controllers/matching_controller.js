@@ -93,27 +93,53 @@ angular.module('BE.seed.controller.matching', [])
         );
     };
 
+
      $scope.closeAlert = function(index) {
         $scope.alerts.splice(index, 1);
     };
 
-    $scope.filter_by_matched = function() {
-        // only show matched buildings
-        $scope.filter_params.children__isnull = false;
+    /**
+    *  Code for filter dropdown
+    */
+
+    var SHOW_ALL = "Show All";
+    var SHOW_MATCHED = "Show Matched";
+    var SHOW_UNMATCHED = "Show Unmatched";
+
+    $scope.filter_options = [
+        {id:SHOW_ALL, value:SHOW_ALL},
+        {id:SHOW_MATCHED, value:SHOW_MATCHED},
+        {id:SHOW_UNMATCHED, value:SHOW_UNMATCHED}
+    ];
+
+    $scope.filter_selection = {selected: SHOW_ALL};     //default setting
+
+    $scope.update_show_filter = function(optionValue) {
+
+        switch(optionValue){
+            case SHOW_ALL:               
+                $scope.filter_params.children__isnull = undefined;
+                break;
+            case SHOW_MATCHED:
+                $scope.filter_params.children__isnull = false;  //has children therefore is matched               
+                break;
+            case SHOW_UNMATCHED:
+                $scope.filter_params.children__isnull = true;   //does not have children therefore is unmatched
+                break;
+            default:
+                $log.error("#matching_controller: unexpected filter value: ", optionValue);
+                return;
+        }
+
         $scope.current_page = 1;
         $scope.filter_search();
-    };
 
-    $scope.filter_by_unmatched = function() {
-        // only show unmatched buildings
-        $scope.current_page = 1;
-        $scope.filter_params.children__isnull = true;
-        $scope.filter_search();
-    };
+    }
 
-     /**
-     * Pagination code
-     */
+
+    /**
+    * Pagination code
+    */
     $scope.pagination.update_number_per_page = function() {
         $scope.number_per_page = $scope.pagination.number_per_page_options_model;
         $scope.filter_search();
