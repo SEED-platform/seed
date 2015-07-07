@@ -20,7 +20,7 @@ ENV = STACK_OUTPUTS.get('StackFlavor', 'dev')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 TEMPLATE_DEBUG = DEBUG
-DOMAIN_URLCONFS[STACK_OUTPUTS.get('HostName')] = 'urls.main'
+DOMAIN_URLCONFS[STACK_OUTPUTS.get('HostName')] = 'BE.urls'
 
 # django-analytics
 WOOPRA_DOMAIN = os.environ.get('WOOPRA_DOMAIN')

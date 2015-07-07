@@ -39,7 +39,7 @@ AWS_STORAGE_BUCKET_NAME = AWS_BUCKET_NAME
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
 DOMAIN_URLCONFS = {}
-DOMAIN_URLCONFS['default'] = 'urls.main'
+DOMAIN_URLCONFS['default'] = 'BE.urls'
 
 # redis cache config
 # with AWS ElastiCache redis, the LOCATION setting looks something like:

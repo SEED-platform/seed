@@ -4,7 +4,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-urls/main.py
+urls/urls.py
 
 Copyright (c) 2013 Building Energy. All rights reserved.
 """

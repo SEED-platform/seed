@@ -56,18 +56,7 @@ MIDDLEWARE_CLASSES = (
     'pagination.middleware.PaginationMiddleware',
 )
 
-ROOT_URLCONF = 'urls.main'
-DOMAIN_URLCONFS = {
-    "seed.buildingenergy.com": "urls.main",
-}
-
-if len(sys.argv) > 1 and sys.argv[1] in ['test', 'harvest', 'salad']:
-    ROOT_URLCONF = 'urls.test'
-    URLCONF_OVERRIDE = "urls.test"
-else:
-    URLCONF_OVERRIDE = None
-    if "URLCONF_OVERRIDE" in os.environ:
-        URLCONF_OVERRIDE = os.environ["URLCONF_OVERRIDE"]
+ROOT_URLCONF = 'BE.urls'
 
 TEMPLATE_DIRS = (
     join(SITE_ROOT, 'templates'),

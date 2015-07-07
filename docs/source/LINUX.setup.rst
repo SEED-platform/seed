@@ -330,7 +330,7 @@ local_untracked.py
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
     DOMAIN_URLCONFS = {}
-    DOMAIN_URLCONFS['default'] = 'urls.main'
+    DOMAIN_URLCONFS['default'] = 'BE.urls'
 
 
     CACHES = {
