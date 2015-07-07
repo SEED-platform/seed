@@ -20,5 +20,5 @@ class AppUrlsTest(TestCase):
         self.assertTrue('seed' in rendered.keys())
         self.assertEqual(
             rendered['seed']['get_columns'],
-            '/main/app/get_columns/'
+            '/app/get_columns/'
         )
