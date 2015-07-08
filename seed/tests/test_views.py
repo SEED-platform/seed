@@ -8,10 +8,8 @@ from unittest import skip
 from django.core.cache import cache
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
-
 from superperms.orgs.models import Organization, OrganizationUser
-
-from audit_logs.models import AuditLog, LOG, ACTION_OPTIONS
+from seed.audit_logs.models import AuditLog, LOG
 from data_importer.models import ROW_DELIMITER, ImportFile, ImportRecord
 from landing.models import SEEDUser as User
 from seed import decorators
@@ -37,8 +35,8 @@ from seed.views.main import (
     _parent_tree_coparents,
 )
 from seed.utils.mapping import _get_column_names
-from seed.utils.constants import ASSESSOR_FIELDS
 from seed.tests import util as test_util
+
 
 
 # Gavin 02/18/2014

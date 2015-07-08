@@ -9,7 +9,7 @@ from os.path import abspath, join, dirname
 
 SITE_ROOT = abspath(join(dirname(__file__), "..", ".."))
 
-SEED_DATADIR = join(SITE_ROOT,'seed','data')
+SEED_DATADIR = join(SITE_ROOT, 'seed', 'data')
 
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -22,7 +22,6 @@ ADMINS = (
 )
 MANAGERS = ADMINS
 SEND_BROKEN_LINK_EMAILS = True
-
 
 TIME_ZONE = 'America/Los_Angeles'
 LANGUAGE_CODE = 'en-us'
@@ -88,8 +87,8 @@ INSTALLED_APPS = (
 BE_CORE_APPS = (
     'BE',
     'data_importer',
+    'seed.audit_logs',
     'seed',
-    'audit_logs',
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
@@ -104,8 +103,8 @@ BE_URL_APPS = (
     'ajaxuploader',
     'data_importer',
     'seed',
-    'projects',
     'audit_logs',
+    'projects',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -130,7 +129,6 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder',
 )
-
 
 COMPRESS_ROOT = STATIC_ROOT
 COMPRESS_URL = STATIC_URL
@@ -210,10 +208,10 @@ APPEND_SLASH = True
 PASSWORD_RESET_EMAIL = 'reset@buildingenergy.com'
 SERVER_EMAIL = 'no-reply@buildingenergy.com'
 
-
 # Celery queues
 from kombu import Exchange, Queue
 import djcelery
+
 djcelery.setup_loader()
 
 CELERYD_MAX_TASKS_PER_CHILD = 1
@@ -271,7 +269,7 @@ MATCH_MED_THRESHOLD = 0.4
 # character minimum, with a minimum of 1 upper and 1 lower case character
 PASSWORD_MIN_LENGTH = 8
 PASSWORD_COMPLEXITY = {
-    "UPPER": 1,       # at least 1 Uppercase
-    "LOWER": 1,       # at least 1 Lowercase
-    "DIGITS": 1,      # at least 1 Digit
+    "UPPER": 1,  # at least 1 Uppercase
+    "LOWER": 1,  # at least 1 Lowercase
+    "DIGITS": 1,  # at least 1 Digit
 }

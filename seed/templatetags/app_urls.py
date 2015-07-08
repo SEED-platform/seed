@@ -5,12 +5,10 @@
 import json
 
 from django import template
-
 from django.conf import settings
 from djangular.core.urlresolvers import urls_by_namespace
 
 register = template.Library()
-
 
 @register.simple_tag
 def namespaced_urls():

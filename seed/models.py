@@ -11,7 +11,7 @@ from django.contrib.contenttypes import generic
 from django.core import serializers
 from django.utils.translation import ugettext_lazy as _
 from autoslug import AutoSlugField
-from audit_logs.models import AuditLog, LOG
+from seed.audit_logs.models import AuditLog, LOG
 from landing.models import SEEDUser as User
 from django_extensions.db.models import TimeStampedModel
 from djorm_pgjson.fields import JSONField

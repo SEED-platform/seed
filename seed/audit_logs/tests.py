@@ -18,7 +18,7 @@ from seed.factory import SEEDFactory
 from seed.models import CanonicalBuilding
 from seed.tests.util import FakeRequest
 
-from .models import AuditLog, LOG, NOTE
+from seed.audit_logs.models import AuditLog, LOG, NOTE
 
 
 class AuditLogModelTests(TestCase):

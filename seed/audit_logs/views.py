@@ -14,7 +14,7 @@ from annoying.decorators import ajax_request
 from superperms.orgs.decorators import has_perm
 from seed.utils.api import api_endpoint
 from seed.models import CanonicalBuilding
-from .models import AuditLog, NOTE
+from seed.audit_logs.models import AuditLog, NOTE
 
 
 @api_endpoint

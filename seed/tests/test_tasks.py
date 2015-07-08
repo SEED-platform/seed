@@ -1,15 +1,15 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
-from dateutil import parser
 from os import path
+import logging
+
+from dateutil import parser
 
 from mock import patch
-
 from django.test import TestCase
 from django.core.files import File
-
-from audit_logs.models import AuditLog
+from seed.audit_logs.models import AuditLog
 from data_importer.models import ImportFile, ImportRecord
 from landing.models import SEEDUser as User
 from superperms.orgs.models import Organization, OrganizationUser
@@ -30,7 +30,6 @@ from seed.models import (
 from seed import tasks
 from seed.tests import util
 
-import logging
 logger = logging.getLogger(__name__)
 
 class TestCleaner(TestCase):

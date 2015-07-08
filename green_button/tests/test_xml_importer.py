@@ -2,20 +2,22 @@
 :copyright: (c) 2014 Building Energy Inc
 """
 
-from audit_logs.models import AuditLog
+import copy
+from os import path
+
+from seed.audit_logs.models import AuditLog
 from django.test import TestCase
 from green_button import xml_importer
 from data_importer.models import ImportRecord, ImportFile
 from seed.models import(
-    BuildingSnapshot, CanonicalBuilding, TimeSeries, Meter
+    BuildingSnapshot, TimeSeries
 )
 import seed.models
 import xmltodict
-import copy
 from landing.models import SEEDUser as User
 from superperms.orgs.models import Organization, OrganizationUser
 from django.core.files import File
-from os import path
+
 
 
 # sample data corresponds to the data that should be extracted by

@@ -1,7 +1,7 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
-#!/usr/bin/env python
+# !/usr/bin/env python
 # encoding: utf-8
 """
 urls/urls.py
@@ -99,7 +99,6 @@ urlpatterns = patterns(
     ),
     url(r'^progress/$', 'progress', name='progress'),
 
-
     # exporter routes
     url(r'^export_buildings/$', 'export_buildings', name='export_buildings'),
     url(
@@ -115,7 +114,6 @@ urlpatterns = patterns(
 
     # test urls
     url(r'^angular_js_tests/$', 'angular_js_tests', name='angular_js_tests'),
-
 
     # org
     url(

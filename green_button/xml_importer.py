@@ -1,6 +1,7 @@
-import xmltodict
 from collections import Iterable
+from datetime import datetime
 
+import xmltodict
 from data_importer.models import ROW_DELIMITER
 from seed.models import (
     BuildingSnapshot,
@@ -11,8 +12,7 @@ from seed.models import (
     GREEN_BUTTON_BS,
 )
 import seed.models
-from audit_logs.models import AuditLog
-from datetime import datetime
+from seed.audit_logs.models import AuditLog
 
 
 def energy_type(service_category):

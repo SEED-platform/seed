@@ -5,7 +5,6 @@ import json
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
-
 from superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
@@ -13,8 +12,7 @@ from superperms.orgs.models import (
     OrganizationUser,
     Organization,
 )
-
-from audit_logs.models import AuditLog
+from seed.audit_logs.models import AuditLog
 from landing.models import SEEDUser as User
 from data_importer.models import ImportRecord
 from seed.tests.util import FakeRequest

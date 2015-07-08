@@ -2,8 +2,10 @@
 :copyright: (c) 2014 Building Energy Inc
 
 """
-from BE.settings.common import *  # noqa
+
 import sys
+
+from BE.settings.common import *  # noqa
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG

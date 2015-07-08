@@ -5,24 +5,18 @@
 import copy
 import datetime
 import re
+from importlib import import_module
 
-# django imports
-
-#vendor imports
 from superperms.orgs.models import (
     Organization as SuperOrganization,
     OrganizationUser as SuperOrganizationUser
 )
-
-# BE imports
 from seed import models
 from seed.models import (
     ASSESSED_RAW, BuildingSnapshot, ProjectBuilding, StatusLabel, Project
 )
 from . import search
-from importlib import import_module
 from django.conf import settings
-
 
 EXCLUDE_FIELDS = [
     'best_guess_canonical_building',
