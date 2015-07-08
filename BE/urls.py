@@ -38,7 +38,7 @@ urlpatterns = patterns(
     url(r'app/api/', include('seed.urls.api', namespace="api", app_name="api")),
 
     # dataset section
-    url(r'^data/', include('data_importer.urls', namespace="data_importer", app_name="data_importer")),
+    url(r'^data/', include('seed.data_importer.urls', namespace="data_importer", app_name="data_importer")),
 
     url(r'^ajax-uploader/', include(ajaxuploader.urls, namespace='ajaxuploader', app_name='ajaxuploader')),
 

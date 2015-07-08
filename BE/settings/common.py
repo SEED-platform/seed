@@ -86,9 +86,9 @@ INSTALLED_APPS = (
 
 BE_CORE_APPS = (
     'BE',
-    'data_importer',
-    'seed.audit_logs',
     'seed',
+    'seed.data_importer',
+    'seed.audit_logs',
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.

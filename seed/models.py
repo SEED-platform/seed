@@ -15,7 +15,7 @@ from seed.audit_logs.models import AuditLog, LOG
 from landing.models import SEEDUser as User
 from django_extensions.db.models import TimeStampedModel
 from djorm_pgjson.fields import JSONField
-from data_importer.models import ImportFile, ImportRecord
+from seed.data_importer.models import ImportFile, ImportRecord
 from seed.lib.mcm import mapper
 from superperms.orgs.models import Organization as SuperOrganization
 from seed.managers.json import JsonManager

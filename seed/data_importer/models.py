@@ -7,7 +7,6 @@ import hashlib
 import math
 import tempfile
 # import time
-import sys
 from urllib import unquote
 try:
     import simplejson as json
@@ -26,7 +25,7 @@ from django.utils.timesince import timesince
 from django.contrib.auth.models import User
 
 from BE.utils import de_camel_case
-from data_importer.managers import NotDeletedManager
+from seed.data_importer.managers import NotDeletedManager
 from organizations.models import Organization
 from seed.common import mapper
 
@@ -667,7 +666,7 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def form(self, data=None):
-        from data_importer.forms import ImportRecordForm
+        from seed.data_importer import ImportRecordForm
         return ImportRecordForm(data, instance=self)
 
     def prefixed_pk(self, pk, max_len_before_prefix=(SOURCE_FACILITY_ID_MAX_LEN - len('IMP1234-'))):
@@ -1004,7 +1003,7 @@ class ImportFile(NotDeletableModel):
         return self.tablecolumnmappings_failed.count()
 
     def tablecolumnmapping_formset(self, *args, **kwargs):
-        from data_importer.forms import TableColumnMappingFormSet
+        from seed.data_importer import TableColumnMappingFormSet
         formset = TableColumnMappingFormSet(queryset=self.tablecolumnmappings)
         return formset
 

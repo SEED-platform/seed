@@ -6,8 +6,6 @@ from lettuce import step
 from django.core.urlresolvers import reverse
 from landing.models import SEEDUser as User
 from superperms.orgs.models import Organization
-from seed.models import Project
-from data_importer.models import ImportRecord
 
 
 @step(u'I visit the landing page')

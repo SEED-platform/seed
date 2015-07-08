@@ -13,7 +13,7 @@ from django.conf.urls import patterns, url
 
 
 urlpatterns = patterns(
-    'data_importer.views',
+    'seed.data_importer.views',
     url(
         r's3_upload_complete/$',
         'handle_s3_upload_complete',

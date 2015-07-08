@@ -29,7 +29,7 @@ from mcm.data.ESPM import espm as espm_schema
 from mcm.data.SEED import seed as seed_schema
 from mcm.utils import batch
 from streetaddress import StreetAddressParser, StreetAddressFormatter
-from data_importer.models import (
+from seed.data_importer.models import (
     ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
 )
 from green_button import xml_importer

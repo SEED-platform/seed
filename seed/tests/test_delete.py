@@ -14,7 +14,7 @@ from superperms.orgs.models import (
 )
 from seed.audit_logs.models import AuditLog
 from landing.models import SEEDUser as User
-from data_importer.models import ImportRecord
+from seed.data_importer.models import ImportRecord
 from seed.tests.util import FakeRequest
 from seed.factory import SEEDFactory
 from seed.models import CanonicalBuilding, BuildingSnapshot

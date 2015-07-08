@@ -17,7 +17,7 @@ from django.db.models import Q
 from annoying.decorators import render_to, ajax_request
 from seed.lib.mcm import mapper
 from seed.audit_logs.models import AuditLog
-from data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
+from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
 from seed.tasks import (
     map_data,
     remap_data,

@@ -8,7 +8,7 @@ from os import path
 from seed.audit_logs.models import AuditLog
 from django.test import TestCase
 from green_button import xml_importer
-from data_importer.models import ImportRecord, ImportFile
+from seed.data_importer.models import ImportRecord, ImportFile
 from seed.models import(
     BuildingSnapshot, TimeSeries
 )
@@ -17,6 +17,7 @@ import xmltodict
 from landing.models import SEEDUser as User
 from superperms.orgs.models import Organization, OrganizationUser
 from django.core.files import File
+
 
 
 

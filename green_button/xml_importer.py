@@ -2,7 +2,7 @@ from collections import Iterable
 from datetime import datetime
 
 import xmltodict
-from data_importer.models import ROW_DELIMITER
+from seed.data_importer.models import ROW_DELIMITER
 from seed.models import (
     BuildingSnapshot,
     Meter,

@@ -2,10 +2,11 @@
 :copyright: (c) 2014 Building Energy Inc
 """
 import random
-from django.contrib.webdesign import lorem_ipsum
-import datetime
 import base64
 from decimal import getcontext, Decimal
+
+from django.contrib.webdesign import lorem_ipsum
+
 getcontext().prec = 7
 from localflavor.us.us_states import STATE_CHOICES
 
@@ -17,7 +18,7 @@ from tempfile import NamedTemporaryFile, mkdtemp
 from django.contrib.auth.models import User
 from django.core.files import File
 
-from data_importer.models import ImportRecord, ImportFile
+from seed.data_importer.models import ImportRecord, ImportFile
 
 from django.test import TestCase
 

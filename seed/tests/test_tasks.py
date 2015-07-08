@@ -10,7 +10,7 @@ from mock import patch
 from django.test import TestCase
 from django.core.files import File
 from seed.audit_logs.models import AuditLog
-from data_importer.models import ImportFile, ImportRecord
+from seed.data_importer.models import ImportFile, ImportRecord
 from landing.models import SEEDUser as User
 from superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (

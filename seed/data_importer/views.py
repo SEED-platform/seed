@@ -12,8 +12,7 @@ from annoying.decorators import ajax_request
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from ajaxuploader.views import AjaxFileUploader
-
-from data_importer.models import (
+from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
 )
