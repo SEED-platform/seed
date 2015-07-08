@@ -2,8 +2,8 @@
 :copyright: (c) 2014 Building Energy Inc
 
 """
+
 from BE.settings.common import *  # noqa
-import sys
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -17,7 +17,7 @@ AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
 AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME", "be-dev-uploads")
 AWS_STORAGE_BUCKET_NAME = AWS_BUCKET_NAME
 
-POSTGRES_CONFIG_NAMES = ['POSTGRES_PORT_5432_TCP_ADDR', 'POSTGRES_PORT_5432_TCP_PORT', 
+POSTGRES_CONFIG_NAMES = ['POSTGRES_PORT_5432_TCP_ADDR', 'POSTGRES_PORT_5432_TCP_PORT',
                          'POSTGRES_DATABASE_NAME', 'POSTGRES_DATABASE_USER', 'POSTGRES_ENV_POSTGRES_PASSWORD']
 
 for loc in POSTGRES_CONFIG_NAMES:
@@ -26,7 +26,6 @@ for loc in POSTGRES_CONFIG_NAMES:
 for loc in POSTGRES_CONFIG_NAMES:
     if not locals().get(loc):
         raise Exception("%s Not defined as env variables" % loc)
-
 
 REDIS_CONFIG_NAMES = ['REDIS_PORT_6379_TCP_ADDR', 'REDIS_PORT_6379_TCP_PORT']
 
@@ -169,6 +168,7 @@ ALLOWED_HOSTS = ['*']
 try:
     import imp
     import BE.settings
+
     local_untracked_exists = imp.find_module(
         'local_untracked', BE.settings.__path__
     )
@@ -178,4 +178,4 @@ except:
 if 'local_untracked_exists' in locals():
     from BE.settings.local_untracked import *  # noqa
 else:
-    print >>sys.stderr, "Unable to find the local_untracked module in BE/settings/local_untracked.py"
+    print >> sys.stderr, "Unable to find the local_untracked module in BE/settings/local_untracked.py"

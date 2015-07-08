@@ -9,7 +9,6 @@
     Example:
         ./manage compress --force --settings=BE.settings.compress
 """
-from BE.settings.main import *  # noqa
 try:
     from BE.settings.local_untracked import *  # noqa
 except ImportError:

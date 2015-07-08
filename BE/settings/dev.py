@@ -3,8 +3,6 @@
 
 """
 
-import sys
-
 from BE.settings.common import *  # noqa
 
 DEBUG = True
@@ -156,6 +154,7 @@ ALLOWED_HOSTS = ['*']
 try:
     import imp
     import BE.settings
+
     local_untracked_exists = imp.find_module(
         'local_untracked', BE.settings.__path__
     )
@@ -165,4 +164,4 @@ except:
 if 'local_untracked_exists' in locals():
     from BE.settings.local_untracked import *  # noqa
 else:
-    print >>sys.stderr, "Unable to find the local_untracked module in BE/settings/local_untracked.py"
+    print >> sys.stderr, "Unable to find the local_untracked module in BE/settings/local_untracked.py"

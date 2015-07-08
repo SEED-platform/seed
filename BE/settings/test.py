@@ -11,7 +11,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'test.log', # TODO: put this in a subdir
+            'filename': 'test.log',  # TODO: put this in a subdir
         },
     },
     'loggers': {
