@@ -7,9 +7,7 @@ This deals with circular dependency issues between LANDINGUser and Organization
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
 
-
 from superperms.orgs.models import ExportableField, Organization
-
 
 INTERNAL = 0
 PUBLIC = 1

@@ -36,7 +36,7 @@ from seed.tasks import (
 )
 from seed.utils.api import api_endpoint
 
-from public.models import INTERNAL, PUBLIC, SharedBuildingField
+from seed.public.models import INTERNAL, PUBLIC, SharedBuildingField
 
 _log = logging.getLogger(__name__)
 

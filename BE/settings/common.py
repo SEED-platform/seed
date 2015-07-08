@@ -1,7 +1,6 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
-# Django settings
 import os
 import sys
 import logging
@@ -81,11 +80,12 @@ INSTALLED_APPS = (
     'raven.contrib.django',
     'south',
     'tos',
-    'public',
+
 )
 
 BE_CORE_APPS = (
     'BE',
+    'seed.public',
     'seed.data_importer',
     'seed',
     'seed.audit_logs',

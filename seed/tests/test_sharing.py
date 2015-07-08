@@ -12,7 +12,7 @@ from seed.models import (
     BuildingSnapshot
 )
 from seed.factory import SEEDFactory
-from public.models import INTERNAL, PUBLIC, SharedBuildingField
+from seed.public.models import INTERNAL, PUBLIC, SharedBuildingField
 from django.core.urlresolvers import reverse_lazy
 
 

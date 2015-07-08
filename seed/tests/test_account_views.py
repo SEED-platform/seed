@@ -17,7 +17,7 @@ from superperms.orgs.models import (
 )
 from superperms.orgs.exceptions import InsufficientPermission
 from seed.models import BuildingSnapshot, CanonicalBuilding
-from public.models import SharedBuildingField
+from seed.public.models import SharedBuildingField
 from seed.tests.util import FakeRequest
 
 

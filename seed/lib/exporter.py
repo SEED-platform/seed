@@ -6,19 +6,18 @@ Refactored 6/12/15 to make this a class
 
 import os
 import tempfile
+
 import unicodecsv as csv
 import xlwt
-
 from django.conf import settings
 from django.db.models.fields import FieldDoesNotExist
 from django.core.files.storage import DefaultStorage
-
-
 from django.db.models import Manager
 from django.db.models.fields.related import (
     ForeignRelatedObjectsDescriptor,
     ReverseSingleRelatedObjectDescriptor
 )
+
 
 class Exporter:
     """
@@ -105,7 +104,6 @@ class Exporter:
             except FieldDoesNotExist:
                 continue
 
-
     def subdirectory(self):
         """
         Create and return the subdirectory
@@ -124,7 +122,6 @@ class Exporter:
         """
         return os.path.join(self.subdirectory(), "%s.%s" % (self.export_name, self.export_type))
 
-
     # Old methods that should be converted into private methods (will require test changes)
 
     def _make_object_row(self, obj, fields):
@@ -141,7 +138,6 @@ class Exporter:
             else:
                 row.append(unicode(value))
         return row
-
 
     def _get_field_name(self, field, qs):
         """

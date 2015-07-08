@@ -11,8 +11,8 @@ from seed.models import (
     set_initial_sources,
     GREEN_BUTTON_BS,
 )
-import seed.models
 from seed.audit_logs.models import AuditLog
+import seed.models
 
 
 def energy_type(service_category):
