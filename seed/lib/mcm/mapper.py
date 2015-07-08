@@ -3,7 +3,7 @@
 """
 import json
 
-from mcm import matchers
+from seed.lib.mcm import matchers
 from mcm.cleaners import default_cleaner
 
 

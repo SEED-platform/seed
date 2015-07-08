@@ -4,7 +4,7 @@
 import copy
 from unittest import TestCase
 
-from mcm import cleaners
+from seed.lib.mcm import cleaners, mapper
 from mcm import mapper
 from mcm.tests.utils import FakeModel
 

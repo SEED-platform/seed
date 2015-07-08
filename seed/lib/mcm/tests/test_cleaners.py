@@ -4,7 +4,7 @@
 import datetime
 from unittest import TestCase
 
-from mcm import cleaners
+from seed.lib.mcm import cleaners
 
 
 class TestCleaners(TestCase):

@@ -2,12 +2,11 @@
 :copyright: (c) 2014 Building Energy Inc
 """
 from unittest import TestCase
-
 import os
-import unicodecsv
 
-from mcm import reader
-from mcm.tests import utils
+import unicodecsv
+from seed.lib.mcm import reader
+from seed.lib.mcm.tests import utils
 
 
 class TestCSVParser(TestCase):

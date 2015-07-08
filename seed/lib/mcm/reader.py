@@ -11,14 +11,24 @@ import datetime
 import mmap
 import operator
 import sys
+import unicodedata
 
 from unicodecsv import DictReader, Sniffer
-import unicodedata
 from xlrd import XLRDError, open_workbook, xldate_as_tuple, empty_cell
 
-from mcm import mapper, utils
+
+
+
+
+
+
+
+
+
 
 # from xlrd/biffh.py
+from seed.lib.mcm import mapper, utils
+
 (
     XL_CELL_EMPTY,
     XL_CELL_TEXT,
@@ -306,8 +316,8 @@ class MCMParser(object):
 
 def main():
     """Just some contrived test code."""
-    from mcm.mappings import espm
-    from mcm.tests.utils import FakeModel
+    from seed.lib.mcm.mappings import espm
+    from seed.lib.mcm.tests.utils import FakeModel
 
     if len(sys.argv) < 2:
         sys.exit('You need to specify a CSV file path.')

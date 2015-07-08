@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from mcm import matchers
+from seed.lib.mcm import matchers
 
 
 class TestMatchers(TestCase):

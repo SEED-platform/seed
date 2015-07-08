@@ -1,38 +1,26 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
-# system imports
+
 import types
 import json
 import unicodedata
 
-# django imports
 from django.db import models
 from django.contrib.contenttypes import generic
 from django.core import serializers
 from django.utils.translation import ugettext_lazy as _
-
-# vendor imports
 from autoslug import AutoSlugField
-
-# app imports
 from audit_logs.models import AuditLog, LOG
 from landing.models import SEEDUser as User
-# provides created and modified fields
 from django_extensions.db.models import TimeStampedModel
 from djorm_pgjson.fields import JSONField
-
 from data_importer.models import ImportFile, ImportRecord
-
-from mcm import mapper
-from superperms.orgs.models import (
-    Organization as SuperOrganization,
-)
-
+from seed.lib.mcm import mapper
+from superperms.orgs.models import Organization as SuperOrganization
 from seed.managers.json import JsonManager
 from seed.utils.time import convert_datestr
 from seed.utils.generic import split_model_fields
-
 
 PROJECT_NAME_MAX_LENGTH = 255
 
@@ -55,11 +43,9 @@ SEED_DATA_SOURCES = (
     (GREEN_BUTTON_RAW, 'Green Button Raw'),
 )
 
-
 SYSTEM_MATCH = 1
 USER_MATCH = 2
 POSSIBLE_MATCH = 3
-
 
 SEED_MATCH_TYPES = (
     (SYSTEM_MATCH, 'System Match'),
@@ -67,13 +53,11 @@ SEED_MATCH_TYPES = (
     (POSSIBLE_MATCH, 'Possible Match'),
 )
 
-
 SEARCH_CONFIDENCE_RANGES = {
     'low': 0.4,
     'medium': 0.75,
     'high': 1.0,
 }
-
 
 BS_VALUES_LIST = [
     'pk',  # needed for matching not to blow up
@@ -82,7 +66,6 @@ BS_VALUES_LIST = [
     'custom_id_1',
     'address_line_1',
 ]
-
 
 NATURAL_GAS = 1
 ELECTRICITY = 2
@@ -128,7 +111,6 @@ ENERGY_TYPES = (
     (WOOD, 'Wood'),
     (OTHER, 'Other'),
 )
-
 
 KILOWATT_HOURS = 1
 THERMS = 2
@@ -318,7 +300,7 @@ def clean_canonicals(b1, b2, new_snapshot):
 
 
 def save_snapshot_match(
-    b1_pk, b2_pk, confidence=None, user=None, match_type=None, default_pk = None
+        b1_pk, b2_pk, confidence=None, user=None, match_type=None, default_pk=None
 ):
     """Saves a match between two models as a new snapshot; updates Canonical.
 
@@ -342,7 +324,7 @@ def save_snapshot_match(
     # No point in linking the same building together.
     if b1_pk == b2_pk:
         return
-    
+
     default_pk = default_pk or b1_pk
 
     b1 = BuildingSnapshot.objects.get(pk=b1_pk)
@@ -351,7 +333,7 @@ def save_snapshot_match(
     # we don't want to match in the middle of the tree, so get the tip
     b1 = b1.tip
     b2 = b2.tip
-    
+
     default_building = b1 if default_pk == b1_pk else b2
 
     new_snapshot = BuildingSnapshot.objects.create()
@@ -418,8 +400,8 @@ def unmatch_snapshot_tree(building_pk):
     # create CanonicalBuilding for coparent that is about to be
     # unmatched
     if (
-        not root_coparent.canonical_building or
-        root_coparent.canonical_building is root.canonical_building
+                not root_coparent.canonical_building or
+                    root_coparent.canonical_building is root.canonical_building
     ):
         new_canon = CanonicalBuilding.objects.create(
             canonical_snapshot=root_coparent
@@ -474,6 +456,7 @@ def unmatch_snapshot_tree(building_pk):
 def _get_filtered_values(updated_values):
     """Breaks out mappable, meta and source BuildingSnapshot attributes."""
     from seed.utils.constants import META_FIELDS, EXCLUDE_FIELDS
+
     mappable_values = {}
     meta_values = {}
     source_values = {}
@@ -515,7 +498,7 @@ def update_building(old_snapshot, updated_values, user, *args, **kwargs):
     # Need to hydrate sources
     sources = {
         k: BuildingSnapshot.objects.get(pk=v) for k, v in sources.items() if v
-    }
+        }
 
     # Handle the mapping of "normal" attributes.
     new_snapshot = mapper.map_row(
@@ -585,6 +568,7 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
 
     """
     from seed.utils.mapping import _get_column_names
+
     if not isinstance(column_raw, list):
         column_raw = [column_raw]
 
@@ -622,6 +606,7 @@ def get_column_mappings(organization):
 
     """
     from seed.utils.mapping import _get_column_names
+
     source_mappings = ColumnMapping.objects.filter(
         super_organization=organization
     )
@@ -656,6 +641,7 @@ def save_column_names(bs, mapping=None):
     :param bs: BuildingSnapshot instance.
     """
     from seed.utils import mapping as mapping_utils
+
     for key in bs.extra_data:
         # Ascertain if our key is ``extra_data`` or not.
         is_extra_data = key not in mapping_utils.get_mappable_columns()
@@ -712,7 +698,7 @@ class Project(TimeStampedModel):
         return self.compliance_set.exists()
 
     def __unicode__(self):
-        return u"Project %s" % (self.name, )
+        return u"Project %s" % (self.name,)
 
     def get_compliance(self):
         if self.has_compliance:
@@ -813,7 +799,7 @@ class Compliance(TimeStampedModel):
     start_date = models.DateField(_("start_date"), null=True, blank=True)
     end_date = models.DateField(_("end_date"), null=True, blank=True)
     deadline_date = models.DateField(_("deadline_date"), null=True, blank=True)
-    project = models.ForeignKey(Project, verbose_name=_('Project'),)
+    project = models.ForeignKey(Project, verbose_name=_('Project'), )
 
     def __unicode__(self):
         return u"Compliance %s for project %s" % (
@@ -1009,6 +995,7 @@ class Schema(models.Model):
 
 class CanonicalManager(models.Manager):
     """Manager to add useful model filtering methods"""
+
     def get_queryset(self):
         """Return only active CanonicalBuilding rows."""
         return super(CanonicalManager, self).get_queryset().filter(
@@ -1346,7 +1333,7 @@ class BuildingSnapshot(TimeStampedModel):
             self.owner_city_state = self.owner_city_state[:128]
         if self.owner_postal_code and isinstance(self.owner_postal_code, types.StringTypes):
             self.owner_postal_code = self.owner_postal_code[:128]
-            
+
         if self.property_name and isinstance(self.property_name, types.StringTypes):
             self.property_name = self.property_name[:255]
         if self.address_line_1 and isinstance(self.address_line_1, types.StringTypes):
@@ -1361,15 +1348,15 @@ class BuildingSnapshot(TimeStampedModel):
             self.state_province = self.state_province[:255]
         if self.building_certification and isinstance(self.building_certification, types.StringTypes):
             self.building_certification = self.building_certification[:255]
-        
+
         super(BuildingSnapshot, self).save(*args, **kwargs)
-        
+
     def clean(self, *args, **kwargs):
         super(BuildingSnapshot, self).clean(*args, **kwargs)
 
         # if self.owner:
         #     self.owner = self.owner[:128]
-            
+
         date_field_names = (
             'year_ending',
             'generation_date',
@@ -1400,10 +1387,10 @@ class BuildingSnapshot(TimeStampedModel):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-            }
+                }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-            }
+                }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk
@@ -1417,7 +1404,7 @@ class BuildingSnapshot(TimeStampedModel):
             result['co_parent'] = (self.co_parent and self.co_parent.pk)
             result['coparent'] = (self.co_parent and {
                 field: self.co_parent.pk for field in ['pk', 'id']
-            })
+                })
 
             return result
 
@@ -1428,7 +1415,7 @@ class BuildingSnapshot(TimeStampedModel):
 
     def __unicode__(self):
         u_repr = u'id: {0}, pm_property_id: {1}, tax_lot_id: {2},' + \
-            ' confidence: {3}'
+                 ' confidence: {3}'
         return u_repr.format(
             self.pk, self.pm_property_id, self.tax_lot_id, self.confidence
         )
