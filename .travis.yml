@@ -14,10 +14,8 @@ env:
 
 before_install:
   - export DJANGO_SETTINGS_MODULE=BE.settings.travis
-  - export PIP_USE_MIRRORS=true
 
 install:
-  - pip install -q .
   - pip install -r requirements.txt
   - pip install django==$DJANGO --quiet
   - pip install psycopg2 --quiet
