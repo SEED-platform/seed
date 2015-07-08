@@ -9,18 +9,14 @@ from seed.audit_logs.models import AuditLog
 from django.test import TestCase
 from seed.green_button import xml_importer
 from seed.data_importer.models import ImportRecord, ImportFile
-from seed.models import(
+from seed.models import (
     BuildingSnapshot, TimeSeries
 )
 import seed.models
 import xmltodict
 from seed.landing.models import SEEDUser as User
-from superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from django.core.files import File
-
-
-
-
 
 
 # sample data corresponds to the data that should be extracted by
@@ -60,6 +56,7 @@ sample_building_data = {
     'interval': sample_block_data
 }
 
+
 class GreenButtonXMLParsingTests(TestCase):
     """
     Tests helper functions for pulling green button building data out
@@ -89,13 +86,12 @@ class GreenButtonXMLParsingTests(TestCase):
         for inval, outval in mapping.iteritems():
             self.assertEquals(fn(inval), outval)
 
-
     def test_energy_type(self):
         """
         Test of xml_importer.energy_type.
         """
         expected_mappings = {
-            -1: None, # missing keys should return None
+            -1: None,  # missing keys should return None
             0: seed.models.ELECTRICITY,
             1: seed.models.NATURAL_GAS
         }
@@ -108,13 +104,12 @@ class GreenButtonXMLParsingTests(TestCase):
         (unit of measurement?) integer to one of seed.models.ENERGY_UNITS.
         """
         expected_mappings = {
-            -1: None, # missing keys should return None
+            -1: None,  # missing keys should return None
             72: seed.models.WATT_HOURS,
             169: seed.models.THERMS
         }
 
         self.assert_fn_mapping(xml_importer.energy_units, expected_mappings)
-
 
     def test_as_collection(self):
         """
@@ -125,7 +120,6 @@ class GreenButtonXMLParsingTests(TestCase):
         self.assertEquals(xml_importer.as_collection('1'), ['1'])
         self.assertEquals(xml_importer.as_collection([1]), [1])
         self.assertEquals(xml_importer.as_collection(['1']), ['1'])
-
 
     def test_interval_data(self):
         """
@@ -153,7 +147,6 @@ class GreenButtonXMLParsingTests(TestCase):
         }
 
         self.assertEqual(xml_importer.interval_data(xml_data), expected)
-
 
     def test_meter_data(self):
         """
@@ -186,7 +179,6 @@ class GreenButtonXMLParsingTests(TestCase):
         }
 
         self.assertEqual(xml_importer.meter_data(xml_data), expected)
-
 
     def test_interval_block_data(self):
         """
@@ -254,13 +246,11 @@ class GreenButtonXMLParsingTests(TestCase):
         self.assertEqual(single_res, single_expected)
         self.assertEqual(multiple_res, multiple_expected)
 
-
     def test_building_data(self):
         """
         Test of xml_importer.building_data.
         """
         xml_data = xmltodict.parse(self.sample_xml)
-
 
         expected_meter_data = {
             'currency': '840',
@@ -298,6 +288,7 @@ class GreenButtonXMLParsingTests(TestCase):
 
         data = xml_importer.building_data(xml_data)
         self.assertEqual(data, sample_building_data)
+
 
 class GreenButtonXMLImportTests(TestCase):
     """
@@ -339,7 +330,6 @@ class GreenButtonXMLImportTests(TestCase):
     def tearDown(self):
         self.sample_xml_file.close()
 
-
     def assert_models_created(self):
         """
         Tests that appropriate models for the sample xml file have
@@ -357,7 +347,6 @@ class GreenButtonXMLImportTests(TestCase):
         meter = meters.first()
         tss = TimeSeries.objects.filter(meter=meter)
         self.assertEqual(len(tss), 2)
-
 
     def test_create_models(self):
         """
@@ -378,7 +367,6 @@ class GreenButtonXMLImportTests(TestCase):
         log = logs.first()
         self.assertEqual(log.user, self.user)
         self.assertEqual(log.organization, self.org)
-
 
     def test_import_xml(self):
         """

@@ -5,8 +5,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 
-from superperms.orgs.exceptions import TooManyNestedOrgs
-
+from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 
 USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', User)
 
@@ -37,6 +36,7 @@ STATUS_CHOICES = (
 
 class ExportableField(models.Model):
     """Tracks which model fields are exportable."""
+
     class Meta:
         unique_together = ('field_model', 'name', 'organization')
         ordering = ['organization', 'name']
@@ -73,13 +73,13 @@ class OrganizationUser(models.Model):
         if self.role_level == ROLE_OWNER:
             # If there are users, but no other owners in this organization.
             if (
-                OrganizationUser.objects.all().exclude(pk=self.pk).exists() and
-                OrganizationUser.objects.filter(
-                    organization=self.organization,
-                    role_level=ROLE_OWNER
-                ).exclude(pk=self.pk).count() == 0
+                        OrganizationUser.objects.all().exclude(pk=self.pk).exists() and
+                            OrganizationUser.objects.filter(
+                                organization=self.organization,
+                                role_level=ROLE_OWNER
+                            ).exclude(pk=self.pk).count() == 0
             ):
-                    # Make next most high ranking person the owner.
+                # Make next most high ranking person the owner.
                 other_user = OrganizationUser.objects.filter(
                     organization=self.organization
                 ).exclude(pk=self.pk)[0]
@@ -97,6 +97,7 @@ class OrganizationUser(models.Model):
 
 class Organization(models.Model):
     """A group of people that optionally contains another sub group."""
+
     class Meta:
         ordering = ['name']
 
@@ -119,8 +120,8 @@ class Organization(models.Model):
         """Perform checks before saving."""
         # There can only be one.
         if (
-            self.parent_org is not None and
-            self.parent_org.parent_org is not None
+                        self.parent_org is not None and
+                        self.parent_org.parent_org is not None
         ):
             raise TooManyNestedOrgs
 

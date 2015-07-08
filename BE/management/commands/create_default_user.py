@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 
 # app
 from seed.landing.models import SEEDUser as User
-from superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 
 
 class Command(BaseCommand):

@@ -5,16 +5,13 @@
 import json
 import logging
 
-# django imports
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
-
-# vendor imports
 from annoying.decorators import ajax_request
-from superperms.orgs.decorators import has_perm, PERMS
-from superperms.orgs.exceptions import TooManyNestedOrgs
-from superperms.orgs.models import (
+from seed.lib.superperms.orgs.decorators import has_perm, PERMS
+from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
+from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
     ROLE_VIEWER,
@@ -24,18 +21,14 @@ from superperms.orgs.models import (
 from passwords.validators import (
     validate_length, common_sequences, dictionary_words, complexity
 )
-
 from seed.utils.organizations import create_organization
 from seed.utils.buildings import get_columns as utils_get_columns
-
-# app imports
 from seed.models import CanonicalBuilding
 from seed.landing.models import SEEDUser as User
 from seed.tasks import (
     invite_to_seed,
 )
 from seed.utils.api import api_endpoint
-
 from seed.public.models import INTERNAL, PUBLIC, SharedBuildingField
 
 _log = logging.getLogger(__name__)

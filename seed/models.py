@@ -17,7 +17,7 @@ from django_extensions.db.models import TimeStampedModel
 from djorm_pgjson.fields import JSONField
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.lib.mcm import mapper
-from superperms.orgs.models import Organization as SuperOrganization
+from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.managers.json import JsonManager
 from seed.utils.time import convert_datestr
 from seed.utils.generic import split_model_fields

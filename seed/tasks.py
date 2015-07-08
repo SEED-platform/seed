@@ -60,7 +60,7 @@ from seed.models import (
 from seed.decorators import lock_and_track, get_prog_key, increment_cache
 from seed.utils.buildings import get_source_type, get_search_query
 from seed.utils.mapping import get_mappable_columns
-from superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import Organization
 from seed.lib.exporter import Exporter
 
 logger = get_task_logger(__name__)

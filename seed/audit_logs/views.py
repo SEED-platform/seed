@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 from annoying.decorators import ajax_request
 
 # app imports
-from superperms.orgs.decorators import has_perm
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.utils.api import api_endpoint
 from seed.models import CanonicalBuilding
 from seed.audit_logs.models import AuditLog, NOTE

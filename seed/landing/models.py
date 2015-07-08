@@ -25,7 +25,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 from djorm_pgjson.fields import JSONField
 
-from superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import Organization
 
 
 class SEEDUser(AbstractBaseUser, PermissionsMixin):

@@ -6,8 +6,7 @@ from functools import wraps
 
 from django.conf import settings
 from django.http import HttpResponseForbidden
-
-from superperms.orgs.models import (
+from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
     ROLE_VIEWER,
@@ -90,8 +89,8 @@ def can_modify_org_settings(org_user):
     # is an owner of the parent.
     org = org_user.organization
     if (
-        org.parent_org is not None
-        and org.parent_org.is_owner(org_user.user)
+                    org.parent_org is not None
+            and org.parent_org.is_owner(org_user.user)
     ):
         return True
     return False
@@ -132,7 +131,6 @@ PERMS = {
     'can_view_data': can_view_data
 }
 
-
 ERROR_MESSAGES = {
     'org_dne': 'Organization does not exist',
     'user_dne': 'No relationship to organization',
@@ -168,6 +166,7 @@ def _get_org_id(request):
 
 def has_perm(perm_name):
     """Proceed if user from request has ``perm_name``."""
+
     def decorator(fn):
         @wraps(fn)
         def _wrapped(request, *args, **kwargs):

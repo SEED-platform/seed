@@ -12,7 +12,7 @@ from django.core.files import File
 from seed.audit_logs.models import AuditLog
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
-from superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     ASSESSED_RAW,
     ASSESSED_BS,

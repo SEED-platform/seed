@@ -7,7 +7,7 @@ import datetime
 import re
 from importlib import import_module
 
-from superperms.orgs.models import (
+from seed.lib.superperms.orgs.models import (
     Organization as SuperOrganization,
     OrganizationUser as SuperOrganizationUser
 )

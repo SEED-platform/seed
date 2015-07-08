@@ -5,7 +5,7 @@ import json
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
-from superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 

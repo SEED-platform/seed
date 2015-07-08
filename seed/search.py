@@ -10,7 +10,7 @@ import json
 import re
 
 from django.db.models import Q
-from superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import Organization
 from .models import BuildingSnapshot
 from .utils.mapping import get_mappable_types
 from seed.public.models import PUBLIC

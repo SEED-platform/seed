@@ -8,7 +8,7 @@ from unittest import skip
 from django.core.cache import cache
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
-from superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.audit_logs.models import AuditLog, LOG
 from seed.data_importer.models import ROW_DELIMITER, ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
@@ -36,6 +36,7 @@ from seed.views.main import (
 )
 from seed.utils.mapping import _get_column_names
 from seed.tests import util as test_util
+
 
 
 

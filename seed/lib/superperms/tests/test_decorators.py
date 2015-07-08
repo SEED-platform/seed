@@ -5,8 +5,7 @@ import json
 
 from django.utils.unittest import TestCase
 from django.http import HttpResponse, HttpResponseForbidden
-from superperms.orgs import decorators
-from superperms.orgs.models import (
+from seed.lib.superperms.orgs.models import (
     ROLE_VIEWER,
     ROLE_MEMBER,
     ROLE_OWNER,
@@ -15,9 +14,11 @@ from superperms.orgs.models import (
 )
 from seed.landing.models import SEEDUser as User
 
+
 #
 # Copied wholesale from django-brake's tests
 # https://github.com/gmcquillan/django-brake/blob/master/brake/tests/tests.py
+from seed.lib.superperms.orgs import decorators
 
 
 class FakeRequest(object):
@@ -69,7 +70,6 @@ def _fake_invite_user(request):
 
 
 class TestDecorators(TestCase):
-
     def setUp(self):
         super(TestDecorators, self).setUp()
         self.client = FakeClient()

@@ -5,7 +5,7 @@ from salad.steps.everything import *
 from lettuce import step
 from django.core.urlresolvers import reverse
 from seed.landing.models import SEEDUser as User
-from superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import Organization
 
 
 @step(u'I visit the landing page')

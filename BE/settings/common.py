@@ -76,11 +76,9 @@ INSTALLED_APPS = (
     'compressor',
     'django_extensions',
     'organizations',
-    'superperms.orgs',
     'raven.contrib.django',
     'south',
     'tos',
-
 )
 
 BE_CORE_APPS = (
@@ -88,6 +86,7 @@ BE_CORE_APPS = (
     'seed.public',
     'seed.data_importer',
     'seed',
+    'seed.lib.superperms.orgs',
     'seed.audit_logs',
 )
 

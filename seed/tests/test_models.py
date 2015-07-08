@@ -4,7 +4,7 @@
 from datetime import datetime
 
 from django.test import TestCase
-from superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed import models as seed_models

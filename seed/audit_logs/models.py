@@ -14,7 +14,7 @@ from django.db import models
 from django_extensions.db.models import TimeStampedModel
 from djorm_expressions.models import ExpressionManager, ExpressionQuerySet
 from djorm_pgjson.fields import JSONField
-from superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import Organization
 
 USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', User)
 

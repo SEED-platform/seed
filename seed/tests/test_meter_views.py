@@ -8,7 +8,7 @@ from seed.models import (
 )
 from seed.views import meters
 from seed.tests.util import FakeRequest
-from superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import Organization
 
 
 class TestMeterViews(TestCase):

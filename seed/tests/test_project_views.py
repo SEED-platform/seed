@@ -5,13 +5,13 @@ import json
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
-from superperms.orgs.models import Organization
 from seed.landing.models import SEEDUser as User
-from superperms.orgs.models import (
+from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
     ROLE_VIEWER,
     OrganizationUser,
+    Organization
 )
 from seed.tests.util import FakeRequest
 from seed.models import Project

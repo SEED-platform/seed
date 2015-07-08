@@ -28,7 +28,7 @@ from seed.data_importer.managers import NotDeletedManager
 from organizations.models import Organization
 from seed.common import mapper
 
-from superperms.orgs.models import Organization as SuperOrganization
+from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 
 
 ROW_DELIMITER = "|#*#|"

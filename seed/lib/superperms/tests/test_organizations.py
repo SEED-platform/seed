@@ -3,8 +3,8 @@
 """
 from django.utils.unittest import TestCase
 
-from superperms.orgs.exceptions import TooManyNestedOrgs
-from superperms.orgs.models import (
+from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
+from seed.lib.superperms.orgs.models import (
     ROLE_VIEWER,
     ROLE_MEMBER,
     ROLE_OWNER,
@@ -112,7 +112,7 @@ class TestOrganization(TestCase):
                 organization=org,
                 field_model='FakeModel'
             ) for x in range(10)
-        ]
+            ]
 
         self.assertListEqual(
             list(org.exportable_fields.all()), exportable_fields
@@ -168,7 +168,7 @@ class TestOrganization(TestCase):
                 organization=parent_org,
                 field_model='FakeModel'
             ) for x in range(10)
-        ]
+            ]
 
         child_org = Organization.objects.create(name='Child')
         child_fields = [
@@ -177,7 +177,7 @@ class TestOrganization(TestCase):
                 organization=child_org,
                 field_model='FakeModel'
             ) for x in range(10)
-        ]
+            ]
 
         self.assertListEqual(
             list(child_org.get_exportable_fields()), child_fields

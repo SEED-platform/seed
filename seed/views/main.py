@@ -24,7 +24,7 @@ from seed.tasks import (
     match_buildings,
     save_raw_data as task_save_raw,
 )
-from superperms.orgs.decorators import has_perm
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed import models, tasks
 from seed.models import (
     get_column_mapping,
@@ -42,7 +42,7 @@ from seed.models import (
     GREEN_BUTTON_BS,
 )
 from seed.views.accounts import _get_js_role
-from superperms.orgs.models import Organization, OrganizationUser, ROLE_MEMBER
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser, ROLE_MEMBER
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
     get_search_query,

@@ -5,8 +5,12 @@ import json
 
 from django.test import TestCase
 from seed.landing.models import SEEDUser as User
-from superperms.orgs.models import Organization, ROLE_OWNER, ExportableField,\
+from seed.lib.superperms.orgs.models import (
+    Organization,
+    ROLE_OWNER,
+    ExportableField,
     ROLE_MEMBER
+)
 from seed.models import (
     CanonicalBuilding,
     BuildingSnapshot
@@ -189,7 +193,7 @@ class SharingViewTests(TestCase):
         self.assertEqual(len(result['buildings']),
                          BuildingSnapshot.objects.count())
 
-        #parent org sees all fields on all buildings
+        # parent org sees all fields on all buildings
         for b in result['buildings']:
             self.assertTrue(b['property_name'] in
                             ('ENG BUILDING', 'DES BUILDING', 'ADMIN BUILDING'))
@@ -220,7 +224,7 @@ class SharingViewTests(TestCase):
         self.assertEqual(len(result['buildings']),
                          expected_count)
 
-        #eng org only sees own buildings
+        # eng org only sees own buildings
         for b in result['buildings']:
             self.assertEqual(b['property_name'], 'ENG BUILDING')
             self.assertEqual(b['address_line_1'], '100 Eng St')
@@ -244,13 +248,13 @@ class SharingViewTests(TestCase):
         self.assertEqual(len(result['buildings']),
                          expected_count)
 
-        #des org user should see shared fields
+        # des org user should see shared fields
         for b in result['buildings']:
-            #property_name is shared
+            # property_name is shared
             self.assertTrue(b['property_name'] in
                             ('ENG BUILDING', 'DES BUILDING', 'ADMIN BUILDING'))
             if b['property_name'] == 'ENG BUILDING':
-                #address_line_1 is unshared
+                # address_line_1 is unshared
                 self.assertTrue('address_line_1' not in b)
             elif b['property_name'] == 'DES BUILDING':
                 self.assertEqual(b['address_line_1'],

@@ -20,7 +20,7 @@ from seed.tasks import (
     remove_buildings,
 )
 
-from superperms.orgs.decorators import has_perm
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import (
     Compliance,
     Project,
