@@ -1,7 +1,6 @@
 import datetime
 
 from django.db.models import Q
-
 from seed import models
 from seed.models import ASSESSED_RAW, BuildingSnapshot
 from seed import search

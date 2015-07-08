@@ -15,6 +15,7 @@ from seed.lib.superperms.orgs.models import (
 )
 
 
+
 # Allow Super Users to ignore permissions.
 ALLOW_SUPER_USER_PERMS = getattr(settings, 'ALLOW_SUPER_USER_PERMS', True)
 

@@ -19,6 +19,7 @@ from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from django.core.files import File
 
 
+
 # sample data corresponds to the data that should be extracted by
 # xml_importer.building_data when called with the file
 # green_button/tests/data/sample_gb_gas.xml

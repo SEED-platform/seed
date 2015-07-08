@@ -5,13 +5,14 @@ API Testing for remote SEED installations.
 """
 
 import os
-import requests
 import pprint
 import json
-import numpy as np
 import datetime as dt
 import time
 from calendar import timegm
+
+import requests
+
 
 
 # Three-step upload process 

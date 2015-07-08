@@ -6,7 +6,6 @@ Utility methods pertaining to data import tasks.
 """
 import datetime
 
-from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.core.cache import cache
 
