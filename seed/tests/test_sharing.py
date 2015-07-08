@@ -1,6 +1,8 @@
 """
 Tests related to sharing of data between users, orgs, suborgs, etc.
 """
+import json
+
 from django.test import TestCase
 from landing.models import SEEDUser as User
 from superperms.orgs.models import Organization, ROLE_OWNER, ExportableField,\
@@ -10,11 +12,8 @@ from seed.models import (
     BuildingSnapshot
 )
 from seed.factory import SEEDFactory
-
 from public.models import INTERNAL, PUBLIC, SharedBuildingField
-
 from django.core.urlresolvers import reverse_lazy
-import json
 
 
 class SharingViewTests(TestCase):

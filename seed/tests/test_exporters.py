@@ -2,6 +2,7 @@
 :copyright: (c) 2014 Building Energy Inc
 """
 import os
+import uuid
 
 from django.test import TestCase
 from django.db.models import Manager
@@ -9,7 +10,6 @@ from seed.models import CanonicalBuilding, BuildingSnapshot
 from seed.factory import SEEDFactory
 from seed.lib.exporter import Exporter
 import xlrd
-import uuid
 import unicodecsv as csv
 
 

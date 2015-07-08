@@ -5,9 +5,7 @@ import json
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
-
 from superperms.orgs.models import Organization
-
 from landing.models import SEEDUser as User
 from seed.views.main import _get_default_org
 from seed.views.accounts import _dict_org, _get_js_role, _get_role_from_js
@@ -18,10 +16,8 @@ from superperms.orgs.models import (
     OrganizationUser,
 )
 from superperms.orgs.exceptions import InsufficientPermission
-
 from seed.models import BuildingSnapshot, CanonicalBuilding
 from public.models import SharedBuildingField
-
 from seed.tests.util import FakeRequest
 
 

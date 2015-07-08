@@ -3,13 +3,11 @@ import json
 
 from django.test import TestCase
 from landing.models import SEEDUser as User
-
 from seed.models import (
     ELECTRICITY, KILOWATT_HOURS, BuildingSnapshot, Meter, TimeSeries
 )
 from seed.views import meters
 from seed.tests.util import FakeRequest
-
 from superperms.orgs.models import Organization
 
 
