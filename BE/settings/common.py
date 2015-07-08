@@ -86,8 +86,8 @@ INSTALLED_APPS = (
 
 BE_CORE_APPS = (
     'BE',
-    'seed',
     'seed.data_importer',
+    'seed',
     'seed.audit_logs',
 )
 

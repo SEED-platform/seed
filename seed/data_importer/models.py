@@ -6,7 +6,6 @@ import datetime
 import hashlib
 import math
 import tempfile
-# import time
 from urllib import unquote
 try:
     import simplejson as json
