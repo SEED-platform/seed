@@ -2,8 +2,9 @@
 :copyright: (c) 2014 Building Energy Inc
 """
 import json
-from dateutil import parser
 from itertools import islice, chain
+
+from dateutil import parser
 
 
 def batch(iterable, size):

@@ -69,6 +69,7 @@ def date_cleaner(value, *args):
 
 class Cleaner(object):
     """Cleans values for a given ontology."""
+
     def __init__(self, ontology):
         self.ontology = ontology
         self.schema = self.ontology.get(u'types', {})

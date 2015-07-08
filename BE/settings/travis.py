@@ -8,8 +8,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'seeddb',
-        'USER': 'postgres',
-        'PASSWORD': '',
+        'USER': 'seeduser',
+        'PASSWORD': 'seedpass',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -26,7 +26,7 @@ CACHES = {
 
 BROKER_URL = 'redis://127.0.0.1:6379/1'
 
-# Make sure to run the migrations on the CI machines for testing. This is disabled when running tests locally
+# Make sure to run the migrations on the CI machines for testing. This is also enabled when running tests locally
 SOUTH_TESTS_MIGRATE = True
 
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'

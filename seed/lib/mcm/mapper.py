@@ -3,8 +3,8 @@
 """
 import json
 
-from seed.lib.mcm import matchers
-from mcm.cleaners import default_cleaner
+import matchers
+from cleaners import default_cleaner
 
 
 def build_column_mapping(

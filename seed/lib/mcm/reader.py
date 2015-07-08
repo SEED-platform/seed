@@ -15,18 +15,6 @@ import unicodedata
 
 from unicodecsv import DictReader, Sniffer
 from xlrd import XLRDError, open_workbook, xldate_as_tuple, empty_cell
-
-
-
-
-
-
-
-
-
-
-
-# from xlrd/biffh.py
 from seed.lib.mcm import mapper, utils
 
 (
@@ -53,6 +41,7 @@ class ExcelParser(object):
             reader.seek_to_beginning()
             # rows.next() will return the first row
     """
+
     def __init__(self, excel_file, *args, **kwargs):
         self.excel_file = excel_file
         self.sheet = self._get_sheet(excel_file)
@@ -122,6 +111,7 @@ class ExcelParser(object):
         :param header_row: the row index to start with
         :returns: Generator yeilding a row as Dict
         """
+
         def item(i, j):
             """returns a tuple (column header, cell value)"""
             return (
@@ -259,6 +249,7 @@ class MCMParser(object):
             # rows.next() will return the first row
 
     """
+
     def __init__(self, import_file, *args, **kwargs):
         self.reader = self._get_reader(import_file)
         self.import_file = import_file
