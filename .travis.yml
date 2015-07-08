@@ -16,7 +16,7 @@ before_install:
   - export DJANGO_SETTINGS_MODULE=BE.settings.travis
 
 install:
-  - pip install -r requirements.txt
+  - pip install -r requirements/test.txt
   - pip install django==$DJANGO --quiet
   - pip install psycopg2 --quiet
   - pip install coveralls

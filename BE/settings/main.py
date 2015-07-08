@@ -3,6 +3,7 @@
 """
 from BE.settings.common import *  # noqa
 import aws
+import djcelery
 
 # AWS settings
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
@@ -71,7 +72,7 @@ CELERY_QUEUES = (
         routing_key=CELERY_DEFAULT_QUEUE
     ),
 )
-import djcelery
+
 
 djcelery.setup_loader()
 

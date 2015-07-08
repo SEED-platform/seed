@@ -66,26 +66,19 @@ CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 djcelery.setup_loader()
 
-try:
-    INSTALLED_APPS += (
-        'lettuce.django',
-        'salad',
-    )
-    TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-    NOSE_PLUGINS = [
-        'nose_exclude.NoseExclude',
-    ]
-    NOSE_ARGS = [
-        '--exclude-dir=data_importer',
-        '--exclude-dir=seed/common',
-        '--nocapture',
-        '--nologcapture'
-    ]
 
-except:
-    if "collectstatic" not in sys.argv:
-        print "Unable to import salad or lettuce."
-    pass
+# Testing
+INSTALLED_APPS += ("django_nose", )
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_PLUGINS = [
+    'nose_exclude.NoseExclude',
+]
+NOSE_ARGS = [
+    '--exclude-dir=data_importer',
+    '--exclude-dir=seed/common',
+    '--nocapture',
+    '--nologcapture'
+]
 
 # You have to run south tests migration due to the BEDES migration (30-32) that adds a bunch of columns
 # There are two test failures if you disable this
@@ -94,30 +87,7 @@ except:
 # To make tests run faster pass the REUSE_DB=1 env var to the test command
 SOUTH_TESTS_MIGRATE = True
 
-LETTUCE_SERVER_PORT = 7001
 REQUIRE_UNIQUE_EMAIL = False
-LETTUCE_AVOID_APPS = (
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.markup',
-    'django.contrib.humanize',
-    'django.contrib.admin',
-    'analytical',
-    'ajaxuploader',
-    'compress',
-    'djcelery',
-    'debug_toolbar',
-    'django_nose',
-    'raven.contrib.django',
-    'south',
-    'salad',
-    'django_extensions',
-    'organizations',
-    'data_importer',
-)
 
 INTERNAL_IPS = ('127.0.0.1',)
 

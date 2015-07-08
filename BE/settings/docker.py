@@ -4,6 +4,8 @@
 """
 
 from BE.settings.common import *  # noqa
+from kombu import Exchange, Queue
+import djcelery
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -91,9 +93,7 @@ else:
             },
         },
     }
-# redis celery/message broker config
-from kombu import Exchange, Queue
-import djcelery
+
 # BROKER_URL with AWS ElastiCache redis looks something like:
 # 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
 BROKER_URL = "redis://%s:%s/1" % (REDIS_PORT_6379_TCP_ADDR, REDIS_PORT_6379_TCP_PORT)
@@ -108,10 +108,7 @@ CELERY_QUEUES = (
 djcelery.setup_loader()
 
 try:
-    INSTALLED_APPS += (
-        'lettuce.django',
-        'salad',
-    )
+    INSTALLED_APPS += ( )
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
     NOSE_PLUGINS = [
         'nose_exclude.NoseExclude',
@@ -129,30 +126,7 @@ if "test" in sys.argv:
     CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
     SOUTH_TESTS_MIGRATE = True
 
-LETTUCE_SERVER_PORT = 7001
 REQUIRE_UNIQUE_EMAIL = False
-LETTUCE_AVOID_APPS = (
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.markup',
-    'django.contrib.humanize',
-    'django.contrib.admin',
-    'analytical',
-    'ajaxuploader',
-    'compress',
-    'djcelery',
-    'debug_toolbar',
-    'django_nose',
-    'raven.contrib.django',
-    'south',
-    'salad',
-    'django_extensions',
-    'organizations',
-    'data_importer',
-)
 
 INTERNAL_IPS = ('127.0.0.1',)
 

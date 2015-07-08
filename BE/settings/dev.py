@@ -4,6 +4,8 @@
 """
 
 from BE.settings.common import *  # noqa
+from kombu import Exchange, Queue
+import djcelery
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -75,9 +77,20 @@ else:
             },
         },
     }
-# redis celery/message broker config
-from kombu import Exchange, Queue
-import djcelery
+
+# django-debug-toolbar
+# ------------------------------------------------------------------------------
+MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+INSTALLED_APPS += ('debug_toolbar', )
+INTERNAL_IPS = ('127.0.0.1',)
+DEBUG_TOOLBAR_CONFIG = {
+    'DISABLE_PANELS': [
+        'debug_toolbar.panels.redirects.RedirectsPanel',
+    ],
+    'SHOW_TEMPLATE_CONTEXT': True,
+}
+
+
 # BROKER_URL with AWS ElastiCache redis looks something like:
 # 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
 BROKER_URL = 'redis://127.0.0.1:6379/1'
@@ -92,54 +105,7 @@ CELERY_QUEUES = (
 )
 djcelery.setup_loader()
 
-try:
-    INSTALLED_APPS += (
-        'lettuce.django',
-        'salad',
-    )
-    TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-    NOSE_PLUGINS = [
-        'nose_exclude.NoseExclude',
-    ]
-    NOSE_ARGS = ['--exclude-dir=data_importer', '--exclude-dir=seed/common']
-
-except:
-    if "collectstatic" not in sys.argv:
-        print "Unable to import salad or lettuce."
-    pass
-
-if "test" in sys.argv:
-    BROKER_BACKEND = 'memory'
-    CELERY_ALWAYS_EAGER = True
-    CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
-    SOUTH_TESTS_MIGRATE = True
-
-LETTUCE_SERVER_PORT = 7001
 REQUIRE_UNIQUE_EMAIL = False
-LETTUCE_AVOID_APPS = (
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.markup',
-    'django.contrib.humanize',
-    'django.contrib.admin',
-    'analytical',
-    'ajaxuploader',
-    'compress',
-    'djcelery',
-    'debug_toolbar',
-    'django_nose',
-    'raven.contrib.django',
-    'south',
-    'salad',
-    'django_extensions',
-    'organizations',
-    'data_importer',
-)
-
-INTERNAL_IPS = ('127.0.0.1',)
 
 COMPRESS_ENABLED = False
 if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:

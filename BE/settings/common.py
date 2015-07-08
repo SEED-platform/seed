@@ -72,7 +72,7 @@ INSTALLED_APPS = (
     'analytical',
     'ajaxuploader',
     'djcelery',
-    'django_nose',
+
     'compressor',
     'django_extensions',
     'organizations',
@@ -138,12 +138,6 @@ AWS_QUERYSTRING_AUTH = False
 
 # django-longer-username-and-email
 REQUIRE_UNIQUE_EMAIL = False
-
-if len(sys.argv) > 1 and sys.argv[1] in [
-    'test', 'harvest', 'salad', 'run_parallel_tests'
-]:
-    logging.disable(logging.CRITICAL)
-    COMPRESS_ENABLED = False
 
 LOGGING = {
     'version': 1,
@@ -232,9 +226,6 @@ BROKER_PASSWORD = "guest"
 BROKER_VHOST = "/"
 
 LOG_FILE = join(SITE_ROOT, '../logs/py.log/')
-
-# DEBUG TOOLBAR
-INTERNAL_IPS = ('127.0.0.1',)
 
 # Set translation languages for i18n
 LANGUAGES = (

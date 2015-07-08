@@ -168,7 +168,7 @@ If running on AWS, the `bin/start_flower.sh` will start flower on port `8080` an
 * use a virtualenv if desired
 * create a `local_untracked.py` in the `BE/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
 * `export DJANGO_SETTINGS_MODULE=BE.settings.dev`
-* `pip install -r requirements.txt`
+* `pip install -r requirements/local.txt`
 * `./manage.py syncdb`
 * `./manage.py migrate`
 * `./manage.py create_default_user`

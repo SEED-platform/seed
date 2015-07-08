@@ -89,7 +89,7 @@ Some packages (uWSGI) may need to find your C compiler. Make sure you have 'gcc'
     
 Install requirements with `pip`
 
-    pip install -r requirements.txt
+    pip install -r requirements/local.txt
 
     
 Install library with `setup.py`
