@@ -32,7 +32,7 @@ from streetaddress import StreetAddressParser, StreetAddressFormatter
 from seed.data_importer.models import (
     ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
 )
-from green_button import xml_importer
+from seed.green_button import xml_importer
 from seed.models import (
     ASSESSED_RAW,
     PORTFOLIO_RAW,

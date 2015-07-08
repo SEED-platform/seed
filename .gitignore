@@ -48,3 +48,5 @@ docs/build/
 .pydevproject
 dump.rdb
 log
+*.log
+

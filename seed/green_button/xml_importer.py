@@ -299,7 +299,6 @@ def create_models(data, import_file):
 
     # now timeseries data for the meter
     for reading in data['interval']['readings']:
-
         start_time = int(reading['start_time'])
         duration = int(reading['duration'])
 
