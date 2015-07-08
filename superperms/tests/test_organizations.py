@@ -14,7 +14,7 @@ from superperms.orgs.models import (
     OrganizationUser,
 )
 
-from landing.models import SEEDUser as User
+from seed.landing.models import SEEDUser as User
 
 
 class TestOrganizationUser(TestCase):

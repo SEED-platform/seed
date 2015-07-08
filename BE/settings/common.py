@@ -93,7 +93,7 @@ BE_CORE_APPS = (
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
 # Internal apps can resolve this via South's depends_on.
-HIGH_DEPENDENCY_APPS = ('landing',)  # 'landing' contains SEEDUser
+HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 
 INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + BE_CORE_APPS
 

@@ -4,7 +4,7 @@ Tests related to sharing of data between users, orgs, suborgs, etc.
 import json
 
 from django.test import TestCase
-from landing.models import SEEDUser as User
+from seed.landing.models import SEEDUser as User
 from superperms.orgs.models import Organization, ROLE_OWNER, ExportableField,\
     ROLE_MEMBER
 from seed.models import (

@@ -6,7 +6,7 @@ import json
 from django.core.urlresolvers import reverse_lazy, reverse
 from django.test import TestCase
 from superperms.orgs.models import Organization, OrganizationUser
-from landing.models import SEEDUser as User
+from seed.landing.models import SEEDUser as User
 from seed.factory import SEEDFactory
 from seed.models import CanonicalBuilding
 from seed.utils.api import get_api_endpoints

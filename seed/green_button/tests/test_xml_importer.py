@@ -14,9 +14,10 @@ from seed.models import(
 )
 import seed.models
 import xmltodict
-from landing.models import SEEDUser as User
+from seed.landing.models import SEEDUser as User
 from superperms.orgs.models import Organization, OrganizationUser
 from django.core.files import File
+
 
 
 

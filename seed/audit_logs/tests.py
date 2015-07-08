@@ -13,7 +13,7 @@ from django.core.urlresolvers import reverse_lazy
 from superperms.orgs.models import Organization
 
 # app imports
-from landing.models import SEEDUser as User
+from seed.landing.models import SEEDUser as User
 from seed.factory import SEEDFactory
 from seed.models import CanonicalBuilding
 from seed.tests.util import FakeRequest

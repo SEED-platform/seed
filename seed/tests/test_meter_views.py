@@ -2,7 +2,7 @@ import datetime
 import json
 
 from django.test import TestCase
-from landing.models import SEEDUser as User
+from seed.landing.models import SEEDUser as User
 from seed.models import (
     ELECTRICITY, KILOWATT_HOURS, BuildingSnapshot, Meter, TimeSeries
 )

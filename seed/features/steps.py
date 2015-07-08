@@ -4,7 +4,6 @@
 from salad.steps.everything import *
 from lettuce import step
 from django.core.urlresolvers import reverse
-from landing.features.steps import *
 
 
 @step(u'I visit the home page')

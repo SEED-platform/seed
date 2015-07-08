@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 
 from tos.models import TermsOfService
 
-from landing.models import SEEDUser as User
+from seed.landing.models import SEEDUser as User
 
 
 class UserLoginTest(TestCase):

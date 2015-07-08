@@ -1,7 +1,7 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
-#!/usr/bin/env python
+# !/usr/bin/env python
 # encoding: utf-8
 """
 landing/urls.py
@@ -12,9 +12,8 @@ from django.contrib.auth.views import (
     logout, password_change, password_change_done
 )
 
-
 urlpatterns = patterns(
-    'landing.views',
+    'seed.landing.views',
     url(r'^$', 'landing_page', name='landing_page'),
     url(r'^accounts/login/$', 'login_view', name='login'),
     url(
@@ -23,16 +22,8 @@ urlpatterns = patterns(
         {'next_page': '/?logout'},
         name='logout'
     ),
-    url(
-        r'^accounts/password/reset/$',
-        'password_reset',
-        name='password_reset'
-    ),
-    url(
-        r'^accounts/password/reset/done/$',
-        'password_reset_done',
-        name='password_reset_done'
-    ),
+    url(r'^accounts/password/reset/$', 'password_reset', name='password_reset'),
+    url(r'^accounts/password/reset/done/$', 'password_reset_done', name='password_reset_done'),
     url(
         (
             r'^accounts/password/reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/'
@@ -41,11 +32,7 @@ urlpatterns = patterns(
         'password_reset_confirm',
         name='password_reset_confirm'
     ),
-    url(
-        r'^accounts/password/reset/complete/$',
-        'password_reset_complete',
-        name='password_reset_complete'
-    ),
+    url(r'^accounts/password/reset/complete/$', 'password_reset_complete', name='password_reset_complete'),
     url(
         (
             r'^accounts/setup/(?P<uidb64>[0-9A-Za-z_\-]+)/'

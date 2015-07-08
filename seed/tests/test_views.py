@@ -11,7 +11,7 @@ from django.test import TestCase
 from superperms.orgs.models import Organization, OrganizationUser
 from seed.audit_logs.models import AuditLog, LOG
 from seed.data_importer.models import ROW_DELIMITER, ImportFile, ImportRecord
-from landing.models import SEEDUser as User
+from seed.landing.models import SEEDUser as User
 from seed import decorators
 from seed.factory import SEEDFactory
 from seed.models import (
@@ -36,6 +36,7 @@ from seed.views.main import (
 )
 from seed.utils.mapping import _get_column_names
 from seed.tests import util as test_util
+
 
 
 

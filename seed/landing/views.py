@@ -1,6 +1,8 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
+import logging
+
 from annoying.decorators import render_to
 from django.contrib import auth
 from django.contrib.auth import authenticate, login
@@ -11,14 +13,11 @@ from django.forms.forms import NON_FIELD_ERRORS
 from django.http import HttpResponseRedirect
 from django.template.context import RequestContext
 from django.shortcuts import render_to_response
-
 from tos.models import (
     has_user_agreed_latest_tos, TermsOfService, NoActiveTermsOfService
 )
+from forms import LoginForm, SetStrongPasswordForm
 
-from landing.forms import LoginForm, SetStrongPasswordForm
-
-import logging
 logger = logging.getLogger(__name__)
 
 

@@ -30,7 +30,7 @@ from seed.utils.buildings import get_columns as utils_get_columns
 
 # app imports
 from seed.models import CanonicalBuilding
-from landing.models import SEEDUser as User
+from seed.landing.models import SEEDUser as User
 from seed.tasks import (
     invite_to_seed,
 )

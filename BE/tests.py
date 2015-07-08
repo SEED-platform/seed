@@ -3,7 +3,7 @@ from django.test import TestCase
 
 from superperms.orgs.models import Organization, OrganizationUser
 
-from landing.models import SEEDUser as User
+from seed.landing.models import SEEDUser as User
 
 
 class ManagementTests(TestCase):

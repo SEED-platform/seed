@@ -20,7 +20,7 @@ admin.autodiscover()
 urlpatterns = patterns(
     '',
     # landing page
-    url(r'^', include('landing.urls', namespace="landing", app_name="landing")),
+    url(r'^', include('seed.landing.urls', namespace="landing", app_name="landing")),
 
     # accounts/orgs AJAX
     url(r'app/accounts/', include('seed.urls.accounts', namespace="accounts", app_name="accounts")),

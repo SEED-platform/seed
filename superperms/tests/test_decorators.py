@@ -5,7 +5,6 @@ import json
 
 from django.utils.unittest import TestCase
 from django.http import HttpResponse, HttpResponseForbidden
-
 from superperms.orgs import decorators
 from superperms.orgs.models import (
     ROLE_VIEWER,
@@ -14,8 +13,7 @@ from superperms.orgs.models import (
     Organization,
     OrganizationUser,
 )
-
-from landing.models import SEEDUser as User
+from seed.landing.models import SEEDUser as User
 
 #
 # Copied wholesale from django-brake's tests

@@ -12,7 +12,7 @@ from django.core import serializers
 from django.utils.translation import ugettext_lazy as _
 from autoslug import AutoSlugField
 from seed.audit_logs.models import AuditLog, LOG
-from landing.models import SEEDUser as User
+from seed.landing.models import SEEDUser as User
 from django_extensions.db.models import TimeStampedModel
 from djorm_pgjson.fields import JSONField
 from seed.data_importer.models import ImportFile, ImportRecord
