@@ -14,7 +14,7 @@ from annoying.decorators import ajax_request
 from dateutil import parser
 
 
-# BE imports
+# config imports
 from seed.tasks import (
     add_buildings,
     remove_buildings,

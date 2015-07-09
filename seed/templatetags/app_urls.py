@@ -18,7 +18,7 @@ def namespaced_urls():
         {% load app_urls %}
     ...
         <script>
-            window.BE.app_urls ={% namespaced_urls %};
+            window.config.app_urls ={% namespaced_urls %};
         </script>
     """
     apps = settings.BE_URL_APPS

@@ -1,7 +1,7 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
-from BE.settings.common import *  # noqa
+from config.settings.common import *  # noqa
 import aws
 import djcelery
 
@@ -21,7 +21,7 @@ ENV = STACK_OUTPUTS.get('StackFlavor', 'dev')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 TEMPLATE_DEBUG = DEBUG
-DOMAIN_URLCONFS[STACK_OUTPUTS.get('HostName')] = 'BE.urls'
+DOMAIN_URLCONFS[STACK_OUTPUTS.get('HostName')] = 'config.urls'
 
 # django-analytics
 WOOPRA_DOMAIN = os.environ.get('WOOPRA_DOMAIN')
@@ -49,7 +49,7 @@ if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
     COMPRESS_CSS_FILTERS = ['compressor.filters.css_default.CssAbsoluteFilter']
     COMPRESS_JS_FILTERS = []
 
-COMPRESS_STORAGE = 'BE.storage.CachedS3BotoStorage'
+COMPRESS_STORAGE = 'config.storage.CachedS3BotoStorage'
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE = True
 COMPRESS_PRECOMPILERS = (
@@ -136,6 +136,6 @@ ALLOWED_HOSTS = ['*']
 # end django 1.5 support
 
 try:
-    from BE.settings.local_untracked import *  # noqa
+    from config.settings.local_untracked import *  # noqa
 except ImportError:
     pass

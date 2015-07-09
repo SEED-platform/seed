@@ -3,7 +3,7 @@
 
 """
 
-from BE.settings.common import *  # noqa
+from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
 import djcelery
 
@@ -19,15 +19,31 @@ AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
 AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME", "be-dev-uploads")
 AWS_STORAGE_BUCKET_NAME = AWS_BUCKET_NAME
 
+POSTGRES_CONFIG_NAMES = ['POSTGRES_PORT_5432_TCP_ADDR', 'POSTGRES_PORT_5432_TCP_PORT',
+                         'POSTGRES_DATABASE_NAME', 'POSTGRES_DATABASE_USER', 'POSTGRES_ENV_POSTGRES_PASSWORD']
+
+for loc in POSTGRES_CONFIG_NAMES:
+    locals()[loc] = os.environ.get(loc)
+
+for loc in POSTGRES_CONFIG_NAMES:
+    if not locals().get(loc):
+        raise Exception("%s Not defined as env variables" % loc)
+
+REDIS_CONFIG_NAMES = ['REDIS_PORT_6379_TCP_ADDR', 'REDIS_PORT_6379_TCP_PORT']
+
+for loc in REDIS_CONFIG_NAMES:
+    locals()[loc] = os.environ.get(loc)
+
+
 # override this in local_untracked.py
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'seed',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': "127.0.0.1",
-        'PORT': '',
+        'NAME': POSTGRES_DATABASE_NAME,
+        'USER': POSTGRES_DATABASE_USER,
+        'PASSWORD': POSTGRES_ENV_POSTGRES_PASSWORD,
+        'HOST': POSTGRES_PORT_5432_TCP_ADDR,
+        'PORT': POSTGRES_PORT_5432_TCP_PORT
     },
 }
 
@@ -43,7 +59,7 @@ else:
     CACHES = {
         'default': {
             'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "127.0.0.1:6379",
+            'LOCATION': "%s:%s" % (REDIS_PORT_6379_TCP_ADDR, REDIS_PORT_6379_TCP_PORT),
             'OPTIONS': {'DB': 1},
             'TIMEOUT': 300
         }
@@ -51,7 +67,7 @@ else:
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': True,
-        # set up some log message handlers to choose from
+        # set up some log message handers to chose from
         'handlers': {
             'sentry': {
                 'level': 'ERROR',
@@ -78,22 +94,9 @@ else:
         },
     }
 
-# django-debug-toolbar
-# ------------------------------------------------------------------------------
-MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
-INSTALLED_APPS += ('debug_toolbar', )
-INTERNAL_IPS = ('127.0.0.1',)
-DEBUG_TOOLBAR_CONFIG = {
-    'DISABLE_PANELS': [
-        'debug_toolbar.panels.redirects.RedirectsPanel',
-    ],
-    'SHOW_TEMPLATE_CONTEXT': True,
-}
-
 # BROKER_URL with AWS ElastiCache redis looks something like:
 # 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
-BROKER_URL = 'redis://127.0.0.1:6379/1'
-BROKER_HOST = '127.0.0.1'
+BROKER_URL = "redis://%s:%s/1" % (REDIS_PORT_6379_TCP_ADDR, REDIS_PORT_6379_TCP_PORT)
 CELERY_DEFAULT_QUEUE = 'seed-dev'
 CELERY_QUEUES = (
     Queue(
@@ -104,7 +107,28 @@ CELERY_QUEUES = (
 )
 djcelery.setup_loader()
 
+try:
+    INSTALLED_APPS += ( )
+    TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+    NOSE_PLUGINS = [
+        'nose_exclude.NoseExclude',
+    ]
+    NOSE_ARGS = ['--exclude-dir=data_importer']
+
+except:
+    if "collectstatic" not in sys.argv:
+        print "Unable to import salad or lettuce."
+    pass
+
+if "test" in sys.argv:
+    BROKER_BACKEND = 'memory'
+    CELERY_ALWAYS_EAGER = True
+    CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+    SOUTH_TESTS_MIGRATE = True
+
 REQUIRE_UNIQUE_EMAIL = False
+
+INTERNAL_IPS = ('127.0.0.1',)
 
 COMPRESS_ENABLED = False
 if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
@@ -115,18 +139,17 @@ if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
 ALLOWED_HOSTS = ['*']
 
 # use imp module to find the local_untracked file rather than a hard-coded path
-# TODO: There seems to be a bunch of loading of other files in these settings. First this loads the common, then this, then anything in the untracked file
 try:
     import imp
-    import BE.settings
+    import config.settings
 
     local_untracked_exists = imp.find_module(
-        'local_untracked', BE.settings.__path__
+        'local_untracked', config.settings.__path__
     )
 except:
     pass
 
 if 'local_untracked_exists' in locals():
-    from BE.settings.local_untracked import *  # noqa
+    from config.settings.local_untracked import *  # noqa
 else:
-    print >> sys.stderr, "Unable to find the local_untracked module in BE/settings/local_untracked.py"
+    print >> sys.stderr, "Unable to find the local_untracked module in config/settings/local_untracked.py"

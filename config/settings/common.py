@@ -23,7 +23,7 @@ MANAGERS = ADMINS
 SEND_BROKEN_LINK_EMAILS = True
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
-WSGI_APPLICATION = 'BE.wsgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
 TIME_ZONE = 'America/Los_Angeles'
 LANGUAGE_CODE = 'en-us'
@@ -55,7 +55,7 @@ MIDDLEWARE_CLASSES = (
     'pagination.middleware.PaginationMiddleware',
 )
 
-ROOT_URLCONF = 'BE.urls'
+ROOT_URLCONF = 'config.urls'
 
 TEMPLATE_DIRS = (
     join(SITE_ROOT, 'templates'),
@@ -85,7 +85,7 @@ INSTALLED_APPS = (
 )
 
 BE_CORE_APPS = (
-    'BE',
+    'config',
     'seed.public',
     'seed.data_importer',
     'seed',
@@ -117,8 +117,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.static',
     'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages',
-    'BE.template_context.compress_enabled',
-    'BE.template_context.session_key',
+    'config.template_context.compress_enabled',
+    'config.template_context.session_key',
 )
 
 MEDIA_ROOT = join(SITE_ROOT, 'collected_static')

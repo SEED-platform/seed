@@ -2,7 +2,7 @@
 :copyright: (c) 2014 Building Energy Inc
 """
 
-from BE.settings.common import *  # noqa
+from config.settings.common import *  # noqa
 
 LOGGING = {
     'version': 1,
@@ -103,15 +103,15 @@ ALLOWED_HOSTS = ['*']
 # TODO: There seems to be a bunch of loading of other files in these settings. First this loads the common, then this, then anything in the untracked file
 try:
     import imp
-    import BE.settings
+    import config.settings
 
     local_untracked_exists = imp.find_module(
-        'local_untracked', BE.settings.__path__
+        'local_untracked', config.settings.__path__
     )
 except:
     pass
 
 if 'local_untracked_exists' in locals():
-    from BE.settings.local_untracked import *  # noqa
+    from config.settings.local_untracked import *  # noqa
 else:
-    print >> sys.stderr, "Unable to find the local_untracked module in BE/settings/local_untracked.py"
+    print >> sys.stderr, "Unable to find the local_untracked module in config/settings/local_untracked.py"

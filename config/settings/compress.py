@@ -7,10 +7,10 @@
     `DEBUG` should be `True` to get compress to have the indented behavior.
     See bin/post_compile for current use.
     Example:
-        ./manage compress --force --settings=BE.settings.compress
+        ./manage compress --force --settings=config.settings.compress
 """
 try:
-    from BE.settings.local_untracked import *  # noqa
+    from config.settings.local_untracked import *  # noqa
 except ImportError:
     pass
 DEBUG = True

@@ -13,7 +13,7 @@ env:
   - DJANGO=1.6.7
 
 before_install:
-  - export DJANGO_SETTINGS_MODULE=BE.settings.travis
+  - export DJANGO_SETTINGS_MODULE=config.settings.travis
 
 install:
   - pip install -r requirements/test.txt
@@ -24,7 +24,7 @@ install:
 before_script:
   - psql -c "create database seeddb;" -U postgres
   - ./bin/install_javascript_dependencies.sh
-  - cp BE/settings/local_untracked.py.dist BE/settings/local_untracked.py
+  - cp config/settings/local_untracked.py.dist config/settings/local_untracked.py
 
 script:
   - coverage run manage.py test

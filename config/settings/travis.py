@@ -2,7 +2,7 @@
 
 settings for travis (travis-ci.org)
 """
-from BE.settings.test import *  # noqa
+from config.settings.test import *  # noqa
 
 DATABASES = {
     'default': {

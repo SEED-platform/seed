@@ -1048,7 +1048,7 @@ def update_user(request):
 @login_required
 def set_password(request):
     """sets/updates a user's password, follows the min requiremnent of
-    django-passwords settings in BE/settings/common.py
+    django-passwords settings in config/settings/common.py
 
     :PUT: {
             'current_password': current_password,

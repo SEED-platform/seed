@@ -15,7 +15,7 @@
 import sys
 import os
 # sets the default settings module for read the docs
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "BE.settings.dev")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -200,7 +200,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   ('index', 'SEED.tex', u'SEED Documentation',
-   u'BE', 'manual'),
+   u'config', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -230,7 +230,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'seed', u'SEED Documentation',
-     [u'BE'], 1)
+     [u'config'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -244,7 +244,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'SEED', u'SEED Documentation',
-   u'BE', 'SEED', 'One line description of project.',
+   u'config', 'SEED', 'One line description of project.',
    'Miscellaneous'),
 ]
 

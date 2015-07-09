@@ -7,7 +7,7 @@ from seed.landing.models import SEEDUser as User
 
 
 class ManagementTests(TestCase):
-    "tests BE django management commands"
+    "tests config django management commands"
 
     def test_create_default_user(self):
         """tests the creat_default_user mgmt command"""

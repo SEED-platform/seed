@@ -23,7 +23,7 @@ from django.db.models.signals import post_save
 from django.utils.timesince import timesince
 from django.contrib.auth.models import User
 
-from BE.utils import de_camel_case
+from config.utils import de_camel_case
 from seed.data_importer.managers import NotDeletedManager
 from organizations.models import Organization
 from seed.common import mapper
