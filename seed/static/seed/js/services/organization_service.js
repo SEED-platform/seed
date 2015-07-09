@@ -8,7 +8,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
   'generated_urls',
   function ($http, $q, generated_urls) {
 
-    var organization_factory = {};
+    var organization_factory = { total_organizations_for_user: 0 };
     // until we switch to replacing ``urls`` everywhere with generated urls
     var urls = generated_urls;
 
@@ -18,6 +18,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
             method: 'GET',
             'url': urls.accounts.get_organizations
         }).success(function(data, status, headers, config) {
+            organization_factory.total_organizations_for_user = (data.organizations != undefined ) ? data.organizations.length : 0;
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
