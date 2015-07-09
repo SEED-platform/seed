@@ -80,15 +80,17 @@ else:
 
 # django-debug-toolbar
 # ------------------------------------------------------------------------------
-MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
-INSTALLED_APPS += ('debug_toolbar', )
-INTERNAL_IPS = ('127.0.0.1',)
-DEBUG_TOOLBAR_CONFIG = {
-    'DISABLE_PANELS': [
-        'debug_toolbar.panels.redirects.RedirectsPanel',
-    ],
-    'SHOW_TEMPLATE_CONTEXT': True,
-}
+# This isn't working right at the moment. Wait until after upgrade to 1.8
+# DEBUG_TOOLBAR_PATCH_SETTINGS = False
+# MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+# INSTALLED_APPS += ('debug_toolbar', )
+# INTERNAL_IPS = ('127.0.0.1',)
+# DEBUG_TOOLBAR_CONFIG = {
+#     'DISABLE_PANELS': [
+#         'debug_toolbar.panels.redirects.RedirectsPanel',
+#     ],
+#     'SHOW_TEMPLATE_CONTEXT': True,
+# }
 
 # BROKER_URL with AWS ElastiCache redis looks something like:
 # 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
