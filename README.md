@@ -9,9 +9,9 @@ The SEED web application provides both a browser-based interface for users to up
 
 
 ### Installation
-Production on Amazon Web Service: See [Installation Notes](http://www.github.com/seed-platform/seed/wiki/Installation)
-Development on Mac OSX: [Installation Notes](https://github.com/SEED-platform/seed/wiki/Development-version-of-SEED-on-a-Mac-OSX)
-Development using Docker: [Installation Notes](https://github.com/SEED-platform/seed/wiki/Development-version-of-SEED-on-a-Docker)
+* Production on Amazon Web Service: See [Installation Notes](http://www.github.com/seed-platform/seed/wiki/Installation)
+* Development on Mac OSX: [Installation Notes](https://github.com/SEED-platform/seed/wiki/Development-version-of-SEED-on-a-Mac-OSX)
+* Development using Docker: [Installation Notes](https://github.com/SEED-platform/seed/wiki/Development-version-of-SEED-on-a-Docker)
 
 ### Django Notes
 Both Django and AngurlarJS are used for url routing.
