@@ -559,7 +559,7 @@ fileout.write('\n-------Project-------\n')
 # Create a Project for 'Condo' in 'use_description'
 print ('API Function: create_project'),
 fileout.write('API Function: create_project\n')
-newproject_payload = {'project': {'name': 'New Project',
+newproject_payload = {'project': {'name': 'New Project' + dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                   'compliance_type': 'describe compliance type',
                                   'description': 'project description'},
                       'organization_id': organization_id}
