@@ -35,9 +35,13 @@ AWS_BUCKET_NAME = "your-S3-bucket"
 AWS_UPLOAD_CLIENT_KEY = AWS_ACCESS_KEY_ID
 AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
 AWS_STORAGE_BUCKET_NAME = AWS_BUCKET_NAME
-# config for AWS S3 as storage backend
+
+# choice of DEFAULT_FILE_STORAGE (s3 or filesystem)
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+# DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
 STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
+
 DOMAIN_URLCONFS = {}
 DOMAIN_URLCONFS['default'] = 'BE.urls'
 

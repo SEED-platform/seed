@@ -2,7 +2,7 @@
 
 settings for travis (travis-ci.org)
 """
-from BE.settings.dev import *  # noqa
+from BE.settings.test import *  # noqa
 
 DATABASES = {
     'default': {
@@ -24,12 +24,5 @@ CACHES = {
     }
 }
 
-BROKER_URL = 'redis://127.0.0.1:6379/1'
-
-# Make sure to run the migrations on the CI machines for testing. This is also enabled when running tests locally
-SOUTH_TESTS_MIGRATE = True
-
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
-DOMAIN_URLCONFS = {}
-DOMAIN_URLCONFS['default'] = 'BE.urls'

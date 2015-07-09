@@ -22,6 +22,9 @@ ADMINS = (
 MANAGERS = ADMINS
 SEND_BROKEN_LINK_EMAILS = True
 
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
+WSGI_APPLICATION = 'BE.wsgi.application'
+
 TIME_ZONE = 'America/Los_Angeles'
 LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
