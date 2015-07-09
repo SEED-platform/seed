@@ -6,23 +6,15 @@ Subpackages
 
 .. toctree::
 
-    BE.settings.aws
+    config.settings.aws
 
 Submodules
 ----------
 
-BE.settings.ci module
----------------------
-
-.. automodule:: BE.settings.ci
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 BE.settings.common module
 -------------------------
 
-.. automodule:: BE.settings.common
+.. automodule:: config.settings.common
     :members:
     :undoc-members:
     :show-inheritance:
@@ -30,7 +22,7 @@ BE.settings.common module
 BE.settings.compress module
 ---------------------------
 
-.. automodule:: BE.settings.compress
+.. automodule:: config.settings.compress
     :members:
     :undoc-members:
     :show-inheritance:
@@ -38,7 +30,7 @@ BE.settings.compress module
 BE.settings.dev module
 ----------------------
 
-.. automodule:: BE.settings.dev
+.. automodule:: config.settings.dev
     :members:
     :undoc-members:
     :show-inheritance:
@@ -46,7 +38,7 @@ BE.settings.dev module
 BE.settings.local_untracked module
 ----------------------------------
 
-.. automodule:: BE.settings.local_untracked
+.. automodule:: config.settings.local_untracked
     :members:
     :undoc-members:
     :show-inheritance:
@@ -54,7 +46,7 @@ BE.settings.local_untracked module
 BE.settings.main module
 -----------------------
 
-.. automodule:: BE.settings.main
+.. automodule:: config.settings.main
     :members:
     :undoc-members:
     :show-inheritance:
@@ -63,7 +55,7 @@ BE.settings.main module
 Module contents
 ---------------
 
-.. automodule:: BE.settings
+.. automodule:: config.settings
     :members:
     :undoc-members:
     :show-inheritance:

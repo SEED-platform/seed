@@ -11,7 +11,7 @@ seed local_untracked.py
             $ ./manage.py runserver --settings=config.settings.dev
         - add your setting to the DATABASES, AWS S3 config, 
             CACHES, and BROKER_URL
-            i.e. everthing here starting with 'your-'
+            i.e. everything here starting with 'your-'
     For local dev, all these services can run locally on localhost or 127.0.0.1 except for S3.
 """
 # postgres DB config

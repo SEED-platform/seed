@@ -21,7 +21,7 @@ Django routes are in `seed/urls/main.py`
 Amazon AWS S3 Expires headers should be set on the AngularJS partials if using S3 with the management command: set_s3_expires_headers_for_angularjs_partials
  usage: `python manage.py set_s3_expires_headers_for_angularjs_partials --verbosity=3`
 
-The default user invite reply-to email can be overridden in the BE/settings/common.py file. The `SERVER_EMAIL` settings var is the reply-to email sent along with new account emails.
+The default user invite reply-to email can be overridden in the config/settings/common.py file. The `SERVER_EMAIL` settings var is the reply-to email sent along with new account emails.
 
 ```python
 # BE/settings/common.py
@@ -95,10 +95,10 @@ $sceDelegateProvider.resourceUrlWhitelist([
 #### Tests
 JS tests can be run with Jasmine at the url `app/angular_js_tests/`
 
-`python manage.py test --settings=BE.settings.test` will run the python unit tests.
+`python manage.py test --settings=config.settings.test` will run the python unit tests.
 
 ```console
-$ coverage run manage.py test --settings=BE.settings.ci
+$ coverage run manage.py test --settings=config.settings.test
 $ coverage report --fail-under=83
 ```
 
@@ -138,8 +138,8 @@ If running on AWS, the `bin/start_flower.sh` will start flower on port `8080` an
 * `git clone git@github.com:seed-platform/seed.git`
 * install Postgres 9.3 and redis for cache and message broker
 * use a virtualenv if desired
-* create a `local_untracked.py` in the `BE/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
-* `export DJANGO_SETTINGS_MODULE=BE.settings.dev`
+* create a `local_untracked.py` in the `config/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
+* `export DJANGO_SETTINGS_MODULE=config.settings.dev`
 * `pip install -r requirements/local.txt`
 * `./manage.py syncdb`
 * `./manage.py migrate`

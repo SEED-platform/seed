@@ -223,7 +223,7 @@ options.
 
 .. code-block:: console
 
-    $ python manage.py runserver --settings=BE.settings.dev
+    $ python manage.py runserver --settings=config.settings.dev
 
 
 Running a production web server
@@ -248,7 +248,7 @@ Generate static files:
 
 .. code-block:: console
 
-    $ udo ./manage.py collectstatic --settings=BE.settings.dev
+    $ udo ./manage.py collectstatic --settings=config.settings.dev
 
 Update ``BE/settings/local_untracked.py``:
 
