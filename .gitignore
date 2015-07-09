@@ -41,7 +41,8 @@ lin/migrations/disabled
 htmlcov/
 src/
 *node_modules*
-/seed/static/vendors/bower_components
+seed/static/vendors/bower_components
+seed/tests/api/*_seedhost.txt
 docs/build/
 dump.rdb
 log
