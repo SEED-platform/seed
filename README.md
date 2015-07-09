@@ -7,42 +7,16 @@ The SEED application is written in Python/Django, with AngularJS, Bootstrap, and
 
 The SEED web application provides both a browser-based interface for users to upload and manage their building data, as well as a full set of APIs that app developers can use to access these same data management functions.
 
-## Docker quckstart
-
-[Install Docker](https://docs.docker.com/installation/)
-**Note, if you are installing on VirtualBox, you will need to setup nat port forwarding for port 8000**
-``` VBoxManage controlvm boot2docker-vm natpf1 "8000,tcp,0.0.0.0,8000,,8000" ```
-
-#### Build the seed platform image ####
-```
-docker build -t seed-platform .
-```
-#### start the redis and postgres services ####
-```
-docker run --name seed-redis -d redis
-docker run --name seed-postgres -e POSTGRES_PASSWORD=seed -d postgres
-```
-#### Setup the initial demo user ####
-```
-docker exec -ti seed-postgres createdb -U postgres seed
-docker run -v $HOME/seed_data:/seed/collected_static --link seed-redis:redis --link seed-postgres:postgres seed-platform /seed/bin/setup_database.sh
-```
-#### Start the Web and Celery services ####
-```
-docker run -d -name seed-uwsgi -v $HOME/seed_data:/seed/collected_static --link seed-redis:redis --link seed-postgres:postgres -p 8000:8000 seed-platform /seed/bin/start_uwsgi_docker.sh
-docker run -d -name seed-celery -v $HOME/seed_data:/seed/collected_static --link seed-redis:redis --link seed-postgres:postgres seed-platform /seed/bin/start_celery_docker.sh
-```
-#### You're done!! ####
-Point your browser at [http://localhost:8000](http://localhost:8000) and log in with the account
- * **username**: demo@buildingenergy.com
- * **password**: demo
 
 ### Installation
-See [Installation Notes](http://www.github.com/seed-platform/seed/wiki/Installation) for setup on Amazon Web Services or a local server.
+Production on Amazon Web Service: See [Installation Notes](http://www.github.com/seed-platform/seed/wiki/Installation)
+Development on Mac OSX: [Installation Notes](https://github.com/SEED-platform/seed/wiki/Development-version-of-SEED-on-a-Mac-OSX)
+Development using Docker: [Installation Notes](https://github.com/SEED-platform/seed/wiki/Development-version-of-SEED-on-a-Docker)
 
-### Django notes
+### Django Notes
 Both Django and AngurlarJS are used for url routing.
-Django routes are in `SEED/urls/main.py`
+
+Django routes are in `seed/urls/main.py`
 
 Amazon AWS S3 Expires headers should be set on the AngularJS partials if using S3 with the management command: set_s3_expires_headers_for_angularjs_partials
  usage: `python manage.py set_s3_expires_headers_for_angularjs_partials --verbosity=3`
@@ -56,7 +30,8 @@ SERVER_EMAIL = 'no-reply@buildingenergy.com'
 ```
 
 ### AngularJS notes
-#### template tags
+
+#### Template Tags
 Angular and Django both use `{{` and `}}` as variable delimiters, and thus the AngularJS variable delimiters are renamed `{$` and `$}`.
 
 ```
@@ -76,7 +51,7 @@ window.BE.apps.seed.run(function ($http, $cookies) {
 });
 ```
 
-#### routes and partials or views
+#### Routes and Partials or Views
 routes in `static/seed/js/seed.js` (the normal angularjs `app.js`)
 
 ```
@@ -117,12 +92,10 @@ $sceDelegateProvider.resourceUrlWhitelist([
 });
 ```
 
-#### tests
+#### Tests
 JS tests can be run with Jasmine at the url `app/angular_js_tests/`
 
-`python manage.py test` will run the python unit tests, we also use coverage
-to check the ammount of SLOC covered under tests. The coverage config is
-in [.coveragerc](.coveragerc)
+`python manage.py test --settings=BE.settings.test` will run the python unit tests.
 
 ```console
 $ coverage run manage.py test --settings=BE.settings.ci
@@ -141,7 +114,7 @@ $ flake8
 $ jshint seed/static/seed/js
 ```
 
-### running
+### Running
 The following two commands will run uwsgi and celeryd.
 
 ```
@@ -161,8 +134,7 @@ monitor background tasks `flower --port=5555 --broker=redis://localhost:6379/1`
 assuming your redis broker is running on `localhost` and on port `6379`, DB `1`. Then goto localhost:5555 to check celery.
 If running on AWS, the `bin/start_flower.sh` will start flower on port `8080` and be available for google credentialed buildingenergy.com accounts.
 
-
-### dev setup:
+### dev setup
 * `git clone git@github.com:seed-platform/seed.git`
 * install Postgres 9.3 and redis for cache and message broker
 * use a virtualenv if desired
@@ -186,7 +158,7 @@ can also create other superusers.
 ./manage.py create_default_user --username=demo2@be.com --organization=be --password=demo123
 ```
 
-### Logs :
+### Logs
 Information about  error logging can be found here - https://docs.djangoproject.com/en/1.7/topics/logging/
 
 Below is a standard set of error messages from Django.
