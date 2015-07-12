@@ -25,9 +25,9 @@ from celery.utils.log import get_task_logger
 from seed.audit_logs.models import AuditLog
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm import cleaners, mapper, reader
-from mcm.data.ESPM import espm as espm_schema
-from mcm.data.SEED import seed as seed_schema
-from mcm.utils import batch
+from seed.lib.mcm.data.ESPM import espm as espm_schema
+from seed.lib.mcm.data.SEED import seed as seed_schema
+from seed.lib.mcm.utils import batch
 from streetaddress import StreetAddressParser, StreetAddressFormatter
 from seed.data_importer.models import (
     ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER

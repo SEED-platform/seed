@@ -80,7 +80,7 @@ INSTALLED_APPS = (
     'django_extensions',
     'organizations',
     'raven.contrib.django',
-    'south',
+    # 'south',
     'tos',
 )
 
