@@ -14,13 +14,13 @@ from annoying.decorators import ajax_request
 from dateutil import parser
 
 
-# BE imports
+# config imports
 from seed.tasks import (
     add_buildings,
     remove_buildings,
 )
 
-from superperms.orgs.decorators import has_perm
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import (
     Compliance,
     Project,

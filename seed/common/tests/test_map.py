@@ -5,10 +5,11 @@ __author__ = 'Dan Gunter <dkgunter@lbl.gov>'
 __date__ = '2/13/15'
 
 import json
-import pytest
 from StringIO import StringIO
 
+import pytest
 from seed.common import mapper
+
 
 @pytest.fixture
 def jsonfile():

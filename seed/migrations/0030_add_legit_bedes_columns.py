@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
-from south.utils import datetime_utils as datetime
-from south.db import db
-from south.v2 import DataMigration
-from django.db import models
-
 import re
+
+from south.v2 import DataMigration
 from seed.data import bedes
 from seed.utils import mapping as m_utils
 from seed.models import (
@@ -12,9 +9,7 @@ from seed.models import (
     DECIMAL,
     FLOAT,
     DATE,
-    DATETIME,
-    Column,
-    Unit
+    DATETIME
 )
 
 def unit_enum(s):

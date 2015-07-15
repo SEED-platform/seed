@@ -37,7 +37,7 @@ fi
 running "manage.py runserver"
 if [ $? -eq 0 ]; then
     printf "Starting Django standalone server\n"
-    ./manage.py runserver --settings=BE.settings.dev
+    ./manage.py runserver --settings=config.settings.dev
 else
     printf "Django server is already running\n"
 fi

@@ -8,7 +8,7 @@ describe("Controller: matching_controller", function(){
 
 
     // make the seed app available for each test
-    // 'BE.seed' is created in TestFilters.html
+    // 'config.seed' is created in TestFilters.html
     beforeEach(function() {
         module('BE.seed');
     });

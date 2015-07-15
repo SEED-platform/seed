@@ -1,4 +1,3 @@
-import sys
 from django.test import TestCase
 from seed.models import BuildingSnapshot
 

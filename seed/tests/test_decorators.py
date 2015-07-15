@@ -2,7 +2,6 @@
 :copyright: (c) 2014 Building Energy Inc
 """
 from django.core.cache import cache
-from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 

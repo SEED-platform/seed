@@ -5,18 +5,16 @@ import json
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
-
-from superperms.orgs.models import (
+from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
     ROLE_VIEWER,
     OrganizationUser,
     Organization,
 )
-
-from audit_logs.models import AuditLog
-from landing.models import SEEDUser as User
-from data_importer.models import ImportRecord
+from seed.audit_logs.models import AuditLog
+from seed.landing.models import SEEDUser as User
+from seed.data_importer.models import ImportRecord
 from seed.tests.util import FakeRequest
 from seed.factory import SEEDFactory
 from seed.models import CanonicalBuilding, BuildingSnapshot

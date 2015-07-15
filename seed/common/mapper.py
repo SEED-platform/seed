@@ -10,7 +10,7 @@ import logging
 import os
 import re
 
-from BE.settings.dev import SEED_DATADIR
+from config.settings.dev import SEED_DATADIR
 
 _log = logging.getLogger(__name__)
 
