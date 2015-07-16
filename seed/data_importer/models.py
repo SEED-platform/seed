@@ -1407,7 +1407,7 @@ class DataCoercionMapping(models.Model):
 
 class ValidationRule(models.Model):
     table_column_mapping = models.ForeignKey(TableColumnMapping)
-    passes = models.BooleanField()
+    passes = models.BooleanField(default=False)
 
 
 class RangeValidationRule(ValidationRule):

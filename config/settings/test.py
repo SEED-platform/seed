@@ -74,7 +74,7 @@ NOSE_PLUGINS = [
     'nose_exclude.NoseExclude',
 ]
 NOSE_ARGS = [
-    '--exclude-dir=data_importer',
+    '--exclude-dir=seed/data_importer',
     '--exclude-dir=seed/common',
     '--nocapture',
     '--nologcapture'

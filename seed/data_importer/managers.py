@@ -6,5 +6,5 @@ from django.db import models
 class NotDeletedManager(models.Manager):
     use_for_related_fields = True
 
-    def get_query_set(self, *args, **kwargs):
-        return super(NotDeletedManager, self).get_query_set(*args, **kwargs).exclude(deleted=True)
+    def get_queryset(self, *args, **kwargs):
+        return super(NotDeletedManager, self).get_queryset(*args, **kwargs).exclude(deleted=True)
