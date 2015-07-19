@@ -1,9 +1,8 @@
 import json
 
-from superperms.orgs.decorators import has_perm
+from seed.lib.superperms.orgs.decorators import has_perm
 from annoying.decorators import ajax_request
 from django.contrib.auth.decorators import login_required
-
 from seed.models import (
     ENERGY_TYPES,
     ENERGY_UNITS,
@@ -12,7 +11,6 @@ from seed.models import (
     Meter,
     TimeSeries
 )
-
 from seed.utils.time import convert_datestr
 
 

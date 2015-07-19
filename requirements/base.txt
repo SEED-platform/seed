@@ -1,0 +1,85 @@
+# Django
+# django==1.6.7
+django==1.7.9
+
+# Configuration
+django-environ==0.3.0
+django-secure==1.0.1
+whitenoise==2.0
+
+
+# Forms
+django-analytical==0.17.1
+django-angular==0.7.2
+django-annoying==0.8.3
+# django-annoying==0.7.6
+django_compressor==1.5
+# django-compressor==1.3
+# django-extensions==1.3.3
+django-extensions==1.5.5
+django-localflavor==1.0
+django-pagination==1.0.7
+django-passwords==0.2.0
+django-redis-cache==0.11.1
+django-ses==0.4.1
+django-sslify==0.2
+
+# Images
+Pillow==2.4.0
+
+# For the persistence stores
+psycopg2==2.5.1
+
+# Unicode slugification
+django-autoslug==1.8.0
+
+
+# Time zones support
+pytz==2012h
+
+# background process management
+django-celery==3.0.23
+flower==0.6.0
+redis==2.9.1
+
+# Custom
+ajaxuploader==0.3.8
+argparse==1.2.1
+boto==2.24.0
+csvkit==0.6.1
+dbf==0.95.004
+dj-database-url==0.2.1
+djorm-ext-core==0.7
+djorm-ext-expressions==0.6
+# -e git+https://github.com/revsys/django-tos.git@490c1edc674da4d1b7fb7203b034fa9b186cf848#egg=django_tos-master
+-e git+https://github.com/niwibe/djorm-ext-pgjson@8fd70a13cb2597b56d1042539917784170569b40#egg=djorm_pgjson
+-e hg+https://bitbucket.org/david/django-storages@e27c8b61ab57e5afaf21cccfee005c980d89480f#egg=django_storages
+-e git+https://github.com/wellfire/django-organizations.git@f9da9778c212b253ebda49453cc57fe199020f51#egg=django_organizations
+fuzzywuzzy>=0.3.1
+ipython==0.13.1
+jellyfish==0.3.2
+kombu==2.5.14
+mccabe==0.2.1
+mock==1.0.1
+newrelic==2.20.0.17
+ngram==3.3.0
+openpyxl==1.7.0
+python-dateutil>=2.2
+python-memcached==1.53
+PyYAML==3.10
+raven==4.0.4
+regex==2014.01.10
+requests==1.1.0
+simplejson==3.3.0
+six==1.5.2
+South==0.8.4
+street-address==0.2.1
+unicodecsv==0.9.4
+uwsgi==2.0.9
+wsgiref==0.1.2
+xlrd==0.9.3
+xlwt==0.7.5
+xmltodict==0.9.0
+
+
+

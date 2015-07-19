@@ -5,21 +5,15 @@
 Search methods pertaining to buildings.
 
 """
-# python
 import operator
 import json
 import re
 
-# django
 from django.db.models import Q
-
-# vendor
-from superperms.orgs.models import Organization
-
-# app
+from seed.lib.superperms.orgs.models import Organization
 from .models import BuildingSnapshot
 from .utils.mapping import get_mappable_types
-from public.models import PUBLIC
+from seed.public.models import PUBLIC
 
 
 def convert_to_js_timestamp(timestamp):
@@ -141,7 +135,7 @@ def generate_paginated_results(queryset, number_per_page=25, page=1,
         # only add the buildings if it is in an org the user belongs or the
         # query count exceeds the query threshold
         if not below_threshold or not is_not_whitelist_building(
-            parent_org, b, whitelist_orgs
+                parent_org, b, whitelist_orgs
         ):
             building_list.append(building_dict)
 
@@ -171,6 +165,7 @@ def filter_other_params(queryset, other_params, db_columns):
     :param dict db_columns: list of column names, extra_data blob outsite these
     :returns: Django Queryset:
     """
+
     def strip_suffix(k, suffix):
         match = k.find(suffix)
         if match >= 0:
@@ -204,7 +199,7 @@ def filter_other_params(queryset, other_params, db_columns):
     query_filters = Q()
     for k, v in other_params.iteritems():
         in_columns = is_column(k, db_columns)
-        #if in_columns and k != 'q' and v:
+        # if in_columns and k != 'q' and v:
         if in_columns and k != 'q' and v is not None:
             # Is this query surrounded by matching quotes?
             exact_match = is_exact_match(v)
@@ -215,11 +210,11 @@ def filter_other_params(queryset, other_params, db_columns):
             elif empty_match:
                 query_filters &= Q(**{"%s__exact" % k: ''}) | Q(**{"%s__isnull" % k: True})
             elif ('__lt' in k or
-                '__lte' in k or
-                '__gt' in k or
-                '__gte' in k or
-                '__isnull' in k or
-               k == 'import_file_id' or k == 'source_type'):
+                          '__lte' in k or
+                          '__gt' in k or
+                          '__gte' in k or
+                          '__isnull' in k or
+                          k == 'import_file_id' or k == 'source_type'):
                 query_filters &= Q(**{"%s" % k: v})
             else:
                 query_filters &= Q(**{"%s__icontains" % k: v})
@@ -298,7 +293,7 @@ def parse_body(request):
     other_search_params = body.get('filter_params', {})
     if 'exclude' in other_search_params:
         exclude = other_search_params['exclude']
-        del(other_search_params['exclude'])
+        del (other_search_params['exclude'])
     else:
         exclude = {}
 
@@ -421,11 +416,11 @@ def search_public_buildings(request, orgs):
 
 
 def create_building_queryset(
-    orgs,
-    exclude,
-    order_by,
-    other_orgs=None,
-    extra_data_sort=False,
+        orgs,
+        exclude,
+        order_by,
+        other_orgs=None,
+        extra_data_sort=False,
 ):
     """creates a querset of buildings within orgs. If ``other_orgs``, buildings
     in both orgs and other_orgs will be represented in the queryset.
@@ -539,7 +534,7 @@ def mask_results(search_results):
         if parent_org.id not in whitelist_fields:
             whitelist_fields[parent_org.id] = []
             for s in parent_org.sharedbuildingfield_set.filter(
-                field_type=PUBLIC
+                    field_type=PUBLIC
             ):
                 whitelist_fields[parent_org.id].append(s.field.name)
 

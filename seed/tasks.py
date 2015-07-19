@@ -22,22 +22,17 @@ from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse_lazy
 from celery.task import task, chord
 from celery.utils.log import get_task_logger
-from audit_logs.models import AuditLog
-from landing.models import SEEDUser as User
-from mcm import cleaners, mapper, reader
-from mcm.data.ESPM import espm as espm_schema
-from mcm.data.SEED import seed as seed_schema
-from mcm.utils import batch
-
-# import ngram
+from seed.audit_logs.models import AuditLog
+from seed.landing.models import SEEDUser as User
+from seed.lib.mcm import cleaners, mapper, reader
+from seed.lib.mcm.data.ESPM import espm as espm_schema
+from seed.lib.mcm.data.SEED import seed as seed_schema
+from seed.lib.mcm.utils import batch
 from streetaddress import StreetAddressParser, StreetAddressFormatter
-
-from data_importer.models import (
+from seed.data_importer.models import (
     ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
 )
-
-from green_button import xml_importer
-
+from seed.green_button import xml_importer
 from seed.models import (
     ASSESSED_RAW,
     PORTFOLIO_RAW,
@@ -62,13 +57,10 @@ from seed.models import (
     Project,
     ProjectBuilding,
 )
-
 from seed.decorators import lock_and_track, get_prog_key, increment_cache
 from seed.utils.buildings import get_source_type, get_search_query
 from seed.utils.mapping import get_mappable_columns
-
-from superperms.orgs.models import Organization
-
+from seed.lib.superperms.orgs.models import Organization
 from seed.lib.exporter import Exporter
 
 logger = get_task_logger(__name__)

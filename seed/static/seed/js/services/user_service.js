@@ -18,7 +18,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      */
     user_factory.get_organization = function() {
         // yes this is a global, but otherwise we'll have to use a promise in
-        // front of every request that needs this. window.BE.initial_org_id is
+        // front of every request that needs this. window.config.initial_org_id is
         // set in base.html via the seed.views.main home view
         return organization || {
             id: window.BE.initial_org_id,

@@ -1,11 +1,12 @@
 """
 Demo and testing features for interacting with a SEED API.
 """
-import requests
-import simplejson as json
 from datetime import datetime, timedelta
 from calendar import timegm
 import os
+
+import requests
+import simplejson as json
 
 
 class APIClient(object):

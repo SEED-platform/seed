@@ -10,19 +10,14 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.core import mail
-
-from superperms.orgs.models import (
-    ROLE_OWNER, Organization, OrganizationUser
-)
-
+from seed.lib.superperms.orgs.models import ROLE_OWNER, Organization, OrganizationUser
 from seed.utils.organizations import create_organization
 
-#Custom user model compatibility
+# Custom user model compatibility
 User = get_user_model()
 
 
 class AdminViewsTest(TestCase):
-
     def setUp(self):
         admin_user_details = {'username': 'admin@testserver',
                               'email': 'admin@testserver',
@@ -88,7 +83,7 @@ class AdminViewsTest(TestCase):
         self.assertEqual(res.body['status'], 'error')
         self.assertEqual(Organization.objects.count(), 1)
 
-        #and most importantly, the admin/owner of the org didn't change
+        # and most importantly, the admin/owner of the org didn't change
         org = Organization.objects.first()
         self.assertTrue(self._is_org_owner(self.admin_user, org))
 
@@ -114,7 +109,7 @@ class AdminViewsTest(TestCase):
         user = User.objects.get(username=data['email'])
         self.assertEqual(user.email, data['email'])
 
-        #the user should be a member of the existing org
+        # the user should be a member of the existing org
         self.assertTrue(user in org.users.all())
 
         # Since this is the only user, it's automatically the owner.
@@ -135,7 +130,7 @@ class AdminViewsTest(TestCase):
         user = User.objects.get(username=data['email'])
         self.assertEqual(user.email, data['email'])
 
-        #new user should be member, admin and owner of new org
+        # new user should be member, admin and owner of new org
         org = Organization.objects.get(name='New Org')
         self.assertTrue(user in org.users.all())
         self.assertTrue(self._is_org_owner(user, org))
@@ -170,7 +165,7 @@ class AdminViewsTest(TestCase):
 
         user = User.objects.get(email=data['email'])
 
-        #user's password doesn't work yet
+        # user's password doesn't work yet
         self.assertFalse(user.has_usable_password())
 
         token = default_token_generator.make_token(user)
@@ -179,27 +174,27 @@ class AdminViewsTest(TestCase):
             "token": token
         })
 
-        #make sure we sent an email to the right address
-        #and it contains the signup url
+        # make sure we sent an email to the right address
+        # and it contains the signup url
         self.assertEqual(len(mail.outbox), 1)
         msg = mail.outbox[0]
         self.assertTrue(signup_url in msg.body)
         self.assertTrue(data['email'] in msg.to)
 
-        #actually go to that url to make sure it works
+        # actually go to that url to make sure it works
         res = self.client.get(signup_url)
         self.assertEqual(res.status_code, 200)
 
-        #post the new password
+        # post the new password
         password_post = {'new_password1': 'newpassS2',
                          'new_password2': 'newpassS2'}
 
         res = self.client.post(signup_url, data=password_post)
 
-        #reload the user
+        # reload the user
         user = User.objects.get(pk=user.pk)
 
-        #user is now has a working password
+        # user is now has a working password
         self.assertTrue(user.has_usable_password())
 
     def test_signup_process_force_lowercase_email(self):
@@ -216,7 +211,7 @@ class AdminViewsTest(TestCase):
 
         user = User.objects.get(email=data['email'])
 
-        #user's password doesn't work yet
+        # user's password doesn't work yet
         self.assertFalse(user.has_usable_password())
 
         token = default_token_generator.make_token(user)
@@ -225,26 +220,26 @@ class AdminViewsTest(TestCase):
             "token": token
         })
 
-        #make sure we sent an email to the right address
-        #and it contains the signup url
+        # make sure we sent an email to the right address
+        # and it contains the signup url
         self.assertEqual(len(mail.outbox), 1)
         msg = mail.outbox[0]
         self.assertTrue(signup_url in msg.body)
         self.assertTrue(data['email'] in msg.to)
 
-        #actually go to that url to make sure it works
+        # actually go to that url to make sure it works
         res = self.client.get(signup_url)
         self.assertEqual(res.status_code, 200)
 
-        #post the new password
+        # post the new password
         password_post = {'new_password1': 'newpassS3',
                          'new_password2': 'newpassS3'}
 
         res = self.client.post(signup_url, data=password_post)
 
-        #reload the user
+        # reload the user
         user = User.objects.get(pk=user.pk)
-        #user is now has a working password and lowercase username
+        # user is now has a working password and lowercase username
         self.assertTrue(user.has_usable_password())
         self.assertEqual(user.email, data['email'])
         self.assertEqual(user.username, data['email'].lower())

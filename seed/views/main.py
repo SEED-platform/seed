@@ -1,38 +1,30 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
-# system imports
+
 import json
 import logging
 import datetime
 import os
 import uuid
 
-# django imports
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.cache import cache
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
 from django.core.files.storage import DefaultStorage
 from django.db.models import Q
-
-# vendor imports
 from annoying.decorators import render_to, ajax_request
-from mcm import mapper
-
-
-# BE imports
-from audit_logs.models import AuditLog
-from data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
-
+from seed.lib.mcm import mapper
+from seed.audit_logs.models import AuditLog
+from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
 from seed.tasks import (
     map_data,
     remap_data,
     match_buildings,
     save_raw_data as task_save_raw,
 )
-
-from superperms.orgs.decorators import has_perm
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed import models, tasks
 from seed.models import (
     get_column_mapping,
@@ -50,26 +42,20 @@ from seed.models import (
     GREEN_BUTTON_BS,
 )
 from seed.views.accounts import _get_js_role
-from superperms.orgs.models import Organization, OrganizationUser, ROLE_MEMBER
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser, ROLE_MEMBER
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
     get_search_query,
     get_buildings_for_user_count
 )
 from seed.utils.api import api_endpoint
-
 from seed.utils.projects import (
     get_projects, update_buildings_with_labels
 )
-
 from seed.utils.time import convert_to_js_timestamp
 from seed.utils.mapping import get_mappable_types, get_mappable_columns
-
 from .. import search
-from ..lib.exporter import Exporter
-
-from BE.settings.dev import SEED_DATADIR
-
+from seed.lib.exporter import Exporter
 from seed.common import mapper as simple_mapper
 from seed.common import views as vutil
 

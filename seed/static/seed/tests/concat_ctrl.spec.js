@@ -7,7 +7,7 @@ describe("controller: concat_modal_ctrl", function(){
     var global_dataset = {};
 
     // make the seed app available for each test
-    // 'BE.seed' is created in TestFilters.html
+    // 'config.seed' is created in TestFilters.html
     beforeEach(function() {
         module('BE.seed');
     });

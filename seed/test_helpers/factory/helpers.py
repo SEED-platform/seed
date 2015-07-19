@@ -2,10 +2,12 @@
 :copyright: (c) 2014 Building Energy Inc
 """
 import random
-from django.contrib.webdesign import lorem_ipsum
 import datetime
 import base64
 from decimal import getcontext, Decimal
+
+from django.contrib.webdesign import lorem_ipsum
+
 getcontext().prec = 7
 from localflavor.us.us_states import STATE_CHOICES
 from seed.test_helpers.factory.lib.chomsky import generate_chomsky

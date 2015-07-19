@@ -1,536 +1,629 @@
-"""
-:copyright: (c) 2014 Building Energy Inc
-"""
 # -*- coding: utf-8 -*-
-from south.utils import datetime_utils as datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+from __future__ import unicode_literals
+
+from django.db import models, migrations
+import djorm_pgjson.fields
+import django_extensions.db.fields
+import autoslug.fields
+import django.utils.timezone
+import django.db.models.deletion
+from django.conf import settings
 
 
-class Migration(SchemaMigration):
+class Migration(migrations.Migration):
 
-    def forwards(self, orm):
-        # Adding model 'Project'
-        db.create_table(u'seed_project', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('slug', self.gf('autoslug.fields.AutoSlugField')(unique=True, max_length=50, populate_from='name', unique_with=())),
-            ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['landing.SEEDUser'], null=True, blank=True)),
-            ('last_modified_by', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='last_modified_user', null=True, to=orm['landing.SEEDUser'])),
-            ('organization', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['organizations.Organization'], null=True, blank=True)),
-            ('description', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('status', self.gf('django.db.models.fields.IntegerField')(default=1)),
-        ))
-        db.send_create_signal(u'seed', ['Project'])
+    dependencies = [
+        ('data_importer', '0002_auto_20150711_2103'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('orgs', '__first__'),
+    ]
 
-        # Adding model 'ProjectBuilding'
-        db.create_table(u'seed_projectbuilding', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True)),
-            ('building_snapshot', self.gf('django.db.models.fields.related.ForeignKey')(related_name='project_building_snapshots', to=orm['seed.BuildingSnapshot'])),
-            ('project', self.gf('django.db.models.fields.related.ForeignKey')(related_name='project_building_snapshots', to=orm['seed.Project'])),
-            ('compliant', self.gf('django.db.models.fields.NullBooleanField')(null=True, blank=True)),
-            ('approved_date', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('approver', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['landing.SEEDUser'], null=True, blank=True)),
-            ('status_label', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seed.StatusLabel'], null=True, blank=True)),
-        ))
-        db.send_create_signal(u'seed', ['ProjectBuilding'])
-
-        # Adding unique constraint on 'ProjectBuilding', fields ['building_snapshot', 'project']
-        db.create_unique(u'seed_projectbuilding', ['building_snapshot_id', 'project_id'])
-
-        # Adding model 'StatusLabel'
-        db.create_table(u'seed_statuslabel', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('color', self.gf('django.db.models.fields.CharField')(default='green', max_length=30)),
-            ('organization', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['organizations.Organization'], null=True, blank=True)),
-        ))
-        db.send_create_signal(u'seed', ['StatusLabel'])
-
-        # Adding unique constraint on 'StatusLabel', fields ['name', 'organization']
-        db.create_unique(u'seed_statuslabel', ['name', 'organization_id'])
-
-        # Adding model 'Compliance'
-        db.create_table(u'seed_compliance', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True)),
-            ('compliance_type', self.gf('django.db.models.fields.CharField')(default='Benchmarking', max_length=30)),
-            ('start_date', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('end_date', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('deadline_date', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('project', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seed.Project'])),
-        ))
-        db.send_create_signal(u'seed', ['Compliance'])
-
-        # Adding model 'CustomBuildingHeaders'
-        db.create_table(u'seed_custombuildingheaders', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('organization', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['organizations.Organization'])),
-            ('building_headers', self.gf('djorm_pgjson.fields.JSONField')(default={})),
-        ))
-        db.send_create_signal(u'seed', ['CustomBuildingHeaders'])
-
-        # Adding model 'ColumnMapping'
-        db.create_table(u'seed_columnmapping', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['landing.SEEDUser'], null=True, blank=True)),
-            ('organization', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['organizations.Organization'], null=True, blank=True)),
-            ('source_type', self.gf('django.db.models.fields.IntegerField')()),
-            ('column_raw', self.gf('django.db.models.fields.CharField')(max_length=128)),
-            ('column_mapped', self.gf('django.db.models.fields.CharField')(max_length=128)),
-        ))
-        db.send_create_signal(u'seed', ['ColumnMapping'])
-
-        # Adding unique constraint on 'ColumnMapping', fields ['organization', 'column_raw']
-        db.create_unique(u'seed_columnmapping', ['organization_id', 'column_raw'])
-
-        # Adding model 'CanonicalBuilding'
-        db.create_table(u'seed_canonicalbuilding', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('canonical_snapshot', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seed.BuildingSnapshot'], null=True, blank=True)),
-        ))
-        db.send_create_signal(u'seed', ['CanonicalBuilding'])
-
-        # Adding model 'BuildingSnapshot'
-        db.create_table(u'seed_buildingsnapshot', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True)),
-            ('import_record', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['data_importer.ImportRecord'], null=True, blank=True)),
-            ('import_file', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['data_importer.ImportFile'], null=True, blank=True)),
-            ('canonical_building', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seed.CanonicalBuilding'], null=True, blank=True)),
-            ('tax_lot_id', self.gf('django.db.models.fields.CharField')(max_length=128, null=True, blank=True)),
-            ('tax_id_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('pm_property_id', self.gf('django.db.models.fields.CharField')(max_length=128, null=True, blank=True)),
-            ('pm_property_id_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('custom_id_1', self.gf('django.db.models.fields.CharField')(max_length=128, null=True, blank=True)),
-            ('custom_id_1_id_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('property_notes', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('property_notes_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('year_ending', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('year_ending_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('district', self.gf('django.db.models.fields.CharField')(max_length=128, null=True, blank=True)),
-            ('district_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('owner', self.gf('django.db.models.fields.CharField')(max_length=128, null=True, blank=True)),
-            ('owner_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('owner_email', self.gf('django.db.models.fields.CharField')(max_length=128, null=True, blank=True)),
-            ('owner_email_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('owner_telephone', self.gf('django.db.models.fields.CharField')(max_length=128, null=True, blank=True)),
-            ('owner_telephone_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('property_name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('property_name_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('building_count', self.gf('django.db.models.fields.IntegerField')(max_length=3, null=True, blank=True)),
-            ('building_count_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('gross_floor_area', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
-            ('gross_floor_area_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('address_line_1', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('address_line_1_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('address_line_2', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('address_line_2_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('city', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('city_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('postal_code', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('postal_code_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('year_built', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
-            ('year_built_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('recent_sale_date', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('recent_sale_date_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('energy_score', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
-            ('energy_score_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('site_eui', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
-            ('site_eui_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('generation_date', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('generation_date_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('release_date', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('release_date_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('state_province', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('state_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('site_eui_weather_normalized', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
-            ('site_eui_weather_normalized_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('source_eui', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
-            ('source_eui_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('source_eui_weather_normalized', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
-            ('source_eui_weather_normalized_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('energy_alerts', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('energy_alerts_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('space_alerts', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('space_alerts_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('building_certification', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('building_certification_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('conditioned_floor_area', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
-            ('conditioned_floor_area_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('occupied_floor_area', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
-            ('occupied_floor_area_source', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['seed.BuildingSnapshot'])),
-            ('best_guess_confidence', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
-            ('best_guess_canonical_building', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='best_guess', null=True, to=orm['seed.CanonicalBuilding'])),
-            ('match_type', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
-            ('confidence', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
-            ('last_modified_by', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['landing.SEEDUser'], null=True, blank=True)),
-            ('source_type', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
-            ('canonical_for_ds', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='+', null=True, to=orm['data_importer.ImportRecord'])),
-            ('extra_data', self.gf('djorm_pgjson.fields.JSONField')(default={})),
-            ('extra_data_sources', self.gf('djorm_pgjson.fields.JSONField')(default={})),
-        ))
-        db.send_create_signal(u'seed', ['BuildingSnapshot'])
-
-        # Adding M2M table for field children on 'BuildingSnapshot'
-        m2m_table_name = db.shorten_name(u'seed_buildingsnapshot_children')
-        db.create_table(m2m_table_name, (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('from_buildingsnapshot', models.ForeignKey(orm[u'seed.buildingsnapshot'], null=False)),
-            ('to_buildingsnapshot', models.ForeignKey(orm[u'seed.buildingsnapshot'], null=False))
-        ))
-        db.create_unique(m2m_table_name, ['from_buildingsnapshot_id', 'to_buildingsnapshot_id'])
-
-        # Adding model 'AttributeOption'
-        db.create_table(u'seed_attributeoption', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('value', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('value_source', self.gf('django.db.models.fields.IntegerField')()),
-            ('building_variant', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='options', null=True, to=orm['seed.BuildingAttributeVariant'])),
-        ))
-        db.send_create_signal(u'seed', ['AttributeOption'])
-
-        # Adding model 'BuildingAttributeVariant'
-        db.create_table(u'seed_buildingattributevariant', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('field_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('building_snapshot', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='variants', null=True, to=orm['seed.BuildingSnapshot'])),
-        ))
-        db.send_create_signal(u'seed', ['BuildingAttributeVariant'])
-
-        # Adding unique constraint on 'BuildingAttributeVariant', fields ['field_name', 'building_snapshot']
-        db.create_unique(u'seed_buildingattributevariant', ['field_name', 'building_snapshot_id'])
-
-
-    def backwards(self, orm):
-        # Removing unique constraint on 'BuildingAttributeVariant', fields ['field_name', 'building_snapshot']
-        db.delete_unique(u'seed_buildingattributevariant', ['field_name', 'building_snapshot_id'])
-
-        # Removing unique constraint on 'ColumnMapping', fields ['organization', 'column_raw']
-        db.delete_unique(u'seed_columnmapping', ['organization_id', 'column_raw'])
-
-        # Removing unique constraint on 'StatusLabel', fields ['name', 'organization']
-        db.delete_unique(u'seed_statuslabel', ['name', 'organization_id'])
-
-        # Removing unique constraint on 'ProjectBuilding', fields ['building_snapshot', 'project']
-        db.delete_unique(u'seed_projectbuilding', ['building_snapshot_id', 'project_id'])
-
-        # Deleting model 'Project'
-        db.delete_table(u'seed_project')
-
-        # Deleting model 'ProjectBuilding'
-        db.delete_table(u'seed_projectbuilding')
-
-        # Deleting model 'StatusLabel'
-        db.delete_table(u'seed_statuslabel')
-
-        # Deleting model 'Compliance'
-        db.delete_table(u'seed_compliance')
-
-        # Deleting model 'CustomBuildingHeaders'
-        db.delete_table(u'seed_custombuildingheaders')
-
-        # Deleting model 'ColumnMapping'
-        db.delete_table(u'seed_columnmapping')
-
-        # Deleting model 'CanonicalBuilding'
-        db.delete_table(u'seed_canonicalbuilding')
-
-        # Deleting model 'BuildingSnapshot'
-        db.delete_table(u'seed_buildingsnapshot')
-
-        # Removing M2M table for field children on 'BuildingSnapshot'
-        db.delete_table(db.shorten_name(u'seed_buildingsnapshot_children'))
-
-        # Deleting model 'AttributeOption'
-        db.delete_table(u'seed_attributeoption')
-
-        # Deleting model 'BuildingAttributeVariant'
-        db.delete_table(u'seed_buildingattributevariant')
-
-
-    models = {
-        u'auth.group': {
-            'Meta': {'object_name': 'Group'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '80'}),
-            'permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'})
-        },
-        u'auth.permission': {
-            'Meta': {'ordering': "(u'content_type__app_label', u'content_type__model', u'codename')", 'unique_together': "((u'content_type', u'codename'),)", 'object_name': 'Permission'},
-            'codename': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
-        },
-        u'contenttypes.contenttype': {
-            'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
-            'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        u'data_importer.importfile': {
-            'Meta': {'object_name': 'ImportFile'},
-            'cached_first_row': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'cached_second_to_fifth_row': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'coercion_mapping_done': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'deleted': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'export_file': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'file': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'file_size_in_bytes': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'has_header_row': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'has_source_id': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'import_record': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['data_importer.ImportRecord']"}),
-            'initial_mapping_done': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_espm': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'mapping_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'mapping_confidence': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'mapping_error_messages': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'num_coercion_errors': ('django.db.models.fields.IntegerField', [], {'default': '0', 'null': 'True', 'blank': 'True'}),
-            'num_coercions_total': ('django.db.models.fields.IntegerField', [], {'default': '0', 'null': 'True', 'blank': 'True'}),
-            'num_columns': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'num_mapping_errors': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'num_mapping_warnings': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'num_rows': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'num_tasks_complete': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'num_tasks_total': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'num_validation_errors': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'})
-        },
-        u'data_importer.importrecord': {
-            'Meta': {'ordering': "('-updated_at',)", 'object_name': 'ImportRecord'},
-            'app': ('django.db.models.fields.CharField', [], {'default': "'seed'", 'max_length': '64'}),
-            'created_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'deleted': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'finish_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'import_completed_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'is_imported_live': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'keep_missing_buildings': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'modified_import_records'", 'null': 'True', 'to': u"orm['landing.SEEDUser']"}),
-            'matching_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'matching_done': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'mcm_version': ('django.db.models.fields.IntegerField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
-            'merge_analysis_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'merge_analysis_done': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'merge_analysis_queued': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'merge_completed_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'default': "'Unnamed Dataset'", 'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'notes': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['landing.SEEDUser']", 'null': 'True', 'blank': 'True'}),
-            'premerge_analysis_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'premerge_analysis_done': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'premerge_analysis_queued': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'start_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'updated_at': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'})
-        },
-        u'landing.seeduser': {
-            'Meta': {'object_name': 'SEEDUser'},
-            'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'default_custom_columns': ('djorm_pgjson.fields.JSONField', [], {'default': '{}'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
-            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "u'user_set'", 'blank': 'True', 'to': u"orm['auth.Group']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "u'user_set'", 'blank': 'True', 'to': u"orm['auth.Permission']"}),
-            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
-        },
-        u'organizations.organization': {
-            'Meta': {'ordering': "['name']", 'object_name': 'Organization'},
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'slug': ('django_extensions.db.fields.AutoSlugField', [], {'allow_duplicates': 'False', 'max_length': '200', 'separator': "u'-'", 'unique': 'True', 'populate_from': "'name'", 'overwrite': 'False'}),
-            'users': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['landing.SEEDUser']", 'through': u"orm['organizations.OrganizationUser']", 'symmetrical': 'False'})
-        },
-        u'organizations.organizationuser': {
-            'Meta': {'ordering': "['organization', 'user']", 'unique_together': "(('user', 'organization'),)", 'object_name': 'OrganizationUser'},
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_admin': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            'organization': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'organization_users'", 'to': u"orm['organizations.Organization']"}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'organization_users'", 'to': u"orm['landing.SEEDUser']"})
-        },
-        u'seed.attributeoption': {
-            'Meta': {'object_name': 'AttributeOption'},
-            'building_variant': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'options'", 'null': 'True', 'to': u"orm['seed.BuildingAttributeVariant']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'value': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'value_source': ('django.db.models.fields.IntegerField', [], {})
-        },
-        u'seed.buildingattributevariant': {
-            'Meta': {'unique_together': "(('field_name', 'building_snapshot'),)", 'object_name': 'BuildingAttributeVariant'},
-            'building_snapshot': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'variants'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'field_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
-        u'seed.buildingsnapshot': {
-            'Meta': {'ordering': "('-modified', '-created')", 'object_name': 'BuildingSnapshot'},
-            'address_line_1': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'address_line_1_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'address_line_2': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'address_line_2_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'best_guess_canonical_building': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'best_guess'", 'null': 'True', 'to': u"orm['seed.CanonicalBuilding']"}),
-            'best_guess_confidence': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'building_certification': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'building_certification_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'building_count': ('django.db.models.fields.IntegerField', [], {'max_length': '3', 'null': 'True', 'blank': 'True'}),
-            'building_count_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'canonical_building': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seed.CanonicalBuilding']", 'null': 'True', 'blank': 'True'}),
-            'canonical_for_ds': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['data_importer.ImportRecord']"}),
-            'children': ('django.db.models.fields.related.ManyToManyField', [], {'blank': 'True', 'related_name': "'parents'", 'null': 'True', 'symmetrical': 'False', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'city': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'city_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'conditioned_floor_area': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'conditioned_floor_area_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'confidence': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            'custom_id_1': ('django.db.models.fields.CharField', [], {'max_length': '128', 'null': 'True', 'blank': 'True'}),
-            'custom_id_1_id_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'district': ('django.db.models.fields.CharField', [], {'max_length': '128', 'null': 'True', 'blank': 'True'}),
-            'district_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'energy_alerts': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'energy_alerts_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'energy_score': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'energy_score_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'extra_data': ('djorm_pgjson.fields.JSONField', [], {'default': '{}'}),
-            'extra_data_sources': ('djorm_pgjson.fields.JSONField', [], {'default': '{}'}),
-            'generation_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'generation_date_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'gross_floor_area': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'gross_floor_area_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'import_file': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['data_importer.ImportFile']", 'null': 'True', 'blank': 'True'}),
-            'import_record': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['data_importer.ImportRecord']", 'null': 'True', 'blank': 'True'}),
-            'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['landing.SEEDUser']", 'null': 'True', 'blank': 'True'}),
-            'match_type': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            'occupied_floor_area': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'occupied_floor_area_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'owner': ('django.db.models.fields.CharField', [], {'max_length': '128', 'null': 'True', 'blank': 'True'}),
-            'owner_email': ('django.db.models.fields.CharField', [], {'max_length': '128', 'null': 'True', 'blank': 'True'}),
-            'owner_email_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'owner_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'owner_telephone': ('django.db.models.fields.CharField', [], {'max_length': '128', 'null': 'True', 'blank': 'True'}),
-            'owner_telephone_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'pm_property_id': ('django.db.models.fields.CharField', [], {'max_length': '128', 'null': 'True', 'blank': 'True'}),
-            'pm_property_id_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'postal_code': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'postal_code_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'property_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'property_name_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'property_notes': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'property_notes_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'recent_sale_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'recent_sale_date_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'release_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'release_date_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'site_eui': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'site_eui_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'site_eui_weather_normalized': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'site_eui_weather_normalized_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'source_eui': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'source_eui_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'source_eui_weather_normalized': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'source_eui_weather_normalized_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'source_type': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'space_alerts': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'space_alerts_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'state_province': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'state_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'tax_id_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'tax_lot_id': ('django.db.models.fields.CharField', [], {'max_length': '128', 'null': 'True', 'blank': 'True'}),
-            'year_built': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'year_built_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"}),
-            'year_ending': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'year_ending_source': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'+'", 'null': 'True', 'to': u"orm['seed.BuildingSnapshot']"})
-        },
-        u'seed.canonicalbuilding': {
-            'Meta': {'object_name': 'CanonicalBuilding'},
-            'canonical_snapshot': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seed.BuildingSnapshot']", 'null': 'True', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
-        u'seed.columnmapping': {
-            'Meta': {'unique_together': "(('organization', 'column_raw'),)", 'object_name': 'ColumnMapping'},
-            'column_mapped': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'column_raw': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'organization': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['organizations.Organization']", 'null': 'True', 'blank': 'True'}),
-            'source_type': ('django.db.models.fields.IntegerField', [], {}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['landing.SEEDUser']", 'null': 'True', 'blank': 'True'})
-        },
-        u'seed.compliance': {
-            'Meta': {'ordering': "('-modified', '-created')", 'object_name': 'Compliance'},
-            'compliance_type': ('django.db.models.fields.CharField', [], {'default': "'Benchmarking'", 'max_length': '30'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            'deadline_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'end_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            'project': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seed.Project']"}),
-            'start_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'})
-        },
-        u'seed.custombuildingheaders': {
-            'Meta': {'object_name': 'CustomBuildingHeaders'},
-            'building_headers': ('djorm_pgjson.fields.JSONField', [], {'default': '{}'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'organization': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['organizations.Organization']"})
-        },
-        u'seed.project': {
-            'Meta': {'ordering': "('-modified', '-created')", 'object_name': 'Project'},
-            'building_snapshots': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['seed.BuildingSnapshot']", 'null': 'True', 'through': u"orm['seed.ProjectBuilding']", 'blank': 'True'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            'description': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'last_modified_user'", 'null': 'True', 'to': u"orm['landing.SEEDUser']"}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'organization': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['organizations.Organization']", 'null': 'True', 'blank': 'True'}),
-            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['landing.SEEDUser']", 'null': 'True', 'blank': 'True'}),
-            'slug': ('autoslug.fields.AutoSlugField', [], {'unique': 'True', 'max_length': '50', 'populate_from': "'name'", 'unique_with': '()'}),
-            'status': ('django.db.models.fields.IntegerField', [], {'default': '1'})
-        },
-        u'seed.projectbuilding': {
-            'Meta': {'ordering': "['project', 'building_snapshot']", 'unique_together': "(('building_snapshot', 'project'),)", 'object_name': 'ProjectBuilding'},
-            'approved_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'approver': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['landing.SEEDUser']", 'null': 'True', 'blank': 'True'}),
-            'building_snapshot': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'project_building_snapshots'", 'to': u"orm['seed.BuildingSnapshot']"}),
-            'compliant': ('django.db.models.fields.NullBooleanField', [], {'null': 'True', 'blank': 'True'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            'project': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'project_building_snapshots'", 'to': u"orm['seed.Project']"}),
-            'status_label': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seed.StatusLabel']", 'null': 'True', 'blank': 'True'})
-        },
-        u'seed.statuslabel': {
-            'Meta': {'ordering': "['-name']", 'unique_together': "(('name', 'organization'),)", 'object_name': 'StatusLabel'},
-            'color': ('django.db.models.fields.CharField', [], {'default': "'green'", 'max_length': '30'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'organization': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['organizations.Organization']", 'null': 'True', 'blank': 'True'})
-        }
-    }
-
-    complete_apps = ['seed']
+    operations = [
+        migrations.CreateModel(
+            name='AttributeOption',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('value', models.CharField(max_length=255)),
+                ('value_source', models.IntegerField(choices=[(0, b'Assessed Raw'), (2, b'Assessed'), (1, b'Portfolio Raw'), (3, b'Portfolio'), (4, b'BuildingSnapshot'), (5, b'Green Button Raw')])),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='BuildingAttributeVariant',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('field_name', models.CharField(max_length=255)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='BuildingSnapshot',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created', django_extensions.db.fields.CreationDateTimeField(default=django.utils.timezone.now, verbose_name='created', editable=False, blank=True)),
+                ('modified', django_extensions.db.fields.ModificationDateTimeField(default=django.utils.timezone.now, verbose_name='modified', editable=False, blank=True)),
+                ('tax_lot_id', models.CharField(db_index=True, max_length=128, null=True, blank=True)),
+                ('pm_property_id', models.CharField(db_index=True, max_length=128, null=True, blank=True)),
+                ('custom_id_1', models.CharField(db_index=True, max_length=128, null=True, blank=True)),
+                ('lot_number', models.CharField(max_length=128, null=True, blank=True)),
+                ('block_number', models.CharField(max_length=128, null=True, blank=True)),
+                ('property_notes', models.TextField(null=True, blank=True)),
+                ('year_ending', models.DateField(null=True, blank=True)),
+                ('district', models.CharField(max_length=128, null=True, blank=True)),
+                ('owner', models.CharField(max_length=128, null=True, blank=True)),
+                ('owner_email', models.CharField(max_length=128, null=True, blank=True)),
+                ('owner_telephone', models.CharField(max_length=128, null=True, blank=True)),
+                ('owner_address', models.CharField(max_length=128, null=True, blank=True)),
+                ('owner_city_state', models.CharField(max_length=128, null=True, blank=True)),
+                ('owner_postal_code', models.CharField(max_length=128, null=True, blank=True)),
+                ('property_name', models.CharField(max_length=255, null=True, blank=True)),
+                ('building_count', models.IntegerField(max_length=3, null=True, blank=True)),
+                ('gross_floor_area', models.FloatField(null=True, blank=True)),
+                ('address_line_1', models.CharField(db_index=True, max_length=255, null=True, blank=True)),
+                ('address_line_2', models.CharField(db_index=True, max_length=255, null=True, blank=True)),
+                ('city', models.CharField(max_length=255, null=True, blank=True)),
+                ('postal_code', models.CharField(max_length=255, null=True, blank=True)),
+                ('year_built', models.IntegerField(null=True, blank=True)),
+                ('recent_sale_date', models.DateTimeField(null=True, blank=True)),
+                ('energy_score', models.IntegerField(null=True, blank=True)),
+                ('site_eui', models.FloatField(null=True, blank=True)),
+                ('generation_date', models.DateTimeField(null=True, blank=True)),
+                ('release_date', models.DateTimeField(null=True, blank=True)),
+                ('state_province', models.CharField(max_length=255, null=True, blank=True)),
+                ('site_eui_weather_normalized', models.FloatField(null=True, blank=True)),
+                ('source_eui', models.FloatField(null=True, blank=True)),
+                ('source_eui_weather_normalized', models.FloatField(null=True, blank=True)),
+                ('energy_alerts', models.TextField(null=True, blank=True)),
+                ('space_alerts', models.TextField(null=True, blank=True)),
+                ('building_certification', models.CharField(max_length=255, null=True, blank=True)),
+                ('conditioned_floor_area', models.FloatField(null=True, blank=True)),
+                ('occupied_floor_area', models.FloatField(null=True, blank=True)),
+                ('use_description', models.TextField(null=True, blank=True)),
+                ('best_guess_confidence', models.FloatField(null=True, blank=True)),
+                ('match_type', models.IntegerField(blank=True, null=True, db_index=True, choices=[(1, b'System Match'), (2, b'User Match'), (3, b'Possible Match')])),
+                ('confidence', models.FloatField(db_index=True, null=True, blank=True)),
+                ('source_type', models.IntegerField(blank=True, null=True, db_index=True, choices=[(0, b'Assessed Raw'), (2, b'Assessed'), (1, b'Portfolio Raw'), (3, b'Portfolio'), (4, b'BuildingSnapshot'), (5, b'Green Button Raw')])),
+                ('extra_data', djorm_pgjson.fields.JSONField(default={}, null=True, blank=True)),
+                ('extra_data_sources', djorm_pgjson.fields.JSONField(default={}, null=True, blank=True)),
+                ('address_line_1_source', models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True)),
+                ('address_line_2_source', models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True)),
+            ],
+            options={
+                'ordering': ('-modified', '-created'),
+                'abstract': False,
+                'get_latest_by': 'modified',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='CanonicalBuilding',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('active', models.BooleanField(default=True)),
+                ('canonical_snapshot', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, blank=True, to='seed.BuildingSnapshot', null=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Column',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('column_name', models.CharField(max_length=512, db_index=True)),
+                ('is_extra_data', models.BooleanField(default=False)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='ColumnMapping',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('source_type', models.IntegerField(blank=True, null=True, choices=[(0, b'Assessed Raw'), (2, b'Assessed'), (1, b'Portfolio Raw'), (3, b'Portfolio'), (4, b'BuildingSnapshot'), (5, b'Green Button Raw')])),
+                ('column_mapped', models.ManyToManyField(related_name='mapped_mappings', null=True, to='seed.Column', blank=True)),
+                ('column_raw', models.ManyToManyField(related_name='raw_mappings', null=True, to='seed.Column', blank=True)),
+                ('super_organization', models.ForeignKey(related_name='column_mappings', verbose_name='SeedOrg', blank=True, to='orgs.Organization', null=True)),
+                ('user', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Compliance',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created', django_extensions.db.fields.CreationDateTimeField(default=django.utils.timezone.now, verbose_name='created', editable=False, blank=True)),
+                ('modified', django_extensions.db.fields.ModificationDateTimeField(default=django.utils.timezone.now, verbose_name='modified', editable=False, blank=True)),
+                ('compliance_type', models.CharField(default=b'Benchmarking', max_length=30, verbose_name='compliance_type', choices=[(b'Benchmarking', 'Benchmarking'), (b'Auditing', 'Auditing'), (b'Retro Commissioning', 'Retro Commissioning')])),
+                ('start_date', models.DateField(null=True, verbose_name='start_date', blank=True)),
+                ('end_date', models.DateField(null=True, verbose_name='end_date', blank=True)),
+                ('deadline_date', models.DateField(null=True, verbose_name='deadline_date', blank=True)),
+            ],
+            options={
+                'ordering': ('-modified', '-created'),
+                'abstract': False,
+                'get_latest_by': 'modified',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='CustomBuildingHeaders',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('building_headers', djorm_pgjson.fields.JSONField(default={}, null=True, blank=True)),
+                ('super_organization', models.ForeignKey(related_name='custom_headers', verbose_name='SeedOrg', blank=True, to='orgs.Organization', null=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Enum',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('enum_name', models.CharField(max_length=255, db_index=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='EnumValue',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('value_name', models.CharField(max_length=255)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Meter',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=100)),
+                ('energy_type', models.IntegerField(max_length=3, choices=[(1, b'Natural Gas'), (2, b'Electricity'), (3, b'Fuel Oil'), (4, b'Fuel Oil No. 1'), (5, b'Fuel Oil No. 2'), (6, b'Fuel Oil No. 4'), (7, b'Fuel Oil No. 5 and No. 6'), (8, b'District Steam'), (9, b'District Hot Water'), (10, b'District Chilled Water'), (11, b'Propane'), (12, b'Liquid Propane'), (13, b'Kerosene'), (14, b'Diesel'), (15, b'Coal'), (16, b'Coal Anthracite'), (17, b'Coal Bituminous'), (18, b'Coke'), (19, b'Wood'), (20, b'Other')])),
+                ('energy_units', models.IntegerField(max_length=3, choices=[(1, b'kWh'), (2, b'Therms'), (3, b'Wh')])),
+                ('building_snapshot', models.ManyToManyField(related_name='meters', null=True, to='seed.BuildingSnapshot', blank=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Project',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created', django_extensions.db.fields.CreationDateTimeField(default=django.utils.timezone.now, verbose_name='created', editable=False, blank=True)),
+                ('modified', django_extensions.db.fields.ModificationDateTimeField(default=django.utils.timezone.now, verbose_name='modified', editable=False, blank=True)),
+                ('name', models.CharField(max_length=255, verbose_name='name')),
+                ('slug', autoslug.fields.AutoSlugField(populate_from=b'name', editable=True, unique=True, verbose_name='slug')),
+                ('description', models.TextField(null=True, verbose_name='description', blank=True)),
+                ('status', models.IntegerField(default=1, verbose_name='status', choices=[(0, 'Inactive'), (1, 'Active')])),
+            ],
+            options={
+                'ordering': ('-modified', '-created'),
+                'abstract': False,
+                'get_latest_by': 'modified',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='ProjectBuilding',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created', django_extensions.db.fields.CreationDateTimeField(default=django.utils.timezone.now, verbose_name='created', editable=False, blank=True)),
+                ('modified', django_extensions.db.fields.ModificationDateTimeField(default=django.utils.timezone.now, verbose_name='modified', editable=False, blank=True)),
+                ('compliant', models.NullBooleanField()),
+                ('approved_date', models.DateField(null=True, verbose_name='approved_date', blank=True)),
+                ('approver', models.ForeignKey(verbose_name='User', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('building_snapshot', models.ForeignKey(related_name='project_building_snapshots', to='seed.BuildingSnapshot')),
+                ('project', models.ForeignKey(related_name='project_building_snapshots', to='seed.Project')),
+            ],
+            options={
+                'ordering': ['project', 'building_snapshot'],
+                'verbose_name': 'project building',
+                'verbose_name_plural': 'project buildings',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Schema',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(unique=True, max_length=50, db_index=True)),
+                ('columns', models.ManyToManyField(related_name='schemas', to='seed.Column')),
+                ('organization', models.ForeignKey(related_name='schemas', blank=True, to='orgs.Organization', null=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='StatusLabel',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created', django_extensions.db.fields.CreationDateTimeField(default=django.utils.timezone.now, verbose_name='created', editable=False, blank=True)),
+                ('modified', django_extensions.db.fields.ModificationDateTimeField(default=django.utils.timezone.now, verbose_name='modified', editable=False, blank=True)),
+                ('name', models.CharField(max_length=255, verbose_name='name')),
+                ('color', models.CharField(default=b'green', max_length=30, verbose_name='compliance_type', choices=[(b'red', 'red'), (b'blue', 'blue'), (b'light blue', 'light blue'), (b'green', 'green'), (b'white', 'white'), (b'orange', 'orange')])),
+                ('super_organization', models.ForeignKey(related_name='status_labels', verbose_name='SeedOrg', blank=True, to='orgs.Organization', null=True)),
+            ],
+            options={
+                'ordering': ['-name'],
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='TimeSeries',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('begin_time', models.DateTimeField(null=True, blank=True)),
+                ('end_time', models.DateTimeField(null=True, blank=True)),
+                ('reading', models.FloatField(null=True)),
+                ('cost', models.DecimalField(null=True, max_digits=11, decimal_places=4)),
+                ('meter', models.ForeignKey(related_name='timeseries_data', blank=True, to='seed.Meter', null=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Unit',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('unit_name', models.CharField(max_length=255)),
+                ('unit_type', models.IntegerField(default=1, choices=[(1, b'String'), (2, b'Decimal'), (3, b'Float'), (4, b'Date'), (5, b'Datetime')])),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.AlterUniqueTogether(
+            name='statuslabel',
+            unique_together=set([('name', 'super_organization')]),
+        ),
+        migrations.AddField(
+            model_name='projectbuilding',
+            name='status_label',
+            field=models.ForeignKey(blank=True, to='seed.StatusLabel', null=True),
+            preserve_default=True,
+        ),
+        migrations.AlterUniqueTogether(
+            name='projectbuilding',
+            unique_together=set([('building_snapshot', 'project')]),
+        ),
+        migrations.AddField(
+            model_name='project',
+            name='building_snapshots',
+            field=models.ManyToManyField(to='seed.BuildingSnapshot', null=True, through='seed.ProjectBuilding', blank=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='project',
+            name='last_modified_by',
+            field=models.ForeignKey(related_name='last_modified_user', blank=True, to=settings.AUTH_USER_MODEL, null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='project',
+            name='owner',
+            field=models.ForeignKey(verbose_name='User', blank=True, to=settings.AUTH_USER_MODEL, null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='project',
+            name='super_organization',
+            field=models.ForeignKey(related_name='projects', verbose_name='SeedOrg', blank=True, to='orgs.Organization', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='enum',
+            name='enum_values',
+            field=models.ManyToManyField(related_name='values', null=True, to='seed.EnumValue', blank=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='compliance',
+            name='project',
+            field=models.ForeignKey(verbose_name='Project', to='seed.Project'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='column',
+            name='enum',
+            field=models.ForeignKey(blank=True, to='seed.Enum', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='column',
+            name='organization',
+            field=models.ForeignKey(blank=True, to='orgs.Organization', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='column',
+            name='unit',
+            field=models.ForeignKey(blank=True, to='seed.Unit', null=True),
+            preserve_default=True,
+        ),
+        migrations.AlterUniqueTogether(
+            name='column',
+            unique_together=set([('organization', 'column_name', 'is_extra_data')]),
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='best_guess_canonical_building',
+            field=models.ForeignKey(related_name='best_guess', blank=True, to='seed.CanonicalBuilding', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='block_number_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='building_certification_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='building_count_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='canonical_building',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, blank=True, to='seed.CanonicalBuilding', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='canonical_for_ds',
+            field=models.ForeignKey(related_name='+', blank=True, to='data_importer.ImportRecord', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='children',
+            field=models.ManyToManyField(related_name='parents', null=True, to='seed.BuildingSnapshot', blank=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='city_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='conditioned_floor_area_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='custom_id_1_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='district_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='energy_alerts_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='energy_score_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='generation_date_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='gross_floor_area_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='import_file',
+            field=models.ForeignKey(blank=True, to='data_importer.ImportFile', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='last_modified_by',
+            field=models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='lot_number_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='occupied_floor_area_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='owner_address_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='owner_city_state_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='owner_email_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='owner_postal_code_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='owner_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='owner_telephone_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='pm_property_id_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='postal_code_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='property_name_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='property_notes_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='recent_sale_date_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='release_date_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='site_eui_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='site_eui_weather_normalized_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='source_eui_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='source_eui_weather_normalized_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='space_alerts_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='state_province_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='super_organization',
+            field=models.ForeignKey(related_name='building_snapshots', blank=True, to='orgs.Organization', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='tax_lot_id_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='use_description_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='year_built_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingsnapshot',
+            name='year_ending_source',
+            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingattributevariant',
+            name='building_snapshot',
+            field=models.ForeignKey(related_name='variants', blank=True, to='seed.BuildingSnapshot', null=True),
+            preserve_default=True,
+        ),
+        migrations.AlterUniqueTogether(
+            name='buildingattributevariant',
+            unique_together=set([('field_name', 'building_snapshot')]),
+        ),
+        migrations.AddField(
+            model_name='attributeoption',
+            name='building_variant',
+            field=models.ForeignKey(related_name='options', blank=True, to='seed.BuildingAttributeVariant', null=True),
+            preserve_default=True,
+        ),
+    ]

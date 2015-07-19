@@ -10,6 +10,7 @@ import sys
 
 from . import mapper
 
+
 # use this to recognize when to remove from mapping
 REMOVE_KEY = "REMOVE"
 
