@@ -26,6 +26,7 @@ angular.module('BE.seed.controller.delete_modal', [])
           function (data) {
             // resolve promise
             $scope.delete_state = 'success';
+            building_services.get_total_number_of_buildings_for_user();
         });
     };
 

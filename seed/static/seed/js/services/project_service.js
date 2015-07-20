@@ -10,7 +10,8 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
   'user_service',
   'generated_urls',
   function ($http, $q, label_helper_service, user_service, generated_urls) {
-    var project_factory = {};
+   
+    var project_factory = { total_number_projects_for_user:0 };
     var urls = generated_urls;
 
     project_factory.get_projects = function() {
@@ -23,6 +24,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
                 'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
+            project_factory.total_number_projects_for_user = (data.projects != undefined ) ? data.projects.length : 0;
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
