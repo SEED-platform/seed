@@ -48,3 +48,7 @@ docs/build/
 .pydevproject
 dump.rdb
 log
+
+/* Don't check in generated .js files for Angular */
+seed/static/seed/js/app.js
+seed/static/seed/js/app.min.js

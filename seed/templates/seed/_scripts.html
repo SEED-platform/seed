@@ -1,5 +1,7 @@
 {% load compress %}
 {% compress js %}
+
+<!-- DMcQ: Removing this as I can use gulp to create the minified .js file
 <script src="{{STATIC_URL}}seed/js/seed.js"></script>
 
 <script src="{{STATIC_URL}}seed/js/filters/district.js"></script>
@@ -55,10 +57,16 @@
 <script src="{{STATIC_URL}}seed/js/services/user_service.js"></script>
 <script src="{{STATIC_URL}}seed/js/services/validators.js"></script>
 <script src="{{STATIC_URL}}seed/js/services/search_service.js"></script>
+-->
+
 {% endcompress %}
+
+<script src="{{STATIC_URL}}seed/js/app.js"></script>
 
 {% comment %}
 {# minified using: uglifyjs ./*.js --source-map app.min.js.map -o app.min.js -m c #}
+<!--
         <script src="{{STATIC_URL}}seed/js/app.min.js"></script>
         <script src="{{STATIC_URL}}seed/js/app.min.js.map"></script>
+-->
 {% endcomment %}
