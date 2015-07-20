@@ -1,0 +1,807 @@
+Entity Name,Attribute Name,Description and Unit,Temp Name,Unit,Enum Entries,Data Type,Priority
+Site,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,City,The city in which the site is located.,City,,,string,1
+,State,The state in which the site is located.,StateEnum,,DC; AS; GU; CM; PR; VI; PTR; AL; AK; AZ; AR; CA; CO; CT; DE; FL; GA; HI; ID; IL; IN; IA; KS; KY; LA; ME; MD; MA; MI; MN; MS; MO; MT; NE; NV; NH; NJ; NM; NY; NC; ND; OH; OK; OR; PA; RI; SC; SD; TN; TX; UT; VT; VA; WA; WV; WI; WY,ENUM,1
+,Postal Code,The postal code in which the site is located.,PostalCode,,,string,1
+,County,"The county in which the site is located. If not known, can be derived from Postal Code.",County,,,string,2
+,Country,The country in which the site is located.,Country,,,string,2
+,Climate Zone,"The ASHRAE climate zone in which the site is located, or CBECS climate zones if ASHRAE climate zone is unavailable. If not known, can be derived from Postal Code.",ClimateZoneEnum,,1A Very Hot - Humid (Miami-FL);2A Hot - Humid (Houston-TX);2B Hot - Dry (Phoenix-AZ);3A Warm - Humid (Memphis-TN);3B Warm - Dry (El Paso-TX);3C Warm - Marine (San Francisco-CA);4A Mixed - Humid (Baltimore-MD);4B Mixed - Dry (Albuquerque-NM);4C Mixed - Marine (Salem-OR);5A Cool - Humid (Chicago-IL);5B Cool - Dry (Boise-ID);6A Cold - Humid (Burlington-VT);6B Cold -Dry (Helena-MT);7 Very Cold (Duluth-MN);8 Subarctic (Fairbanks-AK);CBECS - Zone 1;CBECS - Zone 2;CBECS - Zone 3;CBECS - Zone 4;CBECS - Zone 5,ENUM,1
+,Elevation,Elevation of the site. [feet],Elevation,,,double,2
+,Site Type,Type of site landscape.,SiteTypeEnum,,Rural;Suburban;Urban;Unknown,ENUM,2
+,Number of Facilities,Total number of facilities on the site.,NumberOfFacilities,,,int,2
+,Complex Type,"If the site hosts a complex, the main purpose or use of the complex as a whole.",ComplexTypeEnum,,College or University; Primary or secondary school (K-12); Other type of school; Office complex; Retail complex; Religious complex; Hospital or other health care complex; Lodging or resort complex; Post office complex; Other type of government complex; Industrial complex; Transportation complex; Multifamily; Other Or Combination; Unknown,ENUM,3
+,School District,The school district the site pertains to.,SchoolDistrict,,,string,3
+,eGrid Region,Emissions & Generation Resource Integrated Database (eGRID) region in which this site is located.,eGridRegion,,NWPP; CAMX; AZNM; RMPA; MROW; SPNO; SPSO; ERCT; MROE; SRMW; SRMV; RFCM; RFCW; SRTV; SRSO; NYUP; RFCE; SRVC; FRCC; NEWE; NYLI; NYCW; AKMS; AKGD; HIOA; HIMS,ENUM,3
+,Tax Floor Area,The floor area for the site as defined by the tax records.,TaxFloorArea,,,int,3
+,Site ID,Unique number identifying the site.,SiteID,,,string,4
+,Address Field 1,Street Address or other address field.,AddressField1,,,string,4
+,Address Field 2,Street Address or other address field.,AddressField2,,,string,4
+,City ID Code,"Field can be used for any city identification code. There may be multiple City ID Codes, such as 3 for borough, block, and lot.",CityIdCode,,,string,4
+,City ID Code Name,"Name of city identification code. There may be multiple City ID Code Names, such as 3 for ""Borough,"" ""Block,"" and ""Lot.""",CityIdCodeName,,,string,4
+,Longitude,The angular distance of a place east or west of the meridian.,Longitude,,,double,4
+,Latitude,The angular distance of a place north or south of the Earth's equator.,Latitude,,,double,4
+,Commercial Facility,,CommercialFacility,,,Entity,5
+,Residential Facility,,ResidentialFacility,,,Entity,5
+ResidentialFacility,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Residential Facility Type,Type of residential facility.,ResidentialFacilityTypeEnum,,Single Family - Uncategorized; Single Family - Attached; Single Family - Detached; Manufactured Home; 2-4 Unit Building; 5+ Unit Building; Multifamily - Uncategorized; Multifamily - Town Homes; Multifamily - Condominiums; Apartment Unit; Other; Unknown,ENUM,1
+,Year Completed,Year in which construction was completed.,YearCompleted,,,int,1
+,Year Occupied,Year in which the facility was first occupied.,YearOccupied,,,int,1
+,Operator Type,Entity responsible for the operation of the facility.,OperatorTypeEnum,,Owner; Occupant; Property Management Company; Other corporation/partnership/LLC; Religious organization; Other non-profit organization; Privately-owned school; Individual owner; Other nongovernment owner; Government; Federal government; State government; Local government; Other Or Combination; Unknown,ENUM,2
+,Surroundings,Structure(s) surrounding the facility. ,SurroundingsEnum,,Stand-alone; Attached to another building on one side; Attached to another building on two sides; Attached to another building on three sides; Within a building; Unknown,ENUM,2
+,Orientation,Orientation of the main long axis.,OrientationEnum,,East-West; North-South; North East-South West; North West-South East; Not Applicable,ENUM,2
+,Building Footprint Area,"Total area of a lot or site that is surrounded by the exterior walls of a building or portion of a building, exclusive of courtyards. [square feet]",BuildingFootprintArea,,,double,2
+,Footprint Shape,General shape of building footprint.,FootPrintShapeEnum,,Rectangular; Square; Circular; L-Shaped; U-Shaped; I-Shaped; V-Shaped; T-Shape; Other; Unknown,ENUM,2
+,Perimeter,Length of a line forming the boundary around the facility. [feet],Perimeter,,,double,2
+,Gross Floor Area,"Total floor area of all floors of a building calculated with the external dimensions of the enclosing fixed walls of the building including structures, partitions, corridors, stairs, and conditioned below-grade spaces. Note: All parking areas (enclosed and non-enclosed) should be excluded; atrium should only include the base floor area that it occupies. [square feet]",GrossFloorArea,,,double,1
+,Net Floor Area,"Gross floor area of a building, excluding the area occupied by walls and partitions, the circulation area (where people walk), and the mechanical area (where there is mechanical equipment)  i.e. gross floor area reduced by the area for structural components. [square feet]",NetFloorArea,,,double,2
+,Rentable Floor Area,Floor area that is being rented or is for rent. [square feet],RentableFloorArea,,,double,2
+,Occupied Floor Area,Floor area that is currently occupied or assigned. [square feet],OccupiedFloorArea,,,double,2
+,Percentage Of Common Space,Percent of gross floor area that is common space only.,PercentageOfCommonSpace,,,double,2
+,Lighted Floor Area,Floor area of all spaces that are lit artificially. [square feet],LightedFloorArea,,,double,2
+,Heated Floor Area,Floor area of all heated spaces in the activity area. [square feet],HeatedFloorArea,,,double,2
+,Cooled Floor Area,Floor area of all spaces that are cooled. [square feet],CooledFloorArea,,,double,2
+,Unconditioned Floor Area,Floor area of a building that is neither heated nor cooled. [square feet],UnconditionedFloorArea,,,double,2
+,Basement Floor Area,Basement refers to an enclosed space under all or part of the building in which a person can walk upright.,BasementFloorArea,,,double,3
+,Basement Heated Floor Area,Area of heated enclosed space under all or part of the building in which a person can walk upright. [square feet],BasementHeatedFloorArea,,,double,2
+,Basement Cooled Floor Area,Area of cooled floors pace that is enclosed under all or part of the building in which a person can walk upright. [square feet],BasementCooledFloorArea,,,double,2
+,Attic Floor Area,Attic refers to floor consisting of open space at the top of a house just below roof; often used for storage. [square feet],AtticFloorArea,,,double,1
+,Attic Heated Floor Area,Area of heated floor space consisting of open space at the top of a house just below roof; often used for storage. [square feet],AtticHeatedFloorArea,,,double,2
+,Attic Cooled Floor Area,Area of cooled floor space consisting of open space at the top of a house just below roof; often used for storage. [square feet],AtticCooledFloorArea,,,double,2
+,Garage Floor Area,"Garage refers to a space large enough to accommodate a car, with a door opening at least 6 feet wide and 7 feet high. [square feet]",GarageFloorArea,,,double,1
+,Garage Heated Floor Area,"Area of heated space large enough to accommodate a car, with a door opening at least 6 feet wide and 7 feet high. [square feet]",GarageHeatedFloorArea,,,double,2
+,Garage Cooled Floor Area,"Area of cooled floor space large enough to accommodate a car, with a door opening at least 6 feet wide and 7 feet high. [square feet]",GarageCooledFloorArea,,,double,2
+,Volume,Volume of a building measured by its external dimensions. [cubic feet],Volume,,,double,2
+,Conditioned Building Volume,Heated or cooled air volume of a building. [cubic feet],ConditionedBuildingVolume,,,double,2
+,Number Of Dwelling Units,Number of individual units in a multifamily facility.,NumberOfDwellingUnits,,,int,1
+,Aspect Ratio,The ratio of the facility's width to its length.,AspectRatio,,,double,2
+,Number of Floors,Number of floors in the facility or actvity area.,NumberOfFloors,,,int,2
+,Floors Above Ground,Number of floors which are above ground.,FloorsAboveGround,,,int,2
+,Floors Below Ground,Number of floors which are underground pertaining to the activity area.,FloorsBelowGround,,,int,2
+,Number Of Residents,Number of residents in the facility.,NumberOfResidents,,,int,2
+,Number Of Bedrooms,"Bedroom refers to a room intended for sleeping, even if not presently used for sleeping. The number of bedrooms are those that would be listed as descriptive of the apartment or house if it were on the market for sale or rent. A one-room efficiency or studio apartment has no bedrooms.",NumberOfBedrooms,,,int,2
+,Number Of Complete Baths,"Complete bath refers to a full bathroom that contains a sink with running water, a flush toilet, and a bathtub or shower. ",NumberOfCompleteBaths,,,int,2
+,Number Of Half Baths,Half bath refers to a bathroom which contains a toilet or bathtub or shower.,NumberOfHalfBaths,,,int,2
+,Number Of Rooms,"Rooms refers to subdivisions of a housing unit. Whole rooms are rooms such as living rooms, dining rooms, bedrooms, kitchens, lodgers' rooms, finished basements or attic rooms, recreation rooms, and permanently enclosed sun porches that are used year round. Rooms used for offices by a person living in the unit are included. Not considered to be rooms  are bathrooms, halls, foyers or vestibules, balconies, closets, alcoves, pantries, strip or pullman kitchens, laundry or furnace rooms, unfinished attics or basements, open porches, and unfinished space used for storage. A partially divided room, such as a dinette next to a kitchen or a living room, is considered a separate room only if there is a partition from floor to ceiling--but not if the partition consists solely of shelves or cabinets. If a room is used by occupants of more than one unit, the room is included with the unit from which it is most easily reached.",NumberOfRooms,,,int,2
+,Building Certification Type,"Building energy labeling, rating, or sustainability certification obtained. (Multiple instances of this field)",BuildingCertificationTypeEnum,,ASHRAE Building EQ; CMP Green Value Score; EPA ENERGY STAR Rating; EPA ENERGY STAR Label; Green Globes Rating; USGBC LEED Certification for New Construction & Major Renovation (NC); USGBC LEED Certification for Core & Shell Development (CS); USGBC LEED Certification for Commercial Interiors (CI); USGBC LEED Certification For Existing Buildings: Operations & Management (EBOM); USGBC LEED Certification for Retail; USGBC LEED Certification for Schools; USGBC LEED Certification for Healthcare; USGBC LEED Certification Neighborhood Development (ND); USGBC LEED Certification for Homes; Certified; Not Certified; Unknown,ENUM,1
+,Building Certification Value,"Value specifying building certification, e.g. score or level. (Multiple instances of this field)",BuildingCertificationValue,,,string,1
+,Certification Year,Year the facility earned certification. (Multiple instances of this field),CertificationYear,,,int,1
+,Year Of Last Remodel,Year of the most recent remodel.,YearOfLastRemodel,,,int,2
+,Facility Number,Number for the specific facility (out of total for site).,FacilityNumber,,,string,3
+,Year Completed Range,"If exact year of construction completion is unknown, this is a range.",YearCompletedRange,,,string,3
+,Number Of Floor Plans,Number of floor plans in a multi-family facility.,NumberOfFloorPlans,,,int,3
+,Floor Plan Type,Floor plan type. There may be as many types as number of different floor plans.,FloorPlanTypeEnum,,Studio; 1 Bed/1 Bath; 1 Bed/1+ Bath; 2 Bed/1 Bath; 2 Bed/1+ Bath; 3+ Bed/1+ Bath; Other; Unknown,ENUM,3
+,Number Of Units Per Floor Plan,Number of units with floor plan specified in Floor Plan Type.,NumberOfUnitsperFloorPlan,,,int,3
+,Facility Tax Floor Area,The floor area for the facility as defined by the tax records. [square feet],FacilityTaxFloorArea,,,double,3
+,Enclosed Floor Area,Floor area of all spaces enclosed by walls. [square feet],EnclosedFloorArea,,,double,3
+,Conditioned Floor Area,Floor area of all spaces that are either heated or cooled. [square feet],ConditionedFloorArea,,,double,3
+,Semi-conditioned Floor Area,Partially heated or air-conditioned floor area of a building. [sq. ft.],SemiConditionedFloorArea,,,double,3
+,Heated Only Floor Area,Floor area of all spaces that are only heated. [square feet],HeatedOnlyFloorArea,,,double,3
+,Cooled Only Floor Area,Floor area of all spaces that are only cooled. [square feet],CooledOnlyFloorArea,,,double,3
+,Heated And Cooled Floor Area,Floor area of all spaces that are both heated and cooled.,HeatedAndCooledFloorArea,,,double,3
+,Non-Enclosed Floor Area (w/roof),Floor area of all spaces that are not enclosed by walls but do have a roof. [square feet],NonEnclosedFloorAreaWithRoof,,,double,3
+,Open Floor Area (w/o roof),Floor area of all spaces that are not enclosed by walls and do not have roofs. [square feet],OpenFloorAreaWithoutRoof,,,double,3
+,Facility Height,Height of the facility. [feet],FacilityHeight,,,double,3
+,Floor-to-Floor Height,"Average height of the floor(s), measured from floor to floor/ceiling. [feet]",FloortoFloorHeight,,,double,3
+,Number Of Floors In Housing Unit,"Number of floors in unit, which is part of a building.",NumberOfFloorsInHousingUnit,,,int,3
+,Number Of Conditioned Floors,Number of conditioned floors above ground.,NumberOfConditionedFloors,,,int,3
+,Number Of Conditioned Floors Above Ground,Number of floors that are conditioned and are above ground.,NumberOfConditionedFloorsAboveGround,,,int,3
+,Numbers Of Conditioned Floors Below Ground,Number of floors that are conditioned and are below ground.,NumbersOfConditionedFloorsBelowGround,,,int,3
+,Household Type,The type of household consisting of persons who are permanently resident in the same dwelling unit.,HouseholdTypeEnum,,Family household; Married couple without children; Male householder without spouse; Female householder without spouse; Nonfamily household; Single male; Single female; Other; Unknown,ENUM,3
+,Ownership Status,"The relationship of a housing unit's occupants to the structure itself, not the land on which the structure is located.",OwnershipStatusEnum,,Own or Buying; Renting; Occupying without payment of rent; Other Or Combination; Unknown,ENUM,3
+,Government Subsidized Housing,"True if multifamily property receives affordable public local, state or federal subsidies, false otherwise.",GovernmentSubsidizedHousing,,,boolean,3
+,Occupant Income Range,Annual income of the household occupants.,OccupantIncomeRangeEnum,,Lowest Fifth; Second Fifth; Middle Fifth; Fourth Fifth; Highest Fifth; Top 5%; Other Or Combination; Unknown,ENUM,3
+,Occupant Education,Highest education level of the household occupants.,OccupantEducationEnum,,No High School; Some High School; High School Graduate; Some College; Vocational/Technical/Associates Degree; Bachelor's Degree; Some Post Graduate; Master's Degree; Professional Degree; Doctoral Degree; Other Or Combination; Unknown,ENUM,3
+,Resident Population Type,This is a descriptor used to identify multifamily housing that may be marketed to and/or dedicated for specific resident populations. Applies to the majority (more than 50%) of the residents.,ResidentPopulationTypeEnum,,Student; Military; Senior or Independent Living; Special Accessibility Needs; Other Or Combination; Unknown,ENUM,3
+,Number Of Adults,Number of persons age 18 or older residing in the residence.,NumberOfAdults,,,int,3
+,Number Of Children,Number of persons under the age of 18 residing in the residence. ,NumberOfChildren,,,int,3
+,Number Of Non-bedrooms,Non-bedrooms refers to rooms not intended for sleeping.,NumberOfNonBedrooms,,,int,3
+,Facility ID,The unique facility identifier.,FacilityID,,,string,4
+,Facility Name,Name of the facility.,FacilityName,,,string,4
+,Address Field 1,Street Address or other address field.,AddressField1,,,string,4
+,Address Field 2,Street Address or other address field.,AddressField2,,,string,4
+,Owner Name,Owner of the facility.,OwnerName,,,string,4
+,Facility Contact,Primary contact for the facility.,FacilityContact,,,string,4
+,Owner Address 1,Street Address or other address field.,AddressOwnerField1,,,string,4
+,Owner Address 2,Street Address or other address field.,AddressOwnerField2,,,string,4
+,Owner City,The city in which the site is located.,City,,,string,1
+,Owner State,The state in which the site is located.,StateEnum,,DC; AS; GU; CM; PR; VI; PTR; AL; AK; AZ; AR; CA; CO; CT; DE; FL; GA; HI; ID; IL; IN; IA; KS; KY; LA; ME; MD; MA; MI; MN; MS; MO; MT; NE; NV; NH; NJ; NM; NY; NC; ND; OH; OK; OR; PA; RI; SC; SD; TN; TX; UT; VT; VA; WA; WV; WI; WY,ENUM,1
+,Owner Postal Code,The postal code in which the site is located.,PostalCode,,,string,1
+,Owner Phone Number,"Home phone number of residential facility owner, if appropriate.",OwnerPhoneNumber,,,string,4
+,Facility Phone,Phone number to reach primary property contact.,FacilityPhone,,,string,4
+,Facility E-Mail Address,E-mail to reach primary property contact.,FacilityEMailAddress,,,string,4
+,Property Management Company,Company name managing the property.,PropertyManagementCompany,,,string,4
+,Property Management Address,Address of the property management company.,PropertyManagementAddress,,,string,4
+,Property Management Contact,Name of primary contact for the property management company.,PropertyManagementContact,,,string,4
+,Property Management Phone,Phone number of property management company.,PropertyManagementPhone,,,string,4
+,Property Management E-Mail Address,E-mail address for property management company.,PropertyManagementEMailAddress,,,string,4
+,Agency,"Federal agency, required to designate a facility as a federal property in Portfolio Manager.",Agency,,,string,4
+,Department Or Region,"Federal department/region, required to designate a facility as a federal property in Portfolio Manager.",DepartmentOrRegion,,,string,4
+,PM Unique Building Identifier,Portfolio Manager Building identifier,PMUniqueBuildingIdentifier,,,string,4
+,Year PM Benchmarked,Full year prior to Audit that the building was benchmarked in Portfolio Manager. [year],YearPMBenchmarked,,,int,4
+,Federal Real Property ID,"Federal real property ID, required to designate a facility as a federal property in Portfolio Manager.",FederalRealPropertyID,,,string,4
+,Administrator,Designates this Portfolio Manager account as administrator over other customer accounts.,Administrator,,,boolean,4
+,Shared By,Designates the original Portfolio Manager account who has shared this facility data.,SharedBy,,,string,4
+,PM Last Modified Date,Last date of Portfolio Manager data entry.,PMLastModifiedDate,,,date,4
+,Eligibility For ENERGYSTAR,Indicator signifying whether or not a facility is eligible for the ENERGY STAR Label.,EligibilityForENERGYSTAR,,,boolean,4
+,ENERGYSTAR Application Status,Status of Statement of Energy Perfromance (SEP) and ENERGY STAR application.,ENERGYSTARApplicationStatusEnum,,Application  has not yet been started; No SEP has been generated; SEP has been generated; SEP Expired; Application Submitted to EPA; Pending EPA receipt; Pending EPA decicion; Application on hold; Application Approved; Application expired,ENUM,4
+,Space Use Alerts,Portfolio Manger alerting that space types within the same facility are incompatible.,SpaceUseAlerts,,,string,4
+,Year Or Years Labeled,The year or years in which the facility was ENERGY STAR Labeled.,YearOrYearsLabeled,,,int,4
+,Approval Date Last ENERGYSTAR,The period ending date associated with last (i.e. most recent) ENERGY STAR Label received.,ApprovalDateLastENERGYSTAR,,,date,4
+,Baseline Rating,"A facility's baseline estimated energy use rating, as calculated by Portfolio Manager.",BaselineRating,,,int,4
+,Target Rating,ENERGY STAR target rating selected by Portfolio Manager user.,TargetRating,,,int,4
+,Building Profile Status,The status of the building profile submission process for Portfolio Manager.,BuildingProfileStatusEnum,,Draft; Received; Under Review; On Hold; Reviewed and Approved; Reviewed and Not Approved,ENUM,4
+,Federal Sustainability Checklist Completion Percentage,Percentage of the Federal High Performance Sustainability Checklist that has been completed for federal building in Portfolio Manager. ,FederalSustainabilityChecklistCompletionPercentage,,,double,4
+,Notes,Facility level details about the building in Portfolio Manager.,Notes,,,string,4
+,Service And Product Provider,The ABS Service and Product Provider associated with this Portfolio Manager Facility.,ServiceAndProductProvider,,,string,4
+,Activity Area,,ActivityArea,,,Entity,5
+,Air Distribution,,AirDistribution,,,Entity,5
+,Conveyance,,Conveyance,,,Entity,5
+,Cooking,,Cooking,,,Entity,5
+,Cooling,,Cooling,,,Entity,5
+,Dishwasher,,Dishwasher,,,Entity,5
+,Energy Storage,,EnergyStorage,,,Entity,5
+,Energy Use,,EnergyUse,,,Entity,5
+,Fenestration,,Fenestration,,,Entity,5
+,Foundation,,Foundation,,,Entity,5
+,General Controls And Operations,,GeneralControlsAndOperations,,,Entity,5
+,Heating,,Heating,,,Entity,5
+,IT System,,ITSystem,,,Entity,5
+,Laundry,,Laundry,,,Entity,5
+,Lighting,,Lighting,,,Entity,5
+,Measures,,Measures,,,Entity,5
+,On Site Generation,,OnSiteGeneration,,,Entity,5
+,Other HVAC,,OtherHVAC,,,Entity,5
+,Pool,,Pool,,,Entity,5
+,Process Load,,ProcessLoad,,,Entity,5
+,Refrigeration,,Refrigeration,,,Entity,5
+,Roof Or Ceiling,,RoofOrCeiling,,,Entity,5
+,Service Hot Water,,ServiceHotWater,,,Entity,5
+,Wall,,Wall,,,Entity,5
+,Zonal Cooling,,ZonalCooling,,,Entity,5
+,Zonal Heating,,ZonalHeating,,,Entity,5
+,Owner Type,"The type of organization, association, business, etc. that owns the facility.",OwnerTypeEnum,,Property Management Company; Corporation/Partnership/LLC; Religious Organization; Other Non-Profit organization; Privately-Owned School; Individual; Other Nongovernment; Government; Federal Government; State Government; Local Government; Other; Unknown,ENUM,1
+,Complete Total Energy,"True if facility record includes all energy types used at the facility, false otherwise. E.g. field is false if natural gas is missing.",CompleteTotalEnergy,,,boolean,1
+CommercialFacility,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Year Completed,Year in which construction was completed.,YearCompleted,,,int,1
+,Year Occupied,Year in which the facility was first occupied.,YearOccupied,,,int,1
+,Owner Type,"The type of organization, association, business, etc. that owns the facility.",OwnerTypeEnum,,Property Management Company; Corporation/Partnership/LLC; Religious Organization; Other Non-Profit organization; Privately-Owned School; Individual; Other Nongovernment; Government; Federal Government; State Government; Local Government; Other; Unknown,ENUM,1
+,Percent Occupied By Owner,Percent of facility area occupied by owner.,PercentOccupiedByOwner,,,double,2
+,Operator Type,Entity responsible for the operation of the facility.,OperatorTypeEnum,,Owner; Occupant; Property Management Company; Other corporation/partnership/LLC; Religious organization; Other non-profit organization; Privately-owned school; Individual owner; Other nongovernment owner; Government; Federal government; State government; Local government; Other Or Combination; Unknown,ENUM,2
+,Surroundings,Structure(s) surrounding the facility. ,SurroundingsEnum,,Stand-alone; Attached to another building on one side; Attached to another building on two sides; Attached to another building on three sides; Within a building; Unknown,ENUM,2
+,Orientation,Orientation of the main long axis.,OrientationEnum,,East-West; North-South; North East-South West; North West-South East; Not Applicable,ENUM,2
+,Building Footprint Area,"Total area of a lot or site that is surrounded by the exterior walls of a building or portion of a building, exclusive of courtyards. [square feet]",BuildingFootprintArea,,,double,2
+,Footprint Shape,General shape of building footprint.,FootPrintShapeEnum,,Rectangular; Square; Circular; L-Shaped; U-Shaped; I-Shaped; V-Shaped; T-Shape; Other; Unknown,ENUM,2
+,Perimeter,Length of a line forming the boundary around the facility. [feet],Perimeter,,,double,2
+,Gross Floor Area,"Total floor area of all floors of a building calculated with the external dimensions of the enclosing fixed walls of the building including structures, partitions, corridors, stairs, and conditioned below-grade spaces. Note: All parking areas (enclosed and non-enclosed) should be excluded; atrium should only include the base floor area that it occupies. [square feet]",GrossFloorArea,,,double,1
+,Net Floor Area,"Gross floor area of a building, excluding the area occupied by walls and partitions, the circulation area (where people walk), and the mechanical area (where there is mechanical equipment)  i.e. gross floor area reduced by the area for structural components. [square feet]",NetFloorArea,,,double,2
+,Rentable Floor Area,Floor area that is being rented or is for rent. [square feet],RentableFloorArea,,,double,2
+,Occupied Floor Area,Floor area that is currently occupied or assigned. [square feet],OccupiedFloorArea,,,double,2
+,Lighted Floor Area,Floor area of all spaces that are lit artificially. [square feet],LightedFloorArea,,,double,2
+,Heated Floor Area,Floor area of all heated spaces in the activity area. [square feet],HeatedFloorArea,,,double,2
+,Cooled Floor Area,Floor area of all spaces that are cooled. [square feet],CooledFloorArea,,,double,2
+,Unconditioned Floor Area,Floor area of a building that is neither heated nor cooled. [square feet],UnconditionedFloorArea,,,double,2
+,Volume,Volume of a building measured by its external dimensions. [cubic feet],Volume,,,double,2
+,Conditioned Building Volume,Heated or cooled air volume of a building. [cubic feet],ConditionedBuildingVolume,,,double,2
+,Aspect Ratio,The ratio of the facility's width to its length.,AspectRatio,,,double,2
+,Number Of Floors,Number of floors in the facility or actvity area.,NumberOfFloors,,,int,2
+,Floors Above Ground,Number of floors which are above ground.,FloorsAboveGround,,,int,2
+,Floors Below Ground,Number of floors which are underground pertaining to the activity area.,FloorsBelowGround,,,int,2
+,Number Of Occupants,Number of occupants in the facility or activity area.,NumberOfOccupants,,,int,2
+,Building Certification Type,"Building energy labeling, rating, or sustainability certification obtained. (Multiple instances of this field)",BuildingCertificationTypeEnum,,ASHRAE Building EQ; CMP Green Value Score; EPA ENERGY STAR Rating; EPA ENERGY STAR Label; Green Globes Rating; USGBC LEED Certification for New Construction & Major Renovation (NC); USGBC LEED Certification for Core & Shell Development (CS); USGBC LEED Certification for Commercial Interiors (CI); USGBC LEED Certification For Existing Buildings: Operations & Management (EBOM); USGBC LEED Certification for Retail; USGBC LEED Certification for Schools; USGBC LEED Certification for Healthcare; USGBC LEED Certification Neighborhood Development (ND); USGBC LEED Certification for Homes; Certified; Not Certified; Unknown,ENUM,1
+,Building Certification Value,"Value specifying building certification, e.g. score or level. (Multiple instances of this field)",BuildingCertificationValue,,,string,1
+,Certification Year,Year the facility earned certification. (Multiple instances of this field),CertificationYear,,,int,1
+,Year Of Last Remodel,Year of the most recent remodel.,YearOfLastRemodel,,,int,2
+,Number Of Activity Areas,"Number of separate activity areas (one or more) for this facility, as recorded in this dataset.",NumberOfActivityAreas,,,int,2
+,Facility Number,Number for the specific facility (out of total for site).,FacilityNumber,,,string,3
+,NAICS Code,North American Industry Classification System code.,NAICSCode,,,string,3
+,Ownership Status,"The relationship of a housing unit's occupants to the structure itself, not the land on which the structure is located.",OwnershipStatusEnum,,Own or Buying; Renting; Occupying without payment of rent; Other Or Combination; Unknown,ENUM,3
+,Facility Tax Floor Area,The floor area for the facility as defined by the tax records. [square feet],FacilityTaxFloorArea,,,double,3
+,Enclosed Floor Area,Floor area of all spaces enclosed by walls. [square feet],EnclosedFloorArea,,,double,3
+,Conditioned Floor Area,Floor area of all spaces that are either heated or cooled. [square feet],ConditionedFloorArea,,,double,3
+,Semi-conditioned Floor Area,Partially heated or air-conditioned floor area of a building. [sq. ft.],SemiConditionedFloorArea,,,double,3
+,Heated Only Floor Area,Floor area of all spaces that are only heated. [square feet],HeatedOnlyFloorArea,,,double,3
+,Cooled Only Floor Area,Floor area of all spaces that are only cooled. [square feet],CooledOnlyFloorArea,,,double,3
+,Heated And Cooled Floor Area,Floor area of all spaces that are both heated and cooled.,HeatedAndCooledFloorArea,,,double,3
+,Non-Enclosed Floor Area (w/roof),Floor area of all spaces that are not enclosed by walls but do have a roof. [square feet],NonEnclosedFloorAreaWithRoof,,,double,3
+,Open Floor Area (w/o roof),Floor area of all spaces that are not enclosed by walls and do not have roofs. [square feet],OpenFloorAreaWithoutRoof,,,double,3
+,Basement Floor Area,Basement refers to an enclosed space under all or part of the building in which a person can walk upright.,BasementFloorArea,,,double,3
+,Facility Height,Height of the facility. [feet],FacilityHeight,,,double,3
+,Floor-to-Floor Height,"Average height of the floor(s), measured from floor to floor/ceiling. [feet]",FloortoFloorHeight,,,double,3
+,Number Of Conditioned Floors,Number of conditioned floors above ground.,NumberOfConditionedFloors,,,int,3
+,Number Of Conditioned Floors Above Ground,Number of floors that are conditioned and are above ground.,NumberOfConditionedFloorsAboveGround,,,int,3
+,Numbers Of Conditioned Floors Below Ground,Number of floors that are conditioned and are below ground.,NumbersOfConditionedFloorsBelowGround,,,int,3
+,Facility ID,The unique facility identifier.,FacilityID,,,string,4
+,Facility Name,Name of the facility.,FacilityName,,,string,4
+,Address Field 1,Street Address or other address field.,AddressField1,,,string,4
+,Address Field 2,Street Address or other address field.,AddressField2,,,string,4
+,Owner Name,Owner of the facility.,OwnerName,,,string,4
+,Facility Contact,Primary contact for the facility.,FacilityContact,,,string,4
+,Building Operator,"Name of building operator, if applicable.",BuildingOperator,,,string,4
+,Building Operator Certification,Certification of building operator.,BuildingOperatorCertificationEnum,,BOC; BPI; Other; Unknown,ENUM,4
+,Building Operator Certification Number,Building operator's certification or license number.,BuildingOperatorCertificationNumber,,,string,4
+,Building Operator Certification State,Building operator's certification or license state.,BuildingOperatorCertificationState,,,string,4
+,Owner Care-Of Name,Owner care-of contact for the facility.,OwnerCareOfName,,,string,4
+,Owner Address 1,Street Address or other address field.,AddressOwnerField1,,,string,4
+,Owner Address 2,Street Address or other address field.,AddressOwnerField2,,,string,4
+,Owner City,The city in which the site is located.,City,,,string,1
+,Owner State,The state in which the site is located.,StateEnum,,DC; AS; GU; CM; PR; VI; PTR; AL; AK; AZ; AR; CA; CO; CT; DE; FL; GA; HI; ID; IL; IN; IA; KS; KY; LA; ME; MD; MA; MI; MN; MS; MO; MT; NE; NV; NH; NJ; NM; NY; NC; ND; OH; OK; OR; PA; RI; SC; SD; TN; TX; UT; VT; VA; WA; WV; WI; WY,ENUM,1
+,Owner Postal Code,The postal code in which the site is located.,PostalCode,,,string,1
+,Owner Phone Number,Phone number of the commercial facility owner.,OwnerPhoneNumber,,,string,4
+,Property Management Company,Company name managing the property.,PropertyManagementCompany,,,string,4
+,Property Management Address,Address of the property management company.,PropertyManagementAddress,,,string,4
+,Property Management Contact,Name of primary contact for the property management company.,PropertyManagementContact,,,string,4
+,Property Management Phone,Phone number of property management company.,PropertyManagementPhone,,,string,4
+,Property Management E-Mail Address,E-mail address for property management company.,PropertyManagementEMailAddress,,,string,4
+,Agency,"Federal agency, required to designate a facility as a federal property in Portfolio Manager.",Agency,,,string,4
+,Department Or Region,"Federal department/region, required to designate a facility as a federal property in Portfolio Manager.",DepartmentOrRegion,,,string,4
+,PM Unique Building Identifier,Portfolio Manager Building identifier,PMUniqueBuildingIdentifier,,,string,4
+,Year PM Benchmarked,Full year prior to Audit that the building was benchmarked in Portfolio Manager. [year],YearPMBenchmarked,,,int,4
+,Federal Real Property ID,"Federal real property ID, required to designate a facility as a federal property in Portfolio Manager.",FederalRealPropertyID,,,string,4
+,Administrator,Designates this Portfolio Manager account as administrator over other customer accounts.,Administrator,,,boolean,4
+,Shared By,Designates the original Portfolio Manager account who has shared this facility data.,SharedBy,,,string,4
+,PM Last Modified Date,Last date of Portfolio Manager data entry.,PMLastModifiedDate,,,date,4
+,Eligibility For ENERGYSTAR,Indicator signifying whether or not a facility is eligible for the ENERGY STAR Label.,EligibilityForENERGYSTAR,,,boolean,4
+,ENERGYSTAR ApplicationStatus,Status of Statement of Energy Perfromance (SEP) and ENERGY STAR application.,ENERGYSTARApplicationStatusEnum,,Application  has not yet been started; No SEP has been generated; SEP has been generated; SEP Expired; Application Submitted to EPA; Pending EPA receipt; Pending EPA decicion; Application on hold; Application Approved; Application expired,ENUM,4
+,Space Use Alerts,Portfolio Manger alerting that space types within the same facility are incompatible.,SpaceUseAlerts,,,string,4
+,Year Or YearsLabeled,The year or years in which the facility was ENERGY STAR Labeled.,YearOrYearsLabeled,,,int,4
+,Approval Date _ LastENERGYSTAR,The period ending date associated with last (i.e. most recent) ENERGY STAR Label received.,ApprovalDateLastENERGYSTAR,,,date,4
+,Baseline Rating,"A facility's baseline estimated energy use rating, as calculated by Portfolio Manager.",BaselineRating,,,int,4
+,Target Rating,ENERGY STAR target rating selected by Portfolio Manager user.,TargetRating,,,int,4
+,Building Profile Status,The status of the building profile submission process for Portfolio Manager.,BuildingProfileStatusEnum,,Draft; Received; Under Review; On Hold; Reviewed and Approved; Reviewed and Not Approved,ENUM,4
+,Federal Sustainability Checklist Completion Percentage,Percentage of the Federal High Performance Sustainability Checklist that has been completed for federal building in Portfolio Manager. ,FederalSustainabilityChecklistCompletionPercentage,,,double,4
+,Notes,Facility level details about the building in Portfolio Manager.,Notes,,,string,4
+,Service And Product Provider,The ABS Service and Product Provider associated with this Portfolio Manager Facility.,ServiceAndProductProvider,,,string,4
+,Activity Area,,ActivityArea,,,Entity,5
+,Air Distribution,,AirDistribution,,,Entity,5
+,Conveyance,,Conveyance,,,Entity,5
+,Cooking,,Cooking,,,Entity,5
+,Cooling,,Cooling,,,Entity,5
+,Dishwasher,,Dishwasher,,,Entity,5
+,Energy Storage,,EnergyStorage,,,Entity,5
+,Energy Use,,EnergyUse,,,Entity,5
+,Fenestration,,Fenestration,,,Entity,5
+,Foundation,,Foundation,,,Entity,5
+,General Controls And Operations,,GeneralControlsAndOperations,,,Entity,5
+,Heating,,Heating,,,Entity,5
+,IT System,,ITSystem,,,Entity,5
+,Laundry,,Laundry,,,Entity,5
+,Lighting,,Lighting,,,Entity,5
+,Measures,,Measures,,,Entity,5
+,On Site Generation,,OnSiteGeneration,,,Entity,5
+,Other HVAC,,OtherHVAC,,,Entity,5
+,Pool,,Pool,,,Entity,5
+,Process Load,,ProcessLoad,,,Entity,5
+,Refrigeration,,Refrigeration,,,Entity,5
+,Roof Or Ceiling,,RoofOrCeiling,,,Entity,5
+,Service Hot Water,,ServiceHotWater,,,Entity,5
+,Wall,,Wall,,,Entity,5
+,Zonal Cooling,,ZonalCooling,,,Entity,5
+,Zonal Heating,,ZonalHeating,,,Entity,5
+,Primary Facility Type,Primary use type in at least half of the building floor area.,PrimaryFacilityTypeEnum,,Vacant; Commercial - Uncategorized; Office - Uncategorized; Office  - Administrative or Professional; Office - Bank or other financial; Office - Government; Office - Medical non diagnostic; Office - Mixed use; Office - Other; Laboratory; Warehouse - Uncategorized; Warehouse - Refrigerated; Warehouse - Non-refrigerated; Warehouse - Distribution or Shipping center; Warehouse - Self-storage; Food Sales; Convenience store; Convenience store with gas station; Grocery store or food market; Public Safety - Uncategorized; Public Safety - Courthouse; Public Safety - Fire or police station; Public Safety - Jailhouse; Public Safety - Penitentiary; Health Care - Uncategorized; Health Care - Outpatient Uncategorized; Health Care - Outpatient Diagnostic; Health Care - Outpatient Clinic; Health Care - Inpatient; Religious worship; Public Assembly - Uncategorized; Public Assembly - Entertainment/culture; Public Assembly - Movie Theater; Public Assembly - Drama theater; Public Assembly - Large Hall; Public Assembly - Library; Public Assembly - Recreation; Public Assembly - Arena; Public Assembly - Stadium; Public Assembly - Social/meeting; Public Assembly - Funeral home; Public Assembly - Pool; Public Assembly - Other; Education - Uncategorized; Education - College or university; Education - Elementary or middle school; Education - High school; Education - Preschool or daycare; Education - Other classroom; Food Service - Uncategorized; Food Service - Fast food; Food Service  - Restaurant or cafeteria; Food Service - Bakery; Food Service  - Other; Nursing Home; Lodging - Uncategorized; Lodging - Dormitory or fraternity/sorority; Lodging -  Hotel; Lodging - Motel or inn; Lodging - Other; Retail - Uncategorized; Retail - Strip shopping mall; Retail - Enclosed mall; Retail - Other than mall; Retail - Small Box (< 50K sf); Retail - Big Box (> 50K sf); Retail - Vehicle dealership/showroom; Service - Uncategorized; Service -  Post office or postal center; Service -  Repair shop; Service - Vehicle service/repair shop; Service - Vehicle storage; Service  - Industrial shop; Service - Dry-cleaning or Laundry; Service - Art/Video/Photography Studio; Service - Other service; Parking Garage; Transportation Terminal; Industrial; Agricultural; Data Center; Residential; Other,ENUM,1
+,Complete Total Energy,"True if facility record includes all energy types used at the facility, false otherwise. E.g. field is false if natural gas is missing.",CompleteTotalEnergy,,,boolean,1
+ActivityArea,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Activity Type,A space or area within a building designated for a particular activity,ActivityTypeEnum,,Vacant; Commercial - Uncategorized; Office - Uncategorized; Office  - Administrative or Professional; Office - Bank or other financial; Office - Government; Office - Medical non diagnostic; Office - Mixed use; Office - Other; Laboratory; Warehouse - Uncategorized; Warehouse - Refrigerated; Warehouse - Non-refrigerated; Warehouse - Distribution or Shipping center; Warehouse - Self-storage; Food Sales; Convenience store; Convenience store with gas station; Grocery store or food market; Public Safety - Uncategorized; Public Safety - Courthouse; Public Safety - Fire or police station; Public Safety - Jailhouse; Public Safety - Penitentiary; Health Care - Uncategorized; Health Care - Outpatient Uncategorized; Health Care - Outpatient Diagnostic; Health Care - Outpatient Clinic; Health Care - Inpatient; Religious worship; Public Assembly - Uncategorized; Public Assembly - Entertainment/culture; Public Assembly - Movie Theater; Public Assembly - Drama theater; Public Assembly - Large Hall; Public Assembly - Library; Public Assembly - Recreation; Public Assembly - Arena; Public Assembly - Stadium; Public Assembly - Social/meeting; Public Assembly - Funeral home; Public Assembly - Pool; Public Assembly - Other; Education - Uncategorized; Education - College or university; Education - Elementary or middle school; Education - High school; Education - Preschool or daycare; Education - Other classroom; Food Service - Uncategorized; Food Service - Fast food; Food Service  - Restaurant or cafeteria; Food Service - Bakery; Food Service  - Other; Nursing Home; Lodging - Uncategorized; Lodging - Dormitory or fraternity/sorority; Lodging -  Hotel; Lodging - Motel or inn; Lodging - Other; Retail - Uncategorized; Retail - Strip shopping mall; Retail - Enclosed mall; Retail - Other than mall; Retail - Small Box (< 50K sf); Retail - Big Box (> 50K sf); Retail - Vehicle dealership/showroom; Service - Uncategorized; Service -  Post office or postal center; Service -  Repair shop; Service - Vehicle service/repair shop; Service - Vehicle storage; Service  - Industrial shop; Service - Dry-cleaning or Laundry; Service - Art/Video/Photography Studio; Service - Other service; Parking Garage; Transportation Terminal; Industrial; Agricultural; Data Center; Residential; Other,ENUM,1
+,Gross Floor Area,"Total floor area of all floors of a building calculated with the external dimensions of the enclosing fixed walls of the building including structures, partitions, corridors, stairs, and conditioned below-grade spaces. Note: All parking areas (enclosed and non-enclosed) should be excluded; atrium should only include the base floor area that it occupies. [square feet]",GrossFloorArea,,,double,1
+,Heated Floor Area,Floor area of all heated spaces in the activity area. [square feet],HeatedFloorArea,,,double,2
+,Cooled Floor Area,Floor area of all spaces that are cooled. [square feet],CooledFloorArea,,,double,2
+,Number Of Floors,Number of floors in the facility or actvity area.,NumberOfFloors,,,int,2
+,Floors Above Ground,Number of floors which are above ground.,FloorsAboveGround,,,int,2
+,Floors Below Ground,Number of floors which are underground pertaining to the activity area.,FloorsBelowGround,,,int,2
+,Floor Height,Average height of the floor(s) pertaining to the activity area. [feet],FloorHeight,,,double,2
+,Number Of Units,"Number of individual units, such as retail units, in the activity area.",NumberOfUnits,,,int,2
+,Seating Capacity,"The number of people who can be seated in a specific space, either in terms of the physical space available, or in terms of limitations set by law.",SeatingCapacity,,,int,2
+,Number Of Occupants,Number of occupants in the facility or activity area.,NumberOfOccupants,,,int,2
+,Number Of Guest Rooms,Number of rooms allocated for guest use in the activity area. (Typically applicable to lodging).,NumberOfGuestRooms,,,int,2
+,Number Of Licensed Beds,The number of beds for which a facility holds a license to operate in the activity area. (Typically applicable to health care).,NumberOfLicensedBeds,,,int,2
+,Average Weekly Operating Hours,Average weekly operating hours.,AverageWeeklyOperatingHours,,,double,1
+,Average Weeks Per Year In Use,Average number of weeks per year that the facility or activity area is occupied.,AverageWeeksPerYearInUse,,,double,2
+,Activity Area Name,Name or identifying description of activity area.,ActivityAreaName,,,string,3
+,Metered Space,"True if activity area is individually metered, false otherwise.",MeteredSpace,,,boolean,3
+,Exterior Entrance To The Public,"True if facility has an exterior entrance for public use, false otherwise.",ExteriorEntranceToThePublic,,,boolean,3
+,Enclosed Floor Area,Floor area of all spaces enclosed by walls. [square feet],EnclosedFloorArea,,,double,3
+,Non-Enclosed Floor Area (w/roof),Floor area of all spaces that are not enclosed by walls but do have a roof. [square feet],NonEnclosedFloorAreaWithRoof,,,double,3
+,Open Floor Area (w/o roof),Floor area of all spaces that are not enclosed by walls and do not have roofs. [square feet],OpenFloorAreaWithoutRoof,,,double,3
+,Conditioned Floor Area,Floor area of all spaces that are either heated or cooled. [square feet],ConditionedFloorArea,,,double,3
+,Office Air-Conditioned,"True if office space is air-conditioned, false otherwise.",OfficeAirConditioned,,,boolean,3
+,Office Heated,"True if office space is heated, false otherwise.",OfficeHeated,,,boolean,3
+,Senior Care Facility Total Resident Capacity,Total resident capacity in senior care facility.,SeniorCareFacilityTotalResidentCapacity,,,int,3
+,Occupant Density,Number of occupants per 100 square feet.,OccupantDensity,,,double,3
+,Hours Per Day Guests On Site,Hours per day that guests are on site.,HoursPerDayGuestsOnSite,,Less than 15; Between 15 and 19; More than 20,ENUM,3
+,Number Of Months In Use,Number of months the building is in full operational mode.,NumberOfMonthsInUse,,,double,3
+,Average Occupancy Percentage,Percentage of occupancy. [%],AverageOccupancyPercentage,,,double,3
+,Room Density,"Number of rooms per 1,000 square feet.",RoomDensity,,,double,3
+,Number Of Businesses,Number of distinct businesses operating in the facility.,NumberOfBusinesses,,,int,3
+,Weekly Hours Of Parking Access,Number of hours parking is accessible in an average week.,WeeklyHoursOfParkingAccess,,,double,3
+,K - 12 School - Open Weekends,True if the school facility is open on weekends; false otherwise.,K12SchoolOpenWeekends,,,boolean,3
+,Floor Area Of Full-service Spas,Floor area of full-service spas. [square feet],FloorAreaOfFullServicesPas,,,double,3
+,Floor Area Of Gym/Fitness Center,Floor area of gym or fitness center. [square feet],FloorAreaOfGymOrFitnessCenter,,,double,3
+,Dorm Has Computer Lab,"True if dormitory includes a computer lab, false otherwise.",DormHasComputerLab,,,boolean,3
+,Hospital - Tertiary Care?,"True if tertiary care is offered at the hospital, false otherwise.",HospitalTertiaryCare,,,boolean,3
+,Connected Load,Connected load from activity area-specific equipment. [kW],,,,double,3
+Lighting,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Lighting Type,Type of artificial source of light.,LightingTypeEnum,,Incandescent; Fluorescent - Uncategorized; Fluorescent - T5; Fluorescent - T8; Fluorescent - Super T8; Fluorescent - T12; Compact Fluorescent; High intensity discharge (HID); Halogen; LED; Mercury Vapor; Sodium; Sodium - High Pressure; Sodium - Low Pressure; Metal Halide; Other Or Combination; Unknown,ENUM,1
+,Ballast Type,Type of ballast: a piece of equipment required to control the starting and operating voltages of electrical gas discharge lights.,BallastTypeEnum,,Electronic; Magnetic; Instant start; Rapid Start; Programmed Start; Other Or Combination; Unknown,ENUM,2
+,Lighting Control Type,Type of control used to manage lighting.,LightingControlTypeEnum,,Daylight Dimming; Occupancy Sensors; Vacancy Sensors; Manual Dimming; Bi-level Control; Timers; Manual; Advanced Controls; EMCS; Other Or Combination; Unknown,ENUM,1
+,Installed Power,Installed power for this system.,InstalledPower,,,double,2
+,Percentage Of Total Installed Power,Percent this system is of total installed power. [%],PercentageOfTotalInstalledPower,,,double,2
+,Percentage Of Total Floor Area Served,The percentage of facility square footage served by system. [%],PercentageOfTotalFloorAreaServed,,,double,2
+,Outside Lighting,"True if lighting system is primarily for outside lighting, false otherwise.",OutsideLighting,,,boolean,2
+,Lighting Efficacy,Luminous efficacy of lighting. [lm/W],LightingEfficacy,,,double,3
+,Specular Reflectors,"True if fixtures have specular reflectors, false otherwise.",SpecularReflectors,,,boolean,3
+,Percent Lit When Open,Percentage of square footage that is lit electrically during usual operating hours. [%],PercentLitWhenOpen,,,double,3
+,Percent Lit When Closed,The percentage of square footage that is lit electrically during all hours other than the usual operating hours. [%],PercentLitWhenClosed,,,double,3
+,Lighting Daily Hours,Average hours per day lights are on.,LightingDailyHoursEnum,,1 to 4 hours per day; 4 to 12 hours per day; More than 12 hours per day; All day; Unknown,ENUM,3
+AirDistribution,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Configuration,Basic configuration of air-distribution equipment.,ConfigurationEnum,,Packaged; Built-up; Split; Other; Unknown,ENUM,1
+,Flow Control,Type of air flow control.,FlowControlEnum,,Variable Volume; Constant Volume; Other; Unknown,ENUM,1
+,Duct Configuration,Configuration of ducts.,DuctConfigurationEnum,,Single; Dual; Three; Unitary; Other; Unknown,ENUM,1
+,Heating Source,Source of heating in air-distribution system.,HeatingSourceEnum,,Hydronic; Steam; Electric Resistance; Furnace; Gas; Other; Unknown,ENUM,1
+,Cooling Source,Source of cooling in air-distribution system.,CoolingSourceEnum,,Direct Expansion; Evaporative; Hydronic; Other; Unknown,ENUM,1
+,Preheat Source,Source of preheating in air-distribution system.,PreheatSourceEnum,,Hydronic; Furnace; Electric Resistance; Other; Unknown,ENUM,2
+,Humidification,Humidification type in air-distribution system.,HumidificationEnum,,Steam; Water Spray; Other; Unknown,ENUM,2
+,Dehumidification,Dehumidification type in air-distribution system.,DehumidificationEnum,,Desiccant Wheel; Liquid Desiccant; Other; Unknown,ENUM,2
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Size,System fan size. [cfm],SizeFlowRate,,,double,2
+,Power,Fan power. [kW],Power,,,double,2
+,Year Of Manufacture,Year system was manufactured.,YearOfManufacture,,,int,1
+,Primary Air System,True if the system is the primary air-distribution equipment for the building.,PrimaryAirSystem,,,boolean,2
+,Percent Of Total Installed Capacity,Percent this system is of total installed capacity. [%],PercentOfTotalInstalledCapacity,,,double,2
+,Percent Of Floor Area Served,The percentage of a facility�s square footage served by system. [%],PercentOfFloorAreaServed,,,double,2
+,Static Pressure Reset Control,"True if there is static pressure reset, false otherwise.",StaticPressureResetControl,,,boolean,2
+,Supply Air Temperature Reset Control,"True if there is supply air temperature reset, false otherwise.",SupplyAirTemperatureResetControl,,,boolean,2
+,Efficiency,Efficiency of system.,Efficiency,,,double,1
+,Efficiency Unit,Unit used to measure efficiency.,EfficiencyUnitsEnum,,COP; AFUE; %; W/cfm; EER; SEER; HSPF; kW/ton; Energy Factor; Other; Unknown,ENUM,1
+,Fan Motor Efficiency,Efficiency of the fan's motor.,FanMotorEfficiency,,,double,1
+,Economizer,Type of air economizer system in this air-distribution system.,EconomizerEnum,,Uncategorized; Dry-bulb - Uncategorized; Dry-Bulb - Fixed; dry-Bulb - Differential; Enthalpy - Uncategorized; Enthalpy - Fixed; Enthalpy - Differential; Demand Controlled Ventilation; Nonintegrated; None; Unknown,ENUM,1
+,Minimum Outside Air Percentage,Minimum outside air percentage allowed. [%],MinimumOutsideAirPercentage,,,double,2
+,Fan Control Type,Type of fan control.,FanControlTypeEnum,,Outlet Damper; Bypass Damper; Inlet Guide Vanes; VFD; Constant; Riding Fan Curve; Intermittent; Other/Combination; None; Unknown,ENUM,1
+,Heat Recovery Type,Type of heat recovery within the air distribution equipment.,HeatRecoveryTypeEnum,,Run-Around Coil; Thermal Wheel; Heat Pipe; Air-to-Air Heat Exchanger; Earth-to-Air Heat Exchanger; Earth-to-Water Heat Exchanger; Other; Unknown,ENUM,2
+,Heat Recovery Efficiency,Efficiency of heat recovery. [%],HeatRecoveryEfficiency,,,double,2
+,Duct Insulation,Overall rating of characteristic.,QualityEnum,,Excellent; Good; Average; Poor; Very Poor; None; Unknown,ENUM,1
+,Duct Sealing,Condition of duct sealing.,QualityOfDuctSealingEnum,,Excellent; Good; Average; Poor; Very Poor; None; Unknown,ENUM,2
+,Duct Location,Location of equipment or component.,LocationWithinBuildingEnum,,Indoors; Conditioned Space; Unconditioned Space; Outdoors; Closet; Garage; Attic; Basement or Crawlspace; Below Ground; Ground Level; Above Ground; Other; Unknown,ENUM,2
+,Duct Insulation R-Value,R-value of duct insulation.,DuctInsulationRValue,,,int,2
+,Static Pressure,The designed static pressure for the system. [Pa],StaticPressure,,,double,3
+,Zone Count,Number of zones  serviced by the conditioning system.,ZoneCount,,,int,3
+,Fan Placement,Placement of fan relative to the air stream.,FanPlacementEnum,,Series; Parallel; Draw Through; Blow Through; Other; Unknown,ENUM,3
+,Flow Configuration,Configuration of air flow.,FlowConfigurationEnum,,Stud; Furrdown; Upflow; Downflow; Horizontal; Other; Unknown,ENUM,3
+,Duct Type,Type of duct material.,DuctTypeEnum,,Flex - Uncategorized; Grey Flex; Mylor Flex; Duct Board; Sheet Metal; Galvanized; Flexible; Fiberboard; No Ducting; Other Or Combination; Unknown,ENUM,3
+,Bucket Type,Bucket type of air distribution equipment.,BucketTypeEnum,,Duct Board; Metal; Other Or Combination; Unknown,ENUM,3
+,Duct Pressure Test Leakage (cfm),Duct leakage found from pressure test. Reported in cubic feet per minute. [cfm],DuctPressureTestLeakage,,,double,3
+,Duct Pressure Test Leakage (Percentage),Duct leakage found from pressure test. Reported as a percentage. [%],DuctPressureTestLeakageAsPercentage,,,double,3
+,Air Distribution Equipment Type,Ventilation equipment utilized in the facility. Allow multi-select.,AirDistributionEquipmetTypeEnum,,Air Handler Units(AHU); Make Up Air Units (MAU); Energy/Heat Recovery Unit (ERV/HRV); Other; Unknown,ENUM,1
+,Ventilation Supply Locations,Location that ventilation equipment supplies. Allow multi-select.,VentilationSupplyLocationsEnum,,Corridors; Tenant Spaces; Common Area; Other,ENUM,3
+,Exhaust Ventilation Locations,Location where there is exhaust equipment.,ExhaustVentilationLocationsEnum,,Corridors; Bathrooms; Kitchens; Garage; Other,ENUM,3
+Heating,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Heating Type,Type of heating system. This generally refers to central heating equipment. Zonal heating is recorded in a separate data field. ,HeatingTypeEnum,,Furnace; Furnace - Condensing; Boiler - Uncategorized; Boiler - Hot Water; Boiler - Hot Water - Condensing; Boiler - Hot Water - Non-Condensing; Boiler - Steam; Boiler - Steam - Low-Pressure; Boiler - Steam - High-Pressure; Radiator; Central Heating; Heat Pump - Uncategorized; Heat Pump - Ground Source; Heat Pump - Air Source; Heat Pump - Water Loop; Geothermal Heat Pump; District Hot Water; District Steam; Solar Thermal; Induction Unit; Resistance Heating; PTAC; Perimeter Baseboard; Other Or Combination; Unknown; No Heating,ENUM,1
+,Burner Type,"Type of burner on boiler, if applicable.",BurnerTypeEnum,,Atmospheric; Power; Sealed Combustion; Sealed Combustion Condensing; Rotary Cup; Not Applicable; Other Or Combination; Unknown,ENUM,1
+,Burner Quantity,Number of total burners in this heating equipment.,BurnerQuantity,,,int,3
+,Burner Year of Manufacture,Year of manufacture of the burner(s) in the heating equipment.,BurnerYearofManufature,,,int,3
+,Fuel,Type of fuel consumed.,FuelEnum,,Electricity; Electricity (Renewable); Natural Gas; Natural Gas (Renewable); Fuel Oil; Fuel Oil No.1; Fuel Oil No.2; Fuel Oil No.4; Fuel Oil No.5 and No.6; District Steam; District hot water; District chilled water ; Solar hot water; Bottled gas (LPG or propane); Propane; Liquid Propane; Kerosene; Diesel; Coal; Coal (anthracite); Coal (bituminous); Coke; Wood; Other Or Combination,ENUM,1
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Capacity,System capacity.,Capacity,,,double,2
+,Capacity Unit,Measurement unit for the capacity of the system., CapacityUnitEnum,,Btu; kBtu; kBtu/hour; kW; tons; gallons,ENUM,2
+,Year Of Manufacture,Year system was manufactured.,YearOfManufacture,,,int,1
+,Primary Heating Equipment,True if the system is the primary heating equipment.,PrimaryHeatingEquipment,,,boolean,2
+,Efficiency,Efficiency of system.,Efficiency,,,double,1
+,Efficiency Unit,Unit used to measure efficiency.,EfficiencyUnitsEnum,,COP; AFUE; %; W/cfm; EER; SEER; HSPF; kW/ton; Energy Factor; Other; Unknown,ENUM,1
+,Percent Of Total Installed Capacity,Percent this system is of total installed capacity. [%],PercentOfTotalInstalledCapacity,,,double,2
+,Percent Of Floor Area Served,The percentage of a facility�s square footage served by system. [%],PercentOfFloorAreaServed,,,double,2
+,Hot Water Reset Control,Type of control on water reset.,ResetControlEnum,,Seasonal; None; Other; Unknown,ENUM,2
+,Control Type,Type of system operation control.,ControlTypeEnum,,Programmable Thermostat; Manual thermostat; Manual Analog Thermostat; Manual Digital Thermostat; Digital Thermostat; On/Off; Timer; Electro-Mechanical; Digital; EMCS; Always On; Other Or Combination; Unknown,ENUM,2
+,Distribution Type,Type of distribution. (Allow multi-select),DistributionTypeEnum,,Hot Water Pipes - Primary Distribution; Hot Water Pipes; One Pipe Steam - Primary Distribution; One Pipe Steam; Two Pipe Steam - Primary Distribution; Two Pipe Steam; Air - Primary Distribution; Air; Other - Primary Distribution; Other; Unknown,ENUM,3
+,Vacuum Return System,"True if there is a vacuum return system, false otherwise.",VacuumReturnSystem,,,boolean,3
+,Input Capacity,Input capacity of equipment. [kBtu/hour],InputCapacity,,,double,3
+,Output Capacity,Output capacity of equipment. [horsepower],OutputCapacity,,,double,3
+,Location,Location of equipment or component.,LocationWithinBuildingEnum,,Indoors; Conditioned Space; Unconditioned Space;  Outdoors; Closet; Garage; Attic; Basement or Crawlspace; Central Plant - On Site; Central Plant - Off Site; Below Ground; Ground Level; Above Ground; Other; Unknown,ENUM,2
+,Draft Type,Draft mechanism used for drawing air through the boiler. ,DraftTypeEnum,,Natural; Mechanical Forced; Mechanical Induced; Other; Unknown,ENUM,3
+,Zone Count,Number of zones  serviced by the conditioning system.,ZoneCount,,,int,3
+,Exclusive To This Facility,True if the asset is used exclusively for the present facility; false otherwise.,ExclusiveToThisFacility,,,boolean,3
+ZonalHeating,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Zonal Heating Type,Type of equipment used for heating at the zone.,ZonalHeatingTypeEnum,,PTAC; Radiator; Air Handler; Induction Units; VAV Reheat Boxes; CAV Reheat Boxes; Fan Coil Unit; Fan Coil-2 Pipe; Fan Coil-3 Pipe; Fan Coil-4 Pipe; Perimeter Baseboard; Radiant Floor or Ceiling; Low Pressure Under Floor; Pipeless Furnace; Portable Heater; Fireplace; Cookstove; Heating Stove; Built-in Heater; Individual Space Heater; Heat Pump - Uncategorized; Heat Pump - Ground Source; Heat Pump - Air Source; Heat Pump - Water Source; Heat Pump - Packaged Terminal (PTHP); Resistance Heating; Other Or Combination; Unknown,ENUM,1
+,Control Type,Type of system operation control.,ControlTypeEnum,,Programmable Thermostat; Manual thermostat; Manual Analog Thermostat; Manual Digital Thermostat; Digital Thermostat; On/Off; Timer; Electro-Mechanical; Digital; EMCS; Always On; Other Or Combination; Unknown,ENUM,2
+,Fuel,Type of fuel consumed.,FuelEnum,,Electricity; Electricity (Renewable); Natural Gas; Natural Gas (Renewable); Fuel Oil; Fuel Oil No.1; Fuel Oil No.2; Fuel Oil No.4; Fuel Oil No.5 and No.6; District Steam; District hot water; District chilled water ; Solar hot water; Bottled gas (LPG or propane); Propane; Liquid Propane; Kerosene; Diesel; Coal; Coal (anthracite); Coal (bituminous); Coke; Wood; Other Or Combination,ENUM,1
+,Year Of Manufacture,Year system was manufactured.,YearOfManufacture,,,int,1
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Percent Of Total Installed Capacity,Percent this system is of total installed capacity. [%],PercentOfTotalInstalledCapacity,,,double,2
+,Percent Of Floor Area Served,The percentage of a facility�s square footage served by system. [%],PercentOfFloorAreaServed,,,double,2
+,Input Capacity,Input capacity of equipment. [kBtu/hour],InputCapacity,,,double,3
+,Output Capacity,Output capacity of equipment. [horsepower],OutputCapacity,,,double,3
+,Efficiency,Efficiency of system.,Efficiency,,,double,1
+,Efficiency Unit,Unit used to measure efficiency.,EfficiencyUnitsEnum,,COP; AFUE; %; W/cfm; EER; SEER; HSPF; kW/ton; Energy Factor; Other; Unknown,ENUM,1
+Cooling,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Cooling Type,Type of cooling equipment. This generally refers to central cooling equipment. Zonal cooling is recorded in a separate data field. Use of fans or blowers by themselves without chilled air or water is not included in this definition of air conditioning.,CoolingTypeEnum,,Central Air Conditioning; Split AC System; Heat Pump - Uncategorized; Heat Pump - Ground Source; Heat Pump - Air Source; Heat Pump - Water Loop; Heat Pump - Geothermal; District Chilled Water; Chiller - Uncategorized; Chiller - Absorption; Chiller - High Pressure Absorption; Chiller - Low Pressure Absorption; Chiller - Turbine Driven; Chiller - Engine Driven; Chiller - Modular; Evaporative Cooler; Cooling Tower - Uncategorized; Cooling Tower - Open; Cooling Tower - Closed; Condenser; PTAC; Packaged Direct Expansion; No cooling; Other Or Combination; Unknown,ENUM,1
+,Chiller Compressor Type,"Type of compressor in the chiller, if applicable.",ChillerCompressorTypeEnum,,Reciprocating; Screw; Scroll; Centrifugal; Other; Unknown,ENUM,2
+,Chiller Cooling Type,"Chiller cooling type, if applicable.",ChillerCoolingTypeEnum,,Air cooled; Water cooled; Other; Unknown,ENUM,2
+,Fuel,Type of fuel consumed.,FuelEnum,,Electricity; Electricity (Renewable); Natural Gas; Natural Gas (Renewable); Fuel Oil; Fuel Oil No.1; Fuel Oil No.2; Fuel Oil No.4; Fuel Oil No.5 and No.6; District Steam; District hot water; District chilled water ; Solar hot water; Bottled gas (LPG or propane); Propane; Liquid Propane; Kerosene; Diesel; Coal; Coal (anthracite); Coal (bituminous); Coke; Wood; Other Or Combination,ENUM,1
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Capacity,System capacity.,Capacity,,,double,2
+,Capacity Unit,Measurement unit for the capacity of the system., CapacityUnitEnum,,Btu; kBtu; kBtu/hour; kW; tons; gallons,ENUM,2
+,Efficiency,Efficiency of system.,Efficiency,,,double,1
+,Efficiency Unit,Unit used to measure efficiency.,EfficiencyUnitsEnum,,COP; AFUE; %; W/cfm; EER; SEER; HSPF; kW/ton; Energy Factor; Other; Unknown,ENUM,1
+,Year Of Manufacture,Year system was manufactured.,YearOfManufacture,,,int,1
+,Primary Cooling Equipment,True if the system is the primary cooling equipment for the building.,PrimaryCoolingEquipment,,,boolean,2
+,ENERGYSTAR,True if equipment is Energy Star rated.,ENERGYSTAR,,,boolean,2
+,Percent Of Total Installed Capacity,Percent this system is of total installed capacity. [%],PercentOfTotalInstalledCapacity,,,double,2
+,Percent Of Floor Area Served,The percentage of a facility�s square footage served by system. [%],PercentOfFloorAreaServed,,,double,2
+,Chilled Water Reset Control,Type of control on water reset.,ResetControlEnum,,Seasonal; None; Other; Unknown,ENUM,2
+,Cooling Tower Control Type,Type of cooling tower operation control.,CoolingTowerControlTypeEnum,,Wet Bulb Reset; Max Cells; Min Cells; Other; Unknown,ENUM,2
+,Control Type,Type of system operation control.,ControlTypeEnum,,Programmable Thermostat; Manual thermostat; Manual Analog Thermostat; Manual Digital Thermostat; Digital Thermostat; On/Off; Timer; Electro-Mechanical; Digital; EMCS; Always On; Other Or Combination; Unknown,ENUM,2
+,Water-side Economizer,"True if there is a waterside economizer in use, false otherwise.",WatersideEconomizer,,,boolean,3
+,Location,Location of equipment or component.,LocationWithinBuildingEnum,,Indoors; Conditioned Space; Unconditioned Space;  Outdoors; Closet; Garage; Attic; Basement or Crawlspace; Central Plant - On Site; Central Plant - Off Site; Below Ground; Ground Level; Above Ground; Other; Unknown,ENUM,2
+,Zone Count,Number of zones  serviced by the conditioning system.,ZoneCount,,,int,3
+,Cooling Equipment Redundancy,True if there is backup cooling equipment. False otherwise.,CoolingEquipmentRedundancy,,,boolean,3
+,Primary,True if the system is the primary cooling equipment for the building.,Primary,,,boolean,2
+ZonalCooling,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Zonal Cooling Type,Type of equipment used for cooling at the zone.,ZonalCoolingTypeEnum,,Air Handler; Dual Duct; Constant Volume; Constant Volume Reheat; Variable Volume Reheat ; Variable Air Volume (VAV); Heat Pump - Water Source; Radiant Ceiling; Chilled Beam; Fan Coil-2 Pipe; Fan Coil-3 Pipe; Fan Coil-4 Pipe; PTAC; Packaged Direct Expansion; Room Air Conditioner; Room Air Conditioner - Through the wall (Sleeve); Room Air Conditioner - Window AC; Low Pressure Under Floor; Split AC System; Split AC System - Mini-split; Split AC System - Direct Expansion; Heat Pump; Other Or Combination; Unknown,ENUM,1
+,Year Of Manufacture,Year system was manufactured.,YearOfManufacture,,,int,1
+,Control Type,Type of system operation control.,ControlTypeEnum,,Programmable Thermostat; Manual thermostat; Manual Analog Thermostat; Manual Digital Thermostat; Digital Thermostat; On/Off; Timer; Electro-Mechanical; Digital; EMCS; Always On; Other Or Combination; Unknown,ENUM,2
+,Fuel,Type of fuel consumed.,FuelEnum,,Electricity; Electricity (Renewable); Natural Gas; Natural Gas (Renewable); Fuel Oil; Fuel Oil No.1; Fuel Oil No.2; Fuel Oil No.4; Fuel Oil No.5 and No.6; District Steam; District hot water; District chilled water ; Solar hot water; Bottled gas (LPG or propane); Propane; Liquid Propane; Kerosene; Diesel; Coal; Coal (anthracite); Coal (bituminous); Coke; Wood; Other Or Combination,ENUM,1
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Percent Of Total Installed Capacity,Percent this system is of total installed capacity. [%],PercentOfTotalInstalledCapacity,,,double,2
+,Percent Of Floor Area Served,The percentage of a facility�s square footage served by system. [%],PercentOfFloorAreaServed,,,double,2
+,Capacity,System capacity. [Btu/hr],Capacity,,,double,2
+,Capacity Unit,Capacity of the system.,CapacityUnitsEnum,,Btu; tons,ENUM,2
+,Size Range,"Size of air distribution equipment, in a range.",SizeRangeEnum,,5000 - 10000 cfm; 10000 - 20000 cfm; Greater than  20000 cfm; Unknown,ENUM,3
+,Downstream Distribution,"True if zonal cooling equipment has downstream distribution, false otherwise.",DownstreamDistribution,,,boolean,3
+,Average Operating Hours,Hours system is on during an average day in the cooling season.,AverageOperatingHours,,,double,3
+,Number Of Months In Operation,Number of months room air conditioner is on during an average cooling season.,NumberOfMonthsinOperation,,,double,3
+,Location,Location of equipment or component.,LocationWithinBuildingEnum,,Indoors; Conditioned Space; Unconditioned Space; Outdoors; Closet; Garage; Attic; Basement or Crawlspace; Below Ground; Ground Level; Above Ground; Other; Unknown,ENUM,3
+,Efficiency,Efficiency of system.,Efficiency,,,double,2
+,Efficiency Unit,Unit used to measure efficiency.,EfficiencyUnitsEnum,,COP; AFUE; %; W/cfm; EER; SEER; HSPF; kW/ton; Energy Factor; Other; Unknown,ENUM,2
+OtherHVAC,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Other HVAC Type,"Type of  heating, ventilation, and air-conditioning (HVAC) equipment that is not classified as heating, cooling, air-distribution, zonal heating, or zonal cooling.",OtherHVACTypeEnum,,Humidifier; Dehumidifier; Air Cleaner; Non-conditioning Fan; Mechanical Ventilator; Other Or Combination; Unknown,ENUM,1
+,Fuel,Type of fuel consumed.,FuelEnum,,Electricity; Electricity (Renewable); Natural Gas; Natural Gas (Renewable); Fuel Oil; Fuel Oil No.1; Fuel Oil No.2; Fuel Oil No.4; Fuel Oil No.5 and No.6; District Steam; District hot water; District chilled water ; Solar hot water; Bottled gas (LPG or propane); Propane; Liquid Propane; Kerosene; Diesel; Coal; Coal (anthracite); Coal (bituminous); Coke; Wood; Other Or Combination,ENUM,1
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Capacity,System capacity.,Capacity,,,double,2
+,Capacity Unit,Measurement unit for the capacity of the system., CapacityUnitEnum,,Btu; kBtu; kBtu/hour; kW; tons; gallons,ENUM,2
+,Year Of Manufacture,Year system was manufactured.,YearOfManufacture,,,int,1
+,Percent Of Total Installed Capacity,Percent this system is of total installed capacity. [%],PercentOfTotalInstalledCapacity,,,double,2
+,Percent Of Floor Area Served,The percentage of a facility�s square footage served by system. [%],PercentOfFloorAreaServed,,,double,2
+,Control Type,Type of system operation control.,ControlTypeEnum,,Programmable Thermostat; Manual thermostat; Manual Analog Thermostat; Manual Digital Thermostat; Digital Thermostat; On/Off; Timer; Electro-Mechanical; Digital; EMCS; Always On; Other Or Combination; Unknown,ENUM,2
+,Location,Location of equipment or component.,LocationWithinBuildingEnum,,Indoors; Conditioned Space; Unconditioned Space;  Outdoors; Closet; Garage; Attic; Basement or Crawlspace; Central Plant - On Site; Central Plant - Off Site; Below Ground; Ground Level; Above Ground; Other; Unknown,ENUM,2
+,Efficiency,Efficiency of system.,Efficiency,,,double,2
+,Efficiency Unit,Unit used to measure efficiency.,EfficiencyUnitsEnum,,COP; AFUE; %; W/cfm; EER; SEER; HSPF; kW/ton; Energy Factor; Other; Unknown,ENUM,2
+,Zone Count,Number of zones  serviced by the conditioning system.,ZoneCount,,,int,3
+ServiceHotWater,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Service Hot Water Type,Type of water heating equipment for hot running water.,ServiceHotWaterTypeEnum,,Outdoor; Storage Tank - Uncategorized; Storage Tank - Distributed; Storage Tank - Looped; Storage Tank - Point-Of Use; Storage Tank - Direct-fired; Unspecified; Instantaneous; Heat pump; Tankless; Heat Exchanger; From Space Heating Boiler; Other Or Combination; Unknown,ENUM,1
+,Fuel,Type of fuel consumed.,FuelEnum,,Electricity; Electricity (Renewable); Natural Gas; Natural Gas (Renewable); Fuel Oil; Fuel Oil No.1; Fuel Oil No.2; Fuel Oil No.4; Fuel Oil No.5 and No.6; District Steam; District hot water; District chilled water ; Solar hot water; Bottled gas (LPG or propane); Propane; Liquid Propane; Kerosene; Diesel; Coal; Coal (anthracite); Coal (bituminous); Coke; Wood; Other Or Combination,ENUM,1
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Size,System fan size. [cfm],SizeFlowRate,,,double,2
+,Capacity,System capacity.,Capacity,,,double,2
+,Capacity Unit,Measurement unit for the capacity of the system., CapacityUnitEnum,,Btu; kBtu; kBtu/hour; kW; tons; gallons,ENUM,2
+,Year Of Manufacture,Year system was manufactured.,YearOfManufacture,,,int,1
+,ENERGYSTAR,True if equipment is Energy Star rated.,ENERGYSTAR,,,boolean,2
+,Control Type,Type of system operation control.,ControlTypeEnum,,Programmable Thermostat; Manual thermostat; Manual Analog Thermostat; Manual Digital Thermostat; Digital Thermostat; On/Off; Timer; Electro-Mechanical; Digital; EMCS; Always On; Other Or Combination; Unknown,ENUM,2
+,Efficiency,Efficiency of system.,Efficiency,,,double,1
+,Efficiency Unit,Unit used to measure efficiency.,EfficiencyUnitsEnum,,COP; AFUE; %; W/cfm; EER; SEER; HSPF; kW/ton; Energy Factor; Other; Unknown,ENUM,1
+,Storage Tank Insulation R-Value,Insulation R-Value of hot water storage tank.,StorageTankInsulationRValue,,,int,2
+,Storage Tank Insulation Thickness,Insulation thickness of hot water storage tank. [inches],StorageTankInsulationThickness,,,double,1
+,Percent Of Total Installed Capacity,Percent this system is of total installed capacity. [%],PercentOfTotalInstalledCapacity,,,double,2
+,Venting Type,Venting type for service hot water equipment.,VentingTypeEnum,,Condensing; Near-Condensing; Forced Draft; Atmospheric; Other or Combination; Unknown,ENUM,3
+,Percent Of Floor Area Served,The percentage of a facility�s square footage served by system. [%],PercentOfFloorAreaServed,,,double,2
+,Location,Location of equipment or component.,LocationWithinBuildingEnum,,Indoors; Conditioned Space; Unconditioned Space;  Outdoors; Closet; Garage; Attic; Basement or Crawlspace; Central Plant - On Site; Central Plant - Off Site; Below Ground; Ground Level; Above Ground; Other; Unknown,ENUM,2
+,Setpoint Temp,Temperature setpoint of service hot water. [Degree F],SetpointTemp,,,double,3
+,Residential Temperature Setting,General temperature setting heat mode.,ResidentialTemperatureSettingEnum,,Low; Medium-Low; Medium; Medium-High; High; Unknown,ENUM,3
+GeneralControlsAndOperations,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Regular HVAC Maintenance,Level of routine inspection and service for HVAC equipment.,RegularHVACMaintenanceEnum,,None; Yes - unspecified; As Needed; Daily; Weekly; Bi-Weekly; Monthly; Semi-Quarterly; Quarterly; Semi-Annually; Annually; Unknown,ENUM,2
+,Programmable Thermostats Used,True of programmable thermostats are used to control HVAC equipment; false otherwise.,ProgrammableThermostatsUsed,,,boolean,2
+,Standard Thermostats,True if standard thermostats are used to control HVAC equipment; false otherwise.,StandardThermostats,,,boolean,2
+,Heat Lowered,Times programmable thermostat lowers the heat.,FrequencyEnum,,During the day; During sleeping and unoccupied hours; At night; Never Or Rarely; Other; Unknown,ENUM,2
+,AC Adjusted,Times programmable thermostat adjusts air conditioning.,FrequencyOfAcAdjustedEnum,,During the day; During sleeping and unoccupied hours; At night; Never Or Rarely; Other; Unknown,ENUM,2
+,Occupied Day Setting,Temperature set during the day when occupied. [Degrees F],OccupiedDaySetting,,,double,2
+,Unoccupied Day Setting,Temperature set during the day when unoccupied. [Degrees F],UnoccupiedDaySetting,,,double,2
+,Sleeping Hours Setting,Temperature set during sleeping hours. (Applies to residential facilities). [Degrees F],SleepingHoursSetting,,,double,2
+,Task Lighting In Use,True if task lighting is used.,TaskLightingInUse,,,boolean,3
+,Percent Controlled By EMCS,Percent of space controlled by EMCS as far as HVAC.,PercentControlledByEMCS,,,double,3
+,Primary HVAC Control Strategy,Primary HVAC equipment control strategy.,PrimaryHVACControlStrategyEnum,,Pneumatic; Electric; Other Or Combination; Unknown,ENUM,3
+,HVAC Systems Controlled By EMCS,HVAC systems that are controlled by an energy management and control system (EMCS). Allow multi-select.,HVACSystemsControlledByEMCSEnum,,Heating plant; Cooling Plant; Terminals; Other; Unknown,ENUM,3
+,Individual HVAC Control,Control type of individual HVAC equipment.,IndividualHVACControlEnum,,Temperature; Airflow Velocity; Airflow Direction; Other; Unknown,ENUM,3
+,Percent Of Rooms Controlled By Thermostatic Radiator Valves,Percent of rooms controlled by thermostatic radiator valves. [%],PercentOfRoomsControlledByThermostaticRadiatorValves,,,double,3
+,Percent Of Rooms Controlled By Electronic Zone Valves With Thermostats,Percent of rooms controlled by electronic zone valves with thermostats. [%],PercentOfRoomsControlledByElectronicZoneValvesWithThermostats,,,double,3
+,Percent Of Rooms Controlled By Temperature Sensors,Percent of rooms controlled by wireless temperature sensors. [%],PercentOfRoomsControlledByTemperatureSensors,,,double,3
+,Percent Of Rooms Controlled By Demand Control Ventilation,Percent of rooms controlled by demand control ventilation. [%],PercentOfRoomsControlledByDemandControlVentilation,,,double,3
+,Lighting Reduced During Off Hours,True if lighting load is reduced during off hours. False otherwise.,LightingReducedDuringOffHours,,,boolean,3
+,Percent Area Covered By Occupancy Sensors,Percent of area covered by lighting occupancy sensors. [%],PercentAreaCoveredByOccupancySensors,,,double,3
+,Percent Area Covered By Vacancy Sensors,Percent of area covered by lighting vacancy sensors. [%],PercentAreaCoveredByVacancySensors,,,double,3
+,Percent Area Covered By Photo Sensors,Percent of area covered by lighting photo sensors. [%],PercentAreaCoveredByPhotoSensors,,,double,3
+,Percent Area Covered By Timers,Percent of area covered by lighting timers. [%],PercentAreaCoveredByTimers,,,double,3
+,Percent Area Covered By Advanced Controls,Percent of area covered by advanced lighting controls. [%],PercentAreaCoveredByAdvancedControls,,,double,3
+,AC Replaced In Last 10 Years,True if air conditioning equipment or components have been replaced in the last ten years; false otherwise.,ACReplacedInLast10Years,,,boolean,3
+,Number of Coils Replaces,"If air conditioning was replaced in the last ten years, then the number of coils that were replaced.",NumberOfCoilsReplaces,,,,3
+,Number Of Air Handlers Replaced,"If air conditioning was replaced in the last ten years, then the number of air handlers that were replaced.",NumberOfAirHandlersReplaced,,,int,3
+,Number Of Guest Meals,Number of guest meals served per year.,NumberOfGuestMeals,,,int,3
+,Quantity Of Laundry,Quantity of laundry processed on-site annually,QuantityOfLaundry,,,int,3
+Wall,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Exterior Wall Type,Type of exterior wall construction material.,ExteriorWallTypeEnum,,Brick; Brick Cavity; Stone; Concrete - Uncategorized; Concrete - Panels; Concrete - Block ; Concrete Poured; Concrete Non-Load Bearing; Concrete Load Bearing; Concrete - Insulated Forms; Concrete - Aerated; Metal - Uncategorized; Metal Panels; Sheet Metal; Masonry; Frame Wall; Frame Wall and Masonry; Curtain Wall; Window Wall; Slab Edge; Continuous Angle; SIPS; EIFS and Masonry; EIFS; Wood Walls; Siding or Shingles; Other Or Combination; Unknown,ENUM,1
+,Exterior Wall Color,Color of exterior material.,ColorEnum,,White; Light; Medium; Med-Dark; Dark; Other Or Combination; Unknown,ENUM,1
+,Wall R-Value,The walls' resistance to heat flow.,WallRValue,,,int,2
+,Percentage Of Total Wall Area,Percentage of this exterior wall type relative to total wall area. [%],PercentageOfTotalWallArea,,,double,2
+,Wall Insulation Type,Type of insulation material.,InsulationTypeEnum,,Loose Fill; Batts; Spray-On; Rigid; EPS; Fiberglass; Rockwool; Insulsafe; Recycled Cotton; ISOCY; Icynene; Other Or Combination; None; Unknown,ENUM,1
+,Wall Insulation Thickness,Thickness of wall insulation. [inches],WallInsulationThickness,,,double,1
+,Basement Wall Insulation Thickness,Thickness of basement insulation. [inches],BasementWallInsulationThickness,,,double,2
+,Tightness,Overall rating of characteristic.,QualityEnum,,Excellent; Good; Average; Poor; Very Poor; None; Unknown,ENUM,1
+,Wall Area,Total exposed above-grade wall area. [square feet],WallArea,,,double,3
+RoofOrCeiling,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Roof Type,Type of roof construction material.,RoofTypeEnum,,Built-up; Shingles; Slate or tile shingles; Wood shingles/shakes/other wood; Asphalt/fiberglass/other shingles; Metal surfacing; Plastic/rubber/synthetic sheeting; Concrete; Cool Roof; Green Roof; Blue Roof; Other Or Combination; Unknown,ENUM,1
+,Roof Color,Color of exterior material.,ColorEnum,,White; Light; Medium; Med-Dark; Dark; Other Or Combination; Unknown,ENUM,1
+,Deck Type,Roof deck material type.,DeckTypeEnum,,Concrete; Metal; Wood; Other Or Combination; Unknown,ENUM,2
+,Roof R-Value,The roof's resistance to heat flow.,RoofRValue,,,int,2
+,Percentage Of Total Roof Area,"Percentage of area covered by this roof type, relative to the total roof area. [%]",PercentageOfTotalRoofArea,,,double,2
+,Roof Insulation Type,Type of insulation material.,InsulationTypeEnum,,Loose Fill; Batts; Spray-On; Rigid; EPS; Fiberglass; Rockwool; Insulsafe; Recycled Cotton; ISOCY; Icynene; Other Or Combination; None; Unknown,ENUM,1
+,Roof Insulation Thickness,Thickness of roof insulation. [inches],RoofInsulationThickness,,,double,1
+,Attic Access Location,Location of equipment or component.,LocationWithinBuildingEnum,,Conditioned Space; Unconditioned Space; Outdoors; Closet; Garage; Other; Unknown,ENUM,2
+,Attic/Ceiling Type,"Type of attic, or if there is no attic, type of ceiling.",AtticOrCeilingTypeEnum,,Unconditioned Attic; Conditioned Attic; Cathedral Ceiling; Other; Unknown,ENUM,2
+,Attic/Ceiling R-value,The attic/ceiling's resistance to heat flow.,AtticOrCeilingRvalue,,,int,2
+,Attic/Ceiling Insulation Thickness,Thickness of insulation in attic/ceiling. [inches],AtticOrCeilingInsulationThickness,,,double,1
+,Attic/Ceiling Insulation Type,Type of material used to insulate attic/ceiling.,InsulationTypeAtticCeilingEnum,,Loose Fill; Batts; Spray-On; Rigid; EPS; Fiberglass; Rockwool; Insulsafe; Recycled Cotton; ISOCY; Icynene; Other Or Combination; None; Unknown,ENUM,1
+,Radiant Barrier,"True if a radiant barrier is installed, false otherwise.",RadiantBarrier,,,boolean,1
+,Roof Slope,Categorization of roof slope.,RoofSlopeEnum,,Flat; Pitched; > 2:12; < 2:12; Other Or Combination; Unknown,ENUM,3
+,Roof Area,Surface area of roof. [square feet],RoofArea,,,double,3
+,Percent Of Roof Terraces,Percentage of roof made up of terraces. [%],PercentOfRoofTerraces,,,double,3
+,Terrace R-Value,The terrace's resistance to heat flow.,TerraceRValue,,,int,3
+,Attic Access Location,Location of equipment or component.,LocationWithinBuildingEnum,,Indoors; Conditioned Space; Unconditioned Space;  Outdoors; Closet; Garage; Attic; Basement or Crawlspace; Central Plant - On Site; Central Plant - Off Site; Other; Unknown,ENUM,2
+Fenestration,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Window Glass Type,Type of glass in windows.,WindowGlassTypeEnum,,Clear; Low-e; Tinted; Reflective; Tinted/Reflective; High Performance; Other Or Combination; Unknown,ENUM,1
+,Operable Windows,"True if windows are operable and can be used as ventilation, false otherwise.",OperableWindows,,,boolean,1
+,Windows Gas Filled,"True if windows are gas filled, false otherwise.",WindowsGasFilled,,,boolean,2
+,Window Glass Layers,Number of layers in window type.,WindowGlassLayersEnum,,Single-pane; Double-pane; Triple-pane; Multi-layered; Single-Paned with Storms; Other Or Combination; Unknown,ENUM,1
+,Window R-value,The windows' resistance to heat flow.,WindowRvalue,,,int,2
+,Solar Heat Gain Coefficient (SHGC),"SolarHeatGainCoefficient (SHGC) is the fraction of incident solar radiation admitted through a window, both directly transmitted and absorbed and subsequently released inward.",SolarHeatGainCoefficient,,,double,2
+,Window Visible Transmittance,Amount of visible light transmitted trough the window vs. full transmittance. [%],WindowVisibleTransmittance,,,double,2
+,Window To Wall Ratio,Ratio of total window area to total  wall area.,WindowToWallRatio,,,double,1
+,Window Frame Type,Type of window frame.,WindowFrameTypeEnum,,Aluminum - Uncategorized; Aluminum - No thermal break; Aluminum - Thermal break; Composite; Fiberglass; Steel; Vinyl; Wood; Other Or Combination; Unknown,ENUM,2
+,Exterior Shading Type,Any type of overhang or awning on the outside of the building designed to limit solar penetration.,ExteriorShadingTypeEnum,,Exterior Shades - Uncategorized; External Overhangs; Awnings; Solar Screens; Solar Film; None; Other Or Combination; Unknown,ENUM,1
+,Exterior Shading Orientation,Orientation of window exterior shading.,ExteriorShadingOrientationEnum,,North; North East; North West; South; South East; South West; East; West; Unknown,ENUM,2
+,Interior Shading Type,Type of interior shading.,InteriorShadingTypeEnum,,Blinds; Curtains; Shades; None; Other Or Combination; Unknown,ENUM,2
+,Skylights,"True if skylights are present, false otherwise.",Skylights,,,boolean,1
+,Windows Weather-Stripped,"True if windows are weather-stripped, false otherwise.",WindowsWeatherStripped,,,boolean,2
+,Exterior Door Type,Exterior entrance/exit doors type.,ExteriorDoorTypeEnum,,Solid Wood; Hollow Wood; Uninsulated Metal; Insulated Metal; Glass; Other Or Combination; Unknown,ENUM,2
+,Doors Weather-Stripped,True if exterior doors are weather-stripped.,DoorsWeatherStripped,,,boolean,2
+,Window Area,Total window area. [square feet],WindowArea,,,double,3
+,Ground Floor Only,"True if window type applies to only the ground floor, false otherwise.",GroundFloorOnly,,,boolean,3
+,Percent Vision Glazing,Percent of vision glazing of exposed wall area. Vision glazing is windows that provide a connection to the outdoors. [%],PercentVisionGlazing,,,double,3
+,Year Of Last Window Replacement,"Year of last window replacement, if known.",YearOfLastWindowReplacement,,,int,3
+,Percent Of Window Area Shaded,Percent of window area that is shaded at max shading by external shading. [%],PercentOfWindowAreaShaded,,,double,3
+,Percent Skylight Area,Percentage of roof area that is skylight(s). [%],PercentSkylightArea,,,double,3
+,Skylight SHGC,"SHGC is the fraction of incident solar radiation admitted through a window, both directly transmitted and absorbed and subsequently released inward.",SkylightSHGC,,,double,3
+,Skylight Visible Transmittance,Amount of visible light transmitted trough the window vs. full transmittance.,SkylightVisibleTransmittance,,,double,3
+,Number Of Exterior Doors,The number of doors that lead to the exterior.,NumberOfExteriorDoors,,,int,3
+Foundation,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Ground Coupling,The manner in which the building is connected to the ground.,GroundCouplingEnum,,Basement; Conditioned Basement; Unconditioned Basement; Half Conditioned Basement; Slab; Crawl Space; Unvented Crawlspace; Vented Crawlspace; Continuous Angle; Other Or Combination; Unknown,ENUM,1
+,Perimeter Insulated,"True if floor perimeter is insulated, false otherwise.",PerimeterInsulated,,,boolean,1
+,Floor Insulation Thickness,Thickness of insulation in floor. [inches],FloorInsulationThickness,,,double,1
+,Floor R-Value,The floor's resistance to heat flow.,FloorRValue,,,int,2
+,Floor Construction Type,Floor construction material type.,FloorConstructionTypeEnum,,Concrete; Light Weight Concrete & Steel; Wood; Other Or Combination; Unknown,ENUM,2
+,Carpet,"True if floors are carpeted, false otherwise.",Carpet,,,boolean,3
+,Plumbing Penetration Sealing,"True if plumbing penetration sites are sealed, false otherwise.",PlumbingPenetrationSealing,,,boolean,3
+ITSystem,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,IT System Type,Type of information/technology (IT) system.,ITSystemTypeEnum,,Personal Computer; Server; Printing; Cash Register; Audio; Display; Networking; Security; Set Top; Telephoning; Business Equipment; Power; Other Or Combination; Unknown,ENUM,2
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Electrical Plug Intensity,Plug load per square foot. [Watts/sq.ft.],ElectricalPlugIntensity,,,double,2
+,ENERGYSTAR,True if equipment is Energy Star rated.,ENERGYSTAR,,,boolean,2
+,UPS System Redundancy,True if there is a backup uninterruptable power supply (UPS). False otherwise.,UPSSystemRedundancy,,,boolean,3
+,Density,"Number of assets of this type per 1,000 square feet.",AssetDensity,,,double,3
+,Installed Power,Installed power for this system. [kW],InstalledPower,,,double,3
+ProcessLoad,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Process Load Type,Type of general miscellaneous equipment not categorized elsewhere.,ProcessLoadTypeEnum,,Medical Equipment; Laboratory Equipment; Machinery; Motor; Air Compressor; Fume Hood; Appliance; Gaming/Hobby/Leisure; Infrastructure; Electric Vehicle Charging; Other Or Combination; Unknown,ENUM,2
+,Fuel,Type of fuel consumed.,FuelEnum,,Electricity; Electricity (Renewable); Natural Gas; Natural Gas (Renewable); Fuel Oil; Fuel Oil No.1; Fuel Oil No.2; Fuel Oil No.4; Fuel Oil No.5 and No.6; District Steam; District hot water; District chilled water ; Solar hot water; Bottled gas (LPG or propane); Propane; Liquid Propane; Kerosene; Diesel; Coal; Coal (anthracite); Coal (bituminous); Coke; Wood; Other Or Combination,ENUM,1
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Installed Power,Installed power for this system.,InstalledPower,,,double,2
+,Efficiency,Efficiency of system.,Efficiency,,,double,1
+,Efficiency Unit,Unit used to measure efficiency.,EfficiencyUnitsEnum,,COP; AFUE; %; W/cfm; EER; SEER; HSPF; kW/ton; Energy Factor; Other; Unknown,ENUM,1
+,Capacity,System capacity.,Capacity,,,double,2
+,Capacity Unit,Measurement unit for the capacity of the system., CapacityUnitEnum,,Btu; kBtu; kBtu/hour; kW; tons; gallons,ENUM,2
+Cooking,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Cooking Type,"Type of cooking as an energy end use (does not include employee lounge areas that are equipped with microwaves, other food preparation equipment, and/or vending machines.)",CookingTypeEnum,,Residential Kitchen; Commercial - Uncategorized; Commercial - Fast Food Or Small; Restaurant; Commercial - Large Restaurant; Institutional - Uncategorized; Institutional - Cafeteria; Institutional - Snack Bar Or Small Kitchen; Other Or Combination; Unknown,ENUM,2
+,Fuel,Type of fuel consumed.,FuelEnum,,Electricity; Electricity (Renewable); Natural Gas; Natural Gas (Renewable); Fuel Oil; Fuel Oil No.1; Fuel Oil No.2; Fuel Oil No.4; Fuel Oil No.5 and No.6; District Steam; District hot water; District chilled water ; Solar hot water; Bottled gas (LPG or propane); Propane; Liquid Propane; Kerosene; Diesel; Coal; Coal (anthracite); Coal (bituminous); Coke; Wood; Other Or Combination,ENUM,1
+,Capacity,System capacity.,Capacity,,,double,2
+,Capacity Unit,Measurement unit for the capacity of the system., CapacityUnitEnum,,Btu; kBtu; kBtu/hour; kW; tons; gallons,ENUM,2
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+Refrigeration,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Refrigeration Type,Type of refrigeration equipment.,RefrigerationTypeEnum,,Refrigeration - Case; Refrigeration - Walk-in; Commercial - Uncategorized; Commercial Freezer - Uncategorized; Commercial Freezer- Walk-in; Commercial Freezer - Case; Commercial Refrigerator - Uncategorized; Commercial Refrigerator - Walk-in; Commercial Refrigerator - Open Case; Commercial Refrigerator - Closed Case; Residential - Uncategorized; Residential - Full-Sized One Door; Residential - Full-size Two Doors; Residential - Half or Quarter Size; Residential Freezer - Uncategorized; Residential Freezer - Manual Defrost; Residential Freezer - Frost Free; Refrigerated Vending Machine; Refrigerator - Uncategorized; Freezer - Uncategorized; Other Or Combination; Unknown,ENUM,2
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Size,System fan size. [cfm],SizeFlowRate,,,double,2
+,Year Of Manufacture,Year system was manufactured.,YearOfManufacture,,,int,1
+,ENERGYSTAR,True if equipment is Energy Star rated.,ENERGYSTAR,,,boolean,2
+,Doors,Door configuration of  the refrigerator/freezer unit.,DoorsEnum,,Side-by-side; Top and bottom; Other Or Combination; Unknown,ENUM,2
+,Density,"Number of assets of this type per 1,000 square feet.",AssetDensity,,,double,3
+Dishwasher,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Dishwasher Type,"Type of dishwasher: A free-standing, built-in, or portable appliance used for automatically cleaning dishware, utensils, and cutlery. ",DishwasherTypeEnum,,Residential - Uncategorized; Residential - Built-in under counter; Residential - Portable; Residential - Counter-top; Commercial - Uncategorized; Commercial - Under Counter; Commercial - Single Tank; Commercial - Conveyor; Other; Unknown,ENUM,2
+,Fuel,Type of fuel consumed.,FuelEnum,,Electricity; Electricity (Renewable); Natural Gas; Natural Gas (Renewable); Fuel Oil; Fuel Oil No.1; Fuel Oil No.2; Fuel Oil No.4; Fuel Oil No.5 and No.6; District Steam; District hot water; District chilled water ; Solar hot water; Bottled gas (LPG or propane); Propane; Liquid Propane; Kerosene; Diesel; Coal; Coal (anthracite); Coal (bituminous); Coke; Wood; Other Or Combination,ENUM,1
+,Year Of Manufacture,Year system was manufactured.,YearOfManufacture,,,int,1
+,ENERGYSTAR,True if equipment is Energy Star rated.,ENERGYSTAR,,,boolean,2
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Loads Per Week,Average number of loads of dishes washed per week.,LoadsPerWeek,,,double,3
+Laundry,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Laundry Type,Type of laundry system.,LaundryTypeEnum,,Washer - Uncategorized; Washer - Residential; Washer - Commercial; Dryer - Uncategorized; Dryer - Residential; Dryer - Commercial; All-in-One Combination Washer Dryer; Unitized/Stacked Washer & Dryer Pair; Onsite Laundry Facility; Other; Unknown,ENUM,2
+,Fuel,Type of fuel consumed.,FuelEnum,,Electricity; Electricity (Renewable); Natural Gas; Natural Gas (Renewable); Fuel Oil; Fuel Oil No.1; Fuel Oil No.2; Fuel Oil No.4; Fuel Oil No.5 and No.6; District Steam; District hot water; District chilled water ; Solar hot water; Bottled gas (LPG or propane); Propane; Liquid Propane; Kerosene; Diesel; Coal; Coal (anthracite); Coal (bituminous); Coke; Wood; Other Or Combination,ENUM,1
+,Year Of Manufacture,Year system was manufactured.,YearOfManufacture,,,int,1
+,ENERGYSTAR,True if equipment is Energy Star rated.,ENERGYSTAR,,,boolean,2
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+Conveyance,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Conveyance System Type,"Type of vertical or horizontal transportation equipment that moves people or goods between levels, floors, or sections.",ConveyanceSystemTypeEnum,,Escalator; Elevator; Moving Walkway; Other Or Combination; Unknown,ENUM,2
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Control Type,Type of system operation control.,ControlTypeEnum,,Programmable Thermostat; Manual thermostat; Manual Analog Thermostat; Manual Digital Thermostat; Digital Thermostat; On/Off; Timer; Electro-Mechanical; Digital; EMCS; Always On; Other Or Combination; Unknown,ENUM,2
+OnSiteGeneration,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,On-Site Generation Type,Type of on-site energy generation system.,OnSiteGenerationTypeEnum,,PV; Fuel Cell; Microturbine; Turbine; Cogeneration; Plasma Gasification; Generator - General; Solar Thermal; Geothermal; Biomass; Hydrothermal; Wind; Reciprocating Engine; Other Or Combination; Unknown,ENUM,2
+,Fuel Generated,Type of fuel consumed.,FuelEnum,,Electricity; Electricity (Renewable); Natural Gas; Natural Gas (Renewable); Fuel Oil; Fuel Oil No.1; Fuel Oil No.2; Fuel Oil No.4; Fuel Oil No.5 and No.6; District Steam; District hot water; District chilled water ; Solar hot water; Bottled gas (LPG or propane); Propane; Liquid Propane; Kerosene; Diesel; Coal; Coal (anthracite); Coal (bituminous); Coke; Wood; Other Or Combination,ENUM,1
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Capacity,System capacity.,Capacity,,,double,2
+,Capacity Unit,Measurement unit for the capacity of the system., CapacityUnitEnum,,Btu; kBtu; kBtu/hour; kW; tons; gallons,ENUM,2
+,Annual Operation Hours,Hours in operation per year. [hours/year],AnnualOperationHours,,,double,3
+,Year Of Manufacture,Year system was manufactured.,YearOfManufacture,,,int,3
+,Used for Demand Response,"True if the equipment is used to participate in demand response, false otherwise.",UsedForDemandResponse,,,boolean,3
+EnergyStorage,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Energy Storage Type,Type of equipment that has the ability to hold energy for later retrieval.,EnergyStorageTypeEnum,,Battery; Ice Storage; Chilled Water Storage; Other Or Combination; Unknown,ENUM,2
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Capacity,System capacity.,Capacity,,,double,2
+,Capacity Unit,Measurement unit for the capacity of the system., CapacityUnitEnum,,Btu; kBtu; kBtu/hour; kW; tons; gallons,ENUM,2
+,Location,Location of equipment or component.,LocationWithinBuildingEnum,,Indoors; Conditioned Space; Unconditioned Space;  Outdoors; Closet; Garage; Attic; Basement or Crawlspace; Below Ground; Ground Level; Above Ground; Other; Unknown,ENUM,3
+,Percent Of Total Installed Capacity,Percent this system is of total installed capacity. [%],PercentOfTotalInstalledCapacity,,,double,2
+,Percent Of Floor Area Served,The percentage of a facility�s square footage served by system. [%],PercentOfFloorAreaServed,,,double,2
+,Year Of Manufacture,Year system was manufactured.,YearOfManufacture,,,int,3
+,Fuel,Type of fuel stored.,FuelEnum,,Electricity; Electricity (Renewable); Natural Gas; Natural Gas (Renewable); Fuel Oil; Fuel Oil No.1; Fuel Oil No.2; Fuel Oil No.4; Fuel Oil No.5 and No.6; District Steam; District hot water; District chilled water ; Solar hot water; Bottled gas (LPG or propane); Propane; Liquid Propane; Kerosene; Diesel; Coal; Coal (anthracite); Coal (bituminous); Coke; Wood; Other Or Combination,ENUM,3
+Pool,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Pool Type,Type of pool or spa.,PoolTypeEnum,,Hot Tub or Spa; Pool - Uncategorized; Pool - Olympic; Pool - Recreational; Pool - Short Course; Other Or Combination; Unknown,ENUM,2
+,Quantity,Number of systems of this type.,Quantity,,,int,2
+,Heated,"True if fuel is used to heat the pool. False, otherwise.",Heated,,,boolean,2
+,Fuel,Type of fuel consumed.,FuelEnum,,Electricity; Electricity (Renewable); Natural Gas; Natural Gas (Renewable); Fuel Oil; Fuel Oil No.1; Fuel Oil No.2; Fuel Oil No.4; Fuel Oil No.5 and No.6; District Steam; District hot water; District chilled water ; Solar hot water; Bottled gas (LPG or propane); Propane; Liquid Propane; Kerosene; Diesel; Coal; Coal (anthracite); Coal (bituminous); Coke; Wood; Other Or Combination,ENUM,1
+,Pool Volume,Volume of the pool. [gallons],PoolVolume,,,double,2
+,Number Of Pool Pumps,Number of pool pumps used for the pool.,NumberOfPoolPumps,,,int,2
+,Control Type,Type of system operation control.,ControlTypeEnum,,Programmable Thermostat; Manual thermostat; Manual Analog Thermostat; Manual Digital Thermostat; Digital Thermostat; On/Off; Timer; Electro-Mechanical; Digital; EMCS; Always On; Other Or Combination; Unknown,ENUM,2
+,Indoor,True if the pool asset is indoors. False otherwise.,Indoor,,,boolean,3
+,Pool Area,Surface area of pool. [square feet],PoolArea,,,double,3
+Measures,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Measure List,"Energy efficiency measures, or other changes that affect the energy use of this facility. Measures may be multi-selected to indicate 'packages' of measures.",MeasureListEnum,,Commissioning or Retro-commissioning; Cleaning and/or Repair - Uncategorized; Training and/or Documentation - Uncategorized; Operating Protocols or Calibration and/or Sequencing - Uncategorized; Envelope - Uncategorized; Envelope - Replace Glazing; Envelope - Increase Wall Insulation; Envelope - Increase Ceiling Insulation; Envelope - Increase Roof Insulation; Envelope - Increase Floor Insulation; Envelope - Cool or Green Roof Installed; Envelope - Add Window Films; Envelope - Add Shading Devices; Envelope - Cleaning and/or Repair; Envelope - Air Sealing (changed from weather-stripping); Envelope - Insulation or Replacement of Solar Screens; Envelope - Insulate Attic Hatch Or Stair Box; Envelope - Add Attic/Knee Wall Insulation; Envelope - Insulate Thermal Bypass; Envelope - Insulate Foundation; HVAC - System - Uncategorized; HVAC - System - Operating Protocols Calibration and/or Sequencing; HVAC - System - Cleaning and/or Repair ; HVAC - System - Training and/or Documentation; HVAC  - Heating - Uncategorized; HVAC - Heating - Replace Boiler or Furnace; HVAC - Heating - Replace Burner; HVAC - Heating - Replace Packaged Terminal Units; HVAC - Heating - Add Heat Recovery; HVAC - Heating - Convert Gas-Fired Unit to Boiler Loop; HVAC - Heating - Boiler Room Insulation; HVAC - Heating - Operating Protocols or Calibration and/or Sequencing; HVAC - Heating - Cleaning and Repair; HVAC - Ventilation - Uncategorized; HVAC - Ventilation - Duct Sealing; HVAC - Ventilation - Duct Insulation; HVAC - Ventilation - Balancing; HVAC - Ventilation -  Operating Protocols Calibration and/or Sequencing ; HVAC - Ventilation - Upgrade Fans; HVAC - Ventilation - Cleaning and Repair; HVAC - Cooling -Uncategorized; HVAC - Cooling - Replace Chiller; HVAC - Cooling - Replace Package Units; HVAC - Cooling -  Operating Protocols or Calibration and/or Sequencing ; HVAC - Cooling - Economizer Cycle; HVAC - Cooling - Heat Recovery; HVAC - Cooling - Add or replace Cooling Tower; HVAC - Cooling - Install VSD on Electric Centrifugal Chillers; HVAC - Distribution - Uncategorized; HVAC - Distribution - Add Pipe Insulation; HVAC - Distribution -  Add Duct Insulation; HVAC - Distribution - Balancing; HVAC - Distribution - Operating Protocols Calibration and/or Sequencing; HVAC - Distribution - Replace or Modify AHU; HVAC - Distribution - Repair Leaks Or Seal Ducts; HVAC - Distribution - Improve Fans or Pumps; HVAC - Distribution - Convert System from Steam to hot Water; HVAC - Distribution - Convert CV System to VAV System; HVAC - Controls - Uncategorized; HVAC - Controls - Add or Upgrade BAS/EMS/EMCS; HVAC - Controls - Add or Upgrade Controls; HVAC - Controls - Pneumatic to DDC Convert; Domestic Hot Water - Uncategorized; Domestic Hot Water - Replace or Upgrade Heater; Domestic Hot Water - Heat Recovery; Domestic Hot Water - Add Pipe Insulation; Domestic Hot Water - Install Low-Flow Fixtures; Domestic Hot Water - Add Recirculating Pumps; Domestic Hot Water - Separate DHW from Heating; Domestic Hot Water - Solar Hot Water; Domestic Hot Water - Operating Protocols Calibration and/or Sequencing; Motors - Uncategorized; Motors - Replace with higher efficiency; Motors - Replace with VSD; Motors - Add Drive Controls; Lighting - Uncategorized; Lighting - Retrofit/Replace; Lighting - Cleaning and/or Repair; Lighting - Operation Protocols or Calibration and/or Sequencing; Lighting - Retrofit with T-8; Lighting - Retrofit with T-5; Lighting - Retrofit with CFLs; Lighting - Add occupancy sensors; Lighting - Add daylight dimming; Data Center - Uncategorized; Process/Plug Equipment - Uncategorized; Process/Plug Equipment - Replace with Energy Star Rated; Process/Plug Equipment - Operating Protocols Calibration and/or Sequencing; Process/Plug Equipment - Cleaning and/or Repair; On-Site Generation - Uncategorized; Fuel Conversion; Addition or Annex; Other; Unknown,ENUM,1
+,Early Compliance,True if the audit was performed early in the compliance process.,EarlyCompliance,,,boolean,4
+,Scope,Percentage of the building floor space affected. [%],Scope,,,double,1
+,Description,Description of measure.,Description,,,string,2
+,Start Date,Date the implementation began.,StartDate,,,date,1
+,End Date,Date the implementation was completed.,EndDate,,,date,1
+,Life,Life expectancy of measure. [years],Life,,,int,2
+,First Cost,"The sum of the initial expenditures to implement the measure; includes items such as equipment, transportation, installation, preparation for service, as well as other related costs. [US $]",FirstCost,,,double,1
+,O&M Cost,Operation and maintenance cost per year relating to the measure. [US $ /year],OAndMCost,,,double,2
+,Funding From Rebates,Amount of funding gained from rebates. [US $],FundingFromRebates,,,double,2
+,Funding From Tax Credits,Amount of funding gained from tax credits. [US $],FundingFromTaxCredits,,,double,2
+,Lot Configuration,"If there are more than one building on the lot, identify the retro-commissioning efforts.",LotConfigurationEnum,,Entire lot audited and retro-commissioned together as one; Each building audited and retro-commissioned individually; Unknown,ENUM,3
+,Simple Payback,The length of time required for an investment to pay for itself. [year],SimplePayback,,,double,3
+,Cost Effectiveness Screening Method,Method for cost effective screening of measure.,CostEffectivenessScreeningMethodEnum,,Simple Payback; NPV; Other Or Combination; Unknown,ENUM,3
+,O&M Cost Annual Savings,Operation and maintenance annual cost savings. [US $ /year],OAndMCostAnnualSavings,,,double,3
+,Total Job Hours,Total hours billed to the measure.,TotalJobHours,,,double,3
+,Annual Savings Estimate (Cost),Estimate of cost savings per year. [US $ /year],AnnualSavingsEstimateCost,,,double,3
+,Annual Savings Estimate (Energy),Estimate of energy savings per year. [Btu / year],AnnualSavingsEstimateEnergy,,,double,3
+,Annual Savings (Cost),Cost savings per year. [US $ /year],AnnualSavingsCost,,,double,3
+,Annual Savings (Energy),Energy savings per year. [Btu / year],AnnualSavingsEnergy,,,double,3
+,Annual Savings (Total Energy),Total energy savings per year resulting from this measure package. [Btu / year],AnnualSavingsTotalEnergy,,,double,3
+,Annual Savings (Electric),Electric savings per year resulting from this measure package. [kW/year],AnnualSavingsElectric,,,double,3
+,Annual Savings (Non-electric),Non-electric fuel savings per year resulting from this measure package. [MMBtu],AnnualSavingsNonelectric,,,double,3
+,Implementation Status,Implementation status of measure.,ImplementationStatusEnum,,Completed; In Progress; Selected; Recommended; Further Study Recommended; Not Recommended; Satisfactory Repair Not Achieved; Other; Unknown,ENUM,3
+,Number Of Permits Replaced,Number of permits replaced as part of measure.,NumberOfPermitsReplaced,,,int,3
+,Number Of Staff Members Trained,Number of staff members trained as part of measure.,NumberOfStaffMembersTrained,,,int,3
+,Work Performed By,Entity who performed the work.,WorkPerformedByEnum,,Retro-Commissioning Team; Building Staff; Outside Contractor; Other Or Combination; Unknown,ENUM,3
+,EER Submitted By,Name of the person who submitted the  Energy Efficiency Report (EER).,EERSubmittedby,,,string,4
+,EER Submission Company,Name of company who submitted the Energy Efficiency Report (EER).,EERSubmissionCompany,,,string,4
+,EER Submission E-Mail,E-mail associate with who submitted the Energy Efficiency Report (EER).,EERSubmissionEMail,,,string,4
+,EER Submission Date,Date the Energy Efficiency Report (EER) was submitted. [Date],EERSubmissionDate,,,date,4
+,Simple Building Audit Exemptions,If the building is a Simple Building as  defined by New York City local Law 87 and has met six or more of the seven items. (Allow multi-select),SimpleBuildingAuditExemptionsEnum,,Individual heating controls; Common area and exterior lighting; Low flow faucets and shower heads; Pipe insulation; Domestic hot water; Washing machines; Cool roof,ENUM,4
+,LEED Certification Audit Exemption,"True if building has met all three of the following requirements, false otherwise: 1) Building has received certification under the Leadership in Energy and Environment Design (LEED) 2009 rating system within two years prior to filing this Energy Efficiency Report (EER); AND 2) Building has earned the LEED point for Existing Building Commissioning investigation and analysis; AND 3) Building has earned the LEED point for Existing Commissioning implementation.",LEEDCertificationAuditExemption,,,boolean,4
+,Audit Date,Date Report was conducted or generated.,AuditDate,,,date,4
+,Auditor Name,Name of auditor responsible for execution of Energy Efficiency Measure.,AuditorName,,,string,4
+,Auditor Qualification,Qualification of auditor responsible for execution of Energy Efficiency Measure.,QualificationEnum,,PE; CEM; BPI-BA; DOB; RESNET-Home Partner; RA; Refrigerating System Operating Engineer; High Pressure Boiler Operating Engineer; Other; Unknown,ENUM,4
+,Auditor Qualification Number,"Certificate number, license number, etc., of Auditor Qualification.",AuditorQualificationNumber,,,string,4
+,Auditor Qualification State,"If Auditor Qualification 1 is state-issued, the state the qualification is from.",StateOfAuditorQualificationEnum,,AL; AK; AZ; AR; CA; CO; CT; DE; FL; GA; HI; ID; IL; IN; IA; KS; KY; LA; ME; MD; MA; MI; MN; MS; MO; MT; NE; NV; NH; NJ; NM; NY; NC; ND; OH; OK; OR; PA; RIL; SC; SD; TN; TX; UT; VT; VA; WA; WV; WI; WY,,4
+,Auditor Team Member With Certification,"Name of auditor team member with certification specified in ""Audit Team Member Certification Type"".",AuditorTeamMemberwithCertification,,,,4
+,Audit Team Member Certification Type,"Type of certification held by the team member specified in ""Audit Team Member with Certification"".",CertificationEnum,,NYSERDA Flex Tech; Certified Energy Manager (CEM); Certified Energy Auditor (CEA); High-Performance Building Design; Professional (HPBD); Multifamily Building Analyst (MFBA); Other; Unknown,ENUM,4
+,Auditor Company,Company or organization the auditor represents.,AuditorCompany,,,string,4
+,Auditor Company Address,Address of auditor.,AuditorCompanyAddress,,,string,4
+,Auditor Company Phone Number,Phone number of auditor.,AuditorCompanyPhoneNumber,,,string,4
+,Auditor E-Mail Address,E-mail of auditor.,AuditorEMailAddress,,,string,4
+,Name Of Audit Certification Holder,Name of designated audit certification holder.,NameOfAuditCertificationHolder,,,string,4
+,Central Plant Included In Audit,"True if there is a central plant and it is included in this audit, false otherwise.",CentralPlantIncludedInAudit,,,boolean,4
+,Retro-commissioning Date,Date retro-commissioning was conducted.,RetroCommissioningDate,,,date,4
+,Implementer Name,Name of implementer responsible for execution of Energy Efficiency Measure.,ImplementerName,,,string,4
+,Implementer Qualification,Qualification of implementer responsible for execution of Energy Efficiency Measure.,QualificationOfImplementerEnum,,PE; CEM; BPI-BA; RESNET-Home Partner; RA; Refrigerating System Operating Engineer; High Pressure Boiler Operating Engineer; Other; Unknown,ENUM,4
+,Implementer Qualification Number,"Certificate number, license number, etc., of Implementer Qualification.",ImplementerQualificationNumber,,,string,4
+,Implementer Qualification State,The state in which the site is located.,StateEnum,,AL; AK; AZ; AR; CA; CO; CT; DE; FL; GA; HI; ID; IL; IN; IA; KS; KY; LA; ME; MD; MA; MI; MN; MS; MO; MT; NE; NV; NH; NJ; NM; NY; NC; ND; OH; OK; OR; PA; RIL; SC; SD; TN; TX; UT; VT; VA; WA; WV; WI; WY,,1
+,Implementer Team Member With Certification,"Name of the implementing team member with certification specified in ""Implementer Team Member Certification Type"".",ImplementerTeamMemberwithCertification,,,,4
+,Implementer Team Member Certification Type,Qualification of implementer responsible for execution of Energy Efficiency Measure.,CertificationOfImplementerEnum,,Certified Commissioning Pro (CMP); Certified Building Commissioning Pro (CBCP); Existing Building Commissioning Pro (EBCP); Commissioning Process Management Pro (CPMP); Accredited Commissioning Process Authority Pro (ACPAP); Other; Unknown,ENUM,4
+,Implementer Company,Company or organization the implementer represents.,ImplementerCompany,,,string,4
+,Implementer Company Address,Address of implementer.,ImplementerCompanyAddress,,,string,4
+,Implementer Company Phone Number,Phone number of implementer.,ImplementerCompanyPhoneNumber,,,string,4
+,Name Of Retro-commissioning Certification Holder,Name of designated retro-commissioning certification holder.,NameOfRetrocommissioningCertificationHolder,,,string,4
+,Audit ID,ID code for this Audit.,AuditID,,,string,4
+,Measure ID,ID code for this Measure.,MeasureID,,,string,4
+,Notes,Facility level details about the building in Portfolio Manager.,Notes,,,string,4
+EnergyUse,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Fuel,Type of fuel consumed.,FuelEnum,,Electricity; Electricity (Renewable); Natural Gas; Natural Gas (Renewable); Fuel Oil; Fuel Oil No.1; Fuel Oil No.2; Fuel Oil No.4; Fuel Oil No.5 and No.6; District Steam; District hot water; District chilled water ; Solar hot water; Bottled gas (LPG or propane); Propane; Liquid Propane; Kerosene; Diesel; Coal; Coal (anthracite); Coal (bituminous); Coke; Wood; Other Or Combination,ENUM,1
+,Complete Fuel,True if this Energy Use record covers total consumption of this fuel type in this facility; false otherwise.,CompleteFuel,,,,1
+,End Use Type,End use that this Energy Use primarily applies to.,EndUseTypeEnum,,Whole Building; Lighting - Uncategorized; Lighting - Interior; Lighting - Exterior; Heating; Cooling; Ventilation; Pump; IT; Plug; Process; Conveyance; Domestic Hot Water; Refrigeration; Cooking; Dishwasher; Laundry; Pool Heating; On-site Generation; Owner Paid Electricity Use; Other Or Combination; Unknown,ENUM,1
+,Complete End Use,True if this Energy Use covers total consumption of this end use; false otherwise.,CompleteEndUse,,,,2
+,Units,Units for energy use.,EnergyUnitsEnum,,kWh (thousand Watt-hours); therms; Gallons; KLbs. (thousand pounds); kcf (thousand cubic feet); ccf (hundred cubic feet); cf (cubic feet); MBtu (million Btu); Tons; Lbs. (pounds); kBtu (thousand Btu); Ton Hours; MLbs. (million pounds); MWh (million Watt-hours); MCF (million cubic feet); Cubic Meters; Wh (Watt-hours); kWh (thousand Watt-hours); MWh (million Watt-hours); Btu (British thermal units); kBtu (thousand Btu); MBtu (million Btu); therms; Other Or No Units; Unknown,ENUM,1
+,Interval Type,Indicates whether the reading is meant to be representative of a specific time interval.,IntervalTypeEnum,,15-minute; Hourly; Daily; Monthly; Annual; Other; Unknown,ENUM,1
+,Reading Time Zone Code,The 3 letter code for the time zone where the reading was taken.,ReadingTimeZoneCode,,,string,2
+,Reading Type,Charactarization of reading value.,ReadingTypeEnum,,Point; Median; Average; Total; Estimate; Other; Unknown,ENUM,2
+,Summer Peak,Peak demand in the summer.,SummerPeak,,,double,2
+,Winter Peak,Peak demand in the winter.,WinterPeak,,,double,2
+,Rate Structure,Rate structure type for utility billing.,RateStructure,,,string,3
+,Metering Configuration,"Configuration of metering with respect to tenants, if applicable.",MeteringConfigurationEnum,,Direct metering (Tenants directly metered); Master meter without sub-metering (Tenants not directly metered or sub-metered); Master meter with sub-metering (Tenants sub-metered by building owner); Other Or Combination; Unknown,ENUM,3
+,Emissions Factor,Emissions factor associated with this fuel according to EPA. [kg Co2e/Mbtu],EmissionsFactor,,,double,3
+,Fuel Interruptibility,This refers to the practice of supplementing fuel by other means when there are interruptions in supply from the utility.,FuelInterruptibilityEnum,,Interruptible; Firm; Other; Unknown,ENUM,3
+,Shared Energy System,"Situation that applies if this energy system is shared with multiple buildings on a site, such as shared chilled water.",SharedEnergySystemEnum,,Shared energy systems or meters for multiple building on a single lot; Shared energy systems or meter for multiple buildings on multiple lots; Energy system or meter not shared; Other Or Combination; Unknown,ENUM,3
+,Identifier,Name or identifier of the Energy Use e.g. fuel type or meter number.,Identifier,,,string,4
+,Energy Use Metric Type,Type of calculated energy use metric.,EnergyUseMetricTypeEnum,,Portfolio Manager Energy Performance Rating; Whole Building Energy Use Intensity (Source); Whole Building Energy Use Intensity (Source- Weather Normalized); Whole Building Energy Use Intensity (Site); Green House Gas Emissions (CO2e) ; Baseline Data Center Source PUE; Baseline PUE-PDU Input; Baseline PUE-UPS Output; Baseline Site IT Equipment Input Energy (kWh); Baseline Site PDU Input Energy (kWh); Baseline Site PDU Output Energy (kWh); Baseline Site UPS Output Energy (kWh); Baseline Source IT Energy (kBtu); Current Data Center Source PUE; Current PUE-PDU Input; Current PUE-UPS Output; Current Site IT Equipment Input Energy (kWh); Current Site PDU Input Energy (kWh); Current Site PDU Output Energy (kWh); Current Site UPS Output Energy (kWh); Current Source IT Energy (kBtu); National Average PUE; Baseline Direct GHG Emissions (MtCO2e); Baseline Indirect GHG Emissions (MtCO2e); Baseline Total GHG Emissions (MtCO2e); Change from Baseline: GHG Emissions (MtCO2e); Current Direct GHG Emissions (MtCO2e); Current Indirect GHG Emissions (MtCO2e); Current Total GHG Emissions (MtCO2e); Baseline Energy Period Ending Date; Current Energy Period Ending Date; Baseline Water Period Ending Date; Current Water Period Ending Date; Baseline Total On-Site Renewable Electric Use (kWh); Current Total On-Site Renewable Electric Use (kWh); Percent of Electricity from On-Site Renewable (%); Total Avoided GHG Emissions from Green Power (MtCO2e); Total Green Power Purchased (MWh); Total Renewable Energy Sold to Grid (kWh); Total Revenue From Energy Sold to the Grid (USD $); Baseline Site Energy Intensity (kBtu/sq.ft); Baseline Total Site Energy Use   (kBtu); Current Total Site Energy Use (kBtu); National Median Site EUI (kBtu/sq.ft); Target Site Energy Intensity (kBtu/sq.ft); Weather Normalized Site EUI (kBtu/sq.ft); % Difference from National Median Site Energy per Square Foot (%); Baseline Site Electric Use (kWh); Baseline Site Natural Gas Use (therms); % Difference from National Median Source Energy per Square Foot (%); Baseline Source Energy Intensity (kBtu/sq.ft); Baseline Weather Normalized Source; Energy Intensity (kBtu/sq.ft); National Median Source EUI (kBtu/sq.ft); Baseline Total Source Energy Use   (kBtu); Current Total Source Energy Use (kBtu); Data Center - IT Energy Configuration; Data Center - PDU Input Energy (kWh); Data Center - UPS Output Energy (kWh); Data Center - UPS Capacity (kW),ENUM,4
+,Water Use Metric Type,Type of annual water use metric.,WaterUseMetricTypeEnum,,Indoor Water Cost (US $); Indoor Water Use (kGal); Indoor Water Use Intensity (Gal/sq.ft.); Other Water Cost (US $); Other Water Use (kGal); Outdoor Water Cost (US $); Outdoor Water Use (kGal); Total Indoor and Outdoor Water Cost (US $); Total Indoor and Outdoor Water Use (kGal); Wastewater/Sewer Cost (US $); Wastewater/Sewer Use (kGal),ENUM,4
+,Utility,Name of utility company billing this Energy Use.,Utility,,,string,4
+,Power Plant,Portfolio Manager field.,PowerPlant,,,string,4
+,Energy Use Alerts,Portfolio Manger generated alerts relating to energy use.,EnergyUseAlerts,,,string,4
+,Water Use Alerts,All alerts for this facility that are related to water use.,WaterUseAlerts,,,string,4
+,Time Series,,TimeSeries,,,Entity,5
+,Add to Total Energy Use,True if this energy use should be added to the total energy use of the facility; false otherwise. E.g. A tenant sub-meter would not be added to total if the master meter already includes tenant energy use.,AddToTotalEnergyUse,,,boolean,1
+TimeSeries,,,,,,,
+,Name,Name of the entity,Name,,,string,1
+,ID,Unique ID,ID,,,string,1
+,Start Time Stamp,The timestamp that marks the beginning of the time step.,StartTimeStamp,,,date,1
+,End Time Stamp,The timestamp that marks the end of the time step.,EndTimeStamp,,,date,1
+,Reading,The numerical value of the reading.,Reading,,,double,1
+,Interval Peak,Maximum value in this interval.,IntervalPeak,,,double,2
+,Interval Minimum,Minimum value in this interval.,IntervalMinimum,,,double,2
+,Percent of Total,Percent of total energy for this period .[%],PercentOfTotal,,,double,3
+,Green House Gas Emissions,Total green house gas emissions resulting from this period of energy use.,GreenHouseGasEmissions,,,double,3

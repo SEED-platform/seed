@@ -5,9 +5,7 @@ import logging
 from operator import ior, iand
 
 from fuzzywuzzy import fuzz
-
 from django.db.models import Q
-
 from seed.mappings import reconcile_mappings
 
 logger = logging.getLogger(__name__)

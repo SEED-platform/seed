@@ -1,0 +1,456 @@
+/** 
+ * :copyright: (c) 2014 Building Energy Inc
+ * :license: see LICENSE for more details.
+ */
+
+@font-family-sans-serif: 		"PT Sans","Helvetica Neue", Helvetica, Arial, sans-serif;
+@font-family-sans-serif-narrow: "PT Sans Narrow","Helvetica Neue", Helvetica, Arial, sans-serif;
+@font-family-base:        		@font-family-sans-serif;
+@font-family-base-narrow:       @font-family-sans-serif-narrow;
+@font-size-base:          13px;
+
+@legibility:			optimizeLegibility;
+@knockout:				antialiased;
+
+@white:					#fff;
+@black:					#222;
+@gray:					#4a4a52;
+@gray_dark:				#2b2b32;
+@gray_lighter:  		#ccc;
+@gray_lightest: 		#eeeeee;
+@blue:					#428bca;
+@beige:					#f5f4ec;
+@orange:                #fc882a;
+@green:                 #66b132;
+@yellow:                #ffc40d;
+@purple:				#9900ff;
+@red:					#ff4d4d;
+@highlighter:			#fff7d7;
+
+@be-blue:				@blue;
+@be-lightblue:       	lighten(@blue, 10%);
+@be-darkblue:        	darken(@blue, 10%);
+@grayLight:             #999;
+@grayDivider:           #cecece;
+@grayLighter:           @gray_lighter;
+@grayLightest:          @gray_lightest;
+@be-light-grey:      	@gray_lighter;
+@grayDark:				lighten(@gray_dark, 10%);
+@landing-landing-blue:  #118fa1;
+@landing-landing-dk-blue: #05414d;
+@landing-landing-lt-blue: #f3fafb;
+@bdp-landing-lt-gray:   #929292;
+@bdp-landing-md-gray:   #c6c8c9;
+@bdp-landing-dk-gray:   #606060;
+@prefinery-gray:        #CCC;
+
+
+// Transitions
+.transition(@transition) {
+  -webkit-transition: @transition;
+          transition: @transition;
+}
+// Box Shadows
+.box-shadow(@shadow) {
+  -webkit-box-shadow: @shadow; // iOS <4.3 & Android <4.1
+          box-shadow: @shadow;
+}
+
+// Single side border-radius
+.border-top-radius(@radius) {
+  border-top-right-radius: @radius;
+   border-top-left-radius: @radius;
+}
+.border-right-radius(@radius) {
+  border-bottom-right-radius: @radius;
+     border-top-right-radius: @radius;
+}
+.border-bottom-radius(@radius) {
+  border-bottom-right-radius: @radius;
+   border-bottom-left-radius: @radius;
+}
+.border-left-radius(@radius) {
+  border-bottom-left-radius: @radius;
+     border-top-left-radius: @radius;
+}
+
+
+
+body {
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+    padding: 0;
+    background-image: url("../images/landing-bg.jpg");
+	background-size: cover;
+	font-family: @font-family-base;
+	font-size: 16px;
+	font-weight: normal;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+}
+
+////////// MAKE FLOAT CONTAINERS PLAY NICE ////////////
+.header,
+.page_section,
+.marketing_text,
+.section_marketing {
+	position: relative;
+	overflow: auto;
+}
+
+////////// STYLE THE PAGE ////////////
+.page {
+	margin: 125px auto;
+	width: 75%;
+	height: 50%;
+	background: @white;
+	border-radius: 8px;
+	.box-shadow(0 0 26px rgba(0,0,0,0.7));
+	
+	.header {
+		background-color: @landing-landing-lt-blue;
+		.border-top-radius(9px);
+		border-bottom: 1px solid @bdp-landing-md-gray;
+
+		.logo {
+			float: left;
+			width: 260px;
+			
+			.logo_text {
+				width: 260px;
+				padding: 27px 20px 18px 20px;
+				font-size: 24px;
+				font-family: @font-family-base-narrow;
+				
+				font-weight: normal;
+				text-transform: uppercase;
+				
+				.logo_text_seed {
+					font-family: @font-family-base;
+					font-weight: bold;
+				}
+				.logo_text_saving,
+				.saving_progress {
+					color: @be-blue;
+				}
+			}
+		}
+		.logo_DOE {
+			float: right;
+			padding: 22px 30px 20px 0;
+			width: 274px;
+		}
+	}
+	.page_section {
+		
+		.section_marketing {
+			float: left;
+			width: 50%;
+			height: 430px;
+			color: @black;
+			
+			h1 {
+				padding: 24px 30px 11px 30px;
+				font-size: 24px;
+				line-height: 30px;
+				font-weight: normal;
+				text-align: center;
+			}
+			.marketing_text {
+				padding: 0 30px 20px 30px;
+				line-height: 21px;
+					.bullet {
+						float: left;
+						width: 8%;
+						padding-top: 2px;
+						div {
+							width: 20px;
+						    height: 20px;
+						    background-color: @be-blue;
+						    border: 2px solid @white;
+						    border-radius: 18px;
+						    .box-shadow(1px 1px 4px @bdp-landing-md-gray);
+						}
+					}
+					.bullet_text {
+						float: right;
+						width: 91%;
+					}
+			}
+			.asterix {
+				.bullet_text {
+					font-size: 14px;
+					line-height: 16px;
+				}
+			}
+			span.astrix_color {
+				font-size: 120%;
+				color: @orange;
+			}
+			.powered_by_seed {
+				position: absolute;
+				width: 200px;
+				bottom: 26px;
+				left: 50%;
+				margin-left: -95px;
+				text-align: center;
+				font-size: 14px;
+				font-weight: bold;
+				color: @bdp-landing-lt-gray;
+				
+				.logo_SEED {
+					width: 200px;
+				}
+			}
+		}
+		.section_forms {
+			float: right;
+			overflow: hidden;
+			width: 49%;
+			min-height: 430px;
+			text-align: center;
+			border-left: 1px solid @bdp-landing-md-gray;
+			background: url('../images/bg-paper.png');
+			-webkit-border-bottom-right-radius: 8px;
+    		-moz-border-bottom-right-radius: 8px;
+    		border-bottom-right-radius: 8px;
+
+			.form_title {
+				padding-top: 26px;
+				
+				h2 {
+					font-size: 24px;
+					font-weight: normal;
+					color: @bdp-landing-dk-gray;
+					text-shadow: 1px 1px 1px @white;
+					
+				}
+			}
+			.disable_login {
+				opacity: 50%;
+			}
+			/////////// DEFINE THE HEIGHT OF SECTION FORM CONTAINERS. KEEP SAME. //////////////
+			/////////// IF YOU CHANGE THIS HEIGHT CHANGE IT ON THE PREFINERY IFRAME AS WELL. //////////////
+			.choose_your_path,
+			.current_account_link,
+			.enter_invite_code_form,
+			.signup_form,
+			.browser_unsupported {
+				margin-top: 10px;
+				min-height: 228px;
+			}
+			.current_account_link,
+			.enter_invite_code_form {
+				.signup_form {
+					margin: 0;
+					min-height: 0px;
+				}
+			}
+			.browser_unsupported {
+				display: none;
+				
+				.browser_unsupported_message {
+					margin-top: 26px;
+					
+					h2 {
+						font-weight: bold;
+					}
+					
+					.message_text {
+						width: 80%;
+						margin: 6px auto;
+						font-size: 16px;
+					}
+				}
+				.browser_dowload_links {
+					margin-top: 20px;
+					width: 100%;
+					overflow: auto;
+					
+					.browser_option {
+						display: block;
+						float: left;
+						text-align: center;
+						text-decoration: none;
+						width: 19%;
+						height: 94px;
+					}
+					
+					.chrome {
+						background: url('../images/logo-chrome-64.png') top center no-repeat;
+						margin-left: 63px;
+					}
+					
+					.firefox {
+						background: url('../images/logo-firefox-64.png') top center no-repeat;
+					}
+					
+					.safari {
+						background: url('../images/logo-safari-64.png') top center no-repeat;
+					}
+					
+					.ie {
+						background: url('../images/logo-ie-64.png') top center no-repeat;
+					}
+					
+				}
+				.browser_name {
+					position: relative;
+					top: 70px;
+				}
+			}
+				
+			.signup_form {
+			    table.signup_table {
+				    width: 96%;
+				    margin: 0 auto;
+				    background-color: transparent;
+				    text-align: left;
+				    th {
+				        padding: 8px 8px 20px 0;
+				        text-align: right;
+				        display: none;
+				    }
+				    td {
+					    text-align: center;
+					    p {
+						    text-align: center;
+					    }
+				    }
+				    
+				    //// Code copied from Prefinery.com to maintain style consistency with the application form. Mixins then added. ////
+				    input {
+				        display: inline-block;
+				        width: 94%;
+						padding: 10px;
+						margin-top: 8px;
+						margin-bottom: 2px;
+						font-family: 'PT Sans Narrow', sans-serif;
+						font-size: 16px;
+						line-height: 20px;
+						color: @bdp-landing-lt-gray;
+						background-color: @white;
+						border: 1px solid @prefinery-gray;
+						border-radius: 3px;
+						.box-shadow(inset 0 1px 1px rgba(0, 0, 0, 0.075));
+						.box-shadow(0px 1px 1px @white);
+						.transition(border box-shadow linear 0.2s);
+				    }
+				    //// Code copied from Prefinery.com to maintain style consistency with the application form. Mixins then added. ////
+				    input:focus {
+						border-color: rgba(82, 168, 236, 0.8);
+						outline: 0;
+						outline: thin dotted 9;
+						.box-shadow(inset 0 1px 1px rgba(0,0,0,.075)/* , 0 0 8px rgba(82,168,236,.6) */);
+					}
+					br {
+				        display: none;
+				    }
+				    .errorlist {
+				        text-indent: 0;
+				        color: @red;
+				        position: relative;
+				        li {
+				            position: absolute;
+				            left: 200px;
+				            top: 15px;
+				            list-style: none;
+				        }
+				    }
+	
+					select {
+						width: 98%;
+						margin-top: 10px;
+						margin-bottom: 4px;
+					}
+					#id_first_name,
+					#id_last_name,
+					#id_password1,
+					#id_password2 {
+						width: 88%;
+					}
+					input[type="checkbox"] {
+						margin-top: 0;
+						width: 20px;
+					}
+					.opt-ins {
+						padding-top: 16px;
+					}
+
+				}
+				p {
+					line-height: 24px;
+				}
+				//// Code copied from Prefinery.com to maintain style consistency with the application form. Mixins then added. ////
+				.btn {
+					margin: 30px 4px 0 4px;
+					display: inline-block;
+					font-size: 16px;
+				}
+				
+				.forgot_password {
+				    display: block;
+				    margin-top: 20px;
+				    margin-bottom: 20px;
+			    }
+			    .already_signed_up {
+				    display: block;
+				    margin-top: 20px;
+				    font-size: 15px;
+			    }
+			    .already_signed_up_signup {
+				    display: block;
+				    margin-top: 20px;
+				    font-size: 15px;
+			    }
+
+				.thank_you {
+					padding-top: 20px;
+					.thank_you_text {
+						margin: 0 auto;
+						width: 75%;
+						line-height: 22px
+					}
+				}
+				span.email_me {
+					font-size: 15px;
+				}
+				
+			}
+		}
+		.helptext {
+			display: none;
+		}
+		.signup_complete_message {
+			margin-top: 30px;
+		}
+	}
+	
+	.login_form table.signup_table {
+	    width: 40%;
+	}
+}
+.login.page .page_section .section_forms .signup_form table.signup_table .errorlist {
+	margin: 0 0 8px 0;
+	padding: 0;
+
+	li {
+		left: 0;
+		position: relative;
+	}
+
+}
+.terms_of_service {
+	width: 50%;
+	padding: 20px;
+	background-color: @gray_lightest;
+	
+	.terms {
+		height: 200px;
+		overflow: scroll;
+		background-color: @white;
+		padding: 10px;
+		border: 1px solid @gray_lighter;
+	}
+}

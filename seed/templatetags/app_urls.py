@@ -5,12 +5,10 @@
 import json
 
 from django import template
-
 from django.conf import settings
 from djangular.core.urlresolvers import urls_by_namespace
 
 register = template.Library()
-
 
 @register.simple_tag
 def namespaced_urls():
@@ -20,7 +18,7 @@ def namespaced_urls():
         {% load app_urls %}
     ...
         <script>
-            window.BE.app_urls ={% namespaced_urls %};
+            window.config.app_urls ={% namespaced_urls %};
         </script>
     """
     apps = settings.BE_URL_APPS

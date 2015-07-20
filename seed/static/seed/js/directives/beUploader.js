@@ -3,7 +3,7 @@
  */
 /**
  * directive be-uploader: wraps fineuploader.js assumed AWS creds are in global
- *                        namespace: window.BE.AWS_UPLOAD_BUCKET_NAME window.BE.AWS_CLIENT_ACCESS_KEY
+ *                        namespace: window.config.AWS_UPLOAD_BUCKET_NAME window.config.AWS_CLIENT_ACCESS_KEY
  *   buttontext: string - text for the button
  *   sourcetype: string - upon upload successful, send the sourcetype param to 
  *                        the server to store the linked file

@@ -4,11 +4,9 @@
 from datetime import datetime
 
 from django.test import TestCase
-
-from superperms.orgs.models import Organization, OrganizationUser
-
-from data_importer.models import ImportFile, ImportRecord
-from landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.landing.models import SEEDUser as User
 from seed import models as seed_models
 from seed.mappings import mapper
 from seed.tests import util
@@ -541,7 +539,6 @@ class TestBuildingSnapshot(TestCase):
         bs2 = bs_manager.get(pk=self.bs2.pk)
         self.assertEqual(bs2.has_children, False)
         self.assertEqual(canon2.active, True)
-
 
 class TestCanonicalBuilding(TestCase):
     """Test the clean methods on CanonicalBuildingModel."""

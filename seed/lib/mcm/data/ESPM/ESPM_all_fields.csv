@@ -1,0 +1,1315 @@
+Field Name,Units
+Energy Cost,Dollars
+Energy Cost Intensity,Dollars
+National Median Energy Cost,Dollars
+Total Water Cost (All Water Types),Dollars
+Indoor Water Cost (All Water Types),Dollars
+Indoor Water Cost Intensity (All Water Types),Dollars/ft2
+Outdoor Water Cost (All Water Types),Dollars
+"Investment in Energy Projects, Cumulatve",Dollars
+"Investment in Energy Projects, Cumulatve",Dollars/ft2
+"Water/Wastewater Investment in Energy Projects, Cumulative",Dollars/GPD
+"Estimated Savings from Energy Projects, Cumulative",Dollars
+"Estimated Savings from Energy Projects, Cumulative",Dollars/ft2
+"Water/Wastewater Estimated Savings from Energy Projects, Cumulative",Dollars/GPD
+Electricity (Grid Purchase) Cost,Dollars
+Natural Gas Cost,Dollars
+Fuel Oil (No. 1) Cost,Dollars
+Fuel Oil (No. 2) Cost,Dollars
+Fuel Oil (No. 4) Cost,Dollars
+Fuel Oil (No. 5 and No. 6) Cost,Dollars
+Diesel Cost,Dollars
+Kerosene Cost,Dollars
+Propane Cost,Dollars
+Liquid Propane Cost,Dollars
+District Steam Cost,Dollars
+District Hot Water Cost,Dollars
+District Chilled Water Cost,Dollars
+Coal (anthracite) Cost,Dollars
+Coal (bituminous) Cost,Dollars
+Coke Cost,Dollars
+Wood Cost,Dollars
+Other Energy Cost,Dollars
+Municipally Supplied Potable Water – All Cost,Dollars
+Municipally Supplied Potable Water – Indoor Cost,Dollars
+Municipally Supplied Potable Water – Indoor Cost Intensity,Dollars/ft2
+Municipally Supplied Potable Water – Outdoor Cost,Dollars
+Municipally Supplied Reclaimed Water – All Cost,Dollars
+Municipally Supplied Reclaimed Water – Indoor Cost,Dollars
+Municipally Supplied Reclaimed Water – Indoor Cost Intensity,Dollars/ft2
+Municipally Supplied Reclaimed Water – Outdoor Cost,Dollars
+Alternative Water Generated On-Site – All Cost,Dollars
+Alternative Water Generated On-Site – Indoor Cost,Dollars
+Alternative Water Generated On-Site – Indoor Cost Intensity,Dollars/ft2
+Alternative Water Generated On-Site – Outdoor Cost,Dollars
+Other Water Sources – All Cost,Dollars
+Other Water Sources – Indoor Cost,Dollars
+Other Water Sources – Indoor Cost Intensity,Dollars/ft2
+Other Water Sources – Outdoor Cost,Dollars
+Energy Alerts,
+Property Use Detail Alerts,
+Water Alerts,
+Estimated Data Flag - Electricity Use - Grid Purchase,
+Estimated Data Flag - Electricity Use - Onsite Renewable System Electricity Used Onsite/Coincident,
+Estimated Data Flag - Natural Gas,
+Estimated Data Flag - Fuel Oil (No. 1),
+Estimated Data Flag - Fuel Oil (No. 2),
+Estimated Data Flag - Fuel Oil (No. 4),
+Estimated Data Flag - Fuel Oil (No. 5 and No. 6),
+Estimated Data Flag - Diesel,
+Estimated Data Flag - Kerosene,
+Estimated Data Flag - Propane,
+Estimated Data Flag - Liquid Propane,
+Estimated Data Flag - District Steam,
+Estimated Data Flag - District Hot Water,
+Estimated Data Flag - District Chilled Water,
+Estimated Data Flag - Coal (anthracite),
+Estimated Data Flag - Coal (bituminous),
+Estimated Data Flag - Coke,
+Estimated Data Flag - Wood,
+Estimated Data Flag - Other Energy,
+Estimated Data Flag - Municipally Supplied Potable Water – All Use,
+Estimated Data Flag - Municipally Supplied Potable Water – Indoor Use,
+Estimated Data Flag - Municipally Supplied Potable Water – Outdoor Use,
+Estimated Data Flag - Municipally Supplied Reclaimed Water – All Use,
+Estimated Data Flag - Municipally Supplied Reclaimed Water – Indoor Use,
+Estimated Data Flag - Municipally Supplied Reclaimed Water – Outdoor Use,
+Estimated Data Flag - Alternative Water Generated On-Site – All Use,
+Estimated Data Flag - Alternative Water Generated On-Site – Indoor Use,
+Estimated Data Flag - Alternative Water Generated On-Site – Outdoor Use,
+Estimated Data Flag - Other Water Sources – All Use,
+Estimated Data Flag - Other Water Sources – Indoor Use,
+Estimated Data Flag - Other Water Sources – Outdoor Use,
+Estimated Data Flag - Data Center UPS Output Site Energy,
+Estimated Data Flag - Data Center PDU Input Site Energy,
+Estimated Data Flag - Data Center PDU Output Site Energy,
+Estimated Data Flag - Data Center IT Equipment Input Site Energy,
+Estimated Data Flag - Plant Flow Meter,
+Default Data Flag - Bank Branch,
+Default Data Flag - Barracks,
+Default Data Flag - Courthouse,
+Default Data Flag - Data Center,
+Default Data Flag - Distribution Center,
+Default Data Flag - Financial Office,
+Default Data Flag - Hospital (General Medical & Surgical),
+Default Data Flag - Hotel,
+Default Data Flag - K-12 School,
+Default Data Flag - Medical Office,
+Default Data Flag - Non-Refrigerated Warehouse,
+Default Data Flag - Office,
+Default Data Flag - Refrigerated Warehouse,
+Default Data Flag - Residence Hall/Dormitory,
+Default Data Flag - Retail Store,
+Default Data Flag - Senior Care Community,
+Default Data Flag - Supermarket/Grocery Store,
+Default Data Flag - Wastewater Treatment Plant,
+Default Data Flag - Wholesale Club/Supercenter,
+Default Data Flag - Worship Facility,
+Temporary Data Flag - Adult Education,
+Temporary Data Flag - Ambulatory Surgical Center,
+Temporary Data Flag - Aquarium,
+Temporary Data Flag - Automobile Dealership,
+Temporary Data Flag - Bank Branch,
+Temporary Data Flag - Bar/Nightclub,
+Temporary Data Flag - Barracks,
+Temporary Data Flag - Bowling Alley,
+Temporary Data Flag - Casino,
+Temporary Data Flag - College/University,
+Temporary Data Flag - Convenience Store with Gas Station,
+Temporary Data Flag - Convenience Store without Gas Station,
+Temporary Data Flag - Convention Center,
+Temporary Data Flag - Courthouse,
+Temporary Data Flag - Data Center,
+Temporary Data Flag - Distribution Center,
+Temporary Data Flag - Drinking Water Treatment & Distribution,
+Temporary Data Flag - Enclosed Mall,
+Temporary Data Flag - Energy/Power Station,
+Temporary Data Flag - Fast Food Restaurant,
+Temporary Data Flag - Financial Office,
+Temporary Data Flag - Fire Station,
+Temporary Data Flag - Fitness Center/Health Club/Gym,
+Temporary Data Flag - Food Sales,
+Temporary Data Flag - Food Service,
+Temporary Data Flag - Hospital (General Medical & Surgical),
+Temporary Data Flag - Hotel,
+Temporary Data Flag - Ice/Curling Rink,
+Temporary Data Flag - Indoor Arena,
+Temporary Data Flag - K-12 School,
+Temporary Data Flag - Laboratory,
+Temporary Data Flag - Library,
+Temporary Data Flag - Lifestyle Center,
+Temporary Data Flag - Mailing Center/Post Office,
+Temporary Data Flag - Manufacturing/Industrial Plant,
+Temporary Data Flag - Medical Office,
+Temporary Data Flag - Movie Theater,
+Temporary Data Flag - Multifamily Housing,
+Temporary Data Flag - Museum,
+Temporary Data Flag - Non-Refrigerated Warehouse,
+Temporary Data Flag - Office,
+Temporary Data Flag - Other,
+Temporary Data Flag - Other - Education,
+Temporary Data Flag - Other - Entertainment/Public Assembly,
+Temporary Data Flag - Other - Lodging/Residential,
+Temporary Data Flag - Other - Mall,
+Temporary Data Flag - Other - Public Services,
+Temporary Data Flag - Other - Recreation,
+Temporary Data Flag - Other - Restaurant/Bar,
+Temporary Data Flag - Other - Services,
+Temporary Data Flag - Other - Stadium,
+Temporary Data Flag - Other - Technology/Science,
+Temporary Data Flag - Other - Utility,
+Temporary Data Flag - Other/Speciality Hospital,
+Temporary Data Flag - Outpatient Rehabilitation/Physical Therapy,
+Temporary Data Flag - Parking,
+Temporary Data Flag - Performing Arts,
+"Temporary Data Flag - Personal Services (Health/Beauty, Dry Cleaning, etc)",
+Temporary Data Flag - Police Station,
+Temporary Data Flag - Pre-school/Daycare,
+Temporary Data Flag - Prison/Incarceration,
+Temporary Data Flag - Race Track,
+Temporary Data Flag - Refrigerated Warehouse,
+"Temporary Data Flag - Repair Services (Vehicle, Shoe, Locksmith, etc)",
+Temporary Data Flag - Residence Hall/Dormitory,
+Temporary Data Flag - Restaurant,
+Temporary Data Flag - Retail Store,
+Temporary Data Flag - Roller Rink,
+Temporary Data Flag - Self-Storage Facility,
+Temporary Data Flag - Senior Care Community,
+Temporary Data Flag - Single Family Home,
+Temporary Data Flag - Social/Meeting Hall,
+Temporary Data Flag - Stadium (Closed),
+Temporary Data Flag - Stadium (Open),
+Temporary Data Flag - Strip Mall,
+Temporary Data Flag - Supermarket/Grocery Store,
+Temporary Data Flag - Swimming Pool,
+Temporary Data Flag - Transportation Terminal/Station,
+Temporary Data Flag - Urgent Care/Clinic/Other Outpatient,
+Temporary Data Flag - Veterinary Office,
+Temporary Data Flag - Vocational School,
+Temporary Data Flag - Wastewater Treatment Plant,
+Temporary Data Flag - Wholesale Club/Supercenter,
+Temporary Data Flag - Worship Facility,
+Temporary Data Flag - Zoo,
+Data Center UPS Output Site Energy,kWh
+Data Center PDU Input Site Energy,kWh
+Data Center PDU Output Site Energy,kWh
+Data Center IT Equipment Input Site Energy,kWh
+Data Center IT Site Energy,kBtu
+Data Center IT Souce Energy,kBtu
+Data Center PUE,
+Data Center National Median PUE,
+Energy Baseline Date,Date
+Energy Current Date,Date
+ENERGY STAR Score,
+National Median ENERGY STAR Score,
+National Median Site Energy Use,kBtu
+National Median Source Energy Use,kBtu
+National Median Site EUI,kBtu/ft2
+National Median Source EUI,kBtu/ft2
+National Median Water/Wastewater Site EUI,kBtu/gpd
+National Median Water/Wastewater Source EUI,kBtu/gpd
+Percent Better than National Median Site EUI,Percentage
+Percent Better than National Median Source EUI,Percentage
+Percent Better than National Median Water/Wastewater Site EUI,Percentage
+Percent Better than National Median Water/Wastewater Source EUI,Percentage
+Site Energy Use,kBtu
+Source Energy Use,kBtu
+Site EUI,kBtu/ft2
+Source EUI,kBtu/ft2
+Water/Wastewater Site EUI ,kBtu/gpd
+Water/Wastewater Source EUI,kBtu/gpd
+Weather Normalized Site Energy Use,kBtu
+Weather Normalized Source Energy Use,kBtu
+Weather Normalized Site EUI,kBtu/ft2
+Weather Normalized Source EUI,kBtu/ft2
+Weather Normalized Water/Wastewater Site EUI ,kBtu/gpd
+Weather Normalized Water/Wastewater Source EUI,kBtu/gpd
+Weather Normalized Site Electricity,kWh
+Weather Normalized Site Electricity Intensity,kWh/ft2
+Weather Normalized Water/Wastewater Site Electricity Intensity,kWh/gpd
+Weather Normalized Site Natural Gas Use,therms
+Weather Normalized Site Natural Gas Intensity,therms/ft2
+Weather Normalized Water/Wastewater Site Natural Gas Intensity,therms/gpd
+Site Energy Use - Adjusted to Current Year,kBtu
+Source Energy Use - Adjusted to Current Year,kBtu
+Site EUI - Adjusted to Current Year,kBtu/ft2
+Source EUI - Adjusted to Current Year,kBtu/ft2
+Water/Wastewater Site EUI - Adjusted to Current Year,kBtu/gpd
+Water/Wastewater Source EUI - Adjusted to Current Year,kBtu/gpd 
+ENERGY STAR Certification - Year(s) Certified,
+ENERGY STAR Certification - Last Approval Date,Date
+ENERGY STAR Certification - Next Eligible Date,Date
+ENERGY STAR Certification - Eligibility ,
+ENERGY STAR Certification - Application Status,
+ENERGY STAR Certification - Profile Published ,
+Electricity Use - Grid Purchase and Onsite,kWh
+Electricity Use - Grid Purchase and Onsite,kBtu
+Electricity Use - Grid Purchase,kWh
+Electricity Use - Grid Purchase,kBtu
+Electricity Use - Onsite Renewable System Electricity Used Onsite/Coincident,kWh
+Electricity Use - Onsite Renewable System Electricity Used Onsite/Coincident,kBtu
+Natural Gas Use,therms
+Natural Gas Use,kBtu
+Fuel Oil No. 1 Use,kBtu
+Fuel Oil No. 2 Use,kBtu
+Fuel Oil No. 4 Use,kBtu
+Fuel Oil No. 5 & No. 6 Use,kBtu
+Diesel Use,kBtu
+Kerosene Use,kBtu
+Propane Use,kBtu
+Liquid Propane Use,kBtu
+District Steam Use,kBtu
+District Hot Water Use,kBtu
+District Chilled Water Use,kBtu
+Coal - Anthracite Use,kBtu
+Coal - Bituminous Use,kBtu
+Coke Use,kBtu
+Wood Use,kBtu
+Other Energy Use,kBtu 
+Total GHG Emissions,MtCO2e
+Total GHG Emissions Intensity,kgCO2e/ft2
+Water/Wastewater Total GHG Emissions Intensity,kgCO2e/gpd
+Direct GHG Emissions ,MtCO2e
+Direct GHG Emissions Intensity,kgCO2e/ft2
+Water/Wastewater Direct GHG Emissions Intensity,kgCO2e/gpd
+Indirect GHG Emissions,MtCO2e
+Indirect GHG Emissions Intensity,kgCO2e/ft2
+Water/Wastewater Indirect GHG Emissions Intensity,kgCO2e/gpd
+Biomass GHG Emissions,MtCO2e
+Biomass GHG Emissions Intensity,kgCO2e/ft2
+Water/Wastewater Biomass GHG Emissions Intensity,kgCO2e/gpd
+eGRID Output Emissions Rate,kgCO2e/MBtu
+eGRID Region,
+Electric Distribution Utlity,
+Power Plant,
+National Median Total GHG Emissions,MtCO2e 
+Design ENERGY STAR Score,
+Design Site Energy Use,kBtu
+Design Source Energy Use,kBtu
+Design Site EUI,kBtu/ft2
+Design Source EUI,kBtu/ft2
+Design Water/Wastewater Site EUI ,kBtu/gpd
+Design Water/Wastewater Source EUI,kBtu/gpd
+Design Energy Cost,Dollars
+Design Energy Cost Intensity,Dollars/ft2
+Design Total GHG Emissions,MtCO2e
+Design Total GHG Emissions Intensity,kgCO2e/ft2
+Design Direct GHG Emissions ,MtCO2e
+Design Indirect GHG Emissions,MtCO2e
+Design Biomass GHG Emissions,MtCO2e
+Design Electricity Use - Grid Purchase,kBtu
+Design Electricity Use - Grid Purchase and Onsite,kBtu
+Design Electricity Use - Onsite Renewable System Electricity Used Onsite/Coincident,kBtu
+Design Natural Gas Use,kBtu
+Design Fuel Oil No. 1 Use,kBtu
+Design Fuel Oil No. 2 Use,kBtu
+Design Fuel Oil No. 4 Use,kBtu
+Design Fuel Oil No. 5 & No. 6 Use,kBtu
+Design Diesel Use,kBtu
+Design Kerosene Use,kBtu
+Design Propane Use,kBtu
+Design Liquid Propane Use,kBtu
+Design District Steam Use,kBtu
+Design District Hot Water Use,kBtu
+Design District Chilled Water Use,kBtu
+Design Coal - Anthracite Use,kBtu
+Design Coal - Bituminous Use,kBtu
+Design Coke Use,kBtu
+Design Wood Use,kBtu
+Design Other Energy Use,kBtu
+Design Adult Education - Gross Floor Area,ft2
+Design Ambulatory Surgical Center - Gross Floor Area,ft2
+Design Aquarium - Gross Floor Area,ft2
+Design Automobile Dealership - Gross Floor Area,ft2
+Design Bank Branch - Gross Floor Area,ft2
+Design Bar/Nightclub - Gross Floor Area,ft2
+Design Barracks - Gross Floor Area,ft2
+Design Bowling Alley - Gross Floor Area,ft2
+Design Casino - Gross Floor Area,ft2
+Design College/University - Gross Floor Area,ft2
+Design Convenience Store with Gas Station - Gross Floor Area,ft2
+Design Convenience Store without Gas Station - Gross Floor Area,ft2
+Design Convention Center - Gross Floor Area,ft2
+Design Courthouse - Gross Floor Area,ft2
+Design Data Center - Gross Floor Area,ft2
+Design Distribution Center - Gross Floor Area,ft2
+Design Drinking Water Treatment & Distribution - Gross Floor Area,ft2
+Design Enclosed Mall - Gross Floor Area,ft2
+Design Energy/Power Station - Gross Floor Area,ft2
+Design Fast Food Restaurant - Gross Floor Area,ft2
+Design Financial Office - Gross Floor Area,ft2
+Design Fire Station - Gross Floor Area,ft2
+Design Fitness Center/Health Club/Gym - Gross Floor Area,ft2
+Design Food Sales - Gross Floor Area,ft2
+Design Food Service - Gross Floor Area,ft2
+Design Hospital (General Medical & Surgical) - Gross Floor Area,ft2 
+Design Hotel - Gross Floor Area,ft2
+Design Ice/Curling Rink - Gross Floor Area,ft2
+Design Indoor Arena - Gross Floor Area,ft2
+Design K-12 School - Gross Floor Area,ft2
+Design Laboratory - Gross Floor Area,ft2
+Design Library - Gross Floor Area,ft2
+Design Lifestyle Center - Gross Floor Area,ft2
+Design Mailing Center/Post Office - Gross Floor Area,ft2
+Design Manufacturing/Industrial Plant - Gross Floor Area,ft2
+Design Medical Office - Gross Floor Area,ft2
+Design Movie Theater - Gross Floor Area,ft2
+Design Multifamily Housing - Gross Floor Area,ft2
+Design Museum - Gross Floor Area,ft2
+Design Non-Refrigerated Warehouse - Gross Floor Area,ft2
+Design Office - Gross Floor Area,ft2
+Design Other - Education - Gross Floor Area,ft2
+Design Other - Entertainment/Public Assembly - Gross Floor Area,ft2
+Design Other - Gross Floor Area,ft2
+Design Other - Lodging/Residential - Gross Floor Area,ft2
+Design Other - Mall - Gross Floor Area,ft2
+Design Other - Public Services - Gross Floor Area,ft2
+Design Other - Recreation - Gross Floor Area,ft2
+Design Other - Restaurant/Bar - Gross Floor Area,ft2
+Design Other - Services - Gross Floor Area,ft2
+Design Other - Stadium - Gross Floor Area,ft2
+Design Other - Technology/Science - Gross Floor Area,ft2
+Design Other - Utility - Gross Floor Area,ft2
+Design Other/Speciality Hospital - Gross Floor Area,ft2
+Design Outpatient Rehabilitation/Physical Therapy - Gross Floor Area,ft2
+Design Parking - Gross Floor Area,ft2
+Design Performing Arts - Gross Floor Area,ft2
+"Design Personal Services (Health/Beauty, Dry Cleaning, etc) - Gross Floor Area",ft2
+Design Police Station - Gross Floor Area,ft2
+Design Pre-school/Daycare - Gross Floor Area,ft2
+Design Prison/Incarceration - Gross Floor Area,ft2
+Design Race Track - Gross Floor Area,ft2
+Design Refrigerated Warehouse - Gross Floor Area,ft2
+"Design Repair Services (Vehicle, Shoe, Locksmith, etc) - Gross Floor Area",ft2
+Design Residence Hall/Dormitory - Gross Floor Area,ft2
+Design Restaurant - Gross Floor Area,ft2
+Design Retail Store - Gross Floor Area,ft2
+Design Roller Rink - Gross Floor Area,ft2
+Design Self-Storage Facility - Gross Floor Area,ft2
+Design Senior Care Community - Gross Floor Area,ft2
+Design Single Family Home - Gross Floor Area,ft2
+Design Social/Meeting Hall - Gross Floor Area,ft2
+Design Stadium (Closed) - Gross Floor Area,ft2
+Design Stadium (Open) - Gross Floor Area,ft2
+Design Strip Mall - Gross Floor Area,ft2
+Design Supermarket/Grocery Store - Gross Floor Area,ft2
+Design Swimming Pool - Gross Floor Area,ft2
+Design Transportation Terminal/Station - Gross Floor Area,ft2
+Design Urgent Care/Clinic/Other Outpatient - Gross Floor Area,ft2
+Design Veterinary Office - Gross Floor Area,ft2
+Design Vocational School - Gross Floor Area,ft2
+Design Wastewater Treatment Plant - Gross Floor Area,ft2
+Design Wholesale Club/Supercenter - Gross Floor Area,ft2
+Design Worship Facility - Gross Floor Area,ft2
+Design Zoo - Gross Floor Area,ft2
+Design PUE ,
+Portfolio Manager Property ID,
+Portfolio Manager Parent Property ID,
+Custom Property ID 1 - Name,
+Custom Property ID 1 - ID,
+Custom Property ID 2 - Name,
+Custom Property ID 2 - ID,
+Custom Property ID 3 - Name,
+Custom Property ID 3 - ID,
+Austin Building ID,
+Austin Property ID,
+BOMA BESt Building ID,
+CoStar Property ID,
+District of Columbia Building Unique ID,
+District of Columbia Real Property Unique ID,
+Green Globes CIEB Project ID,
+Green Globes NC Project ID,
+LEED Canada Project ID,
+LEED US Project ID,
+Minneapolis Building ID,
+NYC Building Identification Number (BIN),
+NYC Bureau Block and Lot (BBL),
+Philadelphia Building ID,
+REALPac Energy Benchmarking Program Building Name,
+San Francisco Building ID,
+Seattle Building Energy Benchmarking Reporting ID,
+State of Washington Unique Facilities Identifier (UFI),
+U.S. Agency Designated Covered Facility ID,
+U.S. Federal Real Property Unique Identifier ,
+Property Name,
+Parent Property Name,
+Address 1,
+Address 2,
+City,
+County,
+State/Province,
+Postal Code,
+Country,
+Primary Property Type - Self Selected,
+Primary Property Type - EPA Calculated,
+National Median Reference Property Type,
+Property Floor Area (Buildngs and Parking),ft2
+Property Floor Area (Building(s)),ft2
+Property Floor Area (Parking),ft2
+Construction Status,
+Year Built,
+Number of Buildings,
+Occupancy,Percentage
+Property Notes,
+Third Party Certification,
+Third Party Certification Target Date of Compliance,Date
+Third Party Certification Actual Date of Compliance,Date
+Date Property Last Modified,Date
+Property's Portfolio Manager Account Holder,
+Property's Portfolio Manager Account Holder Email,
+Service and Product Provider,
+Metered Areas (Energy),
+Metered Areas (Water),
+Cooling Degree Days (CDD),Degrees F
+Heating Degree Days (HDD),Degrees F
+Weather Station Name,
+Weather Station ID (WMO ID),
+Federal Agency/Department,
+Federal Region/Subdepartment,
+U.S. Federal Campus ,
+Adult Education - Computer Density,"Number per 1,000 ft2"
+Adult Education - Gross Floor Area,ft2
+Adult Education - Number of Computers,
+Adult Education - Number of Workers on Main Shift,
+Adult Education - Percent That Can Be Cooled ,Percentage
+Adult Education - Percent That Can Be Heated,Percentage
+Adult Education - Weekly Operating Hours,
+Adult Education - Worker Density,"Number per 1,000 ft2"
+Ambulatory Surgical Center - Computer Density,"Number per 1,000 ft2"
+Ambulatory Surgical Center - Gross Floor Area,ft2
+Ambulatory Surgical Center - Number of Computers,
+Ambulatory Surgical Center - Number of Workers on Main Shift,
+Ambulatory Surgical Center - Percent That Can Be Cooled,Percentage
+Ambulatory Surgical Center - Percent That Can Be Heated ,Percentage
+Ambulatory Surgical Center - Weekly Operating Hours,
+Ambulatory Surgical Center - Worker Density,"Number per 1,000 ft2"
+Aquarium - Computer Density,"Number per 1,000 ft2"
+Aquarium - Gross Floor Area,ft2
+Aquarium - Number of Computers,
+Aquarium - Number of Workers on Main Shift,
+Aquarium - Percent That Can Be Cooled ,Percentage
+Aquarium - Percent That Can Be Heated,Percentage
+Aquarium - Weekly Operating Hours,
+Aquarium - Worker Density,"Number per 1,000 ft2"
+Automobile Dealership - Computer Density,"Number per 1,000 ft2"
+Automobile Dealership - Gross Floor Area,ft2
+Automobile Dealership - Number of Computers,
+Automobile Dealership - Number of Workers on Main Shift,
+Automobile Dealership - Percent That Can Be Cooled ,Percentage
+Automobile Dealership - Percent That Can Be Heated,Percentage
+Automobile Dealership - Weekly Operating Hours,
+Automobile Dealership - Worker Density,"Number per 1,000 ft2"
+Bank Branch - Computer Denisty,"Number per 1,000 ft2"
+Bank Branch - Gross Floor Area,ft2
+Bank Branch - Number of Computers,
+Bank Branch - Number of Workers on Main Shift,
+Bank Branch - Percent That Can Be Cooled,Percentage
+Bank Branch - Percent That Can Be Heated,Percentage
+Bank Branch - Weekly Operating Hours,
+Bank Branch - Worker Density,"Number per 1,000 ft2"
+Bar/Nightclub - Computer Density,"Number per 1,000 ft2"
+Bar/Nightclub - Gross Floor Area,ft2
+Bar/Nightclub - Number of Computers,
+Bar/Nightclub - Number of Workers on Main Shift,
+Bar/Nightclub - Percent That Can Be Cooled,Percentage
+Bar/Nightclub - Percent That Can Be Heated,Percentage
+Bar/Nightclub - Weekly Operating Hours,
+Bar/Nightclub - Worker Density,"Number per 1,000 ft2"
+Barracks - Dining Hall,
+Barracks - Computer Lab,
+Barracks - Room Density,"Number per 1,000 ft2"
+Barracks- Gross Floor Area ,ft2
+Barracks- Number of Rooms,
+Barracks- Percent That Can Be Cooled,Percentage
+Barracks- Percent That Can Be Heated,Percentage
+Bowling Alley - Computer Density,"Number per 1,000 ft2"
+Bowling Alley - Gross Floor Area,ft2
+Bowling Alley - Number of Computers,
+Bowling Alley - Number of Workers on Main Shift,
+Bowling Alley - Percent That Can Be Cooled ,Percentage 
+Bowling Alley - Percent That Can Be Heated,Percentage
+Bowling Alley - Weekly Operating Hours,
+Bowling Alley - Worker Density,"Number per 1,000 ft2"
+Casino - Computer Density,"Number per 1,000 ft2"
+Casino - Gross Floor Area,ft2
+Casino - Number of Computers,
+Casino - Number of Workers on Main Shift,
+Casino - Percent That Can Be Cooled,Percentage
+Casino - Percent That Can Be Heated,Percentage
+Casino - Weekly Operating Hours,
+Casino - Worker Density,"Number per 1,000 ft2"
+College/University - Computer Density,"Number per 1,000 ft2"
+College/University - Gross Floor Area,ft2
+College/University - Number of Computers,
+College/University - Number of Workers on Main Shift,
+College/University - Percent That Can Be Cooled,Percentage
+College/University - Percent That Can Be Heated ,Percentage
+College/University - Weekly Operating Hours,
+College/University - Worker Density,"Number per 1,000 ft2"
+Convenience Store with Gas Station - Computer Density,"Number per 1,000 ft2"
+Convenience Store with Gas Station - Gross Floor Area,ft2
+Convenience Store with Gas Station - Number of Computers,
+Convenience Store with Gas Station - Number of Workers on Main Shift,
+Convenience Store with Gas Station - Percent That Can Be Cooled ,Percentage
+Convenience Store with Gas Station - Percent That Can Be Heated,Percentage
+Convenience Store with Gas Station - Weekly Operating Hours,
+Convenience Store with Gas Station - Worker Density,"Number per 1,000 ft2"
+Convenience Store without Gas Station - Computer Density,"Number per 1,000 ft2"
+Convenience Store without Gas Station - Gross Floor Area,ft2
+Convenience Store without Gas Station - Number of Computers,
+Convenience Store without Gas Station - Number of Workers on Main Shift,
+Convenience Store without Gas Station - Percent That Can Be Cooled,Percentage
+Convenience Store without Gas Station - Percent That Can Be Heated,Percentage
+Convenience Store without Gas Station - Weekly Operating Hours,
+Convenience Store without Gas Station - Worker Density,"Number per 1,000 ft2"
+Convention Center - Computer Density,"Number per 1,000 ft2"
+Convention Center - Gross Floor Area,ft2
+Convention Center - Number of Computers,
+Convention Center - Number of Workers on Main Shift,
+Convention Center - Percent That Can Be Cooled ,Percentage
+Convention Center - Percent That Can Be Heated,Percentage
+Convention Center - Weekly Operating Hours,
+Convention Center - Worker Density,"Number per 1,000 ft2"
+Courthouse - Computer Density,"Number per 1,000 ft2"
+Courthouse - Gross Floor Area,ft2
+Courthouse - Number of Computers,
+Courthouse - Number of Workers on Main Shift,
+Courthouse - Percent That Can Be Cooled,Percentage
+Courthouse - Percent That Can Be Heated,Percentage
+Courthouse - Weekly Operating Hours,
+Courthouse - Worker Density,"Number per 1,000 ft2"
+Data Center- Cooling Equipment Redundancy,
+Data Center- Gross Floor Area,ft2
+Data Center- IT Energy Configuration,
+Data Center- UPS System Redundancy,
+Distribution Center - Gross Floor Area,ft2
+Distribution Center - Number of Walk-in Refrigeration/Freezer Units,
+Distribution Center - Number of Workers on Main Shift ,
+Distribution Center - Percent That Can Be Cooled,Percentage
+Distribution Center - Percent That Can Be Heated,Percentage 
+Distribution Center - Walk-in Refrigeration Density,"Number per 1,000 ft2"
+Distribution Center - Weekly Operating Hours,
+Distribution Center - Worker Density,"Number per 1,000 ft2"
+Drinking Water Treatment & Distribuiton - Percent That Can Be Heated ,Percentage
+Drinking Water Treatment & Distribution - Percent That Can Be Cooled ,Percentage
+Drinking Water Treatment & Distribution - Average Flow,MGD
+Drinking Water Treatment & Distribution - Computer Density ,"Number per 1,000 ft2"
+Drinking Water Treatment & Distribution - Gross Floor Area,ft2
+Drinking Water Treatment & Distribution - Number of Computers ,
+Drinking Water Treatment & Distribution - Number of Workers on Main Shift ,
+Drinking Water Treatment & Distribution - Worker Density ,"Number per 1,000 ft2"
+Enclosed Mall - Computer Density,"Number per 1,000 ft2"
+Enclosed Mall - Gross Floor Area,ft2
+Enclosed Mall - Number of Computers,
+Enclosed Mall - Number of Workers on Main Shift,
+Enclosed Mall - Percent That Can Be Cooled,Percentage
+Enclosed Mall - Percent That Can Be Heated ,Percentage
+Enclosed Mall - Weekly Operating Hours,
+Enclosed Mall - Worker Density,"Number per 1,000 ft2"
+Energy/Power Station - Computer Density,"Number per 1,000 ft2"
+Energy/Power Station - Gross Floor Area,ft2
+Energy/Power Station - Number of Computers,
+Energy/Power Station - Number of Workers on Main Shift,
+Energy/Power Station - Percent That Can Be Cooled ,Percentage
+Energy/Power Station - Percent That Can Be Heated,Percentage
+Energy/Power Station - Weekly Operating Hours,
+Energy/Power Station - Worker Density,"Number per 1,000 ft2"
+Fast Food Restaurant - Computer Density,"Number per 1,000 ft2"
+Fast Food Restaurant - Gross Floor Area,ft2
+Fast Food Restaurant - Number of Computers,
+Fast Food Restaurant - Number of Workers on Main Shift,
+Fast Food Restaurant - Percent That Can Be Cooled ,Percentage
+Fast Food Restaurant - Percent That Can Be Heated ,Percentage
+Fast Food Restaurant - Weekly Operating Hours,
+Fast Food Restaurant - Worker Density,"Number per 1,000 ft2"
+Financial Office - Computer Denisty,"Number per 1,000 ft2"
+Financial Office - Gross Floor Area,ft2
+Financial Office - Number of Computers,
+Financial Office - Number of Workers on Main Shift,
+Financial Office - Percent That Can Be Cooled,Percentage
+Financial Office - Percent That Can Be Heated,Percentage
+Financial Office - Weekly Operating Hours,
+Financial Office - Worker Density,"Number per 1,000 ft2"
+Fire Station - Computer Density,"Number per 1,000 ft2"
+Fire Station - Gross Floor Area,ft2
+Fire Station - Number of Computers,
+Fire Station - Number of Workers on Main Shift,
+Fire Station - Percent That Can Be Cooled ,Percentage
+Fire Station - Percent That Can Be Heated ,Percentage
+Fire Station - Weekly Operating Hours,
+Fire Station - Worker Density,"Number per 1,000 ft2"
+Fitness Center/Health Club/Gym - Computer Density,"Number per 1,000 ft2"
+Fitness Center/Health Club/Gym - Gross Floor Area,ft2
+Fitness Center/Health Club/Gym - Number of Computers,
+Fitness Center/Health Club/Gym - Number of Workers on Main Shift,
+Fitness Center/Health Club/Gym - Percent That Can Be Cooled ,Percentage
+Fitness Center/Health Club/Gym - Percent That Can Be Heated,Percentage
+Fitness Center/Health Club/Gym - Weekly Operating Hours,
+Fitness Center/Health Club/Gym - Worker Density,"Number per 1,000 ft2"
+Food Sales - Computer Density,"Number per 1,000 ft2 "
+Food Sales - Gross Floor Area,ft2
+Food Sales - Number of Computers,
+Food Sales - Number of Workers on Main Shift,
+Food Sales - Percent That Can Be Cooled,Percentage
+Food Sales - Percent That Can Be Heated ,Percentage
+Food Sales - Weekly Operating Hours,
+Food Sales - Worker Density,"Number per 1,000 ft2"
+Food Service - Computer Density,"Number per 1,000 ft2"
+Food Service - Gross Floor Area,ft2
+Food Service - Number of Computers,
+Food Service - Number of Workers on Main Shift,
+Food Service - Percent That Can Be Cooled ,Percentage
+Food Service - Percent That Can Be Heated,Percentage
+Food Service - Weekly Operating Hours,
+Food Service - Worker Density,"Number per 1,000 ft2"
+Hospital (General Medical & Surgical) - Full Time Equivalent (FTE) Workers Density,"Number per 1,000 ft2"
+Hospital (General Medical & Surgical) - Gross Floor Area,ft2
+Hospital (General Medical & Surgical) - Laboratory,
+Hospital (General Medical & Surgical) - Maximum Number of Floors,
+Hospital (General Medical & Surgical) - MRI Density,"Number per 1,000 ft2"
+Hospital (General Medical & Surgical) - Number of MRI Machines,
+Hospital (General Medical & Surgical) - Number of Staffed Beds,
+Hospital (General Medical & Surgical) - Onsite Laundry Facilitiy,
+Hospital (General Medical & Surgical) - Owned By,
+Hospital (General Medical & Surgical) - Staffed Bed Density,"Number per 1,000 ft2"
+Hospital (General Medical & Surgical) - Tertiary Care,
+Hospital (General Medical & Surgical)- Full Time Equivalent (FTE) Workers,
+Hotel - Amount of Laundry Processed On-site Annually,short tons/year
+Hotel - Average Occupancy,Percentage
+Hotel - Commercial Refrigeration Density,"Number per 1,000 ft2"
+Hotel - Cooking Facilities,
+Hotel - Full Service Spa Floor Area,ft2
+Hotel - Gross Floor Area,ft2
+Hotel - Gym/fitness Center Floor Area,ft2
+Hotel - Number of Workers on Main Shift,
+Hotel - Percent That Can Be Cooled,Percentage
+Hotel - Percent That Can Be Heated,Percentage
+Hotel - Room Density,"Number per 1,000 ft2"
+Hotel - Type of Laundry Facility,
+Hotel - Worker Density,"Number per 1,000 ft2"
+Hotel- Hours per day guests on-site,
+Hotel- Number of Commercial Refrigeration/Freezer Units,
+Hotel- Number of guest meals served per year,
+Hotel- Number of Rooms,
+Ice/Curling Rink - Computer Density,"Number per 1,000 ft2"
+Ice/Curling Rink - Gross Floor Area,ft2
+Ice/Curling Rink - Number of Computers,
+Ice/Curling Rink - Number of Workers on Main Shift,
+Ice/Curling Rink - Percent That Can Be Cooled,Percentage
+Ice/Curling Rink - Percent That Can Be Heated,Percentage
+Ice/Curling Rink - Weekly Operating Hours,
+Ice/Curling Rink - Worker Density,"Number per 1,000 ft2"
+Indoor Arena - Computer Density,"Number per 1,000 ft2"
+Indoor Arena - Enclosed Floor Area,ft2
+Indoor Arena - Gross Floor Area,ft2
+Indoor Arena - Ice Events,
+Indoor Arena - Number of Computers,
+Indoor Arena - Number of Concert/Show Events per Year,
+Indoor Arena - Number of Special/Other Events per Year,
+Indoor Arena - Number of Sporting Events per Year ,
+Indoor Arena - Number of Walk-in Refrigeration/Freezer Units,
+Indoor Arena - Percent That Can Be Cooled ,Percentage
+Indoor Arena - Percent That Can Be Heated ,Percentage
+Indoor Arena - Size of Electronic Scoreboards,ft2
+Indoor Arena - Walk-in Refrigeration Density,"Number per 1,000 ft2"
+K-12 School - Computer Density,"Number per 1,000 ft2"
+K-12 School - Cooking Facilities,
+K-12 School - Gross Floor Area,ft2
+K-12 School - Gymnasium Floor Area,ft2
+K-12 School - High School,
+K-12 School - Months in Use,
+K-12 School - Number of Computers,
+K-12 School - Number of Walk-in Refrigeration/Freezor Units,
+K-12 School - Number of Workers on Main Shift,
+K-12 School - Percent That Can Be Cooled,Percentage
+K-12 School - Percent That Can Be Heated,Percentage
+K-12 School - Refrigeration Density,"Number per 1,000 ft2"
+K-12 School - School District,
+K-12 School - Student Seating Capacity,
+K-12 School - Student Seating Density,"Number per 1,000 ft2"
+K-12 School - Weekend Operation,
+K-12 School - Worker Density,"Number per 1,000 ft2"
+Laboratory - Computer Density,"Number per 1,000 ft2"
+Laboratory - Gross Floor Area,ft2
+Laboratory - Number of Computers,
+Laboratory - Number of Workers on Main Shift,
+Laboratory - Percent That Can Be Cooled ,Percentage
+Laboratory - Percent That Can Be Heated,Percentage
+Laboratory - Weekly Operating Hours,
+Laboratory - Worker Density,"Number per 1,000 ft2"
+Library - Computer Density,"Number per 1,000 ft2"
+Library - Gross Floor Area,ft2
+Library - Number of Computers,
+Library - Number of Workers on Main Shift,
+Library - Percent That Can Be Cooled ,Percentage
+Library - Percent That Can Be Heated ,Percentage
+Library - Weekly Operating Hours,
+Library - Worker Density,"Number per 1,000 ft2"
+Lifestyle Center - Computer Density,"Number per 1,000 ft2"
+Lifestyle Center - Gross Floor Area,ft2
+Lifestyle Center - Number of Computers,
+Lifestyle Center - Number of Workers on Main Shift,
+Lifestyle Center - Percent That Can Be Cooled,Percentage
+Lifestyle Center - Percent That Can Be Heated ,Percentage
+Lifestyle Center - Weekly Operating Hours,
+Lifestyle Center - Worker Density,"Number per 1,000 ft2"
+Mailing Center/Post Office - Computer Density,"Number per 1,000 ft2"
+Mailing Center/Post Office - Gross Floor Area,ft2
+Mailing Center/Post Office - Number of Computers,
+Mailing Center/Post Office - Number of Workers on Main Shift ,
+Mailing Center/Post Office - Percent That Can Be Cooled,Percentage
+Mailing Center/Post Office - Percent That Can Be Heated,Percentage
+Mailing Center/Post Office - Weekly Operating Hours,
+Mailing Center/Post Office - Worker Density,"Number per 1,000 ft2"
+Manufacturing/Industrial Plant - Computer Density,"Number per 1,000 ft2"
+Manufacturing/Industrial Plant - Gross Floor Area,ft2
+Manufacturing/Industrial Plant - Number of Computers,
+Manufacturing/Industrial Plant - Number of Workers on Main Shift,
+Manufacturing/Industrial Plant - Percent That Can Be Cooled,Percentage
+Manufacturing/Industrial Plant - Percent That Can Be Heated,Percentage 
+Manufacturing/Industrial Plant - Weekly Operating Hours,
+Manufacturing/Industrial Plant - Worker Density,"Number per 1,000 ft2"
+Medical Office - Gross Floor Area,ft2
+Medical Office - MRI Machine Density,"Number per 1,000 ft2"
+Medical Office - Number of MRI Machines,
+Medical Office - Number of Surgical Operating Beds,
+Medical Office - Number of Workers on Main Shift,
+Medical Office - Percent That Can Be Cooled ,Percentage
+Medical Office - Perfecnt That Can Be Heated,Percentage
+Medical Office - Surgery Center Size,ft2
+Medical Office - Surgical Operating Bed Density,"Number per 1,000 ft2"
+Medical Office - Weekly Operating Hours,
+Medical Office - Worker Density,"Number per 1,000 ft2"
+Movie Theater - Computer Density,"Number per 1,000 ft2"
+Movie Theater - Gross Floor Area,ft2
+Movie Theater - Number of Computers,
+Movie Theater - Number of Workers on Main Shift,
+Movie Theater - Percent That Can Be Cooled ,Percentage
+Movie Theater - Percent That Can Be Heated ,Percentage
+Movie Theater - Weekly Operating Hours,
+Movie Theater - Worker Density,"Number per 1,000 ft2"
+Multifamily Housing - Government Subsidized Housing,
+Multifamily Housing - Gross Floor Area,ft2
+Multifamily Housing - Maximum Number of Floors,
+Multifamily Housing - Number of Bedrooms,
+Multifamily Housing - Number of Dishwasher Hookups in All Units,
+Multifamily Housing - Number of Dishwasher Hookups in Common Area(s),
+Multifamily Housing - Number of Laundry Hookups in All Units,
+Multifamily Housing - Number of Laundry Hookups in Common Area(s),
+Multifamily Housing - Number of Residential Living Units,
+Multifamily Housing - Percent of Gross Floor Area That is Common Space Only,Percentage
+Multifamily Housing - Percent That Can Be Cooled,Percentage
+Multifamily Housing - Percent That Can Be Heated,Percentage
+Multifamily Housing - Primary Hot Water Fuel Type (for units),
+Multifamily Housing - Resident Population Type,
+Museum - Computer Density,"Number per 1,000 ft2"
+Museum - Gross Floor Area,ft2
+Museum - Number of Computers,
+Museum - Number of Workers on Main Shift,
+Museum - Percent That Can Be Cooled ,Percentage
+Museum - Percent That Can Be Heated ,Percentage
+Museum - Weekly Operating Hours,
+Museum - Worker Density,"Number per 1,000 ft2"
+Non-Refrigerated Warehouse - Gross Floor Area,ft2
+Non-Refrigerated Warehouse - Number of Walk-in Refrigeration/Freezer Units,
+Non-Refrigerated Warehouse - Number of Worker on Main Shift,
+Non-Refrigerated Warehouse - Percent That Can Be Cooled ,Percentage
+Non-Refrigerated Warehouse - Percent That Can Be Heated,Percentage
+Non-Refrigerated Warehouse - Walk-in Refrigeration Density,"Number per 1,000 ft2"
+Non-Refrigerated Warehouse - Weekly Operating Hours,
+Non-Refrigerated Warehouse - Worker Density,"Number per 1,000 ft2"
+Office - Computer Density,"Number per 1,000 ft2"
+Office - Gross Floor Area,ft2
+Office - Number of Computers,
+Office - Number of Workers on Main Shift,
+Office - Percent That Can Be Cooled ,Percentage
+Office - Percent That Can Be Heated,Percentage
+Office - Weekly Operating Hours,
+Office - Worker Density,"Number per 1,000 ft2"
+Other - Public Services - Percent That Can Be Heated ,Percentage 
+Other - Services - Percent That Can Be Heated,Percentage
+Other - Computer Density,"Number per 1,000 ft2"
+Other - Education - Computer Density,"Number per 1,000 ft2"
+Other - Education - Gross Floor Area,ft2
+Other - Education - Number of Computers,
+Other - Education - Number of Workers on Main Shift,
+Other - Education - Percent That Can Be Cooled ,Percentage
+Other - Education - Percent That Can Be Heated,Percentage
+Other - Education - Weekly Operating Hours,
+Other - Education - Worker Density,"Number per 1,000 ft2"
+Other - Entertainment/Public Assembly - Computer Density,"Number per 1,000 ft2"
+Other - Entertainment/Public Assembly - Gross Floor Area,ft2
+Other - Entertainment/Public Assembly - Number of Computers,
+Other - Entertainment/Public Assembly - Number of Workers on Main Shift,
+Other - Entertainment/Public Assembly - Percent That Can Be Cooled,Percentage
+Other - Entertainment/Public Assembly - Percent That Can Be Heated ,Percentage
+Other - Entertainment/Public Assembly - Weekly Operating Hours,
+Other - Entertainment/Public Assembly - Worker Density,"Number per 1,000 ft2"
+Other - Gross Floor Area,ft2
+Other - Lodging/Residential - Computer Density,"Number per 1,000 ft2"
+Other - Lodging/Residential - Gross Floor Area,ft2
+Other - Lodging/Residential - Number of Computers,
+Other - Lodging/Residential - Number of Workers on Main Shift,
+Other - Lodging/Residential - Percent That Can Be Heated ,Percentage
+Other - Lodging/Residential - Weekly Operating Hours,
+Other - Lodging/Residential - Worker Density,"Number per 1,000 ft2"
+Other - Lodgning/Residential - Percent That Can Be Cooled,Percentage
+Other - Mall - Computer Density,"Number per 1,000 ft2"
+Other - Mall - Gross Floor Area,ft2
+Other - Mall - Number of Computers,
+Other - Mall - Number of Workers on Main Shift,
+Other - Mall - Percent That Can Be Cooled,Percentage
+Other - Mall - Percent That Can Be Heated ,Percentage
+Other - Mall - Weekly Operating Hours,
+Other - Mall - Worker Density,"Number per 1,000 ft2"
+Other - Number of Computers,
+Other - Number of Workers on Main Shift,
+Other - Percent That Can Be Cooled ,Percentage
+Other - Percent That Can Be Heated ,Percentage
+Other - Public Services - Computer Density ,"Number per 1,000 ft2"
+Other - Public Services - Gross Floor Area,ft2
+Other - Public Services - Number of Computers,
+Other - Public Services - Number of Workers on Main Shift,
+Other - Public Services - Percent That Can Be Cooled ,Percentage
+Other - Public Services - Weekly Operating Hours,
+Other - Public Services - Worker Density,"Number per 1,000 ft2"
+Other - Recreation - Computer Density,"Number per 1,000 ft2"
+Other - Recreation - Gross Floor Area,ft2
+Other - Recreation - Number of Computers,
+Other - Recreation - Number of Workers on Main Shift,
+Other - Recreation - Percent That Can Be Cooled ,Percentage
+Other - Recreation - Percent That Can Be Heated,Percentage
+Other - Recreation - Weekly Operating Hours,
+Other - Recreation - Worker Density,"Number per 1,000 ft2"
+Other - Restaurant/Bar - Computer Density,"Number per 1,000 ft2"
+Other - Restaurant/Bar - Gross Floor Area,ft2
+Other - Restaurant/Bar - Number of Computers,
+Other - Restaurant/Bar - Number of Workers on Main Shift,
+Other - Restaurant/Bar - Percent That Can Be Cooled ,Percentage
+Other - Restaurant/Bar - Percent That Can Be Heated ,Percentage 
+Other - Restaurant/Bar - Weekly Operating Hours,
+Other - Restaurant/Bar - Worker Density,"Number per 1,000 ft2"
+Other - Services - Computer Density,"Number per 1,000 ft2"
+Other - Services - Gross Floor Area,ft2
+Other - Services - Number of Computers,
+Other - Services - Number of Workers on Main Shift,
+Other - Services - Percent That Can Be Cooled ,Percentage
+Other - Services - Weekly Operating Hours,
+Other - Services - Worker Density,"Number per 1,000 ft2"
+Other - Stadium - Computer Density,"Number per 1,000 ft2"
+Other - Stadium - Enclosed Floor Area,ft2
+Other - Stadium - Gross Floor Area,ft2
+Other - Stadium - Ice Events,
+Other - Stadium - Number of Computers,
+Other - Stadium - Number of Concert/Show Events per Year,
+Other - Stadium - Number of Special/Other Events per Year,
+Other - Stadium - Number of Sporting Events per Year,
+Other - Stadium - Number of Walk-in Refrigeration/Freezer Units,
+Other - Stadium - Percent That Can Be Cooled ,Percentage
+Other - Stadium - Percent That Can Be Heated,Percentage
+Other - Stadium - Size of Electronic Scoreboards,ft2
+Other - Stadium - Walk-in Refrigeration Density,"Number per 1,000 ft2"
+Other - Technology/Science - Computer Density,"Number per 1,000 ft2"
+Other - Technology/Science - Gross Floor Area,ft2
+Other - Technology/Science - Number of Computers,
+Other - Technology/Science - Number of Workers on Main Shift,
+Other - Technology/Science - Percent That Can Be Cooled ,Percentage
+Other - Technology/Science - Percent That Can Be Heated ,Percentage
+Other - Technology/Science - Weekly Operating Hours,
+Other - Technology/Science - Worker Density,"Number per 1,000 ft2"
+Other - Utility - Computer Density,"Number per 1,000 ft2"
+Other - Utility - Gross Floor Area,ft2
+Other - Utility - Number of Computers,
+Other - Utility - Number of Workers on Main Shift,
+Other - Utility - Percent That Can Be Cooled ,Percentage
+Other - Utility - Percent That Can Be Heated ,Percentage
+Other - Utility - Weekly Operating Hours,
+Other - Utility - Worker Density,"Number per 1,000 ft2"
+Other - Weekly Operating Hours,
+Other - Worker Density,"Number per 1,000 ft2"
+Other/Speciality Hospital - Computer Density,"Number per 1,000 ft2"
+Other/Speciality Hospital - Gross Floor Area,ft2
+Other/Speciality Hospital - Number of Computers,
+Other/Speciality Hospital - Number of Workers on Main Shift,
+Other/Speciality Hospital - Percent That Can Be Cooled ,Percentage
+Other/Speciality Hospital - Percent That Can Be Heated,Percentage
+Other/Speciality Hospital - Weekly Operating Hours,
+Other/Speciality Hospital - Worker Density,"Number per 1,000 ft2"
+Outpatient Rehabilitation/Physical Therapy - Computer Density,"Number per 1,000 ft2"
+Outpatient Rehabilitation/Physical Therapy - Gross Floor Area,ft2
+Outpatient Rehabilitation/Physical Therapy - Number of Computers,
+Outpatient Rehabilitation/Physical Therapy - Number of Workers on Main Shift,
+Outpatient Rehabilitation/Physical Therapy - Percent That Can Be Cooled ,Percentage
+Outpatient Rehabilitation/Physical Therapy - Percent That Can Be Heated ,Percentage
+Outpatient Rehabilitation/Physical Therapy - Weekly Operating Hours,
+Outpatient Rehabilitation/Physical Therapy - Worker Density,"Number per 1,000 ft2"
+Parking - Completely Enclosed Parking Garage Size,ft2
+Parking - Gross Floor Area,ft2
+Parking - Open Parking Lot Size,ft2
+Parking - Partially Enclosed Parking Garage Size,ft2 
+Parking - Supplemental Heating,
+Performing Arts - Computer Density,"Number per 1,000 ft2"
+Performing Arts - Gross Floor Area,ft2
+Performing Arts - Number of Computers,
+Performing Arts - Number of Workers on Main Shift ,
+Performing Arts - Percent That Can Be Cooled ,Percentage
+Performing Arts - Percent That Can Be Heated ,Percentage
+Performing Arts - Weekly Operating Hours,
+Performing Arts - Worker Density,"Number per 1,000 ft2"
+"Personal Services (Health/Beauty, Dry Cleaning, etc) - Computer Density","Number per 1,000 ft2"
+"Personal Services (Health/Beauty, Dry Cleaning, etc) - Gross Floor Area",ft2
+"Personal Services (Health/Beauty, Dry Cleaning, etc) - Number of Computers",
+"Personal Services (Health/Beauty, Dry Cleaning, etc) - Number of Workers on Main Shift",
+"Personal Services (Health/Beauty, Dry Cleaning, etc) - Percent That Can Be Cooled ",Percentage
+"Personal Services (Health/Beauty, Dry Cleaning, etc) - Percent That Can Be Heated ",Percentage
+"Personal Services (Health/Beauty, Dry Cleaning, etc) - Weekly Operating Hours",
+"Personal Services (Health/Beauty, Dry Cleaning, etc) - Worker Density","Number per 1,000 ft2"
+Police Station - Computer Density,"Number per 1,000 ft2"
+Police Station - Gross Floor Area,ft2
+Police Station - Number of Computers,
+Police Station - Number of Workers on Main Shift,
+Police Station - Percent That Can Be Cooled ,Percentage
+Police Station - Percent That Can Be Heated,Percentage
+Police Station - Weekly Operating Hours,
+Police Station - Worker Density,"Number per 1,000 ft2"
+Pre-school/Daycare - Computer Density,"Number per 1,000 ft2"
+Pre-school/Daycare - Gross Floor Area,ft2
+Pre-school/Daycare - Number of Computers,
+Pre-school/Daycare - Number of Workers on Main Shift,
+Pre-school/Daycare - Percent That Can Be Cooled ,Percentage
+Pre-school/Daycare - Percent That Can Be Heated ,Percentage
+Pre-school/Daycare - Weekly Operating Hours,
+Pre-school/Daycare - Worker Density,"Number per 1,000 ft2"
+Prison/Incarceration - Computer Density,"Number per 1,000 ft2"
+Prison/Incarceration - Gross Floor Area,ft2
+Prison/Incarceration - Number of Computers,
+Prison/Incarceration - Number of Workers on Main Shift,
+Prison/Incarceration - Percent That Can Be Cooled ,Percentage
+Prison/Incarceration - Percent That Can Be Heated ,Percentage
+Prison/Incarceration - Weekly Operating Hours,
+Prison/Incarceration - Worker Density,"Number per 1,000 ft2"
+Race Track - Computer Density,"Number per 1,000 ft2"
+Race Track - Gross Floor Area,ft2
+Race Track - Number of Computers,
+Race Track - Number of Workers on Main Shift,
+Race Track - Percent That Can Be Cooled ,Percentage
+Race Track - Percent That Can Be Heated ,Percentage
+Race Track - Weekly Operating Hours,
+Race Track - Worker Density,"Number per 1,000 ft2"
+Refrigerated Warehouse - Gross Floor Area,ft2
+Refrigerated Warehouse - Number of Workers on Main Shift,
+Refrigerated Warehouse - Weekly Operating Hours,
+Refrigerated Warehouse - Worker Density,"Number per 1,000 ft2"
+"Repair Services (Vehicle, Shoe, Locksmith, etc) - Computer Density","Number per 1,000 ft2"
+"Repair Services (Vehicle, Shoe, Locksmith, etc) - Gross Floor Area",ft2
+"Repair Services (Vehicle, Shoe, Locksmith, etc) - Number of Computers",
+"Repair Services (Vehicle, Shoe, Locksmith, etc) - Number of Workers on Main Shift",
+"Repair Services (Vehicle, Shoe, Locksmith, etc) - Percent That Can Be Cooled ",Percentage
+"Repair Services (Vehicle, Shoe, Locksmith, etc) - Percent That Can Be Heated ",Percentage
+"Repair Services (Vehicle, Shoe, Locksmith, etc) - Weekly Operating Hours ",
+"Repair Services (Vehicle, Shoe, Locksmith, etc) - Worker Density","Number per 1,000 ft2"
+Residence Hall/ Dormitory - Computer Lab,
+Residence Hall/ Dormitory - Dining Hall,
+Residence Hall/Dormitory - Gross Floor Area ,ft2
+Residence Hall/Dormitory - Number of Rooms,
+Residence Hall/Dormitory - Percent That Can Be Cooled,Percentage
+Residence Hall/Dormitory - Percent That Can Be Heated,Percentage
+Residence Hall/Dormitory - Room Density,"Number per 1,000 ft2"
+Restaurant - Computer Density,"Number per 1,000 ft2"
+Restaurant - Gross Floor Area,ft2
+Restaurant - Number of Computers,
+Restaurant - Number of Workers on Main Shift,
+Restaurant - Percent That Can Be Cooled ,Percentage
+Restaurant - Percent That Can Be Heated ,Percentage
+Restaurant - Weekly Operating Hours,
+Restaurant - Worker Density,"Number per 1,000 ft2"
+Retail Store - Cash Register Density,"Number per 1,000 ft2"
+Retail Store - Computer Density,"Number per 1,000 ft2"
+Retail Store - Exterior Entrance to the Public,
+Retail Store - Gross Floor Area,ft2
+Retail Store - Number of Cash Registers,
+Retail Store - Number of Computers,
+Retail Store - Number of Open or Closed Refrigeration/Freezer Units,
+Retail Store - Number of Walk-in Refrigeration/Freezer Units,
+Retail Store - Number of Workers on Main Shift ,
+Retail Store - Open or Closed Refrigeration Density,"Number per 1,000 ft2"
+Retail Store - Percent That Can Be Cooled,Percentage
+Retail Store - Percent That Can Be Heated,Percentage
+Retail Store - Single Store ,
+Retail Store - Walk-in Refrigeration Density,"Number per 1,000 ft2"
+Retail Store - Weekly Operating Hours,
+Retail Store - Worker Density,"Number per 1,000 ft2"
+Roller Rink - Number of Workers on Main Shift,
+Roller Rink - Computer Density,"Number per 1,000 ft2"
+Roller Rink - Gross Floor Area,ft2
+Roller Rink - Number of Computers,
+Roller Rink - Percent That Can Be Cooled ,Percentage
+Roller Rink - Percent That Can Be Heated ,Percentage
+Roller Rink - Weekly Operating Hours,
+Roller Rink - Worker Density,"Number per 1,000 ft2"
+Self-Storage Facility - Computer Density,"Number per 1,000 ft2"
+Self-Storage Facility - Gross Floor Area,ft2
+Self-Storage Facility - Number of Computers,
+Self-Storage Facility - Number of Workers on Main Shift,
+Self-Storage Facility - Percent That Can Be Cooled ,Percentage
+Self-Storage Facility - Percent That Can Be Heated ,Percentage
+Self-Storage Facility - Weekly Operating Hours,
+Self-Storage Facility - Worker Density,"Number per 1,000 ft2"
+Senior Care Community - Average Number of Residents,
+Senior Care Community - Commercial Refrigeration Density,"Number per 1,000 ft2"
+Senior Care Community - Commercial Washing Machine Density,"Number per 1,000 ft2"
+Senior Care Community - Computer Density,"Number per 1,000 ft2"
+Senior Care Community - Electronic Lift Density,"Number per 1,000 ft2"
+Senior Care Community - Gross Floor Area,ft2
+Senior Care Community - Living Unit Density,"Number per 1,000 ft2"
+Senior Care Community - Maximum Resident Capacity,
+Senior Care Community - Number of Commercial Washing Machines,
+Senior Care Community - Number of Commerical Refrigeration/ Freezer Units,
+Senior Care Community - Number of Computers,
+Senior Care Community - Number of Residential Electronic Lift Systems ,
+Senior Care Community - Number of Residential Living Units,
+Senior Care Community - Number of Residential Washing Machines ,
+Senior Care Community - Number of Workers on Main Shift,
+Senior Care Community - Percent That Can Be Cooled ,Percentage
+Senior Care Community - Percent That Can Be Heated ,Percentage
+Senior Care Community - Resident Density,"Number per 1,000 ft2"
+Senior Care Community - Residential Washing Machine Density,"Number per 1,000 ft2"
+Senior Care Community - Worker Density,"Number per 1,000 ft2"
+Single Family Home - Bedroom Density,"Number per 1,000 ft2"
+Single Family Home - Density of People ,"Number per 1,000 ft2"
+Single Family Home - Gross Floor Area,ft2
+Single Family Home - Number of Bedrooms,
+Single Family Home - Number of People,
+Social/Meeting Hall - Computer Density,"Number per 1,000 ft2"
+Social/Meeting Hall - Gross Floor Area,ft2
+Social/Meeting Hall - Number of Computers,
+Social/Meeting Hall - Number of Workers on Main Shift,
+Social/Meeting Hall - Percent That Can Be Cooled ,Percentage
+Social/Meeting Hall - Percent That Can Be Heated ,Percentage
+Social/Meeting Hall - Weekly Operating Hours,
+Social/Meeting Hall - Worker Density,"Number per 1,000 ft2"
+Stadium (Closed) - Computer Density,"Number per 1,000 ft2"
+Stadium (Closed) - Enclosed Floor Area,ft2
+Stadium (Closed) - Gross Floor Area,ft2
+Stadium (Closed) - Ice Events,
+Stadium (Closed) - Number of Computers,
+Stadium (Closed) - Number of Concert/Show Events per Year,
+Stadium (Closed) - Number of Special/Other Events per Year,
+Stadium (Closed) - Number of Sporting Events per Year,
+Stadium (Closed) - Number of Walk-in Refrigeration/Freezer Units,
+Stadium (Closed) - Percent That Can Be Cooled ,Percentage
+Stadium (Closed) - Percent That Can Be Heated ,Percentage
+Stadium (Closed) - Size of Electronic Scoreboards,ft2
+Stadium (Closed) - Walk-in Refrigeration Density,"Number per 1,000 ft2"
+Stadium (Open) - Computer Density,"Number per 1,000 ft2"
+Stadium (Open) - Enclosed Floor Area,ft2
+Stadium (Open) - Gross Floor Area,ft2
+Stadium (Open) - Ice Events,
+Stadium (Open) - Number of Computers,
+Stadium (Open) - Number of Concert/Show Events per Year,
+Stadium (Open) - Number of Special/Other Events per Year,
+Stadium (Open) - Number of Sporting Events per Year,
+Stadium (Open) - Number of Walk-in Refrigeration/Freezer Units,
+Stadium (Open) - Percent That Can Be Cooled ,Percentage
+Stadium (Open) - Percent That Can Be Heated ,Percentage
+Stadium (Open) - Size of Electronic Scoreboards,ft2
+Stadium (Open) - Walk-in Refrigeration Density,"Number per 1,000 ft2"
+Strip Mall - Computer Density,"Number per 1,000 ft2"
+Strip Mall - Gross Floor Area,ft2
+Strip Mall - Number of Computers,
+Strip Mall - Number of Workers on Main Shift,
+Strip Mall - Percent That Can Be Cooled,Percentage
+Strip Mall - Percent That Can Be Heated ,Percentage
+Strip Mall - Weekly Operating Hours,
+Strip Mall - Worker Density,"Number per 1,000 ft2"
+Supermarket/Grocery - Cash Register Density,"Number per 1,000 ft2"
+Supermarket/Grocery - Computer Density,"Number per 1,000 ft2"
+Supermarket/Grocery - Cooking Facilities,
+Supermarket/Grocery - Gross Floor Area,ft2
+Supermarket/Grocery - Number of Cash Registers ,
+Supermarket/Grocery - Number of Computers,
+Supermarket/Grocery - Number of Open or Closed Refrigeration/Freezer Units,
+Supermarket/Grocery - Number of Walk-in Refrigeration/Freezer Units,
+Supermarket/Grocery - Number of Workers on Main Shift,
+Supermarket/Grocery - Open or Closed Refrigeration Density,"Number per 1,000 ft2"
+Supermarket/Grocery - Percent That Can Be Cooled,Percentage
+Supermarket/Grocery - Percent That Can Be Heated,Percentage
+Supermarket/Grocery - Walk-in Refrigeration Density,"Number per 1,000 ft2"
+Supermarket/Grocery - Weekly Operating Hours,
+Supermarket/Grocery - Worker Density,"Number per 1,000 ft2"
+Swimming Pool - Approximate Pool Size,
+Swimming Pool - Location of Pool,
+Swimming Pool - Months in Use,
+Transportation Terminal/Station - Computer Density,"Number per 1,000 ft2"
+Transportation Terminal/Station - Gross Floor Area,ft2
+Transportation Terminal/Station - Number of Computers,
+Transportation Terminal/Station - Number of Workers on Main Shift,
+Transportation Terminal/Station - Percent That Can Be Cooled ,Percentage
+Transportation Terminal/Station - Percent That Can Be Heated ,Percentage
+Transportation Terminal/Station - Weekly Operating Hours,
+Transportation Terminal/Station - Worker Density,"Number per 1,000 ft2"
+Urgent Care/Clinic/Other Outpatient - Computer Density,"Number per 1,000 ft2"
+Urgent Care/Clinic/Other Outpatient - Gross Floor Area,ft2
+Urgent Care/Clinic/Other Outpatient - Number of Computers,
+Urgent Care/Clinic/Other Outpatient - Number of Workers on Main Shift,
+Urgent Care/Clinic/Other Outpatient - Percent That can Be Cooled ,Percentage
+Urgent Care/Clinic/Other Outpatient - Percent That Can Be Heated ,Percentage
+Urgent Care/Clinic/Other Outpatient - Weekly Operating Hours,
+Urgent Care/Clinic/Other Outpatient - Worker Density,"Number per 1,000 ft2"
+Veterinary Office - Computer Density,"Number per 1,000 ft2"
+Veterinary Office - Gross Floor Area,ft2
+Veterinary Office - Number of Computers,
+Veterinary Office - Number of Workers on Main Shift,
+Veterinary Office - Percent That Can Be Heated ,Percentage
+Veterinary Office - Percent That Can Be Heated ,Percentage
+Veterinary Office - Weekly Operating Hours,
+Veterinary Office - Worker Density,"Number per 1,000 ft2"
+Vocational School - Computer Density,"Number per 1,000 ft2"
+Vocational School - Gross Floor Area,ft2
+Vocational School - Number of Computers,
+Vocational School - Number of Workers on Main Shift,
+Vocational School - Percent That Can Be Cooled ,Percentage
+Vocational School - Percent That Can Be Heated ,Percentage
+Vocational School - Weekly Operating Hours,
+Vocational School - Worker Density,"Number per 1,000 ft2"
+Wastewater Treatment Plant - Average Effluent Biological Oxygen Demand (BOD5),mg/l
+Wastewater Treatment Plant - Average Influent Biological Oxygen Demand (BOD5),mg/l
+Wastewater Treatment Plant - Average Influent Flow,MGD
+Wastewater Treatment Plant - Fixed Film Trickle Filtration Process,
+Wastewater Treatment Plant - Gross Floor Area,ft2
+Wastewater Treatment Plant - Nutrient Removal,
+Wastewater Treatment Plant - Plant Design Flow Rate,MGD
+Wholesale Club/Supercenter- Cash Register Density,"Number per 1,000 ft2"
+Wholesale Club/Supercenter- Computer Density,"Number per 1,000 ft2"
+Wholesale Club/Supercenter- Exterior Entrance to the Public,
+Wholesale Club/Supercenter- Gross Floor Area ,ft2
+Wholesale Club/Supercenter- Number of Cash Registers,
+Wholesale Club/Supercenter- Number of Computers,
+Wholesale Club/Supercenter- Number of Open or Closed Refrigeration/Freezer Units,
+Wholesale Club/Supercenter- Number of Walk-in Refrigeration/Freezer Units ,
+Wholesale Club/Supercenter- Number of Workers on Main Shift,
+Wholesale Club/Supercenter- Open or Closed Refrigeration Density,"Number per 1,000 ft2"
+Wholesale Club/Supercenter- Percent That Can Be Cooled,Percentage
+Wholesale Club/Supercenter- Percent That Can Be Heated,Percentage
+Wholesale Club/Supercenter- Walk-in Refrigeration Density,"Number per 1,000 ft2"
+Wholesale Club/Supercenter- Weekly Operating Hours,
+Wholesale Club/Supercenter- Worker Density,"Number per 1,000 ft2"
+Worship Facility - Commercial Refrigeration Density,"Number per 1,000 ft2"
+Worship Facility - Computer Density,"Number per 1,000 ft2"
+Worship Facility - Cooking Facilities,
+Worship Facility - Gross Floor Area,ft2
+Worship Facility - Number of Commercial Refrigeration/Freezer Units,
+Worship Facility - Number of Computers,
+Worship Facility - Number of Weekdays Open,
+Worship Facility - Seating Capacity,
+Worship Facility - Weekly Operating Hours,
+Zoo - Computer Density,"Number per 1,000 ft2"
+Zoo - Gross Floor Area,ft2
+Zoo - Number of Computers,
+Zoo - Number of Workers on Main Shift,
+Zoo - Percent That Can Be Cooled ,Percentage
+Zoo - Percent That Can Be Heated ,Percentage
+Zoo - Weekly Operating Hours,
+Zoo - Worker Density,"Number per 1,000 ft2 "
+Onsite Renewable System Generation,kWh
+Onsite Renewable System Electricty Exported,kWh
+Electricity - Onsite Renewable System Electricity Used Onsite/Coincident,kWh
+"Electricity Sourced from Onsite Renewable Systems (% of Total Electricity, including Grid Purchase and Onsite)",Percentage
+RECs Retained (% of Onsite Renewable System Electricity Used Onsite/Coincident),Percentage
+Green Power - Onsite,kWh
+Green Power - Offsite,kWh
+Green Power - Onsite and Offiste,kWh
+"Green Power (% of Total Electricity, including Grid Purchase and Onsite)",Percentage
+Avoided Emissions - Onsite Green Power,MtCO2e
+Avoided Emissions - Offsite Green Power,MtCO2e
+Avoided Emissions - Onsite and Offsite Green Power,MtCO2e
+Net Emissions,MtCO2e 
+Guiding Principles - Actual Date of Compliance,Date
+Guiding Principles - Target Date of Compliance,Date
+Guiding Principles - Checklist Manager,
+Guiding Principles - % Complete (Yes or Not Applicable),Percentage
+Guiding Principles - % Yes,Percentage
+Guiding Principles - % Not Applicable,Percentage
+Guiding Principles - % In Process,Percentage
+Guiding Principles - % No,Percentage
+Guiding Principles - % Not Assessed,Percentage
+Guiding Principle I. Integrated – Team,
+Guiding Principle I. Integrated – Goals,
+Guiding Principle I. Integrated– Plan,
+Guiding Principle I. Integrated -Occupant Feedback,
+Guiding Principle I. Integrated – Commissioning,
+Guiding Principle II. Energy - Energy Efficiency (Any Option),
+Guiding Principle II. Energy - Energy Efficiency -ENERGY STAR Score,
+Guiding Principle II. Energy - Energy Efficiency -Measured 20%,
+Guiding Principle II. Energy - Energy Efficiency -Code 20%,
+Guiding Principle II. Energy - Efficient Products ,
+Guiding Principle II. Energy - Measurement & Verification,
+Guiding Principle II. Energy - On-Site Renewable ,
+Guiding Principle II. Energy - Benchmarking,
+Guiding Principle III. Water - Indoor Water (Any Option),
+Guiding Principle III. Water - Indoor Water - Code 20%,
+Guiding Principle III. Water - Indoor Water - Measured 20%,
+Guiding Principle III. Water - Outdoor Water (Any Option),
+Guiding Principle III. Water - Outdoor Water - Measured 50%,
+Guiding Principle III. Water - Outdoor Water - Conventional 50%,
+Guiding Principle III. Water - Outdoor Water -No Outdoor Water,
+Guiding Principle III. Water - Stormwater,
+Guiding Principle III. Water - Efficient Products,
+Guiding Principle IV. Indoor Environment - Ventilation & Thermal Comfort,
+Guiding Principle IV. Indoor Environment - Moisture Control ,
+Guiding Principle IV. Indoor Environment - Automated Lighting Controls ,
+Guiding Principle IV. Indoor Environment - Daylighting & Occupant Controls,
+Guiding Principle IV. Indoor Environment - Daylighting ,
+Guiding Principle IV. Indoor Environment - Occupant Controls,
+Guiding Principle IV. Indoor Environment - Low-Emitting Materials,
+Guiding Principle IV. Indoor Environment - Integrated Pest Management,
+Guiding Principle IV. Indoor Environment - Tobacco Smoke Control ,
+Guiding Principle V. Materials - Recycled Content,
+Guiding Principle V. Materials - Biobased Content,
+Guiding Principle V. Materials - Environmentally Preferred Products,
+Guiding Principle V. Materials - Waste & Materials Management,
+Guiding Principle V. Materials - Ozone Depleting Compounds ,
+Target ENERGY STAR Score,
+Target % Better Than Median Source EUI,Percentage
+Target Site Energy Use,kBtu
+Target Source Energy Use,kBtu
+Target Site EUI,kBtu/ft2
+Target Source EUI,kBtu/ft2
+Target Water/Wastewater Site EUI,kBtu/gpd
+Target Water/Wastewater Source EUI,kBtu/gpd
+Target Energy Cost,Dollars
+Target Total GHG Emissions,MtCO2e
+Target Total GHG Emissions Intensity,kgCO2e/ft2
+Design Target ENERGY STAR Score,
+Design Target % Better Than Median Source EUI,Percentage
+Design Target Site Energy Use,kBtu
+Design Target Source Energy Use,kBtu
+Design Target Site EUI,kBtu/ft2
+Design Target Source EUI,kBtu/ft2
+Design Target Water/Wastewater Site EUI,kBtu/gpd
+Design Target Water/Wastewater Source EUI,kBtu/gpd
+Design Target Energy Cost,Dollars
+Design Target Total GHG Emissions,MtCO2e
+Design Target Total GHG Emissions Intensity,kgCO2e/ft2 
+Water Baseline Date,Date
+Water Current Date,Date
+Total Water Use (All Water Sources),kgal
+Indoor Water Use (All Water Sources),kgal
+Indoor Water Intensity (All Water Sources),kgal/ft2
+Outdoor Water Use (All Water Sources),kgal
+Municipally Supplied Potable Water – All Use,kgal
+Municipally Supplied Potable Water – Indoor Use,kgal
+Municipally Supplied Potable Water – Indoor Intensity,gal/ft2
+Municipally Supplied Potable Water – Outdoor Use,kgal
+Municipally Supplied Reclaimed Water – All Use,kgal
+Municipally Supplied Reclaimed Water – Indoor Use,kgal
+Municipally Supplied Reclaimed Water – Indoor Intensity,gal/ft2
+Municipally Supplied Reclaimed Water – Outdoor Use,kgal
+Alternative Water Generated On-Site – All Use,kgal
+Alternative Water Generated On-Site – Indoor Use,kgal
+Alternative Water Generated On-Site – Indoor Intensity,gal/ft2
+Alternative Water Generated On-Site – Outdoor Use,kgal
+Other Water Sources – All Use,kgal
+Other Water Sources – Indoor Use,kgal
+Other Water Sources – Indoor Intensity,gal/ft2
+Other Water Sources – Outdoor Use,kgal 

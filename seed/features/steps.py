@@ -1,10 +1,11 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
+
+# TODO: Convert these to selenium tests
 from salad.steps.everything import *
 from lettuce import step
 from django.core.urlresolvers import reverse
-from landing.features.steps import *
 
 
 @step(u'I visit the home page')

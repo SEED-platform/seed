@@ -1,18 +1,18 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
-from dateutil import parser
 from os import path
+import logging
+
+from dateutil import parser
 
 from mock import patch
-
 from django.test import TestCase
 from django.core.files import File
-
-from audit_logs.models import AuditLog
-from data_importer.models import ImportFile, ImportRecord
-from landing.models import SEEDUser as User
-from superperms.orgs.models import Organization, OrganizationUser
+from seed.audit_logs.models import AuditLog
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     ASSESSED_RAW,
     ASSESSED_BS,
@@ -30,6 +30,7 @@ from seed.models import (
 from seed import tasks
 from seed.tests import util
 
+logger = logging.getLogger(__name__)
 
 class TestCleaner(TestCase):
     """Tests that our logic for constructing cleaners works."""
@@ -114,7 +115,7 @@ class TestTasks(TestCase):
         self.fake_extra_data = {
             u'City': u'EnergyTown',
             u'ENERGY STAR Score': u'',
-            u'State/Province': u'Ilinois',
+            u'State/Province': u'Ilinois', # typo on purpose? The entire pm file has this as well.
             u'Site EUI (kBtu/ft2)': u'',
             u'Year Ending': u'',
             u'Weather Normalized Source EUI (kBtu/ft2)': u'',
@@ -132,7 +133,7 @@ class TestTasks(TestCase):
             u'Organization': u'Occidental Management',
             u'Property Name': u'Not Available',
             u'Property Floor Area (Buildings and Parking) (ft2)': u'',
-            u'Total GHG Emissions (MtCO2e)': u'', u'Generation Date': u'',
+            u'Total GHG Emissions (MtCO2e)': u'',
             u'Generation Date': u'',
         }
         self.fake_row = {
@@ -155,7 +156,7 @@ class TestTasks(TestCase):
             'address_line_1': u'Address Line 1',
             'year_built': u'Year Built'
         }
-        
+
     def test_cached_first_row_order(self):
         """Tests to make sure the first row is saved in the correct order.  It should be the order of the headers in the original file."""
         with patch.object(
@@ -167,7 +168,7 @@ class TestTasks(TestCase):
                 1
             )
         expected_first_row = u"Property Id|#*#|Property Name|#*#|Year Ending|#*#|Property Floor Area (Buildings and Parking) (ft2)|#*#|Address 1|#*#|Address 2|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|National Median Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date"
-        
+
         import_file = ImportFile.objects.get(pk=self.import_file.pk)
         first_row = import_file.cached_first_row
         self.assertEqual(first_row, expected_first_row)
@@ -182,7 +183,7 @@ class TestTasks(TestCase):
                 'fake_cache_key',
                 1
             )
-            
+
         raw_saved = BuildingSnapshot.objects.filter(
             import_file=self.import_file,
         )
@@ -723,7 +724,7 @@ class TestTasksXLSX(TestTasks):
             u'Organization': u'Occidental Management',
             u'Property Name': u'Not Available',
             u'Property Floor Area (Buildings and Parking) (ft2)': u'',
-            u'Total GHG Emissions (MtCO2e)': u'', u'Generation Date': u'',
+            u'Total GHG Emissions (MtCO2e)': u'',
             u'Generation Date': u'',
         }
         self.fake_row = {

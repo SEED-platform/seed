@@ -3,14 +3,13 @@
 """
 import calendar
 import datetime
-from dateutil import parser
 import re
 import string
 import operator
-import os
 import traceback
-
 from _csv import Error
+
+from dateutil import parser
 
 from django.core.mail import send_mail
 from django.conf import settings
@@ -18,29 +17,22 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.template import loader
 from django.core.cache import cache
-from django.core.files.storage import DefaultStorage
 from django.db.models import Q
 from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse_lazy
-
 from celery.task import task, chord
 from celery.utils.log import get_task_logger
-
-from audit_logs.models import AuditLog
-from landing.models import SEEDUser as User
-from mcm import cleaners, mapper, reader
-from mcm.data.ESPM import espm as espm_schema
-from mcm.data.SEED import seed as seed_schema
-from mcm.utils import batch
-# import ngram
+from seed.audit_logs.models import AuditLog
+from seed.landing.models import SEEDUser as User
+from seed.lib.mcm import cleaners, mapper, reader
+from seed.lib.mcm.data.ESPM import espm as espm_schema
+from seed.lib.mcm.data.SEED import seed as seed_schema
+from seed.lib.mcm.utils import batch
 from streetaddress import StreetAddressParser, StreetAddressFormatter
-
-from data_importer.models import (
+from seed.data_importer.models import (
     ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
 )
-
-from green_button import xml_importer
-
+from seed.green_button import xml_importer
 from seed.models import (
     ASSESSED_RAW,
     PORTFOLIO_RAW,
@@ -65,15 +57,11 @@ from seed.models import (
     Project,
     ProjectBuilding,
 )
-
 from seed.decorators import lock_and_track, get_prog_key, increment_cache
 from seed.utils.buildings import get_source_type, get_search_query
 from seed.utils.mapping import get_mappable_columns
-
-from superperms.orgs.models import Organization
-
-from . import exporter
-
+from seed.lib.superperms.orgs.models import Organization
+from seed.lib.exporter import Exporter
 
 logger = get_task_logger(__name__)
 
@@ -100,24 +88,13 @@ def export_buildings(export_id, export_name, export_type,
     def _row_cb(i):
         cache.set("export_buildings__%s" % export_id, i)
 
-    my_exporter = getattr(exporter, "export_%s" % export_type, None)
-    if not my_exporter:
+    exporter = Exporter(export_id, export_name, export_type)
+    if not exporter.valid_export_type():
         _row_cb(-1)  # this means there was an error
         return
 
-    exported_filename = my_exporter(selected_buildings,
-                                    selected_fields,
-                                    _row_cb)
-    exported_file = open(exported_filename)
-
-    s3_keyname = exporter._make_export_filename(export_id,
-                                                export_name,
-                                                export_type)
-    s3_key = DefaultStorage().bucket.new_key(s3_keyname)
-    s3_key.set_contents_from_file(exported_file)
-
-    exported_file.close()
-    os.remove(exported_filename)
+    file = exporter.export(selected_buildings, selected_fields, _row_cb)
+    # file return value is not used
 
     _row_cb(selected_buildings.count())  # means we're done!
 
@@ -145,7 +122,7 @@ def invite_to_seed(domain, email_address, token, user_pk, first_name):
     send_mail(subject, email_body, reset_email, [email_address])
 
 
-#TODO (AK): Ensure this gets tested in PR #61
+# TODO (AK): Ensure this gets tested in PR #61
 @task
 def add_buildings(project_slug, project_dict, user_pk):
     """adds buildings to a project. if a user has selected all buildings,
@@ -422,7 +399,7 @@ def _build_cleaner(org):
     """
     units = {'types': {}}
     for column in Column.objects.filter(
-        mapped_mappings__super_organization=org
+            mapped_mappings__super_organization=org
     ).select_related('unit'):
         column_type = 'str'
         if column.unit:
@@ -460,7 +437,7 @@ def apply_data_func(mappable_columns):
 
 @task
 def map_row_chunk(
-    chunk, file_pk, source_type, prog_key, increment, *args, **kwargs
+        chunk, file_pk, source_type, prog_key, increment, *args, **kwargs
 ):
     """Does the work of matching a mapping to a source type and saving
 
@@ -640,12 +617,12 @@ def cache_first_rows(import_file, parser):
             """Less than 5 rows in file"""
             break
 
-    #This is a fix for issue #24 to use original field order when importing
-    #This is ultimately not the correct place for this fix.  The correct fix 
-    #is to update the mcm code to a newer version where the readers in mcm/reader.py
-    #have a headers() function defined and then just do
-    #first_row = parser.headers()
-    #But until we can patch the mcm code this should fix the issue.
+    # This is a fix for issue #24 to use original field order when importing
+    # This is ultimately not the correct place for this fix.  The correct fix
+    # is to update the mcm code to a newer version where the readers in mcm/reader.py
+    # have a headers() function defined and then just do
+    # first_row = parser.headers()
+    # But until we can patch the mcm code this should fix the issue.
     local_reader = parser.reader
     if isinstance(local_reader, reader.ExcelParser):
         first_row = local_reader.sheet.row_values(local_reader.header_row)
@@ -653,7 +630,7 @@ def cache_first_rows(import_file, parser):
         first_row = local_reader.csvreader.fieldnames
         first_row = [local_reader._clean_super(x) for x in first_row]
     else:
-        #default to the original behavior if a new type of parser for lack of anything better
+        # default to the original behavior if a new type of parser for lack of anything better
         first_row = rows.next().keys()
 
     tmp = []
@@ -936,7 +913,7 @@ def _normalize_address_str(address_val):
         return None
 
     if 'house' in addr and addr['house'] is not None:
-        normalized_address = addr['house'].lstrip("0") #some addresses have leading zeros, strip them here
+        normalized_address = addr['house'].lstrip("0")  # some addresses have leading zeros, strip them here
 
     if 'street_name' in addr and addr['street_name'] is not None:
         normalized_address = normalized_address + ' ' + addr['street_name']
@@ -946,16 +923,16 @@ def _normalize_address_str(address_val):
 
     formatter = StreetAddressFormatter()
     normalized_address = formatter.abbrev_street_avenue_etc(normalized_address)
- 
+
     return normalized_address.lower().strip()
 
 
-def _findMatches(un_m_address,canonical_buildings_addresses):
+def _findMatches(un_m_address, canonical_buildings_addresses):
     match_list = []
     if not un_m_address:
         return match_list
     for cb in canonical_buildings_addresses:
-        if un_m_address.lower()==cb.lower(): #this second lower may be obsolete now
+        if un_m_address.lower() == cb.lower():  # this second lower may be obsolete now
             match_list.append((un_m_address, 1))
     return match_list
 
@@ -964,14 +941,14 @@ def _findMatches(un_m_address,canonical_buildings_addresses):
 @lock_and_track
 def _match_buildings(file_pk, user_pk):
     """ngram search against all of the canonical_building snapshots for org."""
-#     assert True
+    #     assert True
     min_threshold = settings.MATCH_MIN_THRESHOLD
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
     org = Organization.objects.filter(
         users=import_file.import_record.owner
     )[0]
-    test=''
+    test = ''
     unmatched_buildings = find_unmatched_buildings(import_file)
 
     newly_matched_building_pks = []
@@ -989,17 +966,17 @@ def _match_buildings(file_pk, user_pk):
     if not unmatched_buildings:
         _finish_matching(import_file, prog_key)
         return
-    #here we are going to normalize the addresses to match on address_1 field, this is not ideal because you could match on two locations with same address_1 but different city
-#     unmatched_normalized_addresses=[]
-    
+        # here we are going to normalize the addresses to match on address_1 field, this is not ideal because you could match on two locations with same address_1 but different city
+    #     unmatched_normalized_addresses=[]
+
     unmatched_normalized_addresses = [
         _normalize_address_str(unmatched[4]) for unmatched in unmatched_buildings
-    ]
+        ]
     # Here we want all the values not related to the BS id for doing comps.
     # dont do this now
-#     unmatched_ngrams = [
-#         _stringify(list(values)[1:]) for values in unmatched_buildings
-#     ]
+    #     unmatched_ngrams = [
+    #         _stringify(list(values)[1:]) for values in unmatched_buildings
+    #     ]
 
     canonical_buildings = find_canonical_building_values(org)
     if not canonical_buildings:
@@ -1017,36 +994,35 @@ def _match_buildings(file_pk, user_pk):
 
         _finish_matching(import_file, prog_key)
         return
-    #print value[]
-    
+
     # This allows us to retrieve the PK for a given NGram after a match.
     can_rev_idx = {
         _normalize_address_str(value[4]): value[0] for value in canonical_buildings
-    }
+        }
     # (SD) This loads up an ngram object with all the canonical buildings. The values are the lists of identifying data for each building
     # (SD) the stringify is given all but the first item in the values list and it concatenates each item with a space in the middle
-    
-    #we no longer need to
-#     n = ngram.NGram(
-#         [_stringify(values[1:]) for values in canonical_buildings]
-#     )
-    #here we are going to normalize the addresses to match on address_1 field, this is not ideal because you could match on two locations with same address_1 but different city
+
+    # we no longer need to
+    #     n = ngram.NGram(
+    #         [_stringify(values[1:]) for values in canonical_buildings]
+    #     )
+    # here we are going to normalize the addresses to match on address_1 field, this is not ideal because you could match on two locations with same address_1 but different city
     canonical_buildings_addresses = [
         _normalize_address_str(values[4]) for values in canonical_buildings
-    ]
+        ]
     # For progress tracking
-# sd we now use the address
-#    num_unmatched = len(unmatched_ngrams) or 1
+    # sd we now use the address
+    #    num_unmatched = len(unmatched_ngrams) or 1
     num_unmatched = len(unmatched_normalized_addresses) or 1
-    #this code below seemed to be unclear when I was debugging so I added the brackets
+    # this code below seemed to be unclear when I was debugging so I added the brackets
     increment = (1.0 / num_unmatched) * 100
 
     # PKs when we have a match.
     import_file.mapping_completion = 0
     import_file.save()
     # this section spencer changed to make the exact match
-    for i,un_m_address in enumerate(unmatched_normalized_addresses):
-        results =_findMatches(un_m_address,canonical_buildings_addresses)
+    for i, un_m_address in enumerate(unmatched_normalized_addresses):
+        results = _findMatches(un_m_address, canonical_buildings_addresses)
         if results:
             handle_results(
                 results, i, can_rev_idx, unmatched_buildings, user_pk
@@ -1063,9 +1039,8 @@ def _match_buildings(file_pk, user_pk):
             import_file.save()
 
     _finish_matching(import_file, prog_key)
-    
+
     return {'status': 'success'}
-    
 
 
 @task

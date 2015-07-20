@@ -105,7 +105,7 @@ def get_api_request_user(request):
         return False
     try:
         #late import
-        from landing.models import SEEDUser as User
+        from seed.landing.models import SEEDUser as User
         username, api_key = auth_header.split(':')
         return User.objects.get(api_key=api_key, username=username)
     except (ValueError, User.DoesNotExist):

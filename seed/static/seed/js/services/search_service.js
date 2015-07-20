@@ -7,7 +7,7 @@
  *
  * initial work: http://plnkr.co/edit/Vm5MR9KYYXl3pkIKyWsd?p=preview
  *
- * search_service: include the module 'BE.seed.service.search' in your app
+ * search_service: include the module 'config.seed.service.search' in your app
  *                 to have access to ``search_service``. ``search_service``
  *                 should be extended by a controller's scope to gain access
  *                 to a smattering of common variables and functions needed to

@@ -1,38 +1,30 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
-# system imports
+
 import json
 import logging
 import datetime
 import os
 import uuid
 
-# django imports
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.cache import cache
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
 from django.core.files.storage import DefaultStorage
 from django.db.models import Q
-
-# vendor imports
 from annoying.decorators import render_to, ajax_request
-from mcm import mapper
-
-
-# BE imports
-from audit_logs.models import AuditLog
-from data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
-
+from seed.lib.mcm import mapper
+from seed.audit_logs.models import AuditLog
+from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
 from seed.tasks import (
     map_data,
     remap_data,
     match_buildings,
     save_raw_data as task_save_raw,
 )
-
-from superperms.orgs.decorators import has_perm
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed import models, tasks
 from seed.models import (
     get_column_mapping,
@@ -50,26 +42,20 @@ from seed.models import (
     GREEN_BUTTON_BS,
 )
 from seed.views.accounts import _get_js_role
-from superperms.orgs.models import Organization, OrganizationUser, ROLE_MEMBER
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser, ROLE_MEMBER
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
     get_search_query,
     get_buildings_for_user_count
 )
 from seed.utils.api import api_endpoint
-
 from seed.utils.projects import (
     get_projects, update_buildings_with_labels
 )
-
 from seed.utils.time import convert_to_js_timestamp
 from seed.utils.mapping import get_mappable_types, get_mappable_columns
-
 from .. import search
-from .. import exporter
-
-from BE.settings.dev import SEED_DATADIR
-
+from seed.lib.exporter import Exporter
 from seed.common import mapper as simple_mapper
 from seed.common import views as vutil
 
@@ -81,8 +67,8 @@ DEFAULT_CUSTOM_COLUMNS = [
     'state_province',
 ]
 
-
 _log = logging.getLogger(__name__)
+
 
 @render_to('seed/jasmine_tests/AngularJSTests.html')
 def angular_js_tests(request):
@@ -104,12 +90,9 @@ def _get_default_org(user):
     org = user.default_organization
     # check if user is still in the org, i.e. s/he wasn't removed from his/her
     # default org or didn't have a set org and try to set the first one
-    if (
-        not org
-        or not OrganizationUser.objects.filter(
-            organization=org, user=user
-        ).exists()
-    ):
+    if (not org
+        or not OrganizationUser.objects.filter(organization=org, user=user).exists()
+        ):
         org = user.orgs.first()
         user.default_organization = org
         user.save()
@@ -152,6 +135,7 @@ def home(request):
     )
 
     return locals()
+
 
 @api_endpoint
 @ajax_request
@@ -196,6 +180,7 @@ def create_pm_mapping(request):
         return vutil.api_error(str(err))
     json_result = [[c] + v.as_json() for c, v in result.items()]
     return vutil.api_success(mapping=json_result)
+
 
 @api_endpoint
 @ajax_request
@@ -260,7 +245,7 @@ def export_buildings(request):
         # buildings list
         selected_building_ids = [
             x[0] for x in selected_buildings.values_list('pk')
-        ]
+            ]
         selected_buildings = ProjectBuilding.objects.filter(
             project_id=project_id,
             building_snapshot__in=selected_building_ids)
@@ -270,7 +255,7 @@ def export_buildings(request):
         for field in selected_fields:
             components = field.split("__", 1)
             if (components[0] == 'project_building_snapshots'
-                    and len(components) > 1):
+                and len(components) > 1):
                 _selected_fields.append(components[1])
             else:
                 _selected_fields.append("building_snapshot__%s" % field)
@@ -280,14 +265,10 @@ def export_buildings(request):
 
     building_ids = [x[0] for x in selected_buildings.values_list('pk')]
 
+    # TODO: move the cache to the Exporter class
     cache.set("export_buildings__%s" % export_id, 0)
 
-    tasks.export_buildings.delay(export_id,
-                                 export_name,
-                                 export_type,
-                                 building_ids,
-                                 export_model,
-                                 selected_fields)
+    tasks.export_buildings.delay(export_id, export_name, export_type, building_ids, export_model, selected_fields)
 
     return {
         "success": True,
@@ -334,36 +315,71 @@ def export_buildings_download(request):
 
     Payload::
 
-        {"export_id": export_id from export_buildings }
+        {
+            "export_id": export_id from export_buildings
+        }
 
     Returns::
 
-        {'success': True or False,
-         'status': 'success or error',
-         'message': 'error message, if any',
-         'url': The url to the exported file.
+        {
+            'success': True or False,
+            'status': 'success or error',
+            'message': 'error message, if any',
+            'url': The url to the exported file.
         }
     """
     body = json.loads(request.body)
     export_id = body.get('export_id')
 
-    export_subdir = exporter._make_export_subdirectory(export_id)
-    keys = list(DefaultStorage().bucket.list(export_subdir))
+    # This is non-ideal, it is returning the directory/s3 key and assumes that only one file lives in that
+    # directory. This should really just return the file to be downloaded. Not sure we are doing multiple downloads at
+    # the moment.
+    export_subdir = Exporter.subdirectory_from_export_id(export_id)
 
-    if not keys or len(keys) > 1:
+    if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
+        file_storage = DefaultStorage()
+        files = file_storage.listdir(export_subdir)
+
+        if not files:
+            return {
+                'success': False,
+                'status': 'error'
+            }
+        else:
+            # get the first file in the directory -- which is the first entry of the second part of the tuple
+            file_name = os.path.join(export_subdir, files[1][0])
+
+            if file_storage.exists(file_name):
+                url = file_storage.url(file_name)
+                return {
+                    'success': True,
+                    "status": "success",
+                    "url": url
+                }
+            else:
+                return {
+                    'success': False,
+                    'message': 'Could not find file on server',
+                    'status': 'error'
+                }
+
+    else:
+        keys = list(DefaultStorage().bucket.list(export_subdir))
+
+        if not keys or len(keys) > 1:
+            return {
+                "success": False,
+                "status": "error",
+            }
+
+        download_key = keys[0]
+        download_url = download_key.generate_url(900)
+
         return {
-            "success": False,
-            "status": "error",
+            'success': True,
+            "status": "success",
+            "url": download_url
         }
-
-    download_key = keys[0]
-    download_url = download_key.generate_url(900)
-
-    return {
-        'success': True,
-        "status": "success",
-        "url": download_url
-    }
 
 
 @ajax_request
@@ -442,10 +458,7 @@ def get_building(request):
     user_orgs = request.user.orgs.all()
     parent_org = user_orgs[0].get_parent()
 
-    if (
-        building.super_organization in user_orgs
-        or parent_org in user_orgs
-    ):
+    if (building.super_organization in user_orgs or parent_org in user_orgs):
         exportable_field_names = None  # show all
     else:
         # User isn't in the parent org or the building's org,
@@ -609,11 +622,10 @@ def search_buildings(request):
     # apply order_by here if extra_data_sort is True
     parent_org = orgs.first().parent_org
     below_threshold = False
-    if (
-        parent_org
+    if (parent_org
         and parent_org.query_threshold
         and buildings_queryset.count() < parent_org.query_threshold
-    ):
+        ):
         below_threshold = True
     if extra_data_sort:
         ed_mapping = ColumnMapping.objects.filter(
@@ -1167,8 +1179,8 @@ def get_column_mapping_suggestions(request):
     # mappings get created to mappable types but we deal with them manually
     # so don't include them here
     columns = Column.objects.select_related('unit').prefetch_related('schemas') \
-                                                   .filter(Q(mapped_mappings__super_organization=org_id) | Q(organization__isnull=True)) \
-                                                   .exclude(column_name__in=field_names)
+        .filter(Q(mapped_mappings__super_organization=org_id) | Q(organization__isnull=True)) \
+        .exclude(column_name__in=field_names)
 
     for c in columns:
         if c.unit:
@@ -1211,14 +1223,14 @@ def get_column_mapping_suggestions(request):
                 suggested_mappings[col] = (cleaned_field, 100)
 
     else:
-    #     # All other input types
+        # All other input types
         suggested_mappings = mapper.build_column_mapping(
-             import_file.first_row_columns,
-             column_types.keys(),
-             previous_mapping=get_column_mapping,
-             map_args=[import_file.import_record.super_organization],
-             thresh=20  # percentage match we require
-         )
+            import_file.first_row_columns,
+            column_types.keys(),
+            previous_mapping=get_column_mapping,
+            map_args=[import_file.import_record.super_organization],
+            thresh=20  # percentage match we require
+        )
         # replace None with empty string for column names
         for m in suggested_mappings:
             dest, conf = suggested_mappings[m]
@@ -1287,7 +1299,7 @@ def get_first_five_rows(request):
     rows = [
         r.split(ROW_DELIMITER)
         for r in import_file.cached_second_to_fifth_row.splitlines()
-    ]
+        ]
 
     return {
         'status': 'success',
@@ -1295,7 +1307,7 @@ def get_first_five_rows(request):
             dict(
                 zip(import_file.first_row_columns, row)
             ) for row in rows
-        ]
+            ]
     }
 
 
@@ -1427,7 +1439,7 @@ def save_column_mappings(request):
             [
                 column_mapping.column_mapped.add(dest_col)
                 for dest_col in dest_cols
-            ]
+                ]
 
         column_mapping.user = request.user
         column_mapping.save()
@@ -1528,6 +1540,7 @@ def get_datasets(request):
         }
     """
     from seed.models import obj_to_dict
+
     org = Organization.objects.get(pk=request.GET.get('organization_id'))
     datasets = []
     for d in ImportRecord.objects.filter(super_organization=org):
@@ -1583,6 +1596,7 @@ def get_dataset(request):
         }
     """
     from seed.models import obj_to_dict
+
     dataset_id = request.GET.get('dataset_id', '')
     orgs = request.user.orgs.all()
     # check if user has access to the dataset
@@ -1653,6 +1667,7 @@ def get_import_file(request):
         }
     """
     from seed.models import obj_to_dict
+
     import_file_id = request.GET.get('import_file_id', '')
     orgs = request.user.orgs.all()
     import_file = ImportFile.objects.get(

@@ -2,7 +2,7 @@
  * :copyright: (c) 2014 Building Energy Inc
  */
 /**
- * AngularJS app 'BE.seed' for SEED SPA
+ * AngularJS app 'config.seed' for SEED SPA
  */
 
 angular.module('BE.seed.angular_dependencies', [
