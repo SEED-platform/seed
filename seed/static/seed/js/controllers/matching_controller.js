@@ -123,7 +123,7 @@ angular.module('BE.seed.controller.matching', [])
                 break;
             case SHOW_MATCHED:
                 $scope.filter_params.children__isnull = false;  //has children therefore is matched    
-               $scope.number_matching_search_label = "matched buildings";    
+                $scope.number_matching_search_label = "matched buildings";    
                 break;
             case SHOW_UNMATCHED:
                 $scope.filter_params.children__isnull = true;   //does not have children therefore is unmatched
