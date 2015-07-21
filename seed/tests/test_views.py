@@ -745,6 +745,64 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['address_line_1'], '')
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
 
+    def test_search_not_empty_column(self):
+        """
+        Tests search_buidlings method when called with a not-empty column query.
+        """
+
+        # Empty column
+        cb1 = CanonicalBuilding(active=True)
+        cb1.save()
+        b1 = SEEDFactory.building_snapshot(
+            canonical_building=cb1,
+            address_line_1=""
+        )
+        cb1.canonical_snapshot = b1
+        cb1.save()
+        b1.super_organization = self.org
+        b1.save()
+
+        # Populated column
+        cb2 = CanonicalBuilding(active=True)
+        cb2.save()
+        b2 = SEEDFactory.building_snapshot(
+            canonical_building=cb2,
+            address_line_1="Address"
+        )
+        cb2.canonical_snapshot = b2
+        cb2.save()
+        b2.super_organization = self.org
+        b2.save()
+
+        url = reverse_lazy("seed:search_buildings")
+        post_data = {
+            'filter_params': {
+                'address_line_1': '!""'
+            },
+            'number_per_page': 10,
+            'order_by': '',
+            'page': 1,
+            'q': '',
+            'sort_reverse': False,
+            'project_id': None,
+        }
+
+        # act
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        json_string = response.content
+        data = json.loads(json_string)
+
+        # assert
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['number_matching_search'], 1)
+        self.assertEqual(len(data['buildings']), 1)
+        self.assertEqual(data['buildings'][0]['address_line_1'], 'Address')
+        self.assertEqual(data['buildings'][0]['pk'], b2.pk)
+
     def test_search_extra_data_exact_match(self):
         """Exact match on extra_data json keys"""
         # Uppercase
@@ -852,6 +910,60 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['number_matching_search'], 1)
         self.assertEqual(len(data['buildings']), 1)
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
+
+    def test_search_extra_data_non_empty_column(self):
+        """Not Empty match on extra_data json keys"""
+        # Empty column
+        cb1 = CanonicalBuilding(active=True)
+        cb1.save()
+        b1 = SEEDFactory.building_snapshot(
+            canonical_building=cb1,
+            extra_data={'testing': ''}
+        )
+        cb1.canonical_snapshot = b1
+        cb1.save()
+        b1.super_organization = self.org
+        b1.save()
+
+        # Populated column
+        cb2 = CanonicalBuilding(active=True)
+        cb2.save()
+        b2 = SEEDFactory.building_snapshot(
+            canonical_building=cb2,
+            extra_data={'testing': 'test'}
+        )
+        cb2.canonical_snapshot = b2
+        cb2.save()
+        b2.super_organization = self.org
+        b2.save()
+
+        url = reverse_lazy("seed:search_buildings")
+        post_data = {
+            'filter_params': {
+                'testing': '!""'
+            },
+            'number_per_page': 10,
+            'order_by': '',
+            'page': 1,
+            'q': '',
+            'sort_reverse': False,
+            'project_id': None,
+        }
+
+        # act
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        json_string = response.content
+        data = json.loads(json_string)
+
+        # assert
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['number_matching_search'], 1)
+        self.assertEqual(len(data['buildings']), 1)
+        self.assertEqual(data['buildings'][0]['pk'], b2.pk)
 
     def test_apply_label_to_project_buildings(self):
         """
