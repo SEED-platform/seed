@@ -239,7 +239,11 @@ def filter_other_params(queryset, other_params, db_columns):
             # django-pgjson package, and use the new "HAS" operator syntax.
             # - nicholasserra
             if empty_match:
-                queryset = queryset.exclude(extra_data__contains='"%s":' % k)
+                # Filter for records that DO NOT contain this field OR
+                # contain a blank value for this field.
+                queryset = queryset.filter(
+                    ~Q(extra_data__contains='"%s":' % k) | Q(extra_data__contains='"%s": ""' % k)
+                )
                 continue
 
             conditions = {
