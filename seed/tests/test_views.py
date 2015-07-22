@@ -38,12 +38,6 @@ from seed.utils.mapping import _get_column_names
 from seed.tests import util as test_util
 
 
-
-
-
-
-
-
 # Gavin 02/18/2014
 # Why are we testing DataImporterViews in the seed module?
 class DataImporterViewTests(TestCase):
@@ -96,10 +90,10 @@ class DataImporterViewTests(TestCase):
 
         expected = [
             dict(zip(expected_raw_columns, row)) for row in expected_raw_rows
-        ]
+            ]
         expected_saved_format = '\n'.join([
-            ROW_DELIMITER.join(row) for row in expected_raw_rows
-        ])
+                                              ROW_DELIMITER.join(row) for row in expected_raw_rows
+                                              ])
         import_file = ImportFile.objects.create(
             import_record=import_record,
             cached_first_row=ROW_DELIMITER.join(expected_raw_columns),
@@ -574,7 +568,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['status'], 'success')
 
         float_col_data = map(lambda b: b['extra_data'][ed_col_name], data['buildings'])
-        expected_data.reverse() # in-place mutation!
+        expected_data.reverse()  # in-place mutation!
 
         self.assertEqual(float_col_data, expected_data)
 
@@ -941,7 +935,6 @@ class SearchViewTests(TestCase):
 
         self.assertEqual(non_project_buildings.count(), 0)
 
-
     def test_apply_label_to_specific_project_buildings(self):
         """
         Tests applying a label to specific buildings in a project.
@@ -1244,7 +1237,7 @@ class BuildingDetailViewTests(TestCase):
         json_string = response.content
         data = json.loads(json_string)
 
-        self.assertEqual(2,len(data['imported_buildings']))
+        self.assertEqual(2, len(data['imported_buildings']))
 
         # both parents link to their import file
         self.assertEqual(
@@ -1416,7 +1409,7 @@ class BuildingDetailViewTests(TestCase):
         self.assertEqual(body, {
             'status': 'error',
             'message': 'No relationship to organization',
-            })
+        })
 
     def test_save_match_wrong_perms_different_building_orgs(self):
         """tests that a building match is valid for BS orgs"""
@@ -1443,7 +1436,7 @@ class BuildingDetailViewTests(TestCase):
         self.assertEqual(body, {
             'status': 'error',
             'message': 'Only buildings within an organization can be matched'
-            })
+        })
 
     def test_save_unmatch_audit_log(self):
         """tests that a building unmatch logs an audit_log"""
@@ -1535,7 +1528,8 @@ class TestMCMViews(TestCase):
             )
         )
 
-    @skip("FAIL: Good case for ``get_column_mapping_suggestions``.; Failed test: AssertionError: u'Date Completed' != u'year_built'")
+    @skip(
+        "FAIL: Good case for ``get_column_mapping_suggestions``.; Failed test: AssertionError: u'Date Completed' != u'year_built'")
     def test_get_column_mapping_suggestions(self):
         """Good case for ``get_column_mapping_suggestions``."""
 
@@ -1582,7 +1576,8 @@ class TestMCMViews(TestCase):
             new_expected_mappings['address']
         )
 
-    @skip("FAIL: When one of the column mappings represents a concatenation.; AssertionError: u'Date Completed' != u'year_built'")
+    @skip(
+        "FAIL: When one of the column mappings represents a concatenation.; AssertionError: u'Date Completed' != u'year_built'")
     def test_get_column_mapping_suggestions_concat(self):
         """When one of the column mappings represents a concatenation."""
         column_raw = Column.objects.create(
@@ -1620,7 +1615,6 @@ class TestMCMViews(TestCase):
             new_expected_mappings
         )
 
-
     def test_get_raw_column_names(self):
         """Good case for ``get_raw_column_names``."""
         resp = self.client.post(
@@ -1636,11 +1630,15 @@ class TestMCMViews(TestCase):
         self.assertDictEqual(body, self.raw_columns_expected)
 
     def test_save_column_mappings(self):
-        """Same endpoint."""
         self.assertEqual(
             ColumnMapping.objects.filter(super_organization=self.org).count(),
             0
         )
+
+        # create a National Median Site Energy use
+        float_unit = Unit.objects.create(unit_name='test energy use intensity', unit_type=FLOAT)
+        c = Column.objects.create(column_name='Global National Median Site Energy Use',
+                                  unit=float_unit)
 
         resp = self.client.post(
             reverse_lazy("seed:save_column_mappings"),
@@ -1648,7 +1646,7 @@ class TestMCMViews(TestCase):
                 'import_file_id': self.import_file.id,
                 'mappings': [
                     ["name", "name"],
-                    ["National Median Site Energy Use", "National Median Site EUI (kBtu/ft2)"],
+                    ["Global National Median Site Energy Use", "National Median Site EUI (kBtu/ft2)"],
                 ]
             }),
             content_type='application/json',
@@ -1656,24 +1654,22 @@ class TestMCMViews(TestCase):
 
         self.assertDictEqual(json.loads(resp.content), {'status': 'success'})
 
-        test_mappings = ColumnMapping.objects.filter(
-            super_organization=self.org
-        )
-
         # test mapping a column that already has a global definition
         # should create a new column for that org with the same data
         # as the global definition
+        # NL: There is not a global definition in the test cases, so we created one above.
         energy_use_columns = Column.objects.filter(
             organization=self.org,
-            column_name="National Median Site Energy Use",
+            column_name="Global National Median Site Energy Use"
         )
 
         self.assertEquals(len(energy_use_columns), 1)
 
         eu_col = energy_use_columns.first()
-        assert(eu_col.unit is not None)
-        self.assertEqual(eu_col.unit.unit_type, FLOAT)
 
+        assert (eu_col.unit is not None)
+        self.assertEqual(eu_col.unit.unit_name, "test energy use intensity")
+        self.assertEqual(eu_col.unit.unit_type, FLOAT)
 
     def test_save_column_mappings_w_concat(self):
         """Concat payloads come back as lists."""
