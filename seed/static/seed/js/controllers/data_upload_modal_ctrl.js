@@ -324,7 +324,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                             } else {
                                 $scope.step.number = 10;
                             }
-                            building_services.get_total_number_of_buildings_for_user();
                         });
                     }, function(data) {
                         // Do nothing
