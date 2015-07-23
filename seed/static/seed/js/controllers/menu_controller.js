@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.menu', [])
   'uploader_service',
   'organization_service',
   'user_service',
+  'dataset_service',
   '$timeout',
   '$route',
   function(
@@ -30,6 +31,7 @@ angular.module('BE.seed.controller.menu', [])
     uploader_service,
     organization_service,
     user_service,
+    dataset_service,
     $timeout,
     $route) {
 
@@ -44,6 +46,7 @@ angular.module('BE.seed.controller.menu', [])
     $scope.datasets_count = 0;
     $scope.projects_count = 0;
     $scope.search_input = "";
+    $scope.organizations_count = 0;
     $scope.menu = {};
     $scope.menu.project = {};
     $scope.menu.create_project_state = "create";
@@ -268,6 +271,43 @@ angular.module('BE.seed.controller.menu', [])
         init();
     };
 
+    //DMcQ: Set up watch statements to keep nav updated with latest buildings_count, datasets_count, etc. 
+    //      This isn't the best solution but most expedient. This approach should be refactored later by
+    //      a proper strategy of binding views straight to model properties.
+    //      See my comments here: https://github.com/SEED-platform/seed/issues/44
+    
+    //watch projects
+    $scope.$watch(  function () { return project_service.total_number_projects_for_user; }, 
+                    function (data) {
+                        $scope.projects_count = data;
+                    }, 
+                    true
+                );
+
+    //watch buildings
+    $scope.$watch(  function () { return building_services.total_number_of_buildings_for_user; }, 
+                    function (data) {
+                        $scope.buildings_count = data;
+                    }, 
+                    true
+                );
+    
+    //watch datasets
+    $scope.$watch(  function () { return dataset_service.total_datasets_for_user; }, 
+                    function (data) {
+                        $scope.datasets_count = data;
+                    }, 
+                    true
+                );        
+
+    //watch organizations
+    $scope.$watch(  function () { return organization_service.total_organizations_for_user; }, 
+                    function (data) {
+                        $scope.organizations_count = data; 
+                    }, 
+                    true
+                );
+
     var init = function() {
         // get the default org for the user
         $scope.menu.user.organization = user_service.get_organization();
@@ -285,7 +325,7 @@ angular.module('BE.seed.controller.menu', [])
         });
         organization_service.get_organizations().then(function (data) {
             // resolve promise
-            $scope.menu.user.organizations = data.organizations;
+            $scope.organizations_count = data.organizations.length;
         });
     };
     init();
