@@ -18,6 +18,7 @@ angular.module('BE.seed.controller.menu', [])
   'dataset_service',
   '$timeout',
   '$route',
+  '$cookies',
   function(
     $scope,
     $http,
@@ -33,7 +34,8 @@ angular.module('BE.seed.controller.menu', [])
     user_service,
     dataset_service,
     $timeout,
-    $route) {
+    $route,
+    $cookies) {
 
     // initial state of css classes for menu and sidebar
     $scope.expanded_controller = false;
@@ -56,9 +58,10 @@ angular.module('BE.seed.controller.menu', [])
     $scope.menu.loading = false;
     $scope.menu.route_load_error = false;
     $scope.menu.user = {};
+    $scope.is_initial_state = $scope.expanded_controller === $scope.collapsed_controller;
 
     $scope.$on("$routeChangeError", function(event, current, previous, rejection) {
-	$scope.menu.loading = false;
+	   $scope.menu.loading = false;
         $scope.menu.route_load_error = true;
         if (rejection === "not authorized" || rejection === "Your page could not be located!") {
             $scope.menu.error_message = rejection;
@@ -135,6 +138,15 @@ angular.module('BE.seed.controller.menu', [])
         $scope.search_input = "";
     };
 
+    //Sets initial expanded/collapse state of sidebar menu
+    function init_menu(){
+        //Default to false but use cookie value if one has been set
+        var isNavExpanded = $cookies.seed_nav_is_expanded === "true";
+        $scope.expanded_controller = isNavExpanded;
+        $scope.collapsed_controller = !isNavExpanded;
+        $scope.narrow_controller = isNavExpanded;
+        $scope.wide_controller = !isNavExpanded; 
+    }
 
     // returns true if menu toggle has never been clicked, i.e. first run, else returns false
     $scope.menu_toggle_has_never_been_clicked = function () {
@@ -151,17 +163,18 @@ angular.module('BE.seed.controller.menu', [])
 
     // expands and collapses the sidebar menu
     $scope.toggle_menu = function() {
-        if ($scope.menu_toggle_has_never_been_clicked()) {
-            $scope.expanded_controller = true;
-            $scope.collapsed_controller = false;
-            $scope.narrow_controller = true;
-            $scope.wide_controller = false;
+        $scope.is_initial_state = false; //we can now turn on animations
+        $scope.expanded_controller = !$scope.expanded_controller;
+        $scope.collapsed_controller = !$scope.collapsed_controller;
+        $scope.narrow_controller = !$scope.narrow_controller;
+        $scope.wide_controller = !$scope.wide_controller;   
+        try{
+            //TODO : refactor to put() when we move to Angular 1.3 or greater
+            $cookies.seed_nav_is_expanded = $scope.expanded_controller.toString(); 
         }
-        else {
-            $scope.expanded_controller = !$scope.expanded_controller;
-            $scope.collapsed_controller = !$scope.collapsed_controller;
-            $scope.narrow_controller = !$scope.narrow_controller;
-            $scope.wide_controller = !$scope.wide_controller;
+        catch(err){
+            //it's ok if the cookie can't be written, so just report in the log and move along.
+            $log.error("Couldn't write cookie for nav state. Error: ", err);
         }
     };
 
@@ -329,4 +342,5 @@ angular.module('BE.seed.controller.menu', [])
         });
     };
     init();
+    init_menu();
 }]);

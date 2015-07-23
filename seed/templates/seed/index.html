@@ -9,7 +9,7 @@
 	{% include "seed/_sidebar.html" %}
     
     <div class="display">
-        <div ng-class="{narrow: narrow_controller, wide: wide_controller, content: true}">
+        <div ng-class="{narrow: narrow_controller, wide: wide_controller, content: true, hide_transition:is_initial_state}">
 
             {% include "seed/_header.html" %}
 
