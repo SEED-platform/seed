@@ -27,7 +27,7 @@ class SharingViewTests(TestCase):
 
     def setUp(self):
         self.admin_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com',
             'show_shared_buildings': True
@@ -37,7 +37,7 @@ class SharingViewTests(TestCase):
         self.parent_org.add_member(self.admin_user, ROLE_OWNER)
 
         self.eng_user_details = {
-            'username': 'eng_user',
+            'username': 'eng_owner@demo.com',
             'password': 'eng_pass',
             'email': 'eng_owner@demo.com'
         }
@@ -47,7 +47,7 @@ class SharingViewTests(TestCase):
         self.eng_org.add_member(self.eng_user, ROLE_OWNER)
 
         self.des_user_details = {
-            'username': 'des_user',
+            'username': 'des_owner@demo.com',
             'password': 'des_pass',
             'email': 'des_owner@demo.com'
         }

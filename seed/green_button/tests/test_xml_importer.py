@@ -300,7 +300,7 @@ class GreenButtonXMLImportTests(TestCase):
 
     def setUp(self):
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }

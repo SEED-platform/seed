@@ -47,7 +47,7 @@ class DataImporterViewTests(TestCase):
 
     def setUp(self):
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
         self.user = User.objects.create_superuser(
@@ -124,7 +124,7 @@ class DefaultColumnsViewTests(TestCase):
 
     def setUp(self):
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
@@ -278,7 +278,7 @@ class SearchViewTests(TestCase):
 
     def setUp(self):
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
@@ -1030,7 +1030,7 @@ class BuildingDetailViewTests(TestCase):
 
     def setUp(self):
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
@@ -1513,7 +1513,7 @@ class TestMCMViews(TestCase):
         self.maxDiff = None
         self.org = Organization.objects.create()
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com',
         }
@@ -1726,7 +1726,7 @@ class TestMCMViews(TestCase):
         # the second user in the org makes the same save, which shouldn't be
         # unique
         user_2_details = {
-            'username': 'test_2_user',
+            'username': 'test_2_user@demo.com',
             'password': 'test_pass',
             'email': 'test_2_user@demo.com',
         }
@@ -1965,7 +1965,7 @@ class MatchTreeTests(TestCase):
 
     def setUp(self):
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }

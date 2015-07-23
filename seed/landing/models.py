@@ -152,6 +152,9 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         """
         Ensure that email and username are synced.
         """
+
+        # NL: Why are we setting the email to the user name, don't we need the email? It seems that the username
+        # is then suppose to be the email, correct? Regardless, this code seems problematic
         if self.email.lower() != self.username:
             self.email = self.username
         return super(SEEDUser, self).save(*args, **kwargs)
