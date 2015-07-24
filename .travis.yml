@@ -10,7 +10,7 @@ services:
   - redis-server
 
 env:
-  - DJANGO=1.6.7
+  - DJANGO=1.7.9
 
 before_install:
   - export DJANGO_SETTINGS_MODULE=config.settings.travis
