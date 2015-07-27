@@ -91,6 +91,16 @@
   -webkit-transition: @transition;
           transition: @transition;
 }
+/* Hide transition when setting initial state of nav */
+.hide_transition{
+  transition: none !important;   
+  -webkit-transition: none !important;
+  animation: none !important;
+  -webkit-animation: none !important;  
+  -moz-animation: none !important;  
+  -o-animation: none !important;  
+}
+
 // Box Shadows
 .box-shadow(@shadow) {
   -webkit-box-shadow: @shadow; // iOS <4.3 & Android <4.1
@@ -1097,7 +1107,12 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 						white-space: normal;
 						text-align: center;
 					}
-					
+					.data_label {
+						padding-left: 5px;
+						padding-right: 5px;
+						color: @white;
+						font-size: 14px;
+					}					
 				}
 				td {
 					border-top: none;
@@ -1823,3 +1838,4 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 		}
 	}
 }
+

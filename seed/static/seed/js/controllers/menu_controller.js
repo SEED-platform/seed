@@ -15,8 +15,10 @@ angular.module('BE.seed.controller.menu', [])
   'uploader_service',
   'organization_service',
   'user_service',
+  'dataset_service',
   '$timeout',
   '$route',
+  '$cookies',
   function(
     $scope,
     $http,
@@ -30,8 +32,10 @@ angular.module('BE.seed.controller.menu', [])
     uploader_service,
     organization_service,
     user_service,
+    dataset_service,
     $timeout,
-    $route) {
+    $route,
+    $cookies) {
 
     // initial state of css classes for menu and sidebar
     $scope.expanded_controller = false;
@@ -44,6 +48,7 @@ angular.module('BE.seed.controller.menu', [])
     $scope.datasets_count = 0;
     $scope.projects_count = 0;
     $scope.search_input = "";
+    $scope.organizations_count = 0;
     $scope.menu = {};
     $scope.menu.project = {};
     $scope.menu.create_project_state = "create";
@@ -53,9 +58,10 @@ angular.module('BE.seed.controller.menu', [])
     $scope.menu.loading = false;
     $scope.menu.route_load_error = false;
     $scope.menu.user = {};
+    $scope.is_initial_state = $scope.expanded_controller === $scope.collapsed_controller;
 
     $scope.$on("$routeChangeError", function(event, current, previous, rejection) {
-	$scope.menu.loading = false;
+	   $scope.menu.loading = false;
         $scope.menu.route_load_error = true;
         if (rejection === "not authorized" || rejection === "Your page could not be located!") {
             $scope.menu.error_message = rejection;
@@ -132,6 +138,15 @@ angular.module('BE.seed.controller.menu', [])
         $scope.search_input = "";
     };
 
+    //Sets initial expanded/collapse state of sidebar menu
+    function init_menu(){
+        //Default to false but use cookie value if one has been set
+        var isNavExpanded = $cookies.seed_nav_is_expanded === "true";
+        $scope.expanded_controller = isNavExpanded;
+        $scope.collapsed_controller = !isNavExpanded;
+        $scope.narrow_controller = isNavExpanded;
+        $scope.wide_controller = !isNavExpanded; 
+    }
 
     // returns true if menu toggle has never been clicked, i.e. first run, else returns false
     $scope.menu_toggle_has_never_been_clicked = function () {
@@ -148,17 +163,18 @@ angular.module('BE.seed.controller.menu', [])
 
     // expands and collapses the sidebar menu
     $scope.toggle_menu = function() {
-        if ($scope.menu_toggle_has_never_been_clicked()) {
-            $scope.expanded_controller = true;
-            $scope.collapsed_controller = false;
-            $scope.narrow_controller = true;
-            $scope.wide_controller = false;
+        $scope.is_initial_state = false; //we can now turn on animations
+        $scope.expanded_controller = !$scope.expanded_controller;
+        $scope.collapsed_controller = !$scope.collapsed_controller;
+        $scope.narrow_controller = !$scope.narrow_controller;
+        $scope.wide_controller = !$scope.wide_controller;   
+        try{
+            //TODO : refactor to put() when we move to Angular 1.3 or greater
+            $cookies.seed_nav_is_expanded = $scope.expanded_controller.toString(); 
         }
-        else {
-            $scope.expanded_controller = !$scope.expanded_controller;
-            $scope.collapsed_controller = !$scope.collapsed_controller;
-            $scope.narrow_controller = !$scope.narrow_controller;
-            $scope.wide_controller = !$scope.wide_controller;
+        catch(err){
+            //it's ok if the cookie can't be written, so just report in the log and move along.
+            $log.error("Couldn't write cookie for nav state. Error: ", err);
         }
     };
 
@@ -268,6 +284,43 @@ angular.module('BE.seed.controller.menu', [])
         init();
     };
 
+    //DMcQ: Set up watch statements to keep nav updated with latest buildings_count, datasets_count, etc. 
+    //      This isn't the best solution but most expedient. This approach should be refactored later by
+    //      a proper strategy of binding views straight to model properties.
+    //      See my comments here: https://github.com/SEED-platform/seed/issues/44
+    
+    //watch projects
+    $scope.$watch(  function () { return project_service.total_number_projects_for_user; }, 
+                    function (data) {
+                        $scope.projects_count = data;
+                    }, 
+                    true
+                );
+
+    //watch buildings
+    $scope.$watch(  function () { return building_services.total_number_of_buildings_for_user; }, 
+                    function (data) {
+                        $scope.buildings_count = data;
+                    }, 
+                    true
+                );
+    
+    //watch datasets
+    $scope.$watch(  function () { return dataset_service.total_datasets_for_user; }, 
+                    function (data) {
+                        $scope.datasets_count = data;
+                    }, 
+                    true
+                );        
+
+    //watch organizations
+    $scope.$watch(  function () { return organization_service.total_organizations_for_user; }, 
+                    function (data) {
+                        $scope.organizations_count = data; 
+                    }, 
+                    true
+                );
+
     var init = function() {
         // get the default org for the user
         $scope.menu.user.organization = user_service.get_organization();
@@ -285,8 +338,9 @@ angular.module('BE.seed.controller.menu', [])
         });
         organization_service.get_organizations().then(function (data) {
             // resolve promise
-            $scope.menu.user.organizations = data.organizations;
+            $scope.organizations_count = data.organizations.length;
         });
     };
     init();
+    init_menu();
 }]);
