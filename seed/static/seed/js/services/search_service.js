@@ -80,13 +80,19 @@ angular.module('BE.seed.service.search', [])
 
     search_service.init_storage = function () {
         // Check session storage for order and sort values.
-        if (typeof(Storage) !== "undefined" && sessionStorage.getItem('seedBuildingOrderBy') !== null) {
-            saas.order_by = sessionStorage.getItem('seedBuildingOrderBy');
-            saas.sort_column = sessionStorage.getItem('seedBuildingOrderBy');
-        }
+        if (typeof(Storage) !== "undefined") {
+            if (sessionStorage.getItem('seedBuildingOrderBy') !== null){
+                saas.order_by = sessionStorage.getItem('seedBuildingOrderBy');
+                saas.sort_column = sessionStorage.getItem('seedBuildingOrderBy');
+            }
 
-        if (typeof(Storage) !== "undefined" && sessionStorage.getItem('seedBuildingSortReverse') !== null) {
-            saas.sort_reverse = JSON.parse(sessionStorage.getItem('seedBuildingSortReverse'));
+            if (sessionStorage.getItem('seedBuildingSortReverse') !== null) {
+                saas.sort_reverse = JSON.parse(sessionStorage.getItem('seedBuildingSortReverse'));
+            }
+
+            if (sessionStorage.getItem('seedBuildingFilterParams') !== null) {
+                saas.filter_params = JSON.parse(sessionStorage.getItem('seedBuildingFilterParams'));
+            }
         }
     };
 
@@ -171,8 +177,11 @@ angular.module('BE.seed.service.search', [])
      * filter_search: triggerd when a filter param changes
      */
     search_service.filter_search = function() {
-       this.current_page = 1;
-       this.search_buildings();
+        this.current_page = 1;
+        this.search_buildings();
+        if (typeof(Storage) !== "undefined") {
+            sessionStorage.setItem('seedBuildingFilterParams', JSON.stringify(this.filter_params));
+        }
     };
 
 
