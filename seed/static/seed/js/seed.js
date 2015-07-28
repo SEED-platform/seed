@@ -262,14 +262,16 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
 
                     // Check session storage for order, sort, and filter values.
                     if (typeof(Storage) !== "undefined") {
-                        if (sessionStorage.getItem('seedBuildingOrderBy') !== null) {
-                            orderBy = sessionStorage.getItem('seedBuildingOrderBy');
+
+                        var prefix = $route.current.$$route.originalPath;
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
+                            orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
                         }
-                        if (sessionStorage.getItem('seedBuildingSortReverse') !== null) {
-                            sortReverse = JSON.parse(sessionStorage.getItem('seedBuildingSortReverse'));
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
+                            sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
                         }
-                        if (sessionStorage.getItem('seedBuildingFilterParams') !== null) {
-                            params = JSON.parse(sessionStorage.getItem('seedBuildingFilterParams'));
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
+                            params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
                         }
                     }
 
