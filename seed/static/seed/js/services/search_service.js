@@ -63,7 +63,8 @@ angular.module('BE.seed.service.search', [])
         number_per_page_options_model: 10,
         filter_params: {},
         prev_page_disabled: true,
-        has_checkbox: true
+        has_checkbox: true,
+        prefix: ''
     };
     search_service.next_page_disabled = (
         search_service.number_matching_search <= 10);
@@ -78,15 +79,22 @@ angular.module('BE.seed.service.search', [])
      * functions
      */
 
-    search_service.init_storage = function () {
+    search_service.init_storage = function (prefix) {
         // Check session storage for order and sort values.
-        if (typeof(Storage) !== "undefined" && sessionStorage.getItem('seedBuildingOrderBy') !== null) {
-            saas.order_by = sessionStorage.getItem('seedBuildingOrderBy');
-            saas.sort_column = sessionStorage.getItem('seedBuildingOrderBy');
-        }
+        if (typeof(Storage) !== "undefined") {
+            saas.prefix = prefix;
+            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null){
+                saas.order_by = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
+                saas.sort_column = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
+            }
 
-        if (typeof(Storage) !== "undefined" && sessionStorage.getItem('seedBuildingSortReverse') !== null) {
-            saas.sort_reverse = JSON.parse(sessionStorage.getItem('seedBuildingSortReverse'));
+            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
+                saas.sort_reverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
+            }
+
+            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
+                saas.filter_params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
+            }
         }
     };
 
@@ -171,8 +179,11 @@ angular.module('BE.seed.service.search', [])
      * filter_search: triggerd when a filter param changes
      */
     search_service.filter_search = function() {
-       this.current_page = 1;
-       this.search_buildings();
+        this.current_page = 1;
+        this.search_buildings();
+        if (typeof(Storage) !== "undefined") {
+            sessionStorage.setItem(this.prefix + ':' + 'seedBuildingFilterParams', JSON.stringify(this.filter_params));
+        }
     };
 
 
@@ -338,8 +349,8 @@ angular.module('BE.seed.service.search', [])
             }
 
             if (typeof(Storage) !== "undefined") {
-                sessionStorage.setItem('seedBuildingOrderBy', saas.sort_column);
-                sessionStorage.setItem('seedBuildingSortReverse', saas.sort_reverse);
+                sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingOrderBy', saas.sort_column);
+                sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingSortReverse', saas.sort_reverse);
             }
 
             saas.order_by = this.sort_column;

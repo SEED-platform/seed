@@ -254,17 +254,28 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             templateUrl: static_url + 'seed/partials/buildings.html',
             resolve: {
                 'search_payload': ['building_services', '$route', function(building_services, $route){
-                    var params = $route.current.params;
-                    var q = params.q || "";
+                    // Defaults
+                    var q = $route.current.params.q || "";
+                    var orderBy = "";
+                    var sortReverse = false;
+                    var params = {};
 
-                    // Check session storage for order and sort values.
-                    var orderBy = (typeof(Storage) !== "undefined" && sessionStorage.getItem('seedBuildingOrderBy') !== null) ?
-                        sessionStorage.getItem('seedBuildingOrderBy') : "";
+                    // Check session storage for order, sort, and filter values.
+                    if (typeof(Storage) !== "undefined") {
 
-                    var sortReverse = (typeof(Storage) !== "undefined" && sessionStorage.getItem('seedBuildingSortReverse') !== null) ?
-                        JSON.parse(sessionStorage.getItem('seedBuildingSortReverse')) : false;
+                        var prefix = $route.current.$$route.originalPath;
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
+                            orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
+                        }
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
+                            sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
+                        }
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
+                            params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
+                        }
+                    }
 
-                    // params: (query, number_per_page, page_number, order_by, sort_reverse, other_params, project_id)
+                    // params: (query, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id)
                     return building_services.search_buildings(q, 10, 1, orderBy, sortReverse, params, null);
                 }],
                 'default_columns': ['user_service', function(user_service){
