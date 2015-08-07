@@ -18,6 +18,7 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.admin',
     'BE.seed.controller.building_detail',
     'BE.seed.controller.building_list',
+    'BE.seed.controller.buildings_reports',
     'BE.seed.controller.buildings_settings',
     'BE.seed.controller.concat_modal',
     'BE.seed.controller.create_note_modal',
@@ -60,6 +61,7 @@ angular.module('BE.seed.services', [
     'BE.seed.service.audit',
     'BE.seed.service.auth',
     'BE.seed.service.building',
+    'BE.seed.service.buildings_reports',
     'BE.seed.service.dataset',
     'BE.seed.service.export',
     'BE.seed.service.mapping',
@@ -312,6 +314,10 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 }
             }
 
+        })
+        .when('/buildings/reports', {
+            templateUrl: static_url + 'seed/partials/buildings_reports.html',
+            controller: 'buildings_reports_controller'
         })
         .when('/buildings/:building_id', {
             controller: 'building_detail_controller',
