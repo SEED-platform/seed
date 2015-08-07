@@ -927,7 +927,7 @@ def _normalize_address_str(address_val):
     return normalized_address.lower().strip()
 
 
-def _findMatches(un_m_address, canonical_buildings_addresses):
+def _find_matches(un_m_address, canonical_buildings_addresses):
     match_list = []
     if not un_m_address:
         return match_list
@@ -945,9 +945,7 @@ def _match_buildings(file_pk, user_pk):
     min_threshold = settings.MATCH_MIN_THRESHOLD
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
-    org = Organization.objects.filter(
-        users=import_file.import_record.owner
-    )[0]
+    org = Organization.objects.filter(users=import_file.import_record.owner)[0]
     test = ''
     unmatched_buildings = find_unmatched_buildings(import_file)
 
@@ -1022,7 +1020,7 @@ def _match_buildings(file_pk, user_pk):
     import_file.save()
     # this section spencer changed to make the exact match
     for i, un_m_address in enumerate(unmatched_normalized_addresses):
-        results = _findMatches(un_m_address, canonical_buildings_addresses)
+        results = _find_matches(un_m_address, canonical_buildings_addresses)
         if results:
             handle_results(
                 results, i, can_rev_idx, unmatched_buildings, user_pk
