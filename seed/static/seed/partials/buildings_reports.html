@@ -1,3 +1,27 @@
+
+<!-- DMcQ: Temp styles -->
+<style>
+
+#chartEnergyStar {
+
+    height: 300px;
+    border: 1px solid #EEE;
+    background-color: #F1F1F1;
+    margin:10px;
+}
+
+#chartSiteEUI {
+
+    height: 300px;
+    border: 1px solid #EEE;
+    background-color: #F6F6F6;
+    margin:10px;
+
+
+}
+
+</style>
+
 <div class="page_header_container" ng-cloak>
     <div class="page_header">
         <div class="left page_action_container">
@@ -29,14 +53,22 @@
     <div class="section_content_container">
         <div class="section_content with_padding">
             
-            
-        </div>
-        <div class="section_content with_padding">
-            <div class="table_list_container has_borders">
-              
-                </div>
+            <div id="chartEnergyStar">
+                Energy Star vs.  <!-- Single button -->
+                    <select ng-model="selectedItem" 
+                            ng-options="item.name for item in items" 
+                            ng-change="updateChart1()">
+                    </select>
+                <linechart data="chart1Data" options="chart1Options" mode="" width="" height=""></linechart>
             </div>
+            
+            <div id="chartSiteEUI">
+                Chart 2
+            </div>
+
         </div>
     </div>
+</div>
+
   
 </div>

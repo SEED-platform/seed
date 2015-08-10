@@ -11,7 +11,8 @@ angular.module('BE.seed.angular_dependencies', [
     ]);
 angular.module('BE.seed.vendor_dependencies', [
     'ui.bootstrap',
-    'ui.tree'
+    'ui.tree',
+    'n3-line-chart'
     ]);
 angular.module('BE.seed.controllers', [
     'BE.seed.controller.accounts',

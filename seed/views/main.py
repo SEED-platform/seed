@@ -2098,3 +2098,24 @@ def delete_buildings(request):
         buildingsnapshot=selected_buildings
     ).update(active=False)
     return {'status': 'success'}
+
+
+
+#DMcQ: Test for building reporting
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('requires_member')
+def get_building_report_data(request):
+
+    data = [ {"x": 0, "gross_floor_area": 4, "use_description": 14, "year_built":1970},
+        {"x": 1, "gross_floor_area": 8, "use_description": 1, "year_built":1980},
+        {"x": 2, "gross_floor_area": 15, "use_description": 11, "year_built":1960},
+        {"x": 3, "gross_floor_area": 16, "use_description": 147, "year_built":1970},
+        {"x": 4, "gross_floor_area": 23, "use_description": 87, "year_built":1980},
+        {"x": 5, "gross_floor_area": 42, "use_description": 45, "year_built":1940}]
+
+    return {
+        'status': 'success',
+        'report_data' : data
+    }
