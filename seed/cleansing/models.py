@@ -4,6 +4,10 @@ import os
 import json
 import time
 from celery.task import task, chord
+from logging import getLogger
+
+logger = getLogger(__name__)
+
 
 class Cleansing(models.Model):
     def __init__(self, *args, **kwargs):
@@ -26,4 +30,14 @@ class Cleansing(models.Model):
         self.rules_data = None
         with open(cleansing_file) as data_file:
             self.rules_data = json.load(data_file)
+
+
+    def cleanse(self, data):
+        '''
+        Send in data as an Array of objects or directly read from the databases
+        :param data:
+        :return:
+        '''
+
+        print "I am doing a cleanse of something here"
 

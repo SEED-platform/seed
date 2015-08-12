@@ -62,6 +62,7 @@ from seed.utils.buildings import get_source_type, get_search_query
 from seed.utils.mapping import get_mappable_columns
 from seed.lib.superperms.orgs.models import Organization
 from seed.lib.exporter import Exporter
+from seed.cleansing.tasks import *
 
 logger = get_task_logger(__name__)
 
@@ -542,6 +543,19 @@ def _map_data(file_pk, *args, **kwargs):
             (serialized_data, file_pk, source_type, prog_key)
         ))
 
+    qs = BuildingSnapshot.objects.filter(
+        import_file=import_file,
+        source_type=source_type,
+    ).iterator()
+    prog_key = get_prog_key('cleanse_data', file_pk)
+    tasks = []
+    for chunk in batch(qs, 100):
+        serialized_data = [obj.extra_data for obj in chunk]
+        tasks.append(cleanse_data_chunk.subtask(
+            (serialized_data, file_pk, source_type, prog_key)
+        ))
+
+    # need to rework how the progress keys are implemented here, but at least the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
     if tasks:
         chord(tasks, interval=15)(finish_mapping.subtask([file_pk]))
@@ -549,6 +563,7 @@ def _map_data(file_pk, *args, **kwargs):
         finish_mapping.task(file_pk)
 
     return {'status': 'success'}
+
 
 
 @task
