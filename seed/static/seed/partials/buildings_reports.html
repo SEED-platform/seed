@@ -55,16 +55,34 @@
             
             <div id="chartEnergyStar">
                 Energy Star vs.  <!-- Single button -->
-                    <select ng-model="selectedItem" 
-                            ng-options="item.name for item in items" 
-                            ng-change="updateChart1()">
-                    </select>
-                <linechart data="chart1Data" options="chart1Options" mode="" width="" height=""></linechart>
+                <select ng-model="esChartSelectedItem" 
+                        ng-init="esChartSelectedItem=esChartVars[0]" 
+                        ng-options="item.name for item in esChartVars" 
+                        ng-change="updateESChart(esChartSelectedItem)">
+                </select>
+                <linechart  data="esChartData" 
+                            options="esChartOptions" 
+                            mode="" 
+                            width="" 
+                            height="">
+                </linechart>
             </div>
             
+            <!--
             <div id="chartSiteEUI">
-                Chart 2
+                Energy Use Intensity vs. 
+                <select ng-model="euiChartSelectedItem" 
+                        ng-options="option.name for option in euiChartVars" 
+                        ng-change="updateEUIChart(euiChartSelectedItem)">
+                </select>
+                <linechart  data="euiChartData" 
+                            options="euiChartOptions" 
+                            mode="" 
+                            width="" 
+                            height="">
+                </linechart>
             </div>
+            -->
 
         </div>
     </div>

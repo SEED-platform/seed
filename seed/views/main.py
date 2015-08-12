@@ -2097,7 +2097,7 @@ def delete_buildings(request):
     CanonicalBuilding.objects.filter(
         buildingsnapshot=selected_buildings
     ).update(active=False)
-    return {'status': 'success'}
+    return {'status': 'success'}    
 
 
 
@@ -2108,13 +2108,26 @@ def delete_buildings(request):
 @has_perm('requires_member')
 def get_building_report_data(request):
 
-    data = [ {"x": 0, "gross_floor_area": 4, "use_description": 14, "year_built":1970},
-        {"x": 1, "gross_floor_area": 8, "use_description": 1, "year_built":1980},
-        {"x": 2, "gross_floor_area": 15, "use_description": 11, "year_built":1960},
-        {"x": 3, "gross_floor_area": 16, "use_description": 147, "year_built":1970},
-        {"x": 4, "gross_floor_area": 23, "use_description": 87, "year_built":1980},
-        {"x": 5, "gross_floor_area": 42, "use_description": 45, "year_built":1940}]
+    #Read in x and y vars requested by client
+    xVar = request.GET.get('xVar')
+    yVar = request.GET.get('yVar')
+    orgID = request.GET.get('organization_id')
+    _log.info("#get_building_report_data: xVar={0} yVar={1} organization={2} ".format(xVar, yVar, orgID))
 
+    #Get data from database. For now let's just set up a big array of dummy data....
+    baseDummyData = [    {"es_score": 0, "eui": 0, "gross_floor_area": 4, "use_description": 14, "year_built":1970},
+                        {"es_score": 1, "eui": 1, "gross_floor_area": 8, "use_description": 1, "year_built":1980},
+                        {"es_score": 2, "eui": 2, "gross_floor_area": 15, "use_description": 11, "year_built":1960},
+                        {"es_score": 3, "eui": 3, "gross_floor_area": 16, "use_description": 147, "year_built":1970},
+                        {"es_score": 4, "eui": 4, "gross_floor_area": 23, "use_description": 87, "year_built":1980},
+                        {"es_score": 5, "eui": 5, "gross_floor_area": 42, "use_description": 45, "year_built":1940}]
+
+    #..and then build a response based on the requested variables
+    data = []
+    for obj in baseDummyData:
+        data.append({xVar:obj[xVar], yVar:obj[yVar]})
+
+    #Send back to client
     return {
         'status': 'success',
         'report_data' : data

@@ -12,52 +12,90 @@ angular.module('BE.seed.controller.buildings_reports', [])
                                               buildings_reports_service
                                             ) {
 
+  var ENERGY_STAR_VAR = "es_score";
+  var EUI_VAR = "eui";
 
-    $scope.items = [
-      {name:"Gross Floor Area", varName:"gross_floor_area", value:0},
-      {name:"Building Classification", varName:"use_description", value:1},
-      {name:"Year Built", varName:"year_built", value:2}
+
+  $scope.esChartVars = [
+    {name:"Gross Floor Area", varName:"gross_floor_area", value:0},
+    {name:"Building Classification", varName:"use_description", value:1},
+    {name:"Year Built", varName:"year_built", value:2}
+  ]
+
+  $scope.euiChartVars = [
+    {name:"Gross Floor Area", varName:"gross_floor_area", value:0},
+    {name:"Building Classification", varName:"use_description", value:1},
+    {name:"Year Built", varName:"year_built", value:2}
+  ]
+
+  $scope.esChartSelectedVar = $scope.esChartVars[0];
+  $scope.euiChartSelectedVar = $scope.euiChartVars[0];
+  
+  $scope.esChartData = [];
+  $scope.euiChartData = [];
+
+  $scope.esChartOptions = {      
+    axes: {
+      x: {key: ENERGY_STAR_VAR}
+    },
+    series: [
+      {
+        y: $scope.esChartSelectedVar.varName,
+        label: " ",
+        color: "#2ca02c",
+        type: "column"
+      }
     ]
+  }
 
-    $scope.selectedItem = $scope.items[0];
-    
-    $scope.chart1Data = [
-      /*
-      {x: 0, gross_floor_area: 4, use_description: 14, year_built:1970},
-      {x: 1, gross_floor_area: 8, use_description: 1, year_built:1980},
-      {x: 2, gross_floor_area: 15, use_description: 11, year_built:1960},
-      {x: 3, gross_floor_area: 16, use_description: 147, year_built:1970},
-      {x: 4, gross_floor_area: 23, use_description: 87, year_built:1980},
-      {x: 5, gross_floor_area: 42, use_description: 45, year_built:1940}
-      */
-    ];
+  $scope.euiChartOptions = {      
+    axes: {
+      x: {key: EUI_VAR}
+    },
+    series: [
+      {
+        y: $scope.euiChartSelectedVar.varName,
+        label: " ",
+        color: "#2ca02c",
+        type: "column"
+      }
+    ]
+  }
 
-    $scope.chart1Options = {
-      series: [
-        {
-          y: "gross_floor_area",
-          label: " ",
-          color: "#2ca02c",
-          type: "column"
-        }
-      ]
-    }
    
-   $scope.updateChart1 = function(){
-    var yAxisVar = $scope.selectedItem.varName;
-    $scope.chart1Options.series[0].y = yAxisVar;
-   }
+  $scope.updateESChart = function(selectedVar){
+    var yVar = selectedVar.varName;
+    getESChartData(yVar);
+  }
 
-  function init(){
-    buildings_reports_service.get_report_data().then(function(data) {
+  function getESChartData(yVar){
+    buildings_reports_service.get_report_data(ENERGY_STAR_VAR, yVar).then(function(data) {
       // resolve promise
-      $scope.chart1Data = data;
+      $scope.esChartData = data;
+      // update chart
+      $scope.esChartOptions.series[0].y = yVar;
     });
   }
 
+  $scope.updateEUIChart = function(selectedVar){
+    var yVar = selectedVar.varName;
+    getEUIChartData(yVar);
+  }
 
+  function getEUIChartData(yVar){
+    buildings_reports_service.get_report_data(EUI_VAR, yVar).then(function(data) {
+      // resolve promise
+      $scope.euiChartData = data;
+      // update chart
+      $scope.euiChartOptions.series[0].y = yVar;
+    });
+  }
+
+  function init(){
+    getESChartData($scope.esChartSelectedVar.varName)
+    getEUIChartData($scope.euiChartSelectedVar.varName)
+  }
 
   init();
-
     
 }]);
