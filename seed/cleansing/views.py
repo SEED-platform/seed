@@ -2,6 +2,8 @@ from annoying.decorators import ajax_request
 from django.contrib.auth.decorators import login_required
 from seed.utils.api import api_endpoint
 
+# TODO The API is returning on both a POST and GET. Make sure to authenticate.
+
 @api_endpoint
 @ajax_request
 @login_required
@@ -36,3 +38,15 @@ def get_cleansing_results(request):
     ret.append(result)
 
     return ret
+
+
+@api_endpoint
+@ajax_request
+@login_required
+def get_progress(request):
+    result = {
+        'progress_key': 'some_random_key',
+        'progress': 50
+    }
+
+    return result
