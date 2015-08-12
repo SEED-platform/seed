@@ -83,17 +83,27 @@ angular.module('BE.seed.service.search', [])
         // Check session storage for order and sort values.
         if (typeof(Storage) !== "undefined") {
             saas.prefix = prefix;
+
+            // order_by & sort_column
             if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null){
                 saas.order_by = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
                 saas.sort_column = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
             }
 
+            // sort_reverse
             if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
                 saas.sort_reverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
             }
 
+            // filter_params
             if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
                 saas.filter_params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
+            }
+
+            // number_per_page
+            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
+                saas.number_per_page = saas.number_per_page_options_model = 
+                JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
             }
         }
     };
@@ -201,6 +211,9 @@ angular.module('BE.seed.service.search', [])
         this.number_per_page = this.number_per_page_options_model;
         this.current_page = 1;
         this.search_buildings();
+        if (typeof(Storage) !== "undefined") {
+            sessionStorage.setItem(this.prefix + ':' + 'seedBuildingNumberPerPage', JSON.stringify(this.number_per_page));
+        }
     };
 
     /**
