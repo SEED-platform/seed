@@ -96,7 +96,7 @@ install ``npm`` assuming the prerequisites are met.
 Django Database Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Create a ``local_untracked.py`` file in the ``BE/settings`` directory and add
+Copy the ``local_untracked.py.dist`` file in the ``config/settings`` directory, remove the .DIST affix and add
 a ``DATABASES`` configuration with your database username, password, host,
 and port. Your database configuration can point to an AWS RDS instance or a
 postgresql 9.3 database instance you have manually installed within your
