@@ -2099,7 +2099,7 @@ def delete_buildings(request):
     ).update(active=False)
     return {'status': 'success'}    
 
-
+import random 
 
 #DMcQ: Test for building reporting
 @api_endpoint
@@ -2112,20 +2112,15 @@ def get_building_report_data(request):
     xVar = request.GET.get('xVar')
     yVar = request.GET.get('yVar')
     orgID = request.GET.get('organization_id')
-    _log.info("#get_building_report_data: xVar={0} yVar={1} organization={2} ".format(xVar, yVar, orgID))
+    
+    #Get all data from buildings...this needs to be refined.
+    bldgs = BuildingSnapshot.objects.values('id', xVar, yVar)
 
-    #Get data from database. For now let's just set up a big array of dummy data....
-    baseDummyData = [    {"es_score": 0, "eui": 0, "gross_floor_area": 4, "use_description": 14, "year_built":1970},
-                        {"es_score": 1, "eui": 1, "gross_floor_area": 8, "use_description": 1, "year_built":1980},
-                        {"es_score": 2, "eui": 2, "gross_floor_area": 15, "use_description": 11, "year_built":1960},
-                        {"es_score": 3, "eui": 3, "gross_floor_area": 16, "use_description": 147, "year_built":1970},
-                        {"es_score": 4, "eui": 4, "gross_floor_area": 23, "use_description": 87, "year_built":1980},
-                        {"es_score": 5, "eui": 5, "gross_floor_area": 42, "use_description": 45, "year_built":1940}]
-
-    #..and then build a response based on the requested variables
+    #For now I need to map values to "x" and "y" fields, until I can figure out how
+    #to dynamically bind var names to axes
     data = []
-    for obj in baseDummyData:
-        data.append({xVar:obj[xVar], yVar:obj[yVar]})
+    for obj in bldgs:
+        data.append({"id":obj["id"], "x":obj[xVar], "y":obj[yVar]})
 
     #Send back to client
     return {

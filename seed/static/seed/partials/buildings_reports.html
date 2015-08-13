@@ -5,16 +5,12 @@
 #chartEnergyStar {
 
     height: 300px;
-    border: 1px solid #EEE;
-    background-color: #F1F1F1;
     margin:10px;
 }
 
 #chartSiteEUI {
 
     height: 300px;
-    border: 1px solid #EEE;
-    background-color: #F6F6F6;
     margin:10px;
 
 
@@ -60,12 +56,11 @@
                         ng-options="item.name for item in esChartVars" 
                         ng-change="updateESChart(esChartSelectedItem)">
                 </select>
-                <linechart  data="esChartData" 
-                            options="esChartOptions" 
-                            mode="" 
-                            width="" 
-                            height="">
-                </linechart>
+                <graph data="esChartData" width="100%" height="300px">
+                  <x field="x" type="Measure" title="Energy Star Score"></x>
+                  <y field="y" type="Measure" title="Test"></y>
+                  <scatter-plot field="x" series="y" label="Test"></scatter-plot>
+                </graph>
             </div>
             
             <!--
