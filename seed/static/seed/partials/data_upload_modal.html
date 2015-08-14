@@ -18,7 +18,7 @@
         <div class="alert alert-danger alert-dismissable" ng-show="dataset.alert">
             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
             The data set <strong>name "{$ dataset.name $}" already exists</strong>. Please select a new one.
-        </div>   
+        </div>
         <div class="form-group" ng-class="{'has-error': dataset.alert, 'has-feedback': dataset.alert}">
             <label class="control-label col-lg-3 col-sm-3" for="inputDataUploadName">Data Set Name</label>
             <div class="col-lg-8 col-sm-8">
@@ -37,8 +37,7 @@
                 <div class="row">
                     <div class="col-lg-4" be-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload a spreadsheet" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                     <div class="col-lg-4 orange_button" be-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Upload Portfolio Manager data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
-                    <div class="col-lg-8 green_button" be-uploader sourcetype="Green Button Raw"
-                         sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Green Button Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                    <div class="col-lg-8 green_button" be-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Green Button Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                 </div>
                 <div class="progress_bar_container" ng-show="uploader.in_progress">
                     <div class="progress_bar_copy_top">Uploading <strong>{$ dataset.filename $}</strong></div>
@@ -169,7 +168,7 @@
     <div ng-switch-when="1">
         <div class="row text-center">
            <button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="create_dataset(dataset.name)" ng-disabled="dataset.disabled()">Create Data Set</button>
-        </div>    
+        </div>
     </div>
     <div ng-switch-when="2">
     </div>
