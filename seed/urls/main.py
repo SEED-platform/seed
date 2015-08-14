@@ -65,8 +65,10 @@ urlpatterns = patterns(
     url(r'^update_dataset/$', 'update_dataset', name='update_dataset'),
     url(r'^update_building/$', 'update_building', name='update_building'),
     
-    #DMcQ: Test for building reports
+    #DMcQ: Test for building reports    
+    url(r'^get_building_summary_report_data/$', 'get_building_summary_report_data', name='get_building_summary_report_data'),
     url(r'^get_building_report_data/$', 'get_building_report_data', name='get_building_report_data'),
+
 
     # New MCM endpoints
     url(

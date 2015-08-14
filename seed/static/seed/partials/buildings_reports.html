@@ -3,17 +3,13 @@
 <style>
 
 #chartEnergyStar {
-
     height: 300px;
-    margin:10px;
+    width: 100%;
 }
 
 #chartSiteEUI {
-
     height: 300px;
-    margin:10px;
-
-
+    width: 100%;
 }
 
 </style>
@@ -46,38 +42,56 @@
             </div>
         </div>
     </div>
+
+
     <div class="section_content_container">
-        <div class="section_content with_padding">
+        <div class="section_content">
             
-            <div id="chartEnergyStar">
-                Energy Star vs.  <!-- Single button -->
-                <select ng-model="esChartSelectedItem" 
-                        ng-init="esChartSelectedItem=esChartVars[0]" 
-                        ng-options="item.name for item in esChartVars" 
-                        ng-change="updateESChart(esChartSelectedItem)">
-                </select>
-                <graph data="esChartData" width="100%" height="300px">
-                  <x field="x" type="Measure" title="Energy Star Score"></x>
-                  <y field="y" type="Measure" title="Test"></y>
-                  <scatter-plot field="x" series="y" label="Test"></scatter-plot>
-                </graph>
+            <div class="content_block row">
+                <div class="col-md-12 col-sm-12">                    
+                    <div >
+                        <div>Total buildings: {$ summaryData.num_buildings $}</div>
+                        <div>Avg EUI: {$ summaryData.avg_eui $}</div>
+                        <div>Avg Energy Score: {$ summaryData.avg_energy_score $}</div>
+                    </div>
+                </div>
             </div>
-            
-            <!--
-            <div id="chartSiteEUI">
-                Energy Use Intensity vs. 
-                <select ng-model="euiChartSelectedItem" 
-                        ng-options="option.name for option in euiChartVars" 
-                        ng-change="updateEUIChart(euiChartSelectedItem)">
-                </select>
-                <linechart  data="euiChartData" 
-                            options="euiChartOptions" 
-                            mode="" 
-                            width="" 
-                            height="">
-                </linechart>
-            </div>
-            -->
+
+            <div class="content_block row">
+                <div class="col-md-6 col-sm-6">      
+
+                    <div id="chartEnergyStar">
+                        Energy Star vs.  <!-- Single button -->
+                        <select ng-model="esChartSelectedItem" 
+                                ng-init="esChartSelectedItem=esChartVars[0]" 
+                                ng-options="item.name for item in esChartVars" 
+                                ng-change="updateESChart(esChartSelectedItem)">
+                        </select>
+                        <graph id="esChart" data="esChartData" width="100%" height="300px" transition="150">
+                          <x field="x" type="Measure" title="Energy Star Score"></x>
+                          <y field="y" type="Measure" title="{$ esChartYAxisLabel $}"></y>
+                          <scatter-plot field="x" series="y" label="Test" width="100%"></scatter-plot>
+                        </graph>
+                    </div>
+
+                </div>
+
+                <div class="col-md-6 col-sm-6">                         
+                    <div id="chartSiteEUI">
+                        Energy Use Intensity vs. 
+                        <select ng-model="euiChartSelectedItem" 
+                                ng-init="euiChartSelectedItem=euiChartVars[0]" 
+                                ng-options="option.name for option in euiChartVars" 
+                                ng-change="updateEUIChart(euiChartSelectedItem)">
+                        </select>
+                        <graph id="euiChart" data="euiChartData" width="100%" height="300px" transition="150">
+                          <x field="x" type="Measure" title="Energy Use Intensity"></x>
+                          <y field="y" type="Measure" title="{$ euiChartYAxisLabel $}"></y>
+                          <scatter-plot field="x" series="y" label="Test" width="100%"></scatter-plot>
+                        </graph>
+                    </div>
+                </div>
+            </div>            
 
         </div>
     </div>

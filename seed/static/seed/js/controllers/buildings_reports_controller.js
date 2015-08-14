@@ -56,7 +56,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
 
   function getESChartData(yVar){
     buildings_reports_service.get_report_data(ENERGY_STAR_VAR, yVar).then(function(data) {
-      // resolve promise
+      // resolve promise      
       $scope.esChartData = data;
     });
   }
@@ -74,9 +74,17 @@ angular.module('BE.seed.controller.buildings_reports', [])
     });
   }
 
+  function getSummaryData() {
+    buildings_reports_service.get_summary_data().then(function(data) {
+      // resolve promise
+      $scope.summaryData = data;
+    });
+  }
+
   function init(){
     $scope.updateESChart($scope.esChartSelectedVar);
-    //getEUIChartData($scope.euiChartSelectedVar.varName)
+    $scope.updateEUIChart($scope.euiChartSelectedVar);
+    getSummaryData();
   }
 
   init();

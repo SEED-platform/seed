@@ -32,7 +32,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 	   {# <link rel="Shortcut Icon" href="PATH_TO_FAVICON.ico" type="image/x-icon" /> #}
         <link href="//fonts.googleapis.com/css?family=PT+Sans:400,700|PT+Sans+Narrow:400,700" rel="stylesheet" type="text/css">
-        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.2/css/font-awesome.css" rel="stylesheet" type="text/css">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.css" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
         <link href="{{STATIC_URL}}vendors/angular-ui-tree/angular-ui-tree.min.css" rel="stylesheet" type="text/css" />
 
@@ -80,7 +80,7 @@
             <!-- DMcQ Temp for charting dev -->
             <script src="{{STATIC_URL}}vendors/bower_components/d3/d3.min.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/dimple/dist/dimple.latest.min.js"></script>
-            <script src="{{STATIC_URL}}vendors/bower_components/angular-dimple/dist/angular-dimple.min.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/angular-dimple/dist/angular-dimple.js"></script> <!-- don't use .min file since I've made some changes to the original file -->
             <!-- /DMcQ -->
 
             {% ifequal FILE_UPLOAD_DESTINATION 'S3' %}

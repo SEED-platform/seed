@@ -2099,9 +2099,39 @@ def delete_buildings(request):
     ).update(active=False)
     return {'status': 'success'}    
 
-import random 
+import random
 
 #DMcQ: Test for building reporting
+
+
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('requires_member')
+def get_building_summary_report_data(request):
+
+    orgs = [ request.GET.get('organization_id') ] #How should we capture user orgs here?
+
+    num_buildings = BuildingSnapshot.objects.filter(
+                super_organization__in=orgs,
+                canonicalbuilding__active=True
+            ).count()
+
+    avg_eui = 123
+    avg_energy_score = 321
+
+    #TODO: Generate this data
+    data = {   "num_buildings" : num_buildings,
+                "avg_eui" : avg_eui,
+                "avg_energy_score": avg_energy_score }
+
+    #Send back to client
+    return {
+        'status': 'success',
+        'summary_data' : data
+    }
+
+
 @api_endpoint
 @ajax_request
 @login_required
@@ -2111,16 +2141,20 @@ def get_building_report_data(request):
     #Read in x and y vars requested by client
     xVar = request.GET.get('xVar')
     yVar = request.GET.get('yVar')
-    orgID = request.GET.get('organization_id')
+    orgs = [ request.GET.get('organization_id') ] #How should we capture user orgs here?
     
     #Get all data from buildings...this needs to be refined.
-    bldgs = BuildingSnapshot.objects.values('id', xVar, yVar)
+    bldgs = BuildingSnapshot.objects.filter(
+                super_organization__in=orgs,
+                canonicalbuilding__active=True
+            ).values('id', xVar, yVar)
 
     #For now I need to map values to "x" and "y" fields, until I can figure out how
     #to dynamically bind var names to axes
     data = []
     for obj in bldgs:
         data.append({"id":obj["id"], "x":obj[xVar], "y":obj[yVar]})
+        #data.append({"id":obj["id"], "x":random.random(), "y":random.random()})
 
     #Send back to client
     return {
