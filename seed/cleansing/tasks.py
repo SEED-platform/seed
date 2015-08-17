@@ -1,7 +1,4 @@
-"""
-:copyright: (c) 2014 Building Energy Inc
-"""
-from celery.task import task, chord
+from celery.task import task
 from celery.utils.log import get_task_logger
 from models import Cleansing
 

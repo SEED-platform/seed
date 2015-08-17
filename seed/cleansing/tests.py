@@ -1,13 +1,11 @@
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
-from tos.models import TermsOfService
 from seed.landing.models import SEEDUser as User
 from seed.cleansing.models import Cleansing
 
 
 class UserLoginTest(TestCase):
-
     def setUp(self):
         self.user_details = {'username': 'testuser@example.com',
                              'email': 'testuser@example.com',
@@ -27,11 +25,10 @@ class UserLoginTest(TestCase):
     def test_cleanse(self):
         c = Cleansing()
 
-
         data = {
-            columns: ['a','b'],
-            data: [
-                [1, 'value', 2 ],
+            'columns': ['a', 'b'],
+            'data': [
+                [1, 'value', 2],
                 [2, 'value', 3],
                 [100, 'value', 100]
             ]
@@ -40,11 +37,7 @@ class UserLoginTest(TestCase):
         results_of_cleansing = c.cleanse(data)
         print results_of_cleansing
 
-
         # write assertions on what this looks like
         # cache off the cleaned data and merge with any other chunks of already clean data
-
-
-
 
         # c.do_something.delay

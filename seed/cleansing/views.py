@@ -4,6 +4,7 @@ from seed.utils.api import api_endpoint
 
 # TODO The API is returning on both a POST and GET. Make sure to authenticate.
 
+
 @api_endpoint
 @ajax_request
 @login_required

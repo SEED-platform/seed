@@ -4,7 +4,6 @@ import json
 from logging import getLogger
 from django.db import models
 
-cleansing = []
 errors = []
 warnings = []
 
@@ -24,7 +23,7 @@ class Cleansing(models.Model):
         # load in the configuration file
         super(Cleansing, self).__init__(*args, **kwargs)
 
-        cleansing_file = os.path.relpath('/home/bldadmin/seed/seed/cleansing/lib/cleansing.json')
+        cleansing_file = os.path.dirname(os.path.realpath(__file__)) + '/lib/cleansing.json'
 
         if not os.path.isfile(cleansing_file):
             raise Exception('Could not find cleansing JSON file on server %s' % cleansing_file)
@@ -69,19 +68,20 @@ class Cleansing(models.Model):
             if k in fields:
                 try:
                     if obj[k] == '':
-                        print "Error in missing_matching_field: Value is empty"
-                        string = k + " = \'" + obj[k] + "\' and is empty."
-                        print string
+                        # TODO remove print statements after initial debug phase complete
+                        # print 'Error in missing_matching_field: Value is empty'
+                        string = k + ' = \'' + obj[k] + '\' and is empty.'
+                        # print string
                         errors.append(string)
                     if obj[k] is None:
-                        print "Error in missing_matching_field: Value is None"
-                        string = k + " " + obj[k] + " is None."
-                        print string
+                        # print 'Error in missing_matching_field: Value is None'
+                        string = k + ' ' + obj[k] + ' is None.'
+                        # print string
                         errors.append(string)
                 except ValueError, e:
-                    print "Exception in missing_matching_field"
-                    string = "Error " + str(e) + "with " + k
-                    print string
+                    # print 'Exception in missing_matching_field'
+                    string = 'Error ' + str(e) + 'with ' + k
+                    # print string
                     errors.append(string)
 
     def missing_values(self, obj):
@@ -93,19 +93,19 @@ class Cleansing(models.Model):
             if k not in ignored_fields:
                 try:
                     if obj[k] == '':
-                        print "Error in missing_values: Value is empty"
-                        string = k + " = \'" + obj[k] + "\' and is empty."
-                        print string
+                        # print 'Error in missing_values: Value is empty'
+                        string = k + ' = \'' + obj[k] + '\' and is empty.'
+                        # print string
                         errors.append(string)
                     if obj[k] is None:
-                        print "Error in missing_values: Value is None"
-                        string = k + " " + obj[k] + " is None."
-                        print string
+                        # print 'Error in missing_values: Value is None'
+                        string = k + ' ' + obj[k] + ' is None.'
+                        # print string
                         errors.append(string)
                 except ValueError, e:
-                    print "Exception in in_range_checking"
-                    string = "Error " + str(e) + "with " + k
-                    print string
+                    # print 'Exception in in_range_checking'
+                    string = 'Error ' + str(e) + 'with ' + k
+                    # print string
                     errors.append(string)
 
     def in_range_checking(self, obj):
@@ -118,24 +118,24 @@ class Cleansing(models.Model):
             if k in in_range_dict:
                 try:
                     if int(float(obj[k])) < int(float(in_range_dict[k][0]['min'])):
-                        # print "Error in in_range_checking"
-                        string = str(obj[k]) + " < " + str(in_range_dict[k][0]['min'])
+                        # print 'Error in in_range_checking'
+                        string = str(obj[k]) + ' < ' + str(in_range_dict[k][0]['min'])
                         # print string
-                        if in_range_dict[k][0]['severity'] == "error":
+                        if in_range_dict[k][0]['severity'] == 'error':
                             errors.append(string)
                         else:
                             warnings.append(string)
                     if int(float(obj[k])) > int(float(in_range_dict[k][0]['max'])):
-                        # print "Error in in_range_checking"
-                        string = str(obj[k]) + " > " + str(in_range_dict[k][0]['max'])
+                        # print 'Error in in_range_checking'
+                        string = str(obj[k]) + ' > ' + str(in_range_dict[k][0]['max'])
                         # print string
-                        if in_range_dict[k][0]['severity'] == "error":
+                        if in_range_dict[k][0]['severity'] == 'error':
                             errors.append(string)
                         else:
                             warnings.append(string)
                 except ValueError, e:
-                    # print "Exception in in_range_checking"
-                    string = "Error " + str(e) + "with " + k
+                    # print 'Exception in in_range_checking'
+                    string = 'Error ' + str(e) + 'with ' + k
                     # print string
                     errors.append(string)
 
@@ -148,13 +148,12 @@ class Cleansing(models.Model):
             if k in data_type_dict:
                 try:
                     if type(obj[k]).__name__ != data_type_dict[k]:
-                        # print "Error in data_type_check"
-                        string = k + " " + str(obj[k]) + " is of type " + type(obj[k]).__name__ + ", not of type " + str(data_type_dict[k])
+                        # print 'Error in data_type_check'
+                        string = k + ' ' + str(obj[k]) + ' is of type ' + type(obj[k]).__name__ + ', not of type ' + str(data_type_dict[k])
                         # print string
                         errors.append(string)
                 except ValueError, e:
-                    # print "Exception in data_type_check"
-                    string = "Error " + str(e) + "with " + k
+                    # print 'Exception in data_type_check'
+                    string = 'Error ' + str(e) + 'with ' + k
                     # print string
                     errors.append(string)
-
