@@ -866,7 +866,7 @@ def save_match(request):
         }
 
     if create:
-        child_id = save_snapshot_match(
+        child_id, changelist = save_snapshot_match(
             b1_pk, b2_pk, user=request.user, match_type=2, default_pk=b2_pk
         )
         child_id = child_id.pk
@@ -1117,12 +1117,58 @@ def get_PM_filter_by_counts(request):
     unmatched = BuildingSnapshot.objects.filter(
         import_file__pk=import_file_id,
         source_type__in=[2, 3],
-        children__isnull=True
+        children__isnull=True,
+        duplicate__isnull = True
+    ).count()
+    duplicates = BuildingSnapshot.objects.filter(
+        import_file__pk=import_file_id,
+        source_type__in=[2, 3],
+        duplicate__isnull = False
     ).count()
     return {
         'status': 'success',
         'matched': matched,
         'unmatched': unmatched,
+        'duplicates': duplicates,
+    }
+    
+@api_endpoint
+@ajax_request
+@login_required
+def delete_duplicates_from_import_file(request):
+    """
+    Retrieves the number of matched and unmatched BuildingSnapshots for
+    a given ImportFile record.
+
+    :GET: Expects import_file_id corresponding to the ImportFile in question.
+
+    Returns::
+
+        {'status': 'success',
+         'deleted': Number of duplicates deleted         
+        }
+    """
+    import_file_id = request.GET.get('import_file_id', '')
+
+    
+    orig_duplicate_ct = BuildingSnapshot.objects.filter(
+        import_file__pk=import_file_id,
+        source_type__in=[2, 3],
+        duplicate__isnull = False
+    ).count()
+    BuildingSnapshot.objects.filter(
+        import_file__pk=import_file_id,
+        source_type__in=[2, 3],
+        duplicate__isnull = False
+    ).delete()
+    new_duplicate_ct = BuildingSnapshot.objects.filter(
+        import_file__pk=import_file_id,
+        source_type__in=[2, 3],
+        duplicate__isnull = False
+    ).count()
+    return {
+        'status': 'success',
+        'deleted': orig_duplicate_ct - new_duplicate_ct,        
     }
 
 
@@ -1963,7 +2009,7 @@ def progress(request):
         # The following if statement can be removed once all progress endpoints have been updated to the new json syntax
         if type(result) != dict:
             result = {'progress': result}
-        result['progress_key'] = progress_key
+        result['progress_key'] = progress_key        
         return result
     else:
         return {

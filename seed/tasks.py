@@ -45,6 +45,7 @@ from seed.models import (
     get_column_mappings,
     find_unmatched_buildings,
     find_canonical_building_values,
+    get_ancestors,
     SYSTEM_MATCH,
     POSSIBLE_MATCH,
     initialize_canonical_building,
@@ -816,6 +817,13 @@ def get_canonical_snapshots(org_id):
 
     return snapshots
 
+def get_snapshots_from_canonical_id(canonical_id):
+    canonical_res = CanonicalBuilding.objects.filter(active = True, canonical_snapshot_id = canonical_id)
+    canonical_id = canonical_res[0].id
+    
+    snapshots = BuildingSnapshot.objects.filter(canonical_building_id = canonical_id)
+    
+    return snapshots
 
 def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
     """Returns canonical snapshots that match at least one id."""
@@ -844,6 +852,45 @@ def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
 
     return canonical_matches
 
+def is_same_snapshot(s1, s2):
+    
+    #fields_to_inspect = ["address_line_1",
+    #                     "address_line_2",
+    #                     "pm_property_id",
+    #                     "super_organization_id",
+    #                     "extra_data"
+    #                     ]
+    
+    fields_to_ignore = ["id", 
+                        "created", 
+                        "modified", 
+                        "match_type", 
+                        "confidence", 
+                        "source_type", 
+                        "canonical_building_id", 
+                        "import_file_id", 
+                        "_state", 
+                        "_import_file_cache",
+                        "import_record"]
+    
+    for k, v in s1.__dict__.items():
+        #ignore anything that starts with an underscore
+        if k[0] == "_":
+            continue
+        #also need to ignore any field with "_source" in it
+        if "_source" in k:
+            continue
+        if k in fields_to_ignore:
+            continue
+        if k not in s2.__dict__ or s2.__dict__[k] != v:
+            return False
+            
+    return True
+
+class DuplicateDataError(RuntimeError):
+    def __init__(self, id):
+        super(DuplicateDataError, self).__init__()
+        self.id = id
 
 def handle_id_matches(unmatched_bs, import_file, user_pk):
     """"Deals with exact matches in the IDs of buildings."""
@@ -855,12 +902,24 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
     )
     if not id_matches.exists():
         return
+    
+    #Check to see if there are any duplicates here
+    for can_snap in id_matches:        
+        snapshots = get_snapshots_from_canonical_id(can_snap.pk)
+        for snapshot in snapshots:
+            if is_same_snapshot(unmatched_bs, snapshot):
+                #if throwing incurs too much of a performance hit maybe just monkey-patch
+                #unmatched_bs and check it on the other side like
+                #unmatched_bs.duplicate_of_pk = snapshot.pk
+                #return unmatched_bs
+                raise DuplicateDataError(snapshot.pk)                
+                
 
     # merge save as system match with high confidence.
     for can_snap in id_matches:
         # Merge all matches together; updating "unmatched" pointer
         # as we go.
-        unmatched_bs = save_snapshot_match(
+        unmatched_bs, changes = save_snapshot_match(
             can_snap.pk,
             unmatched_bs.pk,
             confidence=0.9,  # TODO(gavin) represent conf better.
@@ -871,10 +930,20 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
         canon = unmatched_bs.canonical_building
         canon.canonical_snapshot = unmatched_bs
         canon.save()
+        action_note = 'System matched building ID.'
+        if changes:
+            action_note += "  Fields changed in cannonical building:\n"
+            for change in changes:
+                action_note += "\t{field}:\t".format(field = change["field"].replace("_", " ").replace("-",  "").capitalize())
+                if "from" in change:
+                    action_note += "From:\t{prev}\tTo:\t".format(prev = change["from"])
+                
+                action_note += "{value}\n".format(value = change["to"])
+            action_note = action_note[:-1]            
         AuditLog.objects.create(
             user_id=user_pk,
             content_object=canon,
-            action_note='System matched building ID.',
+            action_note=action_note,
             action='save_system_match',
             organization=unmatched_bs.super_organization,
         )
@@ -935,7 +1004,7 @@ def _findMatches(un_m_address, canonical_buildings_addresses):
         if un_m_address.lower() == cb.lower():  # this second lower may be obsolete now
             match_list.append((un_m_address, 1))
     return match_list
-
+        
 
 @task
 @lock_and_track
@@ -951,9 +1020,17 @@ def _match_buildings(file_pk, user_pk):
     test = ''
     unmatched_buildings = find_unmatched_buildings(import_file)
 
+    duplicates = []
+    
     newly_matched_building_pks = []
     for unmatched in unmatched_buildings:
-        match = handle_id_matches(unmatched, import_file, user_pk)
+        try:
+            match = handle_id_matches(unmatched, import_file, user_pk)
+        except DuplicateDataError as e:
+            duplicates.append(unmatched.pk)
+            unmatched.duplicate_id = e.id
+            unmatched.save()
+            continue
         if match:
             newly_matched_building_pks.extend([match.pk, unmatched.pk])
 
@@ -966,8 +1043,15 @@ def _match_buildings(file_pk, user_pk):
     if not unmatched_buildings:
         _finish_matching(import_file, prog_key)
         return
+    
+    #here we deal with duplicates
+    unmatched_buildings = unmatched_buildings.exclude(pk__in=duplicates).values_list(*BS_VALUES_LIST)
+    if not unmatched_buildings:
+        _finish_matching(import_file, prog_key)
+        return
         # here we are going to normalize the addresses to match on address_1 field, this is not ideal because you could match on two locations with same address_1 but different city
     #     unmatched_normalized_addresses=[]
+
 
     unmatched_normalized_addresses = [
         _normalize_address_str(unmatched[4]) for unmatched in unmatched_buildings
