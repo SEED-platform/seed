@@ -64,8 +64,8 @@ class Cleansing(models.Model):
 
         fields = self.rules['modules'][0]['fields']
 
-        for k in obj.keys():
-            if k in fields:
+        for k in fields:
+            if k in obj.keys():
                 try:
                     if obj[k] == '':
                         # TODO remove print statements after initial debug phase complete
@@ -83,6 +83,11 @@ class Cleansing(models.Model):
                     string = 'Error ' + str(e) + 'with ' + k
                     # print string
                     errors.append(string)
+            else:
+                # print 'Error in missing_matching_field'
+                string = k + ' is missing.'
+                # print string
+                errors.append(string)
 
     def missing_values(self, obj):
         global errors
