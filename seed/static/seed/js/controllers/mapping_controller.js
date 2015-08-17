@@ -547,6 +547,37 @@ angular.module('BE.seed.controller.mapping', [])
     };
 
     /**
+     * open_cleansing_modal: modal to present data cleansing warnings and errors
+     */
+    $scope.open_cleansing_modal = function() {
+        $modal.open({
+            templateUrl: urls.static_url + 'seed/partials/cleansing_modal.html',
+            controller: 'cleansing_controller',
+            resolve: {
+                'cleansingResults': function() {
+                    // Temporarily return hardcoded data
+                    return {
+                      name: 'Portfolio-Manager-Sample.csv',
+                      uploaded: '5/19/2015',
+                      errors: [
+                        'Value [120] > 100',
+                        'Value [8.77] < 10',
+                        'Value is ["Unknown"]; Field accepts numeric values'
+                      ],
+                      warnings: [
+                        'Matching field not found',
+                        'Building is missing matching field',
+                        'Value is missing',
+                        'Value [1/2/1790] < 1/1/1900',
+                        'Value [83928], is not a recognized Date format.'
+                      ]
+                    };
+                }
+            }
+        });
+    };
+
+    /**
      * open_edit_columns_modal: modal to set which columns a user has in the
      *   table
      */

@@ -19,6 +19,7 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.building_detail',
     'BE.seed.controller.building_list',
     'BE.seed.controller.buildings_settings',
+    'BE.seed.controller.cleansing',
     'BE.seed.controller.concat_modal',
     'BE.seed.controller.create_note_modal',
     'BE.seed.controller.create_organization_modal',
