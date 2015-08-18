@@ -95,7 +95,7 @@ DATABASES['default']['CONN_MAX_AGE'] = None  # persistent, forever connections
 
 
 # Caches (django-redis-cache)
-CACHE_MIDDLEWARE_KEY_PREFIX = APP_NAMESPACE
+## CACHE_MIDDLEWARE_KEY_PREFIX = APP_NAMESPACE
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.cache.RedisCache',
