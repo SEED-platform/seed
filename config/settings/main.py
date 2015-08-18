@@ -58,11 +58,11 @@ COMPRESS_PRECOMPILERS = (
 
 # Celery Backend
 ## cache_settings = aws.get_cache_endpoint()
-if cache_settings is None:
-    cache_settings = {
-        'Address': os.environ.get('CACHE_URL', '127.0.0.1'),
-        'Port': os.environ.get('CACHE_PORT', 6379)
-    }
+## if cache_settings is None:
+##     cache_settings = {
+##         'Address': os.environ.get('CACHE_URL', '127.0.0.1'),
+##         'Port': os.environ.get('CACHE_PORT', 6379)
+##     }
 BROKER_URL = 'redis://127.0.0.1:6379/1'
 CELERY_DEFAULT_QUEUE = 'seed-deploy'
 CELERY_QUEUES = (
