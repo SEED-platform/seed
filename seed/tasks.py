@@ -771,7 +771,7 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
     can_snap_pk = can_rev_idx[match_string]
     building_pk = unmatched_list[b_idx][0]  # First element is PK
 
-    bs = save_snapshot_match(
+    bs, changes = save_snapshot_match(
         can_snap_pk, building_pk, confidence=confidence, match_type=match_type, default_pk=building_pk
     )
     canon = bs.canonical_building
