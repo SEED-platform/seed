@@ -57,7 +57,7 @@ COMPRESS_PRECOMPILERS = (
 )
 
 # Celery Backend
-cache_settings = aws.get_cache_endpoint()
+## cache_settings = aws.get_cache_endpoint()
 if cache_settings is None:
     cache_settings = {
         'Address': os.environ.get('CACHE_URL', '127.0.0.1'),
