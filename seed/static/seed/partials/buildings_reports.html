@@ -57,39 +57,76 @@
                 </div>
             </div>
 
+            <!-- DMcQ: Todo: move this into style sheet -->
+            <style>
+
+            .chart-holder {
+                position:relative;
+            }
+
+            .loading-message {
+                position:absolute;
+                top:50%;
+                left:50%;
+                margin-left:-60px;
+                text-align:center;
+                width:120px;
+                padding-top:10px;
+                padding-bottom:10px;
+                background-color: #FFF;
+                border:1px solid #F1F1F1;
+                border-radius: 5px;
+            }
+            </style>
+
             <div class="content_block row">
                 <div class="col-md-6 col-sm-6">      
 
-                    <div id="chartEnergyStar">
+                    <div id="chartEnergyStar" class="chart-holder">
                         Energy Star vs.  <!-- Single button -->
                         <select ng-model="esChartSelectedItem" 
                                 ng-init="esChartSelectedItem=esChartVars[0]" 
                                 ng-options="item.name for item in esChartVars" 
                                 ng-change="updateESChart(esChartSelectedItem)">
                         </select>
-                        <graph id="esChart" data="esChartData" width="100%" height="300px" transition="150">
+                        <graph  id="esChart" 
+                                data="esChartData" 
+                                width="100%" 
+                                height="300px" 
+                                transition="150" 
+                                autoresize="true"  
+                                onchartrendered="esChartRendered()"                              
+                                >
                           <x field="x" type="Measure" title="Energy Star Score"></x>
-                          <y field="y" type="Measure" title="{$ esChartYAxisLabel $}"></y>
+                          <y field="y" type="Measure" title="esChartYAxisLabel"></y>
                           <scatter-plot field="x" series="y" label="Test" width="100%"></scatter-plot>
                         </graph>
                     </div>
+                    <div ng-show="esChartIsLoading" class="loading-message">Loading...</div>
 
                 </div>
 
                 <div class="col-md-6 col-sm-6">                         
-                    <div id="chartSiteEUI">
+                    <div id="chartSiteEUI" class="chart-holder">
                         Energy Use Intensity vs. 
                         <select ng-model="euiChartSelectedItem" 
                                 ng-init="euiChartSelectedItem=euiChartVars[0]" 
                                 ng-options="option.name for option in euiChartVars" 
                                 ng-change="updateEUIChart(euiChartSelectedItem)">
                         </select>
-                        <graph id="euiChart" data="euiChartData" width="100%" height="300px" transition="150">
+                        <graph  id="euiChart" 
+                                data="euiChartData" 
+                                width="100%" 
+                                height="300px" 
+                                transition="150" 
+                                autoresize="true"
+                                onchartrendered="euiChartRendered()"      >
                           <x field="x" type="Measure" title="Energy Use Intensity"></x>
-                          <y field="y" type="Measure" title="{$ euiChartYAxisLabel $}"></y>
+                          <y field="y" type="Measure" title="euiChartYAxisLabel"></y>
                           <scatter-plot field="x" series="y" label="Test" width="100%"></scatter-plot>
                         </graph>
-                    </div>
+                    </div>                    
+                    <div ng-show="euiChartIsLoading" class="loading-message">Loading...</div>
                 </div>
             </div>            
 

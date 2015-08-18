@@ -15,7 +15,6 @@ angular.module('BE.seed.controller.buildings_reports', [])
   var ENERGY_STAR_VAR = "energy_score";
   var EUI_VAR = "site_eui";
 
-
   $scope.esChartVars = [
     { 
       name:"Gross Floor Area", 
@@ -32,7 +31,18 @@ angular.module('BE.seed.controller.buildings_reports', [])
       varName:"year_built",
       yAxisLabel:"Year Built"
     }
-  ]
+  ];
+
+  $scope.esChartIsLoading = true;
+  $scope.euiChartIsLoading = true;
+
+  $scope.esChartRendered = function(){
+    $scope.esChartIsLoading = false;     
+  }
+
+  $scope.euiChartRendered = function(){
+    $scope.euiChartIsLoading = false;     
+  }
 
   $scope.euiChartVars = [
     {name:"Gross Floor Area", varName:"gross_floor_area", value:0},
@@ -51,6 +61,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
   $scope.updateESChart = function(selectedVar){
     var yVar = selectedVar.varName;
     $scope.esChartYAxisLabel = selectedVar.yAxisLabel;
+    $scope.esChartIsLoading = true;
     getESChartData(yVar);
   }
 
@@ -64,12 +75,13 @@ angular.module('BE.seed.controller.buildings_reports', [])
   $scope.updateEUIChart = function(selectedVar){
     var yVar = selectedVar.varName;
     $scope.euiChartYAxisLabel = selectedVar.yAxisLabel;
+    $scope.euiChartIsLoading = true;
     getEUIChartData(yVar);
   }
 
   function getEUIChartData(yVar){
     buildings_reports_service.get_report_data(EUI_VAR, yVar).then(function(data) {
-      // resolve promise
+      // resolve promise      
       $scope.euiChartData = data;
     });
   }
