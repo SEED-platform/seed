@@ -51,7 +51,7 @@ DOMAIN_URLCONFS['default'] = 'config.urls'
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.cache.RedisCache',
-        'LOCATION': "your-cache-url:your-cache-port",
+        'LOCATION': "127.0.0.1:6379",
         'OPTIONS': {'DB': 1},
         'TIMEOUT': 300
     }
@@ -62,7 +62,7 @@ from kombu import Exchange, Queue
 import djcelery
 # BROKER_URL with AWS ElastiCache redis looks something like:
 # 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
-BROKER_URL = 'redis://your-broker-url:your-broker-port/1'
+BROKER_URL = 'redis://127.0.0.1:6379/1'
 CELERY_DEFAULT_QUEUE = 'seed-dev'
 CELERY_QUEUES = (
     Queue(
