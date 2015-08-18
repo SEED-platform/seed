@@ -35,10 +35,10 @@ if ONLY_HTTPS:
                          MIDDLEWARE_CLASSES
 
 # Upload to S3
-AWS_S3_MAX_MEMORY_SIZE = 1024 * 1024
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
-STATIC_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME
+## AWS_S3_MAX_MEMORY_SIZE = 1024 * 1024
+## DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+## STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
+## STATIC_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME
 
 # django-compressor
 COMPRESS_URL = STATIC_URL
