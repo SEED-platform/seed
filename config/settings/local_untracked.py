@@ -14,15 +14,15 @@ seed local_untracked.py
             i.e. everything here starting with 'your-'
     For local dev, all these services can run locally on localhost or 127.0.0.1 except for S3.
 """
-# postgres DB config
+# Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'seed',
-        'USER': 'your-username',
-        'PASSWORD': 'your-password',
-        'HOST': 'your-host',
-        'PORT': 'your-port',
+        'ENGINE':'django.db.backends.postgresql_psycopg2',
+        'NAME': 'seed-deploy',
+        'USER': 'eayoungs',
+        'PASSWORD': '05(@4641mm',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
