@@ -21,7 +21,7 @@ import djcelery
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 TEMPLATE_DEBUG = DEBUG
-DOMAIN_URLCONFS[STACK_OUTPUTS.get('HostName')] = 'config.urls'
+## DOMAIN_URLCONFS[STACK_OUTPUTS.get('HostName')] = 'config.urls'
 
 # django-analytics
 WOOPRA_DOMAIN = os.environ.get('WOOPRA_DOMAIN')
