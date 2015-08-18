@@ -49,7 +49,7 @@ if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
     COMPRESS_CSS_FILTERS = ['compressor.filters.css_default.CssAbsoluteFilter']
     COMPRESS_JS_FILTERS = []
 
-COMPRESS_STORAGE = 'config.storage.CachedS3BotoStorage'
+## COMPRESS_STORAGE = 'config.storage.CachedS3BotoStorage'
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE = True
 COMPRESS_PRECOMPILERS = (
