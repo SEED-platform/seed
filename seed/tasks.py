@@ -852,14 +852,7 @@ def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
 
     return canonical_matches
 
-def is_same_snapshot(s1, s2):
-    
-    #fields_to_inspect = ["address_line_1",
-    #                     "address_line_2",
-    #                     "pm_property_id",
-    #                     "super_organization_id",
-    #                     "extra_data"
-    #                     ]
+def is_same_snapshot(s1, s2):    
     
     fields_to_ignore = ["id", 
                         "created", 

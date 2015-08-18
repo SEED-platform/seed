@@ -275,6 +275,48 @@ class TestTasks(TestCase):
         self.assertEqual(
             mapped_bs.address_line_1, u'1600 Pennsylvania Ave. Someplace Nice'
         )
+        
+    def test_is_same_snapshot(self):
+        """Test to check if two snapshots are duplicates"""
+        
+        bs_data = {
+            'pm_property_id': 1243,
+            'tax_lot_id': '435/422',
+            'property_name': 'Greenfield Complex',
+            'custom_id_1': 12,
+            'address_line_1': '555 Database LN.',
+            'address_line_2': '',
+            'city': 'Gotham City',
+            'postal_code': 8999,
+        }
+        
+        s1 = util.make_fake_snapshot(
+            self.import_file, bs_data, ASSESSED_BS, is_canon=True,
+            org=self.fake_org
+        )
+        
+        self.assertTrue(tasks.is_same_snapshot(s1, s1), "Matching a snapshot to itself should return True")
+        
+        #Making a different snapshot, now Garfield complex rather than Greenfield complex
+        bs_data_2 = {
+            'pm_property_id': 1243,
+            'tax_lot_id': '435/422',
+            'property_name': 'Garfield Complex',
+            'custom_id_1': 12,
+            'address_line_1': '555 Database LN.',
+            'address_line_2': '',
+            'city': 'Gotham City',
+            'postal_code': 8999,
+        }
+        
+        s2 = util.make_fake_snapshot(
+            self.import_file, bs_data_2, ASSESSED_BS, is_canon=True,
+            org=self.fake_org
+        )
+        
+        self.assertFalse(tasks.is_same_snapshot(s1, s2), "Matching a snapshot to a different snapshot should return False")
+        
+        
 
     def test_match_buildings(self):
         """Good case for testing our matching system."""
