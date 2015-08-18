@@ -9,3 +9,4 @@ logger = get_task_logger(__name__)
 def cleanse_data_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwargs):
     c = Cleansing()
     c.cleanse(chunk)
+    c.save_to_cache(file_pk)

@@ -18,25 +18,8 @@ def get_cleansing_results(request):
 
     """
 
-    ret = []
-
-    result = {
-        'row': 7,
-        'column': 'building_area',
-        'column_unmapped': 'bldg area',
-        'type': 'Error',
-        'description': 'field is not an integer'
-    }
-    ret.append(result)
-
-    result = {
-        'row': 15,
-        'column': 'building_address',
-        'column_unmapped': 'edifice address',
-        'type': 'Warning',
-        'description': 'building is located in the middle of the Indian ocean'
-    }
-    ret.append(result)
+    file_pk = request['file_pk']
+    ret = cache.get("cleansing_results__%s" % file_pk)
 
     return ret
 

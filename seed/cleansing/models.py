@@ -3,12 +3,12 @@ import json
 
 from logging import getLogger
 from django.db import models
+from django.core.cache import cache
 
 errors = []
 warnings = []
 
 logger = getLogger(__name__)
-
 
 class Cleansing(models.Model):
     def __init__(self, *args, **kwargs):
@@ -29,6 +29,8 @@ class Cleansing(models.Model):
             raise Exception('Could not find cleansing JSON file on server %s' % cleansing_file)
 
         self.rules = None
+        self.warnings = []
+        self.errors = []
         with open(cleansing_file) as data_file:
             self.rules = json.load(data_file)
 
@@ -40,28 +42,16 @@ class Cleansing(models.Model):
         """
 
         for index in range(0, len(data) - 1):
-            Cleansing.missing_matching_field(self, data[index])
-            Cleansing.missing_values(self, data[index])
-            Cleansing.in_range_checking(self, data[index])
-            Cleansing.data_type_check(self, data[index])
-
-    def get_errors(self):
-        global errors
-        return errors
-
-    def get_warnings(self):
-        global warnings
-        return warnings
+            self.missing_matching_field(data[index])
+            self.missing_values(data[index])
+            self.in_range_checking(data[index])
+            self.data_type_check(data[index])
 
     def reset_errors_and_warnings(self):
-        global errors
-        global warnings
-        errors = []
-        warnings = []
+        self.errors = []
+        self.warnings = []
 
     def missing_matching_field(self, obj):
-        global errors
-
         fields = self.rules['modules'][0]['fields']
 
         for k in fields:
@@ -72,26 +62,24 @@ class Cleansing(models.Model):
                         # print 'Error in missing_matching_field: Value is empty'
                         string = k + ' = \'' + obj[k] + '\' and is empty.'
                         # print string
-                        errors.append(string)
+                        self.errors.append(string)
                     if obj[k] is None:
                         # print 'Error in missing_matching_field: Value is None'
                         string = k + ' ' + obj[k] + ' is None.'
                         # print string
-                        errors.append(string)
+                        self.errors.append(string)
                 except ValueError, e:
                     # print 'Exception in missing_matching_field'
                     string = 'Error ' + str(e) + 'with ' + k
                     # print string
-                    errors.append(string)
+                    self.errors.append(string)
             else:
                 # print 'Error in missing_matching_field'
                 string = k + ' is missing.'
                 # print string
-                errors.append(string)
+                self.errors.append(string)
 
     def missing_values(self, obj):
-        global errors
-
         ignored_fields = self.rules['modules'][1]['ignoredFields']
 
         for k in obj.keys():
@@ -114,9 +102,6 @@ class Cleansing(models.Model):
                     errors.append(string)
 
     def in_range_checking(self, obj):
-        global errors
-        global warnings
-
         in_range_dict = self.rules['modules'][2]['fields']
 
         for k in obj.keys():
@@ -127,26 +112,24 @@ class Cleansing(models.Model):
                         string = str(obj[k]) + ' < ' + str(in_range_dict[k][0]['min'])
                         # print string
                         if in_range_dict[k][0]['severity'] == 'error':
-                            errors.append(string)
+                            self.errors.append(string)
                         else:
-                            warnings.append(string)
+                            self.warnings.append(string)
                     if int(float(obj[k])) > int(float(in_range_dict[k][0]['max'])):
                         # print 'Error in in_range_checking'
                         string = str(obj[k]) + ' > ' + str(in_range_dict[k][0]['max'])
                         # print string
                         if in_range_dict[k][0]['severity'] == 'error':
-                            errors.append(string)
+                            self.errors.append(string)
                         else:
-                            warnings.append(string)
+                            self.warnings.append(string)
                 except ValueError, e:
                     # print 'Exception in in_range_checking'
                     string = 'Error ' + str(e) + 'with ' + k
                     # print string
-                    errors.append(string)
+                    self.errors.append(string)
 
     def data_type_check(self, obj):
-        global errors
-
         data_type_dict = self.rules['modules'][3]['fields']
 
         for k in obj.keys():
@@ -156,9 +139,15 @@ class Cleansing(models.Model):
                         # print 'Error in data_type_check'
                         string = k + ' ' + str(obj[k]) + ' is of type ' + type(obj[k]).__name__ + ', not of type ' + str(data_type_dict[k])
                         # print string
-                        errors.append(string)
+                        self.errors.append(string)
                 except ValueError, e:
                     # print 'Exception in data_type_check'
                     string = 'Error ' + str(e) + 'with ' + k
                     # print string
-                    errors.append(string)
+                    self.errors.append(string)
+
+    def save_to_cache(self, file_pk):
+        existing_results = cache.get("cleansing_results__%s" % file_pk) or {'warnings': [], 'errors':[]}
+        existing_results['warnings'].append(self.warnings)
+        existing_results['errors'].append(self.errors)
+        cache.set("cleansing_results__%s" % file_pk, existing_results)
