@@ -775,10 +775,20 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
         can_snap_pk, building_pk, confidence=confidence, match_type=match_type, default_pk=building_pk
     )
     canon = bs.canonical_building
+    action_note='System matched building.'
+    if changes:
+            action_note += "  Fields changed in cannonical building:\n"
+            for change in changes:
+                action_note += "\t{field}:\t".format(field = change["field"].replace("_", " ").replace("-",  "").capitalize())
+                if "from" in change:
+                    action_note += "From:\t{prev}\tTo:\t".format(prev = change["from"])
+                
+                action_note += "{value}\n".format(value = change["to"])
+            action_note = action_note[:-1]
     AuditLog.objects.create(
         user_id=user_pk,
         content_object=canon,
-        action_note='System matched building.',
+        action_note=action_note,
         action='save_system_match',
         organization=bs.super_organization,
     )
