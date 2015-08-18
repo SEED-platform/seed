@@ -6,18 +6,18 @@ import aws
 import djcelery
 
 # AWS settings
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+## AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+## AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 # Different names for same vars, used by django-ajax-uploader
-AWS_UPLOAD_CLIENT_KEY = AWS_ACCESS_KEY_ID
-AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
-APP_NAMESPACE = "seed" + os.environ.get("STACK_NAME", "prod")
-AWS_BUCKET_NAME = APP_NAMESPACE
-AWS_STORAGE_BUCKET_NAME = APP_NAMESPACE
-AWS_UPLOAD_BUCKET_NAME = APP_NAMESPACE
+## AWS_UPLOAD_CLIENT_KEY = AWS_ACCESS_KEY_ID
+## AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
+## APP_NAMESPACE = "seed" + os.environ.get("STACK_NAME", "prod")
+## AWS_BUCKET_NAME = APP_NAMESPACE
+## AWS_STORAGE_BUCKET_NAME = APP_NAMESPACE
+## AWS_UPLOAD_BUCKET_NAME = APP_NAMESPACE
 
-STACK_OUTPUTS = aws.get_stack_outputs()
-ENV = STACK_OUTPUTS.get('StackFlavor', 'dev')
+## STACK_OUTPUTS = aws.get_stack_outputs()
+## ENV = STACK_OUTPUTS.get('StackFlavor', 'dev')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 TEMPLATE_DEBUG = DEBUG
@@ -63,7 +63,7 @@ if cache_settings is None:
         'Address': os.environ.get('CACHE_URL', '127.0.0.1'),
         'Port': os.environ.get('CACHE_PORT', 6379)
     }
-BROKER_URL = 'redis://%(Address)s:%(Port)i/1' % cache_settings
+BROKER_URL = 'redis://127.0.0.1:6379/1'
 CELERY_DEFAULT_QUEUE = 'seed-deploy'
 CELERY_QUEUES = (
     Queue(
@@ -82,14 +82,15 @@ EMAIL_BACKEND = 'django_ses.SESBackend'
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': "seed-deploy",
-        'USER': STACK_OUTPUTS.get('DBUsername', 'postgres'),
-        'PASSWORD': 'postgres',
-        'HOST': STACK_OUTPUTS.get('DBAddress', '127.0.0.1'),
-        'PORT': STACK_OUTPUTS.get('DBPort', ''),
+        'ENGINE':'django.db.backends.postgresql_psycopg2',
+        'NAME': 'seed-deploy',
+        'USER': 'eayoungs',
+        'PASSWORD': '05(@4641mm',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
 DATABASES['default']['CONN_MAX_AGE'] = None  # persistent, forever connections
 
 
@@ -98,7 +99,7 @@ CACHE_MIDDLEWARE_KEY_PREFIX = APP_NAMESPACE
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.cache.RedisCache',
-        'LOCATION': "%(Address)s:%(Port)s" % cache_settings,
+        'LOCATION': "127.0.0.1:6379",
         'OPTIONS': {'DB': 1},
         'TIMEOUT': 300
     }
