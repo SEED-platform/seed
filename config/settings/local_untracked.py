@@ -72,3 +72,8 @@ CELERY_QUEUES = (
     ),
 )
 djcelery.setup_loader()
+
+DEBUG = False
+# static files
+STATIC_ROOT = 'collected_static'
+STATIC_URL = '/static/'
