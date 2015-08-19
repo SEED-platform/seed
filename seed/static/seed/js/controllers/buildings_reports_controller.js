@@ -33,6 +33,26 @@ angular.module('BE.seed.controller.buildings_reports', [])
     }
   ];
 
+
+  $scope.euiChartVars = [
+    { 
+      name:"Gross Floor Area", 
+      varName:"gross_floor_area", 
+      yAxisLabel:"Gross Floor Area (Thousand ft2)"
+    },
+    {
+      name:"Building Classification", 
+      varName:"use_description", 
+      yAxisLabel:"Building Classification"
+    },
+    {
+      name:"Year Built", 
+      varName:"year_built", 
+      yAxisLabel:"Year Built"
+    }
+  ]
+
+
   $scope.esChartIsLoading = true;
   $scope.euiChartIsLoading = true;
 
@@ -44,17 +64,13 @@ angular.module('BE.seed.controller.buildings_reports', [])
     $scope.euiChartIsLoading = false;     
   }
 
-  $scope.euiChartVars = [
-    {name:"Gross Floor Area", varName:"gross_floor_area", value:0},
-    {name:"Building Classification", varName:"use_description", value:1},
-    {name:"Year Built", varName:"year_built", value:2}
-  ]
 
   $scope.esChartSelectedVar = $scope.esChartVars[0];
-  $scope.euiChartSelectedVar = $scope.euiChartVars[0];
-  $scope.esChartYAxisLabel = $scope.euiChartSelectedVar.yAxisLabel;
-  
+  $scope.esChartYAxisLabel = $scope.esChartSelectedVar.yAxisLabel;
   $scope.esChartData = [];
+
+  $scope.euiChartSelectedVar = $scope.euiChartVars[0];
+  $scope.euiChartYAxisLabel = $scope.euiChartSelectedVar.yAxisLabel;  
   $scope.euiChartData = [];
 
    
@@ -96,7 +112,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
   function init(){
     $scope.updateESChart($scope.esChartSelectedVar);
     $scope.updateEUIChart($scope.euiChartSelectedVar);
-    getSummaryData();
+    setTimeout(getSummaryData);
   }
 
   init();
