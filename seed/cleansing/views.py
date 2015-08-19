@@ -1,6 +1,7 @@
 from annoying.decorators import ajax_request
 from django.contrib.auth.decorators import login_required
 from seed.utils.api import api_endpoint
+from django.core.cache import cache
 
 # TODO The API is returning on both a POST and GET. Make sure to authenticate.
 
@@ -18,7 +19,7 @@ def get_cleansing_results(request):
 
     """
 
-    file_pk = request['file_pk']
+    file_pk = request.GET.get('file_pk')
     ret = cache.get("cleansing_results__%s" % file_pk)
 
     return ret
