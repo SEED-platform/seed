@@ -19,8 +19,8 @@ def get_cleansing_results(request):
 
     """
 
-    file_pk = request.GET.get('file_pk')
-    ret = cache.get("cleansing_results__%s" % file_pk)
+    import_file_id = request.GET.get('import_file_id')
+    ret = cache.get("cleansing_results__%s" % import_file_id)
 
     return ret
 
