@@ -37,7 +37,7 @@ AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
 AWS_STORAGE_BUCKET_NAME = AWS_BUCKET_NAME
 
 # choice of DEFAULT_FILE_STORAGE (s3 or filesystem)
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+## DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 # DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
