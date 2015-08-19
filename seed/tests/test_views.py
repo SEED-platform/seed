@@ -1248,7 +1248,7 @@ class BuildingDetailViewTests(TestCase):
             information from parent buildings.
         """
         # arrange
-        child = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
+        child, changelist = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
 
         url = reverse_lazy("seed:get_building")
         get_data = {
@@ -1304,7 +1304,7 @@ class BuildingDetailViewTests(TestCase):
     def test_get_building_with_project(self):
         """ tests get_building projects payload"""
         # arrange
-        child = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
+        child, changelist = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
         # create project wtihout compliance
         project = Project.objects.create(
             name='test project',
@@ -1345,7 +1345,7 @@ class BuildingDetailViewTests(TestCase):
             import files.
         """
         # arrange
-        child = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
+        child, changelist = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
 
         url = reverse_lazy("seed:get_building")
         get_data = {
@@ -1390,7 +1390,7 @@ class BuildingDetailViewTests(TestCase):
         # arrange
         self.parent_2.source_type = 6
         self.parent_2.save()
-        child = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
+        child, changelist = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
 
         url = reverse_lazy("seed:get_building")
         get_data = {

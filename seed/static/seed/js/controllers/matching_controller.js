@@ -332,6 +332,7 @@ angular.module('BE.seed.controller.matching', [])
             // resolve promise
             $scope.matched_buildings = data.matched;
             $scope.unmatched_buildings = data.unmatched;
+            $scope.duplicate_buildings = data.duplicates;
         });
     };
 

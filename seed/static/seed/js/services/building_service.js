@@ -214,6 +214,22 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         });
         return defer.promise;
     };
+    
+    building_factory.delete_duplicates_from_import_file = function(import_file_id) {
+        var defer = $q.defer();
+        $http({
+            method: 'GET',
+            'url': window.BE.urls.delete_duplicates_from_import_file_url,
+            'params': {
+                'import_file_id': import_file_id
+            }
+        }).success(function(data, status, headers, config) {
+            defer.resolve(data);
+        }).error(function(data, status, headers, config) {
+            defer.reject(data, status);
+        });
+        return defer.promise;
+    };
 
     /**
      * start the delete buildings process
