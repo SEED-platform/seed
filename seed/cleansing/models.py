@@ -147,7 +147,7 @@ class Cleansing(models.Model):
                     self.errors.append(string)
 
     def save_to_cache(self, file_pk):
-        existing_results = cache.get("cleansing_results__%s" % file_pk) or {'warnings': [], 'errors':[]}
-        existing_results['warnings'].append(self.warnings)
-        existing_results['errors'].append(self.errors)
+        existing_results = cache.get("cleansing_results__%s" % file_pk) or {'warnings': [], 'errors': []}
+        existing_results['warnings'] = existing_results['warnings'] + self.warnings
+        existing_results['errors'] = existing_results['errors'] + self.errors
         cache.set("cleansing_results__%s" % file_pk, existing_results)
