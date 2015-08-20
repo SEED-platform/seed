@@ -17,6 +17,7 @@ EXCLUDE_FIELDS = [
     'seed_org',
     'source_type',
     'super_organization',
+    'duplicate',
 ]
 
 META_FIELDS = [

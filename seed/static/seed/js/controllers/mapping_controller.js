@@ -431,14 +431,14 @@ angular.module('BE.seed.controller.mapping', [])
      * reverse titleCase mappings which were titleCase in the suggestion input
      */
     var get_untitle_cased_mappings = function () {
-        var mappings = $scope.get_mappings().map(function (m) {
-            var mapping = m[0];
+        var mappings = $scope.get_mappings().map(function (m) {        	
+            var mapping = m[0];            
             mapping = angular.lowercase(mapping).replace(/ /g, '_');
-            if (~original_columns.indexOf(mapping)) {
+            if (~original_columns.indexOf(mapping)) {            	
                 m[0] = mapping;
             }
             return m;
-        });
+        });        
         return mappings;
     };
 
