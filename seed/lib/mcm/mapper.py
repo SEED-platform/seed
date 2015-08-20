@@ -179,7 +179,7 @@ def map_row(row, mapping, model_class, cleaner=None, concat=None, **kwargs):
         # then, send_apply_func will reference this function and be sent
         # to the ``apply_column_value`` function.
         send_apply_func = apply_func if item in apply_columns else None
-        if value and value != '':
+        if value != None:
             model = apply_column_value(
                 item, value, model, mapping, cleaner,
                 apply_func=send_apply_func

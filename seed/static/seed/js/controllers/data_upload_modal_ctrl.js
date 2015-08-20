@@ -310,19 +310,36 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                     data.progress_key,
                     0,
                     1.0,
-                    function (data){
+                    function (data){                    
                         building_services.get_PM_filter_by_counts($scope.dataset.import_file_id)
                         .then(function (data){
                             // resolve promise
                             $scope.matched_buildings = data.matched;
                             $scope.unmatched_buildings = data.unmatched;
+                            $scope.duplicate_buildings = data.duplicates;                            
                             $scope.uploader.complete = true;
                             $scope.uploader.in_progress = false;
                             $scope.uploader.progress = 0;
-                            if ($scope.matched_buildings > 0) {
-                                $scope.step.number = 8;
-                            } else {
-                                $scope.step.number = 10;
+                            if($scope.duplicate_buildings > 0)
+                            {
+                            	//alert("Duplicate buildings found, trying to delete");
+                            	building_services.delete_duplicates_from_import_file($scope.dataset.import_file_id).then(function (data){
+                            		if ($scope.matched_buildings > 0) {
+		                                $scope.step.number = 8;
+		                            } else {
+		                                $scope.step.number = 10;
+		                                building_services.get_total_number_of_buildings_for_user();
+		                            }		
+                        		});
+                            }
+                            else
+                            {
+	                            if ($scope.matched_buildings > 0) {
+	                                $scope.step.number = 8;
+	                            } else {
+	                                $scope.step.number = 10;
+	                                building_services.get_total_number_of_buildings_for_user();
+	                            }
                             }
                         });
                     }, function(data) {

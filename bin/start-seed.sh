@@ -27,8 +27,8 @@ fi
 running celery
 if [ $? -eq 0 ]; then
     printf "Starting Celery\n"
-    ./manage.py celery worker -B -c 2 --loglevel=INFO -E \
-        --maxtasksperchild=1000 >/tmp/celery.log 2>&1 &
+    ./manage.py celeryd worker -B -c 2 --loglevel=INFO -E \
+        --maxtasksperchild=1000 >/tmp/celeryd.log 2>&1 &
 else
     printf "Celery is already running\n"
 fi
