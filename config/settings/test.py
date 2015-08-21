@@ -68,7 +68,9 @@ djcelery.setup_loader()
 
 
 # Testing
-INSTALLED_APPS += ("django_nose", )
+INSTALLED_APPS += (
+    "django_nose",
+)
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_PLUGINS = [
     'nose_exclude.NoseExclude',

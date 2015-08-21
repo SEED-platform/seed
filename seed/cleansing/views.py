@@ -12,11 +12,6 @@ from django.core.cache import cache
 def get_cleansing_results(request):
     """
     Retrieve the details of the cleansing script.
-
-    TODO: This code is a placeholder and will require the data to be loaded from either disk, redis, or postgres.
-    At the moment I think that the data should be loaded from the redis database, since the cleansing is all or nothing,
-    and that the cleansing will be running asynchronously.
-
     """
 
     import_file_id = request.GET.get('import_file_id')

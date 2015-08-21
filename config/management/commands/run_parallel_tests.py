@@ -17,7 +17,7 @@ class Command(BaseCommand):
         if "settings" in options:
             kwargs["settings"] = options["settings"]
 
-        apps = settings.BE_CORE_APPS
+        apps = settings.SEED_CORE_APPS
         CIRCLE_NODE_INDEX = int(os.environ["CIRCLE_NODE_INDEX"])
         CIRCLE_NODE_TOTAL = int(os.environ["CIRCLE_NODE_TOTAL"])
 

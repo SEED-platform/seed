@@ -85,7 +85,7 @@ INSTALLED_APPS = (
     'tos',
 )
 
-BE_CORE_APPS = (
+SEED_CORE_APPS = (
     'config',
     'seed.public',
     'seed.data_importer',
@@ -98,7 +98,7 @@ BE_CORE_APPS = (
 # Internal apps can resolve this via South's depends_on.
 HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 
-INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + BE_CORE_APPS
+INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
 # apps to auto load namespaced urls for JS use (see seed.main.views.home)
 BE_URL_APPS = (
@@ -202,22 +202,28 @@ LOGIN_REDIRECT_URL = "/app/"
 
 APPEND_SLASH = True
 
-PASSWORD_RESET_EMAIL = 'reset@buildingenergy.com'
-SERVER_EMAIL = 'no-reply@buildingenergy.com'
+PASSWORD_RESET_EMAIL = 'reset@seedplatform.org'
+SERVER_EMAIL = 'no-reply@seedplatform.com'
 
 # Celery queues
 from kombu import Exchange, Queue
 import djcelery
-
 djcelery.setup_loader()
 
 CELERYD_MAX_TASKS_PER_CHILD = 1
 
 # Default queue
-CELERY_DEFAULT_QUEUE = 'be_core'
+CELERY_DEFAULT_QUEUE = 'seed-core'
 CELERY_QUEUES = (
-    Queue('be_core', Exchange('be_core'), routing_key='be_core'),
+    Queue(
+        CELERY_DEFAULT_QUEUE,
+        Exchange(CELERY_DEFAULT_QUEUE),
+        routing_key=CELERY_DEFAULT_QUEUE
+    ),
 )
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
 
 SOUTH_TESTS_MIGRATE = False
 SOUTH_MIGRATION_MODULES = {
