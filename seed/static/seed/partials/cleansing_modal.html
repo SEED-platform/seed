@@ -1,27 +1,38 @@
 <div class="modal-header">
-    <button type="button" class="close" ng-click="cancel()"><i class="fa fa-times"></i></button>
     <h4 class="modal-title">Data Cleansing Results</h4>
 </div>
 <div class="modal-body" style="padding-bottom: 0;">
-    <div class="row">
-        <h4 class="col-sm-4">File Name:</h4>
-        <h5 class="col-sm-8" style="margin-top: 12px;">{$ name $}</h5>
-    </div>
-    <div class="row">
-        <h4 class="col-sm-4">Date Uploaded:</h4>
-        <h5 class="col-sm-8" style="margin-top: 12px;">{$ uploaded $}</h5>
-    </div>
-    <div ng-if="errors.length">
-        <h4>Errors:</h4>
-        <ul>
-            <li ng-repeat="error in errors">{$ error $}</li>
-        </ul>
-    </div>
-    <div ng-if="warnings.length">
-        <h4>Warnings:</h4>
-        <ul>
-            <li ng-repeat="warning in warnings">{$ warning $}</li>
-        </ul>
+    <div ng-switch on="total">
+        <div ng-switch-when="0">
+            No warnings/errors
+        </div>
+        <div ng-switch-default>
+            <div class="row">
+                <h4 class="col-sm-4">File Name:</h4>
+                <h5 class="col-sm-8" style="margin-top: 12px;">{$ name $}</h5>
+            </div>
+            <div class="row">
+                <h4 class="col-sm-4">Date Uploaded:</h4>
+                <h5 class="col-sm-8" style="margin-top: 12px;">{$ uploaded $}</h5>
+            </div>
+            <div ng-if="errors.length">
+                <h4>Errors:</h4>
+                <div style="max-height:200px; overflow-y: scroll;">
+                    <ul>
+                        <li ng-repeat="error in errors track by $index">{$ error $}</li>
+                    </ul>
+                </div>
+            </div>
+            <div ng-if="warnings.length">
+                <h4>Warnings:</h4>
+                <div style="max-height:200px; overflow-y: scroll;">
+                    <ul>
+                        <li ng-repeat="warning in warnings track by $index">{$ warning $}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 <div class="modal-footer">

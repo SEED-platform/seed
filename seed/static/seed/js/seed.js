@@ -61,6 +61,7 @@ angular.module('BE.seed.services', [
     'BE.seed.service.audit',
     'BE.seed.service.auth',
     'BE.seed.service.building',
+    'BE.seed.service.cleansing',
     'BE.seed.service.dataset',
     'BE.seed.service.export',
     'BE.seed.service.mapping',
@@ -393,6 +394,12 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     }, function (data) {
                         return $q.reject(data.message);
                     });
+                }],
+                'cleansing_results': ['cleansing_service', '$route', function(cleansing_service, $route){
+                    var importfile_id = $route.current.params.importfile_id;
+                    return cleansing_service.get_cleansing_results(
+                        importfile_id
+                    );
                 }]
             }
         })

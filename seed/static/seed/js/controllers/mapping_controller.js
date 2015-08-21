@@ -20,6 +20,7 @@ angular.module('BE.seed.controller.mapping', [])
   'matching_service',
   'uploader_service',
   '$filter',
+  'cleansing_results',
   function (
     $scope,
     import_file_payload,
@@ -37,7 +38,8 @@ angular.module('BE.seed.controller.mapping', [])
     user_service,
     matching_service,
     uploader_service,
-    $filter
+    $filter,
+    cleansing_results
 ) {
     $scope.typeahead_columns = suggested_mappings_payload.building_columns;
     var original_columns = angular.copy($scope.typeahead_columns);
@@ -555,23 +557,13 @@ angular.module('BE.seed.controller.mapping', [])
             controller: 'cleansing_controller',
             resolve: {
                 'cleansingResults': function() {
-                    // Temporarily return hardcoded data
-                    return {
-                      name: 'Portfolio-Manager-Sample.csv',
-                      uploaded: '5/19/2015',
-                      errors: [
-                        'Value [120] > 100',
-                        'Value [8.77] < 10',
-                        'Value is ["Unknown"]; Field accepts numeric values'
-                      ],
-                      warnings: [
-                        'Matching field not found',
-                        'Building is missing matching field',
-                        'Value is missing',
-                        'Value [1/2/1790] < 1/1/1900',
-                        'Value [83928], is not a recognized Date format.'
-                      ]
-                    };
+                    return cleansing_results;
+                },
+                'name': function() {
+                    return $scope.import_file.name;
+                },
+                'uploaded': function() {
+                    return $scope.import_file.dataset.finish_time;
                 }
             }
         });

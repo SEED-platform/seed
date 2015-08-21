@@ -16,6 +16,8 @@ def get_cleansing_results(request):
 
     import_file_id = request.GET.get('import_file_id')
     ret = cache.get("cleansing_results__%s" % import_file_id)
+    if ret is None:
+        return {}
 
     return ret
 
