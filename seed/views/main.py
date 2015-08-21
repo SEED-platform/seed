@@ -2109,6 +2109,43 @@ import random
 @login_required
 @has_perm('requires_member')
 def get_building_summary_report_data(request):
+    """ This method returns basic, high-level data about a set of buildings,
+    fitered by organization IDs.
+
+    The returned JSON document that has the following structure.
+
+    ```
+            {
+                "status": "success",
+                "summary_data": 
+                {
+                    "num_buildings":123,
+                    "avg_eui":45.6,
+                    "avg_energy_score":78.9
+                }
+            }
+    ```
+    
+    ---
+
+    parameters:
+            - name: organization_id
+              description: User's organization which should be used to filter building query results
+              required: true
+              type: string
+              paramType: query
+  
+        type:            
+            status:
+                required: true
+                type: string
+            summary_data:
+                required: true
+                type: object           
+
+    """
+
+    #TODO: Generate this data the right way! The following is just dummy data...
 
     orgs = [ request.GET.get('organization_id') ] #How should we capture user orgs here?
 
@@ -2120,7 +2157,7 @@ def get_building_summary_report_data(request):
     avg_eui = 123
     avg_energy_score = 321
 
-    #TODO: Generate this data
+    
     data = {   "num_buildings" : num_buildings,
                 "avg_eui" : avg_eui,
                 "avg_energy_score": avg_energy_score }
@@ -2137,17 +2174,99 @@ def get_building_summary_report_data(request):
 @login_required
 @has_perm('requires_member')
 def get_building_report_data(request):
+    """ This method returns a set of x,y building data for graphing. It expects as parameters
+        the column names of the two variables the user would like returned in the dataset.
+
+        Depending on the variables requested (and the axes to which they're assigned),
+        this method may modify the data before returning it, for example binning 
+        data into categories such as 'year.'
+
+        For future flexibility, this method accepts a 'period' parameter to return the data in
+        (e.g. month, quarter, yera, etc), but for now this argument will be ignored and the 
+        period will always be hardcoded to 'year'. At some point in the future the method may 
+        accept other 'period' strings.
+
+        This method includes record count information as part of the result JSON. It includes the 
+        total number of buildings available in the database given the date and organization arguments, 
+        as well as the subset of those buildings that have actual data to graph, given 
+        the x_var and y_var parameters. By sending the two values in the result we allow the client to 
+        easily build a message like '200 of 250 buildings have data.'
+
+        The returned JSON document that has the following structure.
+    
+        ```
+            {
+                "status": "success",
+                "report_data": [{"x":123, "y":456}, {"x":321, "y":654},...] 
+                "num_buildings": 123
+                "num_buildings_w_data" : 120
+            }
+        ```
+
+        ---
+
+
+        parameters:
+            - name: x_var
+              description: Name of column in building snapshot database to be used for "x" axis
+              required: true
+              type: string
+              paramType: query
+            - name: y_var
+              description: Name of column in building snapshot database to be used for "y" axis
+              required: true
+              type: string
+              paramType: query
+            - start_date:
+              description: The start date for the entire dataset.
+              required: true
+              type: string
+              paramType: query
+            - end_date:
+              description: The end date for the entire dataset.
+              required: true
+              type: string
+              paramType: query
+            - period:
+              description: The period used to group data
+              required: true
+              type: string
+              paramType: query
+            - name: organization_id
+              description: User's organization which should be used to filter building query results
+              required: true
+              type: string
+              paramType: query
+  
+        type:            
+            status:
+                required: true
+                type: string
+            report_data:
+                required: true
+                type: array
+            num_buildings:
+                required: true
+                type: string
+            num_buildings_w_data:
+                required: true
+                type: string
+                  
+        """
+
+
+    #TODO: Generate this data the right way! The following is just dummy data...
 
     #Read in x and y vars requested by client
-    xVar = request.GET.get('xVar')
-    yVar = request.GET.get('yVar')
+    xVar = request.GET.get('x_var')
+    yVar = request.GET.get('y_var')
     orgs = [ request.GET.get('organization_id') ] #How should we capture user orgs here?
     
     #Get all data from buildings...this needs to be refined.
     bldgs = BuildingSnapshot.objects.filter(
                 super_organization__in=orgs,
                 canonicalbuilding__active=True
-            ).values('id', xVar, yVar)
+            ).values('id', x_var, y_var)
 
     #For now I need to map values to "x" and "y" fields, until I can figure out how
     #to dynamically bind var names to axes
@@ -2159,5 +2278,7 @@ def get_building_report_data(request):
     #Send back to client
     return {
         'status': 'success',
-        'report_data' : data
+        'report_data' : data,
+        'num_buildings_w_data' : 400,
+        'num_buildings' : 405
     }
