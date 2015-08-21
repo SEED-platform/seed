@@ -2258,8 +2258,8 @@ def get_building_report_data(request):
     #TODO: Generate this data the right way! The following is just dummy data...
 
     #Read in x and y vars requested by client
-    xVar = request.GET.get('x_var')
-    yVar = request.GET.get('y_var')
+    x_var = request.GET.get('x_var')
+    y_var = request.GET.get('y_var')
     orgs = [ request.GET.get('organization_id') ] #How should we capture user orgs here?
     
     #Get all data from buildings...this needs to be refined.
@@ -2272,7 +2272,7 @@ def get_building_report_data(request):
     #to dynamically bind var names to axes
     data = []
     for obj in bldgs:
-        data.append({"id":obj["id"], "x":obj[xVar], "y":obj[yVar]})
+        data.append({"id":obj["id"], "x":obj[x_var], "y":obj[y_var]})
         #data.append({"id":obj["id"], "x":random.random(), "y":random.random()})
 
     #Send back to client
