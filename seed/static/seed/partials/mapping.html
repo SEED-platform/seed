@@ -130,7 +130,6 @@
                         <tr>
                             <th class="sub_head is_aligned_center">Map <a popover="{$MAP_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th>
                             <th class="mapping_field">header</th>
-                            <th class="sub_head is_aligned_center">BEDES <a popover="{$BEDES_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th>
                             <!--th class="sub_head is_aligned_center">Duplicate <a popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
                             <th class="import_column_name"> header</th>
                             <th>Row 1</th>
@@ -148,9 +147,6 @@
                             <td ng-class="{'danger': tcm.is_duplicate == true, 'disable-mapping-btn': tcm.is_duplicate == true}">
                                 <input type="text" typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" ng-keyup="disable_mapping_button()" ng-blur="disable_mapping_button()" typeahead-on-select='change(tcm)'/>
 
-                            </td>
-                            <td class="is_aligned_center">
-                                <i class="fa fa-check-circle green" ng-show="is_suggestion_BEDES(tcm.suggestion)"></i>
                             </td>
                             <!--td class="check is_aligned_center">
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>

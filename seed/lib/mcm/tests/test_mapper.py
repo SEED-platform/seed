@@ -66,8 +66,7 @@ class TestMapper(TestCase):
             fake_row, self.fake_mapping, fake_model_class
         )
 
-        # empty columns should not result in entries in extra_data
-        expected_extra = {u'heading3': u'value3'}
+        expected_extra = {u'heading3': u'value3', u'heading4': u''}
 
         self.assertEqual(getattr(modified_model, u'property_id'), u'234235423')
         self.assertEqual(
@@ -75,6 +74,25 @@ class TestMapper(TestCase):
         )
         self.assertEqual(getattr(modified_model, u'heading_1'), u'value1')
         self.assertEqual(getattr(modified_model, u'heading_2'), u'value2')
+        self.assertTrue(
+            isinstance(getattr(modified_model, 'extra_data'), dict)
+        )
+        self.assertEqual(modified_model.extra_data, expected_extra)
+
+    def test_map_row_extra_data_empty_columns(self):
+        """map_row should include empty columns in extra_data"""
+        fake_row = {
+            u'heading3': u'value3',
+            u'heading4': u'',
+        }
+        fake_model_class = FakeModel
+
+        modified_model = mapper.map_row(
+            fake_row, self.fake_mapping, fake_model_class
+        )
+
+        expected_extra = {u'heading3': u'value3', u'heading4': u''}
+
         self.assertTrue(
             isinstance(getattr(modified_model, 'extra_data'), dict)
         )

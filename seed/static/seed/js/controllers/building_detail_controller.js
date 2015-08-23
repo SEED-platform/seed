@@ -351,7 +351,7 @@ angular.module('BE.seed.controller.building_detail', [])
         // handle extra_data
         angular.forEach(buildings, function(b){
             angular.forEach(b.extra_data, function (val, key){
-                if (key_list.indexOf(key) === -1 && val !== null){
+                if (key_list.indexOf(key) === -1){
                     key_list.push(key);
                     $scope.data_columns.push({
                         "key": key,
@@ -362,7 +362,7 @@ angular.module('BE.seed.controller.building_detail', [])
         });
         // hanlde building properties
         angular.forEach($scope.building, function ( val, key ) {
-            if ( $scope.is_valid_key(key) && val !== null && typeof val !== "undefined" && key_list.indexOf(key) === -1) {
+            if ( $scope.is_valid_key(key) && typeof val !== "undefined" && key_list.indexOf(key) === -1) {
                 key_list.push(key);
                 $scope.data_columns.push({
                         "key": key,
