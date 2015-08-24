@@ -12,6 +12,33 @@ angular.module('BE.seed.controller.buildings_reports', [])
                                               buildings_reports_service
                                             ) {
 
+
+  /* SETUP VARS AND FUNCTIONS FOR DATEPICKERS */
+
+
+  'use strict';
+
+  $scope.beginDate = new Date();
+  $scope.beginDatePickerOpen = false;
+  $scope.endDate = new Date();
+  $scope.endDatePickerOpen = false;
+
+  $scope.openBeginDatePicker = function ($event) {
+    $event.preventDefault();
+    $event.stopPropagation();
+    $scope.beginDatePickerOpen = !$scope.beginDatePickerOpen;
+  };
+
+  $scope.openEndDatePicker = function ($event) {
+    $event.preventDefault();
+    $event.stopPropagation();
+    $scope.endDatePickerOpen = !$scope.endDatePickerOpen;
+  };
+
+
+
+  /* SETUP VARS AND FUNCTIONS FOR GRAPHS */
+
   var ENERGY_STAR_VAR = "energy_score";
   var EUI_VAR = "site_eui";
 

@@ -35,8 +35,12 @@ angular.module('BE.seed.service.buildings_reports',
                 'url': window.BE.urls.get_building_report_data,
                 'params': {
                     'organization_id': user_service.get_organization().id,
-                    'xVar': xVar,
-                    'yVar': yVar
+                    'x_var': xVar,
+                    'y_var': yVar,
+                    'period': '',
+                    'start_date': '',
+                    'end_date': ''
+
                 }
         }).success(function(data, status, headers, config) {
             building_reports_factory.report_data = (data != undefined && data.report_data != undefined) ? data.report_data : [];
