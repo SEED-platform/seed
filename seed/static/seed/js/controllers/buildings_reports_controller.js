@@ -13,10 +13,9 @@ angular.module('BE.seed.controller.buildings_reports', [])
                                             ) {
 
 
-  /* SETUP VARS AND FUNCTIONS FOR DATEPICKERS */
-
-
   'use strict';
+
+  /* SETUP VARS AND FUNCTIONS FOR DATEPICKERS */
 
   $scope.beginDate = new Date();
   $scope.beginDatePickerOpen = false;
@@ -36,6 +35,9 @@ angular.module('BE.seed.controller.buildings_reports', [])
   };
 
 
+  $scope.updateDaterange = function ($event) {
+    
+  }
 
   /* SETUP VARS AND FUNCTIONS FOR GRAPHS */
 

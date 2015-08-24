@@ -2109,8 +2109,8 @@ import random
 @login_required
 @has_perm('requires_member')
 def get_building_summary_report_data(request):
-    """ This method returns basic, high-level data about a set of buildings,
-    fitered by organization IDs.
+    """ 
+    This method returns basic, high-level data about a set of buildings, fitered by organization ID.
 
     The returned JSON document that has the following structure.
 
@@ -2125,29 +2125,55 @@ def get_building_summary_report_data(request):
                 }
             }
     ```
+    Units for return values are as follows:
+
+    ```
+    | property              | units      |
+    |-----------------------|------------|
+    | avg_eui               | kBtu-ft2   |
+    ```
     
     ---
 
     parameters:
-            - name: organization_id
-              description: User's organization which should be used to filter building query results
-              required: true
-              type: string
-              paramType: query
-  
-        type:            
-            status:
-                required: true
-                type: string
-            summary_data:
-                required: true
-                type: object           
+        - name: organization_id
+          description: User's organization which should be used to filter building query results
+          required: true
+          type: string
+          paramType: query
+
+    type:            
+        status:
+            required: true
+            type: string
+        summary_data:
+            required: true
+            type: object           
+
+
+    responseMessages:
+        - code: 400
+          message: Bad request, only GET method is available
+        - code: 401
+          message: Not authenticated
+        - code: 403
+          message: Insufficient rights to call this procedure
 
     """
 
-    #TODO: Generate this data the right way! The following is just dummy data...
+    #TODO: Generate this data the right way! Will be implemented by Stephen C. The following is just dummy data...
 
-    orgs = [ request.GET.get('organization_id') ] #How should we capture user orgs here?
+    if request.method != 'GET':
+        return Response("This view replies only to GET methods", status = status.HTTP_400_BAD_REQUEST)
+
+    #Read in x and y vars requested by client
+    try:
+        orgs = [ request.GET.get('organization_id') ] #How should we capture user orgs here?
+    except Exception, e:
+        msg = "Error while calling the API function get_scatter_data_series, missing parameter"
+        _log.error(msg)
+        _log.exception(str(e))
+        return Response(msg, status = status.HTTP_400_BAD_REQUEST)
 
     num_buildings = BuildingSnapshot.objects.filter(
                 super_organization__in=orgs,
@@ -2175,7 +2201,13 @@ def get_building_summary_report_data(request):
 @has_perm('requires_member')
 def get_building_report_data(request):
     """ This method returns a set of x,y building data for graphing. It expects as parameters
-        the column names of the two variables the user would like returned in the dataset.
+
+        * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
+        * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
+        * x_var:            The variable name to be assigned to the "x" value in the returned data series 
+        * y_var:            The variable name to be assigned to the "y" value in the returned data series
+        * period:           The period for the data series to be returned (currently ignored and defaulted to 'year') 
+        * organization_id:  The organization to be used when querying data.
 
         Depending on the variables requested (and the axes to which they're assigned),
         this method may modify the data before returning it, for example binning 
@@ -2189,8 +2221,8 @@ def get_building_report_data(request):
         This method includes record count information as part of the result JSON. It includes the 
         total number of buildings available in the database given the date and organization arguments, 
         as well as the subset of those buildings that have actual data to graph, given 
-        the x_var and y_var parameters. By sending the two values in the result we allow the client to 
-        easily build a message like '200 of 250 buildings have data.'
+        the x_var and y_var parameters. By sending these two values in the result we allow the client to 
+        easily build a message like '200 of 250 buildings have data."
 
         The returned JSON document that has the following structure.
     
@@ -2251,29 +2283,45 @@ def get_building_report_data(request):
             num_buildings_w_data:
                 required: true
                 type: string
+
+        responseMessages:
+            - code: 400
+              message: Bad request, only GET method is available
+            - code: 401
+              message: Not authenticated
+            - code: 403
+              message: Insufficient rights to call this procedure
+    
                   
         """
 
 
     #TODO: Generate this data the right way! The following is just dummy data...
+    if request.method != 'GET':
+        return Response("This view replies only to GET methods", status = status.HTTP_400_BAD_REQUEST)
 
     #Read in x and y vars requested by client
-    x_var = request.GET.get('x_var')
-    y_var = request.GET.get('y_var')
-    orgs = [ request.GET.get('organization_id') ] #How should we capture user orgs here?
-    
-    #Get all data from buildings...this needs to be refined.
+    try:
+        x_var = request.GET.get('x_var')
+        y_var = request.GET.get('y_var')
+        orgs = [ request.GET.get('organization_id') ] #How should we capture user orgs here?
+        from_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+    except Exception, e:
+        msg = "Error while calling the API function get_scatter_data_series, missing parameter"
+        _log.error(msg)
+        _log.exception(str(e))
+        return Response(msg, status = status.HTTP_400_BAD_REQUEST)
+            
+    #Get all data from buildings...temp method. To be implemented by Stephen C.
     bldgs = BuildingSnapshot.objects.filter(
                 super_organization__in=orgs,
                 canonicalbuilding__active=True
             ).values('id', x_var, y_var)
 
-    #For now I need to map values to "x" and "y" fields, until I can figure out how
-    #to dynamically bind var names to axes
     data = []
     for obj in bldgs:
         data.append({"id":obj["id"], "x":obj[x_var], "y":obj[y_var]})
-        #data.append({"id":obj["id"], "x":random.random(), "y":random.random()})
 
     #Send back to client
     return {
