@@ -2112,6 +2112,12 @@ def get_building_summary_report_data(request):
     """ 
     This method returns basic, high-level data about a set of buildings, fitered by organization ID.
 
+    It expects as parameters
+
+    * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
+    * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
+    * period:           The period for the data series to be returned (currently ignored and defaulted to 'year') 
+
     The returned JSON document that has the following structure.
 
     ```
@@ -2138,6 +2144,16 @@ def get_building_summary_report_data(request):
     parameters:
         - name: organization_id
           description: User's organization which should be used to filter building query results
+          required: true
+          type: string
+          paramType: query
+        - start_date:
+          description: The start date for the entire dataset.
+          required: true
+          type: string
+          paramType: query
+        - end_date:
+          description: The end date for the entire dataset.
           required: true
           type: string
           paramType: query
@@ -2169,6 +2185,8 @@ def get_building_summary_report_data(request):
     #Read in x and y vars requested by client
     try:
         orgs = [ request.GET.get('organization_id') ] #How should we capture user orgs here?
+        from_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
     except Exception, e:
         msg = "Error while calling the API function get_scatter_data_series, missing parameter"
         _log.error(msg)
