@@ -2345,7 +2345,7 @@ def get_building_report_data(request):
     data = []
     for obj in bldgs:
         randomYear = random.randrange(1910,2015)
-        data.append({"id":obj["id"], "x":obj[x_var], "y":obj[y_var]}, "year":randomYear)
+        data.append({"id":obj["id"], "x":obj[x_var], "y":obj[y_var], "year":randomYear} )
 
     #Send back to client
     return {
