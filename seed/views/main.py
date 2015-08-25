@@ -2114,23 +2114,26 @@ def get_building_summary_report_data(request):
 
     It expects as parameters
 
+    :GET:
     * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
     * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
     * period:           The period for the data series to be returned (currently ignored and defaulted to 'year') 
 
+    Returns::
     The returned JSON document that has the following structure.
-
     ```
             {
                 "status": "success",
                 "summary_data": 
                 {
-                    "num_buildings":123,
-                    "avg_eui":45.6,
-                    "avg_energy_score":78.9
+                    "num_buildings": number of buildings returned from query,
+                    "avg_eui": average EUI for returned buildings,
+                    "avg_energy_score": average energy score for returned buildings
                 }
             }
     ```
+
+
     Units for return values are as follows:
 
     ```
@@ -2220,6 +2223,7 @@ def get_building_summary_report_data(request):
 def get_building_report_data(request):
     """ This method returns a set of x,y building data for graphing. It expects as parameters
 
+        :GET:
         * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
         * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
         * x_var:            The variable name to be assigned to the "x" value in the returned data series 
@@ -2242,14 +2246,15 @@ def get_building_report_data(request):
         the x_var and y_var parameters. By sending these two values in the result we allow the client to 
         easily build a message like '200 of 250 buildings have data."
 
+
+        Returns::
         The returned JSON document that has the following structure.
-    
         ```
             {
                 "status": "success",
-                "report_data": [{"x":123, "y":456}, {"x":321, "y":654},...] 
-                "num_buildings": 123
-                "num_buildings_w_data" : 120
+                "report_data": [{"x":123, "y":456, "year":1940}, {"x":321, "y":654, "year":2012},...] 
+                "num_buildings": number of buildings in query results
+                "num_buildings_w_data" : number of buildings with valid data in query results
             }
         ```
 
@@ -2339,7 +2344,8 @@ def get_building_report_data(request):
 
     data = []
     for obj in bldgs:
-        data.append({"id":obj["id"], "x":obj[x_var], "y":obj[y_var]})
+        randomYear = random.randrange(1910,2015)
+        data.append({"id":obj["id"], "x":obj[x_var], "y":obj[y_var]}, "year":randomYear)
 
     #Send back to client
     return {
