@@ -743,6 +743,73 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['address_line_1'], '')
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
 
+    def test_search_status_label_empty(self):
+        """
+        Make sure empty status label search does not filter. A bug allowed filtering on
+        project_building_snapshots__status_label__name='' to show only buildings with labels,
+        when it should have been ignored and returned all buildings.
+        """
+
+        project = Project.objects.create(
+            name='test project',
+            owner=self.user,
+            super_organization=self.org,
+        )
+
+        # Building with label
+        cb1 = CanonicalBuilding(active=True)
+        cb1.save()
+        b1 = SEEDFactory.building_snapshot(
+            canonical_building=cb1,
+        )
+        cb1.canonical_snapshot = b1
+        cb1.save()
+        b1.super_organization = self.org
+        b1.save()
+        label = StatusLabel.objects.create(
+            color='orange',
+            name='orange',
+            super_organization=self.org
+        )
+        ProjectBuilding.objects.create(
+            building_snapshot=b1,
+            project=project,
+            status_label=label
+        )
+
+        # Building without label
+        cb2 = CanonicalBuilding(active=True)
+        cb2.save()
+        b2 = SEEDFactory.building_snapshot(
+            canonical_building=cb2,
+        )
+        cb2.canonical_snapshot = b2
+        cb2.save()
+        b2.super_organization = self.org
+        b2.save()
+
+        url = reverse_lazy("seed:search_buildings")
+        post_data = {
+            'filter_params': {
+                'project_building_snapshots__status_label__name': ''
+            },
+            'number_per_page': 10,
+            'order_by': '',
+            'page': 1,
+            'q': '',
+            'sort_reverse': False,
+            'project_id': None,
+        }
+
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        json_string = response.content
+        data = json.loads(json_string)
+        self.assertEqual(2, data['number_matching_search'])
+
     def test_search_not_empty_column(self):
         """
         Tests search_buidlings method when called with a not-empty column query.

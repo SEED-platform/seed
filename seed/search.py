@@ -207,8 +207,7 @@ def filter_other_params(queryset, other_params, db_columns):
     query_filters = Q()
     for k, v in other_params.iteritems():
         in_columns = is_column(k, db_columns)
-        # if in_columns and k != 'q' and v:
-        if in_columns and k != 'q' and v is not None:
+        if in_columns and k != 'q' and v is not None and v != '':
             exact_match = is_exact_match(v)
             empty_match = is_empty_match(v)
             not_empty_match = is_not_empty_match(v)
