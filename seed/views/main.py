@@ -2117,7 +2117,6 @@ def get_building_summary_report_data(request):
     :GET:
     * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
     * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
-    * period:           The period for the data series to be returned (currently ignored and defaulted to 'year') 
 
     Returns::
     The returned JSON document that has the following structure.
@@ -2205,7 +2204,7 @@ def get_building_summary_report_data(request):
     avg_energy_score = 321
 
     
-    data = {   "num_buildings" : num_buildings,
+    data = {    "num_buildings" : num_buildings,
                 "avg_eui" : avg_eui,
                 "avg_energy_score": avg_energy_score }
 
@@ -2252,7 +2251,14 @@ def get_building_report_data(request):
         ```
             {
                 "status": "success",
-                "report_data": [{"x":123, "y":456, "year":1940}, {"x":321, "y":654, "year":2012},...] 
+                "report_data": [
+                    {
+                        "x": value for x var, 
+                        "y": value for y var,
+                        type of period (e.g."year", "decade") : value for period  <-- This property will not be set if period is not set
+                    },
+                    ...
+                ] 
                 "num_buildings": number of buildings in query results
                 "num_buildings_w_data" : number of buildings with valid data in query results
             }
@@ -2325,17 +2331,20 @@ def get_building_report_data(request):
 
     #Read in x and y vars requested by client
     try:
-        x_var = request.GET.get('x_var')
-        y_var = request.GET.get('y_var')
-        orgs = [ request.GET.get('organization_id') ] #How should we capture user orgs here?
-        from_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
+        x_var = request.GET['x_var']
+        y_var = request.GET['y_var']
+        orgs = [ request.GET['organization_id'] ] #How should we capture user orgs here?
+        from_date = request.GET['start_date']
+        end_date = request.GET['end_date']
+        period = request.GET.get('period', None) #This is optional
+
     except Exception, e:
         msg = "Error while calling the API function get_scatter_data_series, missing parameter"
         _log.error(msg)
         _log.exception(str(e))
         return Response(msg, status = status.HTTP_400_BAD_REQUEST)
-            
+
+        
     #Get all data from buildings...temp method. To be implemented by Stephen C.
     bldgs = BuildingSnapshot.objects.filter(
                 super_organization__in=orgs,
@@ -2343,14 +2352,27 @@ def get_building_report_data(request):
             ).values('id', x_var, y_var)
 
     data = []
-    for obj in bldgs:
-        randomYear = random.randrange(1910,2015)
-        data.append({"id":obj["id"], "x":obj[x_var], "y":obj[y_var], "year":randomYear} )
+    for obj in bldgs:                
+        #TODO:  the 'year' property below should be replaced with whatever the period is,
+        #       and it's value should correspond. For example, if the period was 'decade',
+        #       the property would be something like "decade":1940
+        #       
+        obj = {"id":obj["id"], "x":obj[x_var], "y":obj[y_var]}
+        data.append(obj)
+        if (period=='decade'):
+            randomYear = random.randrange(1910,2015)
+            randomDecade = randomYear - randomYear%10
+            obj['decade'] =  randomDecade
+        elif (period=='year'):
+            obj['year'] = random.randrange(1910,2015)
+            
+        
 
     #Send back to client
     return {
         'status': 'success',
         'report_data' : data,
+        'period' : period,
         'num_buildings_w_data' : 400,
         'num_buildings' : 405
     }
