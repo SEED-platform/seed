@@ -2227,17 +2227,21 @@ def get_building_report_data(request):
         * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
         * x_var:            The variable name to be assigned to the "x" value in the returned data series 
         * y_var:            The variable name to be assigned to the "y" value in the returned data series
-        * period:           The period for the data series to be returned (currently ignored and defaulted to 'year') 
         * organization_id:  The organization to be used when querying data.
 
-        Depending on the variables requested (and the axes to which they're assigned),
-        this method may modify the data before returning it, for example binning 
-        data into categories such as 'year.'
+        The x_var values should be from the following set of variable names:
 
-        For future flexibility, this method accepts a 'period' parameter to return the data in
-        (e.g. month, quarter, yera, etc), but for now this argument will be ignored and the 
-        period will always be hardcoded to 'year'. At some point in the future the method may 
-        accept other 'period' strings.
+            - site_eui
+            - energy_score 
+
+        The y_var values should be from the following set of variable names:
+
+            - gross_floor_area
+            - use_description
+            - year_built
+
+        Depending on the variables requested (and the axes to which they're assigned),
+        this method may modify the data before returning it, for example binning data.
 
         This method includes record count information as part of the result JSON. It includes the 
         total number of buildings available in the database given the date and organization arguments, 
@@ -2253,9 +2257,10 @@ def get_building_report_data(request):
                 "status": "success",
                 "report_data": [
                     {
+                        "id" the id of the building,
+                        "yr_e" : the year ending value for this data point
                         "x": value for x var, 
                         "y": value for y var,
-                        type of period (e.g."year", "decade") : value for period  <-- This property will not be set if period is not set
                     },
                     ...
                 ] 
@@ -2285,11 +2290,6 @@ def get_building_report_data(request):
               paramType: query
             - end_date:
               description: The end date for the entire dataset.
-              required: true
-              type: string
-              paramType: query
-            - period:
-              description: The period used to group data
               required: true
               type: string
               paramType: query
@@ -2336,7 +2336,6 @@ def get_building_report_data(request):
         orgs = [ request.GET['organization_id'] ] #How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
-        period = request.GET.get('period', None) #This is optional
 
     except Exception, e:
         msg = "Error while calling the API function get_scatter_data_series, missing parameter"
@@ -2352,19 +2351,26 @@ def get_building_report_data(request):
             ).values('id', x_var, y_var)
 
     data = []
-    for obj in bldgs:                
-        #TODO:  the 'year' property below should be replaced with whatever the period is,
-        #       and it's value should correspond. For example, if the period was 'decade',
-        #       the property would be something like "decade":1940
-        #       
-        obj = {"id":obj["id"], "x":obj[x_var], "y":obj[y_var]}
+    for bldg in bldgs:                
+        # DUMMY DATA:
+        # Create some dummy data for year endings. Assume user's selected
+        # date range gives three rows with different year ending data 
+        # for each building
+        obj = { "id":bldg["id"], 
+                "x":bldg[x_var], 
+                "y":bldg[y_var],
+                "yr_e":2011}
         data.append(obj)
-        if (period=='decade'):
-            randomYear = random.randrange(1910,2015)
-            randomDecade = randomYear - randomYear%10
-            obj['decade'] =  randomDecade
-        elif (period=='year'):
-            obj['year'] = random.randrange(1910,2015)
+        obj = { "id":bldg["id"], 
+                "x":bldg[x_var], 
+                "y": (bldg[y_var] + 10),
+                "yr_e":2012}
+        data.append(obj)
+        obj = { "id":bldg["id"], 
+                "x":bldg[x_var], 
+                "y": (bldg[y_var] + 20),
+                "yr_e":2013}
+        data.append(obj)
             
         
 
@@ -2372,7 +2378,6 @@ def get_building_report_data(request):
     return {
         'status': 'success',
         'report_data' : data,
-        'period' : period,
         'num_buildings_w_data' : 400,
         'num_buildings' : 405
     }
