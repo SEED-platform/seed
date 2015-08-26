@@ -44,7 +44,7 @@ NREL
 
 ---
 Maalka 
-Clay Teeter (clay@maalka.com)
+- Clay Teeter (clay@maalka.com)
 
 ---
 Building Energy
