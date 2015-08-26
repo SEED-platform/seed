@@ -43,6 +43,10 @@ NREL
 - Alex Swindler (https://github.com/axelstudios)
 
 ---
+Maalka 
+Clay Teeter (clay@maalka.com)
+
+---
 Building Energy
 - Aleck Landgraf (https://github.com/alecklandgraf/)
 - Gavin McQuillan (https://github.com/gmcquillan)
