@@ -112,11 +112,11 @@ install ``npm`` assuming the prerequisites are met.
 Database Configuration
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Create a ``local_untracked.py`` file in the ``BE/settings`` directory and add
-a ``DATABASES`` configuration with your database username, password, host,
-and port. Your database configuration can point to an AWS RDS instance or a
-postgresql 9.3 database instance you have manually installed within your
-infrastructure.
+Copy the ``local_untracked.py.dist`` file in the ``config/settings`` directory
+to ``config/settings/local_untracked.py``, and add a ``DATABASES`` configuration
+with your database username, password, host, and port. Your database configuration
+can point to an AWS RDS instance or a postgresql 9.3 database instance you have
+manually installed within your infrastructure.
 
 .. code-block:: python
 
@@ -171,7 +171,7 @@ create a superuser to access the system
 
 .. code-block:: console
 
-    $ python manage.py create_default_user --username=demo@be.com --organization=be --password=demo123
+    $ python manage.py create_default_user --username=demo@example.com --organization=example --password=demo123
 
 
 .. note::
