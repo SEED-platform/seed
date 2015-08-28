@@ -319,10 +319,11 @@ local_untracked.py
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'seed-deploy',
-            'USER': 'DBUsername',
-            'PASSWORD': '',
-            'HOST': 'localhost',
+            'NAME': 'seed',
+            'USER': 'your-username',
+            'PASSWORD': 'your-password',
+            'HOST': 'your-host',
+            'PORT': 'your-port',
         }
     }
 
@@ -331,7 +332,6 @@ local_untracked.py
     STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
     DOMAIN_URLCONFS = {}
     DOMAIN_URLCONFS['default'] = 'urls.main'
-
 
     CACHES = {
         'default': {
@@ -352,7 +352,6 @@ local_untracked.py
             routing_key=CELERY_DEFAULT_QUEUE
         ),
     )
-    djcelery.setup_loader()
 
     # SMTP config
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
