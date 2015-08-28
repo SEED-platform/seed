@@ -1,10 +1,13 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
+from __future__ import absolute_import
+
 import os
 import sys
 import logging
 from os.path import abspath, join, dirname
+from kombu import Exchange, Queue
 
 SITE_ROOT = abspath(join(dirname(__file__), "..", ".."))
 
@@ -75,7 +78,7 @@ INSTALLED_APPS = (
 
     'analytical',
     'ajaxuploader',
-    'djcelery',
+    # 'djcelery',
 
     'compressor',
     'django_extensions',
@@ -203,17 +206,12 @@ LOGIN_REDIRECT_URL = "/app/"
 APPEND_SLASH = True
 
 PASSWORD_RESET_EMAIL = 'reset@seedplatform.org'
-SERVER_EMAIL = 'no-reply@seedplatform.com'
-
-# Celery queues
-from kombu import Exchange, Queue
-import djcelery
-djcelery.setup_loader()
+SERVER_EMAIL = 'no-reply@seedplatform.org'
 
 CELERYD_MAX_TASKS_PER_CHILD = 1
 
 # Default queue
-CELERY_DEFAULT_QUEUE = 'seed-core'
+CELERY_DEFAULT_QUEUE = 'seed-common'
 CELERY_QUEUES = (
     Queue(
         CELERY_DEFAULT_QUEUE,
@@ -224,16 +222,13 @@ CELERY_QUEUES = (
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_RESULT_EXPIRES = 18000 # 5 hours
 
 SOUTH_TESTS_MIGRATE = False
 SOUTH_MIGRATION_MODULES = {
 }
 
-BROKER_HOST = "localhost"
-BROKER_PORT = 5672
-BROKER_USER = "guest"
-BROKER_PASSWORD = "guest"
-BROKER_VHOST = "/"
+BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 
 LOG_FILE = join(SITE_ROOT, '../logs/py.log/')
 
