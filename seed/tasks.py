@@ -1,6 +1,8 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
+from __future__ import absolute_import
+
 import calendar
 import datetime
 import re
@@ -20,7 +22,7 @@ from django.core.cache import cache
 from django.db.models import Q
 from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse_lazy
-from celery.task import task, chord
+from celery import shared_task, chord, chain, group
 from celery.utils.log import get_task_logger
 from seed.audit_logs.models import AuditLog
 from seed.landing.models import SEEDUser as User
@@ -79,7 +81,7 @@ PUNCT_REGEX = re.compile('[{0}]'.format(
 ))
 
 
-@task
+@shared_task
 def export_buildings(export_id, export_name, export_type,
                      building_ids, export_model='seed.BuildingSnapshot',
                      selected_fields=None):
@@ -101,7 +103,7 @@ def export_buildings(export_id, export_name, export_type,
     _row_cb(selected_buildings.count())  # means we're done!
 
 
-@task
+@shared_task
 def invite_to_seed(domain, email_address, token, user_pk, first_name):
     signup_url = reverse_lazy('landing:signup', kwargs={
         'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
@@ -125,7 +127,7 @@ def invite_to_seed(domain, email_address, token, user_pk, first_name):
 
 
 # TODO (AK): Ensure this gets tested in PR #61
-@task
+@shared_task
 def add_buildings(project_slug, project_dict, user_pk):
     """adds buildings to a project. if a user has selected all buildings,
        then the the search parameters within project_dict are used to determine
@@ -249,7 +251,7 @@ def add_buildings(project_slug, project_dict, user_pk):
         compliance.save()
 
 
-@task
+@shared_task
 def remove_buildings(project_slug, project_dict, user_pk):
     """adds buildings to a project. if a user has selected all buildings,
        then the the search parameters within project_dict are used to determine
@@ -344,6 +346,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
 
 def add_cache_increment_parameter(tasks):
     """This adds the cache increment value to the signature to each subtask."""
+    """This is a really weird way to handle this, it adds the argument after the methods have been added to the tasks list"""
     denom = len(tasks) or 1
     increment = 1.0 / denom * 100
     # This is kind of terrible. Once we know how much progress each task
@@ -354,7 +357,7 @@ def add_cache_increment_parameter(tasks):
     return tasks
 
 
-@task
+@shared_task
 def finish_import_record(import_record_pk):
     """Set all statuses to Done, etc."""
     states = ('done', 'active', 'queued')
@@ -373,7 +376,7 @@ def finish_import_record(import_record_pk):
     import_record.save()
 
 
-@task
+@shared_task
 def finish_mapping(results, file_pk):
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.mapping_done = True
@@ -437,21 +440,22 @@ def apply_data_func(mappable_columns):
     return result_fn
 
 
-@task
-def map_row_chunk(
-        chunk, file_pk, source_type, prog_key, increment, *args, **kwargs
-):
+@shared_task
+def map_row_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwargs):
     """Does the work of matching a mapping to a source type and saving
 
     :param chunk: list of dict of str. One row's worth of parse data.
     :param file_pk: int, the PK for an ImportFile obj.
     :param source_type: int, represented by either ASSESSED_RAW, or
         PORTFOLIO_RAW.
+    :param prog_key: string, key of the progress key
+    :param increment: double, value by which to increment progress key
     :param cleaner: (optional), the cleaner class you want to send
     to mapper.map_row. (e.g. turn numbers into floats.).
     :param raw_ids: (optional kwarg), the list of ids in chunk order.
 
     """
+
     import_file = ImportFile.objects.get(pk=file_pk)
     save_type = PORTFOLIO_BS
     if source_type == ASSESSED_RAW:
@@ -502,7 +506,7 @@ def map_row_chunk(
     increment_cache(prog_key, increment)
 
 
-@task
+@shared_task
 @lock_and_track
 def _map_data(file_pk, *args, **kwargs):
     """Get all of the raw data and process it using appropriate mapping.
@@ -540,42 +544,69 @@ def _map_data(file_pk, *args, **kwargs):
     tasks = []
     for chunk in batch(qs, 100):
         serialized_data = [obj.extra_data for obj in chunk]
-        tasks.append(map_row_chunk.subtask(
-            (serialized_data, file_pk, source_type, prog_key)
-        ))
-
-    qs = BuildingSnapshot.objects.filter(
-        import_file=import_file,
-        source_type=source_type,
-    ).iterator()
-    prog_key = get_prog_key('cleanse_data', file_pk)
-    tasks = []
-    for chunk in batch(qs, 100):
-        serialized_data = [obj.extra_data for obj in chunk]
-        tasks.append(cleanse_data_chunk.subtask(
-            (serialized_data, file_pk, source_type, prog_key)
-        ))
+        # map_row_chunk(chunk, file_pk, source_type, prog_key, increment):
+        tasks.append(map_row_chunk.s(serialized_data, file_pk, source_type, prog_key))
+        # tasks.append(cleanse_data_chunk.s(serialized_data, file_pk, source_type)) # note that increment will be added to end
 
     # need to rework how the progress keys are implemented here, but at least the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
     if tasks:
         chord(tasks, interval=15)(finish_mapping.subtask([file_pk]))
     else:
-        finish_mapping.task(file_pk)
+        finish_mapping.subtask(file_pk)
 
     return {'status': 'success'}
 
 
-
-@task
+@shared_task
 @lock_and_track
+def _cleanse_data(file_pk, *args, **kwargs):
+    """
+
+    Get the mapped data and run the cleansing class against it in chunks
+    @lock_and_track returns a progress_key
+
+    :param file_pk: int, the id of the import_file we're working with. # TODO: this may need be a different key???
+
+    """
+    import_file = ImportFile.objects.get(pk=file_pk)
+
+    source_type_dict = {
+        'Portfolio Raw': PORTFOLIO_RAW,
+        'Assessed Raw': ASSESSED_RAW,
+        'Green Button Raw': GREEN_BUTTON_RAW,
+    }
+    source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
+    qs = BuildingSnapshot.objects.filter(
+        import_file=import_file,
+        source_type=source_type,
+    ).iterator()
+
+    prog_key = get_prog_key('cleanse_data', file_pk)
+    tasks = []
+    for chunk in batch(qs, 100):
+        serialized_data = [obj.extra_data for obj in chunk]
+        tasks.append(cleanse_data_chunk.subtask((serialized_data, file_pk, source_type, prog_key)))
+
+    # need to rework how the progress keys are implemented here, but at least the method gets called above for cleansing
+    # tasks = add_cache_increment_parameter(tasks)
+    # if tasks:
+    #     chord(tasks, interval=15)(finish_mapping.subtask([file_pk]))
+    # else:
+    #     finish_mapping.task(file_pk)
+
+    return {'status': 'success'}
+
+
+@shared_task
 def map_data(file_pk, *args, **kwargs):
     """Small wrapper to ensure we isolate our mapping process from requests."""
-    _map_data.delay(file_pk, *args, **kwargs)
+    _map_data.delay(file_pk)
+
     return {'status': 'success'}
 
 
-@task
+@shared_task
 def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
     """Save the raw data to the database."""
     import_file = ImportFile.objects.get(pk=file_pk)
@@ -600,7 +631,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
     increment_cache(prog_key, increment)
 
 
-@task
+@shared_task
 def finish_raw_save(results, file_pk):
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
@@ -664,7 +695,7 @@ def cache_first_rows(import_file, parser):
     parser.seek_to_beginning()
 
 
-@task
+@shared_task
 @lock_and_track
 def _save_raw_green_button_data(file_pk, *args, **kwargs):
     """
@@ -692,7 +723,7 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
     }
 
 
-@task
+@shared_task
 @lock_and_track
 def _save_raw_data(file_pk, *args, **kwargs):
     """Chunk up the CSV and save data into the DB raw."""
@@ -751,7 +782,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
     return result
 
 
-@task
+@shared_task
 @lock_and_track
 def save_raw_data(file_pk, *args, **kwargs):
     _save_raw_data.delay(file_pk, *args, **kwargs)
@@ -790,16 +821,16 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
         can_snap_pk, building_pk, confidence=confidence, match_type=match_type, default_pk=building_pk
     )
     canon = bs.canonical_building
-    action_note='System matched building.'
+    action_note = 'System matched building.'
     if changes:
-            action_note += "  Fields changed in cannonical building:\n"
-            for change in changes:
-                action_note += "\t{field}:\t".format(field = change["field"].replace("_", " ").replace("-",  "").capitalize())
-                if "from" in change:
-                    action_note += "From:\t{prev}\tTo:\t".format(prev = change["from"])
-                
-                action_note += "{value}\n".format(value = change["to"])
-            action_note = action_note[:-1]
+        action_note += "  Fields changed in cannonical building:\n"
+        for change in changes:
+            action_note += "\t{field}:\t".format(field=change["field"].replace("_", " ").replace("-", "").capitalize())
+            if "from" in change:
+                action_note += "From:\t{prev}\tTo:\t".format(prev=change["from"])
+
+            action_note += "{value}\n".format(value=change["to"])
+        action_note = action_note[:-1]
     AuditLog.objects.create(
         user_id=user_pk,
         content_object=canon,
@@ -809,7 +840,7 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
     )
 
 
-@task
+@shared_task
 @lock_and_track
 def match_buildings(file_pk, user_pk):
     """kicks off system matching, returns progress key #NL -- this seems to return a JSON--not a progress key?"""
@@ -842,13 +873,15 @@ def get_canonical_snapshots(org_id):
 
     return snapshots
 
+
 def get_snapshots_from_canonical_id(canonical_id):
-    canonical_res = CanonicalBuilding.objects.filter(active = True, canonical_snapshot_id = canonical_id)
+    canonical_res = CanonicalBuilding.objects.filter(active=True, canonical_snapshot_id=canonical_id)
     canonical_id = canonical_res[0].id
-    
-    snapshots = BuildingSnapshot.objects.filter(canonical_building_id = canonical_id)
-    
+
+    snapshots = BuildingSnapshot.objects.filter(canonical_building_id=canonical_id)
+
     return snapshots
+
 
 def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
     """Returns canonical snapshots that match at least one id."""
@@ -877,38 +910,40 @@ def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
 
     return canonical_matches
 
-def is_same_snapshot(s1, s2):    
-    
-    fields_to_ignore = ["id", 
-                        "created", 
-                        "modified", 
-                        "match_type", 
-                        "confidence", 
-                        "source_type", 
-                        "canonical_building_id", 
-                        "import_file_id", 
-                        "_state", 
+
+def is_same_snapshot(s1, s2):
+    fields_to_ignore = ["id",
+                        "created",
+                        "modified",
+                        "match_type",
+                        "confidence",
+                        "source_type",
+                        "canonical_building_id",
+                        "import_file_id",
+                        "_state",
                         "_import_file_cache",
                         "import_record"]
-    
+
     for k, v in s1.__dict__.items():
-        #ignore anything that starts with an underscore
+        # ignore anything that starts with an underscore
         if k[0] == "_":
             continue
-        #also need to ignore any field with "_source" in it
+        # also need to ignore any field with "_source" in it
         if "_source" in k:
             continue
         if k in fields_to_ignore:
             continue
         if k not in s2.__dict__ or s2.__dict__[k] != v:
             return False
-            
+
     return True
+
 
 class DuplicateDataError(RuntimeError):
     def __init__(self, id):
         super(DuplicateDataError, self).__init__()
         self.id = id
+
 
 def handle_id_matches(unmatched_bs, import_file, user_pk):
     """"Deals with exact matches in the IDs of buildings."""
@@ -920,20 +955,20 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
     )
     if not id_matches.exists():
         return
-    
-    #Check to see if there are any duplicates here
-    for can_snap in id_matches:        
+
+    # Check to see if there are any duplicates here
+    for can_snap in id_matches:
         snapshots = get_snapshots_from_canonical_id(can_snap.pk)
         for snapshot in snapshots:
             if is_same_snapshot(unmatched_bs, snapshot):
-                #if throwing incurs too much of a performance hit maybe just monkey-patch
-                #unmatched_bs and check it on the other side like
-                #unmatched_bs.duplicate_of_pk = snapshot.pk
-                #return unmatched_bs
-                raise DuplicateDataError(snapshot.pk)                
-                
+                # if throwing incurs too much of a performance hit maybe just monkey-patch
+                # unmatched_bs and check it on the other side like
+                # unmatched_bs.duplicate_of_pk = snapshot.pk
+                # return unmatched_bs
+                raise DuplicateDataError(snapshot.pk)
 
-    # merge save as system match with high confidence.
+
+                # merge save as system match with high confidence.
     for can_snap in id_matches:
         # Merge all matches together; updating "unmatched" pointer
         # as we go.
@@ -952,12 +987,13 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
         if changes:
             action_note += "  Fields changed in cannonical building:\n"
             for change in changes:
-                action_note += "\t{field}:\t".format(field = change["field"].replace("_", " ").replace("-",  "").capitalize())
+                action_note += "\t{field}:\t".format(
+                    field=change["field"].replace("_", " ").replace("-", "").capitalize())
                 if "from" in change:
-                    action_note += "From:\t{prev}\tTo:\t".format(prev = change["from"])
-                
-                action_note += "{value}\n".format(value = change["to"])
-            action_note = action_note[:-1]            
+                    action_note += "From:\t{prev}\tTo:\t".format(prev=change["from"])
+
+                action_note += "{value}\n".format(value=change["to"])
+            action_note = action_note[:-1]
         AuditLog.objects.create(
             user_id=user_pk,
             content_object=canon,
@@ -1022,9 +1058,9 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
         if un_m_address.lower() == cb.lower():  # this second lower may be obsolete now
             match_list.append((un_m_address, 1))
     return match_list
-        
 
-@task
+
+@shared_task
 @lock_and_track
 def _match_buildings(file_pk, user_pk):
     """ngram search against all of the canonical_building snapshots for org."""
@@ -1037,7 +1073,7 @@ def _match_buildings(file_pk, user_pk):
     unmatched_buildings = find_unmatched_buildings(import_file)
 
     duplicates = []
-    
+
     newly_matched_building_pks = []
     for unmatched in unmatched_buildings:
         try:
@@ -1059,8 +1095,8 @@ def _match_buildings(file_pk, user_pk):
     if not unmatched_buildings:
         _finish_matching(import_file, prog_key)
         return
-    
-    #here we deal with duplicates
+
+    # here we deal with duplicates
     unmatched_buildings = unmatched_buildings.exclude(pk__in=duplicates).values_list(*BS_VALUES_LIST)
     if not unmatched_buildings:
         _finish_matching(import_file, prog_key)
@@ -1143,7 +1179,7 @@ def _match_buildings(file_pk, user_pk):
     return {'status': 'success'}
 
 
-@task
+@shared_task
 @lock_and_track
 def _remap_data(import_file_pk):
     """The delicate parts of deleting and remapping data for a file.
@@ -1169,7 +1205,7 @@ def _remap_data(import_file_pk):
     map_data(import_file_pk)
 
 
-@task
+@shared_task
 def remap_data(import_file_pk):
     """"Delete mapped buildings for current import file, re-map them."""
     import_file = ImportFile.objects.get(pk=import_file_pk)
@@ -1190,7 +1226,7 @@ def remap_data(import_file_pk):
     return {'status': 'success', 'progress_key': mapping_cache_key}
 
 
-@task
+@shared_task
 @lock_and_track
 def delete_organization_buildings(org_pk, *args, **kwargs):
     """Deletes all BuildingSnapshot instances within an organization
@@ -1202,7 +1238,7 @@ def delete_organization_buildings(org_pk, *args, **kwargs):
     return {'status': 'success'}
 
 
-@task
+@shared_task
 @lock_and_track
 def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
     """Deletes all BuildingSnapshot instances within an organization
@@ -1238,7 +1274,7 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
     chord(tasks, interval=15)(finish_delete.subtask([org_pk]))
 
 
-@task
+@shared_task
 def _delete_organization_buildings_chunk(del_ids, prog_key, increment,
                                          org_pk, *args, **kwargs):
     """deletes a list of ``del_ids`` and increments the cache"""
@@ -1247,13 +1283,13 @@ def _delete_organization_buildings_chunk(del_ids, prog_key, increment,
     increment_cache(prog_key, increment * 100)
 
 
-@task
+@shared_task
 def finish_delete(results, org_pk):
     prog_key = get_prog_key('delete_organization_buildings', org_pk)
     cache.set(prog_key, 100)
 
 
-@task
+@shared_task
 def _delete_canonical_buildings(ids, chunk_size=300):
     """deletes CanonicalBuildings
 
@@ -1265,7 +1301,7 @@ def _delete_canonical_buildings(ids, chunk_size=300):
         CanonicalBuilding.objects.filter(pk__in=del_ids).delete()
 
 
-@task
+@shared_task
 def log_deleted_buildings(ids, user_pk, chunk_size=300):
     """
     AuditLog logs a delete entry for the canonical building or each

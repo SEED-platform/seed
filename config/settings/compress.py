@@ -9,6 +9,8 @@
     Example:
         ./manage compress --force --settings=config.settings.compress
 """
+from __future__ import absolute_import
+
 try:
     from config.settings.local_untracked import *  # noqa
 except ImportError:

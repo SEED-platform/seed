@@ -343,9 +343,6 @@ local_untracked.py
     }
 
     # redis celery config
-    from kombu import Exchange, Queue
-    import djcelery
-
     BROKER_URL = 'redis://127.0.0.1:6379/1'
     CELERY_DEFAULT_QUEUE = 'seed-dev'
     CELERY_QUEUES = (

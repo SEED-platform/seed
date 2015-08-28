@@ -14,6 +14,9 @@ seed local_untracked.py
             i.e. everything here starting with 'your-'
     For local dev, all these services can run locally on localhost or 127.0.0.1 except for S3.
 """
+from __future__ import absolute_import
+from kombu import Exchange, Queue
+
 # postgres DB config
 DATABASES = {
     'default': {
@@ -58,8 +61,6 @@ CACHES = {
 }
 
 # redis celery/message broker config
-from kombu import Exchange, Queue
-import djcelery
 # BROKER_URL with AWS ElastiCache redis looks something like:
 # 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
 BROKER_URL = 'redis://your-broker-url:your-broker-port/1'

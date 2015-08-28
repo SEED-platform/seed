@@ -126,7 +126,7 @@ In dev mode, you can start the Django dev server and celery:
 
 ```
 ./manage.py runserver
-./manage.py celeryd -c 4 --loglevel=INFO -E --maxtasksperchild=1000
+celery -A seed worker -l info -c 4 --maxtasksperchild 1000 --events
 ```
 
 #### flower
@@ -145,7 +145,7 @@ If running on AWS, the `bin/start_flower.sh` will start flower on port `8080` an
 * `./manage.py migrate`
 * `./manage.py create_default_user`
 * `./manage.py runserver`
-* `./manage.py celeryd`
+* `celery -A seed worker -l info -c 4 --maxtasksperchild 1000 --events`
 * navaigate to `http://127.0.0.1:8000/app/#/profile/admin` in your browser to add users to organizations
     * each user must belong to an organization!
 * main app runs at `127.0.0.1:8000/app`
