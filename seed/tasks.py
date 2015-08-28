@@ -827,14 +827,6 @@ def get_canonical_snapshots(org_id):
 
     return snapshots
 
-def get_snapshots_from_canonical_id(canonical_id):
-    canonical_res = CanonicalBuilding.objects.filter(active = True, canonical_snapshot_id = canonical_id)
-    canonical_id = canonical_res[0].id
-    
-    snapshots = BuildingSnapshot.objects.filter(canonical_building_id = canonical_id)
-    
-    return snapshots
-
 def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
     """Returns canonical snapshots that match at least one id."""
     params = []
@@ -907,14 +899,18 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
         return
     
     #Check to see if there are any duplicates here
-    for can_snap in id_matches:        
-        snapshots = get_snapshots_from_canonical_id(can_snap.pk)
-        for snapshot in snapshots:
-            if is_same_snapshot(unmatched_bs, snapshot):
-                #if throwing incurs too much of a performance hit maybe just monkey-patch
-                #unmatched_bs and check it on the other side like
-                #unmatched_bs.duplicate_of_pk = snapshot.pk
-                #return unmatched_bs
+    for can_snap in id_matches:                
+        #check to see if this is a duplicate of a canonical building
+        #if throwing incurs too much of a performance hit maybe just monkey-patch
+        #unmatched_bs and check it on the other side like
+        #unmatched_bs.duplicate_of_pk = snapshot.pk
+        #return unmatched_bs
+        if is_same_snapshot(unmatched_bs, can_snap):
+            raise DuplicateDataError(can_snap.pk)
+        
+        #iterate through all of the parent records and see if there is a duplicate there
+        for snapshot in can_snap.parent_tree:
+            if is_same_snapshot(unmatched_bs, snapshot):                
                 raise DuplicateDataError(snapshot.pk)                
                 
 
@@ -1024,8 +1020,11 @@ def _match_buildings(file_pk, user_pk):
     unmatched_buildings = find_unmatched_buildings(import_file)
 
     duplicates = []
-    
     newly_matched_building_pks = []
+    
+    #Filter out matches based on ID.
+    #if the match is a duplicate of other existing data add it to a list
+    #and indicate which existing record it is a duplicate of
     for unmatched in unmatched_buildings:
         try:
             match = handle_id_matches(unmatched, import_file, user_pk)
