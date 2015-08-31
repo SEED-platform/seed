@@ -186,29 +186,38 @@ def filter_other_params(queryset, other_params, db_columns):
         return isinstance(q, basestring)
 
     def is_exact_match(q):
+        # Surrounded by matching quotes?
         if is_string_query(q):
             return re.match(r"""^(["'])(.+)\1$""", q)
         return False
 
     def is_empty_match(q):
+        # Empty matching quotes?
         if is_string_query(q):
             return re.match(r"""^(["'])\1$""", q)
+        return False
+
+    def is_not_empty_match(q):
+        # Exclamation mark and empty matching quotes?
+        if is_string_query(q):
+            return re.match(r"""^!(["'])\1$""", q)
         return False
 
     # Build query as Q objects so we can AND and OR.
     query_filters = Q()
     for k, v in other_params.iteritems():
         in_columns = is_column(k, db_columns)
-        # if in_columns and k != 'q' and v:
-        if in_columns and k != 'q' and v is not None:
-            # Is this query surrounded by matching quotes?
+        if in_columns and k != 'q' and v is not None and v != '':
             exact_match = is_exact_match(v)
             empty_match = is_empty_match(v)
+            not_empty_match = is_not_empty_match(v)
 
             if exact_match:
                 query_filters &= Q(**{"%s__exact" % k: exact_match.group(2)})
             elif empty_match:
                 query_filters &= Q(**{"%s__exact" % k: ''}) | Q(**{"%s__isnull" % k: True})
+            elif not_empty_match:
+                query_filters &= ~Q(**{"%s__exact" % k: ''}) & Q(**{"%s__isnull" % k: False})
             elif ('__lt' in k or
                           '__lte' in k or
                           '__gt' in k or
@@ -225,10 +234,9 @@ def filter_other_params(queryset, other_params, db_columns):
     for k, v in other_params.iteritems():
         if (not is_column(k, db_columns)) and k != 'q' and v:
 
-            # Is this query surrounded by matching quotes?
             exact_match = is_exact_match(v)
             empty_match = is_empty_match(v)
-
+            not_empty_match = is_not_empty_match(v)
 
             # If querying for empty matches, do a hack-y 'contains' query on
             # the json field to check if the field exists. We're checking 
@@ -239,7 +247,19 @@ def filter_other_params(queryset, other_params, db_columns):
             # django-pgjson package, and use the new "HAS" operator syntax.
             # - nicholasserra
             if empty_match:
-                queryset = queryset.exclude(extra_data__contains='"%s":' % k)
+                # Filter for records that DO NOT contain this field OR
+                # contain a blank value for this field.
+                queryset = queryset.filter(
+                    ~Q(extra_data__contains='"%s":' % k) | Q(extra_data__contains='"%s": ""' % k)
+                )
+                continue
+            elif not_empty_match:
+                # Only return records that have the key in extra_data, but the value is not empty.
+                queryset = queryset.filter(
+                    Q(extra_data__contains='"%s":' % k)
+                    & ~Q(extra_data__contains='"%s": ""' % k)
+                    & ~Q(extra_data__contains='"%s":""' % k)
+                )
                 continue
 
             conditions = {

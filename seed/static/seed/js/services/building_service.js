@@ -12,7 +12,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
   'generated_urls',
   function ($http, $q, urls, label_helper_service, user_service, generated_urls) {
 
-    var building_factory = {};
+    var building_factory = { total_number_of_buildings_for_user: 0};
 
     building_factory.get_total_number_of_buildings_for_user = function() {
         // django uses request.user for user information
@@ -21,6 +21,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
             method: 'GET',
             'url': window.BE.urls.get_total_number_of_buildings_for_user_url
         }).success(function(data, status, headers, config) {
+            building_factory.total_number_of_buildings_for_user = data.buildings_count;
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
@@ -203,6 +204,22 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         $http({
             method: 'GET',
             'url': window.BE.urls.get_PM_filter_by_counts_url,
+            'params': {
+                'import_file_id': import_file_id
+            }
+        }).success(function(data, status, headers, config) {
+            defer.resolve(data);
+        }).error(function(data, status, headers, config) {
+            defer.reject(data, status);
+        });
+        return defer.promise;
+    };
+    
+    building_factory.delete_duplicates_from_import_file = function(import_file_id) {
+        var defer = $q.defer();
+        $http({
+            method: 'GET',
+            'url': window.BE.urls.delete_duplicates_from_import_file_url,
             'params': {
                 'import_file_id': import_file_id
             }

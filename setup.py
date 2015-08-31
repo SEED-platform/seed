@@ -9,5 +9,5 @@ setup(
     author='Richard Brown',
     author_email='rebrown@lbl.gov',
     description='The SEED Platform is a web-based application that helps organizations easily manage data on the energy performance of large groups of buildings.',
-    scripts=['scripts/seedutil']
+    scripts=['bin/seedutil']
 )
