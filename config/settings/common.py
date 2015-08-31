@@ -78,13 +78,11 @@ INSTALLED_APPS = (
 
     'analytical',
     'ajaxuploader',
-    # 'djcelery',
 
     'compressor',
     'django_extensions',
     'organizations',
     'raven.contrib.django',
-    # 'south',
     'tos',
 )
 
