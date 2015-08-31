@@ -22,4 +22,3 @@ def finish_cleansing(results, file_pk):
     # finish_import_record(import_file.import_record.pk)
     prog_key = get_prog_key('cleanse_data', file_pk)
     cache.set(prog_key, 100)
-    data = cache.get(Cleansing.cache_key(file_pk))

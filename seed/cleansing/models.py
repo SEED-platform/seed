@@ -50,15 +50,11 @@ class Cleansing(models.Model):
         :return:
         """
 
-        print data
-
         for index in range(0, len(data) - 1):
             self.missing_matching_field(data[index])
             self.missing_values(data[index])
             self.in_range_checking(data[index])
             self.data_type_check(data[index])
-
-        print self.errors
 
     def reset_errors_and_warnings(self):
         self.errors = []
@@ -163,4 +159,4 @@ class Cleansing(models.Model):
         existing_results = cache.get(Cleansing.cache_key(file_pk))
         existing_results['warnings'] = existing_results['warnings'] + self.warnings
         existing_results['errors'] = existing_results['errors'] + self.errors
-        cache.set(Cleansing.cache_key(file_pk), existing_results)
+        cache.set(Cleansing.cache_key(file_pk), existing_results, 3600) # save the results for 1 hour
