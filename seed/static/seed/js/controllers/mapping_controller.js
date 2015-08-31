@@ -20,7 +20,7 @@ angular.module('BE.seed.controller.mapping', [])
   'matching_service',
   'uploader_service',
   '$filter',
-  'cleansing_results',
+  'cleansing_service',
   function (
     $scope,
     import_file_payload,
@@ -39,7 +39,7 @@ angular.module('BE.seed.controller.mapping', [])
     matching_service,
     uploader_service,
     $filter,
-    cleansing_results
+    cleansing_service
 ) {
     $scope.typeahead_columns = suggested_mappings_payload.building_columns;
     var original_columns = angular.copy($scope.typeahead_columns);
@@ -557,7 +557,7 @@ angular.module('BE.seed.controller.mapping', [])
             controller: 'cleansing_controller',
             resolve: {
                 'cleansingResults': function() {
-                    return cleansing_results;
+                    return cleansing_service.get_cleansing_results($scope.import_file.id);
                 },
                 'name': function() {
                     return $scope.import_file.name;
