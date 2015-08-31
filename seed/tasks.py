@@ -22,8 +22,8 @@ from django.core.cache import cache
 from django.db.models import Q
 from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse_lazy
-from celery import shared_task, chord, chain, group
-from celery.utils.log import get_task_logger
+from celery import shared_task, chord
+# from celery.utils.log import get_task_logger
 from seed.audit_logs.models import AuditLog
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm import cleaners, mapper, reader
@@ -385,6 +385,9 @@ def finish_mapping(results, file_pk):
     prog_key = get_prog_key('map_data', file_pk)
     cache.set(prog_key, 100)
 
+    # now call cleansing
+    _cleanse_data(file_pk)
+
 
 def _translate_unit_to_type(unit):
     if unit is None or unit == 'String':
@@ -544,9 +547,8 @@ def _map_data(file_pk, *args, **kwargs):
     tasks = []
     for chunk in batch(qs, 100):
         serialized_data = [obj.extra_data for obj in chunk]
-        # map_row_chunk(chunk, file_pk, source_type, prog_key, increment):
         tasks.append(map_row_chunk.s(serialized_data, file_pk, source_type, prog_key))
-        # tasks.append(cleanse_data_chunk.s(serialized_data, file_pk, source_type)) # note that increment will be added to end
+
 
     # need to rework how the progress keys are implemented here, but at least the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
@@ -560,7 +562,7 @@ def _map_data(file_pk, *args, **kwargs):
 
 @shared_task
 @lock_and_track
-def _cleanse_data(file_pk, *args, **kwargs):
+def _cleanse_data(file_pk):
     """
 
     Get the mapped data and run the cleansing class against it in chunks
@@ -582,18 +584,22 @@ def _cleanse_data(file_pk, *args, **kwargs):
         source_type=source_type,
     ).iterator()
 
+    # initialize the cache for the results using the cleansing static method
+    Cleansing.initialize_cache(file_pk)
+
     prog_key = get_prog_key('cleanse_data', file_pk)
     tasks = []
     for chunk in batch(qs, 100):
         serialized_data = [obj.extra_data for obj in chunk]
-        tasks.append(cleanse_data_chunk.subtask((serialized_data, file_pk, source_type, prog_key)))
+        tasks.append(
+            cleanse_data_chunk.s(serialized_data, file_pk))  # note that increment will be added to end
 
     # need to rework how the progress keys are implemented here, but at least the method gets called above for cleansing
-    # tasks = add_cache_increment_parameter(tasks)
-    # if tasks:
-    #     chord(tasks, interval=15)(finish_mapping.subtask([file_pk]))
-    # else:
-    #     finish_mapping.task(file_pk)
+    tasks = add_cache_increment_parameter(tasks)
+    if tasks:
+        chord(tasks, interval=15)(finish_cleansing.subtask([file_pk]))
+    else:
+        finish_cleansing.subtask(file_pk)
 
     return {'status': 'success'}
 

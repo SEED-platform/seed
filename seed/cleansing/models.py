@@ -10,6 +10,7 @@ warnings = []
 
 logger = getLogger(__name__)
 
+
 class Cleansing(models.Model):
     def __init__(self, *args, **kwargs):
         """
@@ -29,23 +30,35 @@ class Cleansing(models.Model):
             raise Exception('Could not find cleansing JSON file on server %s' % cleansing_file)
 
         self.rules = None
-        self.warnings = []
-        self.errors = []
+        self.reset_errors_and_warnings()
         with open(cleansing_file) as data_file:
             self.rules = json.load(data_file)
+
+    @staticmethod
+    def initialize_cache(file_pk):
+        # initialize cache
+        cache.set(Cleansing.cache_key(file_pk), {'warnings': [], 'errors': []})
+
+    @staticmethod
+    def cache_key(file_pk):
+        return "cleansing_results__%s" % file_pk
 
     def cleanse(self, data):
         """
         Send in data as an Array of objects or directly read from the databases
-        :param data:
+        :param data: row of data to be cleansed
         :return:
         """
+
+        print data
 
         for index in range(0, len(data) - 1):
             self.missing_matching_field(data[index])
             self.missing_values(data[index])
             self.in_range_checking(data[index])
             self.data_type_check(data[index])
+
+        print self.errors
 
     def reset_errors_and_warnings(self):
         self.errors = []
@@ -58,7 +71,6 @@ class Cleansing(models.Model):
             if k in obj.keys():
                 try:
                     if obj[k] == '':
-                        # TODO remove print statements after initial debug phase complete
                         # print 'Error in missing_matching_field: Value is empty'
                         string = k + ' = \'' + obj[k] + '\' and is empty.'
                         # print string
@@ -137,7 +149,8 @@ class Cleansing(models.Model):
                 try:
                     if type(obj[k]).__name__ != data_type_dict[k]:
                         # print 'Error in data_type_check'
-                        string = k + ' ' + str(obj[k]) + ' is of type ' + type(obj[k]).__name__ + ', not of type ' + str(data_type_dict[k])
+                        string = k + ' ' + str(obj[k]) + ' is of type ' + type(obj[k]).__name__ + ', not of type ' + \
+                                 str(data_type_dict[k])
                         # print string
                         self.errors.append(string)
                 except ValueError, e:
@@ -147,7 +160,7 @@ class Cleansing(models.Model):
                     self.errors.append(string)
 
     def save_to_cache(self, file_pk):
-        existing_results = cache.get("cleansing_results__%s" % file_pk) or {'warnings': [], 'errors': []}
+        existing_results = cache.get(Cleansing.cache_key(file_pk))
         existing_results['warnings'] = existing_results['warnings'] + self.warnings
         existing_results['errors'] = existing_results['errors'] + self.errors
-        cache.set("cleansing_results__%s" % file_pk, existing_results)
+        cache.set(Cleansing.cache_key(file_pk), existing_results)
