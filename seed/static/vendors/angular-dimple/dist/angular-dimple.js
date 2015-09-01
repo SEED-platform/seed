@@ -1,4 +1,4 @@
-/*! angular-dimple - 2.0.1 - 2015-08-24
+/*! angular-dimple - 2.0.1 - 2015-08-25
 *   https://github.com/esripdx/angular-dimple
 *   Licensed ISC */
 angular.module('angular-dimple', [
@@ -101,7 +101,7 @@ angular.module('angular-dimple.graph', [])
     scope: {
       onchartrendered: '&',
       data: '=',
-      color: '=',
+      series: "=",
       yaxislabel: '@'
     },
     require: ['graph'],
@@ -120,12 +120,17 @@ angular.module('angular-dimple.graph', [])
         transition = 750;
       }
 
+      scope.$watch('series', function(newValue) {
+        scatterPlot = chart.addSeries(newValue, dimple.plot.bubble);
+        scatterPlot.aggregate = dimple.aggregateMethod.avg;
+      });
+
       scope.$watch('data', function(newValue) {
         if (newValue) {
           scope.dataReady = true;
           graphController.setData();
-            chart.draw(transition);
-            if (chart.data && chart.data.length>0) scope.onchartrendered();
+          chart.draw(transition);
+          if (chart.data && chart.data.length>0) scope.onchartrendered();
         }
       });
 
@@ -384,12 +389,7 @@ angular.module('angular-dimple.scatter-plot', [])
       var chart = graphController.getChart();
 
       function addScatterPlot () {
-        var array = [];
-
-        if ($attrs.series){ array.push($attrs.series); }
-        array.push($attrs.field);
-        if ($attrs.label || $attrs.label === '') { array.push($attrs.label); }
-        scatterPlot = chart.addSeries(array, dimple.plot.bubble);
+        scatterPlot = chart.addSeries($scope.series, dimple.plot.bubble);
         scatterPlot.aggregate = dimple.aggregateMethod.avg;
         graphController.filter($attrs);
         graphController.draw();
@@ -400,6 +400,8 @@ angular.module('angular-dimple.scatter-plot', [])
           addScatterPlot();
         }
       });
+
+      
     }
   };
 }]);

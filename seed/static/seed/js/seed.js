@@ -11,8 +11,7 @@ angular.module('BE.seed.angular_dependencies', [
     ]);
 angular.module('BE.seed.vendor_dependencies', [
     'ui.bootstrap',
-    'ui.tree',
-    'angular-dimple'
+    'ui.tree'
     ]);
 angular.module('BE.seed.controllers', [
     'BE.seed.controller.accounts',
@@ -56,7 +55,8 @@ angular.module('BE.seed.filters', [
 angular.module('BE.seed.directives', [
     'beEnter',
     'beUploader',
-    'beLabel'
+    'beLabel',
+    'basicBuildingInfoChart'
     ]);
 angular.module('BE.seed.services', [
     'BE.seed.service.audit',

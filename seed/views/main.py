@@ -2240,14 +2240,10 @@ def get_building_report_data(request):
             - use_description
             - year_built
 
-        Depending on the variables requested (and the axes to which they're assigned),
-        this method may modify the data before returning it, for example binning data.
-
-        This method includes record count information as part of the result JSON. It includes the 
-        total number of buildings available in the database given the date and organization arguments, 
-        as well as the subset of those buildings that have actual data to graph, given 
-        the x_var and y_var parameters. By sending these two values in the result we allow the client to 
-        easily build a message like '200 of 250 buildings have data."
+        This method includes building record count information as part of the result JSON in a property called "building_counts."
+        This property provides data on the total number of buildings available in each 'year ending' group, as well as the subset of 
+        those buildings that have actual data to graph. By sending these  values in the result 
+        we allow the client to easily build a message like "200 of 250 buildings in this group have data."
 
 
         Returns::
@@ -2260,12 +2256,20 @@ def get_building_report_data(request):
                         "id" the id of the building,
                         "yr_e" : the year ending value for this data point
                         "x": value for x var, 
-                        "y": value for y var,
+                        "y": value for y var,                        
                     },
                     ...
-                ] 
-                "num_buildings": number of buildings in query results
-                "num_buildings_w_data" : number of buildings with valid data in query results
+                ],
+                "building_counts": [
+                    {
+                        "yr_e": string for year ending 
+                        "num_buildings": number of buildings in query results
+                        "num_buildings_w_data" : number of buildings with valid data in query results
+                    },
+                    ...
+                ]                               
+                "num_buildings": total number of buildings in query results,
+                "num_buildings_w_data" : total number of buildings with valid data in the query results
             }
         ```
 
@@ -2295,6 +2299,11 @@ def get_building_report_data(request):
               paramType: query
             - name: organization_id
               description: User's organization which should be used to filter building query results
+              required: true
+              type: string
+              paramType: query              
+            - name: aggregate
+              description: Aggregates data based on internal rules (given x and y var)
               required: true
               type: string
               paramType: query
@@ -2343,41 +2352,209 @@ def get_building_report_data(request):
         _log.exception(str(e))
         return Response(msg, status = status.HTTP_400_BAD_REQUEST)
 
+    
+    building_counts = []
         
     #Get all data from buildings...temp method. To be implemented by Stephen C.
     bldgs = BuildingSnapshot.objects.filter(
                 super_organization__in=orgs,
                 canonicalbuilding__active=True
-            ).values('id', x_var, y_var)
-
+            ).values('id', x_var, y_var, 'year_ending')
+             
+    # DUMMY DATA: get some data back in the form we expect it. Stephen will implement actual logic
     data = []
-    for bldg in bldgs:                
-        # DUMMY DATA:
-        # Create some dummy data for year endings. Assume user's selected
-        # date range gives three rows with different year ending data 
-        # for each building
-        obj = { "id":bldg["id"], 
-                "x":bldg[x_var], 
-                "y":bldg[y_var],
-                "yr_e":2011}
-        data.append(obj)
-        obj = { "id":bldg["id"], 
-                "x":bldg[x_var], 
-                "y": (bldg[y_var] + 10),
-                "yr_e":2012}
-        data.append(obj)
-        obj = { "id":bldg["id"], 
-                "x":bldg[x_var], 
-                "y": (bldg[y_var] + 20),
-                "yr_e":2013}
-        data.append(obj)
-            
+    for bldg in bldgs:   
+        data.append({   "id":bldg["id"], 
+                        "x": bldg[x_var], 
+                        "y": bldg[y_var],
+                        "yr_e": bldg["year_ending"]
+                    })
+                    
+    #Send back to client
+    return {
+        'status': 'success',
+        'report_data' : data,
+        'building_counts' : building_counts,
+        'num_buildings_w_data' : 400,
+        'num_buildings' : 405
+    }
+
+from itertools import groupby
+from operator import itemgetter
+
+
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('requires_member')
+def get_aggregated_building_report_data(request):
+    """ This method returns a set of aggregated building data for graphing. It expects as parameters
+
+        :GET:
+        * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
+        * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
+        * x_var:            The variable name to be assigned to the "x" value in the returned data series 
+        * y_var:            The variable name to be assigned to the "y" value in the returned data series
+        * organization_id:  The organization to be used when querying data.
+
+        The x_var values should be from the following set of variable names:
+
+            - site_eui
+            - energy_score 
+
+        The y_var values should be from the following set of variable names:
+
+            - gross_floor_area
+            - use_description
+            - year_built
+
+        This method includes building record count information as part of the result JSON in a property called "building_counts."
+        This property provides data on the total number of buildings available in each 'year ending' group, as well as the subset of 
+        those buildings that have actual data to graph. By sending these  values in the result 
+        we allow the client to easily build a message like "200 of 250 buildings in this group have data."
+
+
+        Returns::
+        The returned JSON document that has the following structure.
+        ```
+            {
+                "status": "success",
+                "report_data": [
+                    {
+                        "yr_e": x
+                        "x" : x,
+                        "y" : y
+                    },
+                    {
+                        "yr_e": x
+                        "x" : x,
+                        "y" : y
+                    }       
+                    ...
+                ],
+                "building_counts": [
+                    {
+                        "yr_e": string for year ending 
+                        "num_buildings": number of buildings in query results
+                        "num_buildings_w_data" : number of buildings with valid data in this group
+                    },
+                    ...
+                ]                              
+                "num_buildings": total number of buildings in query results,
+                "num_buildings_w_data" : total number of buildings with valid data in query results
+            }
+        ```
+
+        ---
+
+
+        parameters:
+            - name: x_var
+              description: Name of column in building snapshot database to be used for "x" axis
+              required: true
+              type: string
+              paramType: query
+            - name: y_var
+              description: Name of column in building snapshot database to be used for "y" axis
+              required: true
+              type: string
+              paramType: query
+            - start_date:
+              description: The start date for the entire dataset.
+              required: true
+              type: string
+              paramType: query
+            - end_date:
+              description: The end date for the entire dataset.
+              required: true
+              type: string
+              paramType: query
+            - name: organization_id
+              description: User's organization which should be used to filter building query results
+              required: true
+              type: string
+              paramType: query        
+  
+        type:            
+            status:
+                required: true
+                type: string
+            report_data:
+                required: true
+                type: array
+            building_counts:
+                required: true
+                type: array
+            num_buildings:
+                required: true
+                type: string
+            num_buildings_w_data:
+                required: true
+                type: string
+
+        responseMessages:
+            - code: 400
+              message: Bad request, only GET method is available
+            - code: 401
+              message: Not authenticated
+            - code: 403
+              message: Insufficient rights to call this procedure
+    
+                  
+        """
+
+
+    #TODO: Generate this data the right way! The following is just dummy data...
+    if request.method != 'GET':
+        return Response("This view replies only to GET methods", status = status.HTTP_400_BAD_REQUEST)
+
+    #Read in x and y vars requested by client
+    try:
+        x_var = request.GET['x_var']
+        y_var = request.GET['y_var']
+        orgs = [ request.GET['organization_id'] ] #How should we capture user orgs here?
+        from_date = request.GET['start_date']
+        end_date = request.GET['end_date']
+
+    except Exception, e:
+        msg = "Error while calling the API function get_scatter_data_series, missing parameter"
+        _log.error(msg)
+        _log.exception(str(e))
+        return Response(msg, status = status.HTTP_400_BAD_REQUEST)
+
+    building_counts = []
+        
+    #Get all data from buildings...temp method. To be implemented by Stephen C.
+    bldgs = BuildingSnapshot.objects.filter(
+                super_organization__in=orgs,
+                canonicalbuilding__active=True
+            ).values('id', x_var, y_var, 'year_ending')
+
+    # DUMMY DATA: get some data back in the form we expect it. Stephen will implement actual logic
+    # Right now I'll just average values across buildings with same year ending
+
+    return_data = []
+    if y_var == 'use_description':
+        counts = {}
+        for bldg in bldgs:
+            if (bldg[x_var]) == None:
+                continue 
+            entry = counts.setdefault((bldg['year_ending'], bldg['use_description']), [0, 0])
+            entry[0] += bldg[x_var]
+            entry[1] += 1
+
+        return_data = [{'year_ending': k[0], 'y': k[1], 'x': float(v[0]) / v[1]} for 
+                     k, v in counts.items()]
+
         
 
     #Send back to client
     return {
         'status': 'success',
-        'report_data' : data,
+        'report_data' : return_data,
+        'building_counts' : building_counts,
         'num_buildings_w_data' : 400,
         'num_buildings' : 405
     }
+
+

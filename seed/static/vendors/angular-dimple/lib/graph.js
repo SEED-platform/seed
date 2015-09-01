@@ -7,7 +7,7 @@ angular.module('angular-dimple.graph', [])
     scope: {
       onchartrendered: '&',
       data: '=',
-      color: '=',
+      series: "=",
       yaxislabel: '@'
     },
     require: ['graph'],
@@ -26,12 +26,23 @@ angular.module('angular-dimple.graph', [])
         transition = 750;
       }
 
+      scope.$watch('series', function(newValue) {
+        scatterPlot = chart.addSeries(newValue, dimple.plot.bubble);
+        scatterPlot.aggregate = dimple.aggregateMethod.avg;
+      });
+
       scope.$watch('data', function(newValue) {
         if (newValue) {
           scope.dataReady = true;
           graphController.setData();
-            chart.draw(transition);
-            if (chart.data && chart.data.length>0) scope.onchartrendered();
+          chart.draw(transition);
+          if (chart.data && chart.data.length>0) scope.onchartrendered();
+        }
+      });
+
+      $scope.$watch('dataReady', function(newValue, oldValue) {
+        if (newValue === true) {
+          addScatterPlot();
         }
       });
 
@@ -96,6 +107,13 @@ angular.module('angular-dimple.graph', [])
           }
         }
       };
+
+      this.addScatterPlot = function() {
+        scatterPlot = chart.addSeries($scope.series, dimple.plot.bubble);
+        scatterPlot.aggregate = dimple.aggregateMethod.avg;
+        graphController.filter($attrs);
+        graphController.draw();
+      }
 
       this.getAutoresize = function (){
         return autoresize;

@@ -11,12 +11,7 @@ angular.module('angular-dimple.scatter-plot', [])
       var chart = graphController.getChart();
 
       function addScatterPlot () {
-        var array = [];
-
-        if ($attrs.series){ array.push($attrs.series); }
-        array.push($attrs.field);
-        if ($attrs.label || $attrs.label === '') { array.push($attrs.label); }
-        scatterPlot = chart.addSeries(array, dimple.plot.bubble);
+        scatterPlot = chart.addSeries($scope.series, dimple.plot.bubble);
         scatterPlot.aggregate = dimple.aggregateMethod.avg;
         graphController.filter($attrs);
         graphController.draw();
@@ -27,6 +22,8 @@ angular.module('angular-dimple.scatter-plot', [])
           addScatterPlot();
         }
       });
+
+      
     }
   };
 }]);
