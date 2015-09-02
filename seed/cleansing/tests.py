@@ -93,14 +93,14 @@ class CleansingDataTest(TestCase):
 
         data = c.results
 
-        self.assertTrue(3 in c.results)
-        self.assertTrue(4 in c.results)
-        self.assertTrue(c.results[3]['address_line_1'], '95373 E Peach Avenue')
-        self.assertTrue(c.results[3]['tax_lot_id'], '10107/c6596')
+        self.assertEqual(len(c.results), 2)
+        keys = c.results.keys()
+        self.assertEqual(len(keys), 2)
+        self.assertTrue(data[keys[0]]['address_line_1'], '95373 E Peach Avenue')
+        self.assertTrue(data[keys[0]]['tax_lot_id'], '10107/c6596')
 
         res = [{"field": u"custom_id_1", "message": u"Matching field not found", "severity": u"error"},
                {"field": u"pm_property_id", "message": u"Matching field not found", "severity": u"error"},
                {"field": u"year_built", "message": u"Value [0] < 1500", "severity": u"warning"},
                {"field": u"gross_floor_area", "message": u"Value [10000000000] > 7000000", "severity": u"error"}]
-        self.assertEqual(res, data[4]['cleansing_results'])
-        
+        self.assertEqual(res, data[keys[1]]['cleansing_results'])
