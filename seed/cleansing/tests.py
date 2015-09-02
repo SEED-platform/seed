@@ -101,6 +101,10 @@ class CleansingDataTest(TestCase):
         self.assertTrue(data[keys[0]]['address_line_1'], '95373 E Peach Avenue')
         self.assertTrue(data[keys[0]]['tax_lot_id'], '10107/c6596')
 
+        #print data[keys[0]]
+        res = [{'field': u'pm_property_id', 'message': 'Value is missing', 'severity': 'error'}]
+        self.assertEqual(res, data[keys[0]]['cleansing_results'])
+
         # print data[keys[1]]
         res = [{'field': u'year_built', 'message': 'Value [0] < 1500', 'severity': u'warning'},
                {'field': u'gross_floor_area', 'message': 'Value [10000000000] > 7000000', 'severity': u'error'},
