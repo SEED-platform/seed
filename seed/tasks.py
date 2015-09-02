@@ -18,7 +18,6 @@ from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.template import loader
-from django.core.cache import cache
 from django.db.models import Q
 from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse_lazy
@@ -60,8 +59,9 @@ from seed.models import (
     Project,
     ProjectBuilding,
 )
-from seed.decorators import lock_and_track, get_prog_key, increment_cache
+from seed.decorators import lock_and_track, get_prog_key
 from seed.utils.buildings import get_source_type, get_search_query
+from seed.utils.cache import set_cache_raw, set_cache, increment_cache
 from seed.utils.mapping import get_mappable_columns
 from seed.lib.superperms.orgs.models import Organization
 from seed.lib.exporter import Exporter
@@ -90,7 +90,7 @@ def export_buildings(export_id, export_name, export_type,
     selected_buildings = model.objects.filter(pk__in=building_ids)
 
     def _row_cb(i):
-        cache.set("export_buildings__%s" % export_id, i)
+        set_cache_raw("export_buildings__%s" % export_id, i)
 
     exporter = Exporter(export_id, export_name, export_type)
     if not exporter.valid_export_type():
@@ -107,7 +107,7 @@ def export_buildings(export_id, export_name, export_type,
 def invite_to_seed(domain, email_address, token, user_pk, first_name):
     signup_url = reverse_lazy('landing:signup', kwargs={
         'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
-        "token": token
+        'token': token
     })
     context = {
         'email': email_address,
@@ -148,7 +148,7 @@ def add_buildings(project_slug, project_dict, user_pk):
 
     selected_buildings = project_dict.get('selected_buildings', [])
 
-    cache.set(
+    set_cache_raw(
         project.adding_buildings_status_percentage_cache_key,
         {'percentage_done': 0, 'numerator': 0, 'denominator': 0}
     )
@@ -159,7 +159,7 @@ def add_buildings(project_slug, project_dict, user_pk):
             i += 1
             denominator = len(selected_buildings)
             try:
-                cache.set(
+                set_cache_raw(
                     project.adding_buildings_status_percentage_cache_key,
                     {
                         'percentage_done': (
@@ -177,7 +177,7 @@ def add_buildings(project_slug, project_dict, user_pk):
     else:
         query_buildings = get_search_query(user, project_dict)
         denominator = query_buildings.count() - len(selected_buildings)
-        cache.set(
+        set_cache_raw(
             project.adding_buildings_status_percentage_cache_key,
             {'percentage_done': 10, 'numerator': i, 'denominator': denominator}
         )
@@ -190,7 +190,7 @@ def add_buildings(project_slug, project_dict, user_pk):
             ProjectBuilding.objects.get_or_create(
                 project=project, building_snapshot=b
             )
-            cache.set(
+            set_cache_raw(
                 project.adding_buildings_status_percentage_cache_key,
                 {
                     'percentage_done': float(i) / denominator * 100,
@@ -202,7 +202,7 @@ def add_buildings(project_slug, project_dict, user_pk):
             project.building_snapshots.remove(
                 BuildingSnapshot.objects.get(pk=building)
             )
-            cache.set(
+            set_cache_raw(
                 project.adding_buildings_status_percentage_cache_key,
                 {
                     'percentage_done': (
@@ -214,7 +214,7 @@ def add_buildings(project_slug, project_dict, user_pk):
                 }
             )
 
-    cache.set(
+    set_cache_raw(
         project.adding_buildings_status_percentage_cache_key,
         {'percentage_done': 100, 'numerator': i, 'denominator': denominator}
     )
@@ -269,7 +269,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
 
     selected_buildings = project_dict.get('selected_buildings', [])
 
-    cache.set(
+    set_cache_raw(
         project.removing_buildings_status_percentage_cache_key,
         {'percentage_done': 0, 'numerator': 0, 'denominator': 0}
     )
@@ -279,7 +279,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
         for sfid in selected_buildings:
             i += 1
             denominator = len(selected_buildings)
-            cache.set(
+            set_cache_raw(
                 project.removing_buildings_status_percentage_cache_key,
                 {
                     'percentage_done': (
@@ -296,7 +296,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
     else:
         query_buildings = get_search_query(user, project_dict)
         denominator = query_buildings.count() - len(selected_buildings)
-        cache.set(
+        set_cache_raw(
             project.adding_buildings_status_percentage_cache_key,
             {
                 'percentage_done': 10,
@@ -308,7 +308,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
             ProjectBuilding.objects.get(
                 project=project, building_snapshot=b
             ).delete()
-        cache.set(
+        set_cache_raw(
             project.adding_buildings_status_percentage_cache_key,
             {
                 'percentage_done': 50,
@@ -322,7 +322,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
             ProjectBuilding.objects.create(
                 project=project, building_snapshot=ab
             )
-            cache.set(
+            set_cache_raw(
                 project.adding_buildings_status_percentage_cache_key,
                 {
                     'percentage_done': (
@@ -334,7 +334,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
                 }
             )
 
-    cache.set(
+    set_cache_raw(
         project.removing_buildings_status_percentage_cache_key,
         {'percentage_done': 100, 'numerator': i, 'denominator': denominator}
     )
@@ -383,7 +383,7 @@ def finish_mapping(results, file_pk):
     import_file.save()
     finish_import_record(import_file.import_record.pk)
     prog_key = get_prog_key('map_data', file_pk)
-    cache.set(prog_key, 100)
+    set_cache(prog_key, 'success', 100)
 
     # now call cleansing
     _cleanse_data(file_pk)
@@ -523,8 +523,13 @@ def _map_data(file_pk, *args, **kwargs):
     # Don't perform this task if it's already been completed.
     if import_file.mapping_done:
         prog_key = get_prog_key('map_data', file_pk)
-        cache.set(prog_key, 100)
-        return {'status': 'warning', 'message': 'mapping already complete'}
+        result = {
+            'status': 'warning',
+            'progress': 100,
+            'message': 'mapping already complete'
+        }
+        set_cache(prog_key, result['status'], result)
+        return result
 
     # If we haven't finished saving, we shouldn't proceed with mapping
     # Re-queue this task.
@@ -649,7 +654,7 @@ def finish_raw_save(results, file_pk):
     import_file.raw_save_done = True
     import_file.save()
     prog_key = get_prog_key('save_raw_data', file_pk)
-    cache.set(prog_key, {'status': 'success', 'progress': 100})
+    set_cache(prog_key, 'success', 100)
 
 
 def cache_first_rows(import_file, parser):
@@ -724,10 +729,10 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
     res = xml_importer.import_xml(import_file)
 
     prog_key = get_prog_key('save_raw_data', file_pk)
-    cache.set(prog_key, 100)
+    set_cache(prog_key, 'success', 100)
 
     if res:
-        return {'status': 'success'}
+        return {'status': 'success', 'progress': 100}
 
     return {
         'status': 'error',
@@ -747,7 +752,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
         if import_file.raw_save_done:
             result['status'] = 'warning'
             result['message'] = 'Raw data already saved'
-            cache.set(prog_key, result)
+            set_cache(prog_key, result['status'], result)
             return result
 
         if import_file.source_type == "Green Button Raw":
@@ -789,7 +794,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
         result['message'] = 'Unhandled Error: ' + e.message
         result['stacktrace'] = traceback.format_exc()
 
-    cache.set(prog_key, result)
+    set_cache(prog_key, result['status'], result)
     return result
 
 
@@ -858,7 +863,7 @@ def match_buildings(file_pk, user_pk):
     import_file = ImportFile.objects.get(pk=file_pk)
     if import_file.matching_done:
         prog_key = get_prog_key('match_buildings', file_pk)
-        cache.set(prog_key, 100)
+        set_cache(prog_key, 'warning', 100)
         return {'status': 'warning', 'message': 'matching already complete'}
 
     if not import_file.mapping_done:
@@ -1015,7 +1020,7 @@ def _finish_matching(import_file, progress_key):
     import_file.matching_done = True
     import_file.mapping_completion = 100
     import_file.save()
-    cache.set(progress_key, 100)
+    set_cache(progress_key, 'success', 100)
 
 
 def _normalize_address_str(address_val):
@@ -1221,18 +1226,29 @@ def remap_data(import_file_pk):
     # Check to ensure that the building has not already been merged.
     mapping_cache_key = get_prog_key('map_data', import_file.pk)
     if import_file.matching_done or import_file.matching_completion:
-        cache.set(mapping_cache_key, 100)
-        return {
-            'status': 'warning', 'message': 'Mapped buildings already merged'
+        result = {
+            'status': 'warning',
+            'progress': 100,
+            'message': 'Mapped buildings already merged'
         }
+        set_cache(mapping_cache_key, result['status'], result)
+        return result
 
     _remap_data.delay(import_file_pk)
 
     # Make sure that our mapping cache progress is reset.
-    cache.set(mapping_cache_key, 0)
+    result = {
+        'status': 'warning',
+        'progress': 0,
+        'message': 'Mapped buildings already merged'
+    }
+    set_cache(mapping_cache_key, result['status'], result)
     # Here we also return the mapping_prog_key so that the front end can
     # follow the progress.
-    return {'status': 'success', 'progress_key': mapping_cache_key}
+    return {
+        'status': 'success',
+        'progress_key': mapping_cache_key
+    }
 
 
 @shared_task
@@ -1261,7 +1277,7 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
         org_pk
     )
     if not ids:
-        cache.set(deleting_cache_key, 100)
+        set_cache(deleting_cache_key, 'success', 100)
         return
 
     # delete the canonical buildings
@@ -1271,7 +1287,7 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
     _delete_canonical_buildings.delay(can_ids)
 
     step = float(chunk_size) / len(ids)
-    cache.set(deleting_cache_key, 0)
+    set_cache(deleting_cache_key, 'success', 0)
     tasks = []
     for del_ids in batch(ids, chunk_size):
         # we could also use .s instead of .subtask and not wrap the *args
@@ -1295,7 +1311,7 @@ def _delete_organization_buildings_chunk(del_ids, prog_key, increment,
 @shared_task
 def finish_delete(results, org_pk):
     prog_key = get_prog_key('delete_organization_buildings', org_pk)
-    cache.set(prog_key, 100)
+    set_cache(prog_key, 'success', 100)
 
 
 @shared_task
