@@ -103,7 +103,11 @@ class Cleansing(models.Model):
         # TODO: NL: Should we check the extra_data field for the data?
         """
 
-        fields = self.rules['modules'][0]['fields']
+        fields = [v for v in self.rules['modules'] if v['name'] == 'Missing Matching Field']
+        if len(fields) == 1:
+            fields = fields[0]['fields']
+        else:
+            raise RuntimeError('Could not find Missing Matching Field rules')
 
         for field in fields:
             if hasattr(datum, field):
@@ -133,8 +137,11 @@ class Cleansing(models.Model):
         # TODO: Check the extra_data field for the data?
         """
 
-        fields = self.rules['modules'][0]['fields']
-        # fields = self.rules['modules'][1]['ignoredFields']
+        fields = [v for v in self.rules['modules'] if v['name'] == 'Missing Matching Field']
+        if len(fields) == 1:
+            fields = fields[0]['fields']
+        else:
+            raise RuntimeError('Could not find Missing Matching Field rules')
 
         for field in fields:
             if hasattr(datum, field):
@@ -159,7 +166,11 @@ class Cleansing(models.Model):
         :return: None
         """
 
-        fields = self.rules['modules'][2]['fields']
+        fields = [v for v in self.rules['modules'] if v['name'] == 'In-range Checking']
+        if len(fields) == 1:
+            fields = fields[0]['fields']
+        else:
+            raise RuntimeError('Could not find in-range checking rules')
 
         for field in fields:
             rules = self.rules['modules'][2]['fields'][field]
