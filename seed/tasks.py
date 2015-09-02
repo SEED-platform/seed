@@ -518,6 +518,7 @@ def _map_data(file_pk, *args, **kwargs):
     :param file_pk: int, the id of the import_file we're working with.
 
     """
+
     import_file = ImportFile.objects.get(pk=file_pk)
     # Don't perform this task if it's already been completed.
     if import_file.mapping_done:
@@ -565,34 +566,40 @@ def _map_data(file_pk, *args, **kwargs):
 def _cleanse_data(file_pk):
     """
 
-    Get the mapped data and run the cleansing class against it in chunks
+    Get the mapped data and run the cleansing class against it in chunks. The mapped data are pulled from the
+    BuildingSnapshot table.
+
     @lock_and_track returns a progress_key
 
-    :param file_pk: int, the id of the import_file we're working with. # TODO: this may need be a different key???
+    :param file_pk: int, the id of the import_file we're working with.
 
     """
     import_file = ImportFile.objects.get(pk=file_pk)
 
     source_type_dict = {
-        'Portfolio Raw': PORTFOLIO_RAW,
-        'Assessed Raw': ASSESSED_RAW,
-        'Green Button Raw': GREEN_BUTTON_RAW,
+        'Portfolio Raw': PORTFOLIO_BS,
+        'Assessed Raw': ASSESSED_BS,
+        'Green Button Raw': GREEN_BUTTON_BS,
     }
-    source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
+
+    # This is non-ideal, but the source type of the input file is never updated, but the data are stages as if it were.
+    # After the mapping stage occurs, the data end up in the BuildingSnapshot table under the *_BS value.
+    source_type = source_type_dict.get(import_file.source_type, ASSESSED_BS)
     qs = BuildingSnapshot.objects.filter(
         import_file=import_file,
         source_type=source_type,
     ).iterator()
 
-    # initialize the cache for the results using the cleansing static method
+    # initialize the cache for the cleansing results using the cleansing static method
     Cleansing.initialize_cache(file_pk)
 
     prog_key = get_prog_key('cleanse_data', file_pk)
     tasks = []
     for chunk in batch(qs, 100):
-        serialized_data = [obj.extra_data for obj in chunk]
+        # serialized_data = [obj.extra_data for obj in chunk]
+        ids = [obj.id for obj in chunk]
         tasks.append(
-            cleanse_data_chunk.s(serialized_data, file_pk))  # note that increment will be added to end
+            cleanse_data_chunk.s(ids, file_pk))  # note that increment will be added to end
 
     # need to rework how the progress keys are implemented here, but at least the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
@@ -738,7 +745,6 @@ def _save_raw_data(file_pk, *args, **kwargs):
     prog_key = get_prog_key('save_raw_data', file_pk)
     try:
         import_file = ImportFile.objects.get(pk=file_pk)
-
         if import_file.raw_save_done:
             result['status'] = 'warning'
             result['message'] = 'Raw data already saved'

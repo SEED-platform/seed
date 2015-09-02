@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from seed.utils.api import api_endpoint
 from django.core.cache import cache
 
+from seed.cleansing.models import Cleansing
+
 # TODO The API is returning on both a POST and GET. Make sure to authenticate.
 
 
@@ -15,7 +17,8 @@ def get_cleansing_results(request):
     """
 
     import_file_id = request.GET.get('import_file_id')
-    ret = cache.get("cleansing_results__%s" % import_file_id)
+
+    ret = cache.get(Cleansing.cache_key(import_file_id))
     if ret is None:
         return {}
 
@@ -26,9 +29,9 @@ def get_cleansing_results(request):
 @ajax_request
 @login_required
 def get_progress(request):
-    result = {
-        'progress_key': 'some_random_key',
-        'progress': 50
-    }
+    """
+    Return the progress of the cleansing.
+    """
 
-    return result
+    import_file_id = request.GET.get('import_file_id')
+    return cache.get(get_prog_key(import_file_id))

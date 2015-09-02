@@ -5,9 +5,6 @@ from logging import getLogger
 from django.db import models
 from django.core.cache import cache
 
-errors = []
-warnings = []
-
 logger = getLogger(__name__)
 
 
@@ -30,133 +27,185 @@ class Cleansing(models.Model):
             raise Exception('Could not find cleansing JSON file on server %s' % cleansing_file)
 
         self.rules = None
-        self.reset_errors_and_warnings()
+        self.reset_results()
         with open(cleansing_file) as data_file:
             self.rules = json.load(data_file)
+            # TODO: validate this file and load into it's own data object
 
     @staticmethod
     def initialize_cache(file_pk):
-        # initialize cache
-        cache.set(Cleansing.cache_key(file_pk), {'warnings': [], 'errors': []})
+        """
+        Initialize the cache for storing the results. This is called before the celery tasks are chunked up.
+
+        :param file_pk: Import file primary key
+        :return:
+        """
+        cache.set(Cleansing.cache_key(file_pk), {})
 
     @staticmethod
     def cache_key(file_pk):
+        """
+        Static method to return the location of the cleansing results from redis.
+
+        :param file_pk: Import file primary key
+        :return:
+        """
         return "cleansing_results__%s" % file_pk
 
     def cleanse(self, data):
         """
-        Send in data as an Array of objects or directly read from the databases
+        Send in data as a queryset from the BuildingSnapshot ids.
+
         :param data: row of data to be cleansed
         :return:
         """
 
-        for index in range(0, len(data) - 1):
-            self.missing_matching_field(data[index])
-            self.missing_values(data[index])
-            self.in_range_checking(data[index])
-            self.data_type_check(data[index])
+        for datum in data:
+            # Initialize the ID if it doesn't exist yet. Add in the other fields that are of interest to the GUI
+            if datum.id not in self.results:
+                self.results[datum.id] = {}
+                self.results[datum.id]['id'] = datum.id
+                self.results[datum.id]['address_line_1'] = datum.address_line_1
+                self.results[datum.id]['pm_property_id'] = datum.pm_property_id
+                self.results[datum.id]['tax_lot_id'] = datum.tax_lot_id
+                self.results[datum.id]['custom_id_1'] = datum.custom_id_1
+                self.results[datum.id]['cleansing_results'] = []
 
-    def reset_errors_and_warnings(self):
-        self.errors = []
-        self.warnings = []
+            self.missing_matching_field(datum)
+            self.in_range_checking(datum)
+            # self.missing_values(datum)
+            # self.data_type_check(datum)
 
-    def missing_matching_field(self, obj):
+    def reset_results(self):
+        self.results = {}
+
+    def missing_matching_field(self, datum):
+        """
+        Look for fields in the database that are not matched. Missing is defined as a None in the database
+
+        :param datum: Database record containing the BS version of the fields populated
+        :return: None
+
+        # TODO: NL: Should we check the extra_data field for the data?
+        """
+
         fields = self.rules['modules'][0]['fields']
 
-        for k in fields:
-            if k in obj.keys():
-                try:
-                    if obj[k] == '':
-                        # print 'Error in missing_matching_field: Value is empty'
-                        string = k + ' = \'' + obj[k] + '\' and is empty.'
-                        # print string
-                        self.errors.append(string)
-                    if obj[k] is None:
-                        # print 'Error in missing_matching_field: Value is None'
-                        string = k + ' ' + obj[k] + ' is None.'
-                        # print string
-                        self.errors.append(string)
-                except ValueError, e:
-                    # print 'Exception in missing_matching_field'
-                    string = 'Error ' + str(e) + 'with ' + k
-                    # print string
-                    self.errors.append(string)
-            else:
-                # print 'Error in missing_matching_field'
-                string = k + ' is missing.'
-                # print string
-                self.errors.append(string)
+        for field in fields:
+            if hasattr(datum, field):
+                value = getattr(datum, field)
+                if value is None:
+                    # Field exists but the value is None. Register a cleansing error
+                    self.results[datum.id]['cleansing_results'].append(
+                        {
+                            'field': field,
+                            'message': 'Matching field not found',
+                            'severity': 'error'
 
-    def missing_values(self, obj):
-        ignored_fields = self.rules['modules'][1]['ignoredFields']
+                        }
+                    )
 
-        for k in obj.keys():
-            if k not in ignored_fields:
-                try:
-                    if obj[k] == '':
-                        # print 'Error in missing_values: Value is empty'
-                        string = k + ' = \'' + obj[k] + '\' and is empty.'
-                        # print string
-                        errors.append(string)
-                    if obj[k] is None:
-                        # print 'Error in missing_values: Value is None'
-                        string = k + ' ' + obj[k] + ' is None.'
-                        # print string
-                        errors.append(string)
-                except ValueError, e:
-                    # print 'Exception in in_range_checking'
-                    string = 'Error ' + str(e) + 'with ' + k
-                    # print string
-                    errors.append(string)
+    def missing_values(self, datum):
+        """
+        Look for fields in the database that are missing. Need to know the list of fields that are part of the
+        cleansing section.
 
-    def in_range_checking(self, obj):
-        in_range_dict = self.rules['modules'][2]['fields']
+        This method isn't used yet since this could be very intensive to run. To run through all the fields, expect
+        the ignored fields defined in the JSON, would take awhile and wouldn't have much gain.
 
-        for k in obj.keys():
-            if k in in_range_dict:
-                try:
-                    if int(float(obj[k])) < int(float(in_range_dict[k][0]['min'])):
-                        # print 'Error in in_range_checking'
-                        string = str(obj[k]) + ' < ' + str(in_range_dict[k][0]['min'])
-                        # print string
-                        if in_range_dict[k][0]['severity'] == 'error':
-                            self.errors.append(string)
-                        else:
-                            self.warnings.append(string)
-                    if int(float(obj[k])) > int(float(in_range_dict[k][0]['max'])):
-                        # print 'Error in in_range_checking'
-                        string = str(obj[k]) + ' > ' + str(in_range_dict[k][0]['max'])
-                        # print string
-                        if in_range_dict[k][0]['severity'] == 'error':
-                            self.errors.append(string)
-                        else:
-                            self.warnings.append(string)
-                except ValueError, e:
-                    # print 'Exception in in_range_checking'
-                    string = 'Error ' + str(e) + 'with ' + k
-                    # print string
-                    self.errors.append(string)
+        :param datum: Database record containing the BS version of the fields populated
+        :return: None
 
-    def data_type_check(self, obj):
-        data_type_dict = self.rules['modules'][3]['fields']
+        # TODO: Check the extra_data field for the data?
+        """
 
-        for k in obj.keys():
-            if k in data_type_dict:
-                try:
-                    if type(obj[k]).__name__ != data_type_dict[k]:
-                        # print 'Error in data_type_check'
-                        string = k + ' ' + str(obj[k]) + ' is of type ' + type(obj[k]).__name__ + ', not of type ' + \
-                                 str(data_type_dict[k])
-                        # print string
-                        self.errors.append(string)
-                except ValueError, e:
-                    # print 'Exception in data_type_check'
-                    string = 'Error ' + str(e) + 'with ' + k
-                    # print string
-                    self.errors.append(string)
+        fields = self.rules['modules'][1]['ignoredFields']
+
+        for field in fields:
+            if hasattr(datum, field):
+                value = getattr(datum, field)
+                if value is None:
+                    # Field exists but the value is None. Register a cleansing error
+                    self.results[datum.id]['cleansing_results'].append(
+                        {
+                            'field': field,
+                            'message': 'Value is missing',
+                            'severity': 'error'
+
+                        }
+                    )
+
+    def in_range_checking(self, datum):
+        """
+        Check for errors in the min/max of the values.
+
+        :param datum: Database record containing the BS version of the fields populated
+        :return: None
+        """
+
+        fields = self.rules['modules'][2]['fields']
+
+        for field in fields:
+            rules = self.rules['modules'][2]['fields'][field]
+
+            # check if the field exists
+            if hasattr(datum, field):
+                value = getattr(datum, field)
+
+                # Don't check the out of range errors if the data are empty
+                if value is None:
+                    continue
+
+                for rule in rules:
+                    if value < rule['min']:
+                        self.results[datum.id]['cleansing_results'].append(
+                            {
+                                'field': field,
+                                'message': 'Value [%d] < %d' % (value, rule['min']),
+                                'severity': rule['severity']
+                            }
+                        )
+
+                    if value > rule['max']:
+                        self.results[datum.id]['cleansing_results'].append(
+                            {
+                                'field': field,
+                                'message': 'Value [%d] > %d' % (value, rule['max']),
+                                'severity': rule['severity']
+                            }
+                        )
+
+    def data_type_check(self, datum):
+        """
+        Check the data types of the fields. These should never be wrong as these are the data in the database.
+        This chunk of code is currently ignored.
+
+        :param datum: Database record containing the BS version of the fields populated
+        :return: None
+        """
+
+        fields = self.rules['modules'][3]['fields']
+
+        for field, field_data_type in fields.iteritems():
+            # check if the field exists
+            if hasattr(datum, field):
+                value = getattr(datum, field)
+
+                # Don't check the out of range errors if the data are empty
+                if value is None:
+                    continue
+
+                if type(value).__name__ != field_data_type:
+                    self.results[datum.id]['cleansing_results'].append(
+                        {
+                            'field': field,
+                            'message': 'Value ' + str(value) + ' is not a recognized ' + field_data_type + ' format',
+                            'severity': 'error'
+                        }
+                    )
 
     def save_to_cache(self, file_pk):
         existing_results = cache.get(Cleansing.cache_key(file_pk))
-        existing_results['warnings'] = existing_results['warnings'] + self.warnings
-        existing_results['errors'] = existing_results['errors'] + self.errors
-        cache.set(Cleansing.cache_key(file_pk), existing_results, 3600) # save the results for 1 hour
+        z = existing_results.copy()
+        z.update(self.results)
+        cache.set(Cleansing.cache_key(file_pk), z, 3600)  # save the results for 1 hour

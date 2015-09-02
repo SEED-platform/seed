@@ -27,6 +27,12 @@
                         "max": 1451520000,
                         "severity": "error",
                         "units": null
+                    },
+                    {
+                        "min": 1500,
+                        "max": 1451520000,
+                        "severity": "warning",
+                        "units": null
                     }
                 ],
                 "year_ending": [

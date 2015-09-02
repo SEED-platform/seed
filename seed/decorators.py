@@ -37,7 +37,10 @@ def increment_cache(key, increment):
     else:
         value += increment
 
-    cache.set(key, {'status': 'parsing', 'progress': value})
+    cache_result = {'status': 'parsing', 'progress': value}
+    cache.set(key, cache_result)
+    return cache_result
+
 
 
 def lock_and_track(fn, *args, **kwargs):
