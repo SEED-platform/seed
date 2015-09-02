@@ -12,22 +12,13 @@ from seed import tasks
 from seed.cleansing.models import Cleansing
 
 from seed.models import (
-    ASSESSED_RAW,
     ASSESSED_BS,
     PORTFOLIO_BS,
-    POSSIBLE_MATCH,
-    SYSTEM_MATCH,
-    FLOAT,
     BuildingSnapshot,
-    CanonicalBuilding,
-    Column,
-    ColumnMapping,
-    Unit,
-    get_ancestors,
 )
 
 
-class CleansingDataTest(TestCase):
+class CleansingDataTestCoveredBuilding(TestCase):
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -68,7 +59,7 @@ class CleansingDataTest(TestCase):
         # value is the value in the CSV
         fake_mappings = {
             'city': 'city',
-            'Zip': 'Zip',
+            'postal_code': 'Zip',
             'gross_floor_area': 'GBA',
             'building_count': 'BLDGS',
             'year_built': 'AYB_YearBuilt',
@@ -96,18 +87,120 @@ class CleansingDataTest(TestCase):
         data = c.results
 
         self.assertEqual(len(c.results), 2)
-        keys = c.results.keys()
-        self.assertEqual(len(keys), 2)
-        self.assertTrue(data[keys[0]]['address_line_1'], '95373 E Peach Avenue')
-        self.assertTrue(data[keys[0]]['tax_lot_id'], '10107/c6596')
 
-        #print data[keys[0]]
+        result = [v for v in c.results.values() if v['address_line_1'] == '95373 E Peach Avenue']
+        if len(result) == 1:
+            result = result[0]
+        else:
+            raise RuntimeError('Non unity results')
+
+        self.assertTrue(result['address_line_1'], '95373 E Peach Avenue')
+        self.assertTrue(result['tax_lot_id'], '10107/c6596')
         res = [{'field': u'pm_property_id', 'message': 'Value is missing', 'severity': 'error'}]
-        self.assertEqual(res, data[keys[0]]['cleansing_results'])
+        self.assertEqual(res, result['cleansing_results'])
 
-        # print data[keys[1]]
+        result = [v for v in c.results.values() if v['address_line_1'] == '120243 E True Lane']
+        if len(result) == 1:
+            result = result[0]
+        else:
+            raise RuntimeError('Non unity results')
+
         res = [{'field': u'year_built', 'message': 'Value [0] < 1500', 'severity': u'warning'},
-               {'field': u'gross_floor_area', 'message': 'Value [10000000000] > 7000000', 'severity': u'error'},
+               {'field': u'gross_floor_area', 'message': 'Value [10000000000.0] > 7000000', 'severity': u'error'},
                {'field': u'custom_id_1', 'message': 'Value is missing', 'severity': 'error'},
                {'field': u'pm_property_id', 'message': 'Value is missing', 'severity': 'error'}]
-        self.assertEqual(res, data[keys[1]]['cleansing_results'])
+        self.assertEqual(res, result['cleansing_results'])
+
+        result = [v for v in c.results.values() if v['address_line_1'] == '1234 Peach Tree Avenue']
+        self.assertEqual(len(result), 0)
+        self.assertEqual(result, [])
+
+
+class CleansingDataTestPM(TestCase):
+    def setUp(self):
+        self.user_details = {
+            'username': 'testuser@example.com',
+            'email': 'testuser@example.com',
+            'password': 'test_password'
+        }
+        self.user = User.objects.create_user(**self.user_details)
+        self.login_url = reverse('landing:login')
+
+        self.org = Organization.objects.create()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
+
+        self.import_record = ImportRecord.objects.create(owner=self.user)
+        self.import_record.super_organization = self.org
+        self.import_record.save()
+        self.import_file = ImportFile.objects.create(
+            import_record=self.import_record
+        )
+
+        self.import_file.is_espm = True
+        self.import_file.source_type = 'Portfolio Raw'
+        self.import_file.file = File(
+            open(path.join(path.dirname(__file__), 'test_data', 'portfolio-manager-sample-with-errors.csv'))
+        )
+
+        self.import_file.save()
+
+        # tasks.save_raw_data(self.import_file.pk)
+
+    def test_cleanse(self):
+        # Import the file and run mapping
+
+        # Year Ending,ENERGY STAR Score,Total GHG Emissions (MtCO2e),Weather Normalized Site EUI (kBtu/ft2),
+        # National Median Site EUI (kBtu/ft2),Source EUI (kBtu/ft2),Weather Normalized Source EUI (kBtu/ft2),
+        # National Median Source EUI (kBtu/ft2),Parking - Gross Floor Area (ft2),Organization
+        # Release Date
+        fake_mappings = {
+            'pm_property_id': u'Property Id',
+            'property_name': u'Property Name',
+            'address_line_1': u'Address 1',
+            'address_line_2': u'Address 2',
+            'city': u'City',
+            'state_province': u'State/Province',
+            'postal_code': u'Postal Code',
+            'year_built': u'Year Built',
+            'gross_floor_area': u'Property Floor Area (Buildings and Parking) (ft2)',
+            'site_eui': u'Site EUI (kBtu/ft2)',
+            'generation_date': u'Generation Date'
+        }
+
+        tasks.save_raw_data(self.import_file.id)
+        util.make_fake_mappings(fake_mappings, self.org)
+        tasks.map_data(self.import_file.id)
+
+        qs = BuildingSnapshot.objects.filter(
+            import_file=self.import_file,
+            source_type=PORTFOLIO_BS,
+        ).iterator()
+
+        c = Cleansing()
+        c.cleanse(qs)
+
+        data = c.results
+
+        self.assertEqual(len(c.results), 2)
+
+        result = [v for v in c.results.values() if v['address_line_1'] == '120243 E True Lane']
+        if len(result) == 1:
+            result = result[0]
+        else:
+            raise RuntimeError('Non unity results')
+
+        res = [{'field': u'tax_lot_id', 'message': 'Matching field not found', 'severity': 'error'},
+               {'field': u'custom_id_1', 'message': 'Matching field not found', 'severity': 'error'},
+               {'field': u'pm_property_id', 'message': 'Value is missing', 'severity': 'error'}]
+        self.assertEqual(res, result['cleansing_results'])
+
+        result = [v for v in c.results.values() if v['address_line_1'] == '95373 E Peach Avenue']
+        if len(result) == 1:
+            result = result[0]
+        else:
+            raise RuntimeError('Non unity results')
+
+        res = [{'field': u'tax_lot_id', 'message': 'Matching field not found', 'severity': 'error'},
+               {'field': u'custom_id_1', 'message': 'Matching field not found', 'severity': 'error'},
+               {'field': u'site_eui', 'message': 'Value [0.1] < 10', 'severity': u'warning'}]
+        self.assertEqual(res, result['cleansing_results'])

@@ -1,5 +1,6 @@
 import os
 import json
+import datetime
 
 from logging import getLogger
 from django.db import models
@@ -75,6 +76,19 @@ class Cleansing(models.Model):
             self.in_range_checking(datum)
             self.missing_values(datum)
             # self.data_type_check(datum)
+
+        self.prune_data()
+
+    def prune_data(self):
+        """
+        Prune the results will remove any entries that have zero cleansing_results
+
+        :return: None
+        """
+
+        for k, v in self.results.items():
+            if not v['cleansing_results']:
+                del self.results[k]
 
     def reset_results(self):
         self.results = {}
@@ -158,21 +172,26 @@ class Cleansing(models.Model):
                 if value is None:
                     continue
 
+                if isinstance(value, datetime.datetime):
+                    value = value.toordinal()
+                elif isinstance(value, datetime.date):
+                    value = value.toordinal()
+
                 for rule in rules:
-                    if value < rule['min']:
+                    if rule['min'] is not None and value < rule['min']:
                         self.results[datum.id]['cleansing_results'].append(
                             {
                                 'field': field,
-                                'message': 'Value [%d] < %d' % (value, rule['min']),
+                                'message': 'Value [' + str(value) + '] < ' + str(rule['min']),
                                 'severity': rule['severity']
                             }
                         )
 
-                    if value > rule['max']:
+                    if rule['max'] is not None and value > rule['max']:
                         self.results[datum.id]['cleansing_results'].append(
                             {
                                 'field': field,
-                                'message': 'Value [%d] > %d' % (value, rule['max']),
+                                'message': 'Value [' + str(value) + '] > ' + str(rule['max']),
                                 'severity': rule['severity']
                             }
                         )
@@ -207,7 +226,17 @@ class Cleansing(models.Model):
                     )
 
     def save_to_cache(self, file_pk):
+        """
+        Save the results to the cache database.
+
+        :param file_pk: Import file primary key
+        :return: None
+        """
+
+
+
         existing_results = cache.get(Cleansing.cache_key(file_pk))
         z = existing_results.copy()
         z.update(self.results)
         cache.set(Cleansing.cache_key(file_pk), z, 3600)  # save the results for 1 hour
+

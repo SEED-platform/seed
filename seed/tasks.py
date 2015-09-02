@@ -550,7 +550,6 @@ def _map_data(file_pk, *args, **kwargs):
         serialized_data = [obj.extra_data for obj in chunk]
         tasks.append(map_row_chunk.s(serialized_data, file_pk, source_type, prog_key))
 
-
     # need to rework how the progress keys are implemented here, but at least the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
     if tasks:
