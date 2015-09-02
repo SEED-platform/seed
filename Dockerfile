@@ -18,8 +18,8 @@ RUN apt-get update \
         libssl-dev \
         liblzma-dev \
         libevent1-dev \
-	    git \
-	    mercurial \
+        git \
+        mercurial \
         libpq-dev \
         nodejs \
         npm \
