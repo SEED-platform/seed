@@ -73,7 +73,7 @@ class Cleansing(models.Model):
 
             self.missing_matching_field(datum)
             self.in_range_checking(datum)
-            # self.missing_values(datum)
+            self.missing_values(datum)
             # self.data_type_check(datum)
 
     def reset_results(self):
@@ -107,11 +107,11 @@ class Cleansing(models.Model):
 
     def missing_values(self, datum):
         """
-        Look for fields in the database that are missing. Need to know the list of fields that are part of the
+        Look for fields in the database that are empty. Need to know the list of fields that are part of the
         cleansing section.
 
-        This method isn't used yet since this could be very intensive to run. To run through all the fields, expect
-        the ignored fields defined in the JSON, would take awhile and wouldn't have much gain.
+        The original intent of this method would be very intensive to run (looking at all fields except the ignored).
+        This method was changed to check for required values.
 
         :param datum: Database record containing the BS version of the fields populated
         :return: None
@@ -119,19 +119,21 @@ class Cleansing(models.Model):
         # TODO: Check the extra_data field for the data?
         """
 
-        fields = self.rules['modules'][1]['ignoredFields']
+        fields = self.rules['modules'][0]['fields']
+        # fields = self.rules['modules'][1]['ignoredFields']
 
         for field in fields:
             if hasattr(datum, field):
                 value = getattr(datum, field)
-                if value is None:
-                    # Field exists but the value is None. Register a cleansing error
+
+                if value == '':
+                    # TODO: check if the value is zero?
+                    # Field exists but the value is empty. Register a cleansing error
                     self.results[datum.id]['cleansing_results'].append(
                         {
                             'field': field,
                             'message': 'Value is missing',
                             'severity': 'error'
-
                         }
                     )
 
