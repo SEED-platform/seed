@@ -959,7 +959,7 @@ def _finish_matching(import_file, progress_key):
     cache.set(progress_key, 100)
 
 def _normalize_address_direction(direction):
-    direction = direction.lower()
+    direction = direction.lower().replace('.', '')
     direction_map = {
         'east' : 'e',
         'west' : 'w', 

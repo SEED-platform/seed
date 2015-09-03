@@ -46,4 +46,6 @@ class NormalizeStreetAddressTests(TestCase):
         ('numeric street and direction', '555 11th St. NW', '555 11th st nw'),
         ('direction 1', '100 Main S', '100 main s'),
         ('direction 2', '100 Main South', '100 main s'),
+        ('direction 3', '100 Main S.', '100 main s'),
+        ('direction 4', '100 Main', '100 main'),
     ]
