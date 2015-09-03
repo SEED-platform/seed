@@ -30,8 +30,10 @@
                     </tr>
                     <tr ng-class="{'info': !detail.match_tree.length > 0, 'success': detail.match_tree.length > 0}">
                         <td class="is_aligned_center"><i class="fa fa-check green" ng-show="detail.match_tree.length > 0"></i></td>
-
-                        <td ng-repeat="c in columns">{$ building[c.sort_column] $}</td>
+                        <td ng-repeat="c in columns">
+                            <span ng-if="!c.is_extra_data">{$ building[c.sort_column] $}</span>
+                            <span ng-if="c.is_extra_data">{$ building.extra_data[c.sort_column] $}</span>
+                        </td>
                     </tr>
                     <tr>
                         <td class="potential_matches" colspan="{$ columns.length + 1 $}"><span>Potential Matches from Source: <strong>Existing Buildings</strong></span></td>
@@ -41,14 +43,20 @@
                         <td class="is_aligned_center" >
                             <input type="checkbox" ng-model="b.matches_current" ng-change="detail.toggle_match(b)">
                         </td>
-                        <td ng-repeat="c in columns">{$ b[c.sort_column] $}</td>
+                        <td ng-repeat="c in columns">
+                            <span ng-if="!c.is_extra_data">{$ b[c.sort_column] $}</span>
+                            <span ng-if="c.is_extra_data">{$ b.extra_data[c.sort_column] $}</span>
+                        </td>
                     </tr>
                     <!-- search results -->
                     <tr ng-repeat="b in search.buildings | filter:filter_current_building" ng-class="{'success': b.matches_current}" ng-hide="b.id == building.coparent.id">
                         <td class="is_aligned_center">
                             <input type="checkbox" ng-model="b.matches_current" ng-change="detail.toggle_match(b)">
                         </td>
-                        <td ng-repeat="c in columns">{$ b[c.sort_column] $}</td>
+                        <td ng-repeat="c in columns">
+                            <span ng-if="!c.is_extra_data">{$ b[c.sort_column] $}</span>
+                            <span ng-if="c.is_extra_data">{$ b.extra_data[c.sort_column] $}</span>
+                        </td>
                     </tr>
                 </tbody>
             </table>
