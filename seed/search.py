@@ -150,11 +150,11 @@ def is_not_whitelist_building(parent_org, building, whitelist_orgs):
     :param whitelist_orgs: queryset of Organization insts.
     :returns: bool
     """
-    return (parent_org and building.super_organization not in whitelist_orgs)
+    return parent_org and building.super_organization not in whitelist_orgs
 
 
 def filter_other_params(queryset, other_params, db_columns):
-    """applyes a dictionary filter to the query set. Does some domain specific
+    """applies a dictionary filter to the query set. Does some domain specific
     parsing,
        mostly to remove extra query params and deal with ranges.
        Ranges should be passed in as '<field name>__lte' or '<field name>__gte'

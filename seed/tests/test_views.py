@@ -5,7 +5,6 @@ import copy
 import json
 from unittest import skip
 
-from django.core.cache import cache
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
@@ -34,6 +33,7 @@ from seed.views.main import (
     DEFAULT_CUSTOM_COLUMNS,
     _parent_tree_coparents,
 )
+from seed.utils.cache import set_cache, get_cache
 from seed.utils.mapping import _get_column_names
 from seed.tests import util as test_util
 
@@ -1991,7 +1991,7 @@ class TestMCMViews(TestCase):
         """Make sure we retrieve data from cache properly."""
         progress_key = decorators.get_prog_key('fun_func', 23)
         expected = 50.0
-        cache.set(progress_key, expected)
+        set_cache(progress_key, 'parsing', expected)
         resp = self.client.post(
             reverse_lazy("seed:progress"),
             data=json.dumps({
@@ -2022,7 +2022,7 @@ class TestMCMViews(TestCase):
 
         # Set cache like we're done mapping.
         cache_key = decorators.get_prog_key('map_data', self.import_file.pk)
-        cache.set(cache_key, 100)
+        set_cache(cache_key, 'success', 100)
 
         resp = self.client.post(
             reverse_lazy("seed:remap_buildings"),
@@ -2048,7 +2048,7 @@ class TestMCMViews(TestCase):
             10
         )
 
-        self.assertEqual(cache.get(cache_key), 0)
+        self.assertEqual(get_cache(cache_key)['progress'], 0)
 
     def test_reset_mapped_w_previous_matches(self):
         """Ensure we ignore mapped buildings with children BSes."""
@@ -2114,7 +2114,8 @@ class TestMCMViews(TestCase):
 
         expected = {
             'status': 'warning',
-            'message': 'Mapped buildings already merged'
+            'message': 'Mapped buildings already merged',
+            'progress': 100
         }
 
         resp = self.client.post(
