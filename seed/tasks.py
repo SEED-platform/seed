@@ -958,6 +958,21 @@ def _finish_matching(import_file, progress_key):
     import_file.save()
     cache.set(progress_key, 100)
 
+def _normalize_address_direction(direction):
+    direction = direction.lower()
+    direction_map = {
+        'east' : 'e',
+        'west' : 'w', 
+        'north' : 'n',
+        'south' : 's',
+        'northeast': 'ne',
+        'northwest': 'nw',
+        'southeast': 'se',
+        'southwest': 'sw'
+    }
+    if direction in direction_map:
+        return direction_map[direction]
+    return direction
 
 def _normalize_address_str(address_val):
     """
@@ -984,7 +999,7 @@ def _normalize_address_str(address_val):
         normalized_address = addr['AddressNumber'].lstrip("0")  # some addresses have leading zeros, strip them here
 
     if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
-        normalized_address = normalized_address + ' ' + addr['StreetNamePreDirectional']
+        normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePreDirectional'])
 
     if 'StreetName' in addr and addr['StreetName'] is not None:
         normalized_address = normalized_address + ' ' + addr['StreetName']
@@ -994,7 +1009,7 @@ def _normalize_address_str(address_val):
         normalized_address = normalized_address + ' ' + addr['StreetNamePostType'].replace('.', '')
 
     if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
-        normalized_address = normalized_address + ' ' + addr['StreetNamePostDirectional']
+        normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePostDirectional'])
 
     formatter = StreetAddressFormatter()
     normalized_address = formatter.abbrev_street_avenue_etc(normalized_address)

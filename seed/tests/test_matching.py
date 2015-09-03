@@ -40,8 +40,10 @@ class NormalizeStreetAddressTests(TestCase):
         ('boulevard', 'Boulevard', 'blvd'),
         ('avenue', 'avenue', 'ave'),
         ('trailing direction', '123 Test St. NE', '123 test st ne'),
-        ('prefix direction', '123 South Test St.', '123 south test st'),
-        ('verbose direction', '123 Test St. Northeast', '123 test st northeast'),
+        ('prefix direction', '123 South Test St.', '123 s test st'),
+        ('verbose direction', '123 Test St. Northeast', '123 test st ne'),
         ('two directions', '111 S West Main', '111 s west main'),
         ('numeric street and direction', '555 11th St. NW', '555 11th st nw'),
+        ('direction 1', '100 Main S', '100 main s'),
+        ('direction 2', '100 Main South', '100 main s'),
     ]
