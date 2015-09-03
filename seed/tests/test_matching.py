@@ -2,7 +2,7 @@ from django.test import TestCase
 from seed.tasks import _normalize_address_str
 
 
-def make_test(message, expected):
+def make_method(message, expected):
     def run(self):
         result = _normalize_address_str(message)
         self.assertEquals(expected, result)
@@ -15,10 +15,10 @@ class NormalizeAddressTester(type):
         cases = attrs.get('cases', [])
 
         for doc, message, expected in cases:
-            test = make_test(message, expected)
+            test = make_method(message, expected)
             test_name = 'test_normalize_address_%s' % doc.lower().replace(' ', '_')
-            test.__doc__ = doc
             test.__name__ = test_name
+            test.__doc__ = doc
             attrs[test_name] = test
         return super(NormalizeAddressTester, cls).__new__(cls, name, bases, attrs)
 
