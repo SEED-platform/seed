@@ -116,9 +116,20 @@
                                         </button>
                                     </p>
                                 </div>
+                                <div style="display:inline-block; margin-right:20px;">
+                                    <select ng-model="xAxisSelectedItem" 
+                                            ng-init="xAxisSelectedItem=xAxisVars[0]" 
+                                            ng-options="option.name for option in xAxisVars" >
+                                    </select>
+                                    vs. 
+                                    <select ng-model="yAxisSelectedItem" 
+                                            ng-init="yAxisSelectedItem=yAxisVars[0]" 
+                                            ng-options="option.name for option in yAxisVars" >
+                                    </select>
+                                </div>
 
-                                <button type="button" ng-click="updateFilters()">
-                                    Update Graphs
+                                <button type="button" ng-click="updateChartData()">
+                                    Update Charts
                                 </button>
 
                             </div>
@@ -129,41 +140,37 @@
 
                 </div>
             </div>
-
-            <div class="content_block row" style="padding-left:20px; padding-bottom:0px;">
-               
-                <div class="col-md-6 col-sm-6">                    
-                    <div >
-                        <div>Total buildings: {$ summaryData.num_buildings $}</div>
-                        <div>Avg EUI: {$ summaryData.avg_eui $}</div>
-                        <div>Avg Energy Score: {$ summaryData.avg_energy_score $}</div>
-                    </div>
-                </div>
-               
-            </div>
-
-
+         
 
             <div class="content_block row" style="padding-left:20px; padding-bottom:0px;">
 
                 <div class="col-md-6 col-sm-6">                         
-                    <div id="chartSiteEUI" class="chart-holder" style="height:600px" >
-                        Energy Use Intensity vs. 
-                        <select ng-model="euiChartSelectedItem" 
-                                ng-init="euiChartSelectedItem=euiChartVars[0]" 
-                                ng-options="option.name for option in euiChartVars" 
-                                ng-change="updateEUICharts(euiChartSelectedItem)">
-                        </select>
-                        <basic-building-info-chart  id="euiChart" 
-                                                    data="euiChartData" 
+                    <div class="chart-holder" style="height:600px" >                      
+                        <basic-building-info-chart  id="chart" 
+                                                    data="chartData" 
                                                     autoresize="true" 
                                                     chart-type="scatter"
                                                     height="600"
-                                                    onchartrendered="euiChartRendered()"
+                                                    onchartrendered="chartRendered()"
                                                     >
                         </basic-building-info-chart>
                     </div>                    
-                    <div ng-show="euiChartIsLoading" class="loading-message">Loading...</div>
+                    <div ng-show="chartIsLoading" class="loading-message">Loading...</div>
+                </div><!-- ./ col-md-6 -->
+
+
+                <div class="col-md-6 col-sm-6">                         
+                    <div class="chart-holder" style="height:600px;">                       
+                        <basic-building-info-chart  id="aggChart" 
+                                                    data="aggChartData" 
+                                                    autoresize="true" 
+                                                    chart-type="bar"
+                                                    height="600"
+                                                    onchartrendered="aggChartRendered()"
+                                                    >
+                        </basic-building-info-chart>
+                    </div>                    
+                    <div ng-show="aggChartIsLoading" class="loading-message">Loading...</div>
                 </div><!-- ./ col-md-6 -->
 
                 <!--
@@ -196,23 +203,6 @@
 
             </div>  <!-- ./ content_block -->     
 
-             <div class="content_block row" style="padding-left:20px; padding-bottom:0px;">
-
-                <div class="col-md-6 col-sm-6">                         
-                    <div id="chartSiteEUI" class="chart-holder" style="height:600px;">
-                       
-                        <basic-building-info-chart  id="euiChart" 
-                                                    data="euiAggChartData" 
-                                                    autoresize="true" 
-                                                    chart-type="bar"
-                                                    height="600"
-                                                    onchartrendered="euiAggChartRendered()"
-                                                    >
-                        </basic-building-info-chart>
-                    </div>                    
-                    <div ng-show="euiChartIsLoading" class="loading-message">Loading...</div>
-                </div><!-- ./ col-md-6 -->
-            </div>
 
 
         </div>

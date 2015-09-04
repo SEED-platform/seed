@@ -116,7 +116,8 @@ angular.module('basicBuildingInfoChart', [])
           yAxis = chart.addMeasureAxis('y', 'y');
           yAxis.tickFormat = yAxisTickFormat;
         } else {
-          yAxis = chart.addCategoryAxis('y', 'y');
+          yAxis = chart.addCategoryAxis('y', ['y','yr_e']);
+          yAxis.addOrderRule("y", false)
         }
 
 

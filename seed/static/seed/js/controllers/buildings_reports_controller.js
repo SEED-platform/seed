@@ -18,23 +18,90 @@ angular.module('BE.seed.controller.buildings_reports', [])
 
   /* CONST */
 
-  var EUI_X_AXIS_LABEL = "Energy Use Intensity";
-  var ES_X_AXIS_LABEL = "Energy Star Score";
+  var EUI_AXIS_LABEL = "Energy Use Intensity";
+  var EUI_UNITS = "ft2"
+  var EUI_VAR_NAME = "site_eui";
 
-  //the following variable keeps track of which
-  //series will be sent to the graphs when data is updated
-  //('series' values are used by the dimple graphs to group data)
-  $scope.euiChartSeries = ["id", "yr_e"];
-  $scope.euiAggChartSeries = ["use_description", "yr_e"];
+  var ES_AXIS_LABEL = "Energy Star Score";
+  var ES_VAR_NAME = "energy_score";
 
 
+  /* SCOPE VARS */
 
-  /* DATEPICKERS */
-
+  // Datepickers
   $scope.startDate = new Date();
   $scope.startDatePickerOpen = false;
   $scope.endDate = new Date();
   $scope.endDatePickerOpen = false;
+
+  // Series
+  // the following variable keeps track of which
+  // series will be sent to the graphs when data is updated
+  // ('series' values are used by the dimple graphs to group data)
+  $scope.chartSeries = ["id","yr_e"];
+  $scope.aggChartSeries = ["use_description", "yr_e"];
+
+  // Chart variables
+  $scope.xAxisVars = [
+    { 
+      name: EUI_AXIS_LABEL, 
+      varName: EUI_VAR_NAME,
+      axisLabel: EUI_AXIS_LABEL + "(" + EUI_UNITS + ")",
+      axisType: "Measure",
+      axisTickFormat: ",.0f"
+    },
+    { 
+      name: ES_AXIS_LABEL, 
+      varName: ES_VAR_NAME,
+      axisLabel: ES_AXIS_LABEL,
+      axisType: "Measure",
+      axisTickFormat: ",.0f"
+    }
+  ];
+  
+  $scope.yAxisVars = [
+    { 
+      name:"Gross Floor Area", 
+      varName:"gross_floor_area",
+      axisLabel:"Gross Floor Area (ft2)",
+      axisTickFormat: ",.0f",
+      axisType: "Measure",
+      axisMin: ""
+    },
+    { 
+      name:"Building Classification",  
+      varName:"use_description",
+      axisLabel:"Building Classification",
+      axisTickFormat: "",
+      axisType: "Category",
+      axisMin: ""
+    },
+    { 
+      name:"Year Built", 
+      varName:"year_built",
+      axisLabel:"Year Built",
+      axisTickFormat: ".0f",
+      axisType: "Measure",
+      axisMin: "1900"
+    }
+  ];
+
+  //Currently selected x and y variables
+  $scope.xAxisSelectedItem = $scope.xAxisVars[0];  //initialize to first var
+  $scope.yAxisSelectedItem = $scope.yAxisVars[0];  //initialize to first var
+
+  //Chart data
+  $scope.chartData = [];
+  $scope.aggChartData = [];
+
+  //Chart status
+  $scope.chartIsLoading = true;
+  $scope.aggChartIsLoading = true;
+
+
+  /* UI HANDLERS */
+
+  // Datepicker updates 
 
   $scope.openStartDatePicker = function ($event) {
     $event.preventDefault();
@@ -49,22 +116,24 @@ angular.module('BE.seed.controller.buildings_reports', [])
   };
 
 
-  /* FILTER SUBMIT */
+  /* AXIS VARIABLE PICKERS SUBMIT */
   
-  $scope.updateFilters = function ($event) {        
-    //Dates are already current so don't need to update them here.
-    clearSummaryFields();    
-    getSummaryData();
+  $scope.updateChartData = function(){
+    clearChartData();   
     getChartData();
+    getAggChartData();
   }
 
-  function getChartData(){
-    getESChartData();
-    getEUIChartData();
+  function clearChartData(){
+    $scope.chartData = [];
+    $scope.aggChartData = [];
   }
+
+ 
 
 
   /* SUMMARY DATA */
+  /*
   function getSummaryData() {
     buildings_reports_service.get_summary_data().then(function(data) {
       // resolve promise
@@ -75,7 +144,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
   function clearSummaryFields() {
     initSummaryFields();
   }
-
+  
   function initSummaryFields() {
     $scope.summaryData = {
                             num_buildings: "", 
@@ -83,151 +152,61 @@ angular.module('BE.seed.controller.buildings_reports', [])
                             avg_energy_score: ""
                           };
   }
-
   initSummaryFields();
+  */
 
+ 
 
-  /* GRAPHS */
+  
 
-  var ENERGY_STAR_VAR = "energy_score";
-  var EUI_VAR = "site_eui";
+  function getChartData(){    
 
-  $scope.esChartVars = [
-    { 
-      name:"Gross Floor Area", 
-      varName:"gross_floor_area",
-      yAxisLabel:"Gross Floor Area (ft2)",
-      xAxisTickFormat: ",.0f",
-      yAxisTickFormat: ",.0f",
-      yAxisMin: ""
-    },
-    { 
-      name:"Building Classification",  
-      varName:"use_description",
-      yAxisLabel:"Building Classification",
-      xAxisTickFormat: ",.0f",
-      yAxisTickFormat: "",
-      yAxisMin: ""
-    },
-    { 
-      name:"Year Built", 
-      varName:"year_built",
-      yAxisLabel:"Year Built",
-      xAxisTickFormat: ",.0f",
-      yAxisTickFormat: "d",
-      yAxisMin: "1900"
-    }
-  ];
+    var xVar = $scope.xAxisSelectedItem.varName;
+    var yVar = $scope.yAxisSelectedItem.varName;
+    $scope.chartIsLoading = true;
 
-
-  $scope.euiChartVars = [
-    { 
-      name:"Gross Floor Area", 
-      varName:"gross_floor_area", 
-      yAxisLabel:"Gross Floor Area (Thousand ft2)",
-      xAxisTickFormat: ",.0f",
-      yAxisTickFormat: ",.0f",
-      yAxisMin: ""
-    },
-    {
-      name:"Building Classification", 
-      varName:"use_description", 
-      yAxisLabel:"Building Classification",
-      xAxisTickFormat: ",.0f",
-      yAxisTickFormat: "",
-      yAxisMin: ""
-    },
-    {
-      name:"Year Built", 
-      varName:"year_built", 
-      yAxisLabel:"Year Built",
-      xAxisTickFormat: ",.0f",
-      yAxisTickFormat: "d",
-      yAxisMin: "1900"
-    }
-  ]
-
-  $scope.esChartIsLoading = true;
-  $scope.euiChartIsLoading = true;
-
-  $scope.esChartSelectedVar = $scope.esChartVars[0];
-  $scope.esChartYAxisLabel = $scope.esChartSelectedVar.yAxisLabel;
-  $scope.esChartData = [];
-
-  $scope.euiChartSelectedVar = $scope.euiChartVars[0];
-  $scope.euiChartYAxisLabel = $scope.euiChartSelectedVar.yAxisLabel;  
-  $scope.euiChartData = [];
-
-  $scope.updateESChart = function(selectedVar){
-    $scope.esChartSelectedVar = selectedVar;
-    $scope.esChartYAxisLabel = selectedVar.yAxisLabel;
-    getESChartData();
-    getESChartAggData();
-  }
-
-  function getESChartData(){
-    
-  }
-
-  function getESChartAggData(){
-
-  }
-
-  $scope.updateEUICharts = function(selectedVar){
-    $scope.euiChartSelectedVar = selectedVar;
-    $scope.euiChartYAxisLabel = selectedVar.yAxisLabel;
-    getEUIChartData();
-    getEUIChartAggData();
-  }
-
-  function getEUIChartData(){    
-    var yVar = $scope.euiChartSelectedVar.varName;
-    $scope.euiChartIsLoading = true;
-    buildings_reports_service.get_report_data(EUI_VAR, yVar, $scope.startDate, $scope.endDate)
+    buildings_reports_service.get_report_data(xVar, yVar, $scope.startDate, $scope.endDate)
       .then(function(data) {    
-
         var yAxisType = ( yVar === 'use_description' ? 'Category' : 'Measure');
-
-        $scope.euiChartData = {
-          "series":  $scope.euiChartSeries,
+        $scope.chartData = {
+          "series":  $scope.chartSeries,
           "chartData": data,
-          "xAxisTitle": EUI_X_AXIS_LABEL,
-          "yAxisTitle": $scope.euiChartYAxisLabel,
-          "yAxisType": yAxisType,
-          "yAxisMin" : $scope.euiChartSelectedVar.yAxisMin,          
-          "xAxisTickFormat": $scope.euiChartSelectedVar.xAxisTickFormat,
-          "yAxisTickFormat": $scope.euiChartSelectedVar.yAxisTickFormat
+          "xAxisTitle": $scope.xAxisSelectedItem.axisLabel,
+          "yAxisTitle": $scope.yAxisSelectedItem.axisLabel,
+          "yAxisType": $scope.yAxisSelectedItem.axisType,
+          "yAxisMin" : $scope.yAxisSelectedItem.axisMin,          
+          "xAxisTickFormat": $scope.xAxisSelectedItem.axisTickFormat,
+          "yAxisTickFormat": $scope.yAxisSelectedItem.axisTickFormat
         }
       });
   }
 
-  function getEUIChartAggData(){
-    var yVar = $scope.euiChartSelectedVar.varName;
-    $scope.euiAggChartIsLoading = true;
-    buildings_reports_service.get_aggregated_report_data(EUI_VAR, yVar, $scope.startDate, $scope.endDate)
+  function getAggChartData(){
+
+    var xVar = $scope.xAxisSelectedItem.varName;
+    var yVar = $scope.yAxisSelectedItem.varName;
+    $scope.aggChartIsLoading = true;
+
+    buildings_reports_service.get_aggregated_report_data(xVar, yVar, $scope.startDate, $scope.endDate)
       .then(function(data) {    
-        $scope.euiAggChartData = {
-          "series":  $scope.euiAggChartSeries,
+        $scope.aggChartData = {
+          "series":  $scope.aggChartSeries,
           "chartData": data,
-          "yAxisType": "Category",
-          "xAxisTitle": EUI_X_AXIS_LABEL,
-          "yAxisTitle": $scope.euiChartYAxisLabel
+          "xAxisTitle": $scope.xAxisSelectedItem.axisLabel,
+          "yAxisTitle": $scope.yAxisSelectedItem.axisLabel,
+          "yAxisType": "Category"
         }
       });
 
   }
 
 
-  $scope.esChartRendered = function(){
-    $scope.esChartIsLoading = false;     
+  $scope.chartRendered = function(){
+    $scope.chartIsLoading = false;     
   }
 
-  $scope.euiChartRendered = function(){
-    $scope.euiChartIsLoading = false;     
-  }
-
-  $scope.euiAggChartRendered = function(){
-    $scope.euiAggChartIsLoading = false;
+  $scope.aggChartRendered = function(){
+    $scope.aggChartIsLoading = false;
   }
 
   function clearGraphs() {
@@ -235,7 +214,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
   } 
 
   function init(){
-    $scope.updateEUICharts($scope.euiChartSelectedVar);
+    $scope.updateChartData();
   }
 
   init();
