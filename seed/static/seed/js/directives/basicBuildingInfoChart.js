@@ -43,7 +43,8 @@ angular.module('basicBuildingInfoChart', [])
           graphController.clearChart();
           graphController.createChart();
           graphController.createChartAxes(newValue.xAxisTickFormat, newValue.yAxisTickFormat);  
-          graphController.createChartLegend();      
+          //I'm going to create my own 'legend'-like display beneath the graph
+          //graphController.createChartLegend();      
 
           graphController.updateChart(  newValue.chartData, 
                                         newValue.series, 
@@ -85,20 +86,24 @@ angular.module('basicBuildingInfoChart', [])
         $element.append('<div class="dimple-graph" id="dng-'+ id +'"></div>'); 
 
         // create an svg element
-        svg = dimple.newSvg('#dng-'+ id +'', width, height);       
+        var svgID = '#dng-'+ id +'';
+        svg = dimple.newSvg(svgID, width, height);       
+            
+          
       }
 
       this.createChart = function (){ 
         // create the dimple chart using the d3 selection of our <svg> element
         chart = new dimple.chart(svg, []);   
         if (yAxisType=="Category"){
-           chart.setMargins(150, 60, 60, 40);
+           chart.setMargins(150, 20, 60, 40);
         } else {
-           chart.setMargins(90, 60, 60, 40);
+           chart.setMargins(90, 20, 60, 40);
         }
        
         chart.noFormats = false; //use autostyle
         chart.draw(0);
+
       }
 
       this.createChartAxes = function (xAxisTickFormat, yAxisTickFormat){
@@ -124,7 +129,7 @@ angular.module('basicBuildingInfoChart', [])
       }
 
       this.createChartLegend = function (){
-        legend = chart.addLegend(200, 10, 360, 20, "right");
+        legend = chart.addLegend(200, 10, 360, 20, "right bottom");
       }      
 
 

@@ -56,7 +56,8 @@ angular.module('BE.seed.directives', [
     'beEnter',
     'beUploader',
     'beLabel',
-    'basicBuildingInfoChart'
+    'basicBuildingInfoChart',
+    'dropdown'
     ]);
 angular.module('BE.seed.services', [
     'BE.seed.service.audit',

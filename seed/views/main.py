@@ -2232,6 +2232,9 @@ def get_building_report_data(request):
         The x_var values should be from the following set of variable names:
 
             - site_eui
+            - source_eui
+            - site_eui_weather_normalized
+            - source_eui_weather_normalized
             - energy_score 
 
         The y_var values should be from the following set of variable names:
@@ -2401,6 +2404,9 @@ def get_aggregated_building_report_data(request):
         The x_var values should be from the following set of variable names:
 
             - site_eui
+            - source_eui
+            - site_eui_weather_normalized
+            - source_eui_weather_normalized
             - energy_score 
 
         The y_var values should be from the following set of variable names:

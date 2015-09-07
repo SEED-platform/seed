@@ -15,18 +15,88 @@ angular.module('BE.seed.controller.buildings_reports', [])
 
   'use strict';
 
-
-  /* CONST */
-
-  var EUI_AXIS_LABEL = "Energy Use Intensity";
-  var EUI_UNITS = "ft2"
-  var EUI_VAR_NAME = "site_eui";
-
-  var ES_AXIS_LABEL = "Energy Star Score";
-  var ES_VAR_NAME = "energy_score";
-
-
   /* SCOPE VARS */
+
+  // Chart variables : 
+  // these next two arrays define the various properties 
+  // of the variables the user can select for graphing.            
+  $scope.xAxisVars = [
+    { 
+      name: "Site EUI",
+      label: "Site Energy Use Intensity", 
+      varName: "site_eui",
+      axisLabel: "Site EUI (kBtu/ft2)",
+      axisType: "Measure",
+      axisTickFormat: ",.0f"
+    },    
+    {       
+      name: "Source EUI",
+      label: "Source Energy Use Intensity", 
+      varName: "source_eui",
+      axisLabel: "Source EUI (kBtu/ft2)",
+      axisType: "Measure",
+      axisTickFormat: ",.0f"
+    },
+    { 
+      name: "Weather Norm. Site EUI",
+      label: "Weather Normalized Site Energy Use Intensity", 
+      varName: "site_eui_weather_normalized",
+      axisLabel: "Weather Normalized Site EUI (kBtu/ft2)",
+      axisType: "Measure",
+      axisTickFormat: ",.0f"
+    },
+    { 
+      name: "Weather Norm. Source EUI",
+      label: "Weather Normalized Source Energy Use Intensity", 
+      varName: "source_eui_weather_normalized",
+      axisLabel: "Weather Normalized Source EUI (kBtu/ft2)",
+      axisType: "Measure",
+      axisTickFormat: ",.0f"
+    },
+    { 
+      name : "Energy Star Score",
+      label: "Energy Star Score", 
+      varName: "energy_score",
+      axisLabel: "Energy Star Score",
+      axisType: "Measure",
+      axisTickFormat: ",.0f"
+    }
+  ];
+  
+  $scope.yAxisVars = [
+    { 
+      name: "Gross Floor Area",
+      label:"Gross Floor Area", 
+      varName:"gross_floor_area",
+      axisLabel:"Gross Floor Area (ft2)",
+      axisTickFormat: ",.0f",
+      axisType: "Measure",
+      axisMin: ""
+    },
+    { 
+      name: "Building Classification",
+      label:"Building Classification",  
+      varName:"use_description",
+      axisLabel:"Building Classification",
+      axisTickFormat: "",
+      axisType: "Category",
+      axisMin: ""
+    },
+    { 
+      name: "Year Built",
+      label:"Year Built", 
+      varName:"year_built",
+      axisLabel:"Year Built",
+      axisTickFormat: ".0f",
+      axisType: "Measure",
+      axisMin: "1900"
+    }
+  ];
+
+
+  // Chart titles
+  $scope.chart1Title = "";
+  $scope.chart2Title = "";
 
   // Datepickers
   $scope.startDate = new Date();
@@ -40,51 +110,6 @@ angular.module('BE.seed.controller.buildings_reports', [])
   // ('series' values are used by the dimple graphs to group data)
   $scope.chartSeries = ["id","yr_e"];
   $scope.aggChartSeries = ["use_description", "yr_e"];
-
-  // Chart variables
-  $scope.xAxisVars = [
-    { 
-      name: EUI_AXIS_LABEL, 
-      varName: EUI_VAR_NAME,
-      axisLabel: EUI_AXIS_LABEL + "(" + EUI_UNITS + ")",
-      axisType: "Measure",
-      axisTickFormat: ",.0f"
-    },
-    { 
-      name: ES_AXIS_LABEL, 
-      varName: ES_VAR_NAME,
-      axisLabel: ES_AXIS_LABEL,
-      axisType: "Measure",
-      axisTickFormat: ",.0f"
-    }
-  ];
-  
-  $scope.yAxisVars = [
-    { 
-      name:"Gross Floor Area", 
-      varName:"gross_floor_area",
-      axisLabel:"Gross Floor Area (ft2)",
-      axisTickFormat: ",.0f",
-      axisType: "Measure",
-      axisMin: ""
-    },
-    { 
-      name:"Building Classification",  
-      varName:"use_description",
-      axisLabel:"Building Classification",
-      axisTickFormat: "",
-      axisType: "Category",
-      axisMin: ""
-    },
-    { 
-      name:"Year Built", 
-      varName:"year_built",
-      axisLabel:"Year Built",
-      axisTickFormat: ".0f",
-      axisType: "Measure",
-      axisMin: "1900"
-    }
-  ];
 
   //Currently selected x and y variables
   $scope.xAxisSelectedItem = $scope.xAxisVars[0];  //initialize to first var
@@ -122,11 +147,17 @@ angular.module('BE.seed.controller.buildings_reports', [])
     clearChartData();   
     getChartData();
     getAggChartData();
+    updateTitles();
   }
 
   function clearChartData(){
     $scope.chartData = [];
     $scope.aggChartData = [];
+  }
+
+  function updateTitles(){
+    $scope.chart1Title = $scope.xAxisSelectedItem.label + " vs. " + $scope.yAxisSelectedItem.label;
+    $scope.chart2Title = $scope.xAxisSelectedItem.label + " vs. " + $scope.yAxisSelectedItem.label;
   }
 
  
