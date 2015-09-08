@@ -41,7 +41,7 @@ class Cleansing(models.Model):
         :param file_pk: Import file primary key
         :return:
         """
-        cache.set(Cleansing.cache_key(file_pk), {})
+        cache.set(Cleansing.cache_key(file_pk), [])
 
     @staticmethod
     def cache_key(file_pk):
@@ -238,16 +238,22 @@ class Cleansing(models.Model):
 
     def save_to_cache(self, file_pk):
         """
-        Save the results to the cache database.
+        Save the results to the cache database. The data in the cache are stored as a list of dictionaries. The data in
+        this class are stored as a dict of dict. This is important to remember because the data from the cache cannot
+        be simply loaded into the above structure.
 
         :param file_pk: Import file primary key
         :return: None
         """
 
-
-
+        # change the format of the data in the cache. Make this a list of objects instead of object of objects.
         existing_results = cache.get(Cleansing.cache_key(file_pk))
-        z = existing_results.copy()
-        z.update(self.results)
-        cache.set(Cleansing.cache_key(file_pk), z, 3600)  # save the results for 1 hour
 
+        l = []
+        for key, value in self.results.iteritems():
+            l.append(value)
+
+        existing_results = existing_results + l
+
+        z = sorted(existing_results, key=lambda k: k['id'])
+        cache.set(Cleansing.cache_key(file_pk), z, 3600)  # save the results for 1 hour
