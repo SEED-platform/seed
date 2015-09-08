@@ -67,6 +67,18 @@
 	color: @yellow;
 }
 
+.clearfix {
+  *zoom: 1; // For IE 6/7 (trigger hasLayout)
+  &:before, &:after {
+	content: "";
+	line-height: 0;
+	display: table;
+  }
+  &:after {
+	clear:both;
+  }
+}
+
 // Form states and alerts
 // -------------------------
 @warningText:             #c09853;
@@ -537,6 +549,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 		}
 	}
 }
+
 .section {
 	clear: both;
 	display: block;
@@ -586,6 +599,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	.section_header {
 		position: relative;
 		padding: 20px 20px 10px 20px;
+	    .clearfix;
 		
 		&.has_no_padding {
 			padding: 0 20px;
@@ -602,7 +616,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 			height: 64px;
 		}
 		&.fixed_height_short {
-			height: 48px;
+			min-height: 48px;
 		}
 		h2 {
 			display: inline;
@@ -625,9 +639,13 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 				float: left;
 				width: 25%;
 			}
-			&.left_wide {
+			&.left_half {
 				float: left;
 				width: 50%;
+			}
+			&.left_wide {
+			  float: left;
+			  width: 75%;
 			}
 			&.center {
 				float: left;
@@ -1196,6 +1214,14 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 							padding-left: 2px;
 						}
 					}
+					&.ellipsis {
+					  max-width:80px;
+					  text-overflow: ellipsis;
+					  /* Required for text-overflow to do anything */
+					  white-space: nowrap;
+					  overflow: hidden;
+					}
+
 				}
 
 				&.sortable {
@@ -1838,4 +1864,12 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 		}
 	}
 }
+
+.ui-sortable {
+  .ui-sortable-handle {
+	cursor: move;
+  }
+}
+
+
 
