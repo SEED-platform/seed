@@ -15,6 +15,8 @@ angular.module('BE.seed.controller.buildings_reports', [])
 
   'use strict';
 
+  var defaultColors = ["#c83737","#458cc8","#1159a3","#f2c41d","#939495"];
+
   /* SCOPE VARS */
 
   // Chart variables : 
@@ -153,6 +155,8 @@ angular.module('BE.seed.controller.buildings_reports', [])
   function clearChartData(){
     $scope.chartData = [];
     $scope.aggChartData = [];
+    $scope.buildingCounts = [];
+    $scope.aggBuildingCounts = [];
   }
 
   function updateTitles(){
@@ -199,16 +203,20 @@ angular.module('BE.seed.controller.buildings_reports', [])
     buildings_reports_service.get_report_data(xVar, yVar, $scope.startDate, $scope.endDate)
       .then(function(data) {    
         var yAxisType = ( yVar === 'use_description' ? 'Category' : 'Measure');
+        var bldgCounts = data.building_counts;
+        var colorsArr = mapColors(bldgCounts);
+        $scope.buildingCounts = bldgCounts;
         $scope.chartData = {
           "series":  $scope.chartSeries,
-          "chartData": data,
+          "chartData": data.chart_data,
           "xAxisTitle": $scope.xAxisSelectedItem.axisLabel,
           "yAxisTitle": $scope.yAxisSelectedItem.axisLabel,
           "yAxisType": $scope.yAxisSelectedItem.axisType,
           "yAxisMin" : $scope.yAxisSelectedItem.axisMin,          
           "xAxisTickFormat": $scope.xAxisSelectedItem.axisTickFormat,
-          "yAxisTickFormat": $scope.yAxisSelectedItem.axisTickFormat
-        }
+          "yAxisTickFormat": $scope.yAxisSelectedItem.axisTickFormat,
+          "colors": colorsArr
+        };        
       });
   }
 
@@ -220,17 +228,47 @@ angular.module('BE.seed.controller.buildings_reports', [])
 
     buildings_reports_service.get_aggregated_report_data(xVar, yVar, $scope.startDate, $scope.endDate)
       .then(function(data) {    
+        $scope.aggBuildingCounts = data.building_counts;
+        var bldgCounts = data.building_counts;
+        var colorsArr = mapColors(bldgCounts);
+        $scope.aggBuildingCounts = bldgCounts;
         $scope.aggChartData = {
           "series":  $scope.aggChartSeries,
-          "chartData": data,
+          "chartData": data.chart_data,
           "xAxisTitle": $scope.xAxisSelectedItem.axisLabel,
           "yAxisTitle": $scope.yAxisSelectedItem.axisLabel,
-          "yAxisType": "Category"
-        }
+          "yAxisType": "Category",
+          "colors": colorsArr
+        };
+
       });
 
   }
 
+  /*  Generate an array of color objects to be used as part of chart configuration
+      Each color object should have the following properties:
+        {
+          seriesName:  A string value for the name of the series
+          color:       A hex value for the color
+        }   
+      A side effect of this method is that the colors are also applied to the bldgCounts object
+      so that they're available in the table view that lists group details. From a functional
+      view that's not great style but it works.
+  */
+  function mapColors(bldgCounts){    
+    if (!bldgCounts) return [];
+    var colorsArr = [];
+    var numBldgGroups = bldgCounts.length;
+    for (var groupIndex=0;groupIndex<numBldgGroups;groupIndex++){
+      var obj = {};
+      obj.seriesName = bldgCounts[groupIndex].yr_e;
+      obj.color = defaultColors[groupIndex];
+      bldgCounts[groupIndex].color = obj.color;
+      colorsArr.push(obj);
+    }
+    bldgCounts.reverse(); //so the table/legend order matches the order Dimple will build the groups
+    return colorsArr;
+  }
 
   $scope.chartRendered = function(){
     $scope.chartIsLoading = false;     

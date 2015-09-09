@@ -87,6 +87,11 @@
             border-radius: 5px;
         }
 
+        .reportingTableHolder {
+            margin-top: 20px;
+            padding: 0px 60px 0px 105px;
+        }
+
 
     </style>
    
@@ -216,6 +221,26 @@
                         </basic-building-info-chart>
                     </div>                    
                     <div ng-show="chartIsLoading" class="loading-message">Loading...</div>
+
+                    <div class="reportingTableHolder">
+                        <table class="table" >
+                            <thead>
+                              <tr>
+                                <th>Year Ending</th>
+                                <th>Buildings with Data</th>
+                                <th>Total Buildings</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr ng-repeat="obj in buildingCounts">
+                                <td><i class="fa fa-circle" style="color:{$obj.color$}"></i>&nbsp;&nbsp;{$ obj.yr_e $}</td>
+                                <td>{$ obj.num_buildings $}</td>
+                                <td>{$ obj.num_buildings_w_data $}</td>
+                              </tr>                         
+                            </tbody>
+                        </table>
+                    </div>
+
                 </div><!-- ./ col-md-6 -->
 
 
@@ -232,6 +257,26 @@
                         </basic-building-info-chart>
                     </div>                    
                     <div ng-show="aggChartIsLoading" class="loading-message">Loading...</div>
+
+                     <div class="reportingTableHolder" >
+                        <table class="table">
+                            <thead>
+                              <tr>
+                                <th>Year Ending</th>
+                                <th>Buildings with Data</th>
+                                <th>Total Buildings</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr ng-repeat="obj in aggBuildingCounts">
+                                <td><i class="fa fa-square" style="color:{$obj.color$}"></i>&nbsp;&nbsp;{$ obj.yr_e $}</td>
+                                <td>{$ obj.num_buildings $}</td>
+                                <td>{$ obj.num_buildings_w_data $}</td>
+                              </tr>                         
+                            </tbody>
+                        </table>                        
+                    </div>
+
                 </div><!-- ./ col-md-6 -->
 
                 <!--

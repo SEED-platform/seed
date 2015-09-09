@@ -15,8 +15,8 @@ angular.module('BE.seed.service.buildings_reports',
 
         var args = {
                         organization_id: user_service.get_organization().id,     
-                        start_date: startDate,
-                        end_date: endDate
+                        start_date: getDateString(startDate),
+                        end_date: getDateString(endDate)
                     };
        
         $http({
@@ -39,8 +39,8 @@ angular.module('BE.seed.service.buildings_reports',
                         organization_id: user_service.get_organization().id,
                         x_var: xVar,
                         y_var: yVar,
-                        start_date: startDate,
-                        end_date: endDate
+                        start_date: getDateString(startDate),
+                        end_date: getDateString(endDate)
                     };
         $http({
                 method: 'GET',
@@ -48,7 +48,7 @@ angular.module('BE.seed.service.buildings_reports',
                 params: args
         }).success(function(data, status, headers, config) {
             building_reports_factory.report_data = (data != undefined && data.report_data != undefined) ? data.report_data : [];
-            defer.resolve(data.report_data);
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             building_reports_factory.reports_data = [];
             defer.reject(data, status);
@@ -63,8 +63,8 @@ angular.module('BE.seed.service.buildings_reports',
                         organization_id: user_service.get_organization().id,
                         x_var: xVar,
                         y_var: yVar,
-                        start_date: startDate,
-                        end_date: endDate
+                        start_date: getDateString(startDate),
+                        end_date: getDateString(endDate)
                     };
         $http({
                 method: 'GET',
@@ -72,13 +72,20 @@ angular.module('BE.seed.service.buildings_reports',
                 params: args
         }).success(function(data, status, headers, config) {
             building_reports_factory.aggregated_reports_data = (data != undefined && data.report_data != undefined) ? data.report_data : [];
-            defer.resolve(data.report_data);
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             building_reports_factory.aggregated_reports_data = [];
             defer.reject(data, status);
         });
         return defer.promise;
     };
+
+    function getDateString(dateObj){
+       var yyyy = dateObj.getFullYear().toString();
+       var mm = (dateObj.getMonth()+1).toString(); // getMonth() is zero-based
+       var dd  = dateObj.getDate().toString();
+       return yyyy + '-' + (mm[1]?mm:"0"+mm[0]) + '-' + (dd[1]?dd:"0"+dd[0]); // padding
+    }
 
     /* Public API */
 
