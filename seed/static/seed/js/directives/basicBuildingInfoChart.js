@@ -183,16 +183,6 @@ angular.module('basicBuildingInfoChart', [])
         } else {
           yAxis = chart.addCategoryAxis('y', ['y','yr_e']);
           yAxis.addOrderRule("y", false)
-
-          var formatFunction = function(s) { 
-            var label = d3_requote_re;
-            if (label.length()>truncateLength){
-              return d3_requote_re.substring(0,truncateLength) + "...";
-            }
-            return d3_requote_re;
-          };
-
-          yAxis.tickFormat = function(d){ return d + "!"}; 
         }
       }
 

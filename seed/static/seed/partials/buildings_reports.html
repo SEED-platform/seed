@@ -46,7 +46,7 @@
         }
 
         .date-input{
-            max-width: 250px;
+            max-width: 150px;
         }
 
         .chart-holder {
@@ -121,7 +121,8 @@
                                                     class="form-control"
                                                     datepicker-popup="MM-dd-yyyy" 
                                                     is-open="startDatePickerOpen" 
-                                                    ng-model="startDate"                        
+                                                    ng-model="startDate"  
+
                                                     />
                                             <span class="input-group-btn">
                                                 <button type="button" 
@@ -210,12 +211,12 @@
 
                 <div class="col-md-6 col-sm-6">                  
                     <h4 class="chartTitle">{$ chart1Title $}</h3>       
-                    <div class="chart-holder" style="height:600px" >                      
+                    <div class="chart-holder"  >                      
                         <basic-building-info-chart  id="chart" 
                                                     data="chartData" 
                                                     autoresize="true" 
                                                     chart-type="scatter"
-                                                    height="600"
+                                                    height="400"
                                                     onchartrendered="chartRendered()"
                                                     >
                         </basic-building-info-chart>
@@ -246,12 +247,12 @@
 
                 <div class="col-md-6 col-sm-6">                   
                     <h4 class="chartTitle">{$ chart2Title $}</h3>                         
-                    <div class="chart-holder" style="height:600px;">                       
+                    <div class="chart-holder">                       
                         <basic-building-info-chart  id="aggChart" 
                                                     data="aggChartData" 
                                                     autoresize="true" 
                                                     chart-type="bar"
-                                                    height="600"
+                                                    height="400"
                                                     onchartrendered="aggChartRendered()"
                                                     >
                         </basic-building-info-chart>
