@@ -124,5 +124,187 @@
 			"bedes": false,
 			"type": "string"
 		}
+	],
+	"address1": [
+		"Address Line 1",
+		{
+			"bedes": false,
+			"type": "string"
+		}
+	],
+	"address2": [
+		"Address Line 2",
+		{
+			"bedes": false,
+			"type": "string"
+		}
+	],
+	"city": [
+		"City",
+		{
+			"bedes": false,
+			"type": "string"
+		}
+	],
+	"createdDate": [
+		"Created Date",
+		{
+			"bedes": false,
+			"type": "date"
+		}
+	],
+	"medianScore": [
+		"National Median ENERGY STAR Score",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"medianSiteIntensity": [
+		"National Median Site EUI (kBtu/ft2)",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"medianSiteTotal": [
+		"National Median Site Energy Use (kBtu)",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"medianSourceIntensity": [
+		"National Median Source EUI (kBtu/ft2)",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"medianSourceTotal": [
+		"National Median Source Energy Use (kBtu)",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"medianTotalGHGEmissions": [
+		"National Median Total GHG Emissions (Metric Tons CO2e)",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"name": [
+		"Property Name",
+		{
+			"bedes": false,
+			"type": "string"
+		}
+	],
+	"postalCode": [
+		"Postal Code",
+		{
+			"bedes": false,
+			"type": "string"
+		}
+	],
+	"primaryFunction": [
+		"Use Description",
+		{
+			"bedes": false,
+			"type": "string"
+		}
+	],
+	"propertyDataAdminstrator": [
+		"Property Data Administrator",
+		{
+			"bedes": false,
+			"type": "string"
+		}
+	],
+	"propertyFloorAreaBuildingsAndParking": [
+		"Property Floor Area (Buildings and Parking) (ft2)",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"propertyFloorAreaParking": [
+		"Property Floor Area (Parking) (ft2)",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"propertyId": [
+		"PM Property ID",
+		{
+			"bedes": false,
+			"type": "string"
+		}
+	],
+	"propGrossFloorArea": [
+		"Gross Floor Area",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"score": [
+		"Energy Score",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"siteIntensity": [
+		"Site EUI",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"siteTotal": [
+		"Site Energy Use (kBtu)",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"sourceIntensity": [
+		"Source EUI",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"sourceTotal": [
+		"Source Energy Use (kBtu)",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"state": [
+		"State Province",
+		{
+			"bedes": false,
+			"type": "string"
+		}
+	],
+	"totalGHGEmissions": [
+		"Total GHG Emissions (MtCO2e)",
+		{
+			"bedes": false,
+			"type": "float"
+		}
+	],
+	"yearBuilt": [
+		"Year Built",
+		{
+			"bedes": false,
+			"type": "float"
+		}
 	]
 }
