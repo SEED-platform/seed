@@ -10,6 +10,7 @@ import traceback
 from _csv import Error
 
 from dateutil import parser
+import usaddress
 
 from django.core.mail import send_mail
 from django.conf import settings
@@ -27,7 +28,7 @@ from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.data.ESPM import espm as espm_schema
 from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.utils import batch
-from streetaddress import StreetAddressParser, StreetAddressFormatter
+from streetaddress import StreetAddressFormatter
 from seed.data_importer.models import (
     ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
 )
@@ -962,6 +963,21 @@ def _finish_matching(import_file, progress_key):
     import_file.save()
     set_cache(progress_key, 'success', 100)
 
+def _normalize_address_direction(direction):
+    direction = direction.lower().replace('.', '')
+    direction_map = {
+        'east' : 'e',
+        'west' : 'w', 
+        'north' : 'n',
+        'south' : 's',
+        'northeast': 'ne',
+        'northwest': 'nw',
+        'southeast': 'se',
+        'southwest': 'sw'
+    }
+    if direction in direction_map:
+        return direction_map[direction]
+    return direction
 
 def _normalize_address_str(address_val):
     """
@@ -978,21 +994,27 @@ def _normalize_address_str(address_val):
         return None
 
     # now parse the address into number, street name and street type
-    parser = StreetAddressParser()
-    addr = parser.parse(str(address_val))  # TODO: should probably use unicode()
+    addr = usaddress.tag(str(address_val))[0]  # TODO: should probably use unicode()
     normalized_address = ''
 
     if not addr:
         return None
 
-    if 'house' in addr and addr['house'] is not None:
-        normalized_address = addr['house'].lstrip("0")  # some addresses have leading zeros, strip them here
+    if 'AddressNumber' in addr and addr['AddressNumber'] is not None:
+        normalized_address = addr['AddressNumber'].lstrip("0")  # some addresses have leading zeros, strip them here
 
-    if 'street_name' in addr and addr['street_name'] is not None:
-        normalized_address = normalized_address + ' ' + addr['street_name']
+    if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
+        normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePreDirectional'])
 
-    if 'street_type' in addr and addr['street_type'] is not None:
-        normalized_address = normalized_address + ' ' + addr['street_type']
+    if 'StreetName' in addr and addr['StreetName'] is not None:
+        normalized_address = normalized_address + ' ' + addr['StreetName']
+
+    if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
+        # remove any periods from abbreviations
+        normalized_address = normalized_address + ' ' + addr['StreetNamePostType'].replace('.', '')
+
+    if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
+        normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePostDirectional'])
 
     formatter = StreetAddressFormatter()
     normalized_address = formatter.abbrev_street_avenue_etc(normalized_address)
