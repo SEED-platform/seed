@@ -60,7 +60,7 @@ var makeS3Uploader = function(scope, element, attrs, filename) {
      * uploadSuccess: makes a POST to `data/s3_upload_complete` with the 
      * params. `source_type` is set as an HTML element attribute and should
      * semantically define the source type of the file. In the case of 
-     * SEED: a Porfolio Manager file or a covered assessor buildings file
+     * SEED: a Portfolio Manager file or a covered assessor buildings file
      */
     uploadSuccess: {
         endpoint: window.BE.urls.uploader_success_endpoint,

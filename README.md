@@ -177,7 +177,7 @@ Each message that is written to the logger is a Log Record. The log record is st
 Copyright ©  2014 Building Energy Inc.
 
 
-[travis-img]: https://api.travis-ci.org/SEED-platform/seed.svg
+[travis-img]: https://travis-ci.org/SEED-platform/seed.svg?branch=develop
 [travis-url]: https://travis-ci.org/SEED-platform/seed
 [coveralls-img]: https://coveralls.io/repos/SEED-platform/seed/badge.svg
 [coveralls-url]: https://coveralls.io/github/SEED-platform/seed

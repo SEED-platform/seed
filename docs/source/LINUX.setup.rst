@@ -96,11 +96,11 @@ install ``npm`` assuming the prerequisites are met.
 Django Database Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Create a ``local_untracked.py`` file in the ``BE/settings`` directory and add
-a ``DATABASES`` configuration with your database username, password, host,
-and port. Your database configuration can point to an AWS RDS instance or a
-postgresql 9.3 database instance you have manually installed within your
-infrastructure.
+Copy the ``local_untracked.py.dist`` file in the ``config/settings`` directory
+to ``config/settings/local_untracked.py``, and add a ``DATABASES`` configuration
+with your database username, password, host, and port. Your database configuration
+can point to an AWS RDS instance or a postgresql 9.3 database instance you have
+manually installed within your infrastructure.
 
 .. code-block:: python
 
@@ -248,9 +248,9 @@ Generate static files:
 
 .. code-block:: console
 
-    $ udo ./manage.py collectstatic --settings=config.settings.dev
+    $ sudo ./manage.py collectstatic --settings=config.settings.dev
 
-Update ``BE/settings/local_untracked.py``:
+Update ``config/settings/local_untracked.py``:
 
 .. code-block:: python
 
@@ -290,7 +290,7 @@ SMTP service
 ^^^^^^^^^^^^
 
 In the AWS setup, we use SES to provide an email service Django can use as an
-email backend and configured it in our BE/settings/main.py:
+email backend and configured it in our config/settings/main.py:
 
 .. code-block:: python
 
@@ -330,7 +330,7 @@ local_untracked.py
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
     DOMAIN_URLCONFS = {}
-    DOMAIN_URLCONFS['default'] = 'BE.urls'
+    DOMAIN_URLCONFS['default'] = 'urls.main'
 
 
     CACHES = {

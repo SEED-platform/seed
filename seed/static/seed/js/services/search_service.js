@@ -102,7 +102,7 @@ angular.module('BE.seed.service.search', [])
 
             // number_per_page
             if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
-                saas.number_per_page = saas.number_per_page_options_model = 
+                saas.number_per_page = saas.number_per_page_options_model = saas.showing.end =
                 JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
             }
         }
