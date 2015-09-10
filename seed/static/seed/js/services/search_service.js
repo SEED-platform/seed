@@ -83,17 +83,27 @@ angular.module('BE.seed.service.search', [])
         // Check session storage for order and sort values.
         if (typeof(Storage) !== "undefined") {
             saas.prefix = prefix;
+
+            // order_by & sort_column
             if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null){
                 saas.order_by = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
                 saas.sort_column = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
             }
 
+            // sort_reverse
             if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
                 saas.sort_reverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
             }
 
+            // filter_params
             if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
                 saas.filter_params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
+            }
+
+            // number_per_page
+            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
+                saas.number_per_page = saas.number_per_page_options_model = saas.showing.end =
+                JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
             }
         }
     };
@@ -201,6 +211,9 @@ angular.module('BE.seed.service.search', [])
         this.number_per_page = this.number_per_page_options_model;
         this.current_page = 1;
         this.search_buildings();
+        if (typeof(Storage) !== "undefined") {
+            sessionStorage.setItem(this.prefix + ':' + 'seedBuildingNumberPerPage', JSON.stringify(this.number_per_page));
+        }
     };
 
     /**
@@ -397,6 +410,19 @@ angular.module('BE.seed.service.search', [])
         columns = all_columns.filter(function(c) {
             return column_headers.indexOf(c.sort_column) > -1 || c.checked;
         });
+        // also apply the user sort order
+        columns.sort(function(a,b) {
+            if (column_headers.indexOf(a.sort_column) > -1 && column_headers.indexOf(b.sort_column) > -1) {
+                return (column_headers.indexOf(a.sort_column) - column_headers.indexOf(b.sort_column));
+            } else if (column_headers.indexOf(a.sort_column) > -1) {
+                return -1;
+            } else if (column_headers.indexOf(b.sort_column) > -1) {
+                return 1;
+            } else { // preserve previous order
+                return (all_columns.indexOf(a) - all_columns.indexOf(b));
+            }
+        });
+
         for (var i = 0; i < columns.length; i++) {
             angular.extend(columns[i], column_prototype);
         }

@@ -18,7 +18,8 @@ python manage.py collectstatic --noinput -i node_modules --verbosity 1 2>&1 | se
 
 echo "-----> Compressing..."
 rm -rf ~/collected_static/CACHE/
-python manage.py compress --force --verbosity 1 --settings=BE.settings.compress 2>&1 | sed "s/^/        /"
+# python manage.py compress --force --verbosity 1 --settings=BE.settings.compress 2>&1 | sed "s/^/        /"
+python manage.py compress --force --verbosity 1 --settings=config.settings.main
 
 echo "-----> Syncing static..."
 python manage.py sync_static --gzip --expires 2>&1 | sed "s/^/        /"
@@ -31,10 +32,10 @@ echo "-----> Setting the s3 bucket AngularJS partial expires headers..."
 python manage.py set_s3_expires_headers_for_angularjs_partials --verbosity=3 2>&1 | sed "s/^/        /"
 
 echo "-----> Syncdb and migrate..."
-python manage.py syncdb --noinput 2>&1 | sed "s/^/        /"
-python manage.py migrate --noinput --merge 2>&1 | sed "s/^/        /"
+# python manage.py syncdb --noinput 2>&1 | sed "s/^/        /"
+# python manage.py migrate --noinput --merge 2>&1 | sed "s/^/        /"
 
 echo "-----> Restarting uwsgi..."
-touch ../touch-reload
+# touch ../touch-reload
 
 echo "-----> Post-compile done."

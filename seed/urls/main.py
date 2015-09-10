@@ -56,6 +56,7 @@ urlpatterns = patterns(
         'get_PM_filter_by_counts',
         name='get_PM_filter_by_counts'
     ),
+    url(r'^delete_duplicates_from_import_file/$', 'delete_duplicates_from_import_file', name='delete_duplicates_from_import_file'),
     url(r'^create_dataset/$', 'create_dataset', name='create_dataset'),
     url(r'^get_datasets/$', 'get_datasets', name='get_datasets'),
     url(r'^get_dataset/$', 'get_dataset', name='get_dataset'),

@@ -11,6 +11,7 @@ angular.module('BE.seed.angular_dependencies', [
     ]);
 angular.module('BE.seed.vendor_dependencies', [
     'ui.bootstrap',
+    'ui.sortable',
     'ui.tree'
     ]);
 angular.module('BE.seed.controllers', [
@@ -56,6 +57,7 @@ angular.module('BE.seed.directives', [
     'beEnter',
     'beUploader',
     'beLabel',
+    'beResizable',
     'basicBuildingInfoChart',
     'dropdown'
     ]);
@@ -263,6 +265,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     var orderBy = "";
                     var sortReverse = false;
                     var params = {};
+                    var numberPerPage = 10;
 
                     // Check session storage for order, sort, and filter values.
                     if (typeof(Storage) !== "undefined") {
@@ -277,10 +280,13 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
                             params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
                         }
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
+                            numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
+                        }
                     }
 
                     // params: (query, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id)
-                    return building_services.search_buildings(q, 10, 1, orderBy, sortReverse, params, null);
+                    return building_services.search_buildings(q, numberPerPage, 1, orderBy, sortReverse, params, null);
                 }],
                 'default_columns': ['user_service', function(user_service){
                     return user_service.get_default_columns();

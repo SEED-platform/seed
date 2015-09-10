@@ -10,13 +10,13 @@ import traceback
 from _csv import Error
 
 from dateutil import parser
+import usaddress
 
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.template import loader
-from django.core.cache import cache
 from django.db.models import Q
 from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse_lazy
@@ -28,7 +28,7 @@ from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.data.ESPM import espm as espm_schema
 from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.utils import batch
-from streetaddress import StreetAddressParser, StreetAddressFormatter
+from streetaddress import StreetAddressFormatter
 from seed.data_importer.models import (
     ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
 )
@@ -45,6 +45,7 @@ from seed.models import (
     get_column_mappings,
     find_unmatched_buildings,
     find_canonical_building_values,
+    get_ancestors,
     SYSTEM_MATCH,
     POSSIBLE_MATCH,
     initialize_canonical_building,
@@ -57,8 +58,9 @@ from seed.models import (
     Project,
     ProjectBuilding,
 )
-from seed.decorators import lock_and_track, get_prog_key, increment_cache
+from seed.decorators import lock_and_track, get_prog_key
 from seed.utils.buildings import get_source_type, get_search_query
+from seed.utils.cache import set_cache_raw, set_cache, increment_cache
 from seed.utils.mapping import get_mappable_columns
 from seed.lib.superperms.orgs.models import Organization
 from seed.lib.exporter import Exporter
@@ -86,7 +88,7 @@ def export_buildings(export_id, export_name, export_type,
     selected_buildings = model.objects.filter(pk__in=building_ids)
 
     def _row_cb(i):
-        cache.set("export_buildings__%s" % export_id, i)
+        set_cache_raw("export_buildings__%s" % export_id, i)
 
     exporter = Exporter(export_id, export_name, export_type)
     if not exporter.valid_export_type():
@@ -103,7 +105,7 @@ def export_buildings(export_id, export_name, export_type,
 def invite_to_seed(domain, email_address, token, user_pk, first_name):
     signup_url = reverse_lazy('landing:signup', kwargs={
         'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
-        "token": token
+        'token': token
     })
     context = {
         'email': email_address,
@@ -144,7 +146,7 @@ def add_buildings(project_slug, project_dict, user_pk):
 
     selected_buildings = project_dict.get('selected_buildings', [])
 
-    cache.set(
+    set_cache_raw(
         project.adding_buildings_status_percentage_cache_key,
         {'percentage_done': 0, 'numerator': 0, 'denominator': 0}
     )
@@ -155,7 +157,7 @@ def add_buildings(project_slug, project_dict, user_pk):
             i += 1
             denominator = len(selected_buildings)
             try:
-                cache.set(
+                set_cache_raw(
                     project.adding_buildings_status_percentage_cache_key,
                     {
                         'percentage_done': (
@@ -173,7 +175,7 @@ def add_buildings(project_slug, project_dict, user_pk):
     else:
         query_buildings = get_search_query(user, project_dict)
         denominator = query_buildings.count() - len(selected_buildings)
-        cache.set(
+        set_cache_raw(
             project.adding_buildings_status_percentage_cache_key,
             {'percentage_done': 10, 'numerator': i, 'denominator': denominator}
         )
@@ -186,7 +188,7 @@ def add_buildings(project_slug, project_dict, user_pk):
             ProjectBuilding.objects.get_or_create(
                 project=project, building_snapshot=b
             )
-            cache.set(
+            set_cache_raw(
                 project.adding_buildings_status_percentage_cache_key,
                 {
                     'percentage_done': float(i) / denominator * 100,
@@ -198,7 +200,7 @@ def add_buildings(project_slug, project_dict, user_pk):
             project.building_snapshots.remove(
                 BuildingSnapshot.objects.get(pk=building)
             )
-            cache.set(
+            set_cache_raw(
                 project.adding_buildings_status_percentage_cache_key,
                 {
                     'percentage_done': (
@@ -210,7 +212,7 @@ def add_buildings(project_slug, project_dict, user_pk):
                 }
             )
 
-    cache.set(
+    set_cache_raw(
         project.adding_buildings_status_percentage_cache_key,
         {'percentage_done': 100, 'numerator': i, 'denominator': denominator}
     )
@@ -265,7 +267,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
 
     selected_buildings = project_dict.get('selected_buildings', [])
 
-    cache.set(
+    set_cache_raw(
         project.removing_buildings_status_percentage_cache_key,
         {'percentage_done': 0, 'numerator': 0, 'denominator': 0}
     )
@@ -275,7 +277,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
         for sfid in selected_buildings:
             i += 1
             denominator = len(selected_buildings)
-            cache.set(
+            set_cache_raw(
                 project.removing_buildings_status_percentage_cache_key,
                 {
                     'percentage_done': (
@@ -292,7 +294,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
     else:
         query_buildings = get_search_query(user, project_dict)
         denominator = query_buildings.count() - len(selected_buildings)
-        cache.set(
+        set_cache_raw(
             project.adding_buildings_status_percentage_cache_key,
             {
                 'percentage_done': 10,
@@ -304,7 +306,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
             ProjectBuilding.objects.get(
                 project=project, building_snapshot=b
             ).delete()
-        cache.set(
+        set_cache_raw(
             project.adding_buildings_status_percentage_cache_key,
             {
                 'percentage_done': 50,
@@ -318,7 +320,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
             ProjectBuilding.objects.create(
                 project=project, building_snapshot=ab
             )
-            cache.set(
+            set_cache_raw(
                 project.adding_buildings_status_percentage_cache_key,
                 {
                     'percentage_done': (
@@ -330,7 +332,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
                 }
             )
 
-    cache.set(
+    set_cache_raw(
         project.removing_buildings_status_percentage_cache_key,
         {'percentage_done': 100, 'numerator': i, 'denominator': denominator}
     )
@@ -378,7 +380,7 @@ def finish_mapping(results, file_pk):
     import_file.save()
     finish_import_record(import_file.import_record.pk)
     prog_key = get_prog_key('map_data', file_pk)
-    cache.set(prog_key, 100)
+    set_cache(prog_key, 'success', 100)
 
 
 def _translate_unit_to_type(unit):
@@ -513,8 +515,13 @@ def _map_data(file_pk, *args, **kwargs):
     # Don't perform this task if it's already been completed.
     if import_file.mapping_done:
         prog_key = get_prog_key('map_data', file_pk)
-        cache.set(prog_key, 100)
-        return {'status': 'warning', 'message': 'mapping already complete'}
+        result = {
+            'status': 'warning',
+            'progress': 100,
+            'message': 'mapping already complete'
+        }
+        set_cache(prog_key, result['status'], result)
+        return result
 
     # If we haven't finished saving, we shouldn't proceed with mapping
     # Re-queue this task.
@@ -590,7 +597,7 @@ def finish_raw_save(results, file_pk):
     import_file.raw_save_done = True
     import_file.save()
     prog_key = get_prog_key('save_raw_data', file_pk)
-    cache.set(prog_key, {'status': 'success', 'progress': 100})
+    set_cache(prog_key, 'success', 100)
 
 
 def cache_first_rows(import_file, parser):
@@ -665,10 +672,10 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
     res = xml_importer.import_xml(import_file)
 
     prog_key = get_prog_key('save_raw_data', file_pk)
-    cache.set(prog_key, 100)
+    set_cache(prog_key, 'success', 100)
 
     if res:
-        return {'status': 'success'}
+        return {'status': 'success', 'progress': 100}
 
     return {
         'status': 'error',
@@ -689,7 +696,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
         if import_file.raw_save_done:
             result['status'] = 'warning'
             result['message'] = 'Raw data already saved'
-            cache.set(prog_key, result)
+            set_cache(prog_key, result['status'], result)
             return result
 
         if import_file.source_type == "Green Button Raw":
@@ -731,7 +738,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
         result['message'] = 'Unhandled Error: ' + e.message
         result['stacktrace'] = traceback.format_exc()
 
-    cache.set(prog_key, result)
+    set_cache(prog_key, result['status'], result)
     return result
 
 
@@ -770,14 +777,24 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
     can_snap_pk = can_rev_idx[match_string]
     building_pk = unmatched_list[b_idx][0]  # First element is PK
 
-    bs = save_snapshot_match(
+    bs, changes = save_snapshot_match(
         can_snap_pk, building_pk, confidence=confidence, match_type=match_type, default_pk=building_pk
     )
     canon = bs.canonical_building
+    action_note='System matched building.'
+    if changes:
+            action_note += "  Fields changed in cannonical building:\n"
+            for change in changes:
+                action_note += "\t{field}:\t".format(field = change["field"].replace("_", " ").replace("-",  "").capitalize())
+                if "from" in change:
+                    action_note += "From:\t{prev}\tTo:\t".format(prev = change["from"])
+                
+                action_note += "{value}\n".format(value = change["to"])
+            action_note = action_note[:-1]
     AuditLog.objects.create(
         user_id=user_pk,
         content_object=canon,
-        action_note='System matched building.',
+        action_note=action_note,
         action='save_system_match',
         organization=bs.super_organization,
     )
@@ -790,7 +807,7 @@ def match_buildings(file_pk, user_pk):
     import_file = ImportFile.objects.get(pk=file_pk)
     if import_file.matching_done:
         prog_key = get_prog_key('match_buildings', file_pk)
-        cache.set(prog_key, 100)
+        set_cache(prog_key, 'warning', 100)
         return {'status': 'warning', 'message': 'matching already complete'}
 
     if not import_file.mapping_done:
@@ -815,7 +832,6 @@ def get_canonical_snapshots(org_id):
     )
 
     return snapshots
-
 
 def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
     """Returns canonical snapshots that match at least one id."""
@@ -844,6 +860,38 @@ def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
 
     return canonical_matches
 
+def is_same_snapshot(s1, s2):    
+    
+    fields_to_ignore = ["id", 
+                        "created", 
+                        "modified", 
+                        "match_type", 
+                        "confidence", 
+                        "source_type", 
+                        "canonical_building_id", 
+                        "import_file_id", 
+                        "_state", 
+                        "_import_file_cache",
+                        "import_record"]
+    
+    for k, v in s1.__dict__.items():
+        #ignore anything that starts with an underscore
+        if k[0] == "_":
+            continue
+        #also need to ignore any field with "_source" in it
+        if "_source" in k:
+            continue
+        if k in fields_to_ignore:
+            continue
+        if k not in s2.__dict__ or s2.__dict__[k] != v:
+            return False
+            
+    return True
+
+class DuplicateDataError(RuntimeError):
+    def __init__(self, id):
+        super(DuplicateDataError, self).__init__()
+        self.id = id
 
 def handle_id_matches(unmatched_bs, import_file, user_pk):
     """"Deals with exact matches in the IDs of buildings."""
@@ -855,12 +903,28 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
     )
     if not id_matches.exists():
         return
+    
+    #Check to see if there are any duplicates here
+    for can_snap in id_matches:                
+        #check to see if this is a duplicate of a canonical building
+        #if throwing incurs too much of a performance hit maybe just monkey-patch
+        #unmatched_bs and check it on the other side like
+        #unmatched_bs.duplicate_of_pk = snapshot.pk
+        #return unmatched_bs
+        if is_same_snapshot(unmatched_bs, can_snap):
+            raise DuplicateDataError(can_snap.pk)
+        
+        #iterate through all of the parent records and see if there is a duplicate there
+        for snapshot in can_snap.parent_tree:
+            if is_same_snapshot(unmatched_bs, snapshot):                
+                raise DuplicateDataError(snapshot.pk)                
+                
 
     # merge save as system match with high confidence.
     for can_snap in id_matches:
         # Merge all matches together; updating "unmatched" pointer
         # as we go.
-        unmatched_bs = save_snapshot_match(
+        unmatched_bs, changes = save_snapshot_match(
             can_snap.pk,
             unmatched_bs.pk,
             confidence=0.9,  # TODO(gavin) represent conf better.
@@ -871,10 +935,20 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
         canon = unmatched_bs.canonical_building
         canon.canonical_snapshot = unmatched_bs
         canon.save()
+        action_note = 'System matched building ID.'
+        if changes:
+            action_note += "  Fields changed in cannonical building:\n"
+            for change in changes:
+                action_note += "\t{field}:\t".format(field = change["field"].replace("_", " ").replace("-",  "").capitalize())
+                if "from" in change:
+                    action_note += "From:\t{prev}\tTo:\t".format(prev = change["from"])
+                
+                action_note += "{value}\n".format(value = change["to"])
+            action_note = action_note[:-1]            
         AuditLog.objects.create(
             user_id=user_pk,
             content_object=canon,
-            action_note='System matched building ID.',
+            action_note=action_note,
             action='save_system_match',
             organization=unmatched_bs.super_organization,
         )
@@ -887,8 +961,23 @@ def _finish_matching(import_file, progress_key):
     import_file.matching_done = True
     import_file.mapping_completion = 100
     import_file.save()
-    cache.set(progress_key, 100)
+    set_cache(progress_key, 'success', 100)
 
+def _normalize_address_direction(direction):
+    direction = direction.lower().replace('.', '')
+    direction_map = {
+        'east' : 'e',
+        'west' : 'w', 
+        'north' : 'n',
+        'south' : 's',
+        'northeast': 'ne',
+        'northwest': 'nw',
+        'southeast': 'se',
+        'southwest': 'sw'
+    }
+    if direction in direction_map:
+        return direction_map[direction]
+    return direction
 
 def _normalize_address_str(address_val):
     """
@@ -905,21 +994,27 @@ def _normalize_address_str(address_val):
         return None
 
     # now parse the address into number, street name and street type
-    parser = StreetAddressParser()
-    addr = parser.parse(str(address_val))  # TODO: should probably use unicode()
+    addr = usaddress.tag(str(address_val))[0]  # TODO: should probably use unicode()
     normalized_address = ''
 
     if not addr:
         return None
 
-    if 'house' in addr and addr['house'] is not None:
-        normalized_address = addr['house'].lstrip("0")  # some addresses have leading zeros, strip them here
+    if 'AddressNumber' in addr and addr['AddressNumber'] is not None:
+        normalized_address = addr['AddressNumber'].lstrip("0")  # some addresses have leading zeros, strip them here
 
-    if 'street_name' in addr and addr['street_name'] is not None:
-        normalized_address = normalized_address + ' ' + addr['street_name']
+    if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
+        normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePreDirectional'])
 
-    if 'street_type' in addr and addr['street_type'] is not None:
-        normalized_address = normalized_address + ' ' + addr['street_type']
+    if 'StreetName' in addr and addr['StreetName'] is not None:
+        normalized_address = normalized_address + ' ' + addr['StreetName']
+
+    if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
+        # remove any periods from abbreviations
+        normalized_address = normalized_address + ' ' + addr['StreetNamePostType'].replace('.', '')
+
+    if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
+        normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePostDirectional'])
 
     formatter = StreetAddressFormatter()
     normalized_address = formatter.abbrev_street_avenue_etc(normalized_address)
@@ -935,7 +1030,7 @@ def _findMatches(un_m_address, canonical_buildings_addresses):
         if un_m_address.lower() == cb.lower():  # this second lower may be obsolete now
             match_list.append((un_m_address, 1))
     return match_list
-
+        
 
 @task
 @lock_and_track
@@ -951,9 +1046,20 @@ def _match_buildings(file_pk, user_pk):
     test = ''
     unmatched_buildings = find_unmatched_buildings(import_file)
 
+    duplicates = []
     newly_matched_building_pks = []
+    
+    #Filter out matches based on ID.
+    #if the match is a duplicate of other existing data add it to a list
+    #and indicate which existing record it is a duplicate of
     for unmatched in unmatched_buildings:
-        match = handle_id_matches(unmatched, import_file, user_pk)
+        try:
+            match = handle_id_matches(unmatched, import_file, user_pk)
+        except DuplicateDataError as e:
+            duplicates.append(unmatched.pk)
+            unmatched.duplicate_id = e.id
+            unmatched.save()
+            continue
         if match:
             newly_matched_building_pks.extend([match.pk, unmatched.pk])
 
@@ -966,8 +1072,15 @@ def _match_buildings(file_pk, user_pk):
     if not unmatched_buildings:
         _finish_matching(import_file, prog_key)
         return
+    
+    #here we deal with duplicates
+    unmatched_buildings = unmatched_buildings.exclude(pk__in=duplicates).values_list(*BS_VALUES_LIST)
+    if not unmatched_buildings:
+        _finish_matching(import_file, prog_key)
+        return
         # here we are going to normalize the addresses to match on address_1 field, this is not ideal because you could match on two locations with same address_1 but different city
     #     unmatched_normalized_addresses=[]
+
 
     unmatched_normalized_addresses = [
         _normalize_address_str(unmatched[4]) for unmatched in unmatched_buildings
@@ -1076,18 +1189,29 @@ def remap_data(import_file_pk):
     # Check to ensure that the building has not already been merged.
     mapping_cache_key = get_prog_key('map_data', import_file.pk)
     if import_file.matching_done or import_file.matching_completion:
-        cache.set(mapping_cache_key, 100)
-        return {
-            'status': 'warning', 'message': 'Mapped buildings already merged'
+        result = {
+            'status': 'warning',
+            'progress': 100,
+            'message': 'Mapped buildings already merged'
         }
+        set_cache(mapping_cache_key, result['status'], result)
+        return result
 
     _remap_data.delay(import_file_pk)
 
     # Make sure that our mapping cache progress is reset.
-    cache.set(mapping_cache_key, 0)
+    result = {
+        'status': 'warning',
+        'progress': 0,
+        'message': 'Mapped buildings already merged'
+    }
+    set_cache(mapping_cache_key, result['status'], result)
     # Here we also return the mapping_prog_key so that the front end can
     # follow the progress.
-    return {'status': 'success', 'progress_key': mapping_cache_key}
+    return {
+        'status': 'success',
+        'progress_key': mapping_cache_key
+    }
 
 
 @task
@@ -1116,7 +1240,7 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
         org_pk
     )
     if not ids:
-        cache.set(deleting_cache_key, 100)
+        set_cache(deleting_cache_key, 'success', 100)
         return
 
     # delete the canonical buildings
@@ -1126,7 +1250,7 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
     _delete_canonical_buildings.delay(can_ids)
 
     step = float(chunk_size) / len(ids)
-    cache.set(deleting_cache_key, 0)
+    set_cache(deleting_cache_key, 'success', 0)
     tasks = []
     for del_ids in batch(ids, chunk_size):
         # we could also use .s instead of .subtask and not wrap the *args
@@ -1150,7 +1274,7 @@ def _delete_organization_buildings_chunk(del_ids, prog_key, increment,
 @task
 def finish_delete(results, org_pk):
     prog_key = get_prog_key('delete_organization_buildings', org_pk)
-    cache.set(prog_key, 100)
+    set_cache(prog_key, 'success', 100)
 
 
 @task

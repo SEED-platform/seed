@@ -5,7 +5,6 @@ import copy
 import json
 from unittest import skip
 
-from django.core.cache import cache
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
@@ -34,6 +33,7 @@ from seed.views.main import (
     DEFAULT_CUSTOM_COLUMNS,
     _parent_tree_coparents,
 )
+from seed.utils.cache import set_cache, get_cache
 from seed.utils.mapping import _get_column_names
 from seed.tests import util as test_util
 
@@ -743,6 +743,73 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['address_line_1'], '')
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
 
+    def test_search_status_label_empty(self):
+        """
+        Make sure empty status label search does not filter. A bug allowed filtering on
+        project_building_snapshots__status_label__name='' to show only buildings with labels,
+        when it should have been ignored and returned all buildings.
+        """
+
+        project = Project.objects.create(
+            name='test project',
+            owner=self.user,
+            super_organization=self.org,
+        )
+
+        # Building with label
+        cb1 = CanonicalBuilding(active=True)
+        cb1.save()
+        b1 = SEEDFactory.building_snapshot(
+            canonical_building=cb1,
+        )
+        cb1.canonical_snapshot = b1
+        cb1.save()
+        b1.super_organization = self.org
+        b1.save()
+        label = StatusLabel.objects.create(
+            color='orange',
+            name='orange',
+            super_organization=self.org
+        )
+        ProjectBuilding.objects.create(
+            building_snapshot=b1,
+            project=project,
+            status_label=label
+        )
+
+        # Building without label
+        cb2 = CanonicalBuilding(active=True)
+        cb2.save()
+        b2 = SEEDFactory.building_snapshot(
+            canonical_building=cb2,
+        )
+        cb2.canonical_snapshot = b2
+        cb2.save()
+        b2.super_organization = self.org
+        b2.save()
+
+        url = reverse_lazy("seed:search_buildings")
+        post_data = {
+            'filter_params': {
+                'project_building_snapshots__status_label__name': ''
+            },
+            'number_per_page': 10,
+            'order_by': '',
+            'page': 1,
+            'q': '',
+            'sort_reverse': False,
+            'project_id': None,
+        }
+
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        json_string = response.content
+        data = json.loads(json_string)
+        self.assertEqual(2, data['number_matching_search'])
+
     def test_search_not_empty_column(self):
         """
         Tests search_buidlings method when called with a not-empty column query.
@@ -1248,7 +1315,7 @@ class BuildingDetailViewTests(TestCase):
             information from parent buildings.
         """
         # arrange
-        child = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
+        child, changelist = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
 
         url = reverse_lazy("seed:get_building")
         get_data = {
@@ -1304,7 +1371,7 @@ class BuildingDetailViewTests(TestCase):
     def test_get_building_with_project(self):
         """ tests get_building projects payload"""
         # arrange
-        child = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
+        child, changelist = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
         # create project wtihout compliance
         project = Project.objects.create(
             name='test project',
@@ -1345,7 +1412,7 @@ class BuildingDetailViewTests(TestCase):
             import files.
         """
         # arrange
-        child = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
+        child, changelist = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
 
         url = reverse_lazy("seed:get_building")
         get_data = {
@@ -1390,7 +1457,7 @@ class BuildingDetailViewTests(TestCase):
         # arrange
         self.parent_2.source_type = 6
         self.parent_2.save()
-        child = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
+        child, changelist = save_snapshot_match(self.parent_1.pk, self.parent_2.pk)
 
         url = reverse_lazy("seed:get_building")
         get_data = {
@@ -1924,7 +1991,7 @@ class TestMCMViews(TestCase):
         """Make sure we retrieve data from cache properly."""
         progress_key = decorators.get_prog_key('fun_func', 23)
         expected = 50.0
-        cache.set(progress_key, expected)
+        set_cache(progress_key, 'parsing', expected)
         resp = self.client.post(
             reverse_lazy("seed:progress"),
             data=json.dumps({
@@ -1955,7 +2022,7 @@ class TestMCMViews(TestCase):
 
         # Set cache like we're done mapping.
         cache_key = decorators.get_prog_key('map_data', self.import_file.pk)
-        cache.set(cache_key, 100)
+        set_cache(cache_key, 'success', 100)
 
         resp = self.client.post(
             reverse_lazy("seed:remap_buildings"),
@@ -1981,7 +2048,7 @@ class TestMCMViews(TestCase):
             10
         )
 
-        self.assertEqual(cache.get(cache_key), 0)
+        self.assertEqual(get_cache(cache_key)['progress'], 0)
 
     def test_reset_mapped_w_previous_matches(self):
         """Ensure we ignore mapped buildings with children BSes."""
@@ -2047,7 +2114,8 @@ class TestMCMViews(TestCase):
 
         expected = {
             'status': 'warning',
-            'message': 'Mapped buildings already merged'
+            'message': 'Mapped buildings already merged',
+            'progress': 100
         }
 
         resp = self.client.post(
