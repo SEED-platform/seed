@@ -132,8 +132,8 @@ angular.module('basicBuildingInfoChart', [])
           var arr = [];
           var yLabel = 
           arr.push("Year Ending : " + e.aggField[1]);
-          arr.push( xAxisTitle +" : " + e.cx.toString());
           arr.push( yAxisTitle + " : " + e.cy.toString());
+          arr.push( xAxisTitle +" : " + e.cx.toString());
           return arr;
         }
         
