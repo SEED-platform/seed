@@ -12,8 +12,8 @@ logger = getLogger(__name__)
 class Cleansing(models.Model):
     def __init__(self, *args, **kwargs):
         """
-        Initialize the Cleansing class. Right now this class will not need to save anything to the database. It is simply
-        loading the rules from the JSON file upon initialization.
+        Initialize the Cleansing class. Right now this class will not need to save anything to the database. It is
+        simply loading the rules from the JSON file upon initialization.
 
         :param args:
         :param kwargs:

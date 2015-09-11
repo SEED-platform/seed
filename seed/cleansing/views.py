@@ -18,11 +18,7 @@ def get_cleansing_results(request):
 
     import_file_id = request.GET.get('import_file_id')
 
-    ret = cache.get(Cleansing.cache_key(import_file_id))
-    if ret is None:
-        return {}
-
-    return ret
+    return cache.get(Cleansing.cache_key(import_file_id), [])
 
 
 @api_endpoint
