@@ -878,12 +878,16 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 		}
 		.table_list_container {
 			overflow-x: auto;
-			
+
 			&.has_borders {
 				border-left: 1px solid @gray_lighter;
 				border-right: 1px solid @gray_lighter;
 			}
-			
+
+			&.remove_buildings_table {
+				width: 80%;
+			}
+
 			table {
 				margin-bottom: 10px;
 				
