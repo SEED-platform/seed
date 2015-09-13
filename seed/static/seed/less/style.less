@@ -890,6 +890,11 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 				&.has_no_btm_margin {
 					margin-bottom: 0;
 				}
+
+			    &.resizable {
+				  max-width:none; // override bootstrap
+				  min-width: 100%;
+				}
 				
 				th, td {
 					font-family: @font-family-base-narrow;
