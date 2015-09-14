@@ -1027,7 +1027,7 @@ def _normalize_address_direction(direction):
     direction = direction.lower().replace('.', '')
     direction_map = {
         'east' : 'e',
-        'west' : 'w', 
+        'west' : 'w',
         'north' : 'n',
         'south' : 's',
         'northeast': 'ne',
