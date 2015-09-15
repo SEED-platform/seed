@@ -2759,9 +2759,11 @@ def get_aggregated_building_report_data(request):
 
     #Get all data from buildings...temp method. To be implemented by Stephen C.
     bldgs = BuildingSnapshot.objects.filter(
-                super_organization__in=orgs,
-                canonicalbuilding__active=True
-            ).values('id', x_var, y_var, 'year_ending')
+        super_organization__in=orgs,
+        canonicalbuilding__active=True,
+        year_ending__gte=dt_from,
+        year_ending__lte=dt_to
+    )
 
     # DUMMY DATA: get some data back in the form we expect it. Stephen will implement actual logic
     # Right now I'll just average values across buildings with same year ending
