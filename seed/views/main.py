@@ -2632,9 +2632,9 @@ def get_aggregated_building_report_data(request):
                 "status": "success",
                 "chart_data": [
                     {
-                        "yr_e": x
-                        "x" : x,
-                        "y" : y
+                        "yr_e": x - group by year ending
+                        "x" : x, - median value in group
+                        "y" : y - average value thing
                     },
                     {
                         "yr_e": x
@@ -2645,9 +2645,9 @@ def get_aggregated_building_report_data(request):
                 ],
                 "building_counts": [
                     {
-                        "yr_e": string for year ending 
+                        "yr_e": string for year ending - group by
                         "num_buildings": number of buildings in query results
-                        "num_buildings_w_data" : number of buildings with valid data in this group
+                        "num_buildings_w_data" : number of buildings with valid data in this group, BOTH x and y?
                     },
                     ...
                 ]                              
@@ -2726,7 +2726,6 @@ def get_aggregated_building_report_data(request):
         orgs = [ request.GET['organization_id'] ] #How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
-
     except KeyError, e:
         msg = "Error while calling the API function get_aggregated_building_report_data, missing parameter"
         _log.error(msg)
@@ -2760,29 +2759,37 @@ def get_aggregated_building_report_data(request):
 
     #Get all data from buildings...temp method. To be implemented by Stephen C.
     bldgs = BuildingSnapshot.objects.filter(
-                super_organization__in=orgs,
-                canonicalbuilding__active=True
-            ).values('id', x_var, y_var, 'year_ending')
+        super_organization__in=orgs,
+        canonicalbuilding__active=True,
+        year_ending__gte=dt_from,
+        year_ending__lte=dt_to
+    )
 
-    # DUMMY DATA: get some data back in the form we expect it. Stephen will implement actual logic
+    grouped_buildings = defaultdict(list)
+    for building in bldgs:
+        grouped_buildings[building.year_ending].append(building)
+
+    building_counts = []
+    for year_ending, buildings in grouped_buildings.items():
+        group = {
+            'yr_e': year_ending.strftime('%b %d, %Y'), # Dec 31, 2011
+            'num_buildings': len(buildings),
+            'num_buildings_w_data': 0
+        }
+
+        # Tally which buildings have both fields set.
+        for b in buildings:
+            if getattr(b, x_var) and getattr(b, y_var):
+                group['num_buildings_w_data'] += 1
+
+        building_counts.append(group)
+
+    # START DUMMY DATA: get some data back in the form we expect it. Stephen will implement actual logic
     # Right now I'll just average values across buildings with same year ending
 
     return_data = []
     if y_var == 'use_description':
         #Dummy data:
-        building_counts =  [
-                    {
-                        "yr_e": 'Dec 31, 2011',
-                        "num_buildings": 20,
-                        "num_buildings_w_data" : 30
-                    }, 
-                    {
-                        "yr_e": 'Dec 31, 2012',
-                        "num_buildings": 31,
-                        "num_buildings_w_data" : 41
-                    }
-                ]
-
         counts = {}
         for bldg in bldgs:
             if (bldg[x_var]) == None:
@@ -2795,18 +2802,6 @@ def get_aggregated_building_report_data(request):
                      k, v in counts.items()]
     elif y_var == 'year_built':
         #Dummy data:
-        building_counts =  [
-                    {
-                        "yr_e": 'Dec 31, 2011',
-                        "num_buildings": 20,
-                        "num_buildings_w_data" : 30
-                    }, 
-                    {
-                        "yr_e": 'Dec 31, 2012',
-                        "num_buildings": 31,
-                        "num_buildings_w_data" : 41
-                    }
-                ]
         dummydata = []
         for yr_e in ['Dec 31, 2011', 'Dec 31, 2012']:
             for i in range(1,12):
@@ -2820,18 +2815,6 @@ def get_aggregated_building_report_data(request):
 
     elif y_var == 'gross_floor_area':
         #Dummy data
-        building_counts =  [
-                    {
-                        "yr_e": 'Dec 31, 2011',
-                        "num_buildings": 20,
-                        "num_buildings_w_data" : 30
-                    }, 
-                    {
-                        "yr_e": 'Dec 31, 2012',
-                        "num_buildings": 31,
-                        "num_buildings_w_data" : 41
-                    }
-                ]
         dummydata = []
         for yr_e in ['Dec 31, 2011', 'Dec 31, 2012']:
             for gfa in ['100-199k','200k-299k','300k-399k','400-499k','500-599k','600-699k','700-799k','800-899k','900-999k','over 1,000k' ]:
@@ -2841,7 +2824,7 @@ def get_aggregated_building_report_data(request):
                 obj['y'] = gfa
                 dummydata.append(obj)
         return_data = dummydata
-        
+    # END DUMMY DATA
 
     #Send back to client
     return {
