@@ -2790,19 +2790,6 @@ def get_aggregated_building_report_data(request):
     return_data = []
     if y_var == 'use_description':
         #Dummy data:
-        building_counts =  [
-                    {
-                        "yr_e": 'Dec 31, 2011',
-                        "num_buildings": 20,
-                        "num_buildings_w_data" : 30
-                    }, 
-                    {
-                        "yr_e": 'Dec 31, 2012',
-                        "num_buildings": 31,
-                        "num_buildings_w_data" : 41
-                    }
-                ]
-
         counts = {}
         for bldg in bldgs:
             if (bldg[x_var]) == None:
@@ -2815,18 +2802,6 @@ def get_aggregated_building_report_data(request):
                      k, v in counts.items()]
     elif y_var == 'year_built':
         #Dummy data:
-        building_counts =  [
-                    {
-                        "yr_e": 'Dec 31, 2011',
-                        "num_buildings": 20,
-                        "num_buildings_w_data" : 30
-                    }, 
-                    {
-                        "yr_e": 'Dec 31, 2012',
-                        "num_buildings": 31,
-                        "num_buildings_w_data" : 41
-                    }
-                ]
         dummydata = []
         for yr_e in ['Dec 31, 2011', 'Dec 31, 2012']:
             for i in range(1,12):
@@ -2840,18 +2815,6 @@ def get_aggregated_building_report_data(request):
 
     elif y_var == 'gross_floor_area':
         #Dummy data
-        building_counts =  [
-                    {
-                        "yr_e": 'Dec 31, 2011',
-                        "num_buildings": 20,
-                        "num_buildings_w_data" : 30
-                    }, 
-                    {
-                        "yr_e": 'Dec 31, 2012',
-                        "num_buildings": 31,
-                        "num_buildings_w_data" : 41
-                    }
-                ]
         dummydata = []
         for yr_e in ['Dec 31, 2011', 'Dec 31, 2012']:
             for gfa in ['100-199k','200k-299k','300k-399k','400-499k','500-599k','600-699k','700-799k','800-899k','900-999k','over 1,000k' ]:
