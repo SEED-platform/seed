@@ -1,9 +1,10 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
+from __future__ import absolute_import
 from config.settings.common import *  # noqa
+from kombu import Exchange, Queue
 import aws
-import djcelery
 
 # AWS settings
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
@@ -71,8 +72,6 @@ CELERY_QUEUES = (
 )
 
 
-djcelery.setup_loader()
-
 # email through SES (django-ses)
 EMAIL_BACKEND = 'django_ses.SESBackend'
 
@@ -88,7 +87,6 @@ DATABASES = {
     }
 }
 DATABASES['default']['CONN_MAX_AGE'] = None  # persistent, forever connections
-
 
 # Caches (django-redis-cache)
 CACHE_MIDDLEWARE_KEY_PREFIX = APP_NAMESPACE

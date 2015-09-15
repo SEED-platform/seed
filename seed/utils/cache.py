@@ -71,6 +71,7 @@ def increment_cache(key, increment):
         value += increment
 
     set_cache(key, 'parsing', value)
+    return {'status': 'parsing', 'progress': value}
 
 
 def clear_cache():

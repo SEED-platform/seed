@@ -9,6 +9,7 @@
     "tests"
   ],
   "dependencies": {
-    "fine-uploader": "3.9.1"
+    "fine-uploader": "3.9.1",
+    "lodash": "3.10.1"
   }
 }
