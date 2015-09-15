@@ -2647,7 +2647,7 @@ def get_aggregated_building_report_data(request):
                     {
                         "yr_e": string for year ending 
                         "num_buildings": number of buildings in query results
-                        "num_buildings_w_data" : number of buildings with valid data in this group
+                        "num_buildings_w_data" : number of buildings with valid data in this group, BOTH x and y?
                     },
                     ...
                 ]                              
