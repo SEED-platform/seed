@@ -2824,7 +2824,7 @@ def get_aggregated_building_report_data(request):
                 obj['y'] = gfa
                 dummydata.append(obj)
         return_data = dummydata
-        
+    # END DUMMY DATA
 
     #Send back to client
     return {
