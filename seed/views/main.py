@@ -2632,9 +2632,9 @@ def get_aggregated_building_report_data(request):
                 "status": "success",
                 "chart_data": [
                     {
-                        "yr_e": x
-                        "x" : x,
-                        "y" : y
+                        "yr_e": x - group by year ending
+                        "x" : x, - median value in group
+                        "y" : y - average value thing
                     },
                     {
                         "yr_e": x
@@ -2645,7 +2645,7 @@ def get_aggregated_building_report_data(request):
                 ],
                 "building_counts": [
                     {
-                        "yr_e": string for year ending 
+                        "yr_e": string for year ending - group by
                         "num_buildings": number of buildings in query results
                         "num_buildings_w_data" : number of buildings with valid data in this group, BOTH x and y?
                     },
@@ -2726,7 +2726,6 @@ def get_aggregated_building_report_data(request):
         orgs = [ request.GET['organization_id'] ] #How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
-
     except KeyError, e:
         msg = "Error while calling the API function get_aggregated_building_report_data, missing parameter"
         _log.error(msg)
