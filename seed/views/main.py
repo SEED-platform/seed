@@ -2727,11 +2727,23 @@ def get_aggregated_building_report_data(request):
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
 
-    except Exception, e:
-        msg = "Error while calling the API function get_scatter_data_series, missing parameter"
+    except KeyError, e:
+        msg = "Error while calling the API function get_aggregated_building_report_data, missing parameter"
         _log.error(msg)
         _log.exception(str(e))
         return HttpResponseBadRequest(msg)
+
+    valid_x_var_values = [
+        'site_eui', 'source_eui', 'site_eui_weather_normalized',
+        'source_eui_weather_normalized', 'energy_score'
+    ]
+
+    valid_y_var_values = [
+        'gross_floor_area', 'use_description', 'year_built'
+    ]
+
+    if x_var not in valid_x_var_values or y_var not in valid_y_var_values:
+        return HttpResponseBadRequest('Invalid fields specified.')
 
     dt_from = None
     dt_to = None
@@ -2745,7 +2757,7 @@ def get_aggregated_building_report_data(request):
         return HttpResponseBadRequest(msg) 
 
     building_counts = []
-        
+
     #Get all data from buildings...temp method. To be implemented by Stephen C.
     bldgs = BuildingSnapshot.objects.filter(
                 super_organization__in=orgs,
