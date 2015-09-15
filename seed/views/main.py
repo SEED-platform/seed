@@ -2765,7 +2765,26 @@ def get_aggregated_building_report_data(request):
         year_ending__lte=dt_to
     )
 
-    # DUMMY DATA: get some data back in the form we expect it. Stephen will implement actual logic
+    grouped_buildings = defaultdict(list)
+    for building in bldgs:
+        grouped_buildings[building.year_ending].append(building)
+
+    building_counts = []
+    for year_ending, buildings in grouped_buildings.items():
+        group = {
+            'yr_e': year_ending.strftime('%b %d, %Y'), # Dec 31, 2011
+            'num_buildings': len(buildings),
+            'num_buildings_w_data': 0
+        }
+
+        # Tally which buildings have both fields set.
+        for b in buildings:
+            if getattr(b, x_var) and getattr(b, y_var):
+                group['num_buildings_w_data'] += 1
+
+        building_counts.append(group)
+
+    # START DUMMY DATA: get some data back in the form we expect it. Stephen will implement actual logic
     # Right now I'll just average values across buildings with same year ending
 
     return_data = []
