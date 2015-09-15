@@ -41,7 +41,7 @@
                                 </tr>
                             </thead>
                             <tbody ng-repeat="row in cleansingResults | filter: {visible: true}">
-                                <tr ng-repeat="result in row.cleansing_results | filter: {visible: true}">
+                                <tr ng-repeat="result in row.cleansing_results | filter: {visible: true}" ng-class="{'cleansing-error': result.severity == 'error', 'cleansing-warning': result.severity == 'warning'}">
                                     <td ng-repeat="c in columns" class="{$ c.class $}" ng-class="{sorted: search.sort_column == c.sort_column}">
                                         {$ ((c.sort_column == 'field' || c.sort_column == 'message') ? result[c.sort_column] : row[c.sort_column]) || '--' $}
                                     </td>
