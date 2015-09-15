@@ -2170,8 +2170,8 @@ def get_building_summary_report_data(request):
     It expects as parameters
 
     :GET:
-    * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
-    * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
+    * start_date:       The starting date for the data series with the format  `YYYY-MM-DD`
+    * end_date:         The starting date for the data series with the format  `YYYY-MM-DD`
 
     Returns::
     The returned JSON document that has the following structure.
@@ -2280,8 +2280,8 @@ def get_building_report_data(request):
     """ This method returns a set of x,y building data for graphing. It expects as parameters
 
         :GET:
-        * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
-        * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
+        * start_date:       The starting date for the data series with the format  `YYYY-MM-DD`
+        * end_date:         The starting date for the data series with the format  `YYYY-MM-DD`
         * x_var:            The variable name to be assigned to the "x" value in the returned data series 
         * y_var:            The variable name to be assigned to the "y" value in the returned data series
         * organization_id:  The organization to be used when querying data.
@@ -2424,39 +2424,6 @@ def get_building_report_data(request):
         return HttpResponseBadRequest(msg)
 
   
-
-    #Old dummy data code by DMcQ
-    """
-    building_counts =  [
-                {
-                    "yr_e": 'Dec 31, 2011',
-                    "num_buildings": 20,
-                    "num_buildings_w_data" : 30
-                }, 
-                {
-                    "yr_e": 'Dec 31, 2012',
-                    "num_buildings": 31,
-                    "num_buildings_w_data" : 41
-                }
-            ]
-        
-    #Get all data from buildings...temp method. To be implemented by Stephen C.
-    bldgs = BuildingSnapshot.objects.filter(
-                super_organization__in=orgs,
-                canonicalbuilding__active=True
-            ).values('id', x_var, y_var, 'year_ending')
-             
-    # DUMMY DATA: get some data back in the form we expect it. Stephen will implement actual logic
-    data = []
-    for bldg in bldgs:  
-        obj = { "id":bldg["id"], 
-                "x": bldg[x_var], 
-                "y": bldg[y_var],
-                "yr_e": bldg["year_ending"]
-                } 
-        data.append(obj)
-    """
-
     #New code by StephenC
 
     #what I want to do is get all buildings in the date range
@@ -2576,6 +2543,38 @@ def get_building_report_data(request):
             d["id"] = canonical_id #DmcQ: Changing to just id to reduce number of characters transferred
             d["yr_e"] = year_ending.strftime('%Y-%m-%d')
             chart_data.append(d)
+
+    #Old dummy data code by DMcQ
+
+    building_counts =  [
+                {
+                    "yr_e": 'Dec 31, 2011',
+                    "num_buildings": 20,
+                    "num_buildings_w_data" : 30
+                }, 
+                {
+                    "yr_e": 'Dec 31, 2012',
+                    "num_buildings": 31,
+                    "num_buildings_w_data" : 41
+                }
+            ]
+        
+    #Get all data from buildings...temp method. To be implemented by Stephen C.
+    bldgs = BuildingSnapshot.objects.filter(
+                super_organization__in=orgs,
+                canonicalbuilding__active=True
+            ).values('id', x_var, y_var, 'year_ending')
+             
+    # DUMMY DATA: get some data back in the form we expect it. Stephen will implement actual logic
+    chart_data = []
+    for bldg in bldgs:  
+        obj = { "id":bldg["id"], 
+                "x": bldg[x_var], 
+                "y": bldg[y_var],
+                "yr_e": bldg["year_ending"]
+                } 
+        chart_data.append(obj)
+   
 
             
     #Send back to client
