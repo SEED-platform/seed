@@ -22,3 +22,10 @@ def split_model_fields(obj, fields):
             other_fields.append(field)
 
     return model_fields, other_fields
+
+
+def median(lst):
+    index = (len(lst) - 1) // 2
+    if (len(lst) % 2):
+        return sorted(lst)[index]
+    return (sorted(lst)[index] + sorted(lst)[index + 1]) / 2.0

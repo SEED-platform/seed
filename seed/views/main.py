@@ -49,6 +49,7 @@ from seed.utils.buildings import (
     get_buildings_for_user_count
 )
 from seed.utils.api import api_endpoint
+from seed.utils.generic import median
 from seed.utils.projects import (
     get_projects, update_buildings_with_labels
 )
@@ -2769,10 +2770,15 @@ def get_aggregated_building_report_data(request):
     for building in bldgs:
         grouped_buildings[building.year_ending].append(building)
 
+    chart_data = []
     building_counts = []
     for year_ending, buildings in grouped_buildings.items():
-        group = {
-            'yr_e': year_ending.strftime('%b %d, %Y'), # Dec 31, 2011
+        yr_e = year_ending.strftime('%b %d, %Y'), # Dec 31, 2011
+
+        # Begin filling out building_counts object.
+
+        building_count_item = {
+            'yr_e': yr_e,
             'num_buildings': len(buildings),
             'num_buildings_w_data': 0
         }
@@ -2780,9 +2786,34 @@ def get_aggregated_building_report_data(request):
         # Tally which buildings have both fields set.
         for b in buildings:
             if getattr(b, x_var) and getattr(b, y_var):
-                group['num_buildings_w_data'] += 1
+                building_count_item['num_buildings_w_data'] += 1
 
-        building_counts.append(group)
+        building_counts.append(building_count_item)
+
+        # End of building_counts object creation, begin filling out chart_data object.
+
+        chart_data_item = {
+            'yr_e': yr_e,
+        }
+
+        if y_var == 'use_description':
+            pass
+        elif y_var == 'year_built':
+
+            # Group buildings in this year_ending group into decades
+            grouped_decades = defaultdict(list)
+            for b in buildings:
+                grouped_decades['%s0' % str(getattr(b, y_var))[:-1]].append(b)
+
+            # Now iterate over decade groups to make each chart item
+            for decade, buildings_in_decade in grouped_decades.items():
+                # Get the median of the x values
+                chart_data_item['x'] = median([getattr(b, x_var) for b in buildings_in_decade if getattr(b, x_var)])
+                chart_data_item['y'] = '%s-%s' % (decade, '%s9' % str(decade)[:-1]) # 1990-1999
+                chart_data.append(chart_data_item)
+
+        elif y_var == 'gross_floor_area':
+            pass
 
     # START DUMMY DATA: get some data back in the form we expect it. Stephen will implement actual logic
     # Right now I'll just average values across buildings with same year ending
