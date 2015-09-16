@@ -1,10 +1,11 @@
 describe("controller: buildings_reports_controller", function(){
     // globals set up and used in each test scenario
-    var mockService, scope, controller, ngFilter;
+    var scope, controller;
     var buildings_reports_ctrl, buildings_reports_ctrl_scope, labels;
     var mock_buildings_reports_service;
     var fake_report_data;
     var fake_aggregated_report_data;
+    var log;
 
     beforeEach(function() {
         module('BE.seed');
@@ -16,10 +17,12 @@ describe("controller: buildings_reports_controller", function(){
           $controller,
           $rootScope,
           $q,
+          $log,
           buildings_reports_service,
           $filter) {
             controller = $controller;
             scope = $rootScope;
+            log = $log;
             building_detail_ctrl_scope = $rootScope.$new();
 
             // mock the buildings_reports_service factory methods used in the controller
@@ -27,9 +30,8 @@ describe("controller: buildings_reports_controller", function(){
             mock_buildings_reports_service = buildings_reports_service;
 
             spyOn(mock_buildings_reports_service, "get_report_data")
-                .andCallFake(function (building, org_id){
+                .andCallFake(function (xVar, yVar, startDate, endDate){
                     mock_building = building;
-                     /* Assume test will ask for site_eui vs. gross_floor_area */
                     return $q.when(
                         fake_report_data
                     );
@@ -37,9 +39,8 @@ describe("controller: buildings_reports_controller", function(){
             );
 
             spyOn(mock_buildings_reports_service, "get_aggregated_building_report_data")
-                .andCallFake(function (building, org_id){
+                .andCallFake(function (xVar, yVar, startDate, endDate){
                     mock_building = building;
-                     /* Assume test will ask for site_eui vs. gross_floor_area */
                     return $q.when(
                         fake_aggregated_report_data
                     );
@@ -53,6 +54,7 @@ describe("controller: buildings_reports_controller", function(){
     // this is outside the beforeEach so it can be configured by each unit test
     function create_building_detail_controller(){
 
+        /* Assuming site_eui vs. gross_floor_area */
         var fake_report_data = {
             "status": "success",
             "building_counts" : [
@@ -91,12 +93,11 @@ describe("controller: buildings_reports_controller", function(){
                     y: 40000
                     yr_e: "2012-12-31"   
                 },
-            ],
-            "num_buildings": 25,
-            "num_buildings_w_data": 23
-                       
+            ]                       
         }
 
+
+        /* Assuming site_eui vs. gross_floor_area */
         var fake_aggregated_report_data = {
             "status": "success",
             "building_counts" : [
@@ -131,14 +132,13 @@ describe("controller: buildings_reports_controller", function(){
                     y: '200-299k'
                     yr_e: "2012-12-31"   
                 },
-            ],
-            "num_buildings": 25,
-            "num_buildings_w_data": 23
+            ]
         }
         
         buildings_reports_ctrl = controller('buildings_reports_controller', {
             $scope: buildings_reports_ctrl_scope,
-
+            $log: log,
+            buildings_reports_service: mock_buildings_reports_service
         });
     }
 
