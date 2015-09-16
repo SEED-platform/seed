@@ -18,12 +18,11 @@ describe("controller: buildings_reports_controller", function(){
           $rootScope,
           $q,
           $log,
-          buildings_reports_service,
-          $filter) {
+          buildings_reports_service) {
             controller = $controller;
             scope = $rootScope;
             log = $log;
-            building_detail_ctrl_scope = $rootScope.$new();
+            buildings_reports_ctrl_scope = $rootScope.$new();
 
             // mock the buildings_reports_service factory methods used in the controller
             // and return their promises
@@ -31,16 +30,14 @@ describe("controller: buildings_reports_controller", function(){
 
             spyOn(mock_buildings_reports_service, "get_report_data")
                 .andCallFake(function (xVar, yVar, startDate, endDate){
-                    mock_building = building;
                     return $q.when(
                         fake_report_data
                     );
                 }
             );
 
-            spyOn(mock_buildings_reports_service, "get_aggregated_building_report_data")
+            spyOn(mock_buildings_reports_service, "get_aggregated_report_data")
                 .andCallFake(function (xVar, yVar, startDate, endDate){
-                    mock_building = building;
                     return $q.when(
                         fake_aggregated_report_data
                     );
@@ -52,7 +49,7 @@ describe("controller: buildings_reports_controller", function(){
     ));
 
     // this is outside the beforeEach so it can be configured by each unit test
-    function create_building_detail_controller(){
+    function create_buildings_reports_controller(){
 
         /* Assuming site_eui vs. gross_floor_area */
         var fake_report_data = {
@@ -70,32 +67,31 @@ describe("controller: buildings_reports_controller", function(){
             ],
             "report_data": [
                 {
-                    id: 5321
-                    x: 70
-                    y: 20000
+                    id: 5321,
+                    x: 70,
+                    y: 20000,
                     yr_e: "2011-12-31"   
                 },
                 {
-                    id: 5322
-                    x: 71
-                    y: 40000
+                    id: 5322,
+                    x: 71,
+                    y: 40000,
                     yr_e: "2011-12-31"   
                 },
                 {
-                    id: 5321
-                    x: 73.1
-                    y: 20000
+                    id: 5321,
+                    x: 73.1,
+                    y: 20000,
                     yr_e: "2012-12-31"   
                 },
                 {
-                    id: 5322
-                    x: 75
-                    y: 40000
+                    id: 5322,
+                    x: 75,
+                    y: 40000,
                     yr_e: "2012-12-31"   
                 },
             ]                       
         }
-
 
         /* Assuming site_eui vs. gross_floor_area */
         var fake_aggregated_report_data = {
@@ -113,23 +109,23 @@ describe("controller: buildings_reports_controller", function(){
             ],
             "report_data": [
                 {
-                    x: 70
-                    y: '100-199k'
+                    x: 70,
+                    y: '100-199k',
+                    yr_e: "2011-12-31" ,  
+                },
+                {
+                    x: 71,
+                    y: '200-299k',
                     yr_e: "2011-12-31"   
                 },
                 {
-                    x: 71
-                    y: '200-299k'
-                    yr_e: "2011-12-31"   
-                },
-                {
-                    x: 73.1
-                    y: '100-199k'
+                    x: 73.1,
+                    y: '100-199k',
                     yr_e: "2012-12-31"   
                 },
                 {
-                    x: 75
-                    y: '200-299k'
+                    x: 75,
+                    y: '200-299k',
                     yr_e: "2012-12-31"   
                 },
             ]
@@ -146,8 +142,30 @@ describe("controller: buildings_reports_controller", function(){
      * Test scenarios
      */
 
-    it("should create the initial charts based on defaults", function() {
-        //to do
+    it("should have proper settings for the range of x and y variables", function() {
+        // arrange
+        create_buildings_reports_controller();
+        
+        var numXVars = buildings_reports_ctrl_scope.xAxisVars.length;
+        for (var xIndex=0;xIndex<numXVars;xIndex++){
+            var xVarDef = buildings_reports_ctrl_scope.xAxisVars[xIndex];
+            expect(xVarDef.name).toBeDefined();
+            expect(xVarDef.label).toBeDefined();
+            expect(xVarDef.axisLabel).toBeDefined();
+            expect(xVarDef.axisType).toBeDefined();
+            expect(xVarDef.axisTickFormat).toBeDefined();
+        }
+
+        var numYVars = buildings_reports_ctrl_scope.yAxisVars.length;
+        for (var yIndex=0;yIndex<numYVars;yIndex++){
+            var yVarDef = buildings_reports_ctrl_scope.yAxisVars[yIndex];
+            expect(yVarDef.name).toBeDefined();
+            expect(yVarDef.label).toBeDefined();
+            expect(yVarDef.axisLabel).toBeDefined();
+            expect(yVarDef.axisType).toBeDefined();
+            expect(yVarDef.axisTickFormat).toBeDefined();
+        }
+
     });
 
 });
