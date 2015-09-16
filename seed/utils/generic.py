@@ -1,7 +1,7 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
-
+import math
 
 def split_model_fields(obj, fields):
     """
@@ -29,3 +29,7 @@ def median(lst):
     if (len(lst) % 2):
         return sorted(lst)[index]
     return (sorted(lst)[index] + sorted(lst)[index + 1]) / 2.0
+
+
+def round_down_hundred_thousand(x):
+    return int(math.floor(x / 100000.0)) * 100000
