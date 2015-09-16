@@ -1,27 +1,38 @@
 /**
- * :copyright: (c) 2014 Building Energy Inc
- */
+  This controller handles the building reports page, watching for and remembering
+  the user's selections for chart parameters like date range and x and y variables,
+  and then updating the chart directies when the user clicks the update chart button.
+*/
+
 angular.module('BE.seed.controller.buildings_reports', [])
 .controller('buildings_reports_controller', [ '$scope',
                                               '$log',
-                                              '$modal',
                                               'buildings_reports_service',
                                     function( $scope,
                                               $log,
-                                              $modal,
                                               buildings_reports_service
                                             ) {
 
 
   'use strict';
 
+  /* Define the first five colors. After that, rely on Dimple's default colors. */
   var defaultColors = ["#c83737","#458cc8","#1159a3","#f2c41d","#939495"];
 
   /* SCOPE VARS */
+  /* ~~~~~~~~~~ */
 
-  // Chart variables : 
-  // these next two arrays define the various properties 
-  // of the variables the user can select for graphing.            
+  /** Chart variables : 
+      these next two arrays, $scope.xAxisVars and $scope.yAxisVars, define the various properties 
+      of the variables the user can select for graphing.
+
+      Each object contains information used by the dropdown controls as well as information
+      used to customize the chart specifically for that value (e.g. axisTickFormat)
+
+      Ideally, if we need to add new variables, we should just be able to add a new object to 
+      either of these arrays. (However, at first when adding new variables we might need to add
+      new functionality to the directive to handle any idiosyncracies of graphing that new variable.)
+  */           
   $scope.xAxisVars = [
     { 
       name: "Site EUI",
@@ -127,31 +138,47 @@ angular.module('BE.seed.controller.buildings_reports', [])
 
 
   /* UI HANDLERS */
+  /* ~~~~~~~~~~~ */
 
-  // Datepicker updates 
-
+  // Handle datepicker open/close events 
   $scope.openStartDatePicker = function ($event) {
     $event.preventDefault();
     $event.stopPropagation();
     $scope.startDatePickerOpen = !$scope.startDatePickerOpen;
   };
-
   $scope.openEndDatePicker = function ($event) {
     $event.preventDefault();
     $event.stopPropagation();
     $scope.endDatePickerOpen = !$scope.endDatePickerOpen;
   };
-
-
-  /* AXIS VARIABLE PICKERS SUBMIT */
   
+  /* Update data used by the chart. This will force the charts to re-render*/
   $scope.updateChartData = function(){
     clearChartData();   
     getChartData();
     getAggChartData();
-    updateTitles();
+    updateChartTitles();
   }
 
+
+  /* FLAGS FOR CHART STATE */
+  /* ~~~~~~~~~~~~~~~~~~~~~ */
+
+  /* The directive will call this, so we can update our flag for the state of the chart. */
+  $scope.chartRendered = function(){
+    $scope.chartIsLoading = false;     
+  }
+
+  /* The directive will call this, so we can update our flag for the state of the chart. */
+  $scope.aggChartRendered = function(){
+    $scope.aggChartIsLoading = false;
+  }
+
+
+  /* PRIVATE FUNCTIONS (so to speak) */
+  /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+  /* Clear the data used by the chart*/
   function clearChartData(){
     $scope.chartData = [];
     $scope.aggChartData = [];
@@ -159,41 +186,24 @@ angular.module('BE.seed.controller.buildings_reports', [])
     $scope.aggBuildingCounts = [];
   }
 
-  function updateTitles(){
+  /* Update the titles above each chart*/
+  function updateChartTitles(){
     $scope.chart1Title = $scope.xAxisSelectedItem.label + " vs. " + $scope.yAxisSelectedItem.label;
     $scope.chart2Title = $scope.xAxisSelectedItem.label + " vs. " + $scope.yAxisSelectedItem.label;
   }
 
- 
+   /** Get the 'raw' (unaggregated) chart data from the server for the scatter plot chart.
+      The user's selections are already stored as proprties on the scope, so use 
+      those for the parameters that need to be sent to the server.
 
+      When chart data is returned from the service, pass it to our chart directive along 
+      with configuration information. The chart will update automatically as it's watching the
+      chartData property on the scope.
 
-  /* SUMMARY DATA */
-  /*
-  function getSummaryData() {
-    buildings_reports_service.get_summary_data().then(function(data) {
-      // resolve promise
-      $scope.summaryData = data;
-    });
-  }
-
-  function clearSummaryFields() {
-    initSummaryFields();
-  }
-  
-  function initSummaryFields() {
-    $scope.summaryData = {
-                            num_buildings: "", 
-                            avg_eui: "",
-                            avg_energy_score: ""
-                          };
-  }
-  initSummaryFields();
-  */
-
- 
-
-  
-
+      In the future, if we want the chart to look or behave differently depending on the data,
+      we can pass in different configuration options.
+      The chart will update automatically as it's watching the chartData property on the scope.
+  */  
   function getChartData(){    
 
     var xVar = $scope.xAxisSelectedItem.varName;
@@ -220,6 +230,18 @@ angular.module('BE.seed.controller.buildings_reports', [])
       });
   }
 
+  /** Get the aggregated chart data from the server for the scatter plot chart.
+      The user's selections are already stored as proprties on the scope, so use 
+      those for the parameters that need to be sent to the server.
+
+      When chart data is returned from the service, pass it to our chart directive along 
+      with configuration information. The chart will update automatically as it's watching the
+      chartData property on the scope.
+
+      In the future, if we want the chart to look or behave differently depending on the data,
+      we can pass in different configuration options.
+      
+  */  
   function getAggChartData(){
 
     var xVar = $scope.xAxisSelectedItem.varName;
@@ -252,8 +274,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
           color:       A hex value for the color
         }   
       A side effect of this method is that the colors are also applied to the bldgCounts object
-      so that they're available in the table view that lists group details. From a functional
-      view that's not great style but it works.
+      so that they're available in the table view that lists group details. 
   */
   function mapColors(bldgCounts){    
     if (!bldgCounts) return [];
@@ -266,22 +287,13 @@ angular.module('BE.seed.controller.buildings_reports', [])
       bldgCounts[groupIndex].color = obj.color;
       colorsArr.push(obj);
     }
-    bldgCounts.reverse(); //so the table/legend order matches the order Dimple will build the groups
+    //bldgCounts.reverse(); //so the table/legend order matches the order Dimple will build the groups
     return colorsArr;
   }
 
-  $scope.chartRendered = function(){
-    $scope.chartIsLoading = false;     
-  }
-
-  $scope.aggChartRendered = function(){
-    $scope.aggChartIsLoading = false;
-  }
-
-  function clearGraphs() {
-    //TODO : IMPLEMENT
-  } 
-
+ 
+  /* Call the update method so the page initializes
+     with the values set in the scope */
   function init(){
     $scope.updateChartData();
   }
