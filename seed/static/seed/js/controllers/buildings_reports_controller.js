@@ -11,7 +11,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
                                     function( $scope,
                                               $log,
                                               buildings_reports_service
-                                            ) {
+                                            ){
 
 
   'use strict';
@@ -35,12 +35,12 @@ angular.module('BE.seed.controller.buildings_reports', [])
   */           
   $scope.xAxisVars = [
     { 
-      name: "Site EUI",
-      label: "Site Energy Use Intensity", 
-      varName: "site_eui",
-      axisLabel: "Site EUI (kBtu/ft2)",
-      axisType: "Measure",
-      axisTickFormat: ",.0f"
+      name: "Site EUI",                     //short name for variable, used in pulldown
+      label: "Site Energy Use Intensity",   //full name for variable
+      varName: "site_eui",                  //name of variable, to be sent to server
+      axisLabel: "Site EUI (kBtu/ft2)",     //label to be used in charts, should include units
+      axisType: "Measure",                  //DimpleJS property for axis type
+      axisTickFormat: ",.0f"                //DimpleJS property for axis tick format
     },    
     {       
       name: "Source EUI",
