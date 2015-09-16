@@ -49,7 +49,7 @@ from seed.utils.buildings import (
     get_buildings_for_user_count
 )
 from seed.utils.api import api_endpoint
-from seed.utils.generic import median
+from seed.utils.generic import median, round_down_hundred_thousand
 from seed.utils.projects import (
     get_projects, update_buildings_with_labels
 )
@@ -2773,7 +2773,7 @@ def get_aggregated_building_report_data(request):
     chart_data = []
     building_counts = []
     for year_ending, buildings in grouped_buildings.items():
-        yr_e = year_ending.strftime('%b %d, %Y'), # Dec 31, 2011
+        yr_e = year_ending.strftime('%b %d, %Y') # Dec 31, 2011
 
         # Begin filling out building_counts object.
 
@@ -2792,78 +2792,74 @@ def get_aggregated_building_report_data(request):
 
         # End of building_counts object creation, begin filling out chart_data object.
 
-        chart_data_item = {
-            'yr_e': yr_e,
-        }
-
         if y_var == 'use_description':
-            pass
+
+            # Group buildings in this year_ending group into uses
+            grouped_uses = defaultdict(list)
+            for b in buildings:
+                if not getattr(b, y_var):
+                    continue
+                grouped_uses[str(getattr(b, y_var)).lower()].append(b)
+
+            # Now iterate over use groups to make each chart item
+            for use, buildings_in_uses in grouped_uses.items():
+                chart_data.append({
+                    'yr_e': yr_e,
+                    'x': median([getattr(b, x_var) for b in buildings_in_uses if getattr(b, x_var)]),
+                    'y': use.capitalize()
+                })
+
         elif y_var == 'year_built':
 
             # Group buildings in this year_ending group into decades
             grouped_decades = defaultdict(list)
             for b in buildings:
+                if not getattr(b, y_var):
+                    continue
                 grouped_decades['%s0' % str(getattr(b, y_var))[:-1]].append(b)
 
             # Now iterate over decade groups to make each chart item
             for decade, buildings_in_decade in grouped_decades.items():
-                # Get the median of the x values
-                chart_data_item['x'] = median([getattr(b, x_var) for b in buildings_in_decade if getattr(b, x_var)])
-                chart_data_item['y'] = '%s-%s' % (decade, '%s9' % str(decade)[:-1]) # 1990-1999
-                chart_data.append(chart_data_item)
+                chart_data.append({
+                    'yr_e': yr_e,
+                    'x': median([getattr(b, x_var) for b in buildings_in_decade if getattr(b, x_var)]),
+                    'y': '%s-%s' % (decade, '%s9' % str(decade)[:-1]) # 1990-1999
+                })
 
         elif y_var == 'gross_floor_area':
-            pass
+            y_display_map = {
+                0: '0-99k',
+                100000: '100-199k',
+                200000: '200k-299k',
+                300000: '300k-399k',
+                400000: '400-499k',
+                500000: '500-599k',
+                600000: '600-699k',
+                700000: '700-799k',
+                800000: '800-899k',
+                900000: '900-999k',
+                1000000: 'over 1,000k',
+            }
 
-    # START DUMMY DATA: get some data back in the form we expect it. Stephen will implement actual logic
-    # Right now I'll just average values across buildings with same year ending
+            # Group buildings in this year_ending group into ranges
+            grouped_ranges = defaultdict(list)
+            for b in buildings:
+                if not getattr(b, y_var):
+                    continue
+                area = getattr(b, y_var)
+                grouped_ranges[round_down_hundred_thousand(area)].append(b)
 
-    return_data = []
-    if y_var == 'use_description':
-        #Dummy data:
-        counts = {}
-        for bldg in bldgs:
-            if (bldg[x_var]) == None:
-                continue 
-            entry = counts.setdefault((bldg['year_ending'], bldg['use_description']), [0, 0])
-            entry[0] += bldg[x_var]
-            entry[1] += 1
-
-        return_data = [{'yr_e': k[0], 'y': k[1], 'x': float(v[0]) / v[1]} for 
-                     k, v in counts.items()]
-    elif y_var == 'year_built':
-        #Dummy data:
-        dummydata = []
-        for yr_e in ['Dec 31, 2011', 'Dec 31, 2012']:
-            for i in range(1,12):
-                obj = {}
-                decade = str(2020 - (i*10))
-                obj['yr_e'] = yr_e
-                obj['x'] = random.randrange(1,100)
-                obj['y'] = decade
-                dummydata.append(obj)
-        return_data = dummydata
-
-    elif y_var == 'gross_floor_area':
-        #Dummy data
-        dummydata = []
-        for yr_e in ['Dec 31, 2011', 'Dec 31, 2012']:
-            for gfa in ['100-199k','200k-299k','300k-399k','400-499k','500-599k','600-699k','700-799k','800-899k','900-999k','over 1,000k' ]:
-                obj = {}
-                obj['yr_e'] = yr_e
-                obj['x'] = random.randrange(1,100)
-                obj['y'] = gfa
-                dummydata.append(obj)
-        return_data = dummydata
-    # END DUMMY DATA
+            # Now iterate over range groups to make each chart item
+            for range_floor, buildings_in_range in grouped_ranges.items():
+                chart_data.append({
+                    'yr_e': yr_e,
+                    'x': median([getattr(b, x_var) for b in buildings_in_range if getattr(b, x_var)]),
+                    'y': y_display_map[range_floor]
+                })
 
     #Send back to client
     return {
         'status': 'success',
-        'chart_data' : return_data,
-        'building_counts' : building_counts,
-        'num_buildings_w_data' : 400,
-        'num_buildings' : 405
+        'chart_data' : chart_data,
+        'building_counts' : building_counts
     }
-
-
