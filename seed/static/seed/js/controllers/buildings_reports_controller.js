@@ -295,7 +295,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
   /* Call the update method so the page initializes
      with the values set in the scope */
   function init(){
-    $scope.updateChartData();
+    //$scope.updateChartData();
   }
 
   init();

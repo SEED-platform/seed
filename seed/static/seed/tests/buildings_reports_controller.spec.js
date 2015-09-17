@@ -3,8 +3,8 @@ describe("controller: buildings_reports_controller", function(){
     var scope, controller;
     var buildings_reports_ctrl, buildings_reports_ctrl_scope, labels;
     var mock_buildings_reports_service;
-    var fake_report_data;
-    var fake_aggregated_report_data;
+    var fake_report_data_payload;
+    var fake_aggregated_report_data_payload;
     var log;
 
     beforeEach(function() {
@@ -30,17 +30,13 @@ describe("controller: buildings_reports_controller", function(){
 
             spyOn(mock_buildings_reports_service, "get_report_data")
                 .andCallFake(function (xVar, yVar, startDate, endDate){
-                    return $q.when(
-                        fake_report_data
-                    );
+                    return $q.when(fake_report_data_payload);
                 }
             );
 
             spyOn(mock_buildings_reports_service, "get_aggregated_report_data")
                 .andCallFake(function (xVar, yVar, startDate, endDate){
-                    return $q.when(
-                        fake_aggregated_report_data
-                    );
+                    return $q.when(fake_aggregated_report_data_payload);
                 }
             );
 
@@ -52,7 +48,7 @@ describe("controller: buildings_reports_controller", function(){
     function create_buildings_reports_controller(){
 
         /* Assuming site_eui vs. gross_floor_area */
-        var fake_report_data = {
+        fake_report_data_payload = {
             "status": "success",
             "building_counts" : [
                 {   "yr_e": "Dec 31,2011",
@@ -94,7 +90,7 @@ describe("controller: buildings_reports_controller", function(){
         }
 
         /* Assuming site_eui vs. gross_floor_area */
-        var fake_aggregated_report_data = {
+        fake_aggregated_report_data_payload = {
             "status": "success",
             "building_counts" : [
                 {   "yr_e": "Dec 31,2011",
@@ -141,11 +137,14 @@ describe("controller: buildings_reports_controller", function(){
     /*
      * Test scenarios
      */
-
     it("should have proper settings for the range of x and y variables", function() {
+        
         // arrange
         create_buildings_reports_controller();
         
+        // no action, go straight to assertions to check defaults
+
+        // assertions
         var numXVars = buildings_reports_ctrl_scope.xAxisVars.length;
         for (var xIndex=0;xIndex<numXVars;xIndex++){
             var xVarDef = buildings_reports_ctrl_scope.xAxisVars[xIndex];
@@ -155,7 +154,6 @@ describe("controller: buildings_reports_controller", function(){
             expect(xVarDef.axisType).toBeDefined();
             expect(xVarDef.axisTickFormat).toBeDefined();
         }
-
         var numYVars = buildings_reports_ctrl_scope.yAxisVars.length;
         for (var yIndex=0;yIndex<numYVars;yIndex++){
             var yVarDef = buildings_reports_ctrl_scope.yAxisVars[yIndex];
@@ -165,7 +163,29 @@ describe("controller: buildings_reports_controller", function(){
             expect(yVarDef.axisType).toBeDefined();
             expect(yVarDef.axisTickFormat).toBeDefined();
         }
+    });   
+    it("should have defaults for selected x and y variable", function(){
+        // arrange
+        create_buildings_reports_controller();
+        
+        // no action, go straight to assertions to check defaults
 
+        // assertions
+        expect(buildings_reports_ctrl_scope.xAxisSelectedItem).toBeDefined();
+        expect(buildings_reports_ctrl_scope.yAxisSelectedItem).toBeDefined();          
+    }); 
+    it("should load data from service and assign it to scope variables", function() {
+        // arrange
+        create_buildings_reports_controller();
+
+        // act
+        buildings_reports_ctrl_scope.$digest();
+        buildings_reports_ctrl_scope.updateChartData();
+        buildings_reports_ctrl_scope.$digest();
+
+        // assertions
+        expect(buildings_reports_ctrl_scope.chartData.chartData).toEqual(fake_report_data_payload.chartData);
+        expect(buildings_reports_ctrl_scope.aggChartData.chartData).toEqual(fake_aggregated_report_data_payload.chartData);
     });
 
 });
