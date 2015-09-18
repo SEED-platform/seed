@@ -565,6 +565,9 @@ angular.module('BE.seed.controller.mapping', [])
                 },
                 'uploaded': function() {
                     return $scope.import_file.dataset.finish_time;
+                },
+                'importFileId': function() {
+                  return $scope.import_file.id;
                 }
             }
         });

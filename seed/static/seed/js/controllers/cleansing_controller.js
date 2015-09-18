@@ -6,17 +6,20 @@ angular.module('BE.seed.controller.cleansing', [])
   'cleansingResults',
   'name',
   'uploaded',
+  'importFileId',
   function(
     $scope,
     $modalInstance,
     search_service,
     cleansingResults,
     name,
-    uploaded
+    uploaded,
+    importFileId
   ) {
     $scope.name = name;
     $scope.uploaded = uploaded;
     $scope.cleansingResults = cleansingResults;
+    $scope.importFileId = importFileId;
 
     $scope.close = function () {
       $modalInstance.close();
