@@ -72,7 +72,7 @@ class Cleansing(models.Model):
                 self.results[datum.id]['custom_id_1'] = datum.custom_id_1
                 self.results[datum.id]['cleansing_results'] = []
 
-            self.missing_matching_field(datum)
+            # self.missing_matching_field(datum)
             self.in_range_checking(datum)
             self.missing_values(datum)
             # self.data_type_check(datum)
