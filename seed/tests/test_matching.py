@@ -48,4 +48,8 @@ class NormalizeStreetAddressTests(TestCase):
         ('direction 2', '100 Main South', '100 main s'),
         ('direction 3', '100 Main S.', '100 main s'),
         ('direction 4', '100 Main', '100 main'),
+        # Found edge cases
+        # https://github.com/SEED-platform/seed/issues/378
+        ('regression 1', '100 Peach Ave. East', '100 peach ave e'),
+        ('regression 1', '100 Peach Avenue E.', '100 peach ave e'),
     ]

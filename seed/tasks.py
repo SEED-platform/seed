@@ -1027,7 +1027,7 @@ def _normalize_address_direction(direction):
     direction = direction.lower().replace('.', '')
     direction_map = {
         'east' : 'e',
-        'west' : 'w', 
+        'west' : 'w',
         'north' : 'n',
         'south' : 's',
         'northeast': 'ne',
@@ -1038,6 +1038,17 @@ def _normalize_address_direction(direction):
     if direction in direction_map:
         return direction_map[direction]
     return direction
+
+
+POST_TYPE_MAP = {
+    'avenue': 'ave',
+}
+
+
+def _normalize_address_post_type(post_type):
+    value = post_type.lower().replace('.', '')
+    return POST_TYPE_MAP.get(value, value)
+
 
 def _normalize_address_str(address_val):
     """
@@ -1071,7 +1082,7 @@ def _normalize_address_str(address_val):
 
     if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
         # remove any periods from abbreviations
-        normalized_address = normalized_address + ' ' + addr['StreetNamePostType'].replace('.', '')
+        normalized_address = normalized_address + ' ' + _normalize_address_post_type(addr['StreetNamePostType'])
 
     if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
         normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePostDirectional'])
