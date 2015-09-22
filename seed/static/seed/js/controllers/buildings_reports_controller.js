@@ -136,6 +136,11 @@ angular.module('BE.seed.controller.buildings_reports', [])
   $scope.chartIsLoading = true;
   $scope.aggChartIsLoading = true;
 
+  //Setting the status messages will cause the small white status box to show above the chart
+  //Setting these to empty string will remove that box
+  $scope.chartStatusMessage = "No data";     
+  $scope.aggChartStatusMessage = "No data";
+
 
   /* UI HANDLERS */
   /* ~~~~~~~~~~~ */
@@ -155,9 +160,11 @@ angular.module('BE.seed.controller.buildings_reports', [])
   /* Update data used by the chart. This will force the charts to re-render*/
   $scope.updateChartData = function(){
     clearChartData();   
+    $scope.chartStatusMessage = "Loading data...";
+    $scope.aggChartStatusMessage = "Loading data...";
     getChartData();
     getAggChartData();
-    updateChartTitles();
+    updateChartTitles();    
   }
 
 
@@ -191,6 +198,15 @@ angular.module('BE.seed.controller.buildings_reports', [])
     $scope.chart1Title = $scope.xAxisSelectedItem.label + " vs. " + $scope.yAxisSelectedItem.label;
     $scope.chart2Title = $scope.xAxisSelectedItem.label + " vs. " + $scope.yAxisSelectedItem.label;
   }
+
+  function getChartStatusMessages(chartData){
+    if (chartData.chartData && chartData.chartData.length>0) {
+      return ""
+    } else {
+      return "No Data";
+    }
+  }
+
 
    /** Get the 'raw' (unaggregated) chart data from the server for the scatter plot chart.
       The user's selections are already stored as proprties on the scope, so use 
@@ -226,7 +242,10 @@ angular.module('BE.seed.controller.buildings_reports', [])
           "xAxisTickFormat": $scope.xAxisSelectedItem.axisTickFormat,
           "yAxisTickFormat": $scope.yAxisSelectedItem.axisTickFormat,
           "colors": colorsArr
-        };        
+        }; 
+      })
+      .finally(function(data){
+         $scope.chartStatusMessage = getChartStatusMessages($scope.chartData);
       });
   }
 
@@ -262,7 +281,9 @@ angular.module('BE.seed.controller.buildings_reports', [])
           "yAxisType": "Category",
           "colors": colorsArr
         };
-
+      })
+      .finally(function(data){
+         $scope.aggChartStatusMessage = getChartStatusMessages($scope.aggChartData);
       });
 
   }

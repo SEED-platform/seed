@@ -55,6 +55,12 @@
             border:1px solid #F6F6F6;
         }
 
+        .chart-inputs {
+            padding:10px; 
+            border-radius:.5em; 
+            background-color:#F6F6F6;
+        }
+
         .section_content_container .section_content .content_block p {
             font-size: 13px;
         }
@@ -73,11 +79,11 @@
             position:relative;
         }
 
-        .loading-message {
+        .status-message {
             position:absolute;
             top:50%;
             left:50%;
-            margin-left:-60px;
+            margin:-60px 0px 0px -60px;
             text-align:center;
             width:120px;
             padding-top:10px;
@@ -96,117 +102,78 @@
     </style>
    
     <div class="section_content_container">
-
-        <div class="section_content ">
-            
-            <div class="content_block row" style="padding:20px">
-               
-                    <div class="container" style="width:100%; margin-bottom:20px;">
-        
-                        <div class="row">
-
-                            <div class="col-md-2" >
-                                <h2 style="font-size:18px;"><i class="fa fa-bar-chart pull-left"></i> Building Reports</h2>     
-                            </div>
-
-                            <div class="col-md-10" >                   
-
-                                <form class="form-inline pull-right" role="form" style="padding:10px; border-radius:.5em; background-color:#F6F6F6;">
-
-                                    <div class="form-group">                             
-                                        <label  for="from-date">From date:</label>   
-                                        <div class="input-group date-input"> 
-                                            <input  id="from-date"
-                                                    type="text"
-                                                    class="form-control"
-                                                    datepicker-popup="MM-dd-yyyy" 
-                                                    is-open="startDatePickerOpen" 
-                                                    ng-model="startDate"  
-
-                                                    />
-                                            <span class="input-group-btn">
-                                                <button type="button" 
-                                                        class="btn btn-default" 
-                                                        ng-click="openStartDatePicker($event)" ><i class="fa fa-calendar"></i></button>
-                                            </span>
-                                        </div>
-
-                                    </div>
-
-                                    <div class="form-group"> 
-                                        <label for="to-date">To date:</label>   
-                                        <div class="input-group date-input">
-                                            <input  id="to-date"
-                                                    type="text" 
-                                                    class="form-control"
-                                                    min-date="startDate" 
-                                                    datepicker-popup="MM-dd-yyyy" 
-                                                    is-open="endDatePickerOpen" 
-                                                    ng-model="endDate"/>
-                                            <span class="input-group-btn">
-                                                <button type="button" 
-                                                        class="btn btn-default" 
-                                                        ng-click="openEndDatePicker($event)" ><i class="fa fa-calendar"></i></button>
-                                            </span>
-                                        </div>            
-                                    </div>
-
-
-                                    <div class="form-group">
-
-                                        <label for="to-date">X Axis:</label>
-
-                                        <dropdown is-button 
-                                                  ng-model="xAxisSelectedItem" 
-                                                  items="xAxisVars" >
-                                        </dropdown>
-                                        <!--
-                                        <select ng-model="xAxisSelectedItem" 
-                                                ng-init="xAxisSelectedItem=xAxisVars[0]" 
-                                                ng-options="option.pickerName for option in xAxisVars" >
-                                        </select>
-                                        -->
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="to-date">Y Axis:</label>   
-
-                                        <dropdown is-button 
-                                                  ng-model="yAxisSelectedItem" 
-                                                  items="yAxisVars" >
-                                        </dropdown>
-
-                                        <!--
-                                        <select ng-model="yAxisSelectedItem" 
-                                                ng-init="yAxisSelectedItem=yAxisVars[0]" 
-                                                ng-options="option.pickerName for option in yAxisVars" >
-                                        </select>
-                                        -->
-                                    </div>
-                       
-                                    <div class="form-group">
-
-                                        <button type="submit" 
-                                                class="btn btn-primary" 
-                                                ng-click="updateChartData()">
-                                                Update Charts
-                                        </button>
-
-                                    </div>
-
-                                </form>
-
-                            </div>
-                         
+        <div class="section_content ">            
+            <div class="content_block row" style="padding:20px">        
+                <div class="container" style="width:100%; margin-bottom:20px;">        
+                    <div class="row">
+                        <div class="col-md-2" >
+                            <h2 style="font-size:18px;"><i class="fa fa-bar-chart pull-left"></i> Building Reports</h2>     
                         </div>
+                        <div class="col-md-10" >   
+                            <form class="form-inline pull-right chart-inputs" role="form" >
+                                <div class="form-group">                             
+                                    <label  for="from-date">From date:</label>   
+                                    <div class="input-group date-input"> 
+                                        <input  id="from-date"
+                                                type="text"
+                                                class="form-control"
+                                                datepicker-popup="MM-dd-yyyy" 
+                                                is-open="startDatePickerOpen" 
+                                                ng-model="startDate"  
 
-                    </div>
+                                                />
+                                        <span class="input-group-btn">
+                                            <button type="button" 
+                                                    class="btn btn-default" 
+                                                    ng-click="openStartDatePicker($event)" ><i class="fa fa-calendar"></i></button>
+                                        </span>
+                                    </div>
 
-                </div>
-
+                                </div>
+                                <div class="form-group"> 
+                                    <label for="to-date">To date:</label>   
+                                    <div class="input-group date-input">
+                                        <input  id="to-date"
+                                                type="text" 
+                                                class="form-control"
+                                                min-date="startDate" 
+                                                datepicker-popup="MM-dd-yyyy" 
+                                                is-open="endDatePickerOpen" 
+                                                ng-model="endDate"/>
+                                        <span class="input-group-btn">
+                                            <button type="button" 
+                                                    class="btn btn-default" 
+                                                    ng-click="openEndDatePicker($event)" ><i class="fa fa-calendar"></i></button>
+                                        </span>
+                                    </div>            
+                                </div>
+                                <div class="form-group">
+                                    <label for="to-date">X Axis:</label>
+                                    <dropdown is-button 
+                                              ng-model="xAxisSelectedItem" 
+                                              items="xAxisVars" >
+                                    </dropdown>
+                                </div>
+                                <div class="form-group">
+                                    <label for="to-date">Y Axis:</label>   
+                                    <dropdown is-button 
+                                              ng-model="yAxisSelectedItem" 
+                                              items="yAxisVars" >
+                                    </dropdown>
+                                </div>                       
+                                <div class="form-group">
+                                    <button type="submit" 
+                                            class="btn btn-primary" 
+                                            ng-click="updateChartData()">
+                                            Update Charts
+                                    </button>
+                                </div>
+                            </form>
+                        </div>                         
+                    </div> <!-- ./row -->
+                </div> <!-- ./container -->                
             </div>
-         
-
+     
             <div class="content_block row" style="padding:0px 20px;">
 
                 <div class="col-md-6 col-sm-6">                  
@@ -221,7 +188,7 @@
                                                     >
                         </basic-building-info-chart>
                     </div>                    
-                    <div ng-show="chartIsLoading" class="loading-message">Loading...</div>
+                    <div ng-show="chartStatusMessage" class="status-message">{$ chartStatusMessage $}</div>
 
                     <div class="reportingTableHolder">
                         <table class="table" >
@@ -241,9 +208,7 @@
                             </tbody>
                         </table>
                     </div>
-
                 </div><!-- ./ col-md-6 -->
-
 
                 <div class="col-md-6 col-sm-6">                   
                     <h4 class="chartTitle">{$ chart2Title $}</h3>                         
@@ -257,7 +222,7 @@
                                                     >
                         </basic-building-info-chart>
                     </div>                    
-                    <div ng-show="aggChartIsLoading" class="loading-message">Loading...</div>
+                    <div ng-show="aggChartStatusMessage" class="status-message">{$ aggChartStatusMessage $}</div>
 
                      <div class="reportingTableHolder" >
                         <table class="table">
@@ -277,44 +242,8 @@
                             </tbody>
                         </table>                        
                     </div>
-
-                </div><!-- ./ col-md-6 -->
-
-                <!--
-                <div class="col-md-6 col-sm-6">  
-                    <div id="chartEnergyStar" class="chart-holder">
-                        Energy Star vs.  
-                        <select ng-model="esChartSelectedItem" 
-                                ng-init="esChartSelectedItem=esChartVars[0]" 
-                                ng-options="item.name for item in esChartVars" 
-                                ng-change="updateESChart(esChartSelectedItem)">
-                        </select>
-                        <graph  id="esChart" 
-                                data="esChartData" 
-                                width="100%" 
-                                height="300px" 
-                                transition="150" 
-                                autoresize="true"     
-                                yaxislabel="{$esChartYAxisLabel$}"  
-                                onchartrendered="esChartRendered()"                         
-                                >
-                          <x field="x" type="Measure" title="Energy Star Score"></x>
-                          <y field="y" type="Measure" ></y>
-                          <scatter-plot field="x" series="y" label="Test" width="100%"></scatter-plot>
-                        </graph>
-                    </div>
-                    <div ng-show="esChartIsLoading" class="loading-message">Loading...</div>
-                </div> 
-                -->
-                <!-- ./ col-md-6 -->
-
-            </div>  <!-- ./ content_block -->     
-
-
-
-        </div>
-    </div>
-</div>
-
-  
+                </div><!-- ./ col-md-6 -->                      
+            </div> <!-- ./ content_block row --> 
+        </div> <!-- ./section_content -->
+    </div>  <!-- ./section_content_container-->
 </div>
