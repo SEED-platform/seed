@@ -200,15 +200,15 @@ describe("controller: buildings_reports_controller", function(){
         var aggChartData = buildings_reports_ctrl_scope.aggChartData;
 
         expect(chartData.colors.length).toEqual(bldgCounts.length);
-        expect(chartData.colors[0].seriesName).toEqual(bldgCounts[0].seriesName);
+        expect(chartData.colors[0].seriesName).toEqual(bldgCounts[0].yr_e);
         expect(chartData.colors[0].color).toEqual(defaultColors[0]);
-        expect(chartData.colors[1].seriesName).toEqual(bldgCounts[1].seriesName);
+        expect(chartData.colors[1].seriesName).toEqual(bldgCounts[1].yr_e);
         expect(chartData.colors[1].color).toEqual(defaultColors[1]);
 
         expect(aggChartData.colors.length).toEqual(bldgCountsAgg.length);
-        expect(aggChartData.colors[0].seriesName).toEqual(bldgCountsAgg[0].seriesName);
+        expect(aggChartData.colors[0].seriesName).toEqual(bldgCountsAgg[0].yr_e);
         expect(aggChartData.colors[0].color).toEqual(defaultColors[0]);
-        expect(aggChartData.colors[1].seriesName).toEqual(bldgCountsAgg[1].seriesName);
+        expect(aggChartData.colors[1].seriesName).toEqual(bldgCountsAgg[1].yr_e);
         expect(aggChartData.colors[1].color).toEqual(defaultColors[1]);
     });
     
