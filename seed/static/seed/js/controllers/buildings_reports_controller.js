@@ -17,7 +17,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
   'use strict';
 
   /* Define the first five colors. After that, rely on Dimple's default colors. */
-  var defaultColors = ["#c83737","#458cc8","#1159a3","#f2c41d","#939495"];
+  $scope.defaultColors = ["#c83737","#458cc8","#1159a3","#f2c41d","#939495"];
 
   /* SCOPE VARS */
   /* ~~~~~~~~~~ */
@@ -274,7 +274,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
           color:       A hex value for the color
         }   
       A side effect of this method is that the colors are also applied to the bldgCounts object
-      so that they're available in the table view that lists group details. 
+      so that they're available in the table view beneath the chart that lists group details. 
   */
   function mapColors(bldgCounts){    
     if (!bldgCounts) return [];
@@ -283,7 +283,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
     for (var groupIndex=0;groupIndex<numBldgGroups;groupIndex++){
       var obj = {};
       obj.seriesName = bldgCounts[groupIndex].yr_e;
-      obj.color = defaultColors[groupIndex];
+      obj.color = $scope.defaultColors[groupIndex];
       bldgCounts[groupIndex].color = obj.color;
       colorsArr.push(obj);
     }

@@ -174,7 +174,7 @@ describe("controller: buildings_reports_controller", function(){
         expect(buildings_reports_ctrl_scope.xAxisSelectedItem).toBeDefined();
         expect(buildings_reports_ctrl_scope.yAxisSelectedItem).toBeDefined();          
     }); 
-    it("should load data from service and assign it to scope variables", function() {
+    it("should load data from service and assign it to scope variables and build the chart configuration objects", function() {
         // arrange
         create_buildings_reports_controller();
 
@@ -184,8 +184,34 @@ describe("controller: buildings_reports_controller", function(){
         buildings_reports_ctrl_scope.$digest();
 
         // assertions
+        //make sure data from (mock) service is loaded correctly
         expect(buildings_reports_ctrl_scope.chartData.chartData).toEqual(fake_report_data_payload.chartData);
         expect(buildings_reports_ctrl_scope.aggChartData.chartData).toEqual(fake_aggregated_report_data_payload.chartData);
+    
+        //make sure titles are set
+        expect(buildings_reports_ctrl_scope.chart1Title).toBeDefined();
+        expect(buildings_reports_ctrl_scope.chart2Title).toBeDefined();
+
+        //make sure colors are set right, based on the incoming (mock) building_counts.
+        var bldgCounts = fake_report_data_payload.building_counts
+        var bldgCountsAgg = fake_aggregated_report_data_payload.building_counts
+        var defaultColors = buildings_reports_ctrl_scope.defaultColors;
+        var chartData = buildings_reports_ctrl_scope.chartData;
+        var aggChartData = buildings_reports_ctrl_scope.aggChartData;
+
+        expect(chartData.colors.length).toEqual(bldgCounts.length);
+        expect(chartData.colors[0].seriesName).toEqual(bldgCounts[0].seriesName);
+        expect(chartData.colors[0].color).toEqual(defaultColors[0]);
+        expect(chartData.colors[1].seriesName).toEqual(bldgCounts[1].seriesName);
+        expect(chartData.colors[1].color).toEqual(defaultColors[1]);
+
+        expect(aggChartData.colors.length).toEqual(bldgCountsAgg.length);
+        expect(aggChartData.colors[0].seriesName).toEqual(bldgCountsAgg[0].seriesName);
+        expect(aggChartData.colors[0].color).toEqual(defaultColors[0]);
+        expect(aggChartData.colors[1].seriesName).toEqual(bldgCountsAgg[1].seriesName);
+        expect(aggChartData.colors[1].color).toEqual(defaultColors[1]);
     });
+    
+
 
 });
