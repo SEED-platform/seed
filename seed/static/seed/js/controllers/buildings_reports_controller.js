@@ -199,7 +199,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
     $scope.chart2Title = $scope.xAxisSelectedItem.label + " vs. " + $scope.yAxisSelectedItem.label;
   }
 
-  function getChartStatusMessages(chartData){
+  function setChartStatusMessages(chartData){
     if (chartData.chartData && chartData.chartData.length>0) {
       return ""
     } else {
@@ -228,25 +228,33 @@ angular.module('BE.seed.controller.buildings_reports', [])
 
     buildings_reports_service.get_report_data(xVar, yVar, $scope.startDate, $scope.endDate)
       .then(function(data) {    
-        var yAxisType = ( yVar === 'use_description' ? 'Category' : 'Measure');
-        var bldgCounts = data.building_counts;
-        var colorsArr = mapColors(bldgCounts);
-        $scope.buildingCounts = bldgCounts;
-        $scope.chartData = {
-          "series":  $scope.chartSeries,
-          "chartData": data.chart_data,
-          "xAxisTitle": $scope.xAxisSelectedItem.axisLabel,
-          "yAxisTitle": $scope.yAxisSelectedItem.axisLabel,
-          "yAxisType": $scope.yAxisSelectedItem.axisType,
-          "yAxisMin" : $scope.yAxisSelectedItem.axisMin,          
-          "xAxisTickFormat": $scope.xAxisSelectedItem.axisTickFormat,
-          "yAxisTickFormat": $scope.yAxisSelectedItem.axisTickFormat,
-          "colors": colorsArr
-        }; 
+          var yAxisType = ( yVar === 'use_description' ? 'Category' : 'Measure');
+          var bldgCounts = data.building_counts;
+          var colorsArr = mapColors(bldgCounts);
+          $scope.buildingCounts = bldgCounts;
+          $scope.chartData = {
+            "series":  $scope.chartSeries,
+            "chartData": data.chart_data,
+            "xAxisTitle": $scope.xAxisSelectedItem.axisLabel,
+            "yAxisTitle": $scope.yAxisSelectedItem.axisLabel,
+            "yAxisType": $scope.yAxisSelectedItem.axisType,
+            "yAxisMin" : $scope.yAxisSelectedItem.axisMin,          
+            "xAxisTickFormat": $scope.xAxisSelectedItem.axisTickFormat,
+            "yAxisTickFormat": $scope.yAxisSelectedItem.axisTickFormat,
+            "colors": colorsArr
+          } 
+          if($scope.chartData.chartData && $scope.chartData.chartData.length > 0) {
+            $scope.chartStatusMessage = "" 
+          } else {
+            $scope.chartStatusMessage = "No Data";  
+          } 
+        },
+        function(data, status){
+          $scope.chartStatusMessage = "Data load error."
+        })
+      .finally(function(){
+        $scope.chartIsLoading = false;
       })
-      .finally(function(data){
-         $scope.chartStatusMessage = getChartStatusMessages($scope.chartData);
-      });
   }
 
   /** Get the aggregated chart data from the server for the scatter plot chart.
@@ -266,26 +274,32 @@ angular.module('BE.seed.controller.buildings_reports', [])
     var xVar = $scope.xAxisSelectedItem.varName;
     var yVar = $scope.yAxisSelectedItem.varName;
     $scope.aggChartIsLoading = true;
-
     buildings_reports_service.get_aggregated_report_data(xVar, yVar, $scope.startDate, $scope.endDate)
       .then(function(data) {    
-        $scope.aggBuildingCounts = data.building_counts;
-        var bldgCounts = data.building_counts;
-        var colorsArr = mapColors(bldgCounts);
-        $scope.aggBuildingCounts = bldgCounts;
-        $scope.aggChartData = {
-          "series":  $scope.aggChartSeries,
-          "chartData": data.chart_data,
-          "xAxisTitle": $scope.xAxisSelectedItem.axisLabel,
-          "yAxisTitle": $scope.yAxisSelectedItem.axisLabel,
-          "yAxisType": "Category",
-          "colors": colorsArr
-        };
+          $scope.aggBuildingCounts = data.building_counts;
+          var bldgCounts = data.building_counts;
+          var colorsArr = mapColors(bldgCounts);
+          $scope.aggBuildingCounts = bldgCounts;
+          $scope.aggChartData = {
+            "series":  $scope.aggChartSeries,
+            "chartData": data.chart_data,
+            "xAxisTitle": $scope.xAxisSelectedItem.axisLabel,
+            "yAxisTitle": $scope.yAxisSelectedItem.axisLabel,
+            "yAxisType": "Category",
+            "colors": colorsArr
+          }
+          if($scope.aggChartData.chartData && $scope.aggChartData.chartData.length > 0) {
+            $scope.aggChartStatusMessage = "" 
+          } else {
+            $scope.aggChartStatusMessage = "No Data";  
+          }  
+        },
+        function(data, status){
+          $scope.aggChartStatusMessage = "Data load error."
+        })
+      .finally(function(){
+        $scope.aggChartIsLoading = false;
       })
-      .finally(function(data){
-         $scope.aggChartStatusMessage = getChartStatusMessages($scope.aggChartData);
-      });
-
   }
 
   /*  Generate an array of color objects to be used as part of chart configuration
