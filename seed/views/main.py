@@ -2271,6 +2271,119 @@ def get_building_summary_report_data(request):
         'status': 'success',
         'summary_data' : data
     }
+    
+    
+def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
+
+    #First get all building records for the orginization in the date range
+    #Can't just look for those that aren't null since one of the things that
+    #needs to get reported is how many for a given year do not have data 
+    #(i.e. have a null value for either x_var or y_var
+    bldgs = BuildingSnapshot.objects.filter(
+                super_organization__in=orgs,
+                year_ending__gte = from_date,
+                year_ending__lte = end_date
+            )
+             
+    #data will be a dict of canonical building id -> year ending -> building data         
+    data = defaultdict(lambda: defaultdict(dict))
+    
+    canonical_buildings = set(bldg.tip for bldg in bldgs)           
+    buildings_with_year_ending_file_ct = len(canonical_buildings)
+    canonical_ids = [x.id for x in canonical_buildings]
+        
+ 
+    #if the BuildingSnapshot has the attribute use that directly.  Otherwise if the attribute is in extra_data use that
+    #if it is in neither place then it doesn't have it so return None
+    #actually now we are not considering release_data at all so it is just 
+    get_attr_f = lambda obj, attr: getattr(obj, attr) if hasattr(obj, attr) else None
+          
+    bldg_counts = {}
+    buildings_with_file_in_range_but_no_data = canonical_ids      
+    
+    def process_snapshot(canonical_building_id, snapshot):      
+        from datetime import date
+        year_ending_year = snapshot.year_ending
+        
+        if year_ending_year not in bldg_counts:
+            bldg_counts[year_ending_year] = {"buildings" : set(), "buildings_w_data" : set()}
+        release_date = get_attr_f(snapshot, "release_date")
+        
+        #if there is no release_date then we have no way of priotizing vs other records with the same
+        #year_ending.  Plus it is an indication of something wrong so just exit here 
+        if not release_date:            
+            return
+            
+        bldg_counts[year_ending_year]["buildings"].add(canonical_building_id)
+            
+        if (                 
+                (year_ending_year not in data[canonical_building_id]) or 
+                (not data[canonical_building_id][year_ending_year]) or
+                (data[canonical_building_id][year_ending_year]["release_date"] < release_date)
+            ):            
+            bldg_x = get_attr_f(snapshot, x_var)
+            bldg_y = get_attr_f(snapshot, y_var)
+            #what does it mean for a building to "have data"?  I am assuming it must have values for
+            #both x and y fields.  Change "and" to "or" to make it either and "True"
+            #to return everything
+            if bldg_x and bldg_y:
+                bldg_counts[year_ending_year]["buildings_w_data"].add(canonical_building_id)
+                #if there is some data remove from the canonical_Ids list
+                #we will check it later and anything still left is reported as not
+                #having data
+                try:
+                    buildings_with_file_in_range_but_no_data.remove(canonical_building_id)
+                except:
+                    pass
+                
+                data[canonical_building_id][year_ending_year] = {   "building_snapshot_id" : snapshot.id,
+                                                                    "x" : bldg_x,
+                                                                    "y" : bldg_y,
+                                                                    "release_date" : release_date}
+            else:
+                try:
+                    bldg_counts[year_ending_year]["buildings_w_data"].remove(canonical_building_id)                   
+                except:
+                    pass
+                
+                #if this more recent data point does not have both x and y values then the data for the year ending is now invalid
+                #mark that here by giving both 'x' and 'y' a value of None
+                #can't just delete the year since we need to retain the release_date.  If the most recent 
+                #release_date for a given year_ending is not value then that means that year is not valid for the building
+            
+                data[canonical_building_id][year_ending_year] = {   "building_snapshot_id" : snapshot.id,
+                                                                    "x" : None,
+                                                                    "y" : None,
+                                                                    "release_date" : release_date}
+                        
+    for canonical_building in canonical_buildings:
+        canonical_building_id = canonical_building.id  
+        
+        if canonical_building.parent_tree:    
+            bldg = canonical_building
+            #progress up the the tree processing unmerged snapshots until there aren't any more
+            while bldg:
+                unmerged_snapshots = bldg.parents.filter(parents__isnull = True)
+                #get the parent that is merged, if any.  If not then we're done when we finish this iteration
+                bldg = bldg.parents.filter(parents__isnull = False).exclude(id = bldg.id)
+                if bldg.count():
+                    bldg = bldg[0]
+                else:
+                    bldg = None
+                
+                #process all unmerged buildings.
+                #Note:  I don't really know how this works in terms of order
+                #for the root two buildings in the tree
+                for unmerged_bs in unmerged_snapshots:
+                    if from_date <= unmerged_bs.year_ending <= end_date:
+                        process_snapshot(canonical_building_id, unmerged_bs)
+        else:
+            #there is only one record and it is canonical so just process that
+            process_snapshot(canonical_building_id, canonical_building)            
+                                                    
+    buildings_with_file_in_range_but_no_data_ct = len(buildings_with_file_in_range_but_no_data)
+    
+    return bldg_counts, data, buildings_with_year_ending_file_ct, buildings_with_file_in_range_but_no_data_ct
 
 
 @api_endpoint
@@ -2394,6 +2507,8 @@ def get_building_report_data(request):
                   
         """
 
+    from dateutil.parser import parse
+    from collections import defaultdict
 
     #TODO: Generate this data the right way! The following is just dummy data...
     if request.method != 'GET':
@@ -2407,17 +2522,27 @@ def get_building_report_data(request):
         orgs = [ request.GET['organization_id'] ] #How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
+
     except Exception, e:
         msg = "Error while calling the API function get_building_report_data, missing parameter"
         _log.error(msg)
         _log.exception(str(e))
         return HttpResponseBadRequest(msg)
+    
+    valid_values = [
+        'site_eui', 'source_eui', 'site_eui_weather_normalized',
+        'source_eui_weather_normalized', 'energy_score',
+        'gross_floor_area', 'use_description', 'year_built'
+    ]
+
+    if x_var not in valid_values or y_var not in valid_values:
+        return HttpResponseBadRequest('Invalid fields specified.')
 
     dt_from = None
     dt_to = None
     try:
-        dt_from = parse(from_date)
-        dt_to = parse(end_date)
+        from_date = parse(from_date).date()
+        end_date = parse(end_date).date()
     except Exception, e:
         msg = "Couldn't convert date strings to date objects"
         _log.error(msg)
@@ -2427,94 +2552,7 @@ def get_building_report_data(request):
   
     #New code by StephenC
 
-    #what I want to do is get all buildings in the date range
-    #then iterate through each and get the canonical BS and get that set.
-    #Then iterate through each parents and get appropriate values
-    #this lets us use rules for overlapping year_ending values 
-    #(i.e. 2 snapshots with the same year_ending but different data)
-    #In this case the rule is "prefer the snapshot that was merged last"
-    bldgs = BuildingSnapshot.objects.filter(
-                super_organization__in=orgs,
-                year_ending__gte = from_date,
-                year_ending__lte = end_date
-            )
-             
-    #data will be a dict of canonical building id -> year ending -> building data         
-    data = defaultdict(lambda: defaultdict(dict))
-    
-    canonical_buildings = set(bldg.tip for bldg in bldgs)           
-    buildings_with_year_ending_file_ct = len(canonical_buildings)
-    canonical_ids = [x.id for x in canonical_buildings]
-    
-    #     #this gives the number of canonical buidlings without any files within the date range
-    #     buidlings_without_data_ct = BuildingSnapshot.objects.filter(
-    #                                     super_organization__in=orgs,
-    #                                     canonicalbuilding__active=True).exclude(id__in = canonical_ids).count()
-    #     buidlings_without_data_ct = buidlings_without_data_ct.count()
-        
- 
-    #if the BuildingSnapshot has the attribute use that directly.  Otherwise if the attribute is in extra_data use that
-    #if it is in neither place then it doesn't have it so return None
-    get_attr_f = lambda obj, attr: getattr(obj, attr) if hasattr(obj, attr) else obj.extra_data[attr] if attr in obj.extra_data else None 
-          
-    bldg_counts = {}
-    buildings_with_file_in_range_but_no_data = canonical_ids      
-    
-    def process_snapshot(canonical_building_id, snapshot):            
-        if snapshot.year_ending not in bldg_counts:
-            bldg_counts[snapshot.year_ending] = {"buildings" : set(), "buildings_w_data" : set()}
-            
-        bldg_counts[snapshot.year_ending]["buildings"].add(canonical_building_id)
-            
-        if snapshot.year_ending not in data[canonical_building_id]:
-            bldg_x = get_attr_f(snapshot, x_var)
-            bldg_y = get_attr_f(snapshot, y_var)
-            
-            #what does it mean for a building to "have data"?  I am assuming it must have values for
-            #both x and y fields.  Change "and" to "or" to make it either and "True"
-            #to return everything
-            if bldg_x and bldg_y:
-                bldg_counts[snapshot.year_ending]["buildings_w_data"].add(canonical_building_id)
-                #if there is some data remove from the canonical_Ids list
-                #we will check it later and anything still left is reported as not
-                #having data
-                try:
-                    buildings_with_file_in_range_but_no_data.remove(canonical_building_id)
-                except:
-                    pass
-                
-                data[canonical_building_id][snapshot.year_ending] = {   "building_snapshot_id" : snapshot.id,
-                                                                         "address_line_1" : snapshot.address_line_1,
-                                                                         "x" : bldg_x,
-                                                                         "y" : bldg_y}
-        
-    for canonical_building in canonical_buildings:
-        canonical_building_id = canonical_building.id  
-        
-        if canonical_building.parent_tree:    
-            bldg = canonical_building
-            #progress up the the tree processing unmerged snapshots until there aren't any more
-            while bldg:
-                unmerged_snapshots = bldg.parents.filter(parents__isnull = True)
-                #get the parent that is merged, if any.  If not then we're done when we finish this iteration
-                bldg = bldg.parents.filter(parents__isnull = False).exclude(id = bldg.id)
-                if bldg.count():
-                    bldg = bldg[0]
-                else:
-                    bldg = None
-                
-                #process all unmerged buildings.
-                #Note:  I don't really know how this works in terms of order
-                #for the root two buildings in the tree
-                for unmerged_bs in unmerged_snapshots:
-                    if from_date <= unmerged_bs.year_ending <= end_date:
-                        process_snapshot(canonical_building_id, unmerged_bs)
-        else:
-            #there is only one record and it is canonical so just process that
-            process_snapshot(canonical_building_id, canonical_building)            
-                                                    
-    buildings_with_file_in_range_but_no_data_ct = len(buildings_with_file_in_range_but_no_data)
-    
+    bldg_counts, data, buildings_with_year_ending_file_ct, buildings_with_file_in_range_but_no_data_ct = get_raw_report_data(from_date, end_date, orgs, x_var, y_var)
     #    now we have data as nested dictionaries like canonical_building_id -> year_ending -> {building_snapshot_id, address_line_1, x, y}
     #    but the comment at the beginning o says to do it like a list of dicts that looks like
     #                     "chart_data": [
@@ -2527,57 +2565,26 @@ def get_building_report_data(request):
     #                     ...
     #                 ],
 
-    #    I am going to change a few field names and add a couple just to try to clarify what things are
     chart_data = []
     building_counts = []
     for year_ending, values in bldg_counts.items():
         buildingCountItem = {   "num_buildings"         : len(values["buildings"]), 
                                 "num_buildings_w_data"  : len(values["buildings_w_data"]),
-                                "yr_e"                  : [year_ending.strftime('%Y-%m-%d')]
+                                "yr_e"                  : year_ending.strftime('%Y-%m-%d')
                             }
         building_counts.append(buildingCountItem)
     
     for canonical_id, year_ending_to_data_map in data.iteritems():
         for year_ending, requested_data in year_ending_to_data_map.iteritems():
-            d = requested_data#{k : v for k, v in requested_data.items()} 
-            #d["canonical_building_id"] = canonical_id
+            d = requested_data 
+            #The point must have both an x and a y value or else it is not valid
+            if not (d["x"] and d["y"]):
+                continue        
             d["id"] = canonical_id #DmcQ: Changing to just id to reduce number of characters transferred
             d["yr_e"] = year_ending.strftime('%Y-%m-%d')
             chart_data.append(d)
 
-    #Old dummy data code by DMcQ
 
-    building_counts =  [
-                {
-                    "yr_e": 'Dec 31, 2011',
-                    "num_buildings": 20,
-                    "num_buildings_w_data" : 30
-                }, 
-                {
-                    "yr_e": 'Dec 31, 2012',
-                    "num_buildings": 31,
-                    "num_buildings_w_data" : 41
-                }
-            ]
-        
-    #Get all data from buildings...temp method. To be implemented by Stephen C.
-    bldgs = BuildingSnapshot.objects.filter(
-                super_organization__in=orgs,
-                canonicalbuilding__active=True
-            ).values('id', x_var, y_var, 'year_ending')
-             
-    # DUMMY DATA: get some data back in the form we expect it. Stephen will implement actual logic
-    chart_data = []
-    for bldg in bldgs:  
-        obj = { "id":bldg["id"], 
-                "x": bldg[x_var], 
-                "y": bldg[y_var],
-                "yr_e": bldg["year_ending"]
-                } 
-        chart_data.append(obj)
-   
-
-            
     #Send back to client
     return {
         'status': 'success',
@@ -2586,7 +2593,6 @@ def get_building_report_data(request):
         'num_buildings_w_data' : buildings_with_year_ending_file_ct - buildings_with_file_in_range_but_no_data_ct,
         'num_buildings' : buildings_with_year_ending_file_ct
     }
-
 
 from itertools import groupby
 from operator import itemgetter
