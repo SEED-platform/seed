@@ -2274,6 +2274,46 @@ def get_building_summary_report_data(request):
     
     
 def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
+    """ This method returns data used to generate graphing reports. It expects as parameters
+
+        :GET:
+        * from_date:       The starting date for the data series.  Date object
+        * end_date:         The starting date for the data series with the format. Date object
+        * x_var:            The variable name to be assigned to the "x" value in the returned data series 
+        * y_var:            The variable name to be assigned to the "y" value in the returned data series
+        * orgs:  The organizations to be used when querying data.
+
+        The x and y variables should be column names in the BuildingSnapshot table.  In theory they could
+        be in the extra_data too and this works but is currently disabled.
+
+        Returns::
+        bldg_counts:  dict that looks like {year_ending : {"buidings_with_data" : set(canonical ids), "buidings" : set(canonical ids)}
+                        This is a collection of all year_ending dates and ids the canonical buildings that have data for that year and those that
+                        have files with that year_ending but no valid data point
+                        E.G.
+                        "bldg_counts"     (pending)    
+                            __len__    int: 8    
+                            2000-12-31 (140037191378512)    dict: {'buildings_w_data': set([35897, 35898]), 'buildings': set([35897, 35898])}    
+                            2001-12-31 (140037292480784)    dict: {'buildings_w_data': set([35897, 35898]), 'buildings': set([35897, 35898])} 
+                        
+        data:    dict that looks like {canonical_id : { year_ending : {'x' : x_value, 'y' : y_value', 'release_date' : release_date, 'building_snapshot_id' : building_snapshot_id}}}
+                This is the actual data for the building.  The top level key is the canonical_id then the next level is the year_ending and under that
+                is the actual data.  NOTE:  If the year has files for a building but no valid data there will be an entry for that year but the
+                x and y values will be None.
+                
+                E.G.
+                "data"     (pending)    
+                    __len__    int: 2    
+                    35897 (28780560)    defaultdict: defaultdict(<type 'dict'>, {datetime.date(2001, 12, 31): {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}, datetime.date(2004, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2004, 12, 31, 0, 0), 'building_snapshot_id': 35866}, datetime.date(2003, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2003, 12, 31, 0, 0), 'building_snapshot_id': 35860}, datetime.date(2009, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2009, 12, 31, 0, 0), 'building_snapshot_id': 35884}, datetime.date(2007, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2007, 12, 31, 0, 0), 'building_snapshot_id': 35878}, datetime.date(2000, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}, datetime.date(2010, 12, 31): {'y': 111.0, 'x': 21.0, 'release_date': datetime.datetime(2011, 12, 31, 0, 0...    
+                        __len__    int: 8    
+                        2000-12-31 (140037191378512)    dict: {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}    
+                        2001-12-31 (140037292480784)    dict: {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}    
+                 
+                 
+        buildings_with_year_ending_file_ct:  Total number of buildings with at least one file (but not necessairly valid data point) in the range.
+        buildings_with_file_in_range_but_no_data_ct:  Number of buildings with at least one file but no valid data points in the range.
+                          
+        """
 
     #First get all building records for the orginization in the date range
     #Can't just look for those that aren't null since one of the things that
