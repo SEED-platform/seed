@@ -1875,12 +1875,13 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 /* Styles for building reports page */
 .building-reports {
 
+	/* The section containing the UI controls for updating the charts */
     .chart-inputs {
         padding:10px; 
         border-radius:.5em; 
         background-color:#F6F6F6;
 
-        .label {
+        label {
 	        margin-right: 5px;
 	        color: #777;
 	    }
@@ -1889,8 +1890,10 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	        margin-left:20px;
 	    }
 
-	    /* This is a fix for a bug in bootstrap 3.1 
-	       (fixed in 3.2, but we're using 3.1 right now) */
+	    /*  This is a fix for a bug in bootstrap 3.1 
+	        (fixed in 3.2, but we're using 3.1 right now) 
+			We can remove when we update.
+	    */
 	    .input-group {
 	        display: inline-table;
 	        vertical-align: middle;
@@ -1898,15 +1901,14 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	        .input-group-btn,
 	        .form-control {
 	            width: auto !important;
+	            max-width:120px;
 	        }
 	    }
-
-	    .date-input{
-	        max-width: 150px;
-	    }
-
     }
 
+    /* This is a small floating box
+    	above the chart that shows the chart's status
+    	when loading or when it has no data. */
     .status-message {
         position:absolute;
         top:50%;

@@ -112,11 +112,13 @@ angular.module('BE.seed.controller.buildings_reports', [])
   $scope.chart2Title = "";
 
   // Datepickers
-  $scope.startDate = new Date();
+  var initStartDate = new Date();
+  initStartDate.setYear(initStartDate.getFullYear()-1);
+  $scope.startDate = initStartDate;
   $scope.startDatePickerOpen = false;
   $scope.endDate = new Date();
   $scope.endDatePickerOpen = false;
-
+  
   // Series
   // the following variable keeps track of which
   // series will be sent to the graphs when data is updated
