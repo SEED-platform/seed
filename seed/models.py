@@ -1274,7 +1274,7 @@ class BuildingSnapshot(TimeStampedModel):
     use_description_source = models.ForeignKey(
         'BuildingSnapshot', related_name='+', null=True, blank=True
     )
-    
+
     #Need a field to indicate that a record is a duplicate of another.  Mainly used for cleaning up.
     duplicate = models.ForeignKey(
         'BuildingSnapshot', related_name='+', null=True, blank=True

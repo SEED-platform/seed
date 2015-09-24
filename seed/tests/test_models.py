@@ -247,7 +247,7 @@ class TestBuildingSnapshot(TestCase):
 
         test_mapping, _ = seed_models.get_column_mappings(org)
         self.assertDictEqual(test_mapping, expected)
-        
+
     def _check_save_snapshot_match_with_default(self, default_pk):
         """Test good case for saving a snapshot match."""
         self.assertEqual(seed_models.BuildingSnapshot.objects.all().count(), 2)
@@ -257,7 +257,7 @@ class TestBuildingSnapshot(TestCase):
 
         self.bs2.canonical_building = bs2_canon
         self.bs2.save()
-        
+
         default_building = self.bs1 if default_pk == self.bs1.pk else self.bs2
 
         seed_models.save_snapshot_match(
@@ -291,7 +291,7 @@ class TestBuildingSnapshot(TestCase):
     def test_save_snapshot_match_default_to_first_building(self):
         """Test good case for saving a snapshot match with the first building as default."""
         self._check_save_snapshot_match_with_default(self.bs1.pk)
-        
+
     def test_save_snapshot_match_default_to_second_building(self):
         """Test good case for saving a snapshot match with the second building as default."""
         self._check_save_snapshot_match_with_default(self.bs2.pk)
