@@ -2802,15 +2802,15 @@ def get_aggregated_building_report_data(request):
         _log.exception(str(e))
         return HttpResponseBadRequest(msg) 
 
-    building_counts = []
+    _, data, _, _ = get_raw_report_data(dt_from, dt_to, orgs, x_var, y_var)
 
-    #Get all data from buildings...temp method. To be implemented by Stephen C.
-    bldgs = BuildingSnapshot.objects.filter(
-        super_organization__in=orgs,
-        canonicalbuilding__active=True,
-        year_ending__gte=dt_from,
-        year_ending__lte=dt_to
-    )
+    # Grab building snapshot ids from get_raw_report_data payload.
+    snapshot_ids = []
+    for k, v in data.items():
+        for date, building in v.items():
+            snapshot_ids.append(building['building_snapshot_id'])
+
+    bldgs = BuildingSnapshot.objects.filter(pk__in=snapshot_ids)
 
     grouped_buildings = defaultdict(list)
     for building in bldgs:

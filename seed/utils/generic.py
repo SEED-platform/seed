@@ -25,6 +25,8 @@ def split_model_fields(obj, fields):
 
 
 def median(lst):
+    if not lst:
+        return
     index = (len(lst) - 1) // 2
     if (len(lst) % 2):
         return sorted(lst)[index]
