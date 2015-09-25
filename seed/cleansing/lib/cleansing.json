@@ -23,15 +23,9 @@
             "fields": {
                 "year_built": [
                     {
-                        "min": -8520336000,
-                        "max": 1451520000,
+                        "min": 1700,
+                        "max": 2019,
                         "severity": "error",
-                        "units": null
-                    },
-                    {
-                        "min": 1500,
-                        "max": 1451520000,
-                        "severity": "warning",
                         "units": null
                     }
                 ],
@@ -159,6 +153,7 @@
         },
         {
             "name": "Data Type Check",
+            "notes": "These are currently unused in the new cleansing module",
             "fields": {
                 "block_number": "number",
                 "building_count": "number",
@@ -195,7 +190,7 @@
                 "generation_date": "date",
                 "recent_sale_date": "date",
                 "release_date": "date",
-                "year_built": "date",
+                "year_built": "number",
                 "year_ending": "date"
             }
         }
