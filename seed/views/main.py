@@ -2276,7 +2276,6 @@ def get_building_summary_report_data(request):
 def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     """ This method returns data used to generate graphing reports. It expects as parameters
 
-        :GET:
         * from_date:       The starting date for the data series.  Date object
         * end_date:         The starting date for the data series with the format. Date object
         * x_var:            The variable name to be assigned to the "x" value in the returned data series 
@@ -2308,12 +2307,20 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
                         __len__    int: 8    
                         2000-12-31 (140037191378512)    dict: {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}    
                         2001-12-31 (140037292480784)    dict: {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}    
-                 
-                 
-        buildings_with_year_ending_file_ct:  Total number of buildings with at least one file (but not necessairly valid data point) in the range.
-        buildings_with_file_in_range_but_no_data_ct:  Number of buildings with at least one file but no valid data points in the range.
                           
         """
+
+    #year_ending in the BuildingSnapshot model is a DateField which corresponds to a python datetime.date
+    #not a datetime.datetime.  Ensure a conversion here
+    try:
+        from_date = from_date.date()
+    except:
+        pass
+
+    try:
+        end_date = end_date.date()
+    except:
+        pass
 
     #First get all building records for the orginization in the date range
     #Can't just look for those that aren't null since one of the things that
@@ -2329,7 +2336,6 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     data = defaultdict(lambda: defaultdict(dict))
     
     canonical_buildings = set(bldg.tip for bldg in bldgs)           
-    buildings_with_year_ending_file_ct = len(canonical_buildings)
     canonical_ids = [x.id for x in canonical_buildings]
         
  
@@ -2339,7 +2345,6 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     get_attr_f = lambda obj, attr: getattr(obj, attr) if hasattr(obj, attr) else None
           
     bldg_counts = {}
-    buildings_with_file_in_range_but_no_data = canonical_ids      
     
     def process_snapshot(canonical_building_id, snapshot):      
         from datetime import date
@@ -2368,13 +2373,6 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
             #to return everything
             if bldg_x and bldg_y:
                 bldg_counts[year_ending_year]["buildings_w_data"].add(canonical_building_id)
-                #if there is some data remove from the canonical_Ids list
-                #we will check it later and anything still left is reported as not
-                #having data
-                try:
-                    buildings_with_file_in_range_but_no_data.remove(canonical_building_id)
-                except:
-                    pass
                 
                 data[canonical_building_id][year_ending_year] = {   "building_snapshot_id" : snapshot.id,
                                                                     "x" : bldg_x,
@@ -2419,11 +2417,9 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
                         process_snapshot(canonical_building_id, unmerged_bs)
         else:
             #there is only one record and it is canonical so just process that
-            process_snapshot(canonical_building_id, canonical_building)            
-                                                    
-    buildings_with_file_in_range_but_no_data_ct = len(buildings_with_file_in_range_but_no_data)
+            process_snapshot(canonical_building_id, canonical_building)                                                                
     
-    return bldg_counts, data, buildings_with_year_ending_file_ct, buildings_with_file_in_range_but_no_data_ct
+    return bldg_counts, data
 
 
 @api_endpoint
@@ -2550,10 +2546,8 @@ def get_building_report_data(request):
     from dateutil.parser import parse
     from collections import defaultdict
 
-    #TODO: Generate this data the right way! The following is just dummy data...
     if request.method != 'GET':
         return HttpResponseBadRequest('This view replies only to GET methods')
-
 
     #Read in x and y vars requested by client
     try:
@@ -2578,8 +2572,6 @@ def get_building_report_data(request):
     if x_var not in valid_values or y_var not in valid_values:
         return HttpResponseBadRequest('Invalid fields specified.')
 
-    dt_from = None
-    dt_to = None
     try:
         from_date = parse(from_date).date()
         end_date = parse(end_date).date()
@@ -2589,10 +2581,7 @@ def get_building_report_data(request):
         _log.exception(str(e))
         return HttpResponseBadRequest(msg)
 
-  
-    #New code by StephenC
-
-    bldg_counts, data, buildings_with_year_ending_file_ct, buildings_with_file_in_range_but_no_data_ct = get_raw_report_data(from_date, end_date, orgs, x_var, y_var)
+    bldg_counts, data = get_raw_report_data(from_date, end_date, orgs, x_var, y_var)
     #    now we have data as nested dictionaries like canonical_building_id -> year_ending -> {building_snapshot_id, address_line_1, x, y}
     #    but the comment at the beginning o says to do it like a list of dicts that looks like
     #                     "chart_data": [
@@ -2620,19 +2609,16 @@ def get_building_report_data(request):
             #The point must have both an x and a y value or else it is not valid
             if not (d["x"] and d["y"]):
                 continue        
-            d["id"] = canonical_id #DmcQ: Changing to just id to reduce number of characters transferred
+            d["id"] = canonical_id
             d["yr_e"] = year_ending.strftime('%Y-%m-%d')
             chart_data.append(d)
 
 
     #Send back to client
-    return {
-        'status': 'success',
-        'chart_data' : chart_data,
-        'building_counts' : building_counts,
-        'num_buildings_w_data' : buildings_with_year_ending_file_ct - buildings_with_file_in_range_but_no_data_ct,
-        'num_buildings' : buildings_with_year_ending_file_ct
-    }
+    return {    'status': 'success',
+                'chart_data' : chart_data,
+                'building_counts' : building_counts  
+           }
 
 from itertools import groupby
 from operator import itemgetter
@@ -2802,7 +2788,7 @@ def get_aggregated_building_report_data(request):
         _log.exception(str(e))
         return HttpResponseBadRequest(msg) 
 
-    _, data, _, _ = get_raw_report_data(dt_from, dt_to, orgs, x_var, y_var)
+    _, data = get_raw_report_data(dt_from, dt_to, orgs, x_var, y_var)
 
     # Grab building snapshot ids from get_raw_report_data payload.
     snapshot_ids = []
