@@ -253,6 +253,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
         },
         function(data, status){
           $scope.chartStatusMessage = "Data load error."
+          $log.error("#BuildingReportsController: Error loading chart data : " + status);
         })
       .finally(function(){
         $scope.chartIsLoading = false;
@@ -298,6 +299,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
         },
         function(data, status){
           $scope.aggChartStatusMessage = "Data load error."
+          $log.error("#BuildingReportsController: Error loading agg chart data : " + status);
         })
       .finally(function(){
         $scope.aggChartIsLoading = false;
