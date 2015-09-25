@@ -105,7 +105,18 @@
                                                     >
                         </basic-building-info-chart>
                     </div>                    
-                    <div ng-show="chartStatusMessage" class="status-message">{$ chartStatusMessage $}</div>
+                    <div ng-show="chartStatusMessage" class="status-message">
+                        {$ chartStatusMessage $}
+                        <div class="progress progress-striped active" ng-show="chartIsLoading">
+                            <div    class="progress-bar"  
+                                    role="progressbar" 
+                                    aria-valuenow="100" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100" 
+                                    style="width: 100%">
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="reportingTableHolder">
                         <table class="table" >
@@ -139,7 +150,18 @@
                                                     >
                         </basic-building-info-chart>
                     </div>                    
-                    <div ng-show="aggChartStatusMessage" class="status-message">{$ aggChartStatusMessage $}</div>
+                    <div ng-show="aggChartStatusMessage" class="status-message">
+                        {$ aggChartStatusMessage $}
+                        <div class="progress progress-striped active" ng-show="aggChartIsLoading">
+                            <div    class="progress-bar"  
+                                    role="progressbar" 
+                                    aria-valuenow="100" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100" 
+                                    style="width: 100%">
+                            </div>
+                        </div>
+                    </div>
 
                      <div class="reportingTableHolder" >
                         <table class="table">

@@ -135,8 +135,8 @@ angular.module('BE.seed.controller.buildings_reports', [])
   $scope.aggChartData = [];
 
   //Chart status
-  $scope.chartIsLoading = true;
-  $scope.aggChartIsLoading = true;
+  $scope.chartIsLoading = false;
+  $scope.aggChartIsLoading = false;
 
   //Setting the status messages will cause the small white status box to show above the chart
   //Setting these to empty string will remove that box
