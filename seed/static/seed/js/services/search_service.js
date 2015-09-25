@@ -412,6 +412,13 @@ angular.module('BE.seed.service.search', [])
         });
         // also apply the user sort order
         columns.sort(function(a,b) {
+            // when viewing the list of projects, there is an extra "Status" column that is always first
+            if (a.title == 'Status') {
+                return -1;
+            } else if (b.title == 'Status') {
+                return 1;
+            }
+            // if no status, sort according to user's selected order
             if (column_headers.indexOf(a.sort_column) > -1 && column_headers.indexOf(b.sort_column) > -1) {
                 return (column_headers.indexOf(a.sort_column) - column_headers.indexOf(b.sort_column));
             } else if (column_headers.indexOf(a.sort_column) > -1) {
