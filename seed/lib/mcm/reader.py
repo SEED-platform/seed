@@ -162,7 +162,13 @@ class CSVParser(object):
             # rows.next() will return the first row
     """
     # Character escape sequences to replace
-    CLEAN_SUPER = [u'\ufffd', u'\xb2']
+    CLEAN_DICT = {
+        u'\ufffd': u'',
+        u'\u00B2': u'2',
+        u'\u00B3': u'3',
+        u'\u2013': u'-',
+        u'\u2014': u'-'
+    }
 
     def __init__(self, csvfile, *args, **kwargs):
         self.csvfile = csvfile
@@ -188,15 +194,16 @@ class CSVParser(object):
             del kwargs['reader_type']
             return reader_type(self.csvfile, dialect, **kwargs)
 
-    def _clean_super(self, col, replace=u'2'):
-        """Cleans up various superscript unicode escapes.
+    def _clean_super(self, col):
+        """Cleans up various superscript unicode escapes. Reads from the self.CLEAN_DICT to determine what to replace
 
         :param col: str, column name as read from the file.
         :param replace: (optional) str, string to replace superscripts with.
         :rtype: str, cleaned row name.
 
         """
-        for item in self.CLEAN_SUPER:
+
+        for item, replace in self.CLEAN_DICT.iteritems():
             col = col.replace(item, unicode(replace))
 
         return col

@@ -26,7 +26,7 @@ class TestCSVParser(TestCase):
 
     def test_clean_super(self):
         """Make sure we clean out unicode escaped super scripts."""
-        expected = u'Testing 2. And 2.'
+        expected = u'Testing 2. And .'
         test = u'Testing \xb2. And \ufffd.'
         self.assertEqual(
             self.parser._clean_super(test),
@@ -34,10 +34,11 @@ class TestCSVParser(TestCase):
         )
 
         # Test that our replace keyword works
-        new_expected = expected.replace('2', '3')
+        expected = u'Testing 3. And - -.'
+        test = u'Testing \u00b3. And \u2013 \u2014.'
         self.assertEqual(
-            self.parser._clean_super(test, replace=u'3'),
-            new_expected
+            self.parser._clean_super(test),
+            expected
         )
 
     def test_clean_super_scripts(self):
