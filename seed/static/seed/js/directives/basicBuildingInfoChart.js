@@ -78,6 +78,7 @@ angular.module('basicBuildingInfoChart', [])
       var hasData = false;
       var chartType = "";
       var self = this;
+      var truncateLength = 15;
 
       var defaultColors = [
           new dimple.color("#458cc8"),
@@ -156,12 +157,11 @@ angular.module('basicBuildingInfoChart', [])
         // create the dimple chart using the d3 selection of our <svg> element
         chart = new dimple.chart(svg, []); 
         chart.defaultColors = defaultColors;  
-        chart.setMargins(110, 20, 60, 40);
+        chart.setMargins(120, 20, 60, 40);
        
         chart.noFormats = false; //use autostyle
         chart.draw(0);
       }
-
 
       /* Create the axes for the chart, using value passed in from external controller. */
       this.createChartAxes = function (yAxisType, yAxisMin, xAxisTickFormat, yAxisTickFormat){
@@ -172,8 +172,7 @@ angular.module('basicBuildingInfoChart', [])
 
         xAxis = chart.addMeasureAxis('x', 'x');
         xAxis.tickFormat = xAxisTickFormat;
-
-        var truncateLength = 20;
+     
         if (yAxisType=="Measure"){
           if (!yAxisTickFormat){
             yAxisTickFormat = ",.0f"
@@ -182,8 +181,16 @@ angular.module('basicBuildingInfoChart', [])
           yAxis.tickFormat = yAxisTickFormat;
         } else {
           yAxis = chart.addCategoryAxis('y', ['y','yr_e']);
-          yAxis.addOrderRule("y", false)
+          yAxis.addOrderRule("y", false);     
+          yAxis._getFormat = function() { return my_custom_format; };
         }
+      }
+
+      function my_custom_format(value) {
+          if (value && value.length>truncateLength){
+            return value.substring(0,truncateLength) + "...";
+          }
+          return value;
       }
 
       this.createChartLegend = function (){
