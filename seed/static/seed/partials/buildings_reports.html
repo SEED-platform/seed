@@ -104,20 +104,19 @@
                                                     onchartrendered="chartRendered()"
                                                     >
                         </basic-building-info-chart>
-                    </div>                    
-                    <div ng-show="chartStatusMessage" class="status-message">
-                        {$ chartStatusMessage $}
-                        <div class="progress progress-striped active" ng-show="chartIsLoading">
-                            <div    class="progress-bar"  
-                                    role="progressbar" 
-                                    aria-valuenow="100" 
-                                    aria-valuemin="0" 
-                                    aria-valuemax="100" 
-                                    style="width: 100%">
+                        <div ng-show="chartStatusMessage" class="status-message">
+                            {$ chartStatusMessage $}
+                            <div class="progress progress-striped active" ng-show="chartIsLoading">
+                                <div    class="progress-bar"  
+                                        role="progressbar" 
+                                        aria-valuenow="100" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100" 
+                                        style="width: 100%">
+                                </div>
                             </div>
                         </div>
-                    </div>
-
+                    </div>     
                     <div class="reportingTableHolder">
                         <table class="table" >
                             <thead>
@@ -130,8 +129,8 @@
                             <tbody>
                               <tr ng-repeat="obj in buildingCounts">
                                 <td><i class="fa fa-circle" style="color:{$obj.color$}"></i>&nbsp;&nbsp;{$ obj.yr_e $}</td>
-                                <td>{$ obj.num_buildings $}</td>
                                 <td>{$ obj.num_buildings_w_data $}</td>
+                                <td>{$ obj.num_buildings $}</td>
                               </tr>                         
                             </tbody>
                         </table>
@@ -149,19 +148,22 @@
                                                     onchartrendered="aggChartRendered()"
                                                     >
                         </basic-building-info-chart>
-                    </div>                    
-                    <div ng-show="aggChartStatusMessage" class="status-message">
-                        {$ aggChartStatusMessage $}
-                        <div class="progress progress-striped active" ng-show="aggChartIsLoading">
-                            <div    class="progress-bar"  
-                                    role="progressbar" 
-                                    aria-valuenow="100" 
-                                    aria-valuemin="0" 
-                                    aria-valuemax="100" 
-                                    style="width: 100%">
+                        <div ng-show="aggChartStatusMessage" class="status-message">
+                            <div>{$ aggChartStatusMessage $}
+                                <div class="progress progress-striped active" ng-show="aggChartIsLoading">
+                                    <div    class="progress-bar"  
+                                            role="progressbar" 
+                                            aria-valuenow="100" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100" 
+                                            style="width: 100%">
+                                    </div>
+                                </div>
                             </div>
+                            
                         </div>
-                    </div>
+                    </div>                    
+                    
 
                      <div class="reportingTableHolder" >
                         <table class="table">
@@ -175,8 +177,8 @@
                             <tbody>
                               <tr ng-repeat="obj in aggBuildingCounts">
                                 <td><i class="fa fa-square" style="color:{$obj.color$}"></i>&nbsp;&nbsp;{$ obj.yr_e $}</td>
-                                <td>{$ obj.num_buildings $}</td>
                                 <td>{$ obj.num_buildings_w_data $}</td>
+                                <td>{$ obj.num_buildings $}</td>
                               </tr>                         
                             </tbody>
                         </table>                        

@@ -198,7 +198,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
   /* Update the titles above each chart*/
   function updateChartTitles(){
     $scope.chart1Title = $scope.xAxisSelectedItem.label + " vs. " + $scope.yAxisSelectedItem.label;
-    $scope.chart2Title = $scope.xAxisSelectedItem.label + " vs. " + $scope.yAxisSelectedItem.label;
+    $scope.chart2Title = $scope.xAxisSelectedItem.label + " vs. " + $scope.yAxisSelectedItem.label + " (Aggregated)";
   }
 
   function setChartStatusMessages(chartData){
