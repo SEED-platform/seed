@@ -175,7 +175,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 	
 .sidebar {
-	margin-left: 0px;
+	margin-left: 0;
 	position: fixed;
 	float: none;
 	height: 100%;
@@ -420,7 +420,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 							padding-bottom: 15px;
 						}
 						ul {
-							right: 0px;
+							right: 0;
 							left: inherit;
 							text-align: left;
 							
@@ -666,7 +666,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 				text-align: right;
 				
 				i {
-					padding-right:0px;
+					padding-right:0;
 				}
 			}
 			&.right_wide {
@@ -783,10 +783,9 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 			}
 		}
 		.jumbotron {
-			background-image: url('../images/kc_2.jpg');
-			background-repeat: no-repeat;
-			height: 402px;
-			margin-bottom: 0px;
+		  background: url('../images/kc_2.jpg') no-repeat;
+		  height: 402px;
+			margin-bottom: 0;
 			padding: 30px 10%;
 			color: @white;
 			
@@ -878,17 +877,26 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 		}
 		.table_list_container {
 			overflow-x: auto;
-			
+
 			&.has_borders {
 				border-left: 1px solid @gray_lighter;
 				border-right: 1px solid @gray_lighter;
 			}
-			
+
+			&.remove_buildings_table {
+				width: 80%;
+			}
+
 			table {
 				margin-bottom: 10px;
 				
 				&.has_no_btm_margin {
 					margin-bottom: 0;
+				}
+
+			    &.resizable {
+				  max-width:none; // override bootstrap
+				  min-width: 100%;
 				}
 				
 				th, td {
@@ -1246,7 +1254,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 				min-width: 280px;
 				
 				&.has_no_min_width {
-					min-width: 0px;
+					min-width: 0;
 				}
 			}
 			
@@ -1266,13 +1274,11 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 		    }
 		    
 		    .table-striped tbody tr:nth-child(1) td {
-				background-image: url('../images/bg_first_td.png');
-				background-repeat: repeat-x;
-				
-				&.sorted {
-					background-image: url('../images/bg_first_td.png');
-					background-repeat: repeat-x;
-				}
+			  background: url('../images/bg_first_td.png') repeat-x;
+
+			  &.sorted {
+				background: url('../images/bg_first_td.png') repeat-x;
+			  }
 			}
 			.table-striped tbody tr td h3 {
 				font-weight: 400;
@@ -1493,6 +1499,12 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 
 // New styles for better modal living.
+
+@media (min-width: 1042px) {
+	.modal-lg {
+		width: 950px;
+	}
+}
 .modal-header {
 	
 	.close {
@@ -1747,7 +1759,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 .btn-sm, .btn-xs {
 	font-size: 13px;	
 }
-.table_header_persistant {
+.table_header_persistent {
 	
 	.table {
 		margin-bottom: 0;
@@ -1757,13 +1769,22 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 		}
 	}
 }
-.table_body_persistant {
+.table_body_persistent {
 	position: relative;
 	height: 205px; 
 	overflow-y: scroll;
 	border-right: 1px solid @grayLighter;
 	border-left: 1px solid @grayLighter;
 	border-bottom: 1px solid @grayLighter;
+}
+.tbody-striped>tbody:nth-child(odd) td, .tbody-striped>tbody:nth-child(odd)>th {
+	background-color: #F9F9F9
+}
+.cleansing-error td:last-child {
+	background-color: #FFB7B7 !important;
+}
+.cleansing-warning td:last-child {
+	background-color: #FDF4BF !important;
 }
 .export_radio {
 	.radio-inline {

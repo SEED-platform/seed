@@ -1,7 +1,4 @@
 """
-:copyright: (c) 2014 Building Energy Inc
-"""
-"""
 WSGI config for config project.
 
 This module contains the WSGI application used by Django's development server
@@ -16,7 +13,13 @@ middleware here, or combine a Django application with an application of another
 framework.
 
 """
+
 import os
+from os.path import abspath, dirname
+from sys import path
+
+SITE_ROOT = dirname(dirname(abspath(__file__)))
+path.append(SITE_ROOT)
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.main")
 
@@ -26,6 +29,5 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.main")
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-# Apply WSGI middleware here.
-# from helloworld.wsgi import HelloWorldApplication
-# application = HelloWorldApplication(application)
+
+

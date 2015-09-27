@@ -9,7 +9,10 @@
      * angular directive to wrap jQuery's resizable functionality
     */
     function resizable() {
-        var resizableConfig = {handles: 'e'};
+        var resizableConfig = {
+            handles: 'e',
+            alsoResize: 'table.resizable'
+        };
 
         return {
             restrict: 'A',

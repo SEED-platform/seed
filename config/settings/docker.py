@@ -3,9 +3,9 @@
 
 """
 
+from __future__ import absolute_import
 from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
-import djcelery
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -105,7 +105,6 @@ CELERY_QUEUES = (
         routing_key=CELERY_DEFAULT_QUEUE
     ),
 )
-djcelery.setup_loader()
 
 try:
     INSTALLED_APPS += ( )
