@@ -1893,4 +1893,72 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 
 
+/* Styles for building reports page */
+.building-reports {
+
+	/* The section containing the UI controls for updating the charts */
+    .chart-inputs {
+        padding:10px; 
+        border-radius:.5em; 
+        background-color:#d8e3ed;
+
+        label {
+	        margin-right: 5px;
+	        color: #222;
+	    }
+
+	    .form-group{
+	        margin-left:20px;
+	    }
+
+	    /*  This is a fix for a bug in bootstrap 3.1 
+	        (fixed in 3.2, but we're using 3.1 right now) 
+			We can remove when we update.
+	    */
+	    .input-group {
+	        display: inline-table;
+	        vertical-align: middle;
+	        .input-group-addon,
+	        .input-group-btn,
+	        .form-control {
+	            width: auto !important;
+	            max-width:120px;
+	        }
+	    }
+    }
+
+    /* This is a small floating box
+    	above the chart that shows the chart's status
+    	when loading or when it has no data. */
+    .status-message {
+        position:absolute;
+        top:50%;
+        left:50%;
+        margin:-30px 0px 0px -60px;
+        text-align: center;
+        width:120px;
+        padding-top:10px;
+        padding-bottom:10px;
+        background-color: #FFF;
+        border:1px solid #F1F1F1;
+        border-radius: 5px;
+    }
+
+    .chart-holder {
+        border-radius: .5em;
+        background-color: #F6F6F6;
+        border:1px solid #F6F6F6;
+        position:relative;
+    }
+
+    .reportingTableHolder {
+        margin-top: 20px;
+        padding: 0px 60px 0px 105px;
+    }
+
+    .progress {
+    	margin:5px 10px 0px 10px;
+    }
+}
+
 

@@ -30,6 +30,11 @@
         window.BE.urls.update_dataset = "{% url "seed:update_dataset" %}";
         window.BE.urls.update_building = "{% url "seed:update_building" %}";
 
+        //DMcQ: Test for building reporting section        
+        window.BE.urls.get_building_summary_report_data = "{% url "seed:get_building_summary_report_data" %}";
+        window.BE.urls.get_building_report_data         = "{% url "seed:get_building_report_data" %}";
+        window.BE.urls.get_aggregated_building_report_data         = "{% url "seed:get_aggregated_building_report_data" %}";
+
         // uploader URLS
         window.BE.urls.uploader_signature_endpoint = '{% url "data_importer:sign_policy_document" %}';
         window.BE.urls.uploader_success_endpoint = '{% url "data_importer:s3_upload_complete" %}';

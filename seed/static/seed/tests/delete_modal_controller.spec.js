@@ -26,6 +26,10 @@ describe("controller: delete_modal_controller", function(){
                 return $q.when({"status": "success"});
             }
         );
+        spyOn(mock_building_services, "get_total_number_of_buildings_for_user")
+            .andCallFake(function(){
+                return $q.when({"status":"success"})
+            })
     }));
 
     // this is outside the beforeEach so it can be configured by each unit test
@@ -106,6 +110,7 @@ describe("controller: delete_modal_controller", function(){
 
         // assertions
         expect(mock_building_services.delete_buildings).toHaveBeenCalled();
+        expect(mock_building_services.get_total_number_of_buildings_for_user).toHaveBeenCalled();
         expect(ctrl_scope.delete_state).toEqual("success");
     });
     it("should show the number of buildings to be deleted",

@@ -30,9 +30,9 @@
             </script>
         <![endif]-->
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-	{# <link rel="Shortcut Icon" href="PATH_TO_FAVICON.ico" type="image/x-icon" /> #}
+	   {# <link rel="Shortcut Icon" href="PATH_TO_FAVICON.ico" type="image/x-icon" /> #}
         <link href="//fonts.googleapis.com/css?family=PT+Sans:400,700|PT+Sans+Narrow:400,700" rel="stylesheet" type="text/css">
-        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.2/css/font-awesome.css" rel="stylesheet" type="text/css">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.css" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
         <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
         <link href="{{STATIC_URL}}vendors/angular-ui-tree/angular-ui-tree.min.css" rel="stylesheet" type="text/css" />
@@ -79,6 +79,11 @@
             <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-route.min.js"></script>
             <script src="{{STATIC_URL}}vendors/angular-ui/ui-bootstrap-tpls-0.12.0-SNAPSHOT.min.js"></script>
             <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.3.1/moment.min.js"></script>
+
+            <!-- DMcQ Temp for charting dev -->
+            <script src="{{STATIC_URL}}vendors/bower_components/d3/d3.min.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/dimple/dist/dimple.latest.min.js"></script>
+            <!-- /DMcQ -->
 
             {% ifequal FILE_UPLOAD_DESTINATION 'S3' %}
             <script src="{{STATIC_URL}}vendors/bower_components/fine-uploader/_build/s3.fineuploader.js" ></script>
