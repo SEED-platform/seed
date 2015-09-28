@@ -5,6 +5,8 @@ import datetime
 from logging import getLogger
 from django.db import models
 from django.core.cache import cache
+from datetime import datetime
+from datetime import date
 
 logger = getLogger(__name__)
 
@@ -183,26 +185,32 @@ class Cleansing(models.Model):
                 if value is None:
                     continue
 
-                if isinstance(value, datetime.datetime):
-                    value = value.toordinal()
-                elif isinstance(value, datetime.date):
-                    value = value.toordinal()
-
                 for rule in rules:
-                    if rule['min'] is not None and value < rule['min']:
+                    rule_min = rule['min']
+                    rule_max = rule['max']
+                    # need to compare against a data time in the rule - this should be moved to
+                    # a preprocessing method of the cleansing.json file as this is run every time
+                    if isinstance(value, datetime):
+                        rule_min = datetime.strptime(rule_min, '%m/%d/%Y')
+                        rule_max = datetime.strptime(rule_max, '%m/%d/%Y')
+                    elif isinstance(value, date):
+                        rule_min = datetime.strptime(rule_min, '%m/%d/%Y').date()
+                        rule_max = datetime.strptime(rule_max, '%m/%d/%Y').date()
+
+                    if rule_min is not None and value < rule_min:
                         self.results[datum.id]['cleansing_results'].append(
                             {
                                 'field': field,
-                                'message': 'Value [' + str(value) + '] < ' + str(rule['min']),
+                                'message': 'Value [' + str(value) + '] < ' + str(rule_min),
                                 'severity': rule['severity']
                             }
                         )
 
-                    if rule['max'] is not None and value > rule['max']:
+                    if rule_max is not None and value > rule_max:
                         self.results[datum.id]['cleansing_results'].append(
                             {
                                 'field': field,
-                                'message': 'Value [' + str(value) + '] > ' + str(rule['max']),
+                                'message': 'Value [' + str(value) + '] > ' + str(rule_max),
                                 'severity': rule['severity']
                             }
                         )
