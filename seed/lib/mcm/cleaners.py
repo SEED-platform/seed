@@ -25,16 +25,30 @@ def default_cleaner(value, *args):
 
 
 def float_cleaner(value, *args):
-    """Try to clean value, coerce it into a float."""
-    if not value:
+    """Try to clean value, coerce it into a float.
+    Usage:
+        float_cleaner('1,123.45')       # 1123.45
+        float_cleaner('1,123.45 ?')     # 1123.45
+        float_cleaner(50)               # 50.0
+        float_cleaner(None)             # None
+        float_cleaner(Decimal('30.1'))  # 30.1
+        float_cleaner(my_date)          # raises TypeError
+    """
+    # API breakage if None does not return None
+    if value is None:
         return None
-    if isinstance(value, float) or isinstance(value, int):
-        return float(value)
-    try:
+    if isinstance(value, basestring):
         value = PUNCT_REGEX.sub('', value)
+
+    try:
         value = float(value)
     except ValueError:
-        return None
+        value = None
+    except TypeError:
+        message = 'float_cleaner cannot convert {} to float'.format(
+            type(value)
+        )
+        raise TypeError(message)
 
     return value
 
@@ -55,12 +69,13 @@ def bool_cleaner(value, *args):
 
 
 def date_cleaner(value, *args):
+    """Try to clean value, coerce it into a python datetime."""
     if not value:
         return None
     if isinstance(value, datetime) or isinstance(value, date):
         return value
     try:
-        dateutil.parser.parse(value)
+        value = dateutil.parser.parse(value)
     except (TypeError, ValueError):
         return None
 
@@ -69,7 +84,6 @@ def date_cleaner(value, *args):
 
 class Cleaner(object):
     """Cleans values for a given ontology."""
-
     def __init__(self, ontology):
         self.ontology = ontology
         self.schema = self.ontology.get(u'types', {})

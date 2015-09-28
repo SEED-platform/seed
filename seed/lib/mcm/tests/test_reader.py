@@ -9,6 +9,7 @@ from seed.lib.mcm import reader
 from seed.lib.mcm.tests import utils
 
 
+
 class TestCSVParser(TestCase):
     def setUp(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm.csv'
@@ -89,6 +90,17 @@ class TestMCMParserCSV(TestCase):
     def test_num_columns(self):
         self.assertEqual(self.parser.num_columns(), 250)
 
+    def test_headers(self):
+        """tests that we can get the original order of headers"""
+        self.assertEqual(
+            self.parser.headers()[0],
+            'Property Id'
+        )
+        self.assertEqual(
+            self.parser.headers()[-1],
+            'Release Date'
+        )
+
 
 class TestMCMParserXLS(TestCase):
     def setUp(self):
@@ -127,6 +139,31 @@ class TestMCMParserXLS(TestCase):
     def test_num_columns(self):
         self.assertEqual(self.parser.num_columns(), 250)
 
+    def test_headers(self):
+        self.assertEqual(
+            self.parser.headers()[0],
+            'Property Id'
+        )
+        self.assertEqual(
+            self.parser.headers()[-1],
+            'Release Date'
+        )
+
+    def test_blank_row(self):
+        self.xls_f.close()
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm_blank_rows.xls'
+        self.xls_f = open(test_file, 'rb')
+        self.parser = reader.MCMParser(self.xls_f)
+        self.total_callbacks = 0
+        self.assertEqual(
+            self.parser.headers()[0],
+            'Property Id'
+        )
+        self.assertEqual(
+            self.parser.headers()[-1],
+            'Release Date'
+        )
+
 
 class TestMCMParserXLSX(TestCase):
     def setUp(self):
@@ -164,3 +201,13 @@ class TestMCMParserXLSX(TestCase):
 
     def test_num_columns(self):
         self.assertEqual(self.parser.num_columns(), 250)
+
+    def test_headers(self):
+        self.assertEqual(
+            self.parser.headers()[0],
+            'Property Id'
+        )
+        self.assertEqual(
+            self.parser.headers()[-1],
+            'Release Date'
+        )

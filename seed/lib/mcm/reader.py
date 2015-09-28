@@ -61,10 +61,10 @@ class ExcelParser(object):
         return book.sheet_by_index(sheet_index)
 
     def _get_header_row(self, sheet):
-        """attempt to locate the header row based on a lack of empty cells
+        """returns the best guess for the header row
 
         :param sheet: xlrd sheet
-        :returns: header row index
+        :returns: index of header row
         """
         for row in range(sheet.nrows):
             row_contains_empty_cells = False
@@ -146,6 +146,10 @@ class ExcelParser(object):
     def num_columns(self):
         """gets the number of columns for the file"""
         return self.sheet.ncols
+
+    def headers(self):
+        """original ordered list of spreadsheet headers"""
+        return self.sheet.row_values(self.header_row)
 
 
 class CSVParser(object):
@@ -234,6 +238,10 @@ class CSVParser(object):
         """gets the number of columns for the file"""
         return len(self.csvreader.unicode_fieldnames)
 
+    def headers(self):
+        """original ordered list of spreadsheet headers"""
+        return self.csvreader.fieldnames
+
 
 class MCMParser(object):
     """
@@ -310,6 +318,10 @@ class MCMParser(object):
     def num_columns(self):
         """returns the number of columns of the file"""
         return self.reader.num_columns()
+
+    def headers(self):
+        """original ordered list of spreadsheet headers"""
+        return self.reader.headers()
 
 
 def main():
