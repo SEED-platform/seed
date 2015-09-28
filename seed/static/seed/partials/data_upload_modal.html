@@ -6,7 +6,7 @@
     <h4 class="modal-title" ng-switch-when="5">Successful upload!</h4>
     <h4 class="modal-title" ng-switch-when="6">What type of file would you like to upload?</h4>
     <h4 class="modal-title" ng-switch-when="7">Finding building matches.</h4>
-    <h4 class="modal-title" ng-switch-when="8">{$ matched_buildings|number:0 $} building matches found.</h4>
+    <h4 class="modal-title" ng-switch-when="8">Matching Results for file: <strong>{$ dataset.filename $}</strong></h4>
     <h4 class="modal-title" ng-switch-when="9">Add files to {$ dataset.name $}.</h4>
     <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|titleCase $}</h4>
     <h4 class="modal-title" ng-switch-when="11">Confirm Save Mappings?</h4>
@@ -118,7 +118,12 @@
         <div class="row">
             <div class="alert alert-success alert-dismissable">
                 <button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
-                SEED successfully matched <strong>{$ matched_buildings|number:0 $}</strong> and found <strong>{$ duplicate_buildings|number:0 $} duplicates</strong> of the <strong>{$ (matched_buildings + unmatched_buildings + duplicate_buildings)|number:0 $}</strong> buildings from your <strong>{$ dataset.filename $}</strong> file.  Any duplicates will be removed from consideration from matching.
+		<ul>
+	        <li>Total records in the file: {$ (matched_buildings + unmatched_buildings + duplicate_buildings)|number:0 $}</li> 
+	        <li>Duplicate records, not merged into existing Master buildings: {$ duplicate_buildings|number:0 $}</li> 
+	        <li>Records that were matched to existing (or new) Master buildings: {$ matched_buildings|number:0 $}</li> 
+	        <li>Records that were made into new Master buildings (not duplicates, not matches): {$ unmatched_buildings|number:0 $}</li> 
+		</ul>
             </div>
         </div>
     </div>

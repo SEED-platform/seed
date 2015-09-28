@@ -1098,6 +1098,8 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
     if not un_m_address:
         return match_list
     for cb in canonical_buildings_addresses:
+        if cb is None:
+            continue
         if un_m_address.lower() == cb.lower():  # this second lower may be obsolete now
             match_list.append((un_m_address, 1))
     return match_list

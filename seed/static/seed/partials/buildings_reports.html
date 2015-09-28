@@ -1,0 +1,190 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+           
+        </div>
+        <div class="page_title">
+            <h1><i class="fa fa-building-o"></i> Buildings</h1>
+        </div>
+        <div class="right page_action_container page_action_btn">
+            
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav">
+        <a ng-href="#/buildings">Buildings List</a>
+        <a ng-href="#/buildings/settings">List Settings</a>
+        <a ng-href="#/buildings/reports" class="active">Reports</a>
+    </div>
+</div>
+<div class="section building-reports">
+    <div class="section_content_container">
+        <div class="section_content ">            
+            <div class="content_block row" style="padding:20px 20px 10px 20px">        
+                <div class="container" style="width:100%; margin-bottom:10px;">        
+                    <div class="row">
+                        <div class="col-md-2" >
+                            <h2 style="font-size:18px;"><i class="fa fa-bar-chart pull-left"></i> Building Reports</h2>     
+                        </div>
+                        <div class="col-md-10" >   
+                            <form class="form-inline pull-right chart-inputs" role="form" >
+                                <div class="form-group">                             
+                                    <label  for="from-date">From date:</label>   
+                                    <div class="input-group date-input"> 
+                                        <input  id="from-date"
+                                                type="text"
+                                                class="form-control"
+                                                datepicker-popup="MM-dd-yyyy" 
+                                                is-open="startDatePickerOpen" 
+                                                ng-model="startDate" 
+                                                />
+                                        <span class="input-group-btn">
+                                            <button type="button" 
+                                                    class="btn btn-default" 
+                                                    ng-click="openStartDatePicker($event)" ><i class="fa fa-calendar"></i></button>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="form-group"> 
+                                    <label for="to-date">To date:</label>   
+                                    <div class="input-group date-input">
+                                        <input  id="to-date"
+                                                type="text" 
+                                                class="form-control"
+                                                min-date="startDate" 
+                                                datepicker-popup="MM-dd-yyyy" 
+                                                is-open="endDatePickerOpen" 
+                                                min-date="startDate"
+                                                ng-model="endDate"/>
+                                        <span class="input-group-btn">
+                                            <button type="button" 
+                                                    class="btn btn-default" 
+                                                    ng-click="openEndDatePicker($event)" ><i class="fa fa-calendar"></i></button>
+                                        </span>
+                                    </div>            
+                                </div>
+                                <div class="form-group">
+                                    <label for="to-date">X Axis:</label>
+                                    <dropdown is-button 
+                                              ng-model="xAxisSelectedItem" 
+                                              items="xAxisVars" >
+                                    </dropdown>
+                                </div>
+                                <div class="form-group">
+                                    <label for="to-date">Y Axis:</label>   
+                                    <dropdown is-button 
+                                              ng-model="yAxisSelectedItem" 
+                                              items="yAxisVars" >
+                                    </dropdown>
+                                </div>                       
+                                <div class="form-group">
+                                    <button type="submit" 
+                                            class="btn btn-primary" 
+                                            ng-click="updateChartData()">
+                                            Update Charts
+                                    </button>
+                                </div>
+                            </form>
+                        </div>                         
+                    </div> <!-- ./row -->
+                </div> <!-- ./container -->                
+            </div>
+     
+            <div class="content_block row" style="padding:0px 20px;">
+
+                <div class="col-md-6 col-sm-6">                  
+                    <h4 class="chartTitle">{$ chart1Title $}&nbsp;</h3>       
+                    <div class="chart-holder"  >                      
+                        <basic-building-info-chart  id="chart" 
+                                                    data="chartData" 
+                                                    autoresize="true" 
+                                                    chart-type="scatter"
+                                                    height="400"
+                                                    onchartrendered="chartRendered()"
+                                                    >
+                        </basic-building-info-chart>
+                        <div ng-show="chartStatusMessage" class="status-message">
+                            {$ chartStatusMessage $}
+                            <div class="progress progress-striped active" ng-show="chartIsLoading">
+                                <div    class="progress-bar"  
+                                        role="progressbar" 
+                                        aria-valuenow="100" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100" 
+                                        style="width: 100%">
+                                </div>
+                            </div>
+                        </div>
+                    </div>     
+                    <div class="reportingTableHolder">
+                        <table class="table" >
+                            <thead>
+                              <tr>
+                                <th>Year Ending</th>
+                                <th>Buildings with Data</th>
+                                <th>Total Buildings</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr ng-repeat="obj in buildingCounts">
+                                <td><i class="fa fa-circle" style="color:{$obj.color$}"></i>&nbsp;&nbsp;{$ obj.yr_e $}</td>
+                                <td>{$ obj.num_buildings_w_data $}</td>
+                                <td>{$ obj.num_buildings $}</td>
+                              </tr>                         
+                            </tbody>
+                        </table>
+                    </div>
+                </div><!-- ./ col-md-6 -->
+
+                <div class="col-md-6 col-sm-6">                   
+                    <h4 class="chartTitle">{$ chart2Title $}&nbsp;</h3>                         
+                    <div class="chart-holder">                       
+                        <basic-building-info-chart  id="aggChart" 
+                                                    data="aggChartData" 
+                                                    autoresize="true" 
+                                                    chart-type="bar"
+                                                    height="400"
+                                                    onchartrendered="aggChartRendered()"
+                                                    >
+                        </basic-building-info-chart>
+                        <div ng-show="aggChartStatusMessage" class="status-message">
+                            <div>{$ aggChartStatusMessage $}
+                                <div class="progress progress-striped active" ng-show="aggChartIsLoading">
+                                    <div    class="progress-bar"  
+                                            role="progressbar" 
+                                            aria-valuenow="100" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100" 
+                                            style="width: 100%">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>                    
+                    
+
+                     <div class="reportingTableHolder" >
+                        <table class="table">
+                            <thead>
+                              <tr>
+                                <th>Year Ending</th>
+                                <th>Buildings with Data</th>
+                                <th>Total Buildings</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr ng-repeat="obj in aggBuildingCounts">
+                                <td><i class="fa fa-square" style="color:{$obj.color$}"></i>&nbsp;&nbsp;{$ obj.yr_e $}</td>
+                                <td>{$ obj.num_buildings_w_data $}</td>
+                                <td>{$ obj.num_buildings $}</td>
+                              </tr>                         
+                            </tbody>
+                        </table>                        
+                    </div>
+                </div><!-- ./ col-md-6 -->                      
+            </div> <!-- ./ content_block row --> 
+        </div> <!-- ./section_content -->
+    </div>  <!-- ./section_content_container-->
+</div>

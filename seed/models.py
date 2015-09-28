@@ -437,6 +437,19 @@ def unmatch_snapshot_tree(building_pk):
 
     # delete all sub-children of the unmatched snapshot
     for child in children_to_murder:
+        # If the child we're about to delete is set as the canonical snapshop,
+        # we should update the canonical_building to point at a different node
+        # if possible.
+        canons_to_update = CanonicalBuilding.objects.filter(
+            canonical_snapshot=child,
+        )
+        for cb in canons_to_update:
+            sibling = cb.buildingsnapshot_set.exclude(
+                pk=child.pk,
+            ).first()
+            if sibling:
+                cb.canonical_snapshot = sibling.tip
+                cb.save()
         child.delete()
 
     # re-merge parents whose children have been taken from them
@@ -450,6 +463,7 @@ def unmatch_snapshot_tree(building_pk):
     tip = newborn_child or root
     canon = root.canonical_building
     canon.canonical_snapshot = tip
+    canon.active = True
     canon.save()
 
 
@@ -1260,7 +1274,7 @@ class BuildingSnapshot(TimeStampedModel):
     use_description_source = models.ForeignKey(
         'BuildingSnapshot', related_name='+', null=True, blank=True
     )
-    
+
     #Need a field to indicate that a record is a duplicate of another.  Mainly used for cleaning up.
     duplicate = models.ForeignKey(
         'BuildingSnapshot', related_name='+', null=True, blank=True
