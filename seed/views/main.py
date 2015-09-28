@@ -1131,7 +1131,7 @@ def get_PM_filter_by_counts(request):
         'unmatched': unmatched,
         'duplicates': duplicates,
     }
-    
+
 @api_endpoint
 @ajax_request
 @login_required
@@ -1145,12 +1145,12 @@ def delete_duplicates_from_import_file(request):
     Returns::
 
         {'status': 'success',
-         'deleted': Number of duplicates deleted         
+         'deleted': Number of duplicates deleted
         }
     """
     import_file_id = request.GET.get('import_file_id', '')
 
-    
+
     orig_duplicate_ct = BuildingSnapshot.objects.filter(
         import_file__pk=import_file_id,
         source_type__in=[2, 3],
@@ -1168,7 +1168,7 @@ def delete_duplicates_from_import_file(request):
     ).count()
     return {
         'status': 'success',
-        'deleted': orig_duplicate_ct - new_duplicate_ct,        
+        'deleted': orig_duplicate_ct - new_duplicate_ct,
     }
 
 
@@ -1259,11 +1259,11 @@ def get_column_mapping_suggestions(request):
         _log.info("map Portfolio Manager input file")
         suggested_mappings = {}
         ver = import_file.source_program_version
-        
+
         #if there is no pm mapping found but the file has already been matched
         #then effectively the mappings are already known with a confidence of 100
         no_pm_mappings_confience = 100 if import_file.matching_done else 0
-        
+
         for col, item in simple_mapper.get_pm_mapping(
                 ver, import_file.first_row_columns,
                 include_none=True).items():
@@ -2014,7 +2014,7 @@ def progress(request):
         # The following if statement can be removed once all progress endpoints have been updated to the new json syntax
         if type(result) != dict:
             result = {'progress': result}
-        result['progress_key'] = progress_key        
+        result['progress_key'] = progress_key
         return result
     else:
         return {
