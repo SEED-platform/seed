@@ -2413,6 +2413,10 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
                 #Note:  I don't really know how this works in terms of order
                 #for the root two buildings in the tree
                 for unmerged_bs in unmerged_snapshots:
+                    #even though the query at the beginning specifies a date range since this is using the tree
+                    #some other records without a year_ending may have snuck back in.  Ignore them here.
+                    if not hasattr(unmerged_bs, "year_ending") or type(unmerged_bs.year_ending) != datetime.date:
+                        continue
                     if from_date <= unmerged_bs.year_ending <= end_date:
                         process_snapshot(canonical_building_id, unmerged_bs)
         else:
