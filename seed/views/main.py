@@ -2350,6 +2350,7 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     def process_snapshot(canonical_building_id, snapshot):      
         from datetime import date
 
+        #The data is meaningless here aside if there is no valid year_ending value
         if not hasattr(snapshot, "year_ending"):
             return
 
