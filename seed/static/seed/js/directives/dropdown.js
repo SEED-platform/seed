@@ -1,5 +1,5 @@
 angular.module('dropdown', [])
-.directive('dropdown', function () {
+.directive('dropdown', ['urls', function (urls) {
   return {
     restrict: 'E',
     require: '^ngModel',
@@ -24,6 +24,6 @@ angular.module('dropdown', [])
         }
       };
     },
-    templateUrl: '/static/seed/js/directives/dropdown-template.html'
+    templateUrl: urls.static_url + 'seed/js/directives/dropdown-template.html'
   };
-});
+}]);
