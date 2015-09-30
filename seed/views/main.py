@@ -2339,15 +2339,21 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     canonical_ids = [x.id for x in canonical_buildings]
         
  
-    #if the BuildingSnapshot has the attribute use that directly.  Otherwise if the attribute is in extra_data use that
-    #if it is in neither place then it doesn't have it so return None
-    #actually now we are not considering release_data at all so it is just 
+    #if the BuildingSnapshot has the attribute use that directly.  
+    #in the future if it should search extra_data but extra_data is still not 
+    #searchable directly then this can be adjusted by replacing the last None with
+    # obj.extra_data[attr] if hasattr(obj, "extra_data") and attr in obj.extra_data else None
     get_attr_f = lambda obj, attr: getattr(obj, attr) if hasattr(obj, attr) else None
           
     bldg_counts = {}
     
     def process_snapshot(canonical_building_id, snapshot):      
         from datetime import date
+
+        #The data is meaningless here aside if there is no valid year_ending value
+        if not hasattr(snapshot, "year_ending"):
+            return
+
         year_ending_year = snapshot.year_ending
         
         if year_ending_year not in bldg_counts:
@@ -2413,6 +2419,10 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
                 #Note:  I don't really know how this works in terms of order
                 #for the root two buildings in the tree
                 for unmerged_bs in unmerged_snapshots:
+                    #even though the query at the beginning specifies a date range since this is using the tree
+                    #some other records without a year_ending may have snuck back in.  Ignore them here.
+                    if not hasattr(unmerged_bs, "year_ending") or type(unmerged_bs.year_ending) != datetime.date:
+                        continue
                     if from_date <= unmerged_bs.year_ending <= end_date:
                         process_snapshot(canonical_building_id, unmerged_bs)
         else:
