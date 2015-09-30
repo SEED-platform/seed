@@ -43,6 +43,7 @@ class ExcelParser(object):
     """
 
     def __init__(self, excel_file, *args, **kwargs):
+        self.cache_headers = []
         self.excel_file = excel_file
         self.sheet = self._get_sheet(excel_file)
         self.header_row = self._get_header_row(self.sheet)
@@ -112,8 +113,15 @@ class ExcelParser(object):
         :returns: Generator yeilding a row as Dict
         """
 
+        # save off the headers into a member variable. Only do this once. If XLSDictReader is called later (which it is
+        # in `seek_to_beginning` then don't reparse the headers
+        if not self.cache_headers:
+            for j in range(sheet.ncols):
+                self.cache_headers.append(self.get_value(sheet.cell(header_row, j)))
+
         def item(i, j):
             """returns a tuple (column header, cell value)"""
+            # self.cache_headers[j],
             return (
                 self.get_value(sheet.cell(header_row, j)),
                 self.get_value(sheet.cell(i, j))
@@ -138,7 +146,8 @@ class ExcelParser(object):
     def seek_to_beginning(self):
         """seeks to the beginning of the file
 
-        Since ``XLSDictReader`` is in memory, a new one is created
+        Since ``XLSDictReader`` is in memory, a new one is created. Note: the headers will not be
+        parsed again when the XLSDictReader is loaded
         """
         self.excel_file.seek(0)
         self.excelreader = self.XLSDictReader(self.sheet, self.header_row)
@@ -148,8 +157,8 @@ class ExcelParser(object):
         return self.sheet.ncols
 
     def headers(self):
-        """original ordered list of spreadsheet headers"""
-        return self.sheet.row_values(self.header_row)
+        """return ordered list of clean headers"""
+        return self.cache_headers
 
 
 class CSVParser(object):
@@ -177,6 +186,8 @@ class CSVParser(object):
     def __init__(self, csvfile, *args, **kwargs):
         self.csvfile = csvfile
         self.csvreader = self._get_csv_reader(csvfile, **kwargs)
+
+        # cleaning the superscripts also assigns the headers to the csvreader.unicode_fieldnames
         self.clean_super_scripts()
 
     def _get_csv_reader(self, *args, **kwargs):
@@ -239,8 +250,8 @@ class CSVParser(object):
         return len(self.csvreader.unicode_fieldnames)
 
     def headers(self):
-        """original ordered list of spreadsheet headers"""
-        return self.csvreader.fieldnames
+        """original ordered list of headers"""
+        return self.csvreader.unicode_fieldnames
 
 
 class MCMParser(object):

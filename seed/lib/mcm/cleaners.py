@@ -6,7 +6,6 @@ import re
 import string
 
 import dateutil
-
 from seed.lib.mcm.matchers import fuzzy_in_set
 
 NONE_SYNONYMS = (u'not available', u'not applicable', u'n/a')
@@ -74,8 +73,13 @@ def date_cleaner(value, *args):
         return None
     if isinstance(value, datetime) or isinstance(value, date):
         return value
+
     try:
-        value = dateutil.parser.parse(value)
+        # the dateutil parser only parses strings, make sure to return None if not a string
+        if isinstance(value, unicode) or isinstance(value, str):
+            value = dateutil.parser.parse(value)
+        else:
+            value = None
     except (TypeError, ValueError):
         return None
 
@@ -84,6 +88,7 @@ def date_cleaner(value, *args):
 
 class Cleaner(object):
     """Cleans values for a given ontology."""
+
     def __init__(self, ontology):
         self.ontology = ontology
         self.schema = self.ontology.get(u'types', {})
