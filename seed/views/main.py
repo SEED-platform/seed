@@ -2339,9 +2339,10 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     canonical_ids = [x.id for x in canonical_buildings]
         
  
-    #if the BuildingSnapshot has the attribute use that directly.  Otherwise if the attribute is in extra_data use that
-    #if it is in neither place then it doesn't have it so return None
-    #actually now we are not considering release_data at all so it is just 
+    #if the BuildingSnapshot has the attribute use that directly.  
+    #in the future if it should search extra_data but extra_data is still not 
+    #searchable directly then this can be adjusted by replacing the last None with
+    # obj.extra_data[attr] if hasattr(obj, "extra_data") and attr in obj.extra_data else None
     get_attr_f = lambda obj, attr: getattr(obj, attr) if hasattr(obj, attr) else None
           
     bldg_counts = {}
