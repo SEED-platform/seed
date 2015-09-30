@@ -2349,6 +2349,10 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     
     def process_snapshot(canonical_building_id, snapshot):      
         from datetime import date
+
+        if not hasattr(snapshot, "year_ending"):
+            return
+
         year_ending_year = snapshot.year_ending
         
         if year_ending_year not in bldg_counts:
