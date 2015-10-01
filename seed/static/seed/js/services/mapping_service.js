@@ -127,6 +127,7 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
      * @param import_file_id: int, represents file import id.
      */
     mapping_factory.remap_buildings = function(import_file_id) {
+        console.log("IN REMAP BUILDINGS MAP SERVICE")
         var defer = $q.defer();
         $http({
             method: 'POST',
@@ -136,8 +137,10 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
                 'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
+            console.log("REMAP BUILDINGS MAP SERVICE SUCCESS", data);
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
+            console.log("REMAP BUILDINGS MAP SERVICE FAILURE", data);
             defer.reject(data, status);
         });
 

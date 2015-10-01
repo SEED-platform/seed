@@ -451,7 +451,7 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.save_mappings = true;
         $scope.review_mappings = true;
         $scope.raw_columns = $scope.valids.concat($scope.duplicates);
-
+        console.log("IN REMAP BUILDINGS IN MAP CONTROLLER")
         mapping_service.save_mappings(
           $scope.import_file.id,
           get_untitle_cased_mappings()
@@ -460,9 +460,11 @@ angular.module('BE.seed.controller.mapping', [])
           // start re-mapping
           mapping_service.remap_buildings($scope.import_file.id).then(function(data){
             if (data.status === "error" || data.status === "warning") {
+                console.log("IN REMAP BUILDINGS MAP CONTROLLER WITH RESPONSE STATUS ERROR", data);
               $scope.$emit('app_error', data);
               $scope.get_mapped_buildings();
             } else {
+                console.log("IN REMAP BUILDINGS MAP CONTROLLER WITH NON ERROR RESPONSE STATUS", data);
               // save maps start mapping data
               check_mapping(data.progress_key);
             }
@@ -474,14 +476,17 @@ angular.module('BE.seed.controller.mapping', [])
      * check_mapping: mapping progress loop
      */
     var check_mapping = function (progress_key) {
+        console.log("BEGINNING CHECK PROGRESS LOOP MAP CONTROLLER")
       uploader_service.check_progress_loop(
         progress_key,  // key
         0, //starting prog bar percentage
         1.0,  // progress multiplier
         function(data){  //success fn
+            console.log("BEGINNING GET MAPPED BUILDINGS IN LOOP MAP CONTROLLER");
           $scope.get_mapped_buildings();
         }, function(data) {  //failure fn
           // Do nothing
+              console.log("IN OTHER PART OF LOOP MAP CONTROLLER")
         },
         $scope.import_file  // progress bar obj
       );

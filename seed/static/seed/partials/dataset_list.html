@@ -25,8 +25,8 @@
 
                     <tr ng-repeat="d in datasets" class="import_row">
                         <td ng-class="d.column_class('name')" class="name">
-                            <span class="view">
-                                <a ng-href="#/data/{$d.id$}" class="import_name" ng-show="!d.edit_form_showing">{$d.name$}</a>
+                            <span class="view" id="data-link-{$ $index $}">
+                                <a ng-href="#/data/{$d.id$}" class="import_name" ng-show="!d.edit_form_showing">{$d.name$}"</a>
                                 <a href="" class="delete_link" ng-click="confirm_delete(d)" ng-show="!d.edit_form_showing"><i class='fa fa-trash-o'></i></a>
                                 <a href="" class="replace_file_button edit_file_name" ng-click="edit_dataset_name(d)" ng-show="!d.edit_form_showing"><i class="fa fa-pencil"></i></a>
                             </span>

@@ -91,13 +91,14 @@ def export_buildings(export_id, export_name, export_type,
     exporter = Exporter(export_id, export_name, export_type)
     if not exporter.valid_export_type():
         _row_cb(-1)  # this means there was an error
-        return
+        return {'status': 'errored'}
 
     file = exporter.export(selected_buildings, selected_fields, _row_cb)
     # file return value is not used
 
     _row_cb(selected_buildings.count())  # means we're done!
 
+    return {'status': 'success'}
 
 @task
 def invite_to_seed(domain, email_address, token, user_pk, first_name):
@@ -121,6 +122,7 @@ def invite_to_seed(domain, email_address, token, user_pk, first_name):
     reset_email = settings.SERVER_EMAIL
     send_mail(subject, email_body, reset_email, [email_address])
 
+    return {'status': 'success'}
 
 # TODO (AK): Ensure this gets tested in PR #61
 @task
@@ -246,6 +248,8 @@ def add_buildings(project_slug, project_dict, user_pk):
         )
         compliance.save()
 
+    return {'status': 'success'}
+
 
 @task
 def remove_buildings(project_slug, project_dict, user_pk):
@@ -335,6 +339,7 @@ def remove_buildings(project_slug, project_dict, user_pk):
         {'percentage_done': 100, 'numerator': i, 'denominator': denominator}
     )
 
+    return {'status': 'success'}
 
 #
 ## New MCM tasks for importing ESPM data.
@@ -349,7 +354,7 @@ def add_cache_increment_parameter(tasks):
     for _task in tasks:
         _task.args = _task.args + (increment,)
 
-    return tasks
+    return {'status': 'success'}
 
 
 @task
@@ -370,6 +375,7 @@ def finish_import_record(import_record_pk):
     import_record.status = STATUS_READY_TO_MERGE
     import_record.save()
 
+    return {'status': 'success'}
 
 @task
 def finish_mapping(results, file_pk):
@@ -380,6 +386,7 @@ def finish_mapping(results, file_pk):
     prog_key = get_prog_key('map_data', file_pk)
     cache.set(prog_key, 100)
 
+    return {'status': 'success'}
 
 def _translate_unit_to_type(unit):
     if unit is None or unit == 'String':
@@ -419,7 +426,7 @@ def _build_cleaner(org):
 def apply_extra_data(model, key, value):
     """Function sent to MCM to apply mapped columns into extra_data."""
     model.extra_data[key] = value
-
+    return {'status': 'success'}
 
 def apply_data_func(mappable_columns):
     """Returns a function that captures mappable_types in a closure
@@ -498,6 +505,7 @@ def map_row_chunk(
         save_column_names(model, mapping=mapping)
 
     increment_cache(prog_key, increment)
+    return {'status': 'success'}
 
 
 @task
@@ -509,9 +517,11 @@ def _map_data(file_pk, *args, **kwargs):
     :param file_pk: int, the id of the import_file we're working with.
 
     """
+    print "IN _ MAP DATA TASKS, PK=%s" % file_pk
     import_file = ImportFile.objects.get(pk=file_pk)
     # Don't perform this task if it's already been completed.
     if import_file.mapping_done:
+        print "IN IMPORT FILE MAPPING DONE"
         prog_key = get_prog_key('map_data', file_pk)
         cache.set(prog_key, 100)
         return {'status': 'warning', 'message': 'mapping already complete'}
@@ -519,9 +529,12 @@ def _map_data(file_pk, *args, **kwargs):
     # If we haven't finished saving, we shouldn't proceed with mapping
     # Re-queue this task.
     if not import_file.raw_save_done:
-        map_data.apply_async(args=[file_pk], countdown=60, expires=120)
+        print map_data
+        map_data.apply_async(args=[file_pk], countdown=60, expires=120, priority=9)
+        print "SAVING NOT COMPLETE. RETURNING STATUS ERROR."
         return {'status': 'error', 'message': 'waiting for raw data save.'}
 
+    print "BEGINNING SOURCE TYPE LOADING"
     source_type_dict = {
         'Portfolio Raw': PORTFOLIO_RAW,
         'Assessed Raw': ASSESSED_RAW,
@@ -529,10 +542,14 @@ def _map_data(file_pk, *args, **kwargs):
     }
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
 
+    print "BEGINNING BS ITERATOR"
+
     qs = BuildingSnapshot.objects.filter(
         import_file=import_file,
         source_type=source_type,
     ).iterator()
+
+    print "BEGINNING GET PROGRESS KEY"
 
     prog_key = get_prog_key('map_data', file_pk)
     tasks = []
@@ -542,12 +559,15 @@ def _map_data(file_pk, *args, **kwargs):
             (serialized_data, file_pk, source_type, prog_key)
         ))
 
+    print "BEGINNING ADD CACHE INCREMENT PARAMETERS"
+
     tasks = add_cache_increment_parameter(tasks)
     if tasks:
         chord(tasks, interval=15)(finish_mapping.subtask([file_pk]))
     else:
         finish_mapping.task(file_pk)
 
+    print "RETURNING STATUS SUCCESS"
     return {'status': 'success'}
 
 
@@ -555,13 +575,14 @@ def _map_data(file_pk, *args, **kwargs):
 @lock_and_track
 def map_data(file_pk, *args, **kwargs):
     """Small wrapper to ensure we isolate our mapping process from requests."""
+    print "IN MAP DATA TASKS"
     _map_data.delay(file_pk, *args, **kwargs)
-    return {'status': 'success'}
 
 
 @task
 def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
     """Save the raw data to the database."""
+    print "IN _ SAVE RAW DATA CHUNK"
     import_file = ImportFile.objects.get(pk=file_pk)
     # Save our "column headers" and sample rows for F/E.
     source_type = get_source_type(import_file)
@@ -582,6 +603,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
 
     # Indicate progress
     increment_cache(prog_key, increment)
+    return {'status': 'success'}
 
 
 @task
@@ -646,6 +668,7 @@ def cache_first_rows(import_file, parser):
     import_file.save()
     # Reset our file pointer for mapping.
     parser.seek_to_beginning()
+    return {'status': 'success'}
 
 
 @task
@@ -680,7 +703,6 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
 @lock_and_track
 def _save_raw_data(file_pk, *args, **kwargs):
     """Chunk up the CSV and save data into the DB raw."""
-
     result = {'status': 'success', 'progress': 100}
     prog_key = get_prog_key('save_raw_data', file_pk)
     try:
@@ -710,6 +732,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
         import_file.save()
 
         if tasks:
+            print finish_raw_save.subtast([file_pk])._type
             chord(tasks, interval=15)(finish_raw_save.subtask([file_pk]))
         else:
             finish_raw_save.task(file_pk)
@@ -781,6 +804,8 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
         action='save_system_match',
         organization=bs.super_organization,
     )
+
+    return {'status': 'success'}
 
 
 @task
@@ -854,7 +879,7 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
         unmatched_bs.custom_id_1
     )
     if not id_matches.exists():
-        return
+        return {'status': 'success'}
 
     # merge save as system match with high confidence.
     for can_snap in id_matches:
@@ -888,6 +913,7 @@ def _finish_matching(import_file, progress_key):
     import_file.mapping_completion = 100
     import_file.save()
     cache.set(progress_key, 100)
+    return {'status': 'success'}
 
 
 def _normalize_address_str(address_val):
@@ -965,7 +991,7 @@ def _match_buildings(file_pk, user_pk):
     # If we don't find any unmatched buildings, there's nothing left to do.
     if not unmatched_buildings:
         _finish_matching(import_file, prog_key)
-        return
+        return {'status': 'success'}
         # here we are going to normalize the addresses to match on address_1 field, this is not ideal because you could match on two locations with same address_1 but different city
     #     unmatched_normalized_addresses=[]
 
@@ -993,7 +1019,7 @@ def _match_buildings(file_pk, user_pk):
                 increment_cache(prog_key, increment * 100)
 
         _finish_matching(import_file, prog_key)
-        return
+        return {'status': 'success'}
 
     # This allows us to retrieve the PK for a given NGram after a match.
     can_rev_idx = {
@@ -1066,7 +1092,10 @@ def _remap_data(import_file_pk):
     import_file.mapping_completion = None
     import_file.save()
 
+    print "CALLING MAP DATA FROM _ REMAP DATA"
     map_data(import_file_pk)
+
+    return {'status': 'success'}
 
 
 @task
@@ -1074,6 +1103,7 @@ def remap_data(import_file_pk):
     """"Delete mapped buildings for current import file, re-map them."""
     import_file = ImportFile.objects.get(pk=import_file_pk)
     # Check to ensure that the building has not already been merged.
+    print "IN REMAP DATA TASK"
     mapping_cache_key = get_prog_key('map_data', import_file.pk)
     if import_file.matching_done or import_file.matching_completion:
         cache.set(mapping_cache_key, 100)
@@ -1117,7 +1147,7 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
     )
     if not ids:
         cache.set(deleting_cache_key, 100)
-        return
+        return {'status': 'success'}
 
     # delete the canonical buildings
     can_ids = CanonicalBuilding.objects.filter(
@@ -1136,6 +1166,7 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
             )
         )
     chord(tasks, interval=15)(finish_delete.subtask([org_pk]))
+    return {'status': 'success'}
 
 
 @task
@@ -1145,12 +1176,14 @@ def _delete_organization_buildings_chunk(del_ids, prog_key, increment,
     qs = BuildingSnapshot.objects.filter(super_organization=org_pk)
     qs.filter(pk__in=del_ids).delete()
     increment_cache(prog_key, increment * 100)
+    return {'status': 'success'}
 
 
 @task
 def finish_delete(results, org_pk):
     prog_key = get_prog_key('delete_organization_buildings', org_pk)
     cache.set(prog_key, 100)
+    return {'status': 'success'}
 
 
 @task
@@ -1163,6 +1196,7 @@ def _delete_canonical_buildings(ids, chunk_size=300):
     """
     for del_ids in batch(ids, chunk_size):
         CanonicalBuilding.objects.filter(pk__in=del_ids).delete()
+    return {'status': 'success'}
 
 
 @task
@@ -1180,3 +1214,4 @@ def log_deleted_buildings(ids, user_pk, chunk_size=300):
                 action='delete_building',
                 action_note='Deleted building.'
             )
+    return {'status': 'success'}

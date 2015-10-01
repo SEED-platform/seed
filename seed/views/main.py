@@ -7,6 +7,7 @@ import logging
 import datetime
 import os
 import uuid
+import traceback
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.cache import cache
@@ -1401,11 +1402,14 @@ def save_column_mappings(request):
 
         {'status': 'success'}
     """
+    print "IN MAIN DOT PY"
     body = json.loads(request.body)
     import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
     organization = import_file.import_record.super_organization
     mappings = body.get('mappings', [])
+    print mappings
     for mapping in mappings:
+        print "Mapping For Loop Executed; mapping=%s" % mapping
         dest_field, raw_field = mapping
         if dest_field == '':
             dest_field = None
@@ -1413,11 +1417,13 @@ def save_column_mappings(request):
         dest_cols = _column_fields_to_columns(dest_field, organization)
         raw_cols = _column_fields_to_columns(raw_field, organization)
         try:
+            print "In Try"
             column_mapping, created = ColumnMapping.objects.get_or_create(
                 super_organization=organization,
                 column_raw__in=raw_cols,
             )
         except ColumnMapping.MultipleObjectsReturned:
+            print "In Except"
             # handle the special edge-case where remove dupes doesn't get
             # called by ``get_or_create``
             ColumnMapping.objects.filter(
@@ -1430,6 +1436,7 @@ def save_column_mappings(request):
             )
 
         # Clear out the column_raw and column mapped relationships.
+        print "Out of Try/Except Block"
         column_mapping.column_raw.clear()
         column_mapping.column_mapped.clear()
 
@@ -1443,6 +1450,8 @@ def save_column_mappings(request):
 
         column_mapping.user = request.user
         column_mapping.save()
+
+    print "RETURNING STATUS SUCCESS"
 
     return {'status': 'success'}
 
@@ -1874,6 +1883,7 @@ def start_mapping(request):
          'progress_key': ID of background job, for retrieving job progress
         }
     """
+    print "IN START MAPPING MAIN VIEW"
     body = json.loads(request.body)
     import_file_id = body.get('file_id')
     if not import_file_id:
@@ -1903,6 +1913,7 @@ def remap_buildings(request):
          'progress_key': ID of background job, for retrieving job progress
         }
     """
+    print "IN REMAP BUILDINGS MAIN VIEW FILE"
     body = json.loads(request.body)
     import_file_id = body.get('file_id')
     if not import_file_id:
@@ -1956,9 +1967,14 @@ def progress(request):
         }
     """
 
+    print "IN PROGRESS IN MAIN VIEWS: PROGRESS KEY"
+
     progress_key = json.loads(request.body).get('progress_key')
 
+    print progress_key
+
     if cache.get(progress_key):
+        print "IN CACHED IF STATEMENT"
         result = cache.get(progress_key)
         # The following if statement can be removed once all progress endpoints have been updated to the new json syntax
         if type(result) != dict:
@@ -1966,6 +1982,7 @@ def progress(request):
         result['progress_key'] = progress_key
         return result
     else:
+        print "KEY NOT CACHED"
         return {
             'progress_key': progress_key,
             'progress': 0,

@@ -62,7 +62,7 @@ CELERY_QUEUES = (
         routing_key=CELERY_DEFAULT_QUEUE
     ),
 )
-CELERY_ALWAYS_EAGER = True
+CELERY_ALWAYS_EAGER = False
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 djcelery.setup_loader()
 

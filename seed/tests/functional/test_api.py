@@ -271,4 +271,141 @@ class TestApi(TestCase):
 
         r = json.loads(r.content)
 
+        self.assertEqual(r.status_code, 200)
         self.assertEqual(r['success'], True)
+
+        r = json.loads(r.content)
+        self.assertEqual(r['success'], True)
+        import_file_id = r['import_file_id']
+        self.assertNotEqual(import_file_id, None)
+
+        # Save the data to BuildingSnapshots
+        payload = {
+            'file_id': import_file_id,
+            'organization_id': organization_id
+        }
+        r = self.client.post('/app/save_raw_data/', data=json.dumps(payload), content_type='application/json',
+                             follow=True, **self.headers)
+        self.assertEqual(r.status_code, 200)
+
+        # {
+        #     "status": "success",
+        #     "progress_key": ":1:SEED:save_raw_data:PROG:1"
+        # }
+        r = json.loads(r.content)
+        self.assertEqual(r['status'], 'success')
+        self.assertNotEqual(r['progress_key'], None)
+
+        # check the progress bar
+        progress_key = r['progress_key']
+        r = self.client.post('/app/progress/', data=json.dumps({'progress_key': progress_key}),
+                             content_type='application/json', follow=True, **self.headers)
+        self.assertEqual(r.status_code, 200)
+
+        r = json.loads(r.content)
+        # {
+        #   "status": "success",
+        #   "progress": 100,
+        #   "progress_key": ":1:SEED:save_raw_data:PROG:1"
+        # }
+        self.assertEqual(r['status'], 'success')
+        self.assertEqual(r['progress'], 100)
+
+        # Save the column mappings.
+        payload = {
+            'import_file_id': import_file_id,
+            'organization_id': organization_id
+        }
+        payload['mappings'] = [[u'city', u'City'],
+                               [u'postal_code', u'Zip'],
+                               [u'gross_floor_area', u'GBA'],
+                               [u'building_count', u'BLDGS'],
+                               [u'tax_lot_id', u'UBI'],
+                               [u'state_province', u'State'],
+                               [u'address_line_1', u'Address'],
+                               [u'owner', u'Owner'],
+                               [u'use_description', u'Property Type'],
+                               [u'year_built', u'AYB_YearBuilt']]
+        r = self.client.post('/app/save_column_mappings/', data=json.dumps(payload),
+                             content_type='application/json', follow=True, **self.headers)
+        self.assertEqual(r.status_code, 200)
+        r = json.loads(r.content)
+
+        # {
+        #   "status": "success"
+        # }
+        self.assertEqual(r['status'], 'success')
+
+        # Map the buildings with new column mappings.
+        payload = {
+            'file_id': import_file_id,
+            'organization_id': organization_id
+        }
+        r = self.client.post('/app/remap_buildings/', data=json.dumps(payload),
+                             content_type='application/json', follow=True, **self.headers)
+        self.assertEqual(r.status_code, 200)
+        r = json.loads(r.content)
+
+        # {
+        #     "status": "success",
+        #     "progress_key": ":1:SEED:map_data:PROG:1"
+        # }
+
+        self.assertEqual(r['status'], 'success')
+        self.assertNotEqual(r['progress_key'], None)
+
+        # time.sleep(10)
+        # TODO: create a loop to check the progress. stop when status is success
+
+        # check the progress bar
+        progress_key = r['progress_key']
+        print progress_key
+        r = self.client.post('/app/progress/', data=json.dumps({'progress_key': progress_key}),
+                             content_type='application/json', follow=True, **self.headers)
+        self.assertEqual(r.status_code, 200)
+
+        r = json.loads(r.content)
+        print r
+        # {
+        #   "status": "success",
+        #   "progress": 100,
+        #   "progress_key": ":1:SEED:map_data:PROG:1"
+        # }
+
+        # self.assertEqual(r['status'], 'success')
+        # self.assertEqual(r['progress'], 100)
+
+        # # Get the mapping suggestions
+        payload = {
+            'import_file_id': import_file_id,
+            'org_id': organization_id
+        }
+        r = self.client.post('/app/get_column_mapping_suggestions/', json.dumps(payload),
+                             content_type='application/json', follow=True, **self.headers)
+        print r
+
+        # TODO: this isn't working to completion. It is hanging on progress = waiting
+
+        # if result.status_code == 200:
+        #     print('...passed')
+        #     pprint.pprint(result.json()['suggested_column_mappings'], stream=fileout)
+        # else:
+        #     print('...not passed')
+        #     pprint.pprint(result.reason, stream=fileout)
+        #
+        # # Match uploaded buildings with buildings already in the organization.
+        # print ('API Function: start_system_matching'),
+        # fileout.write('API Function: start_system_matching\n')
+        # payload = {'file_id': import_id,
+        #            'organization_id': organization_id}
+        # result = requests.post(main_url + '/app/start_system_matching/',
+        #                        headers=header,
+        #                        data=json.dumps(payload))
+        # check_status(result, fileout)
+        #
+        # time.sleep(10)
+        # progress = requests.get(main_url + '/app/progress/',
+        #                         headers=header,
+        #                         data=json.dumps({'progress_key': result.json()['progress_key']}))
+        # pprint.pprint(progress.json(), stream=fileout)
+        #
