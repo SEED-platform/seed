@@ -2351,7 +2351,12 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
         from datetime import date
 
         #The data is meaningless here aside if there is no valid year_ending value
-        if not hasattr(snapshot, "year_ending"):
+        #even though the query at the beginning specifies a date range since this is using the tree
+        #some other records without a year_ending may have snuck back in.  Ignore them here.
+        if not hasattr(snapshot, "year_ending") or type(snapshot.year_ending) != datetime.date:
+            return
+        #if the snapshot is not in the date range then don't process it
+        if not(from_date <= snapshot.year_ending <= end_date):
             return
 
         year_ending_year = snapshot.year_ending
@@ -2403,31 +2408,32 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     for canonical_building in canonical_buildings:
         canonical_building_id = canonical_building.id  
         
+        #we changed from only using the unmerged snapshots to only using the merged snapshots.
+        #So start at the current canonical building and work back
+        process_snapshot(canonical_building_id, canonical_building)
+        
+        
         if canonical_building.parent_tree:    
-            bldg = canonical_building
-            #progress up the the tree processing unmerged snapshots until there aren't any more
-            while bldg:
-                unmerged_snapshots = bldg.parents.filter(parents__isnull = True)
+            current_canonical_bldg = canonical_building                                    
+            
+            #progress up the the tree processing merged snapshots until there aren't any more
+            while current_canonical_bldg:
+                cur_id = current_canonical_bldg.id
+                #unmerged_snapshots = bldg.parents.filter(parents__isnull = True)
+                previous_canonical_bldg = current_canonical_bldg.parents.filter(parents__isnull = False)
                 #get the parent that is merged, if any.  If not then we're done when we finish this iteration
-                bldg = bldg.parents.filter(parents__isnull = False).exclude(id = bldg.id)
-                if bldg.count():
-                    bldg = bldg[0]
+                #bldg = bldg.parents.filter(parents__isnull = False)#.exclude(id = bldg.id)
+                if previous_canonical_bldg.count():
+                    current_canonical_bldg = previous_canonical_bldg[0]
+                    process_snapshot(canonical_building_id, current_canonical_bldg)                
                 else:
-                    bldg = None
-                
-                #process all unmerged buildings.
-                #Note:  I don't really know how this works in terms of order
-                #for the root two buildings in the tree
-                for unmerged_bs in unmerged_snapshots:
-                    #even though the query at the beginning specifies a date range since this is using the tree
-                    #some other records without a year_ending may have snuck back in.  Ignore them here.
-                    if not hasattr(unmerged_bs, "year_ending") or type(unmerged_bs.year_ending) != datetime.date:
-                        continue
-                    if from_date <= unmerged_bs.year_ending <= end_date:
-                        process_snapshot(canonical_building_id, unmerged_bs)
-        else:
-            #there is only one record and it is canonical so just process that
-            process_snapshot(canonical_building_id, canonical_building)                                                                
+                    #There are no parents who have non-null parents themselves meaning the parent
+                    #must be the first record imported and therefore the first canonical building 
+                    current_canonical_bldg = current_canonical_bldg.parents.filter(parents__isnull = True)
+                    #hopefully the record is always in index 1.  Otherwise I'm not sure how to pick the right one.
+                    current_canonical_bldg = current_canonical_bldg.all()[1]
+                    process_snapshot(canonical_building_id, current_canonical_bldg)
+                    current_canonical_bldg = None                                                          
     
     return bldg_counts, data
 
