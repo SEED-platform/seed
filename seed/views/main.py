@@ -2882,6 +2882,7 @@ def get_aggregated_building_report_data(request):
                 900000: '900-999k',
                 1000000: 'over 1,000k',
             }
+            max_bin = max(y_display_map.keys())
 
             # Group buildings in this year_ending group into ranges
             grouped_ranges = defaultdict(list)
@@ -2889,7 +2890,9 @@ def get_aggregated_building_report_data(request):
                 if not getattr(b, y_var):
                     continue
                 area = getattr(b, y_var)
-                grouped_ranges[round_down_hundred_thousand(area)].append(b)
+                #make sure anything greater than the biggest bin gets put in the biggest bin
+                range_bin = min(max_bin, round_down_hundred_thousand(area))
+                grouped_ranges[range_bin].append(b)
 
             # Now iterate over range groups to make each chart item
             for range_floor, buildings_in_range in grouped_ranges.items():
