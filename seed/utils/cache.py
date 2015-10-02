@@ -30,6 +30,8 @@ def set_cache(progress_key, status, data):
     result['status'] = status
     set_cache_raw(progress_key, result, DEFAULT_TIMEOUT)
 
+    return result
+
 
 def get_cache(progress_key, default=None):
     """Unpickles the cache key to a dictionary and resets the timeout"""

@@ -12,8 +12,6 @@ import traceback
 from _csv import Error
 
 from dateutil import parser
-import usaddress
-
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
@@ -22,7 +20,10 @@ from django.template import loader
 from django.db.models import Q
 from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse_lazy
-from celery import shared_task, chord
+from celery import chord
+
+import usaddress
+
 # from celery.utils.log import get_task_logger
 from seed.audit_logs.models import AuditLog
 from seed.landing.models import SEEDUser as User
@@ -47,20 +48,18 @@ from seed.models import (
     get_column_mappings,
     find_unmatched_buildings,
     find_canonical_building_values,
-    get_ancestors,
     SYSTEM_MATCH,
     POSSIBLE_MATCH,
     initialize_canonical_building,
     set_initial_sources,
     save_snapshot_match,
     save_column_names,
-    BuildingSnapshot,
     CanonicalBuilding,
     Compliance,
     Project,
     ProjectBuilding,
 )
-from seed.decorators import lock_and_track, get_prog_key
+from seed.decorators import lock_and_track
 from seed.utils.buildings import get_source_type, get_search_query
 from seed.utils.cache import set_cache_raw, set_cache, increment_cache
 from seed.utils.mapping import get_mappable_columns
@@ -603,8 +602,7 @@ def _cleanse_data(file_pk):
     for chunk in batch(qs, 100):
         # serialized_data = [obj.extra_data for obj in chunk]
         ids = [obj.id for obj in chunk]
-        tasks.append(
-            cleanse_data_chunk.s(ids, file_pk))  # note that increment will be added to end
+        tasks.append(cleanse_data_chunk.s(ids, file_pk))  # note that increment will be added to end
 
     # need to rework how the progress keys are implemented here, but at least the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
@@ -648,9 +646,18 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
     # Indicate progress
     increment_cache(prog_key, increment)
 
+    return True
+
 
 @shared_task
 def finish_raw_save(results, file_pk):
+    """
+    Finish importing the raw file.
+
+    :param results: results from the other tasks before the chord ran
+    :param file_pk: ID of the file that was being imported
+    :return: None
+    """
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
     import_file.save()
@@ -682,21 +689,8 @@ def cache_first_rows(import_file, parser):
             """Less than 5 rows in file"""
             break
 
-    # This is a fix for issue #24 to use original field order when importing
-    # This is ultimately not the correct place for this fix.  The correct fix
-    # is to update the mcm code to a newer version where the readers in mcm/reader.py
-    # have a headers() function defined and then just do
-    # first_row = parser.headers()
-    # But until we can patch the mcm code this should fix the issue.
-    local_reader = parser.reader
-    if isinstance(local_reader, reader.ExcelParser):
-        first_row = local_reader.sheet.row_values(local_reader.header_row)
-    elif isinstance(local_reader, reader.CSVParser):
-        first_row = local_reader.csvreader.fieldnames
-        first_row = [local_reader._clean_super(x) for x in first_row]
-    else:
-        # default to the original behavior if a new type of parser for lack of anything better
-        first_row = rows.next().keys()
+    # return the first row of the headers which are cleaned
+    first_row = parser.headers()
 
     tmp = []
     for r in validation_rows:
@@ -709,6 +703,7 @@ def cache_first_rows(import_file, parser):
     import_file.cached_first_row = first_row or ''
 
     import_file.save()
+
     # Reset our file pointer for mapping.
     parser.seek_to_beginning()
 
@@ -744,7 +739,7 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
 @shared_task
 @lock_and_track
 def _save_raw_data(file_pk, *args, **kwargs):
-    """Chunk up the CSV and save data into the DB raw."""
+    """Chunk up the CSV or XLSX file and save the raw data into the DB BuildingSnapshot table."""
 
     result = {'status': 'success', 'progress': 100}
     prog_key = get_prog_key('save_raw_data', file_pk)
@@ -763,20 +758,22 @@ def _save_raw_data(file_pk, *args, **kwargs):
         cache_first_rows(import_file, parser)
         rows = parser.next()
         import_file.num_rows = 0
+        import_file.num_columns = parser.num_columns()
 
+        # Why are we setting the num_rows to the number of chunks?
         tasks = []
         for chunk in batch(rows, 100):
             import_file.num_rows += len(chunk)
-            tasks.append(_save_raw_data_chunk.subtask((chunk, file_pk, prog_key)))
+            tasks.append(_save_raw_data_chunk.s(chunk, file_pk, prog_key))
 
-        tasks = add_cache_increment_parameter(tasks)
-        import_file.num_columns = parser.num_columns()
         import_file.save()
 
+        # need to rework how the progress keys are implemented here
+        tasks = add_cache_increment_parameter(tasks)
         if tasks:
-            chord(tasks, interval=15)(finish_raw_save.subtask([file_pk]))
+            chord(tasks, interval=15)(finish_raw_save.s(file_pk))
         else:
-            finish_raw_save.task(file_pk)
+            finish_raw_save.s(file_pk)
 
     except StopIteration:
         result['status'] = 'error'
@@ -792,7 +789,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
         result['stacktrace'] = traceback.format_exc()
     except Exception as e:
         result['status'] = 'error'
-        result['message'] = 'Unhandled Error: ' + e.message
+        result['message'] = 'Unhandled Error: ' + str(e.message)
         result['stacktrace'] = traceback.format_exc()
 
     set_cache(prog_key, result['status'], result)
@@ -1023,13 +1020,14 @@ def _finish_matching(import_file, progress_key):
     import_file.save()
     set_cache(progress_key, 'success', 100)
 
+
 def _normalize_address_direction(direction):
     direction = direction.lower().replace('.', '')
     direction_map = {
-        'east' : 'e',
-        'west' : 'w',
-        'north' : 'n',
-        'south' : 's',
+        'east': 'e',
+        'west': 'w',
+        'north': 'n',
+        'south': 's',
         'northeast': 'ne',
         'northwest': 'nw',
         'southeast': 'se',

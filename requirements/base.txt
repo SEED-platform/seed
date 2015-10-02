@@ -65,7 +65,7 @@ mock==1.0.1
 newrelic==2.20.0.17
 ngram==3.3.0
 openpyxl==1.7.0
-python-dateutil>=2.2
+python-dateutil>=2.4
 python-memcached==1.53
 PyYAML==3.10
 raven==4.0.4

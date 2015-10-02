@@ -43,6 +43,7 @@ class ExcelParser(object):
     """
 
     def __init__(self, excel_file, *args, **kwargs):
+        self.cache_headers = []
         self.excel_file = excel_file
         self.sheet = self._get_sheet(excel_file)
         self.header_row = self._get_header_row(self.sheet)
@@ -61,10 +62,10 @@ class ExcelParser(object):
         return book.sheet_by_index(sheet_index)
 
     def _get_header_row(self, sheet):
-        """attempt to locate the header row based on a lack of empty cells
+        """returns the best guess for the header row
 
         :param sheet: xlrd sheet
-        :returns: header row index
+        :returns: index of header row
         """
         for row in range(sheet.nrows):
             row_contains_empty_cells = False
@@ -112,8 +113,15 @@ class ExcelParser(object):
         :returns: Generator yeilding a row as Dict
         """
 
+        # save off the headers into a member variable. Only do this once. If XLSDictReader is called later (which it is
+        # in `seek_to_beginning` then don't reparse the headers
+        if not self.cache_headers:
+            for j in range(sheet.ncols):
+                self.cache_headers.append(self.get_value(sheet.cell(header_row, j)))
+
         def item(i, j):
             """returns a tuple (column header, cell value)"""
+            # self.cache_headers[j],
             return (
                 self.get_value(sheet.cell(header_row, j)),
                 self.get_value(sheet.cell(i, j))
@@ -138,7 +146,8 @@ class ExcelParser(object):
     def seek_to_beginning(self):
         """seeks to the beginning of the file
 
-        Since ``XLSDictReader`` is in memory, a new one is created
+        Since ``XLSDictReader`` is in memory, a new one is created. Note: the headers will not be
+        parsed again when the XLSDictReader is loaded
         """
         self.excel_file.seek(0)
         self.excelreader = self.XLSDictReader(self.sheet, self.header_row)
@@ -146,6 +155,10 @@ class ExcelParser(object):
     def num_columns(self):
         """gets the number of columns for the file"""
         return self.sheet.ncols
+
+    def headers(self):
+        """return ordered list of clean headers"""
+        return self.cache_headers
 
 
 class CSVParser(object):
@@ -162,11 +175,19 @@ class CSVParser(object):
             # rows.next() will return the first row
     """
     # Character escape sequences to replace
-    CLEAN_SUPER = [u'\ufffd', u'\xb2']
+    CLEAN_DICT = {
+        u'\ufffd': u'',
+        u'\u00B2': u'2',
+        u'\u00B3': u'3',
+        u'\u2013': u'-',
+        u'\u2014': u'-'
+    }
 
     def __init__(self, csvfile, *args, **kwargs):
         self.csvfile = csvfile
         self.csvreader = self._get_csv_reader(csvfile, **kwargs)
+
+        # cleaning the superscripts also assigns the headers to the csvreader.unicode_fieldnames
         self.clean_super_scripts()
 
     def _get_csv_reader(self, *args, **kwargs):
@@ -188,15 +209,16 @@ class CSVParser(object):
             del kwargs['reader_type']
             return reader_type(self.csvfile, dialect, **kwargs)
 
-    def _clean_super(self, col, replace=u'2'):
-        """Cleans up various superscript unicode escapes.
+    def _clean_super(self, col):
+        """Cleans up various superscript unicode escapes. Reads from the self.CLEAN_DICT to determine what to replace
 
         :param col: str, column name as read from the file.
         :param replace: (optional) str, string to replace superscripts with.
         :rtype: str, cleaned row name.
 
         """
-        for item in self.CLEAN_SUPER:
+
+        for item, replace in self.CLEAN_DICT.iteritems():
             col = col.replace(item, unicode(replace))
 
         return col
@@ -226,6 +248,10 @@ class CSVParser(object):
     def num_columns(self):
         """gets the number of columns for the file"""
         return len(self.csvreader.unicode_fieldnames)
+
+    def headers(self):
+        """original ordered list of headers"""
+        return self.csvreader.unicode_fieldnames
 
 
 class MCMParser(object):
@@ -303,6 +329,10 @@ class MCMParser(object):
     def num_columns(self):
         """returns the number of columns of the file"""
         return self.reader.num_columns()
+
+    def headers(self):
+        """original ordered list of spreadsheet headers"""
+        return self.reader.headers()
 
 
 def main():

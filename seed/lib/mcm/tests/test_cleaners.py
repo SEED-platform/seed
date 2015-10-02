@@ -3,6 +3,7 @@
 """
 import datetime
 from unittest import TestCase
+from decimal import Decimal
 
 from seed.lib.mcm import cleaners
 
@@ -39,11 +40,26 @@ class TestCleaners(TestCase):
         self.assertEqual(cleaners.float_cleaner(u'12,090 ?'), 12090)
         self.assertEqual(cleaners.float_cleaner(0.825), 0.825)
         self.assertEqual(cleaners.float_cleaner(100), 100.0)
+        self.assertEqual(cleaners.float_cleaner(0), 0.0)
+        self.assertEqual(cleaners.float_cleaner(0.0), 0.0)
+        self.assertEqual(cleaners.float_cleaner('0'), 0.0)
+        self.assertEqual(cleaners.float_cleaner(Decimal('20.00')), 20.0)
         self.assertTrue(isinstance(cleaners.float_cleaner(100), float))
+        self.assertIsInstance(cleaners.float_cleaner(Decimal('20.00')), float)
+        with self.assertRaises(TypeError) as error:
+            cleaners.float_cleaner(datetime.datetime.now())
+        message = error.exception.message
+        self.assertEqual(
+            message,
+            "float_cleaner cannot convert <type 'datetime.datetime'> to float"
+        )
 
     def test_date_cleaner(self):
         """We return the value if it's convertable to a python datetime."""
-        self.assertEqual(cleaners.date_cleaner(u'2/12/2012'), u'2/12/2012')
+        self.assertEqual(
+            cleaners.date_cleaner(u'2/12/2012'),
+            datetime.datetime(2012, 2, 12, 0, 0)
+        )
         self.assertEqual(cleaners.date_cleaner(u''), None)
         self.assertEqual(cleaners.date_cleaner(u'some string'), None)
         self.assertEqual(cleaners.date_cleaner(u'00'), None)
