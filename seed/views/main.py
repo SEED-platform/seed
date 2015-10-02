@@ -2334,9 +2334,17 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
              
     #data will be a dict of canonical building id -> year ending -> building data         
     data = defaultdict(lambda: defaultdict(dict))
-    
+
+    #get a unique list of canonical buildings    
     canonical_buildings = set(bldg.tip for bldg in bldgs)           
-    canonical_ids = [x.id for x in canonical_buildings]
+    
+    #"deleted" buildings just get their canonicalbuilding field set to false
+    #filter them out here.  There may be a way to do this in one query with the above but I
+    #don't see it now.
+    canonical_buildings = BuildingSnapshot.objects.filter(
+                canonicalbuilding__active=True,
+                pk__in=[x.id for x in canonical_buildings]
+            )
         
  
     #if the BuildingSnapshot has the attribute use that directly.  
