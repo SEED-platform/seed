@@ -55,7 +55,7 @@ angular.module('BE.seed.controller.organization_settings', [])
     };
 
     /**
-     * updates all the fields checkboxs to match the ``select_all`` checkbox
+     * updates all the fields checkboxes to match the ``select_all`` checkbox
      */
     $scope.select_all_clicked = function (type) {
         var fields = $filter('filter')($scope.fields, $scope.filter_params);

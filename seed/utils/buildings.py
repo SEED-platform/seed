@@ -84,7 +84,7 @@ def get_search_query(user, params):
 
 
 def get_columns(is_project, org_id, all_fields=False):
-    """gets default columns, to be overriden in future
+    """gets default columns, to be overridden in future
 
         title: HTML presented title of column
         sort_column: semantic name used by js and for searching DB
@@ -119,7 +119,6 @@ def get_columns(is_project, org_id, all_fields=False):
             "sort_column": k,
             "type": translator[v],
             "class": "is_aligned_right",
-            "field_type": "assessor",
             "sortable": True,
             "checked": False,
             "static": False,

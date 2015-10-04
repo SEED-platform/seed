@@ -2,6 +2,7 @@
 
 settings for travis (travis-ci.org)
 """
+from __future__ import absolute_import
 from config.settings.test import *  # noqa
 
 DATABASES = {

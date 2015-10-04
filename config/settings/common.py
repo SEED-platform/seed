@@ -1,10 +1,13 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
+from __future__ import absolute_import
+
 import os
 import sys
 import logging
 from os.path import abspath, join, dirname
+from kombu import Exchange, Queue
 
 SITE_ROOT = abspath(join(dirname(__file__), "..", ".."))
 
@@ -75,17 +78,15 @@ INSTALLED_APPS = (
 
     'analytical',
     'ajaxuploader',
-    'djcelery',
 
     'compressor',
     'django_extensions',
     'organizations',
     'raven.contrib.django',
-    # 'south',
     'tos',
 )
 
-BE_CORE_APPS = (
+SEED_CORE_APPS = (
     'config',
     'seed.public',
     'seed.data_importer',
@@ -98,7 +99,7 @@ BE_CORE_APPS = (
 # Internal apps can resolve this via South's depends_on.
 HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 
-INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + BE_CORE_APPS
+INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
 # apps to auto load namespaced urls for JS use (see seed.main.views.home)
 BE_URL_APPS = (
@@ -202,32 +203,30 @@ LOGIN_REDIRECT_URL = "/app/"
 
 APPEND_SLASH = True
 
-PASSWORD_RESET_EMAIL = 'reset@buildingenergy.com'
-SERVER_EMAIL = 'no-reply@buildingenergy.com'
-
-# Celery queues
-from kombu import Exchange, Queue
-import djcelery
-
-djcelery.setup_loader()
+PASSWORD_RESET_EMAIL = 'reset@seedplatform.org'
+SERVER_EMAIL = 'no-reply@seedplatform.org'
 
 CELERYD_MAX_TASKS_PER_CHILD = 1
 
 # Default queue
-CELERY_DEFAULT_QUEUE = 'be_core'
+CELERY_DEFAULT_QUEUE = 'seed-common'
 CELERY_QUEUES = (
-    Queue('be_core', Exchange('be_core'), routing_key='be_core'),
+    Queue(
+        CELERY_DEFAULT_QUEUE,
+        Exchange(CELERY_DEFAULT_QUEUE),
+        routing_key=CELERY_DEFAULT_QUEUE
+    ),
 )
+CELERY_ACCEPT_CONTENT = ['pickle']
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_RESULT_SERIALIZER = 'pickle'
+CELERY_TASK_RESULT_EXPIRES = 18000 # 5 hours
 
 SOUTH_TESTS_MIGRATE = False
 SOUTH_MIGRATION_MODULES = {
 }
 
-BROKER_HOST = "localhost"
-BROKER_PORT = 5672
-BROKER_USER = "guest"
-BROKER_PASSWORD = "guest"
-BROKER_VHOST = "/"
+BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 
 LOG_FILE = join(SITE_ROOT, '../logs/py.log/')
 

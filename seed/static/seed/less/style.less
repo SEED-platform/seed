@@ -67,6 +67,18 @@
 	color: @yellow;
 }
 
+.clearfix {
+  *zoom: 1; // For IE 6/7 (trigger hasLayout)
+  &:before, &:after {
+	content: "";
+	line-height: 0;
+	display: table;
+  }
+  &:after {
+	clear:both;
+  }
+}
+
 // Form states and alerts
 // -------------------------
 @warningText:             #c09853;
@@ -163,7 +175,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 	
 .sidebar {
-	margin-left: 0px;
+	margin-left: 0;
 	position: fixed;
 	float: none;
 	height: 100%;
@@ -408,7 +420,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 							padding-bottom: 15px;
 						}
 						ul {
-							right: 0px;
+							right: 0;
 							left: inherit;
 							text-align: left;
 							
@@ -537,6 +549,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 		}
 	}
 }
+
 .section {
 	clear: both;
 	display: block;
@@ -586,6 +599,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	.section_header {
 		position: relative;
 		padding: 20px 20px 10px 20px;
+	    .clearfix;
 		
 		&.has_no_padding {
 			padding: 0 20px;
@@ -602,7 +616,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 			height: 64px;
 		}
 		&.fixed_height_short {
-			height: 48px;
+			min-height: 48px;
 		}
 		h2 {
 			display: inline;
@@ -625,9 +639,13 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 				float: left;
 				width: 25%;
 			}
-			&.left_wide {
+			&.left_half {
 				float: left;
 				width: 50%;
+			}
+			&.left_wide {
+			  float: left;
+			  width: 75%;
 			}
 			&.center {
 				float: left;
@@ -648,7 +666,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 				text-align: right;
 				
 				i {
-					padding-right:0px;
+					padding-right:0;
 				}
 			}
 			&.right_wide {
@@ -765,10 +783,9 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 			}
 		}
 		.jumbotron {
-			background-image: url('../images/kc_2.jpg');
-			background-repeat: no-repeat;
-			height: 402px;
-			margin-bottom: 0px;
+		  background: url('../images/kc_2.jpg') no-repeat;
+		  height: 402px;
+			margin-bottom: 0;
 			padding: 30px 10%;
 			color: @white;
 			
@@ -860,17 +877,26 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 		}
 		.table_list_container {
 			overflow-x: auto;
-			
+
 			&.has_borders {
 				border-left: 1px solid @gray_lighter;
 				border-right: 1px solid @gray_lighter;
 			}
-			
+
+			&.remove_buildings_table {
+				width: 80%;
+			}
+
 			table {
 				margin-bottom: 10px;
 				
 				&.has_no_btm_margin {
 					margin-bottom: 0;
+				}
+
+			    &.resizable {
+				  max-width:none; // override bootstrap
+				  min-width: 100%;
 				}
 				
 				th, td {
@@ -1191,6 +1217,14 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 							padding-left: 2px;
 						}
 					}
+					&.ellipsis {
+					  max-width:80px;
+					  text-overflow: ellipsis;
+					  /* Required for text-overflow to do anything */
+					  white-space: nowrap;
+					  overflow: hidden;
+					}
+
 				}
 
 				&.sortable {
@@ -1215,7 +1249,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 				min-width: 280px;
 				
 				&.has_no_min_width {
-					min-width: 0px;
+					min-width: 0;
 				}
 			}
 			
@@ -1235,13 +1269,11 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 		    }
 		    
 		    .table-striped tbody tr:nth-child(1) td {
-				background-image: url('../images/bg_first_td.png');
-				background-repeat: repeat-x;
-				
-				&.sorted {
-					background-image: url('../images/bg_first_td.png');
-					background-repeat: repeat-x;
-				}
+			  background: url('../images/bg_first_td.png') repeat-x;
+
+			  &.sorted {
+				background: url('../images/bg_first_td.png') repeat-x;
+			  }
 			}
 			.table-striped tbody tr td h3 {
 				font-weight: 400;
@@ -1462,6 +1494,12 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 
 // New styles for better modal living.
+
+@media (min-width: 1042px) {
+	.modal-lg {
+		width: 950px;
+	}
+}
 .modal-header {
 	
 	.close {
@@ -1716,7 +1754,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 .btn-sm, .btn-xs {
 	font-size: 13px;	
 }
-.table_header_persistant {
+.table_header_persistent {
 	
 	.table {
 		margin-bottom: 0;
@@ -1726,13 +1764,22 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 		}
 	}
 }
-.table_body_persistant {
+.table_body_persistent {
 	position: relative;
 	height: 205px; 
 	overflow-y: scroll;
 	border-right: 1px solid @grayLighter;
 	border-left: 1px solid @grayLighter;
 	border-bottom: 1px solid @grayLighter;
+}
+.tbody-striped>tbody:nth-child(odd) td, .tbody-striped>tbody:nth-child(odd)>th {
+	background-color: #F9F9F9
+}
+.cleansing-error td:last-child {
+	background-color: #FFB7B7 !important;
+}
+.cleansing-warning td:last-child {
+	background-color: #FDF4BF !important;
 }
 .export_radio {
 	.radio-inline {
@@ -1833,4 +1880,80 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 		}
 	}
 }
+
+.ui-sortable {
+  .ui-sortable-handle {
+	cursor: move;
+  }
+}
+
+
+/* Styles for building reports page */
+.building-reports {
+
+	/* The section containing the UI controls for updating the charts */
+    .chart-inputs {
+        padding:10px; 
+        border-radius:.5em; 
+        background-color:#d8e3ed;
+
+        label {
+	        margin-right: 5px;
+	        color: #222;
+	    }
+
+	    .form-group{
+	        margin-left:20px;
+	    }
+
+	    /*  This is a fix for a bug in bootstrap 3.1 
+	        (fixed in 3.2, but we're using 3.1 right now) 
+			We can remove when we update.
+	    */
+	    .input-group {
+	        display: inline-table;
+	        vertical-align: middle;
+	        .input-group-addon,
+	        .input-group-btn,
+	        .form-control {
+	            width: auto !important;
+	            max-width:120px;
+	        }
+	    }
+    }
+
+    /* This is a small floating box
+    	above the chart that shows the chart's status
+    	when loading or when it has no data. */
+    .status-message {
+        position:absolute;
+        top:50%;
+        left:50%;
+        margin:-30px 0px 0px -60px;
+        text-align: center;
+        width:120px;
+        padding-top:10px;
+        padding-bottom:10px;
+        background-color: #FFF;
+        border:1px solid #F1F1F1;
+        border-radius: 5px;
+    }
+
+    .chart-holder {
+        border-radius: .5em;
+        background-color: #F6F6F6;
+        border:1px solid #F6F6F6;
+        position:relative;
+    }
+
+    .reportingTableHolder {
+        margin-top: 20px;
+        padding: 0px 60px 0px 105px;
+    }
+
+    .progress {
+    	margin:5px 10px 0px 10px;
+    }
+}
+
 

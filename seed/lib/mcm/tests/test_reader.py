@@ -9,6 +9,7 @@ from seed.lib.mcm import reader
 from seed.lib.mcm.tests import utils
 
 
+
 class TestCSVParser(TestCase):
     def setUp(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm.csv'
@@ -26,7 +27,7 @@ class TestCSVParser(TestCase):
 
     def test_clean_super(self):
         """Make sure we clean out unicode escaped super scripts."""
-        expected = u'Testing 2. And 2.'
+        expected = u'Testing 2. And .'
         test = u'Testing \xb2. And \ufffd.'
         self.assertEqual(
             self.parser._clean_super(test),
@@ -34,10 +35,11 @@ class TestCSVParser(TestCase):
         )
 
         # Test that our replace keyword works
-        new_expected = expected.replace('2', '3')
+        expected = u'Testing 3. And - -.'
+        test = u'Testing \u00b3. And \u2013 \u2014.'
         self.assertEqual(
-            self.parser._clean_super(test, replace=u'3'),
-            new_expected
+            self.parser._clean_super(test),
+            expected
         )
 
     def test_clean_super_scripts(self):
@@ -88,6 +90,17 @@ class TestMCMParserCSV(TestCase):
     def test_num_columns(self):
         self.assertEqual(self.parser.num_columns(), 250)
 
+    def test_headers(self):
+        """tests that we can get the original order of headers"""
+        self.assertEqual(
+            self.parser.headers()[0],
+            'Property Id'
+        )
+        self.assertEqual(
+            self.parser.headers()[-1],
+            'Release Date'
+        )
+
 
 class TestMCMParserXLS(TestCase):
     def setUp(self):
@@ -126,6 +139,31 @@ class TestMCMParserXLS(TestCase):
     def test_num_columns(self):
         self.assertEqual(self.parser.num_columns(), 250)
 
+    def test_headers(self):
+        self.assertEqual(
+            self.parser.headers()[0],
+            'Property Id'
+        )
+        self.assertEqual(
+            self.parser.headers()[-1],
+            'Release Date'
+        )
+
+    def test_blank_row(self):
+        self.xls_f.close()
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm_blank_rows.xls'
+        self.xls_f = open(test_file, 'rb')
+        self.parser = reader.MCMParser(self.xls_f)
+        self.total_callbacks = 0
+        self.assertEqual(
+            self.parser.headers()[0],
+            'Property Id'
+        )
+        self.assertEqual(
+            self.parser.headers()[-1],
+            'Release Date'
+        )
+
 
 class TestMCMParserXLSX(TestCase):
     def setUp(self):
@@ -163,3 +201,13 @@ class TestMCMParserXLSX(TestCase):
 
     def test_num_columns(self):
         self.assertEqual(self.parser.num_columns(), 250)
+
+    def test_headers(self):
+        self.assertEqual(
+            self.parser.headers()[0],
+            'Property Id'
+        )
+        self.assertEqual(
+            self.parser.headers()[-1],
+            'Release Date'
+        )
