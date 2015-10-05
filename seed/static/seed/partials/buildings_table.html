@@ -1,16 +1,16 @@
 <div class="table_list_container">
-    <table class="table table-striped sortable">
+    <table class="resizable table table-striped sortable">
         <thead>
             <tr>
                 <th class="check is_aligned_center" ng-if="search.has_checkbox">
                     <input type="checkbox" ng-model="search.select_all_checkbox" ng-change="search.select_all_changed()">
                 </th>
-                <th ng-repeat="c in columns" class="{$ c.title_class $}" ng-click="c.toggle_sort()" ng-class="c.sorted_class()">{$ c.title $} <span class="subtitle">{$ c.subtitle $}</span>
+                <th be-resizable ng-repeat="c in columns" class="{$ c.title_class $}" ng-click="c.toggle_sort()" ng-class="c.sorted_class()">{$ c.title $} <span class="subtitle">{$ c.subtitle $}</span>
                 </th>
             </tr>
             <tr class="sub_head">
                 <th class="sub_head check_row" ng-if="search.has_checkbox"></th>
-                <th class="sub_head" ng-repeat="c in columns" style="min-width: 140px;">
+                <th class="sub_head" ng-repeat="c in columns" style="min-width: 110px;">
                     <!-- for string filters -->
                     <input ng-if="c.type == 'string' || c.type == 'link'" type="text" class="form-control input-sm show" ng-class="{active: search.filter_params[c.sort_column].length > 0}" placeholder="{$ c.title $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.sort_column]">
 
@@ -31,7 +31,7 @@
                 <td class="check is_aligned_center" ng-if="search.has_checkbox">
                     <input type="checkbox" value="" ng-model="b.checked" ng-change="search.add_remove_to_list(b)">
                 </td>
-                <td ng-repeat="c in columns" class="{$ c.class $}" ng-class="{sorted: search.sort_column == c.sort_column}">
+                <td ng-repeat="c in columns" class="ellipsis {$ c.class $}" ng-class="{sorted: search.sort_column == c.sort_column}">
                     <span ng-if="c.link && is_project && c.is_extra_data">
                         <a ng-href="#/projects/{$ user.project_id $}/{$ b.canonical_building $}">{$ b.extra_data[c.sort_column] | stripImportPrefix $}</a>
                     </span>

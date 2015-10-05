@@ -44,8 +44,10 @@ def build_column_mapping(
             if mapping:
                 result, conf = mapping
 
-        # Only enter this flow if we haven't already selected a result.
-        if not result and result is not None:
+        # Only enter this flow if we haven't already selected a result. Ignore
+        # blank columns with conf of 100 since a conf of 100 signifies the user
+        # has saved that mapping.
+        if not result and result is not None and conf != 100:
             best_match, conf = matchers.best_match(
                 raw, dest_columns, top_n=1
             )[0]
@@ -179,7 +181,9 @@ def map_row(row, mapping, model_class, cleaner=None, concat=None, **kwargs):
         # then, send_apply_func will reference this function and be sent
         # to the ``apply_column_value`` function.
         send_apply_func = apply_func if item in apply_columns else None
-        if value and value != '':
+
+        # Save the value if is is not None, keep empty fields.
+        if value != None:
             model = apply_column_value(
                 item, value, model, mapping, cleaner,
                 apply_func=send_apply_func

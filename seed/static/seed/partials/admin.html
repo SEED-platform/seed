@@ -161,12 +161,12 @@
                 </div>
                 <div class="section_content_container org_user_admin">
                     <div class="section_content row">
-                        <div class="table_list_container col-sm-5 col-md-5">
+                        <div class="table_list_container remove_buildings_table col-sm-5 col-md-5">
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
                                         <th>Organization</th>
-                                        <th>Users</th>
+                                        <th>User Count</th>
                                         <th>Building Count</th>
                                         <th></th>
                 
@@ -175,8 +175,8 @@
                                 <tbody>
                                     <tr ng-repeat="o in org_user.organizations">
                                         <td>{$ o.name $}</td>
-                                        <td><span ng-repeat="u in o.users">{$ u $}<br /></span></td>
-                                        <td><strong>{$ o.buildings_count | number:0 $}</strong> <span class="subtitle">({$ o.total_buildings_count | number:0 $})</span></td>
+                                        <td><strong>{$ o.number_of_users | number:0 $}</strong></td>
+                                        <td><strong>{$ o.num_buildings | number:0 $}</strong></td>
                                         <td>
                                             <div style="width: 150px;">
                                                 <button class="btn btn-danger" ng-click="confirm_delete(o)" ng-hide="o.progress > -1 || o.total_buildings_count == 0">Remove Buildings</button>

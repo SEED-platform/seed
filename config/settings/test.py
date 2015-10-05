@@ -2,7 +2,9 @@
 :copyright: (c) 2014 Building Energy Inc
 """
 
+from __future__ import absolute_import
 from config.settings.common import *  # noqa
+from kombu import Exchange, Queue
 
 LOGGING = {
     'version': 1,
@@ -52,7 +54,6 @@ DATABASES = {
 # TODO: use different redis queue for testing. if you change this here, then it is overloaded later
 BROKER_BACKEND = 'memory'
 BROKER_URL = 'redis://127.0.0.1:6379/1'
-BROKER_HOST = '127.0.0.1'
 
 CELERY_DEFAULT_QUEUE = 'seed-dev'
 CELERY_QUEUES = (
@@ -64,11 +65,12 @@ CELERY_QUEUES = (
 )
 CELERY_ALWAYS_EAGER = False
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
-djcelery.setup_loader()
 
 
 # Testing
-INSTALLED_APPS += ("django_nose", )
+INSTALLED_APPS += (
+    "django_nose",
+)
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_PLUGINS = [
     'nose_exclude.NoseExclude',

@@ -1,5 +1,5 @@
-
 ## Standard Energy Efficiency Data (SEED) Platform™
+[![Build Status][travis-img]][travis-url] [![Coverage Status][coveralls-img]][coveralls-url]
 
 The SEED Platform is a web-based application that helps organizations easily manage data on the energy performance of large groups of buildings. Users can combine data from multiple sources, clean and validate it, and share the information with others. The software application provides an easy, flexible, and cost-effective method to improve the quality and availability of data to help demonstrate the economic and environmental benefits of energy efficiency, to implement programs, and to target investment activity.
 
@@ -126,7 +126,7 @@ In dev mode, you can start the Django dev server and celery:
 
 ```
 ./manage.py runserver
-./manage.py celeryd -c 4 --loglevel=INFO -E --maxtasksperchild=1000
+celery -A seed worker -l info -c 4 --maxtasksperchild 1000 --events
 ```
 
 #### flower
@@ -145,7 +145,7 @@ If running on AWS, the `bin/start_flower.sh` will start flower on port `8080` an
 * `./manage.py migrate`
 * `./manage.py create_default_user`
 * `./manage.py runserver`
-* `./manage.py celeryd`
+* `celery -A seed worker -l info -c 4 --maxtasksperchild 1000 --events`
 * navaigate to `http://127.0.0.1:8000/app/#/profile/admin` in your browser to add users to organizations
     * each user must belong to an organization!
 * main app runs at `127.0.0.1:8000/app`
@@ -175,3 +175,9 @@ Each message that is written to the logger is a Log Record. The log record is st
 
 ### Copyright:
 Copyright ©  2014 Building Energy Inc.
+
+
+[travis-img]: https://travis-ci.org/SEED-platform/seed.svg?branch=develop
+[travis-url]: https://travis-ci.org/SEED-platform/seed
+[coveralls-img]: https://coveralls.io/repos/SEED-platform/seed/badge.svg
+[coveralls-url]: https://coveralls.io/github/SEED-platform/seed

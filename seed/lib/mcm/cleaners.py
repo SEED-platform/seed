@@ -6,7 +6,6 @@ import re
 import string
 
 import dateutil
-
 from seed.lib.mcm.matchers import fuzzy_in_set
 
 NONE_SYNONYMS = (u'not available', u'not applicable', u'n/a')
@@ -25,16 +24,30 @@ def default_cleaner(value, *args):
 
 
 def float_cleaner(value, *args):
-    """Try to clean value, coerce it into a float."""
-    if not value:
+    """Try to clean value, coerce it into a float.
+    Usage:
+        float_cleaner('1,123.45')       # 1123.45
+        float_cleaner('1,123.45 ?')     # 1123.45
+        float_cleaner(50)               # 50.0
+        float_cleaner(None)             # None
+        float_cleaner(Decimal('30.1'))  # 30.1
+        float_cleaner(my_date)          # raises TypeError
+    """
+    # API breakage if None does not return None
+    if value is None:
         return None
-    if isinstance(value, float) or isinstance(value, int):
-        return float(value)
-    try:
+    if isinstance(value, basestring):
         value = PUNCT_REGEX.sub('', value)
+
+    try:
         value = float(value)
     except ValueError:
-        return None
+        value = None
+    except TypeError:
+        message = 'float_cleaner cannot convert {} to float'.format(
+            type(value)
+        )
+        raise TypeError(message)
 
     return value
 
@@ -55,12 +68,18 @@ def bool_cleaner(value, *args):
 
 
 def date_cleaner(value, *args):
+    """Try to clean value, coerce it into a python datetime."""
     if not value:
         return None
     if isinstance(value, datetime) or isinstance(value, date):
         return value
+
     try:
-        dateutil.parser.parse(value)
+        # the dateutil parser only parses strings, make sure to return None if not a string
+        if isinstance(value, unicode) or isinstance(value, str):
+            value = dateutil.parser.parse(value)
+        else:
+            value = None
     except (TypeError, ValueError):
         return None
 

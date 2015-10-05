@@ -1,9 +1,9 @@
 # VERSION 0.1
 # AUTHOR:         Clay Teeter <teeterc@gmail.com>
-# DESCRIPTION:    Image with seed platform and dependecies
+# DESCRIPTION:    Image with seed platform and dependencies
 # TO_BUILD:       docker build -rm -t seed-platform .
 # TO_RUN_CELERY:  docker run -d -name seed-celery -v $HOME/seed_data:/seed/collected_static --link seed-redis:redis --link seed-postgres:postgres seed-platform /seed/bin/start_celery_docker.sh
-# TO_RUN_UWSGI:  docker run -d -name seed-uwsgi -v $HOME/seed_data:/seed/collected_static --link seed-redis:redis --link seed-postgres:postgres -p 8000:8000 seed-platform /seed/bin/start_uwsgi_docker.sh
+# TO_RUN_UWSGI:   docker run -d -name seed-uwsgi -v $HOME/seed_data:/seed/collected_static --link seed-redis:redis --link seed-postgres:postgres -p 8000:8000 seed-platform /seed/bin/start_uwsgi_docker.sh
 
 # Latest Ubuntu LTS
 FROM ubuntu:14.04
@@ -18,8 +18,8 @@ RUN apt-get update \
         libssl-dev \
         liblzma-dev \
         libevent1-dev \
-	git \
-	mercurial \
+        git \
+        mercurial \
         libpq-dev \
         nodejs \
         npm \

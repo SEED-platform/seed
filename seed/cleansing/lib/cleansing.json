@@ -1,0 +1,198 @@
+{
+    "modules": [
+        {
+            "name": "Missing Matching Field",
+            "fields": [
+                "address_line_1",
+                "tax_lot_id",
+                "custom_id_1",
+                "pm_property_id"
+            ]
+        },
+        {
+            "name": "Missing Values",
+            "ignoredFields": [
+                "address_line_1",
+                "tax_lot_id",
+                "custom_id_1",
+                "pm_property_id"
+            ]
+        },
+        {
+            "name": "In-range Checking",
+            "fields": {
+                "year_built": [
+                    {
+                        "min": 1700,
+                        "max": 2019,
+                        "severity": "error",
+                        "units": null
+                    }
+                ],
+                "year_ending": [
+                    {
+                        "min": "01/01/1889",
+                        "max": "12/31/2020",
+                        "severity": "error",
+                        "units": null
+                    }
+                ],
+                "conditioned_floor_area": [
+                    {
+                        "min": 0,
+                        "max": 7000000,
+                        "severity": "error",
+                        "units": "square feet"
+                    },
+                    {
+                        "min": 100,
+                        "max": null,
+                        "severity": "warning",
+                        "units": "square feet"
+                    }
+                ],
+                "energy_score": [
+                    {
+                        "min": 0,
+                        "max": 100,
+                        "severity": "error",
+                        "units": null
+                    },
+                    {
+                        "min": 10,
+                        "max": null,
+                        "severity": "warning",
+                        "units": null
+                    }
+                ],
+                "generation_date": [
+                    {
+                        "min": "01/01/1889",
+                        "max": "12/31/2020",
+                        "severity": "error",
+                        "units": null
+                    }
+                ],
+                "gross_floor_area": [
+                    {
+                        "min": 100,
+                        "max": 7000000,
+                        "severity": "error",
+                        "units": "square feet"
+                    }
+                ],
+                "occupied_floor_area": [
+                    {
+                        "min": 100,
+                        "max": 7000000,
+                        "severity": "error",
+                        "units": "square feet"
+                    }
+                ],
+                "recent_sale_date": [
+                    {
+                        "min": "01/01/1889",
+                        "max": "12/31/2020",
+                        "severity": "error",
+                        "units": null
+                    }
+                ],
+                "release_date": [
+                    {
+                        "min": "01/01/1889",
+                        "max": "12/31/2020",
+                        "severity": "error",
+                        "units": null
+                    }
+                ],
+                "site_eui": [
+                    {
+                        "min": 0,
+                        "max": 1000,
+                        "severity": "error",
+                        "units": "kBtu/sq. ft./year"
+                    },
+                    {
+                        "min": 10,
+                        "max": null,
+                        "severity": "warning",
+                        "units": "kBtu/sq. ft./year"
+                    }
+                ],
+                "site_eui_weather_normalized": [
+                    {
+                        "min": 0,
+                        "max": 1000,
+                        "severity": "error",
+                        "units": "kBtu/sq. ft./year"
+                    }
+                ],
+                "source_eui": [
+                    {
+                        "min": 0,
+                        "max": 1000,
+                        "severity": "error",
+                        "units": "kBtu/sq. ft./year"
+                    },
+                    {
+                        "min": 10,
+                        "max": null,
+                        "severity": "warning",
+                        "units": "kBtu/sq. ft./year"
+                    }
+                ],
+                "source_eui_weather_normalized": [
+                    {
+                        "min": 10,
+                        "max": 1000,
+                        "severity": "error",
+                        "units": "kBtu/sq. ft./year"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Data Type Check",
+            "notes": "These are currently unused in the new cleansing module",
+            "fields": {
+                "block_number": "number",
+                "building_count": "number",
+                "conditioned_floor_area": "number",
+                "energy_score": "number",
+                "gross_floor_area": "number",
+                "lot_number": "number",
+                "occupied_floor_area": "number",
+                "postal_code": "number",
+                "site_eui": "number",
+                "site_eui_weather_normalized": "number",
+                "source_eui": "number",
+                "source_eui_weather_normalized": "number",
+                "address_line_1": "string",
+                "address_line_2": "string",
+                "building_certification": "string",
+                "city": "string",
+                "custom_id_1": "string",
+                "district": "string",
+                "energy_alerts": "string",
+                "owner": "string",
+                "owner_address": "string",
+                "owner_city_state": "string",
+                "owner_email": "string",
+                "owner_postal_code": "string",
+                "owner_telephone": "string",
+                "pm_property_id": "string",
+                "property_name": "string",
+                "property_notes": "string",
+                "space_alerts": "string",
+                "state_province": "string",
+                "tax_lot_id": "string",
+                "use_description": "string",
+                "generation_date": "date",
+                "recent_sale_date": "date",
+                "release_date": "date",
+                "year_built": "number",
+                "year_ending": "date"
+            }
+        }
+    ]
+}

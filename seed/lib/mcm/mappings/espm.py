@@ -19,7 +19,6 @@ MAP = {
     u'Address 2': u'address_line_2',
     u'City': u'city',
     u'County': u'district',
-    u'City': u'city',
     u'Custom Property ID 1 - ID': u'custom_id_1',
     u'Postal Code': u'postal_code',
     u'State/Province': u'state_province',

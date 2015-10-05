@@ -3,9 +3,10 @@
 
 """
 
+from __future__ import absolute_import
+
 from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
-import djcelery
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -95,7 +96,7 @@ else:
 # BROKER_URL with AWS ElastiCache redis looks something like:
 # 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
 BROKER_URL = 'redis://127.0.0.1:6379/1'
-BROKER_HOST = '127.0.0.1'
+CELERY_RESULT_BACKEND = BROKER_URL
 CELERY_DEFAULT_QUEUE = 'seed-dev'
 CELERY_QUEUES = (
     Queue(
@@ -104,7 +105,6 @@ CELERY_QUEUES = (
         routing_key=CELERY_DEFAULT_QUEUE
     ),
 )
-djcelery.setup_loader()
 
 REQUIRE_UNIQUE_EMAIL = False
 

@@ -247,7 +247,7 @@ class TestBuildingSnapshot(TestCase):
 
         test_mapping, _ = seed_models.get_column_mappings(org)
         self.assertDictEqual(test_mapping, expected)
-        
+
     def _check_save_snapshot_match_with_default(self, default_pk):
         """Test good case for saving a snapshot match."""
         self.assertEqual(seed_models.BuildingSnapshot.objects.all().count(), 2)
@@ -257,7 +257,7 @@ class TestBuildingSnapshot(TestCase):
 
         self.bs2.canonical_building = bs2_canon
         self.bs2.save()
-        
+
         default_building = self.bs1 if default_pk == self.bs1.pk else self.bs2
 
         seed_models.save_snapshot_match(
@@ -291,7 +291,7 @@ class TestBuildingSnapshot(TestCase):
     def test_save_snapshot_match_default_to_first_building(self):
         """Test good case for saving a snapshot match with the first building as default."""
         self._check_save_snapshot_match_with_default(self.bs1.pk)
-        
+
     def test_save_snapshot_match_default_to_second_building(self):
         """Test good case for saving a snapshot match with the second building as default."""
         self._check_save_snapshot_match_with_default(self.bs2.pk)
@@ -539,6 +539,48 @@ class TestBuildingSnapshot(TestCase):
         bs2 = bs_manager.get(pk=self.bs2.pk)
         self.assertEqual(bs2.has_children, False)
         self.assertEqual(canon2.active, True)
+
+    def test_unmatch_snapshot_tree_retains_canonical_snapshot(self):
+        """
+        TODO:
+        """
+        self.bs3 = util.make_fake_snapshot(
+            self.import_file1, self.bs1_data, bs_type=seed_models.COMPOSITE_BS,
+            is_canon=True,
+        )
+        self.bs4 = util.make_fake_snapshot(
+            self.import_file1, self.bs2_data, bs_type=seed_models.COMPOSITE_BS,
+            is_canon=True,
+        )
+
+        # simulate matching bs1 and bs2 to have a child of bs3
+        seed_models.save_snapshot_match(self.bs2.pk, self.bs1.tip.pk)
+        seed_models.save_snapshot_match(self.bs3.pk, self.bs1.tip.pk)
+        seed_models.save_snapshot_match(self.bs4.pk, self.bs1.tip.pk)
+
+        tip_pk = self.bs1.tip.pk
+
+        # simulating the following tree:
+        # b1 b2
+        # \ /
+        #  b3 b4
+        #  \ /
+        #   b5
+
+        # unmatch bs3 from bs4
+        seed_models.unmatch_snapshot_tree(self.bs4.pk)
+
+        # tip should be deleted
+        self.assertFalse(seed_models.BuildingSnapshot.objects.filter(pk=tip_pk).exists())
+
+        canon_bs4 = seed_models.CanonicalBuilding.objects.get(pk=self.bs4.canonical_building_id)
+
+        # both of their canons should be active
+        self.assertTrue(canon_bs4.active)
+
+        # both cannons should have a canonical_snapshot
+        self.assertEqual(canon_bs4.canonical_snapshot, self.bs4)
+
 
 class TestCanonicalBuilding(TestCase):
     """Test the clean methods on CanonicalBuildingModel."""

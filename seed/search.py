@@ -150,11 +150,11 @@ def is_not_whitelist_building(parent_org, building, whitelist_orgs):
     :param whitelist_orgs: queryset of Organization insts.
     :returns: bool
     """
-    return (parent_org and building.super_organization not in whitelist_orgs)
+    return parent_org and building.super_organization not in whitelist_orgs
 
 
 def filter_other_params(queryset, other_params, db_columns):
-    """applyes a dictionary filter to the query set. Does some domain specific
+    """applies a dictionary filter to the query set. Does some domain specific
     parsing,
        mostly to remove extra query params and deal with ranges.
        Ranges should be passed in as '<field name>__lte' or '<field name>__gte'
@@ -207,8 +207,7 @@ def filter_other_params(queryset, other_params, db_columns):
     query_filters = Q()
     for k, v in other_params.iteritems():
         in_columns = is_column(k, db_columns)
-        # if in_columns and k != 'q' and v:
-        if in_columns and k != 'q' and v is not None:
+        if in_columns and k != 'q' and v is not None and v != '':
             exact_match = is_exact_match(v)
             empty_match = is_empty_match(v)
             not_empty_match = is_not_empty_match(v)
@@ -248,7 +247,11 @@ def filter_other_params(queryset, other_params, db_columns):
             # django-pgjson package, and use the new "HAS" operator syntax.
             # - nicholasserra
             if empty_match:
-                queryset = queryset.exclude(extra_data__contains='"%s":' % k)
+                # Filter for records that DO NOT contain this field OR
+                # contain a blank value for this field.
+                queryset = queryset.filter(
+                    ~Q(extra_data__contains='"%s":' % k) | Q(extra_data__contains='"%s": ""' % k)
+                )
                 continue
             elif not_empty_match:
                 # Only return records that have the key in extra_data, but the value is not empty.

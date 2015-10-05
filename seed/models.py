@@ -337,7 +337,7 @@ def save_snapshot_match(
     default_building = b1 if default_pk == b1_pk else b2
 
     new_snapshot = BuildingSnapshot.objects.create()
-    new_snapshot = seed_mapper.merge_building(
+    new_snapshot, changes = seed_mapper.merge_building(
         new_snapshot,
         b1,
         b2,
@@ -358,7 +358,7 @@ def save_snapshot_match(
 
     new_snapshot.save()
 
-    return new_snapshot
+    return new_snapshot, changes
 
 
 def unmatch_snapshot_tree(building_pk):
@@ -437,19 +437,33 @@ def unmatch_snapshot_tree(building_pk):
 
     # delete all sub-children of the unmatched snapshot
     for child in children_to_murder:
+        # If the child we're about to delete is set as the canonical snapshop,
+        # we should update the canonical_building to point at a different node
+        # if possible.
+        canons_to_update = CanonicalBuilding.objects.filter(
+            canonical_snapshot=child,
+        )
+        for cb in canons_to_update:
+            sibling = cb.buildingsnapshot_set.exclude(
+                pk=child.pk,
+            ).first()
+            if sibling:
+                cb.canonical_snapshot = sibling.tip
+                cb.save()
         child.delete()
 
     # re-merge parents whose children have been taken from them
     bachelor = root
     newborn_child = None
     for bereaved_parent in coparents_to_keep:
-        newborn_child = save_snapshot_match(bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk)
+        newborn_child, _ = save_snapshot_match(bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk)
         bachelor = newborn_child
 
     # set canonical_snapshot for root's canonical building
     tip = newborn_child or root
     canon = root.canonical_building
     canon.canonical_snapshot = tip
+    canon.active = True
     canon.save()
 
 
@@ -1258,6 +1272,11 @@ class BuildingSnapshot(TimeStampedModel):
 
     use_description = models.TextField(null=True, blank=True)
     use_description_source = models.ForeignKey(
+        'BuildingSnapshot', related_name='+', null=True, blank=True
+    )
+
+    #Need a field to indicate that a record is a duplicate of another.  Mainly used for cleaning up.
+    duplicate = models.ForeignKey(
         'BuildingSnapshot', related_name='+', null=True, blank=True
     )
 

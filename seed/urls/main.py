@@ -56,6 +56,7 @@ urlpatterns = patterns(
         'get_PM_filter_by_counts',
         name='get_PM_filter_by_counts'
     ),
+    url(r'^delete_duplicates_from_import_file/$', 'delete_duplicates_from_import_file', name='delete_duplicates_from_import_file'),
     url(r'^create_dataset/$', 'create_dataset', name='create_dataset'),
     url(r'^get_datasets/$', 'get_datasets', name='get_datasets'),
     url(r'^get_dataset/$', 'get_dataset', name='get_dataset'),
@@ -64,6 +65,13 @@ urlpatterns = patterns(
     url(r'^delete_dataset/$', 'delete_dataset', name='delete_dataset'),
     url(r'^update_dataset/$', 'update_dataset', name='update_dataset'),
     url(r'^update_building/$', 'update_building', name='update_building'),
+    
+    #DMcQ: Test for building reports    
+    url(r'^get_building_summary_report_data/$', 'get_building_summary_report_data', name='get_building_summary_report_data'),
+    url(r'^get_building_report_data/$', 'get_building_report_data', name='get_building_report_data'),
+    url(r'^get_aggregated_building_report_data/$', 'get_aggregated_building_report_data', name='get_aggregated_building_report_data'),
+
+
     # New MCM endpoints
     url(
         r'^get_column_mapping_suggestions/$',

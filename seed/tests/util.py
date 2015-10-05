@@ -7,13 +7,14 @@
 
 import json
 
-from seed.models import(
+from seed.models import (
     BuildingSnapshot,
     CanonicalBuilding,
     Column,
     ColumnMapping,
     set_initial_sources,
 )
+
 
 def make_fake_mappings(mappings, org):
     """Takes a dict and saves a ColumnMapping object for each key"""
@@ -40,9 +41,8 @@ def make_fake_mappings(mappings, org):
             column_mapping.column_raw.add(col)
         column_mapping.column_mapped.add(column_mapped)
 
-def make_fake_snapshot(
-    import_file, init_data, bs_type, is_canon=False, org=None
-):
+
+def make_fake_snapshot(import_file, init_data, bs_type, is_canon=False, org=None):
     """For making fake mapped BuildingSnapshots to test matching against."""
     snapshot = BuildingSnapshot.objects.create(**init_data)
     snapshot.import_file = import_file
@@ -73,7 +73,7 @@ class FakeRequest(object):
     GET = POST = {}
 
     def __init__(
-        self, data=None, headers=None, user=None, method='POST', **kwargs
+            self, data=None, headers=None, user=None, method='POST', **kwargs
     ):
         if 'body' in kwargs:
             self.body = kwargs['body']

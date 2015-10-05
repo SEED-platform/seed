@@ -63,7 +63,8 @@ angular.module('BE.seed.service.search', [])
         number_per_page_options_model: 10,
         filter_params: {},
         prev_page_disabled: true,
-        has_checkbox: true
+        has_checkbox: true,
+        prefix: ''
     };
     search_service.next_page_disabled = (
         search_service.number_matching_search <= 10);
@@ -78,15 +79,32 @@ angular.module('BE.seed.service.search', [])
      * functions
      */
 
-    search_service.init_storage = function () {
+    search_service.init_storage = function (prefix) {
         // Check session storage for order and sort values.
-        if (typeof(Storage) !== "undefined" && sessionStorage.getItem('seedBuildingOrderBy') !== null) {
-            saas.order_by = sessionStorage.getItem('seedBuildingOrderBy');
-            saas.sort_column = sessionStorage.getItem('seedBuildingOrderBy');
-        }
+        if (typeof(Storage) !== "undefined") {
+            saas.prefix = prefix;
 
-        if (typeof(Storage) !== "undefined" && sessionStorage.getItem('seedBuildingSortReverse') !== null) {
-            saas.sort_reverse = JSON.parse(sessionStorage.getItem('seedBuildingSortReverse'));
+            // order_by & sort_column
+            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null){
+                saas.order_by = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
+                saas.sort_column = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
+            }
+
+            // sort_reverse
+            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
+                saas.sort_reverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
+            }
+
+            // filter_params
+            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
+                saas.filter_params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
+            }
+
+            // number_per_page
+            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
+                saas.number_per_page = saas.number_per_page_options_model = saas.showing.end =
+                JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
+            }
         }
     };
 
@@ -99,7 +117,8 @@ angular.module('BE.seed.service.search', [])
       for (var prop in params) {
         if (params.hasOwnProperty(prop) &&
             ((params[prop] === undefined) ||
-             (params[prop] === null))) {
+             (params[prop] === null) ||
+             (params[prop] === ''))) {
           to_remove.push(prop);
         }
       }
@@ -112,7 +131,7 @@ angular.module('BE.seed.service.search', [])
 
     /**
      * search_buildings: makes a search request. ``url`` must be set before
-     * a request can be make successfully.
+     * a request can be made successfully.
      *
      * @param {string} query (optional) cross field search, if undefined,
      *   search_buildings will use search_service.query
@@ -168,11 +187,14 @@ angular.module('BE.seed.service.search', [])
 
 
     /**
-     * filter_search: triggerd when a filter param changes
+     * filter_search: triggered when a filter param changes
      */
     search_service.filter_search = function() {
-       this.current_page = 1;
-       this.search_buildings();
+        this.current_page = 1;
+        this.search_buildings();
+        if (typeof(Storage) !== "undefined") {
+            sessionStorage.setItem(this.prefix + ':' + 'seedBuildingFilterParams', JSON.stringify(this.filter_params));
+        }
     };
 
 
@@ -183,13 +205,16 @@ angular.module('BE.seed.service.search', [])
     /**
      * update_number_per_page: fired when a user picks an option in the number
      *   per page select, `update_number_per_page` updates the pagination model
-     *   and requeryes the search to get more data
+     *   and queries the search again to get more data
      */
     search_service.update_number_per_page = function() {
         // this refers to the pagination object not search_service
         this.number_per_page = this.number_per_page_options_model;
         this.current_page = 1;
         this.search_buildings();
+        if (typeof(Storage) !== "undefined") {
+            sessionStorage.setItem(this.prefix + ':' + 'seedBuildingNumberPerPage', JSON.stringify(this.number_per_page));
+        }
     };
 
     /**
@@ -327,7 +352,7 @@ angular.module('BE.seed.service.search', [])
      *   the sort and filter methods, and various classes
      */
     search_service.column_prototype = {
-        "toggle_sort": function(){
+        toggle_sort: function() {
             if (this.sortable) {
                 if (saas.sort_column === this.sort_column) {
                     saas.sort_reverse = !saas.sort_reverse;
@@ -338,27 +363,27 @@ angular.module('BE.seed.service.search', [])
             }
 
             if (typeof(Storage) !== "undefined") {
-                sessionStorage.setItem('seedBuildingOrderBy', saas.sort_column);
-                sessionStorage.setItem('seedBuildingSortReverse', saas.sort_reverse);
+                sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingOrderBy', saas.sort_column);
+                sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingSortReverse', saas.sort_reverse);
             }
 
             saas.order_by = this.sort_column;
             saas.current_page = 1;
             saas.search_buildings();
         },
-        "is_sorted_on_this_column": function() {
+        is_sorted_on_this_column: function() {
             return this.sort_column === saas.sort_column;
         },
-        "is_sorted_down": function() {
+        is_sorted_down: function() {
             return this.is_sorted_on_this_column() && saas.sort_reverse;
         },
-        "is_sorted_up": function() {
+        is_sorted_up: function() {
             return this.is_sorted_on_this_column() && !saas.sort_reverse;
         },
-        "is_unsorted": function() {
+        is_unsorted: function() {
             return !this.is_sorted_on_this_column();
         },
-        "sorted_class": function() {
+        sorted_class: function() {
             if (saas.sort_column === this.sort_column) {
                 if (saas.sort_reverse) {
                     return "sorted sort_asc";
@@ -369,7 +394,7 @@ angular.module('BE.seed.service.search', [])
                 return "";
             }
         },
-        "is_label": function() {
+        is_label: function() {
             return this.sort_column === "project_building_snapshots__status_label__name";
         }
     };
@@ -386,6 +411,26 @@ angular.module('BE.seed.service.search', [])
         columns = all_columns.filter(function(c) {
             return column_headers.indexOf(c.sort_column) > -1 || c.checked;
         });
+        // also apply the user sort order
+        columns.sort(function(a,b) {
+            // when viewing the list of projects, there is an extra "Status" column that is always first
+            if (a.sort_column == 'project_building_snapshots__status_label__name') {
+                return -1;
+            } else if (b.sort_column == 'project_building_snapshots__status_label__name') {
+                return 1;
+            }
+            // if no status, sort according to user's selected order
+            if (column_headers.indexOf(a.sort_column) > -1 && column_headers.indexOf(b.sort_column) > -1) {
+                return (column_headers.indexOf(a.sort_column) - column_headers.indexOf(b.sort_column));
+            } else if (column_headers.indexOf(a.sort_column) > -1) {
+                return -1;
+            } else if (column_headers.indexOf(b.sort_column) > -1) {
+                return 1;
+            } else { // preserve previous order
+                return (all_columns.indexOf(a) - all_columns.indexOf(b));
+            }
+        });
+
         for (var i = 0; i < columns.length; i++) {
             angular.extend(columns[i], column_prototype);
         }

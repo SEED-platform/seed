@@ -20,6 +20,7 @@ angular.module('BE.seed.controller.mapping', [])
   'matching_service',
   'uploader_service',
   '$filter',
+  'cleansing_service',
   function (
     $scope,
     import_file_payload,
@@ -37,7 +38,8 @@ angular.module('BE.seed.controller.mapping', [])
     user_service,
     matching_service,
     uploader_service,
-    $filter
+    $filter,
+    cleansing_service
 ) {
     $scope.typeahead_columns = suggested_mappings_payload.building_columns;
     var original_columns = angular.copy($scope.typeahead_columns);
@@ -387,7 +389,7 @@ angular.module('BE.seed.controller.mapping', [])
             var tcm = $scope.raw_columns[i];
             var header = tcm.name;
             var suggestion;
-            // We're not mapping columns that are getting concatinated.
+            // We're not mapping columns that are getting concatenated.
             if (tcm.is_a_concat_parameter){
                 continue;
             }
@@ -431,14 +433,14 @@ angular.module('BE.seed.controller.mapping', [])
      * reverse titleCase mappings which were titleCase in the suggestion input
      */
     var get_untitle_cased_mappings = function () {
-        var mappings = $scope.get_mappings().map(function (m) {
-            var mapping = m[0];
+        var mappings = $scope.get_mappings().map(function (m) {        	
+            var mapping = m[0];            
             mapping = angular.lowercase(mapping).replace(/ /g, '_');
-            if (~original_columns.indexOf(mapping)) {
+            if (~original_columns.indexOf(mapping)) {            	
                 m[0] = mapping;
             }
             return m;
-        });
+        });        
         return mappings;
     };
 
@@ -549,6 +551,31 @@ angular.module('BE.seed.controller.mapping', [])
       else {
         angular.element('.mapping-button').prop('disabled', false);
       }
+    };
+
+    /**
+     * open_cleansing_modal: modal to present data cleansing warnings and errors
+     */
+    $scope.open_cleansing_modal = function() {
+        $modal.open({
+            templateUrl: urls.static_url + 'seed/partials/cleansing_modal.html',
+            controller: 'cleansing_controller',
+            size: 'lg',
+            resolve: {
+                'cleansingResults': function() {
+                    return cleansing_service.get_cleansing_results($scope.import_file.id);
+                },
+                'name': function() {
+                    return $scope.import_file.name;
+                },
+                'uploaded': function() {
+                    return $scope.import_file.dataset.finish_time;
+                },
+                'importFileId': function() {
+                  return $scope.import_file.id;
+                }
+            }
+        });
     };
 
     /**

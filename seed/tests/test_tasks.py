@@ -275,6 +275,48 @@ class TestTasks(TestCase):
         self.assertEqual(
             mapped_bs.address_line_1, u'1600 Pennsylvania Ave. Someplace Nice'
         )
+        
+    def test_is_same_snapshot(self):
+        """Test to check if two snapshots are duplicates"""
+        
+        bs_data = {
+            'pm_property_id': 1243,
+            'tax_lot_id': '435/422',
+            'property_name': 'Greenfield Complex',
+            'custom_id_1': 12,
+            'address_line_1': '555 Database LN.',
+            'address_line_2': '',
+            'city': 'Gotham City',
+            'postal_code': 8999,
+        }
+        
+        s1 = util.make_fake_snapshot(
+            self.import_file, bs_data, ASSESSED_BS, is_canon=True,
+            org=self.fake_org
+        )
+        
+        self.assertTrue(tasks.is_same_snapshot(s1, s1), "Matching a snapshot to itself should return True")
+        
+        #Making a different snapshot, now Garfield complex rather than Greenfield complex
+        bs_data_2 = {
+            'pm_property_id': 1243,
+            'tax_lot_id': '435/422',
+            'property_name': 'Garfield Complex',
+            'custom_id_1': 12,
+            'address_line_1': '555 Database LN.',
+            'address_line_2': '',
+            'city': 'Gotham City',
+            'postal_code': 8999,
+        }
+        
+        s2 = util.make_fake_snapshot(
+            self.import_file, bs_data_2, ASSESSED_BS, is_canon=True,
+            org=self.fake_org
+        )
+        
+        self.assertFalse(tasks.is_same_snapshot(s1, s2), "Matching a snapshot to a different snapshot should return False")
+        
+        
 
     def test_match_buildings(self):
         """Good case for testing our matching system."""
@@ -285,6 +327,19 @@ class TestTasks(TestCase):
             'custom_id_1': 12,
             'address_line_1': '555 Database LN.',
             'address_line_2': '',
+            'city': 'Gotham City',
+            'postal_code': 8999,
+        }
+        
+        #Since the change to not match duplicates there needs to be a second record that isn't exactly the same
+        #to run this test.  In this case address_line_2 now has a value of 'A' rather than ''
+        bs_data_2 = {
+            'pm_property_id': 1243,
+            'tax_lot_id': '435/422',
+            'property_name': 'Greenfield Complex',
+            'custom_id_1': 12,
+            'address_line_1': '555 Database LN.',
+            'address_line_2': 'A',
             'city': 'Gotham City',
             'postal_code': 8999,
         }
@@ -303,7 +358,7 @@ class TestTasks(TestCase):
         )
 
         new_snapshot = util.make_fake_snapshot(
-            new_import_file, bs_data, PORTFOLIO_BS, org=self.fake_org
+            new_import_file, bs_data_2, PORTFOLIO_BS, org=self.fake_org
         )
 
         tasks.match_buildings(new_import_file.pk, self.fake_user.pk)
@@ -323,6 +378,93 @@ class TestTasks(TestCase):
             AuditLog.objects.first().action_note,
             'System matched building ID.'
         )
+    
+
+    def test_match_duplicate_buildings(self):
+        """
+        Test for behavior when trying to match duplicate building data
+        """
+        bs_data = {
+            'pm_property_id': "8450",
+            'tax_lot_id': '143/292',
+            'property_name': 'Greenfield Complex',
+            'custom_id_1': "99",
+            'address_line_1': '93754 Database LN.',
+            'address_line_2': '',
+            'city': 'Gotham City',
+            'postal_code': "8999",
+        }
+        
+        import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            mapping_done=True
+        )
+        
+        # Setup mapped PM snapshot.
+        snapshot = util.make_fake_snapshot(
+            import_file, bs_data, PORTFOLIO_BS, is_canon=True,
+            org=self.fake_org
+        )
+        # Different file, but same ImportRecord.
+        # Setup mapped PM snapshot.
+        # Should be a duplicate.
+        new_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            mapping_done=True
+        )
+
+        new_snapshot = util.make_fake_snapshot(
+            new_import_file, bs_data, PORTFOLIO_BS, org=self.fake_org
+        )
+
+        tasks.match_buildings(import_file.pk, self.fake_user.pk)
+        tasks.match_buildings(new_import_file.pk, self.fake_user.pk)
+        
+        self.assertEqual(len(BuildingSnapshot.objects.all()), 2)
+        
+        
+    def test_handle_id_matches_duplicate_data(self):
+        """
+        Test for handle_id_matches behavior when matching duplicate data
+        """
+        bs_data = {
+            'pm_property_id': "2360",
+            'tax_lot_id': '476/460',
+            'property_name': 'Garfield Complex',
+            'custom_id_1': "89",
+            'address_line_1': '12975 Database LN.',
+            'address_line_2': '',
+            'city': 'Cartoon City',
+            'postal_code': "54321",
+        }
+        
+        # Setup mapped AS snapshot.
+        snapshot = util.make_fake_snapshot(
+            self.import_file, bs_data, ASSESSED_BS, is_canon=True,
+            org=self.fake_org
+        )
+        # Different file, but same ImportRecord.
+        # Setup mapped PM snapshot.
+        # Should be an identical match.
+        new_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            mapping_done=True
+        )
+        
+        tasks.match_buildings(new_import_file.pk, self.fake_user.pk)
+        
+        duplicate_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            mapping_done=True
+        )
+
+        new_snapshot = util.make_fake_snapshot(
+            duplicate_import_file, bs_data, PORTFOLIO_BS, org=self.fake_org
+        )
+        
+        self.assertRaises(tasks.DuplicateDataError, tasks.handle_id_matches, new_snapshot, duplicate_import_file, self.fake_user.pk)
+                
+        
 
     def test_match_no_matches(self):
         """When a canonical exists, but doesn't match, we create a new one."""
@@ -491,6 +633,19 @@ class TestTasks(TestCase):
            'city': 'Gotham City',
            'postal_code': 8999,
         }
+        
+        #Since we changed to not match duplicate data make a second record that matches with something slighty changed
+        #In this case appended a 'A' to the end of address_line_1
+        bs_data_2 = {
+           'pm_property_id': 1243,
+           'tax_lot_id': '435/422',
+           'property_name': 'Greenfield Complex',
+           'custom_id_1': 1243,
+           'address_line_1': '555 Database LN. A',
+           'address_line_2': '',
+           'city': 'Gotham City',
+           'postal_code': 8999,
+        }
 
         # Setup mapped AS snapshot.
         snapshot = util.make_fake_snapshot(
@@ -507,7 +662,7 @@ class TestTasks(TestCase):
         )
 
         new_snapshot = util.make_fake_snapshot(
-            new_import_file, bs_data, PORTFOLIO_BS, org=self.fake_org
+            new_import_file, bs_data_2, PORTFOLIO_BS, org=self.fake_org
         )
 
         tasks.match_buildings(new_import_file.pk, self.fake_user.pk)
