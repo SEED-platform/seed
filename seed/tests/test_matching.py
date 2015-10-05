@@ -52,4 +52,5 @@ class NormalizeStreetAddressTests(TestCase):
         # https://github.com/SEED-platform/seed/issues/378
         ('regression 1', '100 Peach Ave. East', '100 peach ave e'),
         ('regression 1', '100 Peach Avenue E.', '100 peach ave e'),
+        ('multiple addresses', 'M St., N St., 4th St., Delaware St., SW', 'm st., n st., 4th st., delaware st., sw')
     ]

@@ -1063,30 +1063,33 @@ def _normalize_address_str(address_val):
         return None
 
     # now parse the address into number, street name and street type
-    addr = usaddress.tag(str(address_val))[0]  # TODO: should probably use unicode()
-    normalized_address = ''
+    try:
+        addr = usaddress.tag(str(address_val))[0]
+    except usaddress.RepeatedLabelError:
+        # usaddress can't parse this at all
+        normalized_address = str(address_val)
+    else:
+        # Address can be parsed, so let's format it.
+        normalized_address = ''
 
-    if not addr:
-        return None
+        if 'AddressNumber' in addr and addr['AddressNumber'] is not None:
+            normalized_address = addr['AddressNumber'].lstrip("0")  # some addresses have leading zeros, strip them here
 
-    if 'AddressNumber' in addr and addr['AddressNumber'] is not None:
-        normalized_address = addr['AddressNumber'].lstrip("0")  # some addresses have leading zeros, strip them here
+        if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
+            normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePreDirectional'])
 
-    if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
-        normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePreDirectional'])
+        if 'StreetName' in addr and addr['StreetName'] is not None:
+            normalized_address = normalized_address + ' ' + addr['StreetName']
 
-    if 'StreetName' in addr and addr['StreetName'] is not None:
-        normalized_address = normalized_address + ' ' + addr['StreetName']
+        if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
+            # remove any periods from abbreviations
+            normalized_address = normalized_address + ' ' + _normalize_address_post_type(addr['StreetNamePostType'])
 
-    if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
-        # remove any periods from abbreviations
-        normalized_address = normalized_address + ' ' + _normalize_address_post_type(addr['StreetNamePostType'])
+        if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
+            normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePostDirectional'])
 
-    if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
-        normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePostDirectional'])
-
-    formatter = StreetAddressFormatter()
-    normalized_address = formatter.abbrev_street_avenue_etc(normalized_address)
+        formatter = StreetAddressFormatter()
+        normalized_address = formatter.abbrev_street_avenue_etc(normalized_address)
 
     return normalized_address.lower().strip()
 
