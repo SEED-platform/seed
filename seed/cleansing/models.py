@@ -11,7 +11,7 @@ from datetime import date
 logger = getLogger(__name__)
 
 
-class Cleansing(models.Model):
+class Cleansing:
     def __init__(self, *args, **kwargs):
         """
         Initialize the Cleansing class. Right now this class will not need to save anything to the database. It is
@@ -21,9 +21,11 @@ class Cleansing(models.Model):
         :param kwargs:
         :return:
         """
-        # load in the configuration file
-        super(Cleansing, self).__init__(*args, **kwargs)
 
+        # Uncomment this line if this becomes a django model.
+        # super(Cleansing, self).__init__(*args, **kwargs)
+
+        # load in the configuration file
         cleansing_file = os.path.dirname(os.path.realpath(__file__)) + '/lib/cleansing.json'
 
         if not os.path.isfile(cleansing_file):
