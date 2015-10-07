@@ -17,7 +17,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
   'use strict';
 
   /* Define the first five colors. After that, rely on Dimple's default colors. */
-  $scope.defaultColors = ["#c83737","#458cc8","#1159a3","#f2c41d","#939495"];
+  $scope.defaultColors = ["#458cc8","#779e1c","#f2c41d","#939495","#c83737", "#f18630"];
 
   /* SCOPE VARS */
   /* ~~~~~~~~~~ */
