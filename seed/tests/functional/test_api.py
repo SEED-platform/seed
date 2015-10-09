@@ -264,15 +264,9 @@ class TestApi(TestCase):
             'filename': open(raw_building_file, 'rb')
         }
 
-        # upload data and check responce
+        # upload data and check response
         r = self.client.post(upload_details['upload_path'], fsysparams, follow=True, **self.headers)
-
         self.assertEqual(r.status_code, 200)
-
-        r = json.loads(r.content)
-
-        self.assertEqual(r.status_code, 200)
-        self.assertEqual(r['success'], True)
 
         r = json.loads(r.content)
         self.assertEqual(r['success'], True)

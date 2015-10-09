@@ -108,10 +108,12 @@ class LogIn(StaticLiveServerTestCase):
         # Access Dataset_list Webpage
         self.selenium.find_element_by_link_text("Data").click()
         self.wait_for_visibility('data-link-0')
+        time.sleep(5)
 
         # Access Dataset_details Webpage
         self.selenium.find_element_by_link_text('Sample\"').click()
         self.wait_for_visibility('data-mapping-0')
+        time.sleep(5)
 
         # Access Mapping Webpage
         self.selenium.find_element_by_link_text('Data Mapping').click()
