@@ -184,7 +184,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
         closeButtonText: 'OK',
         actionButtonText: null,
         headerText: 'Invalid Dates',
-        bodyText: "The 'start' date must be before the 'end' date"
+        bodyText: "The 'From' date must be before the 'To' date"
       };
       simple_modal_service.showModal(modalOptions);
       return;

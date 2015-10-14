@@ -39,8 +39,11 @@
                                                 class="form-control"
                                                 datepicker-popup="MM-dd-yyyy" 
                                                 is-open="startDatePickerOpen" 
-                                                ng-model="startDate"      
-                                                uib-tooltip="'From Date' must be before 'To Date'"                                           
+                                                ng-model="startDate"    
+                                                uib-tooltip="'From Date' must be before 'To Date'"   
+                                                tooltip-placement="top"
+                                                tooltip-trigger="mouseenter"             
+                                                tooltip-enable="invalidDates"                           
                                                 />
                                         <span class="input-group-btn">
                                             <button type="button" 
