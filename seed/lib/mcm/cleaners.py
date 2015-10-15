@@ -6,12 +6,13 @@ import re
 import string
 
 import dateutil
+import dateutil.parser
 from seed.lib.mcm.matchers import fuzzy_in_set
 
 NONE_SYNONYMS = (u'not available', u'not applicable', u'n/a')
 BOOL_SYNONYMS = (u'true', u'yes', u'y', u'1')
 PUNCT_REGEX = re.compile('[{0}]'.format(
-    re.escape(string.punctuation.replace('.', '')))
+    re.escape(string.punctuation.replace('.', '').replace('-', '')))
 )
 
 
@@ -29,6 +30,7 @@ def float_cleaner(value, *args):
         float_cleaner('1,123.45')       # 1123.45
         float_cleaner('1,123.45 ?')     # 1123.45
         float_cleaner(50)               # 50.0
+        float_cleaner(-55)              # -55.0
         float_cleaner(None)             # None
         float_cleaner(Decimal('30.1'))  # 30.1
         float_cleaner(my_date)          # raises TypeError
@@ -36,6 +38,7 @@ def float_cleaner(value, *args):
     # API breakage if None does not return None
     if value is None:
         return None
+
     if isinstance(value, basestring):
         value = PUNCT_REGEX.sub('', value)
 
@@ -76,7 +79,7 @@ def date_cleaner(value, *args):
 
     try:
         # the dateutil parser only parses strings, make sure to return None if not a string
-        if isinstance(value, unicode) or isinstance(value, str):
+        if isinstance(value, basestring):
             value = dateutil.parser.parse(value)
         else:
             value = None
