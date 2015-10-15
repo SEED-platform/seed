@@ -1,4 +1,4 @@
-from annoying.decorators import ajax_request
+from seed.decorators import ajax_request
 from seed.utils.api import (
     get_api_endpoints, format_api_docstring, api_endpoint
 )

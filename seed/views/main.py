@@ -14,7 +14,6 @@ from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
 from django.core.files.storage import DefaultStorage
 from django.db.models import Q
-from annoying.decorators import render_to, ajax_request
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from seed.lib.mcm import mapper
@@ -26,6 +25,7 @@ from seed.tasks import (
     match_buildings,
     save_raw_data as task_save_raw,
 )
+from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed import models, tasks
 from seed.models import (

@@ -10,9 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 
 # vendor imports
-from annoying.decorators import ajax_request
 from dateutil import parser
-
 
 # config imports
 from seed.tasks import (
@@ -20,6 +18,7 @@ from seed.tasks import (
     remove_buildings,
 )
 
+from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import (
     Compliance,
