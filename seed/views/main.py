@@ -15,6 +15,8 @@ from django.conf import settings
 from django.core.files.storage import DefaultStorage
 from django.db.models import Q
 from annoying.decorators import render_to, ajax_request
+from django.shortcuts import render_to_response
+from django.template.context import RequestContext
 from seed.lib.mcm import mapper
 from seed.audit_logs.models import AuditLog
 from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
@@ -75,13 +77,13 @@ DEFAULT_CUSTOM_COLUMNS = [
 _log = logging.getLogger(__name__)
 
 
-@render_to('seed/jasmine_tests/AngularJSTests.html')
 def angular_js_tests(request):
     """Jasmine JS unit test code covering AngularJS unit tests and ran
        by ./manage.py harvest
 
     """
-    return locals()
+    return render_to_response('seed/jasmine_tests/AngularJSTests.html',
+        locals(), context_instance=RequestContext(request))
 
 
 def _get_default_org(user):
@@ -112,7 +114,6 @@ def _get_default_org(user):
         return "", "", ""
 
 
-@render_to('seed/index.html')
 @login_required
 def home(request):
     """the main view for the app
@@ -139,7 +140,8 @@ def home(request):
         request.user
     )
 
-    return locals()
+    return render_to_response('seed/index.html',
+        locals(), context_instance=RequestContext(request))
 
 
 @api_endpoint
