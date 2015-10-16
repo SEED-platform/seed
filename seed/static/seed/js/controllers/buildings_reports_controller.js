@@ -182,7 +182,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
       var modalOptions = {
         type: "error",
         okButtonText: 'OK',
-        actionButtonText: null,
+        cancelButtonText: null,
         headerText: 'Invalid Dates',
         bodyText: "The 'From' date must be before the 'To' date"
       };
