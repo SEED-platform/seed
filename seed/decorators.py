@@ -97,9 +97,14 @@ def ajax_request(func):
         else:
             format_type = 'application/json'
         response = func(request, *args, **kwargs)
+
+        status_code = 200
+        if response.get('status') == 'error' or response.get('success') == False:
+            status_code = 400
+
         if not isinstance(response, HttpResponse):
             data = FORMAT_TYPES[format_type](response)
-            response = HttpResponse(data, content_type=format_type)
+            response = HttpResponse(data, content_type=format_type, status=status_code)
             response['content-length'] = len(data)
         return response
     return wrapper
