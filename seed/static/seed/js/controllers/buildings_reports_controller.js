@@ -181,12 +181,17 @@ angular.module('BE.seed.controller.buildings_reports', [])
       //Show a basic error modal
       var modalOptions = {
         type: "error",
-        closeButtonText: 'OK',
+        okButtonText: 'OK',
         actionButtonText: null,
         headerText: 'Invalid Dates',
         bodyText: "The 'From' date must be before the 'To' date"
       };
-      simple_modal_service.showModal(modalOptions);
+      simple_modal_service.showModal(modalOptions).then(function(result){
+        $log.info('result', result);
+      },
+      function(result){
+        $log.info('error', result);
+      });
       return;
     }
 

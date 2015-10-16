@@ -5,8 +5,11 @@
   <p>{$modalOptions.bodyText$}</p>
 </div>
 <div class="modal-footer">
+  <button 	type="button"
+  			class="btn btn-primary" 
+          	data-ng-click="modalOptions.ok();">{$modalOptions.okButtonText$}</button>
   <button 	type="button" 
   			class="btn" 
-          	data-ng-click="modalOptions.close()">{$modalOptions.closeButtonText$}</button>
- 
+  			ng-hide="!modalOptions.cancelButtonText"
+          	data-ng-click="modalOptions.cancel()">{$modalOptions.cancelButtonText$}</button> 
 </div>
