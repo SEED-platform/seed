@@ -8,7 +8,7 @@ import logging
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
-from annoying.decorators import ajax_request
+from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm, PERMS
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 from seed.lib.superperms.orgs.models import (

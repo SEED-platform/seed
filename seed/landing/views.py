@@ -3,7 +3,6 @@
 """
 import logging
 
-from annoying.decorators import render_to
 from django.contrib import auth
 from django.contrib.auth import authenticate, login
 from django.conf import settings
@@ -21,15 +20,15 @@ from forms import LoginForm, SetStrongPasswordForm
 logger = logging.getLogger(__name__)
 
 
-@render_to('landing/home.html')
 def landing_page(request):
     if request.user.is_authenticated():
         return HttpResponseRedirect(reverse('seed:home'))
     login_form = LoginForm()
-    return locals()
+    return render_to_response('landing/home.html',
+        locals(), context_instance=RequestContext(request))
 
 
-def _login_view(request):
+def login_view(request):
     """
     Standard Django login, with additions:
         Lowercase the login email (username)
@@ -76,9 +75,8 @@ def _login_view(request):
                 errors.append('Username and/or password were invalid.')
     else:
         form = LoginForm()
-
-    return locals()
-login_view = render_to('landing/login.html')(_login_view)
+    return render_to_response('landing/login.html',
+        locals(), context_instance=RequestContext(request))
 
 
 def password_set(request, uidb64=None, token=None):
@@ -120,9 +118,9 @@ def password_reset_confirm(request, uidb64=None, token=None):
     )
 
 
-@render_to("landing/password_reset_complete.html")
 def password_reset_complete(request):
-    return locals()
+    return render_to_response("landing/password_reset_complete.html",
+        {}, context_instance=RequestContext(request))
 
 
 def signup(request, uidb64=None, token=None):
