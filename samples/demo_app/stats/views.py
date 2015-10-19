@@ -3,14 +3,13 @@
 """
 
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg, Min, Max, StdDev
-from django.shortcuts import render_to_response
-from django.template import RequestContext
-
+from annoying.decorators import render_to
 from seed.models import BuildingSnapshot
+from django.db.models import Avg, Min, Max, StdDev
 
 
 @login_required
+@render_to('stats/stats.html')
 def stats(request):
     """get a couple averages to display"""
     stats_dict = BuildingSnapshot.objects.filter(
@@ -22,5 +21,4 @@ def stats(request):
         StdDev('gross_floor_area'),
     )
 
-    return render_to_response('stats/stats.html',
-        locals(), context_instance=RequestContext(request))
+    return locals()

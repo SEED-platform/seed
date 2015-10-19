@@ -49,7 +49,11 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
                 'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status) {
-            defer.resolve(data);
+            if (data.status === "error"){
+                defer.reject(data, status);
+            } else {
+                defer.resolve(data);
+            }
         }).error(function(data, status) {
             defer.reject(data, status);
         });
@@ -72,7 +76,11 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
               'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status) {
-            defer.resolve(data);
+            if (data.status === "error"){
+                defer.reject(data, status);
+            } else {
+                defer.resolve(data);
+            }
         }).error(function(data, status) {
             defer.reject(data, status);
         });
@@ -90,7 +98,11 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
             url: window.BE.urls.progress,
             'data': {'progress_key': progress_key}
         }).success(function(data, status) {
-            defer.resolve(data);
+            if (data.status === "error"){
+                defer.reject(data, status);
+            } else {
+                defer.resolve(data);
+            }
         }).error(function(data, status) {
             defer.reject(data, status);
         });

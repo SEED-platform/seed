@@ -7,8 +7,10 @@ import json
 # django imports
 from django.contrib.auth.decorators import login_required
 
+# vendor imports
+from annoying.decorators import ajax_request
+
 # app imports
-from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.utils.api import api_endpoint
 from seed.models import CanonicalBuilding
