@@ -43,6 +43,9 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
                 'organization': org
             }
         }).success(function(data) {
+            if (data.status === 'error') {
+                defer.reject(data);
+            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -80,6 +83,9 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             'url': urls.accounts.add_user,
             'data': new_user_details
         }).success(function(data) {
+            if (data.status === 'error') {
+                defer.reject(data);
+            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -93,6 +99,9 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             method: 'GET',
             'url': urls.seed.get_default_columns
         }).success(function(data) {
+            if (data.status === 'error') {
+                defer.reject(data);
+            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -106,6 +115,9 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             method: 'GET',
             'url': urls.accounts.get_shared_buildings
         }).success(function(data) {
+            if (data.status === 'error') {
+                defer.reject(data);
+            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -123,6 +135,9 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             method: 'GET',
             'url': urls.accounts.get_user_profile
         }).success(function(data) {
+            if (data.status === 'error') {
+                defer.reject(data);
+            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -140,6 +155,9 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             method: 'POST',
             'url': urls.accounts.generate_api_key
         }).success(function(data) {
+            if (data.status === 'error') {
+                defer.reject(data);
+            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -154,6 +172,9 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             'url': urls.seed.set_default_columns,
             'data': {'columns': columns, 'show_shared_buildings': show_shared_buildings}
         }).success(function(data) {
+            if (data.status === 'error') {
+                defer.reject(data);
+            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -172,6 +193,9 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             'url': urls.accounts.update_user,
             'data': {user: user}
         }).success(function(data) {
+            if (data.status === 'error') {
+                defer.reject(data);
+            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -196,6 +220,9 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
                 'password_2': password_2
             }
         }).success(function(data) {
+            if (data.status === 'error') {
+                defer.reject(data);
+            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);

@@ -1,9 +1,9 @@
 import csv
+from annoying.decorators import ajax_request
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.http import HttpResponse
 from seed.cleansing.models import Cleansing
-from seed.decorators import ajax_request
 from seed.utils.api import api_endpoint
 
 # TODO The API is returning on both a POST and GET. Make sure to authenticate.

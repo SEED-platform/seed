@@ -34,7 +34,12 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
             'url': urls.accounts.add_org,
             'data': {'user_id': org.email.user_id, 'organization_name': org.name}
         }).success(function(data, status, headers, config) {
-            defer.resolve(data);
+            if (data.status === 'error') {
+                defer.reject(data);
+            } else {
+               defer.resolve(data);
+            }
+
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -76,6 +81,9 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
             'url': urls.accounts.remove_user_from_org,
             'data': {'organization_id': org_id, 'user_id':user_id}
         }).success(function(data, status, headers, config) {
+            if (data.status === 'error') {
+                defer.reject(data, status);
+            }
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
@@ -137,6 +145,9 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
                 'organization': org
             }
         }).success(function(data, status, headers, config) {
+            if (data.status === "error") {
+                defer.reject(data, status);
+            }
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
@@ -198,8 +209,12 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
                 'sub_org': sub_org
             }
         }).success(function(data, status, headers, config) {
+            if (data.status === "error") {
+                defer.reject(data, status);
+            }
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
+            console.log(data);
             defer.reject(data, status);
         });
         return defer.promise;

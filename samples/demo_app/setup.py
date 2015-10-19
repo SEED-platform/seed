@@ -17,6 +17,7 @@ setup(
     include_package_data=True,
     install_requires=[
          'django<1.7',
+         'django-annoying',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
