@@ -29,21 +29,15 @@
                         </div>
                         <div class="col-md-10" >   
                             <form class="form-inline pull-right chart-inputs" role="form" >
-
-                                <div class="form-group" ng-class="{'has-error' : invalidDates }">                             
+                                <div class="form-group">                             
                                     <label  for="from-date">From date:</label>   
-
                                     <div class="input-group date-input"> 
                                         <input  id="from-date"
                                                 type="text"
                                                 class="form-control"
                                                 datepicker-popup="MM-dd-yyyy" 
                                                 is-open="startDatePickerOpen" 
-                                                ng-model="startDate"    
-                                                uib-tooltip="'From Date' must be before 'To Date'"   
-                                                tooltip-placement="top"
-                                                tooltip-trigger="mouseenter"             
-                                                tooltip-enable="invalidDates"                           
+                                                ng-model="startDate" 
                                                 />
                                         <span class="input-group-btn">
                                             <button type="button" 
@@ -58,8 +52,10 @@
                                         <input  id="to-date"
                                                 type="text" 
                                                 class="form-control"
+                                                min-date="startDate" 
                                                 datepicker-popup="MM-dd-yyyy" 
                                                 is-open="endDatePickerOpen" 
+                                                min-date="startDate"
                                                 ng-model="endDate"/>
                                         <span class="input-group-btn">
                                             <button type="button" 
