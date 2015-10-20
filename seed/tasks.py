@@ -2,7 +2,6 @@
 :copyright: (c) 2014 Building Energy Inc
 """
 from __future__ import absolute_import
-
 import calendar
 import datetime
 import re
@@ -10,7 +9,6 @@ import string
 import operator
 import traceback
 from _csv import Error
-
 from dateutil import parser
 from django.core.mail import send_mail
 from django.conf import settings
@@ -21,9 +19,7 @@ from django.db.models import Q
 from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse_lazy
 from celery import chord
-
 import usaddress
-
 # from celery.utils.log import get_task_logger
 from seed.audit_logs.models import AuditLog
 from seed.landing.models import SEEDUser as User
@@ -61,7 +57,7 @@ from seed.models import (
 )
 from seed.decorators import lock_and_track
 from seed.utils.buildings import get_source_type, get_search_query
-from seed.utils.cache import set_cache_raw, set_cache, increment_cache
+from seed.utils.cache import set_cache_raw, set_cache, increment_cache, get_cache
 from seed.utils.mapping import get_mappable_columns
 from seed.lib.superperms.orgs.models import Organization
 from seed.lib.exporter import Exporter
@@ -383,7 +379,12 @@ def finish_mapping(results, file_pk):
     import_file.save()
     finish_import_record(import_file.import_record.pk)
     prog_key = get_prog_key('map_data', file_pk)
-    set_cache(prog_key, 'success', 100)
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
+    set_cache(prog_key, result['status'], result)
 
     # now call cleansing
     _cleanse_data(file_pk)
@@ -518,15 +519,15 @@ def _map_data(file_pk, *args, **kwargs):
     :param file_pk: int, the id of the import_file we're working with.
 
     """
-
+    prog_key = get_prog_key('map_data', file_pk)
     import_file = ImportFile.objects.get(pk=file_pk)
     # Don't perform this task if it's already been completed.
     if import_file.mapping_done:
-        prog_key = get_prog_key('map_data', file_pk)
         result = {
             'status': 'warning',
             'progress': 100,
-            'message': 'mapping already complete'
+            'message': 'mapping already complete',
+            'progress_key': prog_key
         }
         set_cache(prog_key, result['status'], result)
         return result
@@ -535,7 +536,11 @@ def _map_data(file_pk, *args, **kwargs):
     # Re-queue this task.
     if not import_file.raw_save_done:
         map_data.apply_async(args=[file_pk], countdown=60, expires=120)
-        return {'status': 'error', 'message': 'waiting for raw data save.'}
+        return {
+            'status': 'error',
+            'message': 'waiting for raw data save.',
+            'progress_key': prog_key
+        }
 
     source_type_dict = {
         'Portfolio Raw': PORTFOLIO_RAW,
@@ -549,7 +554,6 @@ def _map_data(file_pk, *args, **kwargs):
         source_type=source_type,
     ).iterator()
 
-    prog_key = get_prog_key('map_data', file_pk)
     tasks = []
     for chunk in batch(qs, 100):
         serialized_data = [obj.extra_data for obj in chunk]
@@ -561,9 +565,6 @@ def _map_data(file_pk, *args, **kwargs):
         chord(tasks, interval=15)(finish_mapping.subtask([file_pk]))
     else:
         finish_mapping.subtask(file_pk)
-
-    return {'status': 'success'}
-
 
 @shared_task
 @lock_and_track
@@ -611,7 +612,12 @@ def _cleanse_data(file_pk):
     else:
         finish_cleansing.subtask(file_pk)
 
-    return {'status': 'success'}
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
+    return result
 
 
 @shared_task
@@ -619,12 +625,11 @@ def map_data(file_pk, *args, **kwargs):
     """Small wrapper to ensure we isolate our mapping process from requests."""
     _map_data.delay(file_pk)
 
-    return {'status': 'success'}
-
 
 @shared_task
 def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
     """Save the raw data to the database."""
+    print 'In _save_raw_data_chunk'
     import_file = ImportFile.objects.get(pk=file_pk)
     # Save our "column headers" and sample rows for F/E.
     source_type = get_source_type(import_file)
@@ -645,7 +650,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
 
     # Indicate progress
     increment_cache(prog_key, increment)
-
+    print 'Returning from _save_raw_data_chunk'
     return True
 
 
@@ -658,11 +663,19 @@ def finish_raw_save(results, file_pk):
     :param file_pk: ID of the file that was being imported
     :return: None
     """
+    print 'In finish_raw_save'
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
     import_file.save()
     prog_key = get_prog_key('save_raw_data', file_pk)
-    set_cache(prog_key, 'success', 100)
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
+    set_cache(prog_key, result['status'], result)
+    print 'Returning from finish_raw_save'
+    return result
 
 
 def cache_first_rows(import_file, parser):
@@ -725,14 +738,24 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
     res = xml_importer.import_xml(import_file)
 
     prog_key = get_prog_key('save_raw_data', file_pk)
-    set_cache(prog_key, 'success', 100)
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
+    set_cache(prog_key, result['status'], result)
 
     if res:
-        return {'status': 'success', 'progress': 100}
+        return {
+            'status': 'success',
+            'progress': 100,
+            'progress_key': prog_key
+        }
 
     return {
         'status': 'error',
-        'message': 'data failed to import'
+        'message': 'data failed to import',
+        'progress_key': prog_key
     }
 
 
@@ -740,15 +763,21 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
 @lock_and_track
 def _save_raw_data(file_pk, *args, **kwargs):
     """Chunk up the CSV or XLSX file and save the raw data into the DB BuildingSnapshot table."""
-
-    result = {'status': 'success', 'progress': 100}
+    print 'In _save_raw_data'
     prog_key = get_prog_key('save_raw_data', file_pk)
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
+
     try:
         import_file = ImportFile.objects.get(pk=file_pk)
         if import_file.raw_save_done:
             result['status'] = 'warning'
             result['message'] = 'Raw data already saved'
             set_cache(prog_key, result['status'], result)
+            print 'Returning with warn from _save_raw_data'
             return result
 
         if import_file.source_type == "Green Button Raw":
@@ -793,14 +822,21 @@ def _save_raw_data(file_pk, *args, **kwargs):
         result['stacktrace'] = traceback.format_exc()
 
     set_cache(prog_key, result['status'], result)
+    print 'Returning from end of _save_raw_data'
     return result
 
 
 @shared_task
 @lock_and_track
 def save_raw_data(file_pk, *args, **kwargs):
+    print 'In save_raw_data'
     _save_raw_data.delay(file_pk, *args, **kwargs)
-    return {'status': 'success'}
+    print 'Returning from save_raw_data'
+    return {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': get_prog_key('save_raw_data', file_pk)
+    }
 
 
 def _stringify(values):
@@ -859,10 +895,14 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
 def match_buildings(file_pk, user_pk):
     """kicks off system matching, returns progress key #NL -- this seems to return a JSON--not a progress key?"""
     import_file = ImportFile.objects.get(pk=file_pk)
+    prog_key = get_prog_key('match_buildings', file_pk)
     if import_file.matching_done:
-        prog_key = get_prog_key('match_buildings', file_pk)
-        set_cache(prog_key, 'warning', 100)
-        return {'status': 'warning', 'message': 'matching already complete'}
+        return {
+            'status': 'warning',
+            'message': 'matching already complete',
+            'progress_key': prog_key
+        }
+        set_cache(prog_key, result['status'], result)
 
     if not import_file.mapping_done:
         # Re-add to the queue, hopefully our mapping will be done by then.
@@ -871,12 +911,17 @@ def match_buildings(file_pk, user_pk):
         )
         return {
             'status': 'error',
-            'message': 'waiting for mapping to complete'
+            'message': 'waiting for mapping to complete',
+            'progress_key': prog_key
         }
 
     _match_buildings.delay(file_pk, user_pk)
 
-    return {'status': 'success'}
+    return {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
 
 
 def get_canonical_snapshots(org_id):
@@ -1018,7 +1063,12 @@ def _finish_matching(import_file, progress_key):
     import_file.matching_done = True
     import_file.mapping_completion = 100
     import_file.save()
-    set_cache(progress_key, 'success', 100)
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': progress_key
+    }
+    set_cache(progress_key, result['status'], result)
 
 
 def _normalize_address_direction(direction):
@@ -1223,7 +1273,11 @@ def _match_buildings(file_pk, user_pk):
 
     _finish_matching(import_file, prog_key)
 
-    return {'status': 'success'}
+    return {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
 
 
 @shared_task
@@ -1262,26 +1316,25 @@ def remap_data(import_file_pk):
         result = {
             'status': 'warning',
             'progress': 100,
-            'message': 'Mapped buildings already merged'
+            'message': 'Mapped buildings already merged',
+            'progress_key': mapping_cache_key
         }
         set_cache(mapping_cache_key, result['status'], result)
         return result
 
-    _remap_data.delay(import_file_pk)
-
     # Make sure that our mapping cache progress is reset.
     result = {
-        'status': 'warning',
-        'progress': 0,
-        'message': 'Mapped buildings already merged'
-    }
-    set_cache(mapping_cache_key, result['status'], result)
-    # Here we also return the mapping_prog_key so that the front end can
-    # follow the progress.
-    return {
         'status': 'success',
+        'progress': 0,
+        'message': 'Initializing mapping cache',
         'progress_key': mapping_cache_key
     }
+    set_cache(mapping_cache_key, result['status'], result)
+
+    _remap_data.delay(import_file_pk)
+
+    result = get_cache(mapping_cache_key)
+    return result
 
 
 @shared_task
@@ -1293,7 +1346,15 @@ def delete_organization_buildings(org_pk, *args, **kwargs):
     :returns: Dict. with keys ``status`` and ``progress_key``
     """
     _delete_organization_buildings.delay(org_pk, *args, **kwargs)
-    return {'status': 'success'}
+    deleting_cache_key = get_prog_key(
+        'delete_organization_buildings',
+        org_pk
+    )
+    return {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': deleting_cache_key
+    }
 
 
 @shared_task
@@ -1310,8 +1371,13 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
         org_pk
     )
     if not ids:
-        set_cache(deleting_cache_key, 'success', 100)
-        return
+        result = {
+            'status': 'success',
+            'progress': 100,
+            'progress_key': deleting_cache_key
+        }
+        set_cache(deleting_cache_key, result['status'], result)
+        return result
 
     # delete the canonical buildings
     can_ids = CanonicalBuilding.objects.filter(
@@ -1320,7 +1386,13 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
     _delete_canonical_buildings.delay(can_ids)
 
     step = float(chunk_size) / len(ids)
-    set_cache(deleting_cache_key, 'success', 0)
+
+    result = {
+        'status': 'success',
+        'progress': 0,
+        'progress_key': deleting_cache_key
+    }
+    set_cache(deleting_cache_key, result['status'], result)
     tasks = []
     for del_ids in batch(ids, chunk_size):
         # we could also use .s instead of .subtask and not wrap the *args
@@ -1344,7 +1416,12 @@ def _delete_organization_buildings_chunk(del_ids, prog_key, increment,
 @shared_task
 def finish_delete(results, org_pk):
     prog_key = get_prog_key('delete_organization_buildings', org_pk)
-    set_cache(prog_key, 'success', 100)
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
+    set_cache(prog_key, result['status'], result)
 
 
 @shared_task

@@ -64,7 +64,7 @@ class LogIn(StaticLiveServerTestCase):
         r = json.loads(r.content)
         print "Mark One"
         print r
-        time.sleep(10)
+        #time.sleep(10)
         self.assertEqual(r['status'], 'success')
         data_set_id = r['id']
 
@@ -88,7 +88,7 @@ class LogIn(StaticLiveServerTestCase):
         r = json.loads(r.content)
         print "Mark Two"
         print r
-        time.sleep(10)
+        # time.sleep(10)
         self.assertEqual(r['success'], True)
 
         # Save Raw Data Upload
@@ -101,23 +101,22 @@ class LogIn(StaticLiveServerTestCase):
 
         print "Mark Three"
         print json.loads(r.content)
-        time.sleep(10)
 
         # Navigate to Data Mapping Page
+
+        self.wait_for_visibility('nav-data')
 
         # Access Dataset_list Webpage
         self.selenium.find_element_by_link_text("Data").click()
         self.wait_for_visibility('data-link-0')
-        time.sleep(5)
 
         # Access Dataset_details Webpage
         self.selenium.find_element_by_link_text('Sample\"').click()
         self.wait_for_visibility('data-mapping-0')
-        time.sleep(5)
 
         # Access Mapping Webpage
         self.selenium.find_element_by_link_text('Data Mapping').click()
-        self.wait_for_visibility('mapped-header-0', 30)
+        self.wait_for_visibility('mapped-header-0')
 
         # Map Data
 
@@ -151,8 +150,10 @@ class LogIn(StaticLiveServerTestCase):
 
         print "Beginning Column Mapping"
 
+        # time.sleep(10)
+
         self.selenium.find_element_by_id('map-data-button').click()
-        time.sleep(6)
+        time.sleep(30)
 
     def get_org_id(self, dict, username):
         '''Return the org id from the passed dictionary and username'''
@@ -164,7 +165,7 @@ class LogIn(StaticLiveServerTestCase):
 
         return id
 
-    def wait_for_visibility(self, selector, timeout_seconds=10):
+    def wait_for_visibility(self, selector, timeout_seconds=60):
         '''
         :param selector: angularjs rendered id to wait for in 'id' format
         :param timeout_seconds: time to wait for angularjs to render the selector id

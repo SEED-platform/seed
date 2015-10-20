@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 from django.test import TestCase
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
@@ -289,6 +290,7 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
         self.assertNotEqual(r['progress_key'], None)
+        time.sleep(5)
 
         # check the progress bar
         progress_key = r['progress_key']
@@ -297,6 +299,7 @@ class TestApi(TestCase):
         self.assertEqual(r.status_code, 200)
 
         r = json.loads(r.content)
+        print(r)
         # {
         #   "status": "success",
         #   "progress": 100,

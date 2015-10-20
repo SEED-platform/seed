@@ -310,11 +310,11 @@ fileout.write('\n-------Dataset-------\n')
 # Set up directory for file uploads
 sample_dir = "../data"
 
-# Load raw files. 
-raw_building_file = os.path.relpath(os.path.join(sample_dir, 'covered-buildings-sample.csv'))
+# Load raw files.
+raw_building_file = os.path.relpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), sample_dir, 'covered-buildings-sample.csv'))
 assert (os.path.isfile(raw_building_file)), 'Missing file ' + raw_building_file
 
-pm_building_file = os.path.relpath(os.path.join(sample_dir, 'portfolio-manager-sample.csv'))
+pm_building_file = os.path.relpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), sample_dir, 'portfolio-manager-sample.csv'))
 assert (os.path.isfile(pm_building_file)), "Missing file " + pm_building_file
 
 # Create a dataset 
