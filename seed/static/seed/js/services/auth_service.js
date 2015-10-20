@@ -36,9 +36,6 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
                 'organization_id': organization_id
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            }
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
@@ -56,9 +53,6 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
             method: 'GET',
             'url': urls.accounts.get_actions
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            }
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
