@@ -11,6 +11,9 @@
   "dependencies": {
     "fine-uploader": "3.9.1",
     "dimple": "~2.1.6",
-    "lodash": "3.10.1"
+    "lodash": "3.10.1",
+    "ui-bootstrap": "~0.14.1",
+    "angular-ui-tree": "~2.9.0",
+    "angular-ui-sortable": "~0.13.4"
   }
 }
