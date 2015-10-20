@@ -42,11 +42,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
                 'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -63,11 +59,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
                 'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -84,11 +76,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
                 'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -105,11 +93,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
                 'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -126,11 +110,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
                 'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -144,11 +124,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
             'url': urls.projects.get_adding_buildings_to_project_status_percentage,
             'data': {'project_loading_cache_key': project_loading_cache_key}
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -165,11 +141,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
                 'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -267,11 +239,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
                 'label': label
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -289,11 +257,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
                 'label': label
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -311,11 +275,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
                 'label': label
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -333,11 +293,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
                 'label': label
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -356,11 +312,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
                 'building': building
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -382,11 +334,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
                 'search_params': search_params
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -409,11 +357,7 @@ angular.module('BE.seed.service.project', ['BE.seed.services.label_helper'])
                 'copy': copy
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
