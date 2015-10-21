@@ -33,7 +33,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
 
       Ideally, if we need to add new variables, we should just be able to add a new object to 
       either of these arrays. (However, at first when adding new variables we might need to add
-      new functionality to the directive to handle any idiosyncracies of graphing that new variable.)
+      new functionality to the directive to handle any idiosyncrasies of graphing that new variable.)
   */           
   $scope.xAxisVars = [
     { 

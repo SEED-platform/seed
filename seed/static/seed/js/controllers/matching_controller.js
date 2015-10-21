@@ -10,7 +10,7 @@ angular.module('BE.seed.controller.matching', [])
     'default_columns',
     'all_columns',
     'urls',
-    '$modal',
+    '$uibModal',
     '$log',
     'search_service',
     'matching_service',
@@ -23,7 +23,7 @@ angular.module('BE.seed.controller.matching', [])
         default_columns,
         all_columns,
         urls,
-        $modal,
+        $uibModal,
         $log,
         search_service,
         matching_service, 
@@ -288,7 +288,7 @@ angular.module('BE.seed.controller.matching', [])
      *   the columns used in the matching list table and matching detail table
      */
     $scope.open_edit_columns_modal = function() {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/custom_view_modal.html',
             controller: 'buildings_settings_controller',
             resolve: {

@@ -12,11 +12,11 @@
 
 <div class="section" ng-cloak>
 
-    <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{$ alert.msg $}</alert>
+    <uib-alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{$ alert.msg $}</uib-alert>
 
     <div class="section_tab_container">
-        <tabset>
-            <tab heading="Auto Matching">
+        <uib-tabset>
+            <uib-tab heading="Auto Matching">
                 <div class="row">
                     <div class="col-lg-6 col-sm-6 tab_content wide">
                         <p><strong>HOW THE SYSTEM AUTO-MATCHES YOUR BUILDINGS:</strong></p>
@@ -29,8 +29,8 @@
                         <p><span class="label label-warning">Custom ID</span> <span class="label label-warning">Address Line 1</span></p>
                     </div>
                 </div>
-            </tab>
-            <tab heading="Manual Matching" active="tab.active" disabled="tab.disabled">
+            </uib-tab>
+            <uib-tab heading="Manual Matching" active="tab.active" disabled="tab.disabled">
                 <div class="row">
                     <div class="col-lg-6 col-sm-6 tab_content wide">
                         <p><strong>HOW TO MANUALLY MATCH YOUR BUILDINGS:</strong></p>
@@ -42,9 +42,9 @@
                     </div>
                 </div>
 
-            </tab>
-            <tab class="pull-right" heading="Collapse Tabs"></tab>
-        </tabset>
+            </uib-tab>
+            <uib-tab class="pull-right" heading="Collapse Tabs"></uib-tab>
+        </uib-tabset>
     </div>
     <div class="section_header_container has_no_border">
         <div class="section_header fixed_height">

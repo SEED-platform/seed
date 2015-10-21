@@ -7,7 +7,7 @@ angular.module('BE.seed.controller.menu', [])
   '$http',
   '$location',
   '$window',
-  '$modal',
+  '$uibModal',
   '$log',
   'urls',
   'building_services',
@@ -24,7 +24,7 @@ angular.module('BE.seed.controller.menu', [])
     $http,
     $location,
     $window,
-    $modal,
+    $uibModal,
     $log,
     urls,
     building_services,
@@ -179,7 +179,7 @@ angular.module('BE.seed.controller.menu', [])
     };
 
     $scope.open_create_project_modal = function() {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/edit_project_modal.html',
             controller: 'edit_project_modal_ctrl',
             resolve: {
@@ -208,7 +208,7 @@ angular.module('BE.seed.controller.menu', [])
      *  data_upload_modal_ctrl controller. 
      */
     $scope.open_data_upload_modal = function() {
-        var dataModalInstance = $modal.open({
+        var dataModalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
             controller: 'data_upload_modal_ctrl',
             resolve: {

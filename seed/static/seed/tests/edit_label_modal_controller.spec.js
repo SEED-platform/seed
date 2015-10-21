@@ -26,7 +26,7 @@ describe("controller: edit_label_modal_ctrl", function(){
     });
 
     // inject AngularJS dependencies for the controller
-    beforeEach(inject(function($controller, $rootScope, $modal, urls, $q, project_service) {
+    beforeEach(inject(function($controller, $rootScope, $uibModal, urls, $q, project_service) {
         controller = $controller;
         scope = $rootScope;
         edit_ctrl_scope = $rootScope.$new();

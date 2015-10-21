@@ -17,7 +17,7 @@ describe("controller: mapping_controller", function(){
 
     // inject AngularJS dependencies for the controller
     beforeEach(inject(
-        function($controller, $rootScope, $modal, urls, $q, building_services, $timeout, user_service, search_service) {
+        function($controller, $rootScope, $uibModal, urls, $q, building_services, $timeout, user_service, search_service) {
             controller = $controller;
             scope = $rootScope;
             mapping_ctrl_scope = $rootScope.$new();

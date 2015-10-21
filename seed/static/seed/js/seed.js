@@ -78,7 +78,7 @@ angular.module('BE.seed.services', [
     'BE.seed.service.user',
     'mappingValidatorService',
     'BE.seed.service.search',
-    'BE.seed.service.simple_modal',
+    'BE.seed.service.simple_modal'
     ]);
 
 var SEED_app = angular.module('BE.seed', [

@@ -15,7 +15,7 @@ describe("controller: concat_modal_ctrl", function(){
     // inject AngularJS dependencies for the controller
     beforeEach(inject(
         function(
-            $controller, $rootScope, $modal, urls, $q
+            $controller, $rootScope, $uibModal, urls, $q
         ) {
             controller = $controller;
             scope = $rootScope;

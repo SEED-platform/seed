@@ -8,9 +8,9 @@ angular.module('BE.seed.controller.project', [])
   'project_service',
   'urls',
   '$log',
-  '$modal',
+  '$uibModal',
   'projects_payload',
-  function($scope, $http, project_service, urls, $log, $modal, projects_payload) {
+  function($scope, $http, project_service, urls, $log, $uibModal, projects_payload) {
 
     $scope.user = {};
     $scope.user.projects = projects_payload.projects;
@@ -32,7 +32,7 @@ angular.module('BE.seed.controller.project', [])
 
     $scope.open_edit_modal = function(p) {
         $scope.the_project = p;
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/edit_project_modal.html',
             controller: 'edit_project_modal_ctrl',
             resolve: {
