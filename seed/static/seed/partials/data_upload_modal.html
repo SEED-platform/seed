@@ -42,7 +42,7 @@
                 <div class="progress_bar_container" ng-show="uploader.in_progress">
                     <div class="progress_bar_copy_top">Uploading <strong>{$ dataset.filename $}</strong></div>
 
-                    <progressbar class="progress-striped active" value="uploader.progress" type="success"></progressbar>
+                    <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
                     <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ uploader.status_message $}</div>
                 </div>
             </div>
@@ -77,7 +77,7 @@
                 <div class="progress_bar_container" ng-show="uploader.in_progress">
                     <div class="progress_bar_copy_top">Uploading <strong>{$ dataset.filename $}</strong></div>
 
-                    <progressbar class="progress-striped active" value="uploader.progress" type="success"></progressbar>
+                    <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
                     <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ uploader.status_message $}</div>
                 </div>
             </div>
@@ -107,7 +107,7 @@
             <div class="form-group col-lg-12 col-sm-12">
                 <div class="progress_bar_container">
                     <div class="progress_bar_copy_top">Finding building matches for <strong>{$ dataset.filename $}</strong></div>
-                    <progressbar class="progress-striped active" value="uploader.progress" type="success"></progressbar>
+                    <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
                     <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% Complete</div>
                 </div>
             </div>

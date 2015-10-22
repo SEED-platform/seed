@@ -7,9 +7,9 @@ angular.module('BE.seed.controller.dataset_detail', [])
   'dataset_payload',
   '$log',
   'dataset_service',
-  '$modal',
+  '$uibModal',
   'urls',
-  function ($scope, dataset_payload, $log, dataset_service, $modal, urls) {
+  function ($scope, dataset_payload, $log, dataset_service, $uibModal, urls) {
     $scope.dataset = dataset_payload.dataset;
 
     $log.info('dataset_payload:', dataset_payload);
@@ -31,7 +31,7 @@ angular.module('BE.seed.controller.dataset_detail', [])
      * open_data_upload_modal: opens the data upload modal to step 4, add energy files
      */
     $scope.open_data_upload_modal = function() {
-        var dataModalInstance = $modal.open({
+        var dataModalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
             controller: 'data_upload_modal_ctrl',
             resolve: {

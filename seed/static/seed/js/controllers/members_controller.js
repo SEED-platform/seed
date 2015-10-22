@@ -4,7 +4,7 @@
 angular.module('BE.seed.controller.members', [])
 .controller('members_controller', [
     '$scope',
-    '$modal',
+    '$uibModal',
     'users_payload',
     'organization_payload',
     'auth_payload',
@@ -12,7 +12,7 @@ angular.module('BE.seed.controller.members', [])
     'urls',
     function (
       $scope,
-      $modal,
+      $uibModal,
       users_payload,
       organization_payload,
       auth_payload,
@@ -69,7 +69,7 @@ angular.module('BE.seed.controller.members', [])
      * new_member_modal open an AngularUI modal to add/invite a new member
      */
     $scope.new_member_modal = function() {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/new_member_modal.html',
             controller: 'new_member_modal_ctrl',
             resolve: {
@@ -91,7 +91,7 @@ angular.module('BE.seed.controller.members', [])
         });
     };
     $scope.existing_members_modal = function() {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/existing_members_modal.html',
             controller: 'existing_members_modal_ctrl'
         });

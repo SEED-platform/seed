@@ -10,7 +10,7 @@ describe("controller: create_organization_modal_ctrl", function(){
     });
 
     // inject AngularJS dependencies for the controller
-    beforeEach(inject(function($controller, $rootScope, $modal, $q, organization_service, $timeout) {
+    beforeEach(inject(function($controller, $rootScope, $uibModal, $q, organization_service, $timeout) {
         ctrl = $controller;
         scope = $rootScope;
         ctrl_scope = $rootScope.$new();

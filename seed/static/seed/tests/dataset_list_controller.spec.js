@@ -17,7 +17,7 @@ describe("controller: dataset_list_controller", function(){
 
     // inject AngularJS dependencies for the controller
     beforeEach(inject(
-        function($controller, $rootScope, $modal, urls, $q, uploader_service,
+        function($controller, $rootScope, $uibModal, urls, $q, uploader_service,
             $location) {
             controller = $controller;
             scope = $rootScope;

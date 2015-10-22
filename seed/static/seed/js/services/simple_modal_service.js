@@ -30,7 +30,7 @@
 angular.module('BE.seed.service.simple_modal', [])
 .factory('simple_modal_service', [  '$uibModal',
                                     'urls',
-    function ($modal, urls) {
+    function ($uibModal, urls) {
 
         // Define types of modals allowed. 
         // TODO:    Create more configurations for different types of modals, e.g. standard, error
@@ -104,7 +104,7 @@ angular.module('BE.seed.service.simple_modal', [])
                 };
             }          
 
-            return $modal.open(tempModalDefaults).result;
+            return $uibModal.open(tempModalDefaults).result;
         };
 
 

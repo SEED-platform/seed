@@ -10,7 +10,7 @@ describe("controller: delete_modal_controller", function(){
     });
 
     // inject AngularJS dependencies for the controller
-    beforeEach(inject(function($controller, $rootScope, $modal, $q, building_services, $timeout) {
+    beforeEach(inject(function($controller, $rootScope, $uibModal, $q, building_services, $timeout) {
         ctrl = $controller;
         scope = $rootScope;
         ctrl_scope = $rootScope.$new();

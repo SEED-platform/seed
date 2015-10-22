@@ -14,7 +14,7 @@ describe("Controller: matching_controller", function(){
     });
 
     // inject AngularJS dependencies for the controller
-    beforeEach(inject(function($controller, $rootScope, $modal, urls, $q, building_services) {
+    beforeEach(inject(function($controller, $rootScope, $uibModal, urls, $q, building_services) {
             controller = $controller;
             scope = $rootScope;
             matching_ctrl_scope = $rootScope.$new();

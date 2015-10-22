@@ -12,7 +12,7 @@ describe("controller: export_modal_controller", function(){
     });
 
     // inject AngularJS dependencies for the controller
-    beforeEach(inject(function($controller, $rootScope, $modal, $q, export_service, $timeout) {
+    beforeEach(inject(function($controller, $rootScope, $uibModal, $q, export_service, $timeout) {
         ctrl = $controller;
         scope = $rootScope;
         ctrl_scope = $rootScope.$new();

@@ -1,5 +1,5 @@
 angular.module('dropdown', [])
-.directive('dropdown', ['urls', function (urls) {
+.directive('seedDropdown', ['urls', function (urls) {
   return {
     restrict: 'E',
     require: '^ngModel',
