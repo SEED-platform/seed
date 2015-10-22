@@ -62,8 +62,6 @@ class LogIn(StaticLiveServerTestCase):
                              **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
-        print "Mark One"
-        print r
         #time.sleep(10)
         self.assertEqual(r['status'], 'success')
         data_set_id = r['id']
@@ -86,8 +84,6 @@ class LogIn(StaticLiveServerTestCase):
         r = self.client.post(upload_details['upload_path'], fsysparams, follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
-        print "Mark Two"
-        print r
         # time.sleep(10)
         self.assertEqual(r['success'], True)
 
@@ -98,9 +94,6 @@ class LogIn(StaticLiveServerTestCase):
         }
         r = self.client.post('/app/save_raw_data/', data=json.dumps(payload), content_type='application/json',
                              follow=True, **self.headers)
-
-        print "Mark Three"
-        print json.loads(r.content)
 
         # Navigate to Data Mapping Page
 
@@ -165,7 +158,7 @@ class LogIn(StaticLiveServerTestCase):
 
         return id
 
-    def wait_for_visibility(self, selector, timeout_seconds=60):
+    def wait_for_visibility(self, selector, timeout_seconds=10):
         '''
         :param selector: angularjs rendered id to wait for in 'id' format
         :param timeout_seconds: time to wait for angularjs to render the selector id

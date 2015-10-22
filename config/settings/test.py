@@ -5,6 +5,8 @@
 from __future__ import absolute_import
 from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
+from celery.utils import LOG_LEVELS
+
 
 LOGGING = {
     'version': 1,
@@ -52,7 +54,7 @@ DATABASES = {
 # BROKER_URL with AWS ElastiCache redis looks something like:
 # 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
 # TODO: use different redis queue for testing. if you change this here, then it is overloaded later
-BROKER_BACKEND = 'memory'
+#BROKER_BACKEND = 'memory'
 BROKER_URL = 'redis://127.0.0.1:6379/1'
 
 CELERY_DEFAULT_QUEUE = 'seed-dev'
@@ -64,8 +66,9 @@ CELERY_QUEUES = (
     ),
 )
 CELERY_ALWAYS_EAGER = False
-CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
-
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = False
+CELERY_LOG_LEVEL = LOG_LEVELS['DEBUG']
+CELERYD_REDIRECT_STDOUTS = True
 
 # Testing
 INSTALLED_APPS += (
