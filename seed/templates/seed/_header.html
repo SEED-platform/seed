@@ -41,9 +41,9 @@
 			    <ul class="uib-dropdown-menu pull-right" role="menu">
 			    	<li class="dropdown_header">Create a New...</li>
 			    	<li class="divider"></li>
-			    	<li><a href="javascript:void(0);" data-toggle="modal" data-target="#newProjectModalIndex" ng-click="open_create_project_modal()">Project</a></li>
+			    	<li><a data-toggle="modal" data-target="#newProjectModalIndex" ng-click="open_create_project_modal()">Project</a></li>
 			    	<li class="divider" ng-show="menu.user.organization.user_role !== 'viewer'"></li>
-			    	<li ng-show="menu.user.organization.user_role !== 'viewer'"><a href="javascript:void(0);" data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()">Data Set</a></li>
+			    	<li ng-show="menu.user.organization.user_role !== 'viewer'"><a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()">Data Set</a></li>
 			    </ul>
 			</div>
 	    </div>
