@@ -5,11 +5,11 @@
                 <h2><i class="fa fa-folder-o"></i> Projects That Include This Building</h2>
             </div>
             <div class="section_action_container right" ng-hide="building.edit_form_showing">
-                <a href="javascript:void(0);" ng-click="building.edit_form_showing = true; save_building_state()" ng-show="user_role !== 'viewer'" ><i class="fa fa-pencil"></i> Edit</a>
+                <a ng-click="building.edit_form_showing = true; save_building_state()" ng-show="user_role !== 'viewer'" ><i class="fa fa-pencil"></i> Edit</a>
             </div>
             <div class="section_action_container right section_action_btn" ng-show="building.edit_form_showing">
-                <a roll="button" class="btn btn-default btn-sm" href="javascript:void(0);" ng-click="building.edit_form_showing = false; restore_building()">Cancel</a>
-                <a roll="button" class="btn btn-primary btn-sm" href="javascript:void(0);" ng-click="building.edit_form_showing = false; save_building()">Save Changes</a>
+                <a roll="button" class="btn btn-default btn-sm" ng-click="building.edit_form_showing = false; restore_building()">Cancel</a>
+                <a roll="button" class="btn btn-primary btn-sm" ng-click="building.edit_form_showing = false; save_building()">Save Changes</a>
             </div>
         </div>
     </div>
@@ -52,8 +52,8 @@
                                     <ul class="uib-dropdown-menu" role="menu">
                                         <li ng-repeat="label in labels"><a ng-click="update_project_building(p, label)"><span class="label label-{$ label.label $}">{$ label.name $}</span></a></li>
                                         <li class="divider"></li>
-                                        <li><a href="javascript:void(0);" ng-click="remove_label(p)">Remove label</a></li>
-                                        <li><a href="javascript:void(0);" ng-click="open_edit_label_modal()">Manage labels</a></li>
+                                        <li><a ng-click="remove_label(p)">Remove label</a></li>
+                                        <li><a ng-click="open_edit_label_modal()">Manage labels</a></li>
                                     </ul>
                                 </div>
                             </td>
