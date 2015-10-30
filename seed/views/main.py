@@ -1904,12 +1904,13 @@ def save_raw_data(request):
 
     Payload::
 
-        {'file_id': The ID of the ImportFile to be saved}
+        { 'file_id': The ID of the ImportFile to be saved }
 
     Returns::
 
-        {'status': 'success' or 'error',
-         'progress_key': ID of background job, for retrieving job progress
+        {
+            'status': 'success' or 'error',
+            'progress_key': ID of background job, for retrieving job progress
         }
     """
     body = json.loads(request.body)

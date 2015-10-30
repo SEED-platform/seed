@@ -31,14 +31,6 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 SESSION_COOKIE_SECURE = False
 
-# AWS credentials for S3.  Set them in environment or local_untracked.py
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
-AWS_UPLOAD_CLIENT_KEY = AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
-AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
-AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME", "be-dev-uploads")
-AWS_STORAGE_BUCKET_NAME = AWS_BUCKET_NAME
-
 # override this in local_untracked.py
 DATABASES = {
     'default': {
@@ -51,24 +43,11 @@ DATABASES = {
     },
 }
 
-# BROKER_URL with AWS ElastiCache redis looks something like:
-# 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
-# TODO: use different redis queue for testing. if you change this here, then it is overloaded later
-#BROKER_BACKEND = 'memory'
-BROKER_URL = 'redis://127.0.0.1:6379/1'
+BROKER_BACKEND = 'memory'
 
-CELERY_DEFAULT_QUEUE = 'seed-dev'
-CELERY_QUEUES = (
-    Queue(
-        CELERY_DEFAULT_QUEUE,
-        Exchange(CELERY_DEFAULT_QUEUE),
-        routing_key=CELERY_DEFAULT_QUEUE
-    ),
-)
-CELERY_ALWAYS_EAGER = False
-CELERY_EAGER_PROPAGATES_EXCEPTIONS = False
+CELERY_ALWAYS_EAGER = True
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 CELERY_LOG_LEVEL = LOG_LEVELS['DEBUG']
-CELERYD_REDIRECT_STDOUTS = True
 
 # Testing
 INSTALLED_APPS += (

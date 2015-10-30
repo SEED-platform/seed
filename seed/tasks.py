@@ -847,8 +847,10 @@ def _save_raw_data(file_pk, *args, **kwargs):
 @lock_and_track
 def save_raw_data(file_pk, *args, **kwargs):
     logger.debug('In save_raw_data')
-    print('In save_raw_data')
+    print('In save_raw_data YO')
     print(get_prog_key('save_raw_data', file_pk))
+    print file_pk
+
     prog_key = get_prog_key('save_raw_data', file_pk)
     initializing_key = {
         'status': 'not-started',

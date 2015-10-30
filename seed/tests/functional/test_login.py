@@ -86,12 +86,14 @@ class LogIn(StaticLiveServerTestCase):
         r = json.loads(r.content)
         # time.sleep(10)
         self.assertEqual(r['success'], True)
+        self.assertEqual(r['import_file_id'], 1)
 
         # Save Raw Data Upload
         payload = {
             'file_id': r['import_file_id'],
-            'organization_id': organization_id
+            'organization_id': str(organization_id)
         }
+        print(payload)
         r = self.client.post('/app/save_raw_data/', data=json.dumps(payload), content_type='application/json',
                              follow=True, **self.headers)
 
