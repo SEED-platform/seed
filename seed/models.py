@@ -1327,6 +1327,9 @@ class BuildingSnapshot(TimeStampedModel):
 
     objects = JsonManager()
 
+    class Meta:
+        index_together = ("super_organization", "id")
+
     def save(self, *args, **kwargs):
         if self.tax_lot_id and isinstance(self.tax_lot_id, types.StringTypes):
             self.tax_lot_id = self.tax_lot_id[:128]
