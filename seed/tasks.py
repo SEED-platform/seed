@@ -677,7 +677,6 @@ def finish_raw_save(results, file_pk):
         'progress_key': prog_key
     }
     set_cache(prog_key, result['status'], result)
-    print 'Returning from finish_raw_save'
     return result
 
 
@@ -812,14 +811,16 @@ def _save_raw_data(file_pk, *args, **kwargs):
         tasks = add_cache_increment_parameter(tasks)
         logger.debug('Added caching increment')
         if tasks:
-            logger.debug('Starting chord')
-            chord(tasks, interval=15)(finish_raw_save.s(file_pk))
+            print "Adding chord to queue"
+            logger.debug('Adding chord to queue')
+            a = chord(tasks, interval=15)(finish_raw_save.s(file_pk))
         else:
+            print "Skipping to finish_raw_save"
             logger.debug('Skipped chord')
             finish_raw_save.s(file_pk)
 
         logger.debug('Finished raw save tasks')
-
+        result = get_cache(prog_key)
     except StopIteration:
         result['status'] = 'error'
         result['message'] = 'StopIteration Exception'
