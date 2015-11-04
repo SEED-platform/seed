@@ -8,7 +8,7 @@ angular.module('BE.seed.controller.building_list', [])
   '$timeout',
   '$http',
   '$log',
-  '$modal',
+  '$uibModal',
   '$location',
   'building_services',
   'project_service',
@@ -25,7 +25,7 @@ angular.module('BE.seed.controller.building_list', [])
     $timeout,
     $http,
     $log,
-    $modal,
+    $uibModal,
     $location,
     building_services,
     project_service,
@@ -257,7 +257,7 @@ angular.module('BE.seed.controller.building_list', [])
      *   get_labels() and refresh_search() are called to update labels.
      */
     $scope.open_edit_label_modal = function() {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/manage_labels_modal.html',
             controller: 'edit_label_modal_ctrl',
             resolve: {
@@ -281,7 +281,7 @@ angular.module('BE.seed.controller.building_list', [])
      * open_export_modal: opens the export modal
      */
     $scope.open_export_modal = function() {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/export_modal.html',
             controller: 'export_modal_controller',
             resolve: {
@@ -311,7 +311,7 @@ angular.module('BE.seed.controller.building_list', [])
      * open_delete_modal: opens the delete buildings modal
      */
     $scope.open_delete_modal = function() {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/delete_modal.html',
             controller: 'delete_modal_controller',
             resolve: {
@@ -402,7 +402,7 @@ angular.module('BE.seed.controller.building_list', [])
      *   table
      */
     $scope.open_edit_columns_modal = function() {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/custom_view_modal.html',
             controller: 'buildings_settings_controller',
             resolve: {

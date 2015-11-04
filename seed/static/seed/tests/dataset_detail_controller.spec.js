@@ -16,7 +16,7 @@ describe("controller: dataset_detail_controller", function(){
 
     // inject AngularJS dependencies for the controller
     beforeEach(inject(
-        function($controller, $rootScope, $modal, urls, $q, dataset_service, $filter) {
+        function($controller, $rootScope, $uibModal, urls, $q, dataset_service, $filter) {
             controller = $controller;
             scope = $rootScope;
             ngFilter = $filter;

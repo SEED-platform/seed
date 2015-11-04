@@ -12,15 +12,15 @@
 
 <div class="section" ng-cloak>
 
-    <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{$ alert.msg $}</alert>
+    <uib-alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{$ alert.msg $}</uib-alert>
 
     <div class="section_tab_container">
-        <tabset>
-            <tab heading="Auto Matching">
+        <uib-tabset>
+            <uib-tab heading="Auto Matching">
                 <div class="row">
                     <div class="col-lg-6 col-sm-6 tab_content wide">
                         <p><strong>HOW THE SYSTEM AUTO-MATCHES YOUR BUILDINGS:</strong></p>
-                        <p>Your source data file(s) are presented in the table on the left. All buildings where a possible data match exists are presented in a table on the right. The system attempts to auto-match building records using shared unique IDs like: PM Proprty ID, Tax Lot ID, and Custom IDs as well as Address information. Where the system believes a match exists between a record in your source file and an existing building record it will auto-check the 'match' <i class="fa fa-check-square-o"></i> checkbox &mdash; effectively making a match between these buildings. A confidence number (0 - 100%) is included to indicate the systems confidence that this match is correct.</p>
+                        <p>Your source data file(s) are presented in the table on the left. All buildings where a possible data match exists are presented in a table on the right. The system attempts to auto-match building records using shared unique IDs like: PM Property ID, Tax Lot ID, and Custom IDs as well as Address information. Where the system believes a match exists between a record in your source file and an existing building record it will auto-check the 'match' <i class="fa fa-check-square-o"></i> checkbox &mdash; effectively making a match between these buildings. A confidence number (0 - 100%) is included to indicate the systems confidence that this match is correct.</p>
                     </div>
                     <div class="col-lg-6 col-sm-6 key tab_content wide">
                         <p class="important-tip"><strong>FIELDS NEEDED TO MAKE BUILDING MATCHES:</strong></p>
@@ -29,8 +29,8 @@
                         <p><span class="label label-warning">Custom ID</span> <span class="label label-warning">Address Line 1</span></p>
                     </div>
                 </div>
-            </tab>
-            <tab heading="Manual Matching" active="tab.active" disabled="tab.disabled">
+            </uib-tab>
+            <uib-tab heading="Manual Matching" active="tab.active" disabled="tab.disabled">
                 <div class="row">
                     <div class="col-lg-6 col-sm-6 tab_content wide">
                         <p><strong>HOW TO MANUALLY MATCH YOUR BUILDINGS:</strong></p>
@@ -42,9 +42,9 @@
                     </div>
                 </div>
 
-            </tab>
-            <tab class="pull-right" heading="Collapse Tabs"></tab>
-        </tabset>
+            </uib-tab>
+            <uib-tab class="pull-right" heading="Collapse Tabs"></uib-tab>
+        </uib-tabset>
     </div>
     <div class="section_header_container has_no_border">
         <div class="section_header fixed_height">

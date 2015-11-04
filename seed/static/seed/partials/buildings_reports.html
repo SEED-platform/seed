@@ -29,15 +29,21 @@
                         </div>
                         <div class="col-md-10" >   
                             <form class="form-inline pull-right chart-inputs" role="form" >
-                                <div class="form-group">                             
-                                    <label  for="from-date">From date:</label>   
+
+                                <div class="form-group" ng-class="{'has-error' : invalidDates }">                             
+                                    <label for="from-date">From date:</label>
+
                                     <div class="input-group date-input"> 
                                         <input  id="from-date"
                                                 type="text"
                                                 class="form-control"
-                                                datepicker-popup="MM-dd-yyyy" 
+                                                uib-datepicker-popup="MM-dd-yyyy"
                                                 is-open="startDatePickerOpen" 
-                                                ng-model="startDate" 
+                                                ng-model="startDate"    
+                                                uib-tooltip="'From Date' must be before 'To Date'"   
+                                                tooltip-placement="top"
+                                                tooltip-trigger="mouseenter"             
+                                                tooltip-enable="invalidDates"                           
                                                 />
                                         <span class="input-group-btn">
                                             <button type="button" 
@@ -52,10 +58,8 @@
                                         <input  id="to-date"
                                                 type="text" 
                                                 class="form-control"
-                                                min-date="startDate" 
-                                                datepicker-popup="MM-dd-yyyy" 
+                                                uib-datepicker-popup="MM-dd-yyyy"
                                                 is-open="endDatePickerOpen" 
-                                                min-date="startDate"
                                                 ng-model="endDate"/>
                                         <span class="input-group-btn">
                                             <button type="button" 
@@ -66,17 +70,17 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="to-date">X Axis:</label>
-                                    <dropdown is-button 
+                                    <seed-dropdown is-button
                                               ng-model="xAxisSelectedItem" 
-                                              items="xAxisVars" >
-                                    </dropdown>
+                                              items="xAxisVars">
+                                    </seed-dropdown>
                                 </div>
                                 <div class="form-group">
                                     <label for="to-date">Y Axis:</label>   
-                                    <dropdown is-button 
+                                    <seed-dropdown is-button
                                               ng-model="yAxisSelectedItem" 
-                                              items="yAxisVars" >
-                                    </dropdown>
+                                              items="yAxisVars">
+                                    </seed-dropdown>
                                 </div>                       
                                 <div class="form-group">
                                     <button type="submit" 
@@ -91,10 +95,10 @@
                 </div> <!-- ./container -->                
             </div>
      
-            <div class="content_block row" style="padding:0px 20px;">
+            <div class="content_block row" style="padding:0 20px;">
 
                 <div class="col-md-6 col-sm-6">                  
-                    <h4 class="chartTitle">{$ chart1Title $}&nbsp;</h3>       
+                    <h4 class="chartTitle">{$ chart1Title $}&nbsp;</h4>
                     <div class="chart-holder"  >                      
                         <basic-building-info-chart  id="chart" 
                                                     data="chartData" 
@@ -138,7 +142,7 @@
                 </div><!-- ./ col-md-6 -->
 
                 <div class="col-md-6 col-sm-6">                   
-                    <h4 class="chartTitle">{$ chart2Title $}&nbsp;</h3>                         
+                    <h4 class="chartTitle">{$ chart2Title $}&nbsp;</h4>
                     <div class="chart-holder">                       
                         <basic-building-info-chart  id="aggChart" 
                                                     data="aggChartData" 

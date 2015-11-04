@@ -10,6 +10,7 @@
             
         </div>
     </div>
+    
 </div>
 <div class="section_nav_container">
     <div class="section_nav">
@@ -29,15 +30,15 @@
         <div class="section_header fixed_height">
             <div class="left section_action_container">
                 <div class="check_action">
-                    <div class="btn-group" ng-style="nothing_selected_cursor()">
+                    <div uib-dropdown class="btn-group" ng-style="nothing_selected_cursor()">
                       <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" ng-disabled="nothing_selected()">
                         Building Actions <span class="caret"></span>
                       </button>
-                      <ul class="dropdown-menu" role="menu">
-                        <li ng-hide="menu.user.organization.user_role === 'viewer'"><a href="javascript:void(0);" data-toggle="modal" data-target="#newProjectModal" ng-click="set_initial_project_state()">Create a new project</a></li>
-                        <li ng-hide="menu.user.organization.user_role === 'viewer'"><a href="javascript:void(0);" data-toggle="modal" data-target="#existingProjectModal" ng-click="create_project_state='create'">Add to an existing project</a></li>
-                      <li ng-hide="menu.user.organization.user_role === 'viewer'"><a href="javascript:void(0);" ng-click="open_delete_modal()">Delete Buildings</a></li>
-                      <li><a href="javascript:void(0);" ng-click="open_export_modal()">Export Buildings</a></li>
+                      <ul class="uib-dropdown-menu" role="menu">
+                        <li ng-hide="menu.user.organization.user_role === 'viewer'"><a data-toggle="modal" data-target="#newProjectModal" ng-click="set_initial_project_state()">Create a new project</a></li>
+                        <li ng-hide="menu.user.organization.user_role === 'viewer'"><a data-toggle="modal" data-target="#existingProjectModal" ng-click="create_project_state='create'">Add to an existing project</a></li>
+                      <li ng-hide="menu.user.organization.user_role === 'viewer'"><a ng-click="open_delete_modal()">Delete Buildings</a></li>
+                      <li><a ng-click="open_export_modal()">Export Buildings</a></li>
                       </ul>
                     </div>
                 </div>

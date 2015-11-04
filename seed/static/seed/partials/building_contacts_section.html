@@ -5,11 +5,11 @@
                 <h2><i class="fa fa-user"></i> Contact Information</h2>
             </div>
             <div class="section_action_container right" ng-hide="building.edit_form_showing">
-                <a href="javascript:void(0);" ng-click="building.edit_form_showing = true; save_building_state()" ng-show="user_role !== 'viewer'" ><i class="fa fa-pencil"></i> Edit</a>
+                <a ng-click="building.edit_form_showing = true; save_building_state()" ng-show="user_role !== 'viewer'" ><i class="fa fa-pencil"></i> Edit</a>
             </div>
             <div class="section_action_container right section_action_btn" ng-show="building.edit_form_showing">
-                <a roll="button" class="btn btn-default btn-sm" href="javascript:void(0);" ng-click="building.edit_form_showing = false; restore_building()">Cancel</a>
-                <a roll="button" class="btn btn-primary btn-sm" href="javascript:void(0);" ng-click="building.edit_form_showing = false; save_building()">Save Changes</a>
+                <a roll="button" class="btn btn-default btn-sm" ng-click="building.edit_form_showing = false; restore_building()">Cancel</a>
+                <a roll="button" class="btn btn-primary btn-sm" ng-click="building.edit_form_showing = false; save_building()">Save Changes</a>
             </div>
         </div>
     </div>
@@ -23,7 +23,7 @@
                             <th>Master</th>
                             <th ng-repeat="i in imported_buildings" ng-class="{'is_not_master': !i.is_master && building.edit_form_showing, 'is_master': i.is_master && building.edit_form_showing}">
                                 <span ng-hide="building.edit_form_showing">{$ i.import_file_name $}</span> 
-                                <a href="javascript:void(0);" ng-click="make_source_default(i)" ng-show="building.edit_form_showing">
+                                <a ng-click="make_source_default(i)" ng-show="building.edit_form_showing">
                                     <span>{$ i.import_file_name $}</span> 
                                 </a>
                             </th>
@@ -40,7 +40,7 @@
                             <td ng-repeat="i in imported_buildings" ng-class="{'is_not_master': building[f.sort_column + '_source'] != i.id && building.edit_form_showing, 'is_master':building[f.sort_column + '_source'] == i.id && building.edit_form_showing }">
                                 <span ng-hide="building.edit_form_showing" ng-if="f.type != 'date'">{$ i[f.sort_column] $}</span>
                                 <span ng-hide="building.edit_form_showing" ng-if="f.type == 'date'">{$ i[f.sort_column] | date:'MM/dd/yyyy' $}</span>
-                                <a href="javascript:void(0);" ng-show="building.edit_form_showing && i[f.sort_column]"  ng-click="set_building_attribute(i, f.sort_column)">
+                                <a ng-show="building.edit_form_showing && i[f.sort_column]"  ng-click="set_building_attribute(i, f.sort_column)">
                                     <span ng-if="f.type != 'date'">{$ i[f.sort_column] $}</span>
                                 <span ng-if="f.type == 'date'">{$ i[f.sort_column] | date:'MM/dd/yyyy' $}</span>
                                 </a>

@@ -17,7 +17,7 @@ describe("controller: building_detail_controller", function(){
         function(
           $controller,
           $rootScope,
-          $modal,
+          $uibModal,
           urls,
           $q,
           building_services,

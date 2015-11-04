@@ -10,7 +10,7 @@ angular.module('BE.seed.controller.matching', [])
     'default_columns',
     'all_columns',
     'urls',
-    '$modal',
+    '$uibModal',
     '$log',
     'search_service',
     'matching_service',
@@ -23,7 +23,7 @@ angular.module('BE.seed.controller.matching', [])
         default_columns,
         all_columns,
         urls,
-        $modal,
+        $uibModal,
         $log,
         search_service,
         matching_service, 
@@ -113,30 +113,28 @@ angular.module('BE.seed.controller.matching', [])
     ];
 
     $scope.filter_selection = {selected: SHOW_ALL};     //default setting
-    $scope.number_matching_search_label = "buildings total";     //default label
 
     $scope.update_show_filter = function(optionValue) {
+
         switch(optionValue){
             case SHOW_ALL:               
                 $scope.filter_params.children__isnull = undefined;
-                $scope.number_matching_search_label = "buildings total";
                 break;
             case SHOW_MATCHED:
-                $scope.filter_params.children__isnull = false;  //has children therefore is matched    
-                $scope.number_matching_search_label = "matched buildings";    
+                $scope.filter_params.children__isnull = false;  //has children therefore is matched               
                 break;
             case SHOW_UNMATCHED:
                 $scope.filter_params.children__isnull = true;   //does not have children therefore is unmatched
-                $scope.number_matching_search_label = "unmatched buildings"; 
                 break;
             default:
-                $scope.number_matching_search_label = "buildings total";
-                $log.error("#matching_controller: update_show_filter() unexpected filter value: ", optionValue);
+                $log.error("#matching_controller: unexpected filter value: ", optionValue);
                 return;
         }
+
         $scope.current_page = 1;
         $scope.filter_search();
-    };
+
+    }
 
 
     /**
@@ -290,7 +288,7 @@ angular.module('BE.seed.controller.matching', [])
      *   the columns used in the matching list table and matching detail table
      */
     $scope.open_edit_columns_modal = function() {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/custom_view_modal.html',
             controller: 'buildings_settings_controller',
             resolve: {

@@ -77,7 +77,8 @@ angular.module('BE.seed.services', [
     'BE.seed.service.uploader',
     'BE.seed.service.user',
     'mappingValidatorService',
-    'BE.seed.service.search'
+    'BE.seed.service.search',
+    'BE.seed.service.simple_modal'
     ]);
 
 var SEED_app = angular.module('BE.seed', [
@@ -100,9 +101,10 @@ SEED_app.run([
   '$http',
   '$cookies',
   function ($http, $cookies) {
-    $http.defaults.headers.common['X-CSRFToken'] = $cookies.csrftoken;
-    BE.csrftoken = $cookies.csrftoken;
-    $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;
+    var csrftoken = $cookies.get('csrftoken');
+    BE.csrftoken = csrftoken;
+    $http.defaults.headers.common['X-CSRFToken'] = csrftoken;
+    $http.defaults.headers.post['X-CSRFToken'] = csrftoken;
     $http.defaults.xsrfCookieName = 'csrftoken';
     $http.defaults.xsrfHeaderName = 'X-CSRFToken';
   }

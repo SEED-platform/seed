@@ -29,7 +29,7 @@ describe("controller: data_upload_modal_ctrl", function(){
 
     // inject AngularJS dependencies for the controller
     beforeEach(inject(
-        function($controller, $rootScope, $modal, urls, $q, uploader_service, mapping_service, matching_service) {
+        function($controller, $rootScope, $uibModal, urls, $q, uploader_service, mapping_service, matching_service) {
             controller = $controller;
             scope = $rootScope;
             data_upload_ctrl_scope = $rootScope.$new();

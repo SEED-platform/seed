@@ -294,5 +294,5 @@ class CleansingDataSample(TestCase):
 
         # print data
         # This only checks to make sure the 32 errors have occurred.
-        self.assertEqual(len(c.results), 32)
+        self.assertEqual(len(c.results), 35)
 

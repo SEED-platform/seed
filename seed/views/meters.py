@@ -1,8 +1,8 @@
 import json
 
 from seed.lib.superperms.orgs.decorators import has_perm
-from annoying.decorators import ajax_request
 from django.contrib.auth.decorators import login_required
+from seed.decorators import ajax_request
 from seed.models import (
     ENERGY_TYPES,
     ENERGY_UNITS,

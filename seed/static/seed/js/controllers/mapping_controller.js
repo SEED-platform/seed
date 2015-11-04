@@ -15,7 +15,7 @@ angular.module('BE.seed.controller.mapping', [])
   'mapping_service',
   'search_service',
   'urls',
-  '$modal',
+  '$uibModal',
   'user_service',
   'matching_service',
   'uploader_service',
@@ -34,7 +34,7 @@ angular.module('BE.seed.controller.mapping', [])
     mapping_service,
     search_service,
     urls,
-    $modal,
+    $uibModal,
     user_service,
     matching_service,
     uploader_service,
@@ -101,7 +101,7 @@ angular.module('BE.seed.controller.mapping', [])
      * Opens modal for making changes to concatenation changes.
      */
     $scope.open_concat_modal = function(building_column_types, raw_columns) {
-        var concatModalInstance = $modal.open({
+        var concatModalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/concat_modal.html',
             controller: 'concat_modal_ctrl',
             resolve: {
@@ -498,8 +498,8 @@ angular.module('BE.seed.controller.mapping', [])
      * monitor_typeahead_list: decide if duplicate checking is required in
      * order to enable or disable map data button
      */
-    $scope.monitor_typeahead_list =function() {
-      var dropdown = angular.element('.dropdown-menu.ng-scope');
+    $scope.monitor_typeahead_list = function() {
+      var dropdown = angular.element('.uib-dropdown-menu.ng-scope');
 
       //if dropdown menu is not shown - i.e., the user has typed
       //a new field name and a duplicate field is encountered in the
@@ -557,7 +557,7 @@ angular.module('BE.seed.controller.mapping', [])
      * open_cleansing_modal: modal to present data cleansing warnings and errors
      */
     $scope.open_cleansing_modal = function() {
-        $modal.open({
+        $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/cleansing_modal.html',
             controller: 'cleansing_controller',
             size: 'lg',
@@ -583,7 +583,7 @@ angular.module('BE.seed.controller.mapping', [])
      *   table
      */
     $scope.open_edit_columns_modal = function() {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/custom_view_modal.html',
             controller: 'buildings_settings_controller',
             resolve: {
@@ -646,7 +646,7 @@ angular.module('BE.seed.controller.mapping', [])
         var ds = angular.copy(dataset);
         ds.filename = $scope.import_file.name;
         ds.import_file_id = $scope.import_file.id;
-        var dataModalInstance = $modal.open({
+        var dataModalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
             controller: 'data_upload_modal_ctrl',
             resolve: {

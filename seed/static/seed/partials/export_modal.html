@@ -1,8 +1,8 @@
 <div class="modal-header">
-  <button type="button" class="close" ng-click="cancel()"><i class="fa fa-times"></i></button>
-  <h4 class="modal-title" id="exportModalLabel" ng-show="export_state == 'create'">Export your Buildings</h4>
-  <h4 class="modal-title" id="exportModalLabel" ng-show="export_state == 'prepare'">Preparing your buildings for export</h4>
-  <h4 class="modal-title" id="exportModalLabel" ng-show="export_state == 'success'">Success!</h4>
+    <button type="button" class="close" ng-click="cancel()"><i class="fa fa-times"></i></button>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="export_state == 'create'">Export your Buildings</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="export_state == 'prepare'">Preparing your buildings for export</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="export_state == 'success'">Success!</h4>
 </div>
 <div class="modal-body form-horizontal" style="padding-bottom: 0;">
     <div class="form-group" ng-show="export_state == 'create'">
@@ -24,7 +24,7 @@
     <div class="form-group" ng-show="export_state == 'prepare'">
         <div class="col-sm-7">
             <div class="progress">
-                <progressbar class="progress-striped active" value="progress_percentage" type="success"></progressbar>
+                <uib-progressbar class="progress-striped active" value="progress_percentage" type="success"></uib-progressbar>
             </div>
         </div>
         <div class="col-sm-5">
@@ -38,8 +38,8 @@
     </div>
 </div>
 <div class="modal-footer">
-  <button type="button" class="btn btn-default" ng-show="export_state == 'create'" ng-click="cancel()">Cancel</button>
-  <button type="button" class="btn btn-default" ng-show="export_state == 'success'" ng-click="close()">Close</button>
-  <button type="button" class="btn btn-primary" ng-click="export_buildings()" ng-show="export_state == 'create'" ng-disabled="building_export.export_name == undefined || building_export.export_name.length == 0">Export</button>
-  <button type="button" class="btn btn-primary" ng-click="export_buildings()" ng-show="export_state == 'success'">Retry Export</button>
+    <button type="button" class="btn btn-default" ng-show="export_state == 'create'" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-default" ng-show="export_state == 'success'" ng-click="close()">Close</button>
+    <button type="button" class="btn btn-primary" ng-click="export_buildings()" ng-show="export_state == 'create'" ng-disabled="building_export.export_name == undefined || building_export.export_name.length == 0">Export</button>
+    <button type="button" class="btn btn-primary" ng-click="export_buildings()" ng-show="export_state == 'success'">Retry Export</button>
 </div>

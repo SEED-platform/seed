@@ -5,7 +5,7 @@ angular.module('BE.seed.controller.building_detail', [])
 .controller('building_detail_controller', [
   '$scope',
   '$routeParams',
-  '$modal',
+  '$uibModal',
   '$log',
   'building_services',
   'project_service',
@@ -16,7 +16,7 @@ angular.module('BE.seed.controller.building_detail', [])
   '$filter',
   '$location',
   'audit_service',
-  function($scope, $routeParams, $modal, $log, building_services, project_service, building_payload, all_columns, audit_payload, urls, $filter, $location, audit_service) {
+  function($scope, $routeParams, $uibModal, $log, building_services, project_service, building_payload, all_columns, audit_payload, urls, $filter, $location, audit_service) {
     $scope.user = {};
     $scope.user.building_id = $routeParams.building_id;
     $scope.user.project_slug = $routeParams.project_id;
@@ -97,7 +97,7 @@ angular.module('BE.seed.controller.building_detail', [])
      *   init() is called to refresh available labels
      */
     $scope.open_edit_label_modal = function() {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/manage_labels_modal.html',
             controller: 'edit_label_modal_ctrl',
             resolve: {
@@ -377,7 +377,7 @@ angular.module('BE.seed.controller.building_detail', [])
      * create_note
      */
     $scope.open_create_note_modal = function(existing_note) {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/create_note_modal.html',
             controller: 'create_note_modal_ctrl',
             resolve: {

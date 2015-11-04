@@ -8,16 +8,18 @@ angular.module('BE.seed.controller.buildings_reports', [])
 .controller('buildings_reports_controller', [ '$scope',
                                               '$log',
                                               'buildings_reports_service',
+                                              'simple_modal_service',
                                     function( $scope,
                                               $log,
-                                              buildings_reports_service
+                                              buildings_reports_service,
+                                              simple_modal_service
                                             ){
 
 
   'use strict';
 
   /* Define the first five colors. After that, rely on Dimple's default colors. */
-  $scope.defaultColors = ["#c83737","#458cc8","#1159a3","#f2c41d","#939495"];
+  $scope.defaultColors = ["#458cc8","#779e1c","#f2c41d","#939495","#c83737", "#f18630"];
 
   /* SCOPE VARS */
   /* ~~~~~~~~~~ */
@@ -31,7 +33,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
 
       Ideally, if we need to add new variables, we should just be able to add a new object to 
       either of these arrays. (However, at first when adding new variables we might need to add
-      new functionality to the directive to handle any idiosyncracies of graphing that new variable.)
+      new functionality to the directive to handle any idiosyncrasies of graphing that new variable.)
   */           
   $scope.xAxisVars = [
     { 
@@ -118,6 +120,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
   $scope.startDatePickerOpen = false;
   $scope.endDate = new Date();
   $scope.endDatePickerOpen = false;
+  $scope.invalidDates = false; // set this to true when startDate >= endDate;
   
   // Series
   // the following variable keeps track of which
@@ -158,9 +161,40 @@ angular.module('BE.seed.controller.buildings_reports', [])
     $event.stopPropagation();
     $scope.endDatePickerOpen = !$scope.endDatePickerOpen;
   };
+
+  $scope.$watch('startDate', function(newval, oldval){
+    $scope.checkInvalidDate();
+  });
+
+  $scope.$watch('endDate', function(newval, oldval){
+    $scope.checkInvalidDate();
+  });
+
+  $scope.checkInvalidDate = function() {
+     $scope.invalidDates = ($scope.endDate < $scope.startDate);
+  }
+
   
   /* Update data used by the chart. This will force the charts to re-render*/
   $scope.updateChartData = function(){
+    if ($scope.invalidDates){
+      //Show a basic error modal
+      var modalOptions = {
+        type: "error",
+        okButtonText: 'OK',
+        cancelButtonText: null,
+        headerText: 'Invalid Dates',
+        bodyText: "The 'From' date must be before the 'To' date"
+      };
+      simple_modal_service.showModal(modalOptions).then(function(result){
+        $log.info('result', result);
+      },
+      function(result){
+        $log.info('error', result);
+      });
+      return;
+    }
+
     clearChartData();   
     $scope.chartStatusMessage = "Loading data...";
     $scope.aggChartStatusMessage = "Loading data...";
