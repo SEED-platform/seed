@@ -7,7 +7,6 @@ from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
 from celery.utils import LOG_LEVELS
 
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

@@ -2112,12 +2112,6 @@ class TestMCMViews(TestCase):
         for x in range(10):
             test_util.make_fake_snapshot(self.import_file, {}, ASSESSED_BS)
 
-        expected = {
-            'status': 'warning',
-            'message': 'Mapped buildings already merged',
-            'progress': 100
-        }
-
         resp = self.client.post(
             reverse_lazy("seed:remap_buildings"),
             data=json.dumps({
@@ -2125,9 +2119,13 @@ class TestMCMViews(TestCase):
             }),
             content_type='application/json'
         )
+        json_result = json.loads(resp.content)
 
-        self.assertDictEqual(json.loads(resp.content), expected)
-
+        self.assertEqual(json_result['status'], 'warning')
+        self.assertEqual(json_result['message'], 'Mapped buildings already merged')
+        self.assertEqual(json_result['progress'], 100)
+        # self.assertItemsEqualqual(json_result['progress_key'], 100)
+        
         # Verify that we haven't deleted those mapped buildings.
         self.assertEqual(
             BuildingSnapshot.objects.filter(
