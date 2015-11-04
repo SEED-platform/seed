@@ -288,9 +288,10 @@ class TestApi(TestCase):
         #     "progress_key": ":1:SEED:save_raw_data:PROG:1"
         # }
         r = json.loads(r.content)
+        print(r)
         self.assertEqual(r['status'], 'success')
         self.assertNotEqual(r['progress_key'], None)
-        time.sleep(5)
+        time.sleep(15)
 
         # check the progress bar
         progress_key = r['progress_key']

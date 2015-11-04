@@ -676,7 +676,12 @@ def finish_raw_save(results, file_pk):
         'progress': 100,
         'progress_key': prog_key
     }
+    print('Setting Cache Key')
     set_cache(prog_key, result['status'], result)
+    print('Set Cache Key. Getting Cache Key.')
+    temp = get_cache(prog_key)
+    print('Got Cache Key. Result is:')
+    print(temp)
     print 'Returning from finish_raw_save'
     return result
 
@@ -812,9 +817,11 @@ def _save_raw_data(file_pk, *args, **kwargs):
         tasks = add_cache_increment_parameter(tasks)
         logger.debug('Added caching increment')
         if tasks:
+            print("In Chord")
             logger.debug('Starting chord')
             chord(tasks, interval=15)(finish_raw_save.s(file_pk))
         else:
+            print('Not in Chord')
             logger.debug('Skipped chord')
             finish_raw_save.s(file_pk)
 
@@ -840,6 +847,8 @@ def _save_raw_data(file_pk, *args, **kwargs):
     set_cache(prog_key, result['status'], result)
     logger.debug('Returning from end of _save_raw_data')
     logger.debug(result)
+    print("returning the following result from _save_raw_data")
+    print(result)
     return result
 
 
@@ -858,7 +867,11 @@ def save_raw_data(file_pk, *args, **kwargs):
         'progress_key': prog_key
     }
     set_cache(prog_key, initializing_key['status'], initializing_key)
-    _save_raw_data.delay(file_pk, *args, **kwargs)
+    result = _save_raw_data.delay(file_pk, *args, **kwargs)
+    print('Getting prog-key status')
+    print(get_cache(prog_key))
+    print('Result of _save_raw_data')
+    print(result)
     logger.debug('Returning from save_raw_data')
     print('Returning from save_raw_data')
     return {
