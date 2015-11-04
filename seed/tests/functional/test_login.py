@@ -84,9 +84,7 @@ class LogIn(StaticLiveServerTestCase):
         r = self.client.post(upload_details['upload_path'], fsysparams, follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
-        # time.sleep(10)
         self.assertEqual(r['success'], True)
-        self.assertEqual(r['import_file_id'], 1)
 
         # Save Raw Data Upload
         payload = {
@@ -145,10 +143,8 @@ class LogIn(StaticLiveServerTestCase):
 
         print "Beginning Column Mapping"
 
-        # time.sleep(10)
-
         self.selenium.find_element_by_id('map-data-button').click()
-        time.sleep(30)
+        # time.sleep(30)
 
     def get_org_id(self, dict, username):
         '''Return the org id from the passed dictionary and username'''
