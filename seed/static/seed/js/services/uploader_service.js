@@ -84,7 +84,6 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
     * @param progress_key: progress_key to grab the progress
     */
     uploader_factory.check_progress = function(progress_key) {
-        console.log("IN CHECK PROGRESS IN UPLOADER SERVICE")
         var defer = $q.defer();
         $http({
             method: 'POST',
@@ -97,7 +96,6 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
                 defer.resolve(data);
             }
         }).error(function(data, status) {
-            console.log("FOUND ERRED STATUS", data, status);
             defer.reject(data, status);
         });
         return defer.promise;
@@ -114,14 +112,12 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      *   is set with the progress
      */
     uploader_factory.check_progress_loop = function(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj, debug) {
-        console.log("IN CHECK PROGRESS LOOP IN UPLOADER SERVICE");
         debug = true;
         if (typeof debug === 'undefined') {
             debug = false;
         }
         uploader_factory.check_progress(progress_key).then(function (data){
             if (debug) {
-                console.log({progress: data.progress});
             }
             var stop = $timeout(function(){
                 progress_bar_obj.progress = (data.progress * multiplier) + offset;
