@@ -11,17 +11,15 @@
             <tr class="sub_head">
                 <th class="sub_head check_row" ng-if="search.has_checkbox"></th>
                 <th class="sub_head" ng-repeat="c in columns" style="min-width: 110px;">
-                    <!-- for string filters -->
-                    <input ng-if="c.type == 'string' || c.type == 'link'" type="text" class="form-control input-sm show" ng-class="{active: search.filter_params[c.sort_column].length > 0}" placeholder="{$ c.title $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.sort_column]">
+                    <!-- for string & numeric filters -->
+                    <input ng-if="c.type == 'string' || c.type == 'link' || c.type == 'number' || c.type == 'floor_area'" type="text" class="form-control input-sm show" ng-class="{active: search.filter_params[c.sort_column].length > 0}" placeholder="{$ c.title $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.sort_column]">
 
-                    <!-- for range filters -->
-                    <div ng-if="c.type == 'number' || c.type == 'date' || c.type == 'floor_area'" class="col-xs-6">
+                    <!-- for date range filters -->
+                    <div ng-if="c.type == 'date'" class="col-xs-6">
                         <input ng-if="c.type == 'date'" type="date" class="form-control input-sm" placeholder="Min" ng-change="search.filter_search()" ng-model="search.filter_params[c.min]" ng-class="{active: search.filter_params[c.min].length > 0}">
-                        <input ng-if="c.type != 'date'" type="number" class="form-control input-sm" placeholder="Min" ng-change="search.filter_search()" ng-model="search.filter_params[c.min]" ng-class="{active: search.filter_params[c.min].length > 0}">
                     </div>
-                    <div ng-if="c.type == 'number' || c.type == 'date' || c.type == 'floor_area'" class="col-xs-6">
+                    <div ng-if="c.type == 'date'" class="col-xs-6">
                         <input ng-if="c.type == 'date'" type="date" class="form-control input-sm" placeholder="Max" ng-change="search.filter_search()" ng-model="search.filter_params[c.max]" ng-class="{active: search.filter_params[c.max].length > 0}">
-                        <input ng-if="c.type != 'date'" type="number" class="form-control input-sm" placeholder="Max" ng-change="search.filter_search()" ng-model="search.filter_params[c.max]" ng-class="{active: search.filter_params[c.max].length > 0}">
                     </div>
                 </th>
             </tr>
