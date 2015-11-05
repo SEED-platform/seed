@@ -923,7 +923,9 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
 
     def test_search_extra_data_non_existent_column(self):
-        """Empty match on extra_data json keys"""
+        """
+        Empty column query on extra_data key should match key not existing in jsonfield.
+        """
         # Empty column
         cb1 = CanonicalBuilding(active=True)
         cb1.save()
@@ -977,7 +979,10 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
 
     def test_search_extra_data_empty_column(self):
-        """Empty match on extra_data json keys"""
+        """
+        Empty column query on extra_data key should match key's value being empty
+        in jsonfield.
+        """
         # Empty column
         cb1 = CanonicalBuilding(active=True)
         cb1.save()
@@ -1031,7 +1036,9 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
 
     def test_search_extra_data_non_empty_column(self):
-        """Not Empty match on extra_data json keys"""
+        """
+        Not-empty column query on extra_data key.
+        """
         # Empty column
         cb1 = CanonicalBuilding(active=True)
         cb1.save()
