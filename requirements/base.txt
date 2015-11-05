@@ -51,7 +51,7 @@ dbf==0.95.004
 dj-database-url==0.2.1
 djorm-ext-core==0.7
 djorm-ext-expressions==0.6
--e git+https://github.com/niwibe/djorm-ext-pgjson@8fd70a13cb2597b56d1042539917784170569b40#egg=djorm_pgjson
+django-pgjson==0.3.1
 -e hg+https://bitbucket.org/david/django-storages@e27c8b61ab57e5afaf21cccfee005c980d89480f#egg=django_storages
 -e git+https://github.com/wellfire/django-organizations.git@f9da9778c212b253ebda49453cc57fe199020f51#egg=django_organizations
 fuzzywuzzy>=0.3.1
