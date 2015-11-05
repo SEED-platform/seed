@@ -780,7 +780,7 @@ def get_default_columns(request):
     else:
         initial_columns = False
     if type(columns) == unicode:
-        # postgres 9.1 stores JSONField as unicode
+        # postgres 9.1 stores JsonField as unicode
         columns = json.loads(columns)
 
     return {

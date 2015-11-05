@@ -14,7 +14,7 @@ from autoslug import AutoSlugField
 from seed.audit_logs.models import AuditLog, LOG
 from seed.landing.models import SEEDUser as User
 from django_extensions.db.models import TimeStampedModel
-from djorm_pgjson.fields import JSONField
+from django_pgjson.fields import JsonField
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
@@ -190,7 +190,7 @@ def find_canonical_building_values(org):
 
 def obj_to_dict(obj):
     """serializes obj for a JSON friendly version
-        tries to serialize JSONField
+        tries to serialize JsonField
 
     """
     data = serializers.serialize('json', [obj, ])
@@ -198,9 +198,9 @@ def obj_to_dict(obj):
     response = struct['fields']
     response[u'id'] = response[u'pk'] = struct['pk']
     response[u'model'] = struct['model']
-    # JSONField doesn't get serialized by `serialize`
+    # JsonField doesn't get serialized by `serialize`
     for f in obj._meta.fields:
-        if type(f) == JSONField:
+        if type(f) == JsonField:
             e = getattr(obj, f.name)
             # postgres < 9.3 support
             while type(e) == unicode:
@@ -836,7 +836,7 @@ class CustomBuildingHeaders(models.Model):
 
     # 'existing, normalized name' -> 'preferred display name'
     # e.g. {'district': 'Boro'}
-    building_headers = JSONField()
+    building_headers = JsonField(default={})
 
     objects = JsonManager()
 
@@ -1321,9 +1321,9 @@ class BuildingSnapshot(TimeStampedModel):
     ###
 
     # 'key' -> 'value'
-    extra_data = JSONField()
+    extra_data = JsonField(default={})
     # 'key' -> ['model', 'fk'], what was the model and its FK?
-    extra_data_sources = JSONField()
+    extra_data_sources = JsonField(default={})
 
     objects = JsonManager()
 

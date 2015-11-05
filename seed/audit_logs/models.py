@@ -13,7 +13,7 @@ from django.db import models
 # vendor imports
 from django_extensions.db.models import TimeStampedModel
 from djorm_expressions.models import ExpressionManager, ExpressionQuerySet
-from djorm_pgjson.fields import JSONField
+from django_pgjson.fields import JsonField
 from seed.lib.superperms.orgs.models import Organization
 
 USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', User)
@@ -78,7 +78,7 @@ class AuditLog(TimeStampedModel):
         help_text='method triggering audit',
         db_index=True,
     )
-    action_response = JSONField(help_text='HTTP response from action')
+    action_response = JsonField(default={}, help_text='HTTP response from action')
     action_note = models.TextField(
         blank=True,
         null=True,
