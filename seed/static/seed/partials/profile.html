@@ -28,14 +28,14 @@
                         <div class="form-group" ng-class="{ 'has-error' : profile_form.first_name.$invalid && !profile_form.first_name.$pristine }">
                             <label class="control-label" for="newMemberFirstName">First Name:</label>
                             <div class="">
-                                <input type="text" class="form-control" name="first_name" id="newMemberFirstName" placeholder="Enter first name" ng-model="user.first_name" required>
+                                <input id="first-name-text" type="text" class="form-control" name="first_name" id="newMemberFirstName" placeholder="Enter first name" ng-model="user.first_name" required>
                                  <p ng-show="profile_form.first_name.$invalid && !profile_form.first_name.$pristine" class="help-block">First name is required.</p>
                             </div>
                         </div>
                         <div class="form-group"  ng-class="{ 'has-error' : profile_form.last_name.$invalid && !profile_form.last_name.$pristine }">
                             <label class="control-label" for="newMemberLastName">Last Name:</label>
                             <div class="">
-                                <input type="text" class="form-control" name="last_name" placeholder="Enter last name" ng-model="user.last_name" required>
+                                <input id="last-name-text" type="text" class="form-control" name="last_name" placeholder="Enter last name" ng-model="user.last_name" required>
                                  <p ng-show="profile_form.last_name.$invalid && !profile_form.last_name.$pristine" class="help-block">Last name is required.</p>
                             </div>
                         </div>
@@ -46,7 +46,7 @@
                                 <p ng-show="profile_form.email.$invalid && !profile_form.email.$pristine" class="help-block">Enter a valid email address.</p>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary" ng-disabled="profile_form.$invalid">Save Changes <i class="fa fa-check" ng-show="user_updated"></i></button>
+                        <button id="update_profile" type="submit" class="btn btn-primary" ng-disabled="profile_form.$invalid">Save Changes <i class="fa fa-check" ng-show="user_updated"></i></button>
                         <button type="button" class="btn btn-default" ng-click="reset_form()">Cancel</button>
                     </form>
                 </div>

@@ -91,7 +91,6 @@ class LogIn(StaticLiveServerTestCase):
             'file_id': r['import_file_id'],
             'organization_id': str(organization_id)
         }
-        print(payload)
         r = self.client.post('/app/save_raw_data/', data=json.dumps(payload), content_type='application/json',
                              follow=True, **self.headers)
 
@@ -108,7 +107,7 @@ class LogIn(StaticLiveServerTestCase):
         self.wait_for_visibility('data-mapping-0')
 
         # Access Mapping Webpage
-        self.selenium.find_element_by_link_text('Data Mapping').click()
+        self.selenium.find_element_by_id('data-mapping-0').click()
         self.wait_for_visibility('mapped-header-0')
 
         # Map Data
@@ -141,10 +140,130 @@ class LogIn(StaticLiveServerTestCase):
             self.selenium.find_element_by_css_selector("#duplicate-row-input-%s > #duplicate-row-input-box-%s" % (i, i)).clear()
             self.selenium.find_element_by_css_selector("#duplicate-row-input-%s > #duplicate-row-input-box-%s" % (i, i)).send_keys(mapping_dict[dict_key])
 
-        print "Beginning Column Mapping"
+        # Navigate through Data Saving/Matching
+        self.selenium.find_element_by_id('map-data-button').click()
+        self.wait_for_visibility('verify-mapping-table',15)
+        self.selenium.find_element_by_id('save-mapping').click()
+        self.wait_for_visibility('confirm-mapping')
+        self.selenium.find_element_by_id('confirm-mapping').click()
+        self.wait_for_visibility('view-buildings',120)
+        self.selenium.find_element_by_id('view-buildings').click()
+        self.wait_for_visibility('verify-mapping-table')
+        self.selenium.find_element_by_id('list-settings').click()
+
+        # Retrieve and Verify Upload Details
+        upload_details = self.client.get('/data/get_upload_details/', follow=True, **self.headers)
+        self.assertEqual(upload_details.status_code, 200)
+        upload_details = json.loads(upload_details.content)
+        self.assertEqual(upload_details['upload_mode'], 'filesystem')
+
+        raw_portfolio_file = os.path.relpath(os.path.join('seed/tests/data', 'portfolio-manager-sample.csv'))
+        self.assertTrue(os.path.isfile(raw_portfolio_file), 'could not find file')
+
+        # Generate Dictionary for Data Upload
+        fsysparams = {
+            'qqfile': raw_portfolio_file,
+            'import_record': data_set_id,
+            'source_type': 'Portfolio Raw',
+            'filename': open(raw_portfolio_file, 'rb')
+        }
+
+        # Upload Data and Check Response
+        r = self.client.post(upload_details['upload_path'], fsysparams, follow=True, **self.headers)
+        self.assertEqual(r.status_code, 200)
+        r = json.loads(r.content)
+        self.assertEqual(r['success'], True)
+
+        # Save Raw Data Upload
+        payload = {
+            'file_id': r['import_file_id'],
+            'organization_id': str(organization_id)
+        }
+        r = self.client.post('/app/save_raw_data/', data=json.dumps(payload), content_type='application/json',
+                             follow=True, **self.headers)
+
+        # Navigate to Data Mapping Page
+        self.wait_for_visibility('sidebar-data')
+        self.selenium.find_element_by_id('sidebar-data').click()
+        self.wait_for_visibility('data-link-0')
+        self.selenium.find_element_by_link_text('Sample\"').click()
+        self.wait_for_visibility('data-mapping-1')
+
+        # Access Mapping Webpage
+        self.selenium.find_element_by_id('data-mapping-1').click()
+        self.wait_for_visibility('duplicate-table')
+
+        # Define Mapping dictonary
+        mapping_dict = {
+            'Property Id': 'Pm Property Id',
+            'Property Name': 'Premises Name Identifier',
+            'Year Ending': 'Year Ending',
+            'Property Floor Area (Buildings and Parking) (ft2)': 'Gross Floor Area',
+            'Address 1': 'Address Line 1',
+            'Address 2': 'Address Line 2',
+            'City': 'City',
+            'State/Province': 'State Province',
+            'Postal Code': 'Postal Code',
+            'Year Built': 'Year Built',
+            'ENERGY STAR Score': 'Energy Score',
+            'Site EUI (kBtu/ft2)': 'Site Eui',
+            'Weather Normalized Site EUI (kBtu/ft2)': 'Site Eui Weather Normalized',
+            'Source EUI (kBtu/ft2)': 'Source Eui',
+            'Weather Normalized Source EUI (kBtu/ft2)': 'Source Eui Weather Normalized',
+            'National Median Source EUI (kBtu/ft2)': 'Source Eui National Median',
+            'Organization': 'Building Certification',
+            'Release Date': 'Release Date',
+            'National Median Site EUI (kBtu/ft2)': 'Site Eui National Median',
+            'Generation Date': 'Generation Date',
+            'Total GHG Emissions (MtCO2e)': 'GHG Emissions',
+            'Parking - Gross Floor Area (ft2)': 'Parking Floor Area'
+        }
+
+        # Map 'Mapped' Data Fields
+        for i in range(16):
+            request_id = "mapped-header-%s" % i
+            dict_key = self.selenium.find_element_by_id(request_id).text
+            self.selenium.find_element_by_css_selector("#mapped-row-input-%s > #mapped-row-input-box-%s" % (i, i)).clear()
+            self.selenium.find_element_by_css_selector("#mapped-row-input-%s > #mapped-row-input-box-%s" % (i, i)).send_keys(mapping_dict[dict_key])
+
+        # Map 'Duplicate' Data Fields
+        for i in range(6):
+            request_id = "duplicate-header-%s" % i
+            dict_key = self.selenium.find_element_by_id(request_id).text
+            self.selenium.find_element_by_css_selector("#duplicate-row-input-%s > #duplicate-row-input-box-%s" % (i, i)).clear()
+            self.selenium.find_element_by_css_selector("#duplicate-row-input-%s > #duplicate-row-input-box-%s" % (i, i)).send_keys(mapping_dict[dict_key])
 
         self.selenium.find_element_by_id('map-data-button').click()
-        # time.sleep(30)
+        self.wait_for_visibility('verify-mapping-table',15)
+        self.selenium.find_element_by_id('save-mapping').click()
+        self.wait_for_visibility('confirm-mapping')
+        self.selenium.find_element_by_id('confirm-mapping').click()
+        self.wait_for_visibility('review-mapping',30)
+        self.selenium.find_element_by_id('review-mapping').click()
+        self.wait_for_visibility('sidebar-profile')
+        self.selenium.find_element_by_id('sidebar-profile').click()
+        self.wait_for_visibility('first-name-text')
+        self.selenium.find_element_by_id('first-name-text').clear()
+        self.selenium.find_element_by_id('first-name-text').send_keys('thisTestIs')
+        self.selenium.find_element_by_id('last-name-text').clear()
+        self.selenium.find_element_by_id('last-name-text').send_keys('goingQuiteWell')
+        self.wait_for_visibility('update_profile')
+        self.selenium.find_element_by_id('update_profile').click()
+        self.selenium.find_element_by_id('sidebar-projects').click()
+        self.wait_for_visibility('project-table')
+        self.selenium.find_element_by_id('sidebar-buildings').click()
+        self.wait_for_visibility('building-list-table')
+        self.selenium.find_element_by_id('neg-neg-2')
+        self.selenium.find_element_by_id('neg-neg-2').click()
+        self.wait_for_visibility('sidebar-accounts')
+        self.selenium.find_element_by_id('sidebar-accounts').click()
+        self.wait_for_visibility('org-owned-tables')
+        self.selenium.find_element_by_id('sidebar-feedback').click()
+        self.wait_for_visibility('text-block')
+        self.selenium.find_element_by_id('sidebar-about').click()
+        self.wait_for_visibility('text-block')
+
+
 
     def get_org_id(self, dict, username):
         '''Return the org id from the passed dictionary and username'''
@@ -167,6 +286,7 @@ class LogIn(StaticLiveServerTestCase):
             try:
                 element = self.selenium.find_element_by_id(selector)
                 if element.is_displayed():
+                    #time.sleep(1)      # Enable this to be able to see what's going on
                     return element
             except (NoSuchAttributeException,
                     NoSuchElementException,

@@ -646,8 +646,6 @@ def map_data(file_pk, *args, **kwargs):
 @shared_task
 def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
     """Save the raw data to the database."""
-    logger.debug('In _save_raw_data_chunk')
-    print('In _save_raw_data_chunk')
     import_file = ImportFile.objects.get(pk=file_pk)
     # Save our "column headers" and sample rows for F/E.
     source_type = get_source_type(import_file)
@@ -669,7 +667,6 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
     # Indicate progress
     increment_cache(prog_key, increment)
     logger.debug('Returning from _save_raw_data_chunk')
-    print('Returning from _save_raw_data_chunk')
     return True
 
 
@@ -682,7 +679,6 @@ def finish_raw_save(results, file_pk):
     :param file_pk: ID of the file that was being imported
     :return: None
     """
-    print 'In finish_raw_save'
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
     import_file.save()
@@ -692,13 +688,9 @@ def finish_raw_save(results, file_pk):
         'progress': 100,
         'progress_key': prog_key
     }
-    print('Setting Cache Key')
     set_cache(prog_key, result['status'], result)
-    print('Set Cache Key. Getting Cache Key.')
     temp = get_cache(prog_key)
-    print('Got Cache Key. Result is:')
-    print(temp)
-    print 'Returning from finish_raw_save'
+    logger.debug('Returning from finish_raw_save')
     return result
 
 
@@ -787,14 +779,10 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
 @lock_and_track
 def _save_raw_data(file_pk, *args, **kwargs):
     """Chunk up the CSV or XLSX file and save the raw data into the DB BuildingSnapshot table."""
-    logger.debug('In _save_raw_data')
-    logger.warn(file_pk)
     prog_key = get_prog_key('save_raw_data', file_pk)
-    logger.warn(prog_key)
-    logger.warn("attempting to get and print cache")
+    logger.debug("Current cache state")
     current_cache = get_cache(prog_key)
-    logger.warn(current_cache)
-    logger.warn('Got and printed cache')
+    logger.debug(current_cache)
     time.sleep(2)
     result = current_cache
 
@@ -833,11 +821,9 @@ def _save_raw_data(file_pk, *args, **kwargs):
         tasks = add_cache_increment_parameter(tasks)
         logger.debug('Added caching increment')
         if tasks:
-            print "Adding chord to queue"
             logger.debug('Adding chord to queue')
             a = chord(tasks, interval=15)(finish_raw_save.s(file_pk))
         else:
-            print "Skipping to finish_raw_save"
             logger.debug('Skipped chord')
             finish_raw_save.s(file_pk)
 
@@ -861,10 +847,8 @@ def _save_raw_data(file_pk, *args, **kwargs):
         result['stacktrace'] = traceback.format_exc()
 
     set_cache(prog_key, result['status'], result)
-    logger.debug('Returning from end of _save_raw_data')
+    logger.debug('Returning from end of _save_raw_data with state:')
     logger.debug(result)
-    print("returning the following result from _save_raw_data")
-    print(result)
     return result
 
 
@@ -872,9 +856,6 @@ def _save_raw_data(file_pk, *args, **kwargs):
 @lock_and_track
 def save_raw_data(file_pk, *args, **kwargs):
     logger.debug('In save_raw_data')
-    print('In save_raw_data YO')
-    print(get_prog_key('save_raw_data', file_pk))
-    print file_pk
 
     prog_key = get_prog_key('save_raw_data', file_pk)
     initializing_key = {
@@ -883,18 +864,10 @@ def save_raw_data(file_pk, *args, **kwargs):
         'progress_key': prog_key
     }
     set_cache(prog_key, initializing_key['status'], initializing_key)
-    result = _save_raw_data.delay(file_pk, *args, **kwargs)
-    print('Getting prog-key status')
-    print(get_cache(prog_key))
-    print('Result of _save_raw_data')
-    print(result)
+    _save_raw_data.delay(file_pk, *args, **kwargs)
     logger.debug('Returning from save_raw_data')
-    print('Returning from save_raw_data')
-    return {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': get_prog_key('save_raw_data', file_pk)
-    }
+    result = get_cache(prog_key)
+    return result
 
 
 def _stringify(values):
