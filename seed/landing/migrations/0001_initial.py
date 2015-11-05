@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import django.utils.timezone
-import djorm_pgjson.fields
+import django_pgjson.fields
 
 
 class Migration(migrations.Migration):
@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                 ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
                 ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
-                ('default_custom_columns', djorm_pgjson.fields.JSONField(default={}, null=True, blank=True)),
+                ('default_custom_columns', django_pgjson.fields.JsonField(default={}, null=True, blank=True)),
                 ('show_shared_buildings', models.BooleanField(default=False, help_text='shows shared buildings within search results', verbose_name='active')),
                 ('api_key', models.CharField(default=b'', max_length=128, verbose_name='api key', db_index=True, blank=True)),
                 ('default_organization', models.ForeignKey(related_name='default_users', blank=True, to='orgs.Organization', null=True)),
