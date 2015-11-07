@@ -201,7 +201,7 @@
             <button type="button" class="btn btn-default col-sm-6 col-lg-6 col-md-6 center-block" ng-click="view_my_buildings()">View my buildings</button>
         </div>
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_data_matching()">Review matches</button>
+            <button id="review-mapping" type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_data_matching()">Review matches</button>
         </div>
     </div>
     <div ng-switch-when="9">
@@ -214,12 +214,12 @@
             <button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_step(2)">Add another file</button>
         </div>
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="view_my_buildings()">View my buildings</button>
+            <button id="view-buildings" type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="view_my_buildings()">View my buildings</button>
         </div>
     </div>
     <div ng-switch-when="11">
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_step(7); find_matches();">Confirm mappings &amp; start matching</button>
+            <button type="button" id="confirm-mapping" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_step(7); find_matches();">Confirm mappings &amp; start matching</button>
         </div>
     </div>
     <div class="row text-center">

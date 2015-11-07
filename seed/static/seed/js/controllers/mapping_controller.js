@@ -453,7 +453,6 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.save_mappings = true;
         $scope.review_mappings = true;
         $scope.raw_columns = $scope.valids.concat($scope.duplicates);
-
         mapping_service.save_mappings(
           $scope.import_file.id,
           get_untitle_cased_mappings()

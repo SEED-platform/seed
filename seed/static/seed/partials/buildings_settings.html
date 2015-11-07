@@ -13,14 +13,14 @@
 </div>
 <div class="section_nav_container">
     <div class="section_nav">
-        <a ng-href="#/buildings">Buildings List</a>
-        <a ng-href="#/buildings/settings" class="active">List Settings</a>
-        <a ng-href="#/buildings/reports">Reports</a> 
+        <a id="building-list" ng-href="#/buildings">Buildings List</a>
+        <a id="list-settings" ng-href="#/buildings/settings" class="active">List Settings</a>
+        <a id="reports" ng-href="#/buildings/reports">Reports</a> 
     </div>
 </div>
 <div class="section">
     <div class="section_header_container">
-        <div class="section_header has_no_padding fixed_height_short">
+        <div id="building-settings" class="section_header has_no_padding fixed_height_short">
             <div class="section_action_container left_wide">
                 <h2><i class="fa fa-cogs"></i> Building List Settings:
                     <span ng-show="!is_show_reorder">Show/Hide Columns</span>

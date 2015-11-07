@@ -1,5 +1,5 @@
-<div class="table_list_container">
-    <table class="resizable table table-striped sortable">
+<div id="building-list-table" class="table_list_container">
+    <table class="resizable table table-striped sortable" id="verify-mapping-table">
         <thead>
             <tr>
                 <th class="check is_aligned_center" ng-if="search.has_checkbox">
@@ -33,16 +33,16 @@
                 </td>
                 <td ng-repeat="c in columns" class="ellipsis {$ c.class $}" ng-class="{sorted: search.sort_column == c.sort_column}">
                     <span ng-if="c.link && is_project && c.is_extra_data">
-                        <a ng-href="#/projects/{$ user.project_id $}/{$ b.canonical_building $}">{$ b.extra_data[c.sort_column] | stripImportPrefix $}</a>
+                        <a id="pos-pos-{$ $index $}" ng-href="#/projects/{$ user.project_id $}/{$ b.canonical_building $}">{$ b.extra_data[c.sort_column] | stripImportPrefix $}</a>
                     </span>
                     <span ng-if="c.link && is_project && !c.is_extra_data">
-                        <a ng-href="#/projects/{$ user.project_id $}/{$ b.canonical_building $}">{$ b[c.sort_column] | stripImportPrefix $}</a>
+                        <a id="pos-neg-{$ $index $}" ng-href="#/projects/{$ user.project_id $}/{$ b.canonical_building $}">{$ b[c.sort_column] | stripImportPrefix $}</a>
                     </span>
                     <span ng-if="c.link && !is_project && c.is_extra_data">
-                        <a ng-href="#/buildings/{$ b.canonical_building $}">{$ b.extra_data[c.sort_column] | stripImportPrefix $}</a>
+                        <a id="neg-pos-{$ $index $}" ng-href="#/buildings/{$ b.canonical_building $}">{$ b.extra_data[c.sort_column] | stripImportPrefix $}</a>
                     </span>
                     <span ng-if="c.link && !is_project && !c.is_extra_data">
-                        <a ng-href="#/buildings/{$ b.canonical_building $}">{$ b[c.sort_column] | stripImportPrefix $}</a>
+                        <a id="neg-neg-{$ $index $}" ng-href="#/buildings/{$ b.canonical_building $}">{$ b[c.sort_column] | stripImportPrefix $}</a>
                     </span>
                     <span ng-if="!c.link && !c.is_label() && c.type == 'date' && c.sort_column != 'year_built' && c.is_extra_data">
                         {$ b.extra_data[c.sort_column] | date:'shortDate' $}

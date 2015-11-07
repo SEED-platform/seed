@@ -7,6 +7,7 @@ import logging
 import datetime
 import os
 import uuid
+import traceback
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.cache import cache
@@ -57,6 +58,7 @@ from seed.utils.projects import (
 )
 from seed.utils.time import convert_to_js_timestamp
 from seed.utils.mapping import get_mappable_types, get_mappable_columns
+from seed.utils.cache import get_cache
 from .. import search
 from seed.lib.exporter import Exporter
 from seed.common import mapper as simple_mapper
@@ -1897,12 +1899,13 @@ def save_raw_data(request):
 
     Payload::
 
-        {'file_id': The ID of the ImportFile to be saved}
+        { 'file_id': The ID of the ImportFile to be saved }
 
     Returns::
 
-        {'status': 'success' or 'error',
-         'progress_key': ID of background job, for retrieving job progress
+        {
+            'status': 'success' or 'error',
+            'progress_key': ID of background job, for retrieving job progress
         }
     """
     body = json.loads(request.body)
@@ -1964,7 +1967,7 @@ def remap_buildings(request):
     body = json.loads(request.body)
     import_file_id = body.get('file_id')
     if not import_file_id:
-        return {'status': 'error', 'message': 'Import File does not exist'}
+        return {'status': 'error', 'message': 'Blah Import File does not exist'}
 
     return remap_data(import_file_id)
 
@@ -2017,7 +2020,7 @@ def progress(request):
     progress_key = json.loads(request.body).get('progress_key')
 
     if cache.get(progress_key):
-        result = cache.get(progress_key)
+        result = get_cache(progress_key)
         # The following if statement can be removed once all progress endpoints have been updated to the new json syntax
         if type(result) != dict:
             result = {'progress': result}

@@ -5,6 +5,7 @@
 from __future__ import absolute_import
 from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
+from celery.utils import LOG_LEVELS
 
 LOGGING = {
     'version': 1,
@@ -13,7 +14,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'test.log',  # TODO: put this in a subdir
+            'filename': 'log/test.log'
         },
     },
     'loggers': {
@@ -29,14 +30,6 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 SESSION_COOKIE_SECURE = False
 
-# AWS credentials for S3.  Set them in environment or local_untracked.py
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
-AWS_UPLOAD_CLIENT_KEY = AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
-AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
-AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME", "be-dev-uploads")
-AWS_STORAGE_BUCKET_NAME = AWS_BUCKET_NAME
-
 # override this in local_untracked.py
 DATABASES = {
     'default': {
@@ -49,23 +42,11 @@ DATABASES = {
     },
 }
 
-# BROKER_URL with AWS ElastiCache redis looks something like:
-# 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
-# TODO: use different redis queue for testing. if you change this here, then it is overloaded later
 BROKER_BACKEND = 'memory'
-BROKER_URL = 'redis://127.0.0.1:6379/1'
 
-CELERY_DEFAULT_QUEUE = 'seed-dev'
-CELERY_QUEUES = (
-    Queue(
-        CELERY_DEFAULT_QUEUE,
-        Exchange(CELERY_DEFAULT_QUEUE),
-        routing_key=CELERY_DEFAULT_QUEUE
-    ),
-)
 CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
-
+CELERY_LOG_LEVEL = LOG_LEVELS['DEBUG']
 
 # Testing
 INSTALLED_APPS += (
@@ -76,7 +57,6 @@ NOSE_PLUGINS = [
     'nose_exclude.NoseExclude',
 ]
 NOSE_ARGS = [
-    '--exclude-dir=seed/data_importer',
     '--exclude-dir=seed/common',
     '--nocapture',
     '--nologcapture'
@@ -117,3 +97,4 @@ if 'local_untracked_exists' in locals():
     from config.settings.local_untracked import *  # noqa
 else:
     print >> sys.stderr, "Unable to find the local_untracked module in config/settings/local_untracked.py"
+

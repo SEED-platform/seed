@@ -47,7 +47,7 @@ class DataImporterViewTests(TestCase):
 
     def setUp(self):
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
         self.user = User.objects.create_superuser(
@@ -124,7 +124,7 @@ class DefaultColumnsViewTests(TestCase):
 
     def setUp(self):
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
@@ -278,7 +278,7 @@ class SearchViewTests(TestCase):
 
     def setUp(self):
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
@@ -1263,7 +1263,7 @@ class BuildingDetailViewTests(TestCase):
 
     def setUp(self):
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
@@ -1746,7 +1746,7 @@ class TestMCMViews(TestCase):
         self.maxDiff = None
         self.org = Organization.objects.create()
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com',
         }
@@ -1959,7 +1959,7 @@ class TestMCMViews(TestCase):
         # the second user in the org makes the same save, which shouldn't be
         # unique
         user_2_details = {
-            'username': 'test_2_user',
+            'username': 'test_2_user@demo.com',
             'password': 'test_pass',
             'email': 'test_2_user@demo.com',
         }
@@ -2112,12 +2112,6 @@ class TestMCMViews(TestCase):
         for x in range(10):
             test_util.make_fake_snapshot(self.import_file, {}, ASSESSED_BS)
 
-        expected = {
-            'status': 'warning',
-            'message': 'Mapped buildings already merged',
-            'progress': 100
-        }
-
         resp = self.client.post(
             reverse_lazy("seed:remap_buildings"),
             data=json.dumps({
@@ -2125,9 +2119,13 @@ class TestMCMViews(TestCase):
             }),
             content_type='application/json'
         )
+        json_result = json.loads(resp.content)
 
-        self.assertDictEqual(json.loads(resp.content), expected)
-
+        self.assertEqual(json_result['status'], 'warning')
+        self.assertEqual(json_result['message'], 'Mapped buildings already merged')
+        self.assertEqual(json_result['progress'], 100)
+        # self.assertItemsEqualqual(json_result['progress_key'], 100)
+        
         # Verify that we haven't deleted those mapped buildings.
         self.assertEqual(
             BuildingSnapshot.objects.filter(
@@ -2199,7 +2197,7 @@ class MatchTreeTests(TestCase):
 
     def setUp(self):
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }

@@ -2,6 +2,7 @@
 :copyright: (c) 2014 Building Energy Inc
 """
 import json
+import logging
 
 from django.core.urlresolvers import reverse_lazy, reverse
 from django.test import TestCase
@@ -10,6 +11,7 @@ from seed.landing.models import SEEDUser as User
 from seed.factory import SEEDFactory
 from seed.models import CanonicalBuilding
 from seed.utils.api import get_api_endpoints
+
 
 
 class ApiAuthenticationTests(TestCase):
@@ -21,7 +23,7 @@ class ApiAuthenticationTests(TestCase):
 
     def setUp(self):
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
@@ -96,3 +98,4 @@ class SchemaGenerationTests(TestCase):
         endpoint = endpoints[url]
         self.assertEqual(endpoint['name'], 'get_api_schema')
         self.assertTrue('description' in endpoint)
+
