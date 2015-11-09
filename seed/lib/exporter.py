@@ -195,7 +195,7 @@ class Exporter:
         try:
             return getattr(par, components[-1]) if par else None
         except AttributeError:
-            # try extra_data JSONField
+            # try extra_data JsonField
             return par.extra_data.get(components[-1])
 
     def export_csv(self, qs, fields=[], cb=None):

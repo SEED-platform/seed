@@ -92,7 +92,7 @@ class JsonQuerySet(QuerySet):
 
     def json_query(self, key, value=None, cond=None,
                    key_cast='text', unit=None, **kw):
-        """Query JSONField data using simplified syntax.
+        """Query JsonField data using simplified syntax.
 
         See ``build_extra`` for parameter definitions.
         optional parameters pulled from kwargs:

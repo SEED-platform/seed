@@ -238,27 +238,18 @@ def filter_other_params(queryset, other_params, db_columns):
             empty_match = is_empty_match(v)
             not_empty_match = is_not_empty_match(v)
 
-            # If querying for empty matches, do a hack-y 'contains' query on
-            # the json field to check if the field exists. We're checking 
-            # existence because empty mapped fields are not saved in the
-            # extra_data json field if they contain no data.
-            #
-            # When we bump to Django 1.7, we can switch to the newer
-            # django-pgjson package, and use the new "HAS" operator syntax.
-            # - nicholasserra
             if empty_match:
                 # Filter for records that DO NOT contain this field OR
                 # contain a blank value for this field.
                 queryset = queryset.filter(
-                    ~Q(extra_data__contains='"%s":' % k) | Q(extra_data__contains='"%s": ""' % k)
+                    Q(**{'extra_data__at_%s__isnull' % k: True}) | Q(**{'extra_data__at_%s' % k: ''})
                 )
                 continue
             elif not_empty_match:
                 # Only return records that have the key in extra_data, but the value is not empty.
                 queryset = queryset.filter(
-                    Q(extra_data__contains='"%s":' % k)
-                    & ~Q(extra_data__contains='"%s": ""' % k)
-                    & ~Q(extra_data__contains='"%s":""' % k)
+                    Q(**{'extra_data__at_%s__isnull' % k: False})
+                    & ~Q(**{'extra_data__at_%s' % k: ''})
                 )
                 continue
 
@@ -368,7 +359,7 @@ def build_json_params(order_by, sort_reverse):
 
     :param str order_by: field to order_by
     :returns: tuple: db_columns: dict of known DB columns i.e. non-JSONfFeld,
-        extra_data_sort bool if order_by is in ``extra_data`` JSONField,
+        extra_data_sort bool if order_by is in ``extra_data`` JsonField,
         order_by str if sort_reverse and DB column prepend a '-' for the django
         order_by
     """

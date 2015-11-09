@@ -25,7 +25,7 @@ from django.utils.http import urlquote
 from django.core.mail import send_mail
 from django.core.exceptions import ImproperlyConfigured
 
-from djorm_pgjson.fields import JSONField
+from django_pgjson.fields import JsonField
 
 from seed.lib.superperms.orgs.models import Organization
 
@@ -53,7 +53,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
                     'active. Unselect this instead of deleting accounts.'))
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 
-    default_custom_columns = JSONField()
+    default_custom_columns = JsonField(default={})
     show_shared_buildings = models.BooleanField(
         _('active'), default=False,
         help_text=_('shows shared buildings within search results'))
