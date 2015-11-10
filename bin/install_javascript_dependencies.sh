@@ -2,13 +2,8 @@
 # installs bower dependencies
 # assumes npm is installed
 
-echo "installing bower..."
-npm install -g bower
-echo ""
-echo ""
-echo ""
-echo "installing grunt-cli..."
-npm install -g grunt-cli
+echo "installing node dependencies..."
+npm install -g bower gulp gulp-load-plugins es6-promise gulp-jshint jshint-stylish gulp-fixmyjs gulp-sourcemaps gulp-sass gulp-autoprefixer gulp-csso
 echo ""
 echo ""
 echo ""
