@@ -35,12 +35,11 @@
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.css" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
         <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
-        <link href="{{STATIC_URL}}vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.css" rel="stylesheet" type="text/css" />
+        <link href="{{STATIC_URL}}vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.css" rel="stylesheet" type="text/css">
        
         {% block css %}{{block.super}}
             {% compress css %}
-                <link href="{{STATIC_URL}}seed/less/style.less" rel="stylesheet" type="text/less">
-                <link href="{{STATIC_URL}}seed/css/mapping.css" rel="stylesheet" type="text/css" />
+                <link href="{{STATIC_URL}}seed/css/style.css" rel="stylesheet" type="text/css">
             {% endcompress %}
         {% endblock %}
 
@@ -100,9 +99,6 @@
             {# all seed js files #}
             {% include "seed/_scripts.html" %}
 
-            {% if not COMPRESS_ENABLED %}
-                <script src="{{STATIC_URL}}vendors/lesscss_org/js/less-1.5.0.min.js"></script>
-            {% endif %}
         {% endblock js%}
     {% analytical_head_bottom %}
     </head>
