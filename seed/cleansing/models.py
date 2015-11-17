@@ -4,7 +4,7 @@ import datetime
 
 from logging import getLogger
 from django.db import models
-from django.core.cache import cache
+from seed.utils.cache import set_cache_raw, get_cache_raw
 from datetime import datetime
 from datetime import date
 
@@ -45,7 +45,7 @@ class Cleansing:
         :param file_pk: Import file primary key
         :return:
         """
-        cache.set(Cleansing.cache_key(file_pk), [])
+        set_cache_raw(Cleansing.cache_key(file_pk))
 
     @staticmethod
     def cache_key(file_pk):
@@ -257,7 +257,7 @@ class Cleansing:
         """
 
         # change the format of the data in the cache. Make this a list of objects instead of object of objects.
-        existing_results = cache.get(Cleansing.cache_key(file_pk))
+        existing_results = get_cache_raw(Cleansing.cache_key(file_pk))
 
         l = []
         for key, value in self.results.iteritems():
@@ -266,7 +266,7 @@ class Cleansing:
         existing_results = existing_results + l
 
         z = sorted(existing_results, key=lambda k: k['id'])
-        cache.set(Cleansing.cache_key(file_pk), z, 3600)  # save the results for 1 hour
+        set_cache_raw(Cleansing.cache_key(file_pk), z, 3600)  # save the results for 1 hour
 
     ASSESSOR_FIELDS = [
         {

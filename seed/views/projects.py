@@ -7,7 +7,7 @@ import datetime
 
 # django imports
 from django.contrib.auth.decorators import login_required
-from django.core.cache import cache
+from seed.utils.cache import get_cache
 
 # vendor imports
 from dateutil import parser
@@ -445,7 +445,7 @@ def get_adding_buildings_to_project_status_percentage(request):
 
     return {
         'status': 'success',
-        'progress_object': cache.get(project_loading_cache_key)
+        'progress_object': get_cache(project_loading_cache_key)
     }
 
 
