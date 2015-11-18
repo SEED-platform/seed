@@ -45,7 +45,7 @@ class Cleansing:
         :param file_pk: Import file primary key
         :return:
         """
-        set_cache_raw(Cleansing.cache_key(file_pk))
+        set_cache_raw(Cleansing.cache_key(file_pk), [])
 
     @staticmethod
     def cache_key(file_pk):
