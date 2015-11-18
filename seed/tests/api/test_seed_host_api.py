@@ -1,4 +1,4 @@
-"""
+﻿"""
 API Testing for remote SEED installations.
 :copyright (c) 2014, The Regents of the University of California, Department of Energy contract-operators of the Lawrence Berkeley National Laboratory.
 :author Claudine Custodio
@@ -15,7 +15,7 @@ import requests
 
 
 # Three-step upload process
-def upload_file(upload_header, upload_filepath, upload_url, upload_dataset_id, upload_datatype):
+def upload_file(upload_header, upload_filepath, uploadURL, upload_dataset_id, upload_datatype):
     """
     Checks if the upload is through an AWS system or through filesystem. 
     Proceeds with the appropriate upload method. 
@@ -63,7 +63,7 @@ def upload_file(upload_header, upload_filepath, upload_url, upload_dataset_id, u
             {'key': key}
         ]
 
-        sig_result = requests.post(upload_url + sig_uri,
+        sig_result = requests.post(uploadURL + sig_uri,
                                    headers=upload_header,
                                    data=json.dumps(payload))
         if sig_result.status_code != 200:
@@ -103,11 +103,11 @@ def upload_file(upload_header, upload_filepath, upload_url, upload_dataset_id, u
             'key': key,
             'source_type': upload_datatype
         }
-        return requests.get(upload_url + completion_uri,
+        return requests.get(uploadURL + completion_uri,
                             headers=upload_header,
                             params=completion_payload)
 
-    def _upload_file_to_file_system(upload_url, upload_details):
+    def _upload_file_to_file_system(upload_details):
         """
         Implements uploading to SEED's filesystem. Used by
         upload_file if SEED in configured for local file storage.
@@ -121,7 +121,7 @@ def upload_file(upload_header, upload_filepath, upload_url, upload_dataset_id, u
              "success": true,
              "filename": "DataforSEED_dos15.csv"}
         """
-        upload_url = "%s%s" % (upload_url, upload_details['upload_path'])
+        upload_url = "%s%s" % (uploadURL, upload_details['upload_path'])
         fsysparams = {'qqfile': upload_filepath,
                       'import_record': upload_dataset_id,
                       'source_type': upload_datatype}
@@ -131,7 +131,7 @@ def upload_file(upload_header, upload_filepath, upload_url, upload_dataset_id, u
                              headers=upload_header)
 
     # Get the upload details.
-    upload_details = requests.get(upload_url + '/data/get_upload_details/', headers=upload_header)
+    upload_details = requests.get(uploadURL + '/data/get_upload_details/', headers=upload_header)
     upload_details = upload_details.json()
 
     filename = os.path.basename(upload_filepath)
@@ -139,7 +139,7 @@ def upload_file(upload_header, upload_filepath, upload_url, upload_dataset_id, u
     if upload_details['upload_mode'] == 'S3':
         return _upload_file_to_aws(upload_details)
     elif upload_details['upload_mode'] == 'filesystem':
-        return _upload_file_to_file_system(upload_url, upload_details)
+        return _upload_file_to_file_system(upload_details)
     else:
         raise RuntimeError("Upload mode unknown: %s" %
                            upload_details['upload_mode'])
@@ -354,6 +354,21 @@ progress = requests.get(main_url + '/app/progress/',
                         data=json.dumps({'progress_key': result.json()['progress_key']}))
 pprint.pprint(progress.json(), stream=fileout)
 
+# Get the mapping suggestions
+print ('API Function: get_column_mapping_suggestions'),
+fileout.write('API Function: get_column_mapping_suggestions\n')
+payload = {'import_file_id': import_id,
+           'org_id': organization_id}
+result = requests.get(main_url + '/app/get_column_mapping_suggestions/',
+                      headers=header,
+                      data=json.dumps(payload))
+if result.status_code == 200:
+    print('...passed')
+    pprint.pprint(result.json()['suggested_column_mappings'], stream=fileout)
+else:
+    print('...not passed')
+    pprint.pprint(result.reason, stream=fileout)
+
 # Save the column mappings. 
 print ('API Function: save_column_mappings'),
 fileout.write('API Function: save_column_mappings\n')
@@ -389,21 +404,6 @@ progress = requests.get(main_url + '/app/progress/',
                         headers=header,
                         data=json.dumps({'progress_key': result.json()['progress_key']}))
 pprint.pprint(progress.json(), stream=fileout)
-
-# Get the mapping suggestions
-print ('API Function: get_column_mapping_suggestions'),
-fileout.write('API Function: get_column_mapping_suggestions\n')
-payload = {'import_file_id': import_id,
-           'org_id': organization_id}
-result = requests.get(main_url + '/app/get_column_mapping_suggestions/',
-                      headers=header,
-                      data=json.dumps(payload))
-if result.status_code == 200:
-    print('...passed')
-    pprint.pprint(result.json()['suggested_column_mappings'], stream=fileout)
-else:
-    print('...not passed')
-    pprint.pprint(result.reason, stream=fileout)
 
 # Match uploaded buildings with buildings already in the organization.
 print ('API Function: start_system_matching'),
@@ -452,34 +452,31 @@ progress = requests.get(main_url + '/app/progress/',
                         data=json.dumps({'progress_key': result.json()['progress_key']}))
 pprint.pprint(progress.json(), stream=fileout)
 
+# Get the mapping suggestions
+print ('API Function: get_column_mapping_suggestions'),
+fileout.write('API Function: get_column_mapping_suggestions\n')
+payload = {'import_file_id': import_id,
+           'org_id': organization_id}
+result = requests.get(main_url + '/app/get_column_mapping_suggestions/',
+                      headers=header,
+                      data=json.dumps(payload))
+if result.status_code == 200:
+    print('...passed')
+    pprint.pprint(result.json()['suggested_column_mappings'], stream=fileout)
+else:
+    print('...not passed')
+    pprint.pprint(result.reason, stream=fileout)
+
 # Save the column mappings. 
 print ('API Function: save_column_mappings'),
 fileout.write('API Function: save_column_mappings\n')
 payload = {'import_file_id': import_id,
            'organization_id': organization_id}
-payload['mappings'] = [[u'city', u'City'],
-                       [u'energy_score', u'ENERGY STAR Score'],
-                       [u'state_province', u'State/Province'],
-                       [u'site_eui', u'Site EUI (kBtu/ft2)'],
-                       [u'year_ending', u'Year Ending'],
-                       [u'source_eui_weather_normalized', 'Weather Normalized Source EUI (kBtu/ft2)'],
-                       [u'Parking - Gross Floor Area', u'Parking - Gross Floor Area (ft2)'],
-                       [u'address_line_1', u'Address 1'],
-                       [u'Portfolio Manager Property ID', u'Property Id'],
-                       [u'address_line_2', u'Address 2'],
-                       [u'source_eui', u'Source EUI (kBtu/ft2)'],
-                       [u'release_date', u'Release Date'],
-                       [u'National Median Source EUI', u'National Median Source EUI (kBtu/ft2)'],
-                       [u'site_eui_weather_normalized', u'Weather Normalized Site EUI (kBtu/ft2)'],
-                       [u'National Median Site EUI', u'National Median Site EUI (kBtu/ft2)'],
-                       [u'year_built', u'Year Built'],
-                       [u'postal_code', u'Postal Code'],
-                       [u'owner', u'Organization'],
-                       [u'property_name', u'Property Name'],
-                       [u'Property Floor Area (Buildings and Parking)',
-                        u'Property Floor Area (Buildings and Parking) (ft2)'],
-                       [u'Total GHG Emissions', u'Total GHG Emissions (MtCO2e)'],
-                       [u'generation_date', u'Generation Date']]
+mappings = []
+for key, value in result.json()['suggested_column_mappings'].iteritems():
+    mappings.append([value[0],key])
+payload['mappings'] = mappings
+
 result = requests.get(main_url + '/app/save_column_mappings/',
                       headers=header,
                       data=json.dumps(payload))
@@ -500,21 +497,6 @@ progress = requests.get(main_url + '/app/progress/',
                         headers=header,
                         data=json.dumps({'progress_key': result.json()['progress_key']}))
 pprint.pprint(progress.json(), stream=fileout)
-
-# Get the mapping suggestions
-print ('API Function: get_column_mapping_suggestions'),
-fileout.write('API Function: get_column_mapping_suggestions\n')
-payload = {'import_file_id': import_id,
-           'org_id': organization_id}
-result = requests.get(main_url + '/app/get_column_mapping_suggestions/',
-                      headers=header,
-                      data=json.dumps(payload))
-if result.status_code == 200:
-    print('...passed')
-    pprint.pprint(result.json()['suggested_column_mappings'], stream=fileout)
-else:
-    print('...not passed')
-    pprint.pprint(result.reason, stream=fileout)
 
 # Match uploaded buildings with buildings already in the organization.
 print ('API Function: start_system_matching'),
