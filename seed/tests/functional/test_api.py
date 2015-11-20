@@ -382,28 +382,3 @@ class TestApi(TestCase):
                              content_type='application/json', follow=True, **self.headers)
         print r
 
-        # TODO: this isn't working to completion. It is hanging on progress = waiting
-
-        # if result.status_code == 200:
-        #     print('...passed')
-        #     pprint.pprint(result.json()['suggested_column_mappings'], stream=fileout)
-        # else:
-        #     print('...not passed')
-        #     pprint.pprint(result.reason, stream=fileout)
-        #
-        # # Match uploaded buildings with buildings already in the organization.
-        # print ('API Function: start_system_matching'),
-        # fileout.write('API Function: start_system_matching\n')
-        # payload = {'file_id': import_id,
-        #            'organization_id': organization_id}
-        # result = requests.post(main_url + '/app/start_system_matching/',
-        #                        headers=header,
-        #                        data=json.dumps(payload))
-        # check_status(result, fileout)
-        #
-        # time.sleep(10)
-        # progress = requests.get(main_url + '/app/progress/',
-        #                         headers=header,
-        #                         data=json.dumps({'progress_key': result.json()['progress_key']}))
-        # pprint.pprint(progress.json(), stream=fileout)
-        #
