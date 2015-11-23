@@ -1129,6 +1129,42 @@ def _normalize_address_post_type(post_type):
     return POST_TYPE_MAP.get(value, value)
 
 
+ADDRESS_NUMBER_RE = re.compile((
+    r''
+    r'(?P<start>[0-9]+)'  # The left part of the range
+    r'\s?'                         # Optional whitespace before the separator
+    r'[\\/-]?'                     # Optional Separator
+    r'\s?'                         # Optional whitespace after the separator
+    r'(?<=[\s\\/-])'               # Enforce match of at least one separator char.
+    r'(?P<end>[0-9]+)'    # THe right part of the range
+))
+
+
+def _normalize_address_number(address_number):
+    """
+    Given the numeric portion of an address, normalize it.
+    - strip leading zeros from numbers.
+    - remove whitespace from ranges.
+    - convert ranges to use dash as separator.
+    - expand any numbers that appear to have had their leading digits
+      truncated.
+    """
+    match = ADDRESS_NUMBER_RE.match(address_number)
+    if match:
+        # This address number is a range, so normalize it.
+        components = match.groupdict()
+        range_start = components['start'].lstrip("0")
+        range_end = components['end'].lstrip("0")
+        if len(range_end) < len(range_start):
+            # The end range value is omitting a common prefix.  Add it back.
+            prefix_length = len(range_start) - len(range_end)
+            range_end = range_start[:prefix_length] + range_end
+        return '-'.join([range_start, range_end])
+
+    # some addresses have leading zeros, strip them here
+    return address_number.lstrip("0")
+
+
 def _normalize_address_str(address_val):
     """
     Normalize the address to conform to short abbreviations.
@@ -1154,7 +1190,7 @@ def _normalize_address_str(address_val):
         normalized_address = ''
 
         if 'AddressNumber' in addr and addr['AddressNumber'] is not None:
-            normalized_address = addr['AddressNumber'].lstrip("0")  # some addresses have leading zeros, strip them here
+            normalized_address = _normalize_address_number(addr['AddressNumber'])
 
         if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePreDirectional'])
