@@ -4,10 +4,10 @@
 angular.module('BE.seed.controller.edit_label_modal', [])
 .controller('edit_label_modal_ctrl', [
   '$scope',
-  '$modalInstance',
+  '$uibModalInstance',
   'labels',
   'project_service',
-  function ($scope, $modalInstance, labels, project_service) {
+  function ($scope, $uibModalInstance, labels, project_service) {
     $scope.labels = labels;
     $scope.label_modal = {};
     $scope.label_modal.color = "gray";
@@ -62,11 +62,11 @@ angular.module('BE.seed.controller.edit_label_modal', [])
 
 
     $scope.close = function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
     };
 
     $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss('cancel');
     };
 
 

@@ -232,7 +232,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'shared_fields_payload': ['user_service', '$route', function(user_service, $route) {
                     return user_service.get_shared_buildings();
                 }],
-                '$modalInstance': function() {
+                '$uibModalInstance': function() {
                     return {close: function () {}};
                 },
                 'project_payload': ['$route', 'project_service', function($route, project_service) {
@@ -318,7 +318,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'shared_fields_payload': ['user_service', '$route', function(user_service, $route) {
                     return user_service.get_shared_buildings();
                 }],
-                '$modalInstance': function() {
+                '$uibModalInstance': function() {
                     return {close: function () {}};
                 },
                 'project_payload': function() {

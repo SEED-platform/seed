@@ -4,10 +4,10 @@
 angular.module('BE.seed.controller.delete_modal', [])
 .controller('delete_modal_controller', [
   '$scope',
-  '$modalInstance',
+  '$uibModalInstance',
   'search',
   'building_services',
-  function($scope, $modalInstance, search, building_services) {
+  function($scope, $uibModalInstance, search, building_services) {
     $scope.delete_state = 'delete';
     $scope.delete_payload = {};
     $scope.delete_payload.selected_buildings = search.selected_buildings;
@@ -54,13 +54,13 @@ angular.module('BE.seed.controller.delete_modal', [])
      * cancel: dismisses the modal
      */
     $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss('cancel');
     };
 
     /**
      * close: closes the modal
      */
     $scope.close = function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
     };
 }]);

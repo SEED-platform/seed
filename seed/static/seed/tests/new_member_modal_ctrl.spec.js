@@ -30,7 +30,7 @@ describe("controller: new_member_modal_ctrl", function(){
     function create_new_member_controller(){
         ctrl = ctrl('new_member_modal_ctrl', {
             $scope: ctrl_scope,
-            $modalInstance: {
+            $uibModalInstance: {
                 close: function() {
                     modal_state = "close";
                 },

@@ -9,12 +9,12 @@
 angular.module('BE.seed.controller.concat_modal', [])
 .controller('concat_modal_ctrl', [
   '$scope',
-  '$modalInstance',
+  '$uibModalInstance',
   'building_column_types',
   'raw_columns',
   function(
     $scope,
-    $modalInstance,
+    $uibModalInstance,
     building_column_types,
     raw_columns
   ){
@@ -75,7 +75,7 @@ angular.module('BE.seed.controller.concat_modal', [])
         if (typeof($scope.target_tcm) !== undefined) {
             $scope.raw_columns.push($scope.target_tcm);
         }
-        $modalInstance.close();
+        $uibModalInstance.close();
     };
 
     $scope.close_concat_modal = function () {
@@ -87,7 +87,7 @@ angular.module('BE.seed.controller.concat_modal', [])
             }
         }
 
-        $modalInstance.close();
+        $uibModalInstance.close();
     };
 
   }

@@ -76,7 +76,7 @@ describe("controller: edit_label_modal_ctrl", function(){
 
         edit_ctrl = controller('edit_label_modal_ctrl', {
             $scope: edit_ctrl_scope,
-            $modalInstance: {
+            $uibModalInstance: {
                 close: function() {
                     modal_state = "close";
                 },

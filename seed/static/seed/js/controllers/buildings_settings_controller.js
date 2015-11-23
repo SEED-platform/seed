@@ -4,7 +4,7 @@
 angular.module('BE.seed.controller.buildings_settings', [])
 .controller('buildings_settings_controller', [
   '$scope',
-  '$modalInstance',
+  '$uibModalInstance',
   'all_columns',
   'default_columns',
   'shared_fields_payload',
@@ -14,7 +14,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
   'project_payload',
   function(
     $scope,
-    $modalInstance,
+    $uibModalInstance,
     all_columns,
     default_columns,
     shared_fields_payload,
@@ -102,7 +102,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
         .then(function (data) {
             //resolve promise
             $scope.settings_updated = true;
-            $modalInstance.close(columns);
+            $uibModalInstance.close(columns);
             location.reload();
         });
     };

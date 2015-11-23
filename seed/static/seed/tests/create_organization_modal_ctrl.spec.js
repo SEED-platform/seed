@@ -30,7 +30,7 @@ describe("controller: create_organization_modal_ctrl", function(){
     function create_organization_modal_ctrl(){
         ctrl = ctrl('create_organization_modal_ctrl', {
             $scope: ctrl_scope,
-            $modalInstance: {
+            $uibModalInstance: {
                 close: function() {
                     modal_state = "close";
                 },

@@ -36,7 +36,7 @@ describe("controller: delete_modal_controller", function(){
     function create_delete_modal_controller(){
         ctrl = ctrl('delete_modal_controller', {
             $scope: ctrl_scope,
-            $modalInstance: {
+            $uibModalInstance: {
                 close: function() {
                     modal_state = "close";
                 },
