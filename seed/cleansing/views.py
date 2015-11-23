@@ -6,6 +6,7 @@ from seed.cleansing.models import Cleansing
 from seed.decorators import ajax_request
 from seed.utils.api import api_endpoint
 
+
 # TODO The API is returning on both a POST and GET. Make sure to authenticate.
 
 
@@ -19,12 +20,19 @@ def get_cleansing_results(request):
 
     import_file_id = request.GET.get('import_file_id')
     cleansing_results = get_cache_raw(Cleansing.cache_key(import_file_id))
+
+    # add in additional fields for view
     for i, row in enumerate(cleansing_results):
         for j, result in enumerate(row['cleansing_results']):
             if result['field'] in Cleansing.ASSESSOR_FIELDS_BY_COLUMN:
                 result['field'] = Cleansing.ASSESSOR_FIELDS_BY_COLUMN[result['field']]['title']
 
-    return cleansing_results
+    return {
+        'status': 'success',
+        'message': 'Cleansing complete',
+        'progress': 100,
+        'data': cleansing_results
+    }
 
 
 @api_endpoint
