@@ -99,6 +99,9 @@
             {# all seed js files #}
             {% include "seed/_scripts.html" %}
 
+            {% if not COMPRESS_ENABLED %}
+              <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.3/less.min.js"></script>              
+            {% endif %}            
         {% endblock js%}
     {% analytical_head_bottom %}
     </head>
