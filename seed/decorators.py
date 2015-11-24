@@ -98,14 +98,13 @@ def ajax_request(func):
             format_type = 'application/json'
         response = func(request, *args, **kwargs)
 
+        # determine the status code if the object is a dictionary
         status_code = 200
-
-        # This is somewhat hackish, but the response is not always an HttpResponse. I'm explicitly
-        # excluding the list because it is a known type that is returned in the cleansing routines.
-        if not isinstance(response, list):
+        if isinstance(response, dict):
             if response.get('status') == 'error' or response.get('success') == False:
                 status_code = 400
 
+        # convert the response into an HttpResponse if it is not already.
         if not isinstance(response, HttpResponse):
             data = FORMAT_TYPES[format_type](response)
             response = HttpResponse(data, content_type=format_type, status=status_code)

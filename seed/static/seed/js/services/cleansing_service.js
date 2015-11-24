@@ -18,7 +18,7 @@ angular.module('BE.seed.service.cleansing', []).factory('cleansing_service', [
             method: 'GET',
             'url': '/cleansing/results/?import_file_id=' + import_file_id
         }).success(function(data, status, headers, config) {
-            defer.resolve(data);
+            defer.resolve(data['data']);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });

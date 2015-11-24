@@ -52,5 +52,15 @@ class NormalizeStreetAddressTests(TestCase):
         # https://github.com/SEED-platform/seed/issues/378
         ('regression 1', '100 Peach Ave. East', '100 peach ave e'),
         ('regression 1', '100 Peach Avenue E.', '100 peach ave e'),
-        ('multiple addresses', 'M St., N St., 4th St., Delaware St., SW', 'm st., n st., 4th st., delaware st., sw')
+        ('multiple addresses', 'M St., N St., 4th St., Delaware St., SW', 'm st., n st., 4th st., delaware st., sw'),
+        # House numbers declared as ranges
+        ('no range separator', '300 322 S Green St', '300-322 s green st'),
+        ('- as separator no whitespace', '300-322 S Green St', '300-322 s green st'),
+        ('/ as separator no whitespace', '300/322 S Green St', '300-322 s green st'),
+        ('\\ as separator no whitespace', '300\\322 S Green St', '300-322 s green st'),
+        ('- as separator whitespace', '300 - 322 S Green St', '300-322 s green st'),
+        ('/ as separator whitespace', '300 / 322 S Green St', '300-322 s green st'),
+        ('\\ as separator whitespace', '300 \\ 322 S Green St', '300-322 s green st'),
+        # Ranges which leave off common prefix.
+        ('end of range leaves off common prefix', '300-22 S Green St', '300-322 s green st'),
     ]
