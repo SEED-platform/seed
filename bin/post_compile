@@ -4,12 +4,11 @@
 echo "-----> downloading and installing JS dependencies..."
 bash bin/install_javascript_dependencies.sh 2>&1 | sed "s/^/        /"
 
-echo "-----> Making the s3 bucket..."
-python manage.py create_s3_bucket 2>&1 | sed "s/^/        /"
-
-
 echo "-----> Compiling Sass..."
 gulp sass
+
+echo "-----> Making the s3 bucket..."
+python manage.py create_s3_bucket 2>&1 | sed "s/^/        /"
 
 echo "-----> Collecting static..."
 rm -rf collected_static

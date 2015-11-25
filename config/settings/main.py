@@ -4,7 +4,8 @@
 from __future__ import absolute_import
 from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
-import aws
+# import aws
+from config.settings.aws import aws
 
 # AWS settings
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
@@ -12,7 +13,8 @@ AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 # Different names for same vars, used by django-ajax-uploader
 AWS_UPLOAD_CLIENT_KEY = AWS_ACCESS_KEY_ID
 AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
-APP_NAMESPACE = "seed" + os.environ.get("STACK_NAME", "prod")
+# APP_NAMESPACE = "seed" + os.environ.get("STACK_NAME", "prod")
+APP_NAMESPACE = "seedtest" # + os.environ.get("STACK_NAME", "prod")
 AWS_BUCKET_NAME = APP_NAMESPACE
 AWS_STORAGE_BUCKET_NAME = APP_NAMESPACE
 AWS_UPLOAD_BUCKET_NAME = APP_NAMESPACE
@@ -22,6 +24,7 @@ ENV = STACK_OUTPUTS.get('StackFlavor', 'dev')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 TEMPLATE_DEBUG = DEBUG
+DOMAIN_URLCONFS = {}
 DOMAIN_URLCONFS[STACK_OUTPUTS.get('HostName')] = 'config.urls'
 
 # Handle SSL with django-sslify
