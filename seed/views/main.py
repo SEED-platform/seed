@@ -10,7 +10,6 @@ import uuid
 import traceback
 
 from django.contrib.auth.decorators import login_required, permission_required
-from django.core.cache import cache
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
 from django.core.files.storage import DefaultStorage
@@ -58,7 +57,7 @@ from seed.utils.projects import (
 )
 from seed.utils.time import convert_to_js_timestamp
 from seed.utils.mapping import get_mappable_types, get_mappable_columns
-from seed.utils.cache import get_cache
+from seed.utils.cache import get_cache, set_cache
 from .. import search
 from seed.lib.exporter import Exporter
 from seed.common import mapper as simple_mapper
@@ -273,9 +272,13 @@ def export_buildings(request):
         export_model = 'seed.BuildingSnapshot'
 
     building_ids = [x[0] for x in selected_buildings.values_list('pk')]
-
-    # TODO: move the cache to the Exporter class
-    cache.set("export_buildings__%s" % export_id, 0)
+    progress_key = "export_buildings__%s" % export_id
+    result = {
+        'progress_key': progress_key,
+        'status': 'not-started',
+        'progress': 0
+    }
+    set_cache(progress_key, result['status'], result)
 
     tasks.export_buildings.delay(export_id, export_name, export_type, building_ids, export_model, selected_fields)
 
@@ -308,10 +311,11 @@ def export_buildings_progress(request):
     """
     body = json.loads(request.body)
     export_id = body.get('export_id')
+    progress_key = "export_buildings__%s" % export_id
     return {
         "success": True,
         "status": "success",
-        "buildings_processed": cache.get("export_buildings__%s" % export_id),
+        "buildings_processed": get_cache(progress_key)['progress']
     }
 
 
@@ -2019,13 +2023,8 @@ def progress(request):
 
     progress_key = json.loads(request.body).get('progress_key')
 
-    if cache.get(progress_key):
-        result = get_cache(progress_key)
-        # The following if statement can be removed once all progress endpoints have been updated to the new json syntax
-        if type(result) != dict:
-            result = {'progress': result}
-        result['progress_key'] = progress_key
-        return result
+    if get_cache(progress_key):
+        return get_cache(progress_key)
     else:
         return {
             'progress_key': progress_key,

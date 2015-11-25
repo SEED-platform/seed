@@ -15,7 +15,7 @@ except ImportError:
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.cache import cache
+from seed.utils.cache import set_cache_raw, set_cache_state, set_cache, increment_cache, get_cache, get_cache_raw, get_cache_state, delete_cache
 from django.core.urlresolvers import reverse
 from django.db import models, IntegrityError
 from django.db.models import Q
@@ -301,7 +301,7 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def pct_merge_complete(self):
-        return cache.get(self.merge_progress_key, None)
+        return get_cache(self.merge_progress_key)['progress']
 
     @property
     def merge_seconds_remaining_key(self):
@@ -313,7 +313,7 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def pct_premerge_complete(self):
-        return cache.get(self.premerge_progress_key, None)
+        return get_cache(self.premerge_progress_key)['progress']
 
     @property
     def premerge_seconds_remaining_key(self):
@@ -329,15 +329,15 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def estimated_seconds_remaining(self):
-        return cache.get(self.merge_seconds_remaining_key, None)
+        return get_cache_raw(self.merge_seconds_remaining_key)
 
     @property
     def merge_status(self):
-        return cache.get(self.merge_status_key, None)
+        return get_cache(self.merge_status_key)['status']
 
     @property
     def premerge_estimated_seconds_remaining(self):
-        return cache.get(self.premerge_seconds_remaining_key, None)
+        return get_cache_raw(self.premerge_seconds_remaining_key)
 
     @property
     def matched_buildings(self):
@@ -552,13 +552,13 @@ class ImportRecord(NotDeletableModel):
 
     def validate_mappings_and_update_mapping_stats(self):
         # print "validate_mappings_and_update_mapping_stats for %s: %s " % (self.MAPPING_ACTIVE_KEY, cache.get(self.MAPPING_ACTIVE_KEY, False))
-        if cache.get(self.MAPPING_ACTIVE_KEY, False):
+        if get_cache_state(self.MAPPING_ACTIVE_KEY, False):
             # print "queued"
-            cache.set(self.MAPPING_QUEUED_KEY, True)
+            set_cache_state(self.MAPPING_QUEUED_KEY, True)
         else:
             # print "running"
-            cache.set(self.MAPPING_ACTIVE_KEY, True)
-            cache.set(self.MAPPING_QUEUED_KEY, False)
+            set_cache_state(self.MAPPING_ACTIVE_KEY, True)
+            set_cache_state(self.MAPPING_QUEUED_KEY, False)
 
             s = SchemaKnowingRobot(primary_app=self.app)
 
@@ -639,8 +639,8 @@ class ImportRecord(NotDeletableModel):
             self.status = self.get_status()
             self.save()
 
-            cache.set(self.MAPPING_ACTIVE_KEY, False)
-            if cache.get(self.MAPPING_QUEUED_KEY, False):
+            set_cache_state(self.MAPPING_ACTIVE_KEY, False)
+            if get_cache_state(self.MAPPING_QUEUED_KEY, False):
                 self.validate_mappings_and_update_mapping_stats()
                 pass
 
@@ -649,11 +649,11 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def summary_analysis_active(self):
-        return cache.get(self.__class__.SUMMARY_ANALYSIS_ACTIVE_KEY(self.pk), False)
+        return get_cache_state(self.__class__.SUMMARY_ANALYSIS_ACTIVE_KEY(self.pk), False)
 
     @property
     def summary_analysis_queued(self):
-        return cache.get(self.__class__.SUMMARY_ANALYSIS_QUEUED_KEY(self.pk), False)
+        return get_cache_state(self.__class__.SUMMARY_ANALYSIS_QUEUED_KEY(self.pk), False)
 
     @classmethod
     def SUMMARY_ANALYSIS_ACTIVE_KEY(cls, pk):
@@ -736,7 +736,7 @@ class ImportRecord(NotDeletableModel):
     @property
     def worksheet_progress_json(self):
         progresses = []
-        some_file_has_mapping_active = cache.get(self.MAPPING_ACTIVE_KEY, False) == False
+        some_file_has_mapping_active = get_cache_state(self.MAPPING_ACTIVE_KEY, False) == False
         # some_file_has_mapping_active = False
         try:
             for f in self.files:
@@ -1129,10 +1129,10 @@ class ImportFile(NotDeletableModel):
 
     def update_tcms_from_save(self, json_data, save_counter):
         # Check save_counter vs queued_save_counters.
-        queued_save_counter = cache.get(self.QUEUED_TCM_SAVE_COUNTER_KEY, None)
+        queued_save_counter = get_cache_raw(self.QUEUED_TCM_SAVE_COUNTER_KEY, None)
         if not queued_save_counter or save_counter > queued_save_counter:
-            if not cache.get(self.UPDATING_TCMS_KEY, None):
-                cache.set(self.UPDATING_TCMS_KEY, True)
+            if not get_cache_state(self.UPDATING_TCMS_KEY, None):
+                set_cache_state(self.UPDATING_TCMS_KEY, True)
                 for d in json.loads(json_data):
 
                     tcm = TableColumnMapping.objects.get(pk=d["pk"])
@@ -1142,22 +1142,22 @@ class ImportFile(NotDeletableModel):
                     tcm.was_a_human_decision = True
                     tcm.save()
 
-                if cache.get(self.QUEUED_TCM_SAVE_COUNTER_KEY, False) is not False:
-                    queued_data = cache.get(self.QUEUED_TCM_DATA_KEY)
-                    queued_time = cache.get(self.QUEUED_TCM_SAVE_COUNTER_KEY)
-                    cache.delete(self.QUEUED_TCM_DATA_KEY)
-                    cache.delete(self.QUEUED_TCM_SAVE_COUNTER_KEY)
-                    cache.delete(self.UPDATING_TCMS_KEY)
+                if get_cache_raw(self.QUEUED_TCM_SAVE_COUNTER_KEY, False) is not False:
+                    queued_data = get_cache_raw(self.QUEUED_TCM_DATA_KEY)
+                    queued_time = get_cache_raw(self.QUEUED_TCM_SAVE_COUNTER_KEY)
+                    delete_cache(self.QUEUED_TCM_DATA_KEY)
+                    delete_cache(self.QUEUED_TCM_SAVE_COUNTER_KEY)
+                    delete_cache(self.UPDATING_TCMS_KEY)
                     self.update_tcms_from_save(queued_data, queued_time)
 
-                cache.delete(self.UPDATING_TCMS_KEY)
-                cache.delete(self.QUEUED_TCM_DATA_KEY)
-                cache.delete(self.QUEUED_TCM_SAVE_COUNTER_KEY)
+                delete_cache(self.UPDATING_TCMS_KEY)
+                delete_cache(self.QUEUED_TCM_DATA_KEY)
+                delete_cache(self.QUEUED_TCM_SAVE_COUNTER_KEY)
                 return True
 
             else:
-                cache.set(self.QUEUED_TCM_SAVE_COUNTER_KEY, save_counter)
-                cache.set(self.QUEUED_TCM_DATA_KEY, json_data)
+                set_cache_raw(self.QUEUED_TCM_SAVE_COUNTER_KEY, save_counter)
+                set_cache_raw(self.QUEUED_TCM_DATA_KEY, json_data)
         return False
 
     @property
@@ -1169,7 +1169,7 @@ class ImportFile(NotDeletableModel):
         if not self.coercion_mapping_active and not self.coercion_mapping_queued and self.num_coercions_total > 0:
             return 100.0
         if self.coercion_mapping_active:
-            return cache.get(self.CLEANING_PROGRESS_KEY, 0.0)
+            return get_cache(self.CLEANING_PROGRESS_KEY)['progress']
         elif self.coercion_mapping_queued or not self.coercion_mapping_done:
             return 0.0
         else:
@@ -1193,11 +1193,11 @@ class ImportFile(NotDeletableModel):
 
     @property
     def coercion_mapping_active(self):
-        return cache.get(self.CLEANING_ACTIVE_CACHE_KEY, False)
+        return get_cache_state(self.CLEANING_ACTIVE_CACHE_KEY, False)
 
     @property
     def coercion_mapping_queued(self):
-        return cache.get(self.CLEANING_QUEUED_CACHE_KEY, False)
+        return get_cache_state(self.CLEANING_QUEUED_CACHE_KEY, False)
 
     @property
     def SAVE_COUNTER_CACHE_KEY(self):
@@ -1217,11 +1217,11 @@ class ImportFile(NotDeletableModel):
 
     @property
     def export_ready(self):
-        return cache.get(self.EXPORT_READY_CACHE_KEY, True) and self.export_file != None and self.export_file != ""
+        return get_cache_state(self.EXPORT_READY_CACHE_KEY, True) and self.export_file != None and self.export_file != ""
 
     @property
     def export_generation_pct_complete(self):
-        return cache.get(self.EXPORT_PCT_COMPLETE_CACHE_KEY, False)
+        return get_cache_state(self.EXPORT_PCT_COMPLETE_CACHE_KEY, False)
 
     @property
     def export_url(self):

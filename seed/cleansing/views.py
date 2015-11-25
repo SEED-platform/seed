@@ -1,6 +1,6 @@
 import csv
 from django.contrib.auth.decorators import login_required
-from django.core.cache import cache
+from seed.utils.cache import get_cache_raw, get_cache
 from django.http import HttpResponse
 from seed.cleansing.models import Cleansing
 from seed.decorators import ajax_request
@@ -19,7 +19,7 @@ def get_cleansing_results(request):
     """
 
     import_file_id = request.GET.get('import_file_id')
-    cleansing_results = cache.get(Cleansing.cache_key(import_file_id), [])
+    cleansing_results = get_cache_raw(Cleansing.cache_key(import_file_id))
 
     # add in additional fields for view
     for i, row in enumerate(cleansing_results):
@@ -44,7 +44,7 @@ def get_progress(request):
     """
 
     import_file_id = request.GET.get('import_file_id')
-    return cache.get(get_prog_key(import_file_id))
+    return get_cache(get_prog_key(import_file_id))['progress']
 
 
 @api_endpoint
@@ -56,7 +56,7 @@ def get_csv(request):
     """
 
     import_file_id = request.GET.get('import_file_id')
-    cleansing_results = cache.get(Cleansing.cache_key(import_file_id), [])
+    cleansing_results = get_cache_raw(Cleansing.cache_key(import_file_id))
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="Data Cleansing Results.csv"'
 

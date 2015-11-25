@@ -2,7 +2,7 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from models import Cleansing
 from seed.decorators import get_prog_key
-from django.core.cache import cache
+from seed.utils.cache import set_cache
 from seed.models import BuildingSnapshot
 
 logger = get_task_logger(__name__)
@@ -37,4 +37,9 @@ def finish_cleansing(results, file_pk):
     """
 
     prog_key = get_prog_key('cleanse_data', file_pk)
-    cache.set(prog_key, 100)
+    result = {
+            'status': 'success',
+            'progress': 100,
+            'message': 'cleansing complete'
+        }
+    set_cache(prog_key, result['status'], result)

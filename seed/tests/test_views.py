@@ -1997,8 +1997,12 @@ class TestMCMViews(TestCase):
     def test_progress(self):
         """Make sure we retrieve data from cache properly."""
         progress_key = decorators.get_prog_key('fun_func', 23)
-        expected = 50.0
-        set_cache(progress_key, 'parsing', expected)
+        test_progress = {
+            'progress': 50.0,
+            'status': 'parsing',
+            'progress_key': progress_key
+        }
+        set_cache(progress_key, 'parsing', test_progress)
         resp = self.client.post(
             reverse_lazy("seed:progress"),
             data=json.dumps({
@@ -2009,7 +2013,7 @@ class TestMCMViews(TestCase):
 
         self.assertEqual(resp.status_code, 200)
         body = json.loads(resp.content)
-        self.assertEqual(body.get('progress', 0), expected)
+        self.assertEqual(body.get('progress', 0), test_progress['progress'])
         self.assertEqual(body.get('progress_key', ''), progress_key)
 
     def test_remap_buildings(self):
