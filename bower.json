@@ -9,7 +9,7 @@
     "tests"
   ],
   "dependencies": {
-    "angular":"~1.4.7",
+    "angular": "~1.4.7",
     "angular-bootstrap": "~0.14.3",
     "angular-cookies": "~1.4.7",
     "angular-mocks": "~1.4.7",
@@ -24,7 +24,10 @@
     "jquery": "~2.1.4",
     "jquery-ui": "~1.11.4",
     "lodash": "~3.10.1",
-    "moment": "~2.10.6"
+    "moment": "~2.10.6",
+    "angular-xeditable": "~0.1.9",
+    "ng-tags-input": "~3.0.0",
+    "angular-ui-notification": "~0.1.0"
   },
   "resolutions": {
     "angular": "1.4.7"

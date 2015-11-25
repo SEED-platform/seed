@@ -36,6 +36,11 @@
         <link href="{{STATIC_URL}}vendors/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
         <link href="{{STATIC_URL}}vendors/bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css" rel="stylesheet" type="text/css">
         <link href="{{STATIC_URL}}vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.css" rel="stylesheet" type="text/css">
+         <link href="{{STATIC_URL}}vendors/bower_components/ng-tags-input/ng-tags-input.css" rel="stylesheet" type="text/css"/>   
+        <link href="{{STATIC_URL}}vendors/bower_components/ng-tags-input/ng-tags-input.bootstrap.css" rel="stylesheet" type="text/css">  
+         <link href="{{STATIC_URL}}vendors/bower_components/angular-xeditable/dist/css/xeditable.css" rel="stylesheet" type="text/css">  
+        <link href="{{STATIC_URL}}vendors/bower_components/angular-ui-notification/dist/angular-ui-notification.min.css" rel="stylesheet" type="text/css">
+       
        
         {% block css %}{{block.super}}
             {% compress css %}
@@ -84,10 +89,15 @@
 
             <script src="{{STATIC_URL}}vendors/bower_components/moment/min/moment.min.js"></script>
 
-            <!-- for reports -->
+            <!-- reports -->
             <script src="{{STATIC_URL}}vendors/bower_components/d3/d3.min.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/dimple/dist/dimple.latest.min.js"></script>
-            <!-- / end for reports -->
+            <!-- / reports -->
+        
+            <script src="{{STATIC_URL}}vendors/bower_components/angular-xeditable/dist/js/xeditable.min.js"></script>                     
+            <script src="{{STATIC_URL}}vendors/bower_components/ng-tags-input/ng-tags-input.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-notification/dist/angular-ui-notification.min.js"></script>
+          
 
             {% ifequal FILE_UPLOAD_DESTINATION 'S3' %}
             <script src="{{STATIC_URL}}vendors/bower_components/fine-uploader/_build/s3.fineuploader.js" ></script>
