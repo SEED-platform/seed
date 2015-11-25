@@ -17,6 +17,8 @@ class NormalizeAddressTester(type):
         for doc, message, expected in cases:
             test = make_method(message, expected)
             test_name = 'test_normalize_address_%s' % doc.lower().replace(' ', '_')
+            if test_name in attrs:
+                raise KeyError("Test name {0} duplicated".format(test_name))
             test.__name__ = test_name
             test.__doc__ = doc
             attrs[test_name] = test
@@ -51,7 +53,7 @@ class NormalizeStreetAddressTests(TestCase):
         # Found edge cases
         # https://github.com/SEED-platform/seed/issues/378
         ('regression 1', '100 Peach Ave. East', '100 peach ave e'),
-        ('regression 1', '100 Peach Avenue E.', '100 peach ave e'),
+        ('regression 2', '100 Peach Avenue E.', '100 peach ave e'),
         ('multiple addresses', 'M St., N St., 4th St., Delaware St., SW', 'm st., n st., 4th st., delaware st., sw'),
         # House numbers declared as ranges
         ('no range separator', '300 322 S Green St', '300-322 s green st'),

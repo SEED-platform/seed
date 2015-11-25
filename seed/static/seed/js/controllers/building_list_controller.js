@@ -365,6 +365,9 @@ angular.module('BE.seed.controller.building_list', [])
         $scope.search.query = $scope.search.filter_params.q || "";
         $scope.search.update_results(search_payload);
 
+        // intitialize tooltips
+        $('[data-toggle="popover"]').popover();
+
         if (typeof $scope.user.project_id !== "undefined") {
             $scope.is_project = true;
             $scope.search.filter_params.project__slug = $scope.user.project_id;

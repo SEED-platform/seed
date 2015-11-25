@@ -13,6 +13,7 @@ from django.db.models import Q
 from seed.lib.superperms.orgs.models import Organization
 from .models import BuildingSnapshot
 from .utils.mapping import get_mappable_types
+from .utils import search as search_utils
 from seed.public.models import PUBLIC
 
 
@@ -166,51 +167,15 @@ def filter_other_params(queryset, other_params, db_columns):
     :returns: Django Queryset:
     """
 
-    def strip_suffix(k, suffix):
-        match = k.find(suffix)
-        if match >= 0:
-            return k[:match]
-        else:
-            return k
-
-    def strip_suffixes(k, suffixes):
-        return reduce(strip_suffix, suffixes, k)
-
-    def is_column(k, columns):
-        sanitized = strip_suffixes(k, ['__lt', '__gt', '__lte', '__gte'])
-        if sanitized in columns:
-            return True
-        return False
-
-    def is_string_query(q):
-        return isinstance(q, basestring)
-
-    def is_exact_match(q):
-        # Surrounded by matching quotes?
-        if is_string_query(q):
-            return re.match(r"""^(["'])(.+)\1$""", q)
-        return False
-
-    def is_empty_match(q):
-        # Empty matching quotes?
-        if is_string_query(q):
-            return re.match(r"""^(["'])\1$""", q)
-        return False
-
-    def is_not_empty_match(q):
-        # Exclamation mark and empty matching quotes?
-        if is_string_query(q):
-            return re.match(r"""^!(["'])\1$""", q)
-        return False
-
     # Build query as Q objects so we can AND and OR.
     query_filters = Q()
     for k, v in other_params.iteritems():
-        in_columns = is_column(k, db_columns)
+        in_columns = search_utils.is_column(k, db_columns)
         if in_columns and k != 'q' and v is not None and v != '':
-            exact_match = is_exact_match(v)
-            empty_match = is_empty_match(v)
-            not_empty_match = is_not_empty_match(v)
+            exact_match = search_utils.is_exact_match(v)
+            empty_match = search_utils.is_empty_match(v)
+            not_empty_match = search_utils.is_not_empty_match(v)
+            is_expression = search_utils.is_expression(v)
 
             if exact_match:
                 query_filters &= Q(**{"%s__exact" % k: exact_match.group(2)})
@@ -218,6 +183,8 @@ def filter_other_params(queryset, other_params, db_columns):
                 query_filters &= Q(**{"%s__exact" % k: ''}) | Q(**{"%s__isnull" % k: True})
             elif not_empty_match:
                 query_filters &= ~Q(**{"%s__exact" % k: ''}) & Q(**{"%s__isnull" % k: False})
+            elif is_expression:
+                query_filters &= search_utils.parse_expression(k, v)
             elif ('__lt' in k or
                           '__lte' in k or
                           '__gt' in k or
@@ -232,11 +199,11 @@ def filter_other_params(queryset, other_params, db_columns):
 
     # handle extra_data with json_query
     for k, v in other_params.iteritems():
-        if (not is_column(k, db_columns)) and k != 'q' and v:
+        if (not search_utils.is_column(k, db_columns)) and k != 'q' and v:
 
-            exact_match = is_exact_match(v)
-            empty_match = is_empty_match(v)
-            not_empty_match = is_not_empty_match(v)
+            exact_match = search_utils.is_exact_match(v)
+            empty_match = search_utils.is_empty_match(v)
+            not_empty_match = search_utils.is_not_empty_match(v)
 
             if empty_match:
                 # Filter for records that DO NOT contain this field OR
@@ -261,11 +228,11 @@ def filter_other_params(queryset, other_params, db_columns):
                 conditions['value'] = exact_match.group(2)
                 conditions['key_cast'] = 'text'
             elif k.endswith(('__gt', '__gte')):
-                k = strip_suffixes(k, ['__gt', '__gte'])
+                k = search_utils.strip_suffixes(k, ['__gt', '__gte'])
                 conditions['cond'] = '>'
                 conditions['key_cast'] = 'float'
             elif k.endswith(('__lt', '__lte')):
-                k = strip_suffixes(k, ['__lt', '__lte'])
+                k = search_utils.strip_suffixes(k, ['__lt', '__lte'])
                 conditions['cond'] = '<'
                 conditions['key_cast'] = 'float'
             else:
@@ -302,11 +269,7 @@ def parse_body(request):
 
     q = body.get('q', '')
     other_search_params = body.get('filter_params', {})
-    if 'exclude' in other_search_params:
-        exclude = other_search_params['exclude']
-        del (other_search_params['exclude'])
-    else:
-        exclude = {}
+    exclude = other_search_params.pop('exclude', {})
 
     order_by = body.get('order_by', 'tax_lot_id')
     if order_by == '':
