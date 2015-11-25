@@ -17,43 +17,75 @@
         <a id="building-list" ng-href="#/buildings" class="active">Buildings List</a>
         <a id="list-settings" ng-href="#/buildings/settings">List Settings</a>
         <a id="reports" ng-href="#/buildings/reports">Reports</a>
+        <a id="labels" ng-href="#/buildings/labels">Labels</a>
     </div>
 </div>
-<div class="section">
-    <div class="alert_container" ng-show="show_alert">
-        <div class="alert alert-success">
-            <button type="button" class="close" ng-click="show_alert = false">&times;</button>
-            You successfully created the project <a href="#"><strong>{$ project.name $}</strong></a>.
-        </div>
-    </div>
-    <div class="section_header_container">
-        <div class="section_header fixed_height">
-            <div class="left section_action_container">
-                <div class="check_action">
-                    <div uib-dropdown class="btn-group" ng-style="nothing_selected_cursor()">
-                      <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" ng-disabled="nothing_selected()">
-                        Building Actions <span class="caret"></span>
-                      </button>
-                      <ul class="uib-dropdown-menu" role="menu">
-                        <li ng-hide="menu.user.organization.user_role === 'viewer'"><a data-toggle="modal" data-target="#newProjectModal" ng-click="set_initial_project_state()">Create a new project</a></li>
-                        <li ng-hide="menu.user.organization.user_role === 'viewer'"><a data-toggle="modal" data-target="#existingProjectModal" ng-click="create_project_state='create'">Add to an existing project</a></li>
-                      <li ng-hide="menu.user.organization.user_role === 'viewer'"><a ng-click="open_delete_modal()">Delete Buildings</a></li>
-                      <li><a ng-click="open_export_modal()">Export Buildings</a></li>
-                      </ul>
-                    </div>
-                </div>
+<div class="buildingListControls">
+    <form   name="listControlsForm" 
+            class="form-inline" 
+            role="form"
+            ng-submit="submitNewLabelForm(newLabelForm.$valid)"
+            novalidate>
+        <div class="form-group">    
+            <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
+                <button type="button" 
+                        class="btn btn-default btn-sm dropdown-toggle" 
+                        data-toggle="dropdown" 
+                        ng-disabled="nothing_selected()">
+                    Building Actions <span class="caret"></span>
+                </button>
+                <ul class="uib-dropdown-menu" role="menu" >
+                    <li ng-hide="menu.user.organization.user_role === 'viewer'">
+                        <a  data-toggle="modal" 
+                            data-target="#newProjectModal" 
+                            ng-click="set_initial_project_state()">
+                            Create a new project</a></li>
+                    <li ng-hide="menu.user.organization.user_role === 'viewer'">
+                        <a  data-toggle="modal" 
+                            data-target="#existingProjectModal" 
+                            ng-click="create_project_state='create'">
+                            Add to an existing project</a></li>
+                    <li ng-hide="menu.user.organization.user_role === 'viewer'">
+                        <a ng-click="open_delete_modal()">Delete Buildings</a></li>
+                    <li>
+                        <a ng-click="open_export_modal()">Export Buildings</a>
+                    </li>
+                    <li>
+                        <a ng-click="open_update_building_labels_modal()">Add/Remove Labels</a>
+                    </li>
+                </ul>
             </div>
-            <div class="right section_action_container section_action_btn"></div>
         </div>
-    </div>
-    <div class="section_content_container" ng-cloak>
-        <div class="section_content">
-            <ng-include src="urls.static_url + 'seed/partials/buildings_table.html'">
-                <!-- buildings table loads here -->
-            </ng-include>
-        </div>
+        <div class="form-group" >
+            <label for="tagsInput">Filter by label:</label>  
+            <div class="btn-group"   >
+                <tags-input id="tagsInput"
+                            ng-model="search.filter_params.labels"
+                            placeholder="Add a label"
+                            replace-spaces-with-dashes="false"
+                            add-from-autocomplete-only="true">
+                   <auto-complete source="loadLabelsForFilter($query)"></auto-complete>
+                </tags-input>
+            </div>     
+        </div>        
+        <div class="btn-group">
+            <button type="button" 
+                    class="btn btn-primary btn-sm"
+                    ng-click="do_search()"  >
+                Update Filters
+            </button>
+        </div>                     
+    </form>
+</div>
+
+<div class="section_content_container" ng-cloak style="clear:both;">    
+    <div class="section_content">
+        <ng-include src="urls.static_url + 'seed/partials/buildings_table.html'">
+            <!-- buildings table loads here -->
+        </ng-include>
     </div>
 </div>
+
 
 <!-- newProjectModal -->
 <div class="modal fade" id="newProjectModal" tabindex="-1" role="dialog" aria-labelledby="newProjectModalLabel" aria-hidden="true">

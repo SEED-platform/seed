@@ -1,0 +1,155 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+           
+        </div>
+        <div class="page_title">
+            <h1><i class="fa fa-building-o"></i> Buildings</h1>
+        </div>
+        <div class="right page_action_container page_action_btn">
+            
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav">
+        <a id="building-list" ng-href="#/buildings">Buildings List</a>
+        <a id="list-settings" ng-href="#/buildings/settings">List Settings</a>
+        <a id="reports" ng-href="#/buildings/reports">Reports</a>
+        <a ng-href="#/buildings/labels" class="active">Labels</a>
+    </div>
+</div>
+
+<div id="label_admin" class="container-fluid"> 
+                
+    <div class="newLabelInput">               
+        <form   name="newLabelForm" 
+                class="form-inline" 
+                role="form"
+                ng-submit="submitNewLabelForm(newLabelForm.$valid)"
+                novalidate>
+            <div    class="form-group" 
+                    ng-class="{'has-error':  newLabelForm.labelName.$invalid &&
+                                             newLabelForm.labelName.$dirty}">       
+                <label  class="control-label sectionLabel" 
+                        style="padding-right:20px;">
+                        Create new label</label>
+                <div class="input-group" >
+                    <input  type="text"      
+                            name="name"                       
+                            class="form-control" 
+                            id="projectName" 
+                            ng-minlength="1" 
+                            ng-maxlength="100"
+                            style="min-width:300px;"
+                            ng-model="new_label.name" 
+                            placeholder="Label Name" 
+                            required>
+                    <div uib-dropdown class="input-group-btn">
+                        <button type="button" 
+                                class="btn btn-{$ new_label.label $} dropdown-toggle"
+                                data-toggle="dropdown">
+                                {$ new_label.color $}&nbsp;&nbsp;<span class="caret"></span></button>
+                        <ul class="uib-dropdown-menu pull-right" role="menu">
+                            <li ng-repeat="labelOption in available_colors" 
+                                ng-click="new_label.label = labelOption.label; 
+                                            new_label.color = labelOption.color">
+                                <a>
+                                    <span class="label label-{$ labelOption.label $}">{$ labelOption.color $}</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>                   
+                </div>                
+                <button id="btnCreateLabel"
+                        class="btn btn-primary" >
+                        Create label</button>
+            </div>
+        </form>
+    </div>
+
+
+    <div style="padding-left:10px;" class="sectionLabel" >
+        <p><b><i class="fa fa-labels"></i>Existing Labels</b></p>
+    </div>
+     
+    <div class="table_list_container">
+        <table class="table table-striped table-hover table-condensed"  >
+
+            <tr class="tableHeader">
+              <td style="width:80%;padding-left:10px;">Name</td>
+              <td style="width:10%">Color</td>
+              <!--
+              <td style="width:30%"># Buildings with Label</td>
+              -->
+              <td width="width:10%" align="right"></td>
+            </tr>
+
+            <tr ng-repeat="label in labels" >
+
+                <td style="border:0px; padding-left:10px; vertical-align:middle;">
+                    <span   editable-text="label.name" 
+                            e-name="name" 
+                            e-form="rowform" 
+                            ng-show="rowform.$visible" 
+                            onbeforesave="checkNewLabelNameForUpdate($data, label.name)" 
+                            e-ng-keypress="onLabelNameKeypress($event, rowform)"
+                            e-required>
+                        {$ label.name || 'empty' $}
+                    </span>
+                    <span   ng-show="!rowform.$visible"
+                            class="label label-{$ label.label $}">
+                        {$ label.name || 'empty' $}
+                    </span>
+                </td>
+
+                <td style="border:0px;">
+                    <!-- editable status (select-local) -->
+                    <span   editable-select="label.color"
+                            e-name="color" 
+                            e-form="rowform" 
+                            ng-show="rowform.$visible" 
+                            class="label label-{$ label.label $}"
+                            e-ng-keypress="onLabelNameKeypress($event, rowform)"
+                            e-ng-options="s.color as s.color for s in available_colors">
+                        {$ label.color $}
+                    </span>
+                </td>
+
+                <td style="white-space: nowrap; border:0px;" align="right">
+
+                    <!-- form -->
+                    <form   editable-form name="rowform" 
+                            onbeforesave="saveLabel($data, label.id, $index)" 
+                            ng-show="rowform.$visible" 
+                            class="form-buttons form-inline" 
+                            shown="inserted == label">
+                      <button   type="submit" 
+                                ng-disabled="rowform.$waiting"
+                                class="btn btn-primary btn-rowform">
+                        save
+                      </button>
+                      <button   type="button" 
+                                ng-disabled="rowform.$waiting" 
+                                ng-click="rowform.$cancel()"
+                                class="btn btn-default btn-rowform">
+                        cancel
+                      </button>
+                    </form>
+
+                    <div class="buttons" ng-show="!rowform.$visible">
+                      <button   class="btn btn-default  btn-rowform" 
+                                ng-click="rowform.$show()">
+                                edit</button>
+                      <button   class="btn btn-danger btn-rowform" 
+                                ng-click="deleteLabel(label, $index)">
+                                X</button>
+                    </div>  
+
+                </td>
+
+            </tr>
+        </table>
+    </div>
+   
+</div>

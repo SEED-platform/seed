@@ -1987,3 +1987,173 @@ a:not([href]) {
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
+
+
+/* Styles for new labels  */
+
+#label_admin {
+
+   .newLabelInput{
+        margin: 20px 0px; 
+        border:1px solid #EEE; 
+        padding: 10px 10px; 
+        border-radius: 5px;
+        background-color: #F1F1F1;
+    }
+    #btnCreateLabel {
+        margin-left:10px;
+    }
+
+  .table_list_container{
+        border: 1px solid #cdcdcd;
+    }
+
+    .sectionLabel {
+         font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    .tableHeader {
+        font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        white-space: nowrap;
+        padding: 6px 10px 5px 10px;
+        text-transform: uppercase;
+        background-color: #cdcdcd !important;
+        text-shadow: 0 1px 0 white;
+        border-bottom: 1px solid #b3b3b3;
+    }   
+
+    /* Get xeditable fields to extend 100% of td */
+    form[editable-form] > div {
+      margin: 10px 0;
+    }
+    .editable-wrap {
+      width: 100%;
+    }
+
+}
+
+.label-edit-section {
+
+  margin:5px 10px 10px 20px;
+
+    .label-action {
+      
+    display: inline-block;
+
+      .label-edit-text {
+      margin-right: 20px;
+      }
+
+      a {
+      margin-right: 20px;
+    }
+    }
+
+  .label-container {
+    display: inline-block;
+  }
+
+  .label {
+    padding: .6em .6em .5em .6em;
+    display: inline-block;
+    margin-bottom: 5px;
+  }
+}
+
+
+.label {  
+    margin-right: 5px;
+}
+
+/* Styles for building list controls and table */
+.buildingListControls{
+    padding: 20px 10px;
+
+  .form-group {
+    margin-right: 20px;
+  }
+}
+
+
+/* Styles for update labels modal */
+
+#update-building-labels-modal {
+
+  .add-label-row {
+    margin-right: -5px;
+    margin-bottom: 20px;
+  }
+
+  .btn-default {
+    min-width: 70px;
+  }
+
+  .table-list-container {
+    border: 1px solid #EEE;
+    th, td {
+      border: 0px;
+    }
+  }
+
+}
+
+/* Styles to override ngInputTags to get correct tag colors */
+
+tags-input .tags {
+    min-width:550px;
+}
+
+.tag-primary {
+  border-color: #428bca !important;
+  background: #428bca !important;
+}
+  
+.tag-success {
+  border-color: #5cb85c !important;
+  background: #5cb85c !important;
+}
+
+.tag-info {
+  border-color: #5bc0de !important;
+  background: #5bc0de !important;
+}
+
+.tag-warning {
+  border-color: #dff0d8 !important;
+  background: #dff0d8 !important;
+}
+
+.tag-danger {
+  border-color:  #d43f3a !important;
+  background: #d43f3a !important;
+}
+gs-input .tags .tag-item .remove-button { 
+  color: #FFF;
+}
+
+
+
+/* Styles for notifications */
+.ui-notification {
+
+  background-color: #EEE;
+  color: #000;
+  border-left: thick solid $blue;
+  
+  &.warning {
+    border-left: thick solid $warningBackground;
+    }
+    &.error {     
+    border-left: thick solid $errorBackground;
+    }
+    &.success {
+      border-left: thick solid $successBackground;
+    }
+    &.info {
+      border-left: thick solid $infoBackground;
+    }
+    &:hover {
+        opacity: 0.7;
+    }
+}
+

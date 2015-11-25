@@ -19,6 +19,7 @@ angular.module('BE.seed.controller.building_list', [])
   'all_columns',
   'project_payload',
   'search_service',
+  'label_service',
   function(
     $scope,
     $routeParams,
@@ -35,7 +36,8 @@ angular.module('BE.seed.controller.building_list', [])
     default_columns,
     all_columns,
     project_payload,
-    search_service
+    search_service,
+    label_service
   ) {
     // extend the search_service
     $scope.search = angular.copy(search_service);
@@ -56,9 +58,93 @@ angular.module('BE.seed.controller.building_list', [])
     $scope.assessor_fields = [];
     $scope.create_project_error = false;
     $scope.create_project_error_message = "";
+    
 
     /**
-     * building table code
+    * SEARCH CODE
+    */
+
+    $scope.do_search = function(){
+        refresh_search();
+    }
+
+    var refresh_search = function() {
+        $scope.search.search_buildings();
+    };
+
+    /**
+    * END SEARCH CODE
+    */
+
+
+    /**
+    * LABELS CODE
+    */
+
+    /*  This method is required by the ngTagsInput input control.
+        TODO: Write function to dynamically build array based on query.
+    */
+    $scope.loadLabelsForFilter = function(query) {
+        //todo : provide list of tags based on query
+        //right now just sending back list of labels
+        return $scope.labels;  
+    };
+
+    /**
+        Opens the update building labels modal.
+        All further actions for labels happen with that modal and its related controller,
+        including creating a new label or applying to/removing from a building.
+        When the modal is closed, refresh labels and search.
+     */
+    $scope.open_update_building_labels_modal = function() {
+
+        //get labels with 'is-applied' property by passing in current search state
+        label_service.get_labels($scope.search).then(function(data){
+           
+            var modalInstance = $uibModal.open({
+                templateUrl: urls.static_url + 'seed/partials/update_building_labels_modal.html',
+                controller: 'update_building_labels_modal_ctrl',
+                resolve: {
+                    labels: function () {
+                        return $scope.labels;
+                    },
+                    search: function () {
+                        return $scope.search;
+                    }
+                }
+            });
+            modalInstance.result.then(
+                function () {
+                    //dialog was closed with 'Done' button.
+                    get_labels();
+                    refresh_search();
+                }, 
+                function (message) {
+                   //dialog was 'dismissed,' which means it was cancelled...so nothing to do. 
+                }
+            );
+        });
+    };
+
+    /**
+    * get_labels: called by init, gets available organization labels
+    */
+    var get_labels = function(building) {
+        // gets all labels for an org user
+        label_service.get_labels().then(function(data) {
+            // resolve promise
+            $scope.labels = data.labels;
+        });
+    };
+
+    /**
+    * END LABELS CODE
+    */
+
+
+
+    /**
+     * BUILDING TABLE CODE
      */
 
     /**
@@ -75,29 +161,12 @@ angular.module('BE.seed.controller.building_list', [])
     };
 
     /**
-     * get_labels: called by init, gets available organization labels
-     */
-    var get_labels = function(building) {
-        // gets all labels for an org user
-        project_service.get_labels().then(function(data) {
-            // resolve promise
-            $scope.labels = data.labels;
-        });
-    };
-    /**
-     * end building table code
-     */
-
-    /**
-     * search code
-     */
-    var refresh_search = function() {
-        $scope.search.search_buildings();
-    };
+    * END BUILDING TABLE CODE
+    */
 
 
     /**
-     * Projects code
+     * PROJECTS CODE
      */
     $scope.nothing_selected = function() {
         if ($scope.search.selected_buildings.length === 0 &&
@@ -231,6 +300,8 @@ angular.module('BE.seed.controller.building_list', [])
         $scope.project.deadline_date = null;
         $scope.project.end_date = null;
     };
+
+    /* DMcQ: (Nov 26, 2015) We are removing project-label functionality until a later date.
     $scope.apply_label = function(label) {
         var search_params = {
             'q': $scope.query,
@@ -251,32 +322,9 @@ angular.module('BE.seed.controller.building_list', [])
         var empty_label = {};
         $scope.apply_label(empty_label);
     };
+    */
 
-    /**
-     * open_edit_label_modal: opens the edit or manage labels modal. On return,
-     *   get_labels() and refresh_search() are called to update labels.
-     */
-    $scope.open_edit_label_modal = function() {
-        var modalInstance = $uibModal.open({
-            templateUrl: urls.static_url + 'seed/partials/manage_labels_modal.html',
-            controller: 'edit_label_modal_ctrl',
-            resolve: {
-                labels: function () {
-                    return $scope.labels;
-                }
-            }
-        });
-
-        modalInstance.result.then(
-            function () {
-                get_labels();
-                refresh_search();
-        }, function (message) {
-                get_labels();
-                refresh_search();
-        });
-    };
-
+    
     /**
      * open_export_modal: opens the export modal
      */
@@ -330,8 +378,8 @@ angular.module('BE.seed.controller.building_list', [])
         });
     };
     /**
-     * end Projects code
-     */
+    * END PROJECTS CODE
+    */
 
 
     /**

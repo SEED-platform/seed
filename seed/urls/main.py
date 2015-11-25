@@ -66,11 +66,17 @@ urlpatterns = patterns(
     url(r'^update_dataset/$', 'update_dataset', name='update_dataset'),
     url(r'^update_building/$', 'update_building', name='update_building'),
     
-    #DMcQ: Test for building reports    
+    #Building reports    
     url(r'^get_building_summary_report_data/$', 'get_building_summary_report_data', name='get_building_summary_report_data'),
     url(r'^get_building_report_data/$', 'get_building_report_data', name='get_building_report_data'),
     url(r'^get_aggregated_building_report_data/$', 'get_aggregated_building_report_data', name='get_aggregated_building_report_data'),
 
+    #Labels
+    url(r'^get_labels/$',   'get_labels',   name='get_labels'),
+    url(r'^create_label/$', 'create_label', name='create_label'),
+    url(r'^update_label/$', 'update_label', name='update_label'),
+    url(r'^delete_label/$', 'delete_label', name='delete_label'),
+    url(r'^update_building_labels/$', 'update_building_labels', name='update_building_labels'),
 
     # New MCM endpoints
     url(

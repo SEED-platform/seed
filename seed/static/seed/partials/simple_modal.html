@@ -1,15 +1,15 @@
 <div class="modal-header">
-  <h3>{$uibModalOptions.headerText$}</h3>
+  <h3>{$ modalOptions.headerText $}</h3>
 </div>
 <div class="modal-body">
-  <p>{$uibModalOptions.bodyText$}</p>
+  <p>{$ modalOptions.bodyText $}</p>
 </div>
 <div class="modal-footer">
   <button 	type="button"
   			class="btn btn-primary" 
-          	data-ng-click="modalOptions.ok();">{$uibModalOptions.okButtonText$}</button>
+          	data-ng-click="modalOptions.ok();">{$ modalOptions.okButtonText $}</button>
   <button 	type="button" 
-  			class="btn" 
+  			class="btn btn-default" 
   			ng-hide="!modalOptions.cancelButtonText"
-          	data-ng-click="modalOptions.cancel()">{$uibModalOptions.cancelButtonText$}</button>
+          	data-ng-click="modalOptions.cancel()">{$ modalOptions.cancelButtonText $}</button>
 </div>

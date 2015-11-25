@@ -94,15 +94,15 @@ angular.module('BE.seed.service.simple_modal', [])
             //Map modal.html $scope custom properties to defaults defined in service
             angular.extend(tempModalOptions, modalOptions, customModalOptions);
 
-            tempModalDefaults.controller = function ($scope, $uibModalInstance) {
+            tempModalDefaults.controller = function ($scope, $modalInstance) {
                 $scope.modalOptions = tempModalOptions;
                 $scope.modalOptions.ok = function (result) {
-                    $uibModalInstance.close(tempModalOptions.okResult);
+                    $modalInstance.close(tempModalOptions.okResult);
                 };
                 $scope.modalOptions.cancel = function (result) {
-                    $uibModalInstance.dismiss('cancel');
+                    $modalInstance.dismiss('cancel');
                 };
-            };     
+            }          
 
             return $uibModal.open(tempModalDefaults).result;
         };
