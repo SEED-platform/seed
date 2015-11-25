@@ -73,11 +73,11 @@ BEHome.handlers.handle_cancel_button = function () {
 
 BEHome.util.bind_all_handlers = function() {
     $(window).resize(BEHome.actions.vertically_center_page);
-    $(".btn_landing_landing.invite").live("click", BEHome.handlers.handle_signup_choice_button);
-    $(".btn_landing_landing.request").live("click", BEHome.handlers.handle_request_invite_button);
-    $(".btn_landing_landing.login").live("click", BEHome.handlers.handle_login_button);
-    $(".already_signed_up").live("click", BEHome.handlers.handle_login_button);
-    $(".cancel_btn").live("click", BEHome.handlers.handle_cancel_button);
+    $(".btn_landing_landing.invite").on("click", BEHome.handlers.handle_signup_choice_button);
+    $(".btn_landing_landing.request").on("click", BEHome.handlers.handle_request_invite_button);
+    $(".btn_landing_landing.login").on("click", BEHome.handlers.handle_login_button);
+    $(".already_signed_up").on("click", BEHome.handlers.handle_login_button);
+    $(".cancel_btn").on("click", BEHome.handlers.handle_cancel_button);
 };
 
 $(function(){

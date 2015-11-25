@@ -22,6 +22,12 @@ then
     echo ""
     echo ""
     echo ""
+    echo "installing grunt-cli..."
+    npm install -g grunt-cli
+    echo ""
+    echo ""
+    echo ""
+    echo ""
     echo "building fineuploader"
     grunt build
     cd ../../../../../

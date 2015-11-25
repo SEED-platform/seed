@@ -1,7 +1,7 @@
 angular.module('BE.seed.controller.cleansing', [])
 .controller('cleansing_controller', [
   '$scope',
-  '$modalInstance',
+  '$uibModalInstance',
   'search_service',
   'cleansingResults',
   'name',
@@ -9,7 +9,7 @@ angular.module('BE.seed.controller.cleansing', [])
   'importFileId',
   function(
     $scope,
-    $modalInstance,
+    $uibModalInstance,
     search_service,
     cleansingResults,
     name,
@@ -22,7 +22,7 @@ angular.module('BE.seed.controller.cleansing', [])
     $scope.importFileId = importFileId;
 
     $scope.close = function () {
-      $modalInstance.close();
+      $uibModalInstance.close();
     };
 
     var fields = [{

@@ -24,7 +24,7 @@
 angular.module('BE.seed.controller.data_upload_modal', [])
 .controller('data_upload_modal_ctrl', [
   '$scope',
-  '$modalInstance',
+  '$uibModalInstance',
   '$log',
   'step',
   'dataset',
@@ -36,7 +36,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
   'building_services',
   function (
     $scope,
-    $modalInstance,
+    $uibModalInstance,
     $log,
     step,
     dataset,
@@ -105,18 +105,18 @@ angular.module('BE.seed.controller.data_upload_modal', [])
      * close: closes the modal, routes to the close function of the parent scope
      */
     $scope.close = function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
     };
     $scope.goto_data_mapping = function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
         $location.path('/data/mapping/' + $scope.dataset.import_file_id);
     };
     $scope.goto_data_matching = function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
         $location.path('/data/matching/' + $scope.dataset.import_file_id);
     };
     $scope.view_my_buildings = function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
         $location.path('/buildings/');
     };
     /**
@@ -124,7 +124,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
      *  scope
      */
     $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss('cancel');
     };
     /**
      * create_dataset: uses the `uploader_service` to create a new data set. If

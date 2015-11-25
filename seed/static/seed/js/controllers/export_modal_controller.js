@@ -4,13 +4,13 @@
 angular.module('BE.seed.controller.export_modal', [])
 .controller('export_modal_controller', [
   '$scope',
-  '$modalInstance',
+  '$uibModalInstance',
   'search',
   'selected_fields',
   'project',
   'export_service',
   '$timeout',
-  function($scope, $modalInstance, search, selected_fields, project, export_service, $timeout) {
+  function($scope, $uibModalInstance, search, selected_fields, project, export_service, $timeout) {
     $scope.export_state = 'create';
     $scope.building_export = {};
     $scope.building_export.selected_fields = selected_fields;
@@ -99,7 +99,7 @@ angular.module('BE.seed.controller.export_modal', [])
     $scope.cancel = function () {
         // stop any remaining timeout loops
         $timeout.cancel($scope.stop);
-        $modalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss('cancel');
     };
 
     /**
@@ -108,6 +108,6 @@ angular.module('BE.seed.controller.export_modal', [])
     $scope.close = function () {
         // stop any remaining timeout loops
         $timeout.cancel($scope.stop);
-        $modalInstance.close();
+        $uibModalInstance.close();
     };
 }]);

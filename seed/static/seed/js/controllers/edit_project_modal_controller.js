@@ -5,13 +5,13 @@
 angular.module('BE.seed.controller.edit_project_modal', [])
 .controller('edit_project_modal_ctrl', [
   '$scope',
-  '$modalInstance',
+  '$uibModalInstance',
   'project',
   '$filter',
   '$location',
   'project_service',
   'create_project',
-  function($scope, $modalInstance, project, $filter, $location, project_service, create_project) {
+  function($scope, $uibModalInstance, project, $filter, $location, project_service, create_project) {
     $scope.project = angular.copy(project);
     $scope.project.deadline_date = $filter('date')($scope.project.deadline_date, 'yyyy-MM-dd') || null;
     $scope.project.end_date = $filter('date')($scope.project.end_date, 'yyyy-MM') || null;
@@ -34,8 +34,8 @@ angular.module('BE.seed.controller.edit_project_modal', [])
         } else {
             project_service.update_project_name($scope.project).then(
                 function(data){
-                    // resolve promuse
-                    $modalInstance.close($scope.project);
+                    // resolve promise
+                    $uibModalInstance.close($scope.project);
                 },
                 function(data, status){
                     // reject promise
@@ -49,14 +49,14 @@ angular.module('BE.seed.controller.edit_project_modal', [])
 
     $scope.go_to_project = function() {
         $location.path('/projects/' + $scope.project.project_slug);
-        $modalInstance.close($scope.project);
+        $uibModalInstance.close($scope.project);
     };
 
     $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss('cancel');
     };
     $scope.close = function () {
-        $modalInstance.close($scope.project);
+        $uibModalInstance.close($scope.project);
     };
 
     var init = function() {

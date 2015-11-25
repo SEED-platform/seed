@@ -141,7 +141,7 @@ describe("controller: data_upload_modal_ctrl", function(){
     function create_data_upload_modal_controller(){
         edit_ctrl = controller('data_upload_modal_ctrl', {
             $scope: data_upload_ctrl_scope,
-            $modalInstance: {
+            $uibModalInstance: {
                 close: function() {
                     modal_state = "close";
                 },

@@ -4,12 +4,12 @@
 angular.module('BE.seed.controller.custom_view_modal', [])
 .controller('custom_view_modal_ctrl', [
   '$scope',
-  '$modalInstance',
+  '$uibModalInstance',
   'all_columns',
   'selected_columns',
   'buildings_payload',
   'user_service',
-  function($scope, $modalInstance, all_columns, selected_columns, buildings_payload, user_service) {
+  function($scope, $uibModalInstance, all_columns, selected_columns, buildings_payload, user_service) {
     $scope.my_buildings_count = buildings_payload.my_buildings_count;
     $scope.all_buildings_count = buildings_payload.all_buildings_count;
     $scope.fields = all_columns.fields;
@@ -40,7 +40,7 @@ angular.module('BE.seed.controller.custom_view_modal', [])
         });
         // save the array of column names for the user
         user_service.set_default_columns(columns, $scope.user.show_shared_buildings);
-        $modalInstance.close(columns);
+        $uibModalInstance.close(columns);
     };
 
     /**

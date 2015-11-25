@@ -202,6 +202,7 @@ a:not([href]) {
   float: none;
   height: 100%;
   background-color: $gray;
+  white-space: nowrap;
   width: 56px;
 
   .menu {

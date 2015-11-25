@@ -52,7 +52,7 @@ describe("controller: export_modal_controller", function(){
     function create_export_modal_controller(){
         ctrl = ctrl('export_modal_controller', {
             $scope: ctrl_scope,
-            $modalInstance: {
+            $uibModalInstance: {
                 close: function() {
                     modal_state = "close";
                 },

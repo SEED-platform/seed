@@ -4,11 +4,11 @@
 angular.module('BE.seed.controller.new_member_modal', [])
 .controller('new_member_modal_ctrl', [
   '$scope',
-  '$modalInstance',
+  '$uibModalInstance',
   'organization',
   'user_service',
   '$timeout',
-  function ($scope, $modalInstance, organization, user_service, $timeout) {
+  function ($scope, $uibModalInstance, organization, user_service, $timeout) {
     $scope.roles = [
       {
         name: "Member",
@@ -34,7 +34,7 @@ angular.module('BE.seed.controller.new_member_modal', [])
     $scope.submit_form = function(is_valid) {
       user_service.add($scope.user).then(function(data){
             // resolve promise
-            $modalInstance.close();
+            $uibModalInstance.close();
 
         }, function(data) {
             // reject promise
@@ -43,11 +43,11 @@ angular.module('BE.seed.controller.new_member_modal', [])
     };
     
     $scope.close = function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
     };
 
     $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss('cancel');
     };
 
     $timeout(function(name) {
@@ -58,14 +58,14 @@ angular.module('BE.seed.controller.new_member_modal', [])
 angular.module('BE.seed.controller.existing_members_modal', [])
 .controller('existing_members_modal_ctrl', [
   '$scope',
-  '$modalInstance',
-  function ($scope, $modalInstance) {
+  '$uibModalInstance',
+  function ($scope, $uibModalInstance) {
     
     $scope.close = function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
     };
 
     $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss('cancel');
     };
 }]);

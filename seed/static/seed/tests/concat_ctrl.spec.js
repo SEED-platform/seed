@@ -70,7 +70,7 @@ describe("controller: concat_modal_ctrl", function(){
     function create_concat_modal_controller(){
         edit_ctrl = controller('concat_modal_ctrl', {
             $scope: concat_modal_ctrl_scope,
-            $modalInstance: {
+            $uibModalInstance: {
                 close: function() {
                     modal_state = "close";
                 },

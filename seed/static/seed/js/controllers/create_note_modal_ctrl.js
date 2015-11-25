@@ -4,12 +4,12 @@
 angular.module('BE.seed.controller.create_note_modal', [])
 .controller('create_note_modal_ctrl', [
     '$scope',
-    '$modalInstance',
+    '$uibModalInstance',
     'audit_service',
     '$timeout',
     'building',
     'note',
-    function ($scope, $modalInstance, audit_service, $timeout, building, note) {
+    function ($scope, $uibModalInstance, audit_service, $timeout, building, note) {
     $scope.note = note || {};
     $scope.note = angular.copy($scope.note);
     $scope.error_message = "";
@@ -24,7 +24,7 @@ angular.module('BE.seed.controller.create_note_modal', [])
             audit_service.update_note(note.id, $scope.note.action_note)
             .then(function(data){
                 // resolve promise
-                $modalInstance.close(data.audit_log);
+                $uibModalInstance.close(data.audit_log);
 
             }, function(data) {
                 // reject promise
@@ -35,7 +35,7 @@ angular.module('BE.seed.controller.create_note_modal', [])
             audit_service.create_note(building.canonical_building, $scope.note.action_note)
             .then(function(data){
                 // resolve promise
-                $modalInstance.close(data.audit_log);
+                $uibModalInstance.close(data.audit_log);
 
             }, function(data) {
                 // reject promise
@@ -46,11 +46,11 @@ angular.module('BE.seed.controller.create_note_modal', [])
     
     
     $scope.close = function () {
-        $modalInstance.close($scope.note);
+        $uibModalInstance.close($scope.note);
     };
 
     $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss('cancel');
     };
 
     /**

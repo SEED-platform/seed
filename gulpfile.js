@@ -12,7 +12,7 @@ require('es6-promise').polyfill();
 
 var conf = {
   jshintPattern: ['./seed/landing/static/**/*.js', './seed/static/seed/**/*.js'],
-  sassPattern: './seed/static/seed/scss/**/*.scss',
+  sassPattern: ['./seed/landing/static/landing/scss/**/*.scss', './seed/static/seed/scss/**/*.scss'],
   autoprefixerOptions: {
     browsers: ['last 3 versions', 'ie >= 8'],
     cascade: false
