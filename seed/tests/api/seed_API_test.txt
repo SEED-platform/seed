@@ -1,0 +1,4 @@
+<hostname>
+<main URL>
+<username>
+<API Key>
