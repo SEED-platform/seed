@@ -1616,43 +1616,6 @@ a:not([href]) {
   }
 }
 
-#manageLabelsModal .modal-body {
-  .add_text, .edit_text {
-    font-weight: bold;
-  }
-  .add_text {
-    margin-bottom: 3px;
-  }
-  .edit_text {
-    margin-top: 16px;
-    margin-bottom: 4px;
-  }
-  .add_label_row {
-    padding-bottom: 16px;
-    border-bottom: 1px solid $grayLightest;
-  }
-  .label_row {
-    padding: 6px 0;
-  }
-  .table {
-    td {
-      &.label_column {
-        vertical-align: middle;
-      }
-    }
-  }
-
-  .input-group-btn {
-    .btn-default {
-      color: $white;
-      background-color: #999;
-    }
-    .caret {
-      border-top-color: $white;
-    }
-  }
-}
-
 .inset_badge {
   padding: 0;
 }
@@ -2078,6 +2041,10 @@ a:not([href]) {
 /* Styles for update labels modal */
 
 #update-building-labels-modal {
+
+  .add_text, .edit_text {
+    margin-bottom: 5px;
+  }
 
   .add-label-row {
     margin-right: -5px;
