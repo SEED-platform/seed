@@ -2124,3 +2124,28 @@ gs-input .tags .tag-item .remove-button {
     }
 }
 
+/* A more subtle alternative to the above 'tip' class */
+.tip-subtle {
+  position: relative;
+  margin-top:5px;
+  margin-left:35px;
+  margin-bottom:0px;
+  color:#999;
+  &:before {
+    font-size: 12px;
+    font-family: FontAwesome;
+    padding: 4px 8px 4px 8px;
+    content: '\f129';
+    background: #5bc0de;
+    line-height: 12px;
+    color: #FFF;
+    position: absolute;
+    left: -30px;
+    top: 0;
+    border-radius: 6px;
+  }
+  i.fa {
+    padding-right: 0;
+  }
+}
+
