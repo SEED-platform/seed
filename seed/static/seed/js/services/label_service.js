@@ -57,30 +57,26 @@ angular.module('BE.seed.service.label',
             }
     */
     
-    function get_labels(search) {
+    function get_labels(selected_buildings, select_all_checkbox, filter_params) {
         var defer = $q.defer();
-
-         var args =  {
-                        organization_id: user_service.get_organization().id
-                    };
-
-        if (search){
-            //Let's not send the entire search object as it's got quite a lot of data.
-            //Only send the props that the BE needs
-            var searchArgs = {
-                'selected_buildings' : search.selected_buildings,
-                'select_all_checkbox' : search.select_all_checkbox,
-                'filter_params' : search.filter_params
-            }
-            args.search = searchArgs;
+       
+        var searchArgs = {
+            'selected_buildings' : selected_buildings,
+            'select_all_checkbox' : select_all_checkbox,
+            'filter_params' : filter_params,
+             organization_id: user_service.get_organization().id
         }
        
         $http({
             method: 'POST',
             url: window.BE.urls.get_labels,
-            params: args
+            params: searchArgs
         }).success(function(data, status, headers, config) {
             
+            if (data.labels==null || data.labels == undefined) {
+                data.labels = [];
+            }
+
             //update label properties with 'local' properties
             var len = data.labels.length;
             for (var i = 0; i < len; i++) {
@@ -200,7 +196,7 @@ angular.module('BE.seed.service.label',
                                             (success or error)
 
     */
-    function update_building_labels(add_label_ids, remove_label_ids, search) {
+    function update_building_labels(add_label_ids, remove_label_ids, selected_buildings, select_all_checkbox, filter_params) {
         var defer = $q.defer();
         $http({
             method: 'POST',
@@ -208,9 +204,9 @@ angular.module('BE.seed.service.label',
             'data': {
                 'add_label_ids': add_label_ids,
                 'remove_label_ids': remove_label_ids,
-                'buildings' : search.selected_buildings,
-                'select_all_checkbox': search.select_all_checkbox,
-                'filter_params': search.filter_params,
+                'selected_buildings' : selected_buildings,
+                'select_all_checkbox': select_all_checkbox,
+                'filter_params': filter_params,
                 'org_id': user_service.get_organization().id,
             }
         }).success(function(data, status, headers, config) {

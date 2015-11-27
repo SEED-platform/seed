@@ -5,10 +5,17 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
   '$scope',
   '$uibModalInstance',
   'label_service',
-  'labels',
   'search',
   'Notification',
-  function ($scope, $uibModalInstance, label_service, labels, search, notification) {
+  function ($scope, $uibModalInstance, label_service, search, notification) {
+
+    //keep track of status of service call
+    $scope.loading = false;
+
+    //convenience refs for the parts of the search object we're concerned about in this controller
+    var selected_buildings = search.selected_buildings;
+    var select_all_checkbox = search.select_all_checkbox;
+    var filter_params = search.filter_params;
 
     //If the user has checkmarked buildings, bind how many buildings are selected.
     //Otherwise, UI will show default message ("..from selected buildings")
@@ -20,8 +27,9 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
     
     //An array of labels relevant to the current search properties.
     //These label objects should have the is_applied property set so 
-    //the modal can show the Remove button if necessary.
-    $scope.labels = labels;
+    //the modal can show the Remove button if necessary. (Populated
+    //during init function below.)
+    $scope.labels = [];
 
     //new_label serves as model for the "Create a new label" UI
     $scope.new_label = {};
@@ -34,6 +42,7 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
         $scope.new_label.label = "default";
     };
 
+    /* Create a new label based on user input */
     $scope.create_new_label = function(new_label){
         label_service.create_label(new_label).then(
             function(data){
@@ -56,35 +65,37 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
         );
     }
 
+    /* Toggle the add button for a label */
     $scope.toggle_add = function(label){
         if (label.is_checked_remove && label.is_checked_add) {
             label.is_checked_remove = false;
         }
     }
+
+    /* Toggle the remove button for a label */
     $scope.toggle_remove = function(label){
         if (label.is_checked_remove && label.is_checked_add) {
             label.is_checked_add = false;
         }
     }
 
-
-
+    /* User has indicated 'Done' so perform selected label operations */
     $scope.done = function () {
 
-        var addLabels = [];
-        var removeLabels = [];
+        var addLabelIDs = [];
+        var removeLabelIDs = [];
 
         var len = $scope.labels.length;
         for (var index=0; index<len; index++){
             var label = $scope.labels[index];
             if (label.is_checked_add){
-                addLabels.push(label.id);
+                addLabelIDs.push(label.id);
             } else if (label.is_checked_remove) {
-                removeLabels.push(label.id);
+                removeLabelIDs.push(label.id);
             }
         }
 
-        label_service.update_building_labels(addLabels, removeLabels, search).then(
+        label_service.update_building_labels(addLabelIDs, removeLabelIDs, selected_buildings, select_all_checkbox, filter_params).then(
             function(data){  
                 var msg = data.num_buildings_updated.toString() + " building labels updated." 
                 notification.primary(msg);       
@@ -100,11 +111,24 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
         
     };
 
+    /* User has cancelled dialog */
     $scope.cancel = function () {
         //don't do anything, just close modal.
         $uibModalInstance.dismiss('cancel');
     };
 
 
-    $scope.initialize_new_label();
+    /* init: Gets the list of labels. Sets up new label object. */
+    var init = function() {    
+        $scope.initialize_new_label();
+        //get labels with 'is-applied' property by passing in current search state
+        $scope.loading = true;
+        label_service.get_labels(selected_buildings, select_all_checkbox, filter_params).then(function(data){
+             $scope.labels = data.labels;
+             $scope.loading = false;
+        });
+    }   
+
+    init();
+
 }]);

@@ -98,32 +98,26 @@ angular.module('BE.seed.controller.building_list', [])
      */
     $scope.open_update_building_labels_modal = function() {
 
-        //get labels with 'is-applied' property by passing in current search state
-        label_service.get_labels($scope.search).then(function(data){
-           
-            var modalInstance = $uibModal.open({
-                templateUrl: urls.static_url + 'seed/partials/update_building_labels_modal.html',
-                controller: 'update_building_labels_modal_ctrl',
-                resolve: {
-                    labels: function () {
-                        return $scope.labels;
-                    },
-                    search: function () {
-                        return $scope.search;
-                    }
+        var modalInstance = $uibModal.open({
+            templateUrl: urls.static_url + 'seed/partials/update_building_labels_modal.html',
+            controller: 'update_building_labels_modal_ctrl',
+            resolve: {
+                search: function () {
+                    return $scope.search;
                 }
-            });
-            modalInstance.result.then(
-                function () {
-                    //dialog was closed with 'Done' button.
-                    get_labels();
-                    refresh_search();
-                }, 
-                function (message) {
-                   //dialog was 'dismissed,' which means it was cancelled...so nothing to do. 
-                }
-            );
+            }
         });
+        modalInstance.result.then(
+            function () {
+                //dialog was closed with 'Done' button.
+                get_labels();
+                refresh_search();
+            }, 
+            function (message) {
+               //dialog was 'dismissed,' which means it was cancelled...so nothing to do. 
+            }
+        );
+   
     };
 
     /**

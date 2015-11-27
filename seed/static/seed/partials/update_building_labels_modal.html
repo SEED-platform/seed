@@ -46,8 +46,20 @@
             </div>
         </div>
         <div class="edit_text">Add or remove labels from {$ number_matching_search $} selected buildings</div>
+
         <div class="table-list-container"  >
-            <table class="table table-striped">
+
+            <div class="labels-status-msg" 
+                 ng-show="loading==true || labels.length == 0">
+                <div ng-show="loading">
+                    <p>Loading labels...</p>
+                </div>
+                <div ng-show="loading==false && labels.length == 0">
+                    <p>No labels available. Add a label above to get started.</p>
+                </div>
+            </div>           
+
+            <table ng-show="labels.length > 0" class="table table-striped">
                 <tr ng-repeat="label in labels">
                     <td class="label_column">
                         <span class="label label-{$ label.label $}">{$ label.name $}</span>
@@ -80,7 +92,9 @@
                 </tr>
             </table>
         </div>
-        <p class="tip-subtle">A 'remove' button is shown for tags that are applied to one or more buildings in the current selection</p>
+        <div ng-show="labels.length > 0">
+            <p class="tip-subtle" >A 'remove' button is shown for tags that are applied to one or more buildings in the current selection</p>
+        </div>     
     </div>
     <div class="modal-footer">
         <button type="button" 

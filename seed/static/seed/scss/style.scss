@@ -2042,6 +2042,14 @@ a:not([href]) {
 
 #update-building-labels-modal {
 
+  .labels-status-msg {
+    min-height: 150px;
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+
   .add_text, .edit_text {
     margin-bottom: 5px;
   }
@@ -2056,6 +2064,7 @@ a:not([href]) {
   }
 
   .table-list-container {
+    min-height: 150px;
     border: 1px solid #EEE;
     th, td {
       border: 0px;
