@@ -64,14 +64,19 @@
                             placeholder="Add a label"
                             replace-spaces-with-dashes="false"
                             add-from-autocomplete-only="true">
-                   <auto-complete source="loadLabelsForFilter($query)"></auto-complete>
+                    <auto-complete  source="loadLabelsForFilter($query)"
+                                    min-length="0"
+                                    load-on-empty="true"
+                                    load-on-focus="true"
+                                    >
+                    </auto-complete>
                 </tags-input>
             </div>     
         </div>        
         <div class="btn-group">
             <button type="button" 
                     class="btn btn-primary btn-sm"
-                    ng-click="do_search()"  >
+                    ng-click="do_update_buildings_filters()"  >
                 Update Filters
             </button>
         </div>                     

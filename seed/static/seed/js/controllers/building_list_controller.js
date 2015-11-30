@@ -64,9 +64,13 @@ angular.module('BE.seed.controller.building_list', [])
     * SEARCH CODE
     */
 
-    $scope.do_search = function(){
+     $scope.do_update_buildings_filters = function(){
         refresh_search();
-    }
+    };
+
+    $scope.do_update_projects_filters = function(){
+        refresh_search();
+    };
 
     var refresh_search = function() {
         $scope.search.search_buildings();
@@ -85,9 +89,20 @@ angular.module('BE.seed.controller.building_list', [])
         TODO: Write function to dynamically build array based on query.
     */
     $scope.loadLabelsForFilter = function(query) {
-        //todo : provide list of tags based on query
-        //right now just sending back list of labels
-        return $scope.labels;  
+        
+        if(query==="" || query === undefined){
+            return $scope.labels;
+        }
+
+        var returnArr = [];
+        var len = $scope.labels.length;
+        for (var index = 0; index< len; index++){
+            var label= $scope.labels[index];
+            if (label.name.indexOf(query) > -1){
+                returnArr.push(label);
+            }
+        }
+        return returnArr;  
     };
 
     /**

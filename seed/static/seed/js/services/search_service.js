@@ -189,6 +189,7 @@ angular.module('BE.seed.service.search', [])
     /**
      * filter_search: triggered when a filter param changes
      */
+    /* DMcQ: Turning off instantaneous filtering 
     search_service.filter_search = function() {
         this.current_page = 1;
         this.search_buildings();
@@ -196,6 +197,7 @@ angular.module('BE.seed.service.search', [])
             sessionStorage.setItem(this.prefix + ':' + 'seedBuildingFilterParams', JSON.stringify(this.filter_params));
         }
     };
+    */
 
 
     /**
