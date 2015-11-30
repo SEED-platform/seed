@@ -1999,18 +1999,15 @@ a:not([href]) {
 
   margin:5px 10px 10px 20px;
 
-    .label-action {
-      
+  .label-action {      
     display: inline-block;
-
-      .label-edit-text {
-      margin-right: 20px;
-      }
-
-      a {
+    .label-edit-text {
       margin-right: 20px;
     }
+    a {
+      margin-right: 20px;
     }
+  }
 
   .label-container {
     display: inline-block;
@@ -2064,8 +2061,12 @@ a:not([href]) {
   }
 
   .table-list-container {
-    min-height: 150px;
     border: 1px solid #EEE;
+    overflow-y:auto;
+    max-height:350px;
+    table {
+      
+    }
     th, td {
       border: 0px;
     }
@@ -2095,8 +2096,8 @@ tags-input .tags {
 }
 
 .tag-warning {
-  border-color: #dff0d8 !important;
-  background: #dff0d8 !important;
+  border-color: #f0ad4e !important;
+  background: #f0ad4e !important;
 }
 
 .tag-danger {

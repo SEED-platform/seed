@@ -288,6 +288,8 @@ angular.module('BE.seed.controller.building_list', [])
         });
     };
     $scope.set_initial_project_state = function() {
+        $scope.create_project_error = false;
+        $scope.create_project_error_message = "";
         $scope.create_project_state = 'create';
         $scope.project.compliance_type = null;
         $scope.project.name = null;
