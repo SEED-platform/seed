@@ -13,11 +13,11 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
     $scope.loading = false;
 
     //convenience refs for the parts of the search object we're concerned about in this controller
-    var selected_buildings = search.selected_buildings;
+    var selected_buildings = search.selectepd_buildings;
     var select_all_checkbox = search.select_all_checkbox;
     var filter_params = search.filter_params;
 
-    //If the user has checkmarked buildings, bind how many buildings are selected.
+    //If the user has checkmarked individual buildings, bind how many buildings are selected.
     //Otherwise, UI will show default message ("..from selected buildings")
     if (search.selected_buildings && search.selected_buildings.length > 0){
         $scope.number_matching_search = search.selected_buildings.length;
@@ -37,6 +37,7 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
     //list of colors for the create label UI
     $scope.available_colors = label_service.get_available_colors();
 
+    /* Initialize the label props for a 'new' label */
     $scope.initialize_new_label = function() {   
         $scope.new_label.color = "gray";
         $scope.new_label.label = "default";

@@ -1,12 +1,9 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
- */
 describe("controller: update_building_labels_modal_ctrl", function(){
     // globals set up and used in each test scenario
     var mockService, scope, controller, modal_state, mock_notification, mock_search;
     var update_ctrl, update_ctrl_scope, modalInstance, labels;
     
-    var return_create_label = {
+    var return_obj_for_create_label = {
         "color":"gray",
         "is_applied":true,
         "id":100,
@@ -47,7 +44,7 @@ describe("controller: update_building_labels_modal_ctrl", function(){
         spyOn(mock_label_service, "create_label")
             .andCallFake(function(){
                 // return $q.reject for error scenario
-                return $q.when({"status": "success", "label": return_create_label});
+                return $q.when({"status": "success", "label": return_obj_for_create_label});
             }
         );
         spyOn(mock_label_service, "update_building_labels")
@@ -125,6 +122,7 @@ describe("controller: update_building_labels_modal_ctrl", function(){
      */
 
     it("should initialize the default 'new' label", function() {
+        
         // arrange
         create_update_building_labels_modal_ctrl();
 
