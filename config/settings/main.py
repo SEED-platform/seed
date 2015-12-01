@@ -13,8 +13,7 @@ AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 # Different names for same vars, used by django-ajax-uploader
 AWS_UPLOAD_CLIENT_KEY = AWS_ACCESS_KEY_ID
 AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
-# APP_NAMESPACE = "seed" + os.environ.get("STACK_NAME", "prod")
-APP_NAMESPACE = "seedtest" # + os.environ.get("STACK_NAME", "prod")
+APP_NAMESPACE = "seed" + os.environ.get("STACK_NAME", "prod")
 AWS_BUCKET_NAME = APP_NAMESPACE
 AWS_STORAGE_BUCKET_NAME = APP_NAMESPACE
 AWS_UPLOAD_BUCKET_NAME = APP_NAMESPACE
