@@ -45,6 +45,7 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
     $scope.initialize_new_label = function() {   
         $scope.new_label.color = "gray";
         $scope.new_label.label = "default";
+        $scope.new_label.name = "";
     };
 
     /* Create a new label based on user input */
