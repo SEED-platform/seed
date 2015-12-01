@@ -53,7 +53,7 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
 
     /*  Take user input from New Label form and submit 
         to service to create a new label. */
-    $scope.submitNewLabelForm = function (){
+    $scope.submitNewLabelForm = function (form){
         if (isLabelNameUsed($scope.new_label.name)) {
             alert("That label name is alredy used.");
             return;
@@ -63,7 +63,8 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
                 get_labels();
                 var msg = "Created label " + getTruncatedName($scope.new_label.name); 
                 notification.primary(msg);       
-                initialize_new_label();      
+                initialize_new_label();     
+                form.$setPristine(); 
             },
             function(message){
                 $log.error("Error creating new label.", message);

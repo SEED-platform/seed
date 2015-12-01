@@ -26,11 +26,11 @@
         <form   name="newLabelForm" 
                 class="form-inline" 
                 role="form"
-                ng-submit="submitNewLabelForm(newLabelForm.$valid)"
+                ng-submit="submitNewLabelForm(newLabelForm)"
                 novalidate>
             <div    class="form-group" 
-                    ng-class="{'has-error':  newLabelForm.labelName.$invalid &&
-                                             newLabelForm.labelName.$dirty}">       
+                    ng-class="{'has-error': newLabelForm.name.$invalid &&
+                                            newLabelForm.name.$dirty }">       
                 <label  class="control-label sectionLabel" 
                         style="padding-right:20px;">
                         Create new label</label>
@@ -44,7 +44,9 @@
                             style="min-width:300px;"
                             ng-model="new_label.name" 
                             placeholder="Label Name" 
+                            check-label-exists="labels"
                             required>
+                   
                     <div uib-dropdown class="input-group-btn">
                         <button type="button" 
                                 class="btn btn-{$ new_label.label $} dropdown-toggle"
@@ -65,6 +67,12 @@
                         class="btn btn-primary"
                         ng-disabled="newLabelForm.$invalid" >
                         Create label</button>
+                <div class="help-block">
+                    <span   class="has-error" 
+                            ng-show="newLabelForm.name.$error.checkLabelExists">
+                            This label name is already taken.
+                    </span>
+                </div>
             </div>
         </form>
     </div>
