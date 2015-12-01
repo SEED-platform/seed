@@ -23,6 +23,9 @@ describe("controller: update_building_labels_modal_ctrl", function(){
         },
     ];
 
+    var all_available_labels = [
+        {"color":"green","is_applied":true,"id":70,"name":"new label","label":"success","text":"new label"},{"color":"orange","is_applied":true,"id":44,"name":"data cleansing warning3","label":"warning","text":"data cleansing warning3"},{"color":"red","is_applied":true,"id":43,"name":"data cleansing error!","label":"danger","text":"data cleansing error!"},{"color":"green","is_applied":false,"id":74,"name":"dafdsfsa fa","label":"success","text":"dafdsfsa fa"},{"color":"gray","is_applied":true,"id":66,"name":"abc3","label":"default","text":"abc3"},{"color":"light blue","is_applied":false,"id":65,"name":"abc","label":"info","text":"abc"}
+    ];
                    
 
     // make the seed app available for each test
@@ -32,7 +35,7 @@ describe("controller: update_building_labels_modal_ctrl", function(){
     });
 
     // inject AngularJS dependencies for the controller
-    beforeEach(inject(function($controller, $rootScope, $uibModal, $q, label_service, notification) {
+    beforeEach(inject(function($controller, $rootScope, $uibModal, $q, label_service, Notification) {
 
         controller = $controller;
         scope = $rootScope;
@@ -41,6 +44,12 @@ describe("controller: update_building_labels_modal_ctrl", function(){
         // mock the label_service factory methods used in the controller
         // and return their promises (if necessary).
         mock_label_service = label_service;
+        spyOn(mock_label_service, "get_labels")
+            .andCallFake(function(){
+                // return $q.reject for error scenario
+                return $q.when({"status": "success", "labels": all_available_labels});
+            }
+        );        
         spyOn(mock_label_service, "create_label")
             .andCallFake(function(){
                 // return $q.reject for error scenario
@@ -60,7 +69,7 @@ describe("controller: update_building_labels_modal_ctrl", function(){
         );    
 
         //mock the notification service
-        mock_notification = notification;
+        mock_notification = Notification;
         spyOn(mock_notification, "primary")
             .andCallFake(function(){
                 //do nothing
@@ -102,7 +111,7 @@ describe("controller: update_building_labels_modal_ctrl", function(){
 
         //function ($scope, $uibModalInstance, label_service, search, notification) {
         update_ctrl = controller('update_building_labels_modal_ctrl', {
-            $scope: edit_ctrl_scope,
+            $scope: update_ctrl_scope,
             $uibModalInstance: {
                 close: function() {
                     modal_state = "close";
@@ -128,12 +137,11 @@ describe("controller: update_building_labels_modal_ctrl", function(){
 
         // act
         update_ctrl_scope.$digest();
-        update_ctrl_scope.initialize_label_modal();
+        update_ctrl_scope.initialize_new_label();
 
         // assertions
         expect(update_ctrl_scope.new_label.color).toBe("gray");
         expect(update_ctrl_scope.new_label.label).toBe("default");
-        expect(update_ctrl_scope.new_label.name).toBe("");
     });
 
 

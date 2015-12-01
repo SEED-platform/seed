@@ -64,21 +64,21 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
 
             }
         );
-    }
+    };
 
     /* Toggle the add button for a label */
     $scope.toggle_add = function(label){
         if (label.is_checked_remove && label.is_checked_add) {
             label.is_checked_remove = false;
         }
-    }
+    };
 
     /* Toggle the remove button for a label */
     $scope.toggle_remove = function(label){
         if (label.is_checked_remove && label.is_checked_add) {
             label.is_checked_add = false;
         }
-    }
+    };
 
     /* User has indicated 'Done' so perform selected label operations */
     $scope.done = function () {
@@ -98,7 +98,7 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
 
         label_service.update_building_labels(addLabelIDs, removeLabelIDs, selected_buildings, select_all_checkbox, filter_params).then(
             function(data){  
-                var msg = data.num_buildings_updated.toString() + " buildings updated." 
+                var msg = data.num_buildings_updated.toString() + " buildings updated.";
                 notification.primary(msg);       
                 $uibModalInstance.close();
             },
@@ -128,7 +128,7 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
              $scope.labels = data.labels;
              $scope.loading = false;
         });
-    }   
+    }; 
 
     init();
 

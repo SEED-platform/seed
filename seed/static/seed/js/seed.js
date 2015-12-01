@@ -15,7 +15,7 @@ angular.module('BE.seed.vendor_dependencies', [
     'ui.tree',
     'xeditable',
     'ngTagsInput',
-    'ui-notification'
+    'ui-notification',
     ]);
 angular.module('BE.seed.controllers', [
     'BE.seed.controller.accounts',
