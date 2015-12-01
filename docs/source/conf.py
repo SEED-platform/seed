@@ -261,6 +261,9 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 # formatters for API autodocumentation
+import django
+django.setup()
+
 from seed.utils.api import get_api_endpoints
 api_endpoints = get_api_endpoints()
 
