@@ -21,6 +21,7 @@ from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.managers.json import JsonManager
 from seed.utils.time import convert_datestr
 from seed.utils.generic import split_model_fields
+from django.db.models.fields.related import ManyToManyField
 
 PROJECT_NAME_MAX_LENGTH = 255
 
@@ -736,7 +737,6 @@ class ProjectBuilding(TimeStampedModel):
     approver = models.ForeignKey(
         User, verbose_name=_('User'), blank=True, null=True
     )
-    status_label = models.ForeignKey('StatusLabel', null=True, blank=True)
 
     class Meta:
         ordering = ['project', 'building_snapshot']
@@ -1034,6 +1034,8 @@ class CanonicalBuilding(models.Model):
 
     objects = CanonicalManager()
     raw_objects = models.Manager()
+
+    labels = ManyToManyField(StatusLabel)
 
     def __unicode__(self):
         snapshot_pk = "None"
@@ -1503,6 +1505,10 @@ class BuildingSnapshot(TimeStampedModel):
         else:
             return self
 
+
+class NonCanonicalProjectBuildings(models.Model):
+    """Holds a reference to all project buildings that do not point at a canonical building snapshot."""
+    projectbuilding = models.ForeignKey(ProjectBuilding, primary_key=True)
 
 class AttributeOption(models.Model):
     """Holds a single conflicting value for a BuildingSnapshot attribute."""
