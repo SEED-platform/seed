@@ -35,7 +35,7 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
         if(isLabelNameUsed(data)){
             return "That label name already exists";
         }         
-    }
+    };
 
     /*  Check if supplied label name
         exists in current set of labels. 
@@ -68,9 +68,9 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
             function(message){
                 $log.error("Error creating new label.", message);
             }
-        )
+        );
         
-    }
+    };
 
     $scope.onLabelNameKeypress = function(e, form) {
         if (e.which === 13) {
@@ -83,7 +83,7 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
         angular.extend(label, {id: id});        
         label_service.update_label(label).then(
             function(data){
-                var msg = "Label updated."
+                var msg = "Label updated.";
                 notification.primary(msg);    
                 $scope.labels.splice(index, 1, data.label);
                 $scope.label = data.label;
@@ -132,7 +132,7 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
             // resolve promise
             $scope.labels = data.labels;
         });
-    };
+    }
 
     function getTruncatedName(name) {
         if (name && name.length>20){
@@ -144,7 +144,7 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
     function init(){
        get_labels();
        initialize_new_label();
-    };
+    }
     init();
 
 }

@@ -28,8 +28,8 @@ describe("controller: delete_modal_controller", function(){
         );
         spyOn(mock_building_services, "get_total_number_of_buildings_for_user")
             .andCallFake(function(){
-                return $q.when({"status":"success"})
-            })
+                return $q.when({"status":"success"});
+            });
     }));
 
     // this is outside the beforeEach so it can be configured by each unit test

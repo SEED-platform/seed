@@ -1,6 +1,6 @@
 describe("controller: update_building_labels_modal_ctrl", function(){
     // globals set up and used in each test scenario
-    var mockService, scope, controller, modal_state, mock_notification, mock_search;
+    var mock_label_service, scope, controller, modal_state, mock_notification, mock_search ;
     var update_ctrl, update_ctrl_scope, modalInstance, labels;
     
     var return_obj_for_create_label = {

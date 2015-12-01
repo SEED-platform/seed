@@ -511,12 +511,12 @@ angular.module('BE.seed.controller.mapping', [])
         }
       }
       else {
-        if(dropdown.length === 0 || dropdown.css('display') == 'none') {
+        if(dropdown.length === 0 || dropdown.css('display') === 'none') {
           var input_focus = $(document.activeElement);
 
           $('.header-field').each(function(){
 
-            if(!$(this).is(input_focus) && $(this).val() == input_focus.val()) {
+            if(!$(this).is(input_focus) && $(this).val() === input_focus.val()) {
               return $scope.duplicates_present();
             }
           });

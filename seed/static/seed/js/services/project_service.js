@@ -23,7 +23,7 @@ angular.module('BE.seed.service.project', [])
                 'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
-            project_factory.total_number_projects_for_user = (data.projects != undefined ) ? data.projects.length : 0;
+            project_factory.total_number_projects_for_user = (data.projects !== undefined ) ? data.projects.length : 0;
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);

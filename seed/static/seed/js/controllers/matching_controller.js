@@ -134,7 +134,7 @@ angular.module('BE.seed.controller.matching', [])
         $scope.current_page = 1;
         $scope.filter_search();
 
-    }
+    };
 
 
     /**

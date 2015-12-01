@@ -65,7 +65,7 @@ angular.module('BE.seed.service.label',
             'select_all_checkbox' : select_all_checkbox,
             'filter_params' : filter_params,
              organization_id: user_service.get_organization().id
-        }
+        };
        
         $http({
             method: 'POST',
@@ -73,7 +73,7 @@ angular.module('BE.seed.service.label',
             params: searchArgs
         }).success(function(data, status, headers, config) {
             
-            if (data.labels==null || data.labels == undefined) {
+            if (data.labels===null || data.labels === undefined) {
                 data.labels = [];
             }
 
@@ -90,7 +90,7 @@ angular.module('BE.seed.service.label',
             defer.reject(data, status);
         });
         return defer.promise;
-    };
+    }
 
 
     /*  Add a label to an organization's list of labels 
@@ -215,7 +215,7 @@ angular.module('BE.seed.service.label',
             defer.reject(data, status);
         });
         return defer.promise;
-    };
+    }
 
     /*  Gets the list of supported colors for labels, based on default bootstrap
         styles for labels. These are defined locally.
@@ -261,7 +261,7 @@ angular.module('BE.seed.service.label',
                 'color': 'blue'
             }
         ];
-    };
+    }
 
     /*  Add a few properties to the label object so that it
         works well with UI components.

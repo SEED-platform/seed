@@ -9,6 +9,10 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
   'Notification',
   function ($scope, $uibModalInstance, label_service, search, notification) {
 
+    //Controller for the Update Building Labels modal window.
+    //Manages applying labels to a pre-selected set of buildings, as
+    //well as allowing for the creation of new labels.
+
     //keep track of status of service call
     $scope.loading = false;
 
