@@ -53,7 +53,7 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
         label_service.create_label(new_label).then(
             function(data){
                 //promise completed successfully
-                var createdLabel = data.label;
+                var createdLabel = data;
                 createdLabel.is_applied = false;
                 $scope.labels.unshift(createdLabel);
                 $scope.initialize_new_label();
@@ -130,7 +130,7 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
         //get labels with 'is-applied' property by passing in current search state
         $scope.loading = true;
         label_service.get_labels(selected_buildings, select_all_checkbox, filter_params).then(function(data){
-             $scope.labels = data.labels;
+             $scope.labels = data.results;
              $scope.loading = false;
         });
     }; 
