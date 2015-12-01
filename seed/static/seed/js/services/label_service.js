@@ -68,22 +68,16 @@ angular.module('BE.seed.service.label',
         };
        
         $http({
-            method: 'POST',
-            url: window.BE.urls.get_labels,
+            method: 'GET',
+            url: window.BE.urls.label_list,
             params: searchArgs
         }).success(function(data, status, headers, config) {
             
-            if (data.labels===null || data.labels === undefined) {
-                data.labels = [];
+            if (_.isEmpty(data.results)) {
+                data.results = [];
             }
 
-            //update label properties with 'local' properties
-            var len = data.labels.length;
-            for (var i = 0; i < len; i++) {
-                var lbl = data.labels[i];
-                update_label_w_local_props(lbl);
-            }
-
+            data.results = _.map(data.results, update_label_w_local_props);
             defer.resolve(data);
 
         }).error(function(data, status, headers, config) {
@@ -107,13 +101,11 @@ angular.module('BE.seed.service.label',
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': window.BE.urls.create_label,
-            'data': {
-                'label': label
-            }
+            'url': window.BE.urls.label_list,
+            'data': label
         }).success(function(data, status, headers, config) {
-            if(data.label){
-                update_label_w_local_props(data.label);
+            if(data){
+                data = update_label_w_local_props(data);
             }            
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -136,14 +128,12 @@ angular.module('BE.seed.service.label',
     function update_label(label){
         var defer = $q.defer();
         $http({
-            method: 'POST',
-            'url': window.BE.urls.update_label,
-            'data': {
-                'label': label
-            }
+            method: 'PUT',
+            'url': window.BE.urls.label_list + label.id + '/',
+            'data': label,
         }).success(function(data, status, headers, config) {
-            if(data.label){
-                update_label_w_local_props(data.label);
+            if(data){
+                data = update_label_w_local_props(data);
             }  
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -163,11 +153,8 @@ angular.module('BE.seed.service.label',
     function delete_label(label){
         var defer = $q.defer();
         $http({
-            method: 'POST',
-            'url': window.BE.urls.delete_label,
-            'data': {
-                'label': label
-            }
+            method: 'DELETE',
+            'url': window.BE.urls.label_list + label.id + '/',
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -199,9 +186,9 @@ angular.module('BE.seed.service.label',
     function update_building_labels(add_label_ids, remove_label_ids, selected_buildings, select_all_checkbox, filter_params) {
         var defer = $q.defer();
         $http({
-            method: 'POST',
+            method: 'PUT',
             'url': window.BE.urls.update_building_labels,
-            'data': {
+            'params': {
                 'add_label_ids': add_label_ids,
                 'remove_label_ids': remove_label_ids,
                 'selected_buildings' : selected_buildings,
@@ -271,6 +258,7 @@ angular.module('BE.seed.service.label',
         lbl.label = label_helper_service.lookup_label(lbl.color);
         // create 'text' property needed for ngTagsInput control
         lbl.text = lbl.name;
+        return lbl;
     }
 
     /* Public API */

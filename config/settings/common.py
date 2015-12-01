@@ -84,6 +84,7 @@ INSTALLED_APPS = (
     'organizations',
     'raven.contrib.django',
     'tos',
+    'rest_framework',
 )
 
 SEED_CORE_APPS = (
@@ -269,4 +270,17 @@ PASSWORD_COMPLEXITY = {
     "UPPER": 1,  # at least 1 Uppercase
     "LOWER": 1,  # at least 1 Lowercase
     "DIGITS": 1,  # at least 1 Digit
+}
+
+# Django Rest Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'seed.authentication.SEEDAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 25,
 }

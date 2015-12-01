@@ -758,6 +758,7 @@ class StatusLabel(TimeStampedModel):
     BLUE_CHOICE = 'blue'
     LIGHT_BLUE_CHOICE = 'light blue'
     GREEN_CHOICE = 'green'
+    GRAY_CHOICE = 'gray'
 
     COLOR_CHOICES = (
         (RED_CHOICE, _('red')),
@@ -766,6 +767,7 @@ class StatusLabel(TimeStampedModel):
         (GREEN_CHOICE, _('green')),
         (WHITE_CHOICE, _('white')),
         (ORANGE_CHOICE, _('orange')),
+        (GRAY_CHOICE, _('gray')),
     )
 
     name = models.CharField(_('name'), max_length=PROJECT_NAME_MAX_LENGTH)

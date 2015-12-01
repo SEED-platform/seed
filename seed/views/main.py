@@ -53,8 +53,11 @@ from seed.utils.buildings import (
 )
 from seed.utils.api import api_endpoint
 from seed.utils.generic import median, round_down_hundred_thousand
+from seed.utils.labels import (
+    update_buildings_with_labels,
+)
 from seed.utils.projects import (
-    get_projects, update_buildings_with_labels
+    get_projects,
 )
 from seed.utils.time import convert_to_js_timestamp
 from seed.utils.mapping import get_mappable_types, get_mappable_columns
@@ -2158,7 +2161,7 @@ def delete_buildings(request):
     CanonicalBuilding.objects.filter(
         buildingsnapshot=selected_buildings
     ).update(active=False)
-    return {'status': 'success'}    
+    return {'status': 'success'}
 
 import random
 
@@ -2170,7 +2173,7 @@ import random
 @login_required
 @has_perm('requires_member')
 def get_building_summary_report_data(request):
-    """ 
+    """
     This method returns basic, high-level data about a set of buildings, fitered by organization ID.
 
     It expects as parameters
@@ -2184,7 +2187,7 @@ def get_building_summary_report_data(request):
     ```
             {
                 "status": "success",
-                "summary_data": 
+                "summary_data":
                 {
                     "num_buildings": number of buildings returned from query,
                     "avg_eui": average EUI for returned buildings,
@@ -2201,7 +2204,7 @@ def get_building_summary_report_data(request):
     |-----------------------|------------|
     | avg_eui               | kBtu-ft2   |
     ```
-    
+
     ---
 
     parameters:
@@ -2221,13 +2224,13 @@ def get_building_summary_report_data(request):
           type: string
           paramType: query
 
-    type:            
+    type:
         status:
             required: true
             type: string
         summary_data:
             required: true
-            type: object           
+            type: object
 
 
     responseMessages:
@@ -2245,7 +2248,7 @@ def get_building_summary_report_data(request):
     if request.method != 'GET':
         return HttpResponseBadRequest("This view replies only to GET methods")
 
-       
+
     #Read in x and y vars requested by client
     try:
         orgs = [ request.GET.get('organization_id') ] #How should we capture user orgs here?
@@ -2266,7 +2269,7 @@ def get_building_summary_report_data(request):
     avg_eui = 123
     avg_energy_score = 321
 
-    
+
     data = {    "num_buildings" : num_buildings,
                 "avg_eui" : avg_eui,
                 "avg_energy_score": avg_energy_score }
@@ -2276,14 +2279,14 @@ def get_building_summary_report_data(request):
         'status': 'success',
         'summary_data' : data
     }
-    
-    
+
+
 def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     """ This method returns data used to generate graphing reports. It expects as parameters
 
         * from_date:       The starting date for the data series.  Date object
         * end_date:         The starting date for the data series with the format. Date object
-        * x_var:            The variable name to be assigned to the "x" value in the returned data series 
+        * x_var:            The variable name to be assigned to the "x" value in the returned data series
         * y_var:            The variable name to be assigned to the "y" value in the returned data series
         * orgs:  The organizations to be used when querying data.
 
@@ -2295,24 +2298,24 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
                         This is a collection of all year_ending dates and ids the canonical buildings that have data for that year and those that
                         have files with that year_ending but no valid data point
                         E.G.
-                        "bldg_counts"     (pending)    
-                            __len__    int: 8    
-                            2000-12-31 (140037191378512)    dict: {'buildings_w_data': set([35897, 35898]), 'buildings': set([35897, 35898])}    
-                            2001-12-31 (140037292480784)    dict: {'buildings_w_data': set([35897, 35898]), 'buildings': set([35897, 35898])} 
-                        
+                        "bldg_counts"     (pending)
+                            __len__    int: 8
+                            2000-12-31 (140037191378512)    dict: {'buildings_w_data': set([35897, 35898]), 'buildings': set([35897, 35898])}
+                            2001-12-31 (140037292480784)    dict: {'buildings_w_data': set([35897, 35898]), 'buildings': set([35897, 35898])}
+
         data:    dict that looks like {canonical_id : { year_ending : {'x' : x_value, 'y' : y_value', 'release_date' : release_date, 'building_snapshot_id' : building_snapshot_id}}}
                 This is the actual data for the building.  The top level key is the canonical_id then the next level is the year_ending and under that
                 is the actual data.  NOTE:  If the year has files for a building but no valid data there will be an entry for that year but the
                 x and y values will be None.
-                
+
                 E.G.
-                "data"     (pending)    
-                    __len__    int: 2    
-                    35897 (28780560)    defaultdict: defaultdict(<type 'dict'>, {datetime.date(2001, 12, 31): {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}, datetime.date(2004, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2004, 12, 31, 0, 0), 'building_snapshot_id': 35866}, datetime.date(2003, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2003, 12, 31, 0, 0), 'building_snapshot_id': 35860}, datetime.date(2009, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2009, 12, 31, 0, 0), 'building_snapshot_id': 35884}, datetime.date(2007, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2007, 12, 31, 0, 0), 'building_snapshot_id': 35878}, datetime.date(2000, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}, datetime.date(2010, 12, 31): {'y': 111.0, 'x': 21.0, 'release_date': datetime.datetime(2011, 12, 31, 0, 0...    
-                        __len__    int: 8    
-                        2000-12-31 (140037191378512)    dict: {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}    
-                        2001-12-31 (140037292480784)    dict: {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}    
-                          
+                "data"     (pending)
+                    __len__    int: 2
+                    35897 (28780560)    defaultdict: defaultdict(<type 'dict'>, {datetime.date(2001, 12, 31): {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}, datetime.date(2004, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2004, 12, 31, 0, 0), 'building_snapshot_id': 35866}, datetime.date(2003, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2003, 12, 31, 0, 0), 'building_snapshot_id': 35860}, datetime.date(2009, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2009, 12, 31, 0, 0), 'building_snapshot_id': 35884}, datetime.date(2007, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2007, 12, 31, 0, 0), 'building_snapshot_id': 35878}, datetime.date(2000, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}, datetime.date(2010, 12, 31): {'y': 111.0, 'x': 21.0, 'release_date': datetime.datetime(2011, 12, 31, 0, 0...
+                        __len__    int: 8
+                        2000-12-31 (140037191378512)    dict: {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}
+                        2001-12-31 (140037292480784)    dict: {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}
+
         """
 
     #year_ending in the BuildingSnapshot model is a DateField which corresponds to a python datetime.date
@@ -2329,20 +2332,20 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
 
     #First get all building records for the orginization in the date range
     #Can't just look for those that aren't null since one of the things that
-    #needs to get reported is how many for a given year do not have data 
+    #needs to get reported is how many for a given year do not have data
     #(i.e. have a null value for either x_var or y_var
     bldgs = BuildingSnapshot.objects.filter(
                 super_organization__in=orgs,
                 year_ending__gte = from_date,
                 year_ending__lte = end_date
             )
-             
-    #data will be a dict of canonical building id -> year ending -> building data         
+
+    #data will be a dict of canonical building id -> year ending -> building data
     data = defaultdict(lambda: defaultdict(dict))
 
-    #get a unique list of canonical buildings    
-    canonical_buildings = set(bldg.tip for bldg in bldgs)           
-    
+    #get a unique list of canonical buildings
+    canonical_buildings = set(bldg.tip for bldg in bldgs)
+
     #"deleted" buildings just get their canonicalbuilding field set to false
     #filter them out here.  There may be a way to do this in one query with the above but I
     #don't see it now.
@@ -2350,17 +2353,17 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
                 canonicalbuilding__active=True,
                 pk__in=[x.id for x in canonical_buildings]
             )
-        
- 
-    #if the BuildingSnapshot has the attribute use that directly.  
-    #in the future if it should search extra_data but extra_data is still not 
+
+
+    #if the BuildingSnapshot has the attribute use that directly.
+    #in the future if it should search extra_data but extra_data is still not
     #searchable directly then this can be adjusted by replacing the last None with
     # obj.extra_data[attr] if hasattr(obj, "extra_data") and attr in obj.extra_data else None
     get_attr_f = lambda obj, attr: getattr(obj, attr) if hasattr(obj, attr) else None
-          
+
     bldg_counts = {}
-    
-    def process_snapshot(canonical_building_id, snapshot):      
+
+    def process_snapshot(canonical_building_id, snapshot):
         from datetime import date
 
         #The data is meaningless here aside if there is no valid year_ending value
@@ -2373,23 +2376,23 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
             return
 
         year_ending_year = snapshot.year_ending
-        
+
         if year_ending_year not in bldg_counts:
             bldg_counts[year_ending_year] = {"buildings" : set(), "buildings_w_data" : set()}
         release_date = get_attr_f(snapshot, "release_date")
-        
+
         #if there is no release_date then we have no way of priotizing vs other records with the same
-        #year_ending.  Plus it is an indication of something wrong so just exit here 
-        if not release_date:            
+        #year_ending.  Plus it is an indication of something wrong so just exit here
+        if not release_date:
             return
-            
+
         bldg_counts[year_ending_year]["buildings"].add(canonical_building_id)
-            
-        if (                 
-                (year_ending_year not in data[canonical_building_id]) or 
+
+        if (
+                (year_ending_year not in data[canonical_building_id]) or
                 (not data[canonical_building_id][year_ending_year]) or
                 (data[canonical_building_id][year_ending_year]["release_date"] < release_date)
-            ):            
+            ):
             bldg_x = get_attr_f(snapshot, x_var)
             bldg_y = get_attr_f(snapshot, y_var)
             #what does it mean for a building to "have data"?  I am assuming it must have values for
@@ -2397,38 +2400,38 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
             #to return everything
             if bldg_x and bldg_y:
                 bldg_counts[year_ending_year]["buildings_w_data"].add(canonical_building_id)
-                
+
                 data[canonical_building_id][year_ending_year] = {   "building_snapshot_id" : snapshot.id,
                                                                     "x" : bldg_x,
                                                                     "y" : bldg_y,
                                                                     "release_date" : release_date}
             else:
                 try:
-                    bldg_counts[year_ending_year]["buildings_w_data"].remove(canonical_building_id)                   
+                    bldg_counts[year_ending_year]["buildings_w_data"].remove(canonical_building_id)
                 except:
                     pass
-                
+
                 #if this more recent data point does not have both x and y values then the data for the year ending is now invalid
                 #mark that here by giving both 'x' and 'y' a value of None
-                #can't just delete the year since we need to retain the release_date.  If the most recent 
+                #can't just delete the year since we need to retain the release_date.  If the most recent
                 #release_date for a given year_ending is not value then that means that year is not valid for the building
-            
+
                 data[canonical_building_id][year_ending_year] = {   "building_snapshot_id" : snapshot.id,
                                                                     "x" : None,
                                                                     "y" : None,
                                                                     "release_date" : release_date}
-                        
+
     for canonical_building in canonical_buildings:
-        canonical_building_id = canonical_building.id  
-        
+        canonical_building_id = canonical_building.id
+
         #we changed from only using the unmerged snapshots to only using the merged snapshots.
         #So start at the current canonical building and work back
         process_snapshot(canonical_building_id, canonical_building)
-        
-        
-        if canonical_building.parent_tree:    
-            current_canonical_bldg = canonical_building                                    
-            
+
+
+        if canonical_building.parent_tree:
+            current_canonical_bldg = canonical_building
+
             #progress up the the tree processing merged snapshots until there aren't any more
             while current_canonical_bldg:
                 cur_id = current_canonical_bldg.id
@@ -2438,16 +2441,16 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
                 #bldg = bldg.parents.filter(parents__isnull = False)#.exclude(id = bldg.id)
                 if previous_canonical_bldg.count():
                     current_canonical_bldg = previous_canonical_bldg[0]
-                    process_snapshot(canonical_building_id, current_canonical_bldg)                
+                    process_snapshot(canonical_building_id, current_canonical_bldg)
                 else:
                     #There are no parents who have non-null parents themselves meaning the parent
-                    #must be the first record imported and therefore the first canonical building 
+                    #must be the first record imported and therefore the first canonical building
                     current_canonical_bldg = current_canonical_bldg.parents.filter(parents__isnull = True)
                     #hopefully the record is always in index 1.  Otherwise I'm not sure how to pick the right one.
                     current_canonical_bldg = current_canonical_bldg.all()[1]
                     process_snapshot(canonical_building_id, current_canonical_bldg)
-                    current_canonical_bldg = None                                                          
-    
+                    current_canonical_bldg = None
+
     return bldg_counts, data
 
 
@@ -2461,7 +2464,7 @@ def get_building_report_data(request):
         :GET:
         * start_date:       The starting date for the data series with the format  `YYYY-MM-DD`
         * end_date:         The starting date for the data series with the format  `YYYY-MM-DD`
-        * x_var:            The variable name to be assigned to the "x" value in the returned data series 
+        * x_var:            The variable name to be assigned to the "x" value in the returned data series
         * y_var:            The variable name to be assigned to the "y" value in the returned data series
         * organization_id:  The organization to be used when querying data.
 
@@ -2471,7 +2474,7 @@ def get_building_report_data(request):
             - source_eui
             - site_eui_weather_normalized
             - source_eui_weather_normalized
-            - energy_score 
+            - energy_score
 
         The y_var values should be from the following set of variable names:
 
@@ -2480,8 +2483,8 @@ def get_building_report_data(request):
             - year_built
 
         This method includes building record count information as part of the result JSON in a property called "building_counts."
-        This property provides data on the total number of buildings available in each 'year ending' group, as well as the subset of 
-        those buildings that have actual data to graph. By sending these  values in the result 
+        This property provides data on the total number of buildings available in each 'year ending' group, as well as the subset of
+        those buildings that have actual data to graph. By sending these  values in the result
         we allow the client to easily build a message like "200 of 250 buildings in this group have data."
 
 
@@ -2494,19 +2497,19 @@ def get_building_report_data(request):
                     {
                         "id" the id of the building,
                         "yr_e" : the year ending value for this data point
-                        "x": value for x var, 
-                        "y": value for y var,                        
+                        "x": value for x var,
+                        "y": value for y var,
                     },
                     ...
                 ],
                 "building_counts": [
                     {
-                        "yr_e": string for year ending 
+                        "yr_e": string for year ending
                         "num_buildings": number of buildings in query results
                         "num_buildings_w_data" : number of buildings with valid data in query results
                     },
                     ...
-                ]                               
+                ]
                 "num_buildings": total number of buildings in query results,
                 "num_buildings_w_data" : total number of buildings with valid data in the query results
             }
@@ -2540,14 +2543,14 @@ def get_building_report_data(request):
               description: User's organization which should be used to filter building query results
               required: true
               type: string
-              paramType: query              
+              paramType: query
             - name: aggregate
               description: Aggregates data based on internal rules (given x and y var)
               required: true
               type: string
               paramType: query
-  
-        type:            
+
+        type:
             status:
                 required: true
                 type: string
@@ -2568,8 +2571,8 @@ def get_building_report_data(request):
               message: Not authenticated
             - code: 403
               message: Insufficient rights to call this procedure
-    
-                  
+
+
         """
 
     from dateutil.parser import parse
@@ -2591,7 +2594,7 @@ def get_building_report_data(request):
         _log.error(msg)
         _log.exception(str(e))
         return HttpResponseBadRequest(msg)
-    
+
     valid_values = [
         'site_eui', 'source_eui', 'site_eui_weather_normalized',
         'source_eui_weather_normalized', 'energy_score',
@@ -2617,8 +2620,8 @@ def get_building_report_data(request):
     #                     {
     #                         "id" the id of the building,
     #                         "yr_e" : the year ending value for this data point
-    #                         "x": value for x var, 
-    #                         "y": value for y var,                        
+    #                         "x": value for x var,
+    #                         "y": value for y var,
     #                     },
     #                     ...
     #                 ],
@@ -2626,18 +2629,18 @@ def get_building_report_data(request):
     chart_data = []
     building_counts = []
     for year_ending, values in bldg_counts.items():
-        buildingCountItem = {   "num_buildings"         : len(values["buildings"]), 
+        buildingCountItem = {   "num_buildings"         : len(values["buildings"]),
                                 "num_buildings_w_data"  : len(values["buildings_w_data"]),
                                 "yr_e"                  : year_ending.strftime('%Y-%m-%d')
                             }
         building_counts.append(buildingCountItem)
-    
+
     for canonical_id, year_ending_to_data_map in data.iteritems():
         for year_ending, requested_data in year_ending_to_data_map.iteritems():
-            d = requested_data 
+            d = requested_data
             #The point must have both an x and a y value or else it is not valid
             if not (d["x"] and d["y"]):
-                continue        
+                continue
             d["id"] = canonical_id
             d["yr_e"] = year_ending.strftime('%Y-%m-%d')
             chart_data.append(d)
@@ -2646,7 +2649,7 @@ def get_building_report_data(request):
     #Send back to client
     return {    'status': 'success',
                 'chart_data' : chart_data,
-                'building_counts' : building_counts  
+                'building_counts' : building_counts
            }
 
 from itertools import groupby
@@ -2663,7 +2666,7 @@ def get_aggregated_building_report_data(request):
         :GET:
         * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
         * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
-        * x_var:            The variable name to be assigned to the "x" value in the returned data series 
+        * x_var:            The variable name to be assigned to the "x" value in the returned data series
         * y_var:            The variable name to be assigned to the "y" value in the returned data series
         * organization_id:  The organization to be used when querying data.
 
@@ -2673,7 +2676,7 @@ def get_aggregated_building_report_data(request):
             - source_eui
             - site_eui_weather_normalized
             - source_eui_weather_normalized
-            - energy_score 
+            - energy_score
 
         The y_var values should be from the following set of variable names:
 
@@ -2682,8 +2685,8 @@ def get_aggregated_building_report_data(request):
             - year_built
 
         This method includes building record count information as part of the result JSON in a property called "building_counts."
-        This property provides data on the total number of buildings available in each 'year ending' group, as well as the subset of 
-        those buildings that have actual data to graph. By sending these  values in the result 
+        This property provides data on the total number of buildings available in each 'year ending' group, as well as the subset of
+        those buildings that have actual data to graph. By sending these  values in the result
         we allow the client to easily build a message like "200 of 250 buildings in this group have data."
 
 
@@ -2702,7 +2705,7 @@ def get_aggregated_building_report_data(request):
                         "yr_e": x
                         "x" : x,
                         "y" : y
-                    }       
+                    }
                     ...
                 ],
                 "building_counts": [
@@ -2712,7 +2715,7 @@ def get_aggregated_building_report_data(request):
                         "num_buildings_w_data" : number of buildings with valid data in this group, BOTH x and y?
                     },
                     ...
-                ]                              
+                ]
                 "num_buildings": total number of buildings in query results,
                 "num_buildings_w_data" : total number of buildings with valid data in query results
             }
@@ -2746,9 +2749,9 @@ def get_aggregated_building_report_data(request):
               description: User's organization which should be used to filter building query results
               required: true
               type: string
-              paramType: query        
-  
-        type:            
+              paramType: query
+
+        type:
             status:
                 required: true
                 type: string
@@ -2772,8 +2775,8 @@ def get_aggregated_building_report_data(request):
               message: Not authenticated
             - code: 403
               message: Insufficient rights to call this procedure
-    
-                  
+
+
         """
 
 
@@ -2815,7 +2818,7 @@ def get_aggregated_building_report_data(request):
         msg = "Couldn't convert date strings to date objects"
         _log.error(msg)
         _log.exception(str(e))
-        return HttpResponseBadRequest(msg) 
+        return HttpResponseBadRequest(msg)
 
     _, data = get_raw_report_data(dt_from, dt_to, orgs, x_var, y_var)
 
@@ -2927,293 +2930,3 @@ def get_aggregated_building_report_data(request):
         'chart_data' : chart_data,
         'building_counts' : building_counts
     }
-
-
-
-# ~~~~~~~ #
-# LABELS  #
-# ~~~~~~~ #
-
-#DMcQ:  Temporary location for label methods. (Probably should be added as separate view
-#       if we want to start refactoring main.py.)
-#       This code is only for UI work...will be properly implemented by BE person.
-
-
-import json
-from ..utils import labels as label_utils
-import random 
-from ..utils import labels as utils
-from django.core.exceptions import ObjectDoesNotExist
-
-@api_endpoint
-@ajax_request
-@login_required
-def get_labels(request):
-    """
-    Gets all labels for the current user's organization.
-
-    If request object has 'search' object assigned, use that object to
-    select subset of buildings, and then determine if each label appears
-    at least once in that set. If so, assign an 'is_applied' property to
-    True, otherwise assign False.
-
-    If no 'search' object is provided, do not need to assign an 'is_applied' property.
-
-    (Note:  The search object is defined on the front end by the angular search_service.js   
-            and is used in other Django methods. It has a host of properties, only some
-            of which are relative here.)
-
-    Payload::
-
-        {
-            'search': (optional)
-            {
-                "select_all_checkbox":  boolean, indicates if "select all" on building
-                                        list was selected
-                "selected_buildings":   array of building ids. May be empty if 
-                                        select_all_checkbox is true.
-                "filter_params" :       object with key/values for each filter used.
-            }
-        }
-
-    Returns::
-
-        {
-         'status': 'success',
-         'labels':
-          [
-            {
-             'name': name of label,
-             'color': color of label,
-             'id': label's ID
-             'is_applied': boolean. True if label is in one or more buildings in query.
-            }, ...
-         ]
-        }
-    """
-    labels = label_utils.get_labels(request.user)
-
-    #DMcQ: TEMP FOR UI DEV: Randomly assign 'is_applied' property
-    #TODO: REPLACE WITH VALID ROUTINE TO ASSIGN is_applied
-    for label in labels: 
-        label['is_applied'] = random.choice([True, False])
-
-    return {'status': 'success', 'labels': labels}
-
-
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def create_label(request):
-    """
-    Creates a new label.
-
-    Payload::
-
-        {
-         'label':
-          {
-           "color": "red",
-           "name": "non compliant"
-          }
-        }
-
-    Returns::
-
-        {
-         'status':  {string} 'success' or 'error',
-         'message': {string} error message, if any
-         'label':   {object} The new label object
-        }
-
-    """
-
-    #Check for correct request and params
-    if request.method != 'POST':
-        return HttpResponseBadRequest("This view replies only to POST methods")
-
-    body = json.loads(request.body)
-    label = body.get('label')
-
-    if not label:
-        msg = "Missing 'label' parameter"
-        _log.error(msg)
-        _log.exception(str(e))
-        return HttpResponseBadRequest(msg)
-
-    #TODO:  We need to implement proper error responses for the REST API.
-    #       In this case, we should be returning a 409 error if the label
-    #       already exists.
-                   
-    if StatusLabel.objects.filter(name=label['name']).exists():
-        return  {'status': 'error', 'message' : 'label already exists' }
-
-    new_label, created = StatusLabel.objects.get_or_create(
-        super_organization=request.user.orgs.all()[0],
-        name=label['name'],
-        color=label['color'],
-    )
-
-    #Must be an easier way to do this
-    return_label = {    'id' : new_label.id,
-                        'name': new_label.name,
-                        'color' : new_label.color
-                    }
-
-    return {'status': 'success',
-            'label': return_label}
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def update_label(request):
-    """
-    Updates a label.
-
-    Payload::
-
-        {
-         "label": {
-            "id":       ID of label to change,
-            "color":    Label's new color,
-            "name":     Label's new name,
-         }
-        }
-
-    Returns::
-
-        {
-            'status': {string}  'success' or 'error'
-            'label' : {object}  label object for updated label
-        }
-
-    """
-
-    # NOTE: SHOULDN'T THIS BE USING THE 'PUT' REQUEST TYPE?
-
-     #Check for correct request and params
-    if request.method != 'POST':
-        return HttpResponseBadRequest("This view replies only to POST methods")
-
-    body = json.loads(request.body)
-    label = body.get('label')
-
-    if not label:
-        msg = "Missing 'label' parameter"
-        _log.error(msg)
-        _log.exception(str(e))
-        return HttpResponseBadRequest(msg)
-
-    try:
-        update_label = StatusLabel.objects.get(pk=label['id'])
-    except ObjectDoesNotExist:
-        return  {'status': 'error', 'message' : 'label does not exist' }
-   
-    try:       
-        update_label.color = label['color']
-        update_label.name = label['name']
-        update_label.save()
-    except:
-        msg = 'Could not update label'
-        _log.error(msg)
-        _log.exception(str(e))
-        return  {'status': 'error', 'message' : msg }
-
-    return_label = {    'id'    : update_label.id,
-                        'name'  : update_label.name,
-                        'color' : update_label.color
-                    }
-
-    return {'status': 'success', 'label': return_label}
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def delete_label(request):
-    """
-    Deletes a label.
-
-    Payload::
-
-        {'label':
-         {'id': ID of label to delete}
-        }
-
-    Returns::
-
-        {'status': 'success'}
-
-    """
-
-    # NOTE: SHOULDN'T THIS BE USING THE 'DELETE' REQUEST TYPE?
-
-    body = json.loads(request.body)
-    label = body.get('label')
-
-    if not label:
-        msg = "Missing 'label' parameter"
-        _log.error(msg)
-        _log.exception(str(e))
-        return HttpResponseBadRequest(msg)
-
-    try:        
-        status_label = StatusLabel.objects.get(pk=label['id'])
-        ProjectBuilding.objects.filter(
-            status_label=status_label
-        ).update(status_label=None)
-        status_label.delete()
-    except:
-        msg = 'Could not delete label'
-        _log.error(msg)
-        _log.exception(str(e))
-        return  {'status': 'error', 'message' : msg }
-
-    return {'status': 'success'}
-
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def update_building_labels(request):
-    """
-    Updates label assignments to buildings. 
-
-    Payload::
-
-        {
-            "add_label_ids": {array}            Array of label ids to apply to selected buildings
-            "remove_label_ids": {array}         Array of label ids to remove from selected buildings
-            "buildings": {array}                Array of building ids to apply/remove labels. (this will be empty or null if select_all_checkbox is true),
-            "select_all_checkbox": {boolean},   Whether select all checkbox was selected on building list
-            "filter_params": {object}           A 'filter params' object containing key/value pairs for selected filters
-            "org_id": {integer}                 The user's org ID            
-        }
-
-    Returns::
-
-        {
-            'status': {string}                  'success' or 'error'
-            'message': {string}                 Error message if status = 'error'
-            'num_buildings_updated': {integer}  Number of buildings in queryset 
-        }
-
-    """
-    body = json.loads(request.body)
-
-    #TEMP:
-    num_buildings_updated = 23
-    
-    #TODO:  Apply add_label_ids to selected buildings in org
-    #       Remove remove_label_ids from selected buildings in org
-    #       Return 'success' or 'error' and an error 'message'
-
-    return {'status': 'success', 'num_buildings_updated': num_buildings_updated}
-
-
-
-

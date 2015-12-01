@@ -36,11 +36,8 @@
         window.BE.urls.get_aggregated_building_report_data  = '{% url "seed:get_aggregated_building_report_data" %}';
 
         //label management urls
-        window.BE.urls.get_labels       = '{% url "seed:get_labels" %}';
-        window.BE.urls.create_label     = '{% url "seed:create_label" %}';
-        window.BE.urls.update_label     = '{% url "seed:update_label" %}';
-        window.BE.urls.delete_label     = '{% url "seed:delete_label" %}';
-        window.BE.urls.update_building_labels = '{% url "seed:update_building_labels" %}';
+        window.BE.urls.label_list             = '{% url "labels:label-list" %}';
+        window.BE.urls.update_building_labels = '{% url "labels:update_building_labels" %}';
 
         // uploader URLS
         window.BE.urls.uploader_signature_endpoint  = '{% url "data_importer:sign_policy_document" %}';
