@@ -85,8 +85,8 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
             function(data){
                 var msg = "Label updated.";
                 notification.primary(msg);    
-                $scope.labels.splice(index, 1, data.label);
-                $scope.label = data.label;
+                $scope.labels.splice(index, 1, data);
+                $scope.label = data;
             },
             function(message){
                 $log.error("Error saving label.", message);
@@ -130,7 +130,7 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
         // gets all labels for an org user
         label_service.get_labels().then(function(data) {
             // resolve promise
-            $scope.labels = data.labels;
+            $scope.labels = data.results;
         });
     }
 

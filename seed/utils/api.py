@@ -92,6 +92,19 @@ def api_endpoint(fn):
     return _wrapped
 
 
+def drf_api_endpoint(fn):
+    """
+    Decorator to register a Django Rest Framework view with the list of API
+    endpoints.  Marks it with `is_api_endpoint = True` as well as appending it
+    to the global `endpoints` list.
+    """
+    fn.is_api_endpoint = True
+    global endpoints
+    endpoints.append(fn)
+
+    return fn
+
+
 def get_api_request_user(request):
     """
     Determines if this is an API request and returns the corresponding user
