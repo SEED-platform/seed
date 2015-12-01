@@ -13,8 +13,8 @@ angular.module('BE.seed.vendor_dependencies', [
     'ui.bootstrap',
     'ui.sortable',
     'ui.tree',
-    'ngTagsInput',
     'xeditable',
+    'ngTagsInput',
     'ui-notification'
     ]);
 angular.module('BE.seed.controllers', [
@@ -33,7 +33,6 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.dataset_detail',
     'BE.seed.controller.delete_modal',
     'BE.seed.controller.developer',
-    'BE.seed.controller.edit_label_modal',
     'BE.seed.controller.edit_project_modal',
     'BE.seed.controller.existing_members_modal',
     'BE.seed.controller.export_modal',
