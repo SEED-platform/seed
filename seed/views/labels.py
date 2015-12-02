@@ -1,14 +1,18 @@
 from rest_framework import viewsets
-from rest_framework import views
+from rest_framework import generics
 
 from seed.decorators import (
     DecoratorMixin,
+)
+from seed.filters import (
+    BuildingFilterBackend,
 )
 from seed.utils.api import (
     drf_api_endpoint,
 )
 from seed.models import (
     StatusLabel as Label,
+    BuildingSnapshot,
 )
 from seed.serializers.labels import (
     LabelSerializer,
@@ -30,7 +34,10 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
         return super(LabelViewSet, self).get_serializer(*args, **kwargs)
 
 
-class UpdateBuildingLabelsAPIView(views.APIView):
+class UpdateBuildingLabelsAPIView(generics.GenericAPIView):
+    filter_backends = (BuildingFilterBackend,)
+    queryset = BuildingSnapshot.objects.none()
+
     def put(self, *args, **kwargs):
         """
         Updates label assignments to buildings.
@@ -70,6 +77,8 @@ class UpdateBuildingLabelsAPIView(views.APIView):
 
             return {'status': 'success', 'num_buildings_updated': num_buildings_updated}
         '''
+        queryset = self.filter_queryset(self.get_queryset())
+        import ipdb; ipdb.set_trace()
         assert False
 
 

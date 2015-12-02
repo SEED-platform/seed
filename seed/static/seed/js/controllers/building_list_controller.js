@@ -47,6 +47,7 @@ angular.module('BE.seed.controller.building_list', [])
     $scope.user.project_id = $routeParams.project_id;
     $scope.columns = [];
     $scope.labels = [];
+    $scope.selected_labels = [];
     $scope.is_loading = false;
     $scope.project = project_payload.project;
     $scope.show_alert = false;
@@ -89,21 +90,26 @@ angular.module('BE.seed.controller.building_list', [])
         TODO: Write function to dynamically build array based on query.
     */
     $scope.loadLabelsForFilter = function(query) {
-        
-        if(query==="" || query === undefined){
-            return $scope.labels;
+        return _.filter($scope.labels, function(lbl) {
+            if(_.isEmpty(query)) {
+                // Empty query so return the whole list.
+                return true;
+            } else {
+                // Only include element if it's name contains the query string.
+                return lbl.name.indexOf(query) > 1;
+            }
+        });
+    };
+
+    $scope.$watchCollection("selected_labels", function() {
+        // Only submit the `id` of the label to the API.
+        if($scope.selected_labels.length > 0) {
+            $scope.search.filter_params.canonical_building__labels = _.pluck($scope.selected_labels, "id");
+        } else {
+            delete $scope.search.filter_params.canonical_building__labels;
         }
 
-        var returnArr = [];
-        var len = $scope.labels.length;
-        for (var index = 0; index< len; index++){
-            var label= $scope.labels[index];
-            if (label.name.indexOf(query) > -1){
-                returnArr.push(label);
-            }
-        }
-        return returnArr;  
-    };
+    });
 
     /**
         Opens the update building labels modal.
@@ -142,7 +148,7 @@ angular.module('BE.seed.controller.building_list', [])
         // gets all labels for an org user
         label_service.get_labels().then(function(data) {
             // resolve promise
-            $scope.labels = data.labels;
+            $scope.labels = data.results;
         });
     };
 

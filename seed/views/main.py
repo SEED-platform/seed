@@ -607,68 +607,32 @@ def search_buildings(request):
         }
     """
     params = search.parse_body(request)
-    other_search_params = params['other_search_params']
-    # add some filters to the dict of known column names so search_buildings
-    # doesn't think they are part of extra_data
-    db_columns, extra_data_sort, params['order_by'] = search.build_json_params(
-        params['order_by'], params['sort_reverse']
+
+    buildings_queryset = search.orchestrate_search_filter_sort(
+        params=params,
+        user=request.user,
     )
 
-    # get all buildings for a user's orgs and sibling orgs
-    orgs = request.user.orgs.all()
-    whitelist_orgs = orgs
-    other_orgs = []
-    if params['show_shared_buildings']:
-        other_orgs = search.build_shared_buildings_orgs(orgs)
-
-    building_snapshots = search.create_building_queryset(
-        orgs,
-        params['exclude'],
-        params['order_by'],
-        other_orgs=other_orgs,
-        extra_data_sort=extra_data_sort,
-    )
-
-    # full text search across a couple common fields
-    buildings_queryset = search.search_buildings(
-        params['q'], queryset=building_snapshots
-    )
-    buildings_queryset = search.filter_other_params(
-        buildings_queryset, other_search_params, db_columns
-    )
     # apply order_by here if extra_data_sort is True
-    parent_org = orgs.first().parent_org
-    below_threshold = False
-    if (parent_org
-        and parent_org.query_threshold
-        and buildings_queryset.count() < parent_org.query_threshold
-        ):
-        below_threshold = True
-    if extra_data_sort:
-        ed_mapping = ColumnMapping.objects.filter(
-            super_organization__in=orgs,
-            column_mapped__column_name=params['order_by'],
-        ).first()
-        ed_column = ed_mapping.column_mapped.filter(
-            column_name=params['order_by']
-        ).first()
-        ed_unit = ed_column.unit
+    parent_org = request.user.orgs.first().parent_org
 
-        buildings_queryset = buildings_queryset.json_query(
-            params['order_by'],
-            order_by=params['order_by'],
-            order_by_rev=params['sort_reverse'],
-            unit=ed_unit,
-        )
+    below_threshold = (
+        parent_org and parent_org.query_threshold and
+        buildings_queryset.count() < parent_org.query_threshold
+    )
+
     buildings, building_count = search.generate_paginated_results(
         buildings_queryset,
         number_per_page=params['number_per_page'],
         page=params['page'],
         # Generally just orgs, sometimes all orgs with public fields.
-        whitelist_orgs=whitelist_orgs,
+        whitelist_orgs=request.user.orgs.all(),
         below_threshold=below_threshold,
     )
+
     project_slug = None
+
+    other_search_params = params['other_search_params']
     if other_search_params and 'project__slug' in other_search_params:
         project_slug = other_search_params['project__slug']
     if params['project_id']:
