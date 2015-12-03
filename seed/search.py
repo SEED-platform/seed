@@ -195,7 +195,8 @@ def filter_other_params(queryset, other_params, db_columns):
                           k == 'import_file_id' or k == 'source_type'):
                 query_filters &= Q(**{"%s" % k: v})
             elif k == 'canonical_building__labels':
-                query_filters &= Q(**{"%s__in" % k: v})
+                for l in v:
+                    query_filters &= Q(**{k: l})
             else:
                 query_filters &= Q(**{"%s__icontains" % k: v})
 
