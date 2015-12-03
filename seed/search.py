@@ -7,11 +7,13 @@ Search methods pertaining to buildings.
 """
 import operator
 import json
-import re
 
 from django.db.models import Q
 from seed.lib.superperms.orgs.models import Organization
-from .models import BuildingSnapshot
+from .models import (
+    BuildingSnapshot,
+    ColumnMapping,
+)
 from .utils.mapping import get_mappable_types
 from .utils import search as search_utils
 from seed.public.models import PUBLIC
@@ -171,7 +173,7 @@ def filter_other_params(queryset, other_params, db_columns):
     query_filters = Q()
     for k, v in other_params.iteritems():
         in_columns = search_utils.is_column(k, db_columns)
-        if in_columns and k != 'q' and v is not None and v != '':
+        if in_columns and k != 'q' and v is not None and v != '' and v != []:
             exact_match = search_utils.is_exact_match(v)
             empty_match = search_utils.is_empty_match(v)
             not_empty_match = search_utils.is_not_empty_match(v)
@@ -192,6 +194,8 @@ def filter_other_params(queryset, other_params, db_columns):
                           '__isnull' in k or
                           k == 'import_file_id' or k == 'source_type'):
                 query_filters &= Q(**{"%s" % k: v})
+            elif k == 'canonical_building__labels':
+                query_filters &= Q(**{"%s__in" % k: v})
             else:
                 query_filters &= Q(**{"%s__icontains" % k: v})
 
@@ -267,21 +271,49 @@ def parse_body(request):
     except ValueError:
         body = {}
 
-    q = body.get('q', '')
-    other_search_params = body.get('filter_params', {})
+    return process_search_params(
+        params=body,
+        user=request.user,
+        is_api_request=getattr(request, 'is_api_request', False),
+    )
+
+
+def process_search_params(params, user, is_api_request=False):
+    """
+    Given a python representation of a search query, process it into the
+    internal format that is used for searching, filtering, sorting, and
+    pagination.
+
+    :param params: a python object representing the search query
+    :param user: the user this search is for
+    :param is_api_request: bool, boolean whether this search is being done as an api request.
+    :returns: dict {
+        'exclude': dict, exclude dict for django queryset
+        'order_by': str, query order_by, defaults to 'tax_lot_id'
+        'sort_reverse': bool, True if ASC, False if DSC
+        'page': int, pagination page
+        'number_per_page': int, number per pagination page
+        'show_shared_buildings': bool, whether to search across all user's orgs
+        'q': str, global search param
+        'other_search_params': dict, filter params
+        'project_id': str, project id if exists in body
+    }
+    """
+    q = params.get('q', '')
+    other_search_params = params.get('filter_params', {})
     exclude = other_search_params.pop('exclude', {})
 
-    order_by = body.get('order_by', 'tax_lot_id')
+    order_by = params.get('order_by', 'tax_lot_id')
     if order_by == '':
         order_by = 'tax_lot_id'
-    sort_reverse = body.get('sort_reverse', False)
-    page = int(body.get('page', 1))
-    number_per_page = int(body.get('number_per_page', 10))
-    if 'show_shared_buildings' in body:
-        show_shared_buildings = body.get('show_shared_buildings')
-    elif not getattr(request, 'is_api_request', False):
+    sort_reverse = params.get('sort_reverse', False)
+    page = int(params.get('page', 1))
+    number_per_page = int(params.get('number_per_page', 10))
+    if 'show_shared_buildings' in params:
+        show_shared_buildings = params.get('show_shared_buildings')
+    elif not is_api_request:
         show_shared_buildings = getattr(
-            request.user, 'show_shared_buildings', False
+            user, 'show_shared_buildings', False
         )
     else:
         show_shared_buildings = False
@@ -295,7 +327,7 @@ def parse_body(request):
         'show_shared_buildings': show_shared_buildings,
         'q': q,
         'other_search_params': other_search_params,
-        'project_id': body.get('project_id')
+        'project_id': params.get('project_id')
     }
 
 
@@ -330,6 +362,7 @@ def build_json_params(order_by, sort_reverse):
     db_columns = get_mappable_types()
     db_columns['project_building_snapshots__status_label__name'] = ''
     db_columns['project__slug'] = ''
+    db_columns['canonical_building__labels'] = ''
 
     if order_by not in db_columns:
         extra_data_sort = True
@@ -518,3 +551,58 @@ def mask_results(search_results):
                 d[key] = b[key]
         results.append(d)
     return results
+
+
+def orchestrate_search_filter_sort(params, user):
+    """
+    Given a parsed set of params, perform the search, filter, and sort for
+    BuildingSnapshot's
+    """
+    other_search_params = params['other_search_params']
+    # add some filters to the dict of known column names so search_buildings
+    # doesn't think they are part of extra_data
+    db_columns, extra_data_sort, params['order_by'] = build_json_params(
+        params['order_by'], params['sort_reverse']
+    )
+
+    # get all buildings for a user's orgs and sibling orgs
+    orgs = user.orgs.all()
+    other_orgs = []
+    if params['show_shared_buildings']:
+        other_orgs = build_shared_buildings_orgs(orgs)
+
+    building_snapshots = create_building_queryset(
+        orgs,
+        params['exclude'],
+        params['order_by'],
+        other_orgs=other_orgs,
+        extra_data_sort=extra_data_sort,
+    )
+
+    # full text search across a couple common fields
+    buildings_queryset = search_buildings(
+        params['q'], queryset=building_snapshots
+    )
+    buildings_queryset = filter_other_params(
+        buildings_queryset, other_search_params, db_columns
+    )
+
+    # sorting
+    if extra_data_sort:
+        ed_mapping = ColumnMapping.objects.filter(
+            super_organization__in=orgs,
+            column_mapped__column_name=params['order_by'],
+        ).first()
+        ed_column = ed_mapping.column_mapped.filter(
+            column_name=params['order_by']
+        ).first()
+        ed_unit = ed_column.unit
+
+        buildings_queryset = buildings_queryset.json_query(
+            params['order_by'],
+            order_by=params['order_by'],
+            order_by_rev=params['sort_reverse'],
+            unit=ed_unit,
+        )
+
+    return buildings_queryset

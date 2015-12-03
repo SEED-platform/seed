@@ -37,13 +37,6 @@ def get_projects(building, organization):
             'approver': pb.approver.email if pb.approver else None,
             'approved_date': approved_date,
         }
-        if pb.status_label:
-            label = {
-                'name': pb.status_label.name,
-                'color': pb.status_label.color,
-                'id': pb.status_label.pk,
-            }
-            project_dict['building']['label'] = label
         projects.append(project_dict)
 
     return projects

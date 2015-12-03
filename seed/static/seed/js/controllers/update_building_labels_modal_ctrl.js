@@ -17,7 +17,7 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
     $scope.loading = false;
 
     //convenience refs for the parts of the search object we're concerned about in this controller
-    var selected_buildings = search.selectepd_buildings;
+    var selected_buildings = search.selected_buildings;
     var select_all_checkbox = search.select_all_checkbox;
     var filter_params = search.filter_params;
 
@@ -96,20 +96,23 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
     /* User has indicated 'Done' so perform selected label operations */
     $scope.done = function () {
 
-        var addLabelIDs = [];
-        var removeLabelIDs = [];
+        var addLabelIDs = _.chain($scope.labels)
+            .filter(function(lbl) {
+                return lbl.is_checked_add;
+            })
+            .pluck("id")
+            .value();
+        var removeLabelIDs = _.chain($scope.labels)
+            .filter(function(lbl) {
+                return lbl.is_checked_remove;
+            })
+            .pluck("id")
+            .value();
 
-        var len = $scope.labels.length;
-        for (var index=0; index<len; index++){
-            var label = $scope.labels[index];
-            if (label.is_checked_add){
-                addLabelIDs.push(label.id);
-            } else if (label.is_checked_remove) {
-                removeLabelIDs.push(label.id);
-            }
-        }
+        // Parameters used to limit the loaded building list.
+        var search_params = search.construct_search_query();
 
-        label_service.update_building_labels(addLabelIDs, removeLabelIDs, selected_buildings, select_all_checkbox, filter_params).then(
+        label_service.update_building_labels(addLabelIDs, removeLabelIDs, selected_buildings, select_all_checkbox, search_params).then(
             function(data){  
                 var msg = data.num_buildings_updated.toString() + " buildings updated.";
                 notification.primary(msg);       

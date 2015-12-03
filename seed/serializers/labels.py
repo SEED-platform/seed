@@ -1,3 +1,4 @@
+from rest_framework import fields
 from rest_framework import serializers
 
 from seed.models import (
@@ -23,3 +24,19 @@ class LabelSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ("id", "name", "color", "super_organization")
         model = Label
+
+
+class UpdateBuildingLabelsSerializer(serializers.Serializer):
+    add_label_ids = serializers.ListSerializer(
+        child=fields.IntegerField(),
+        allow_empty=True,
+    )
+    remove_label_ids = serializers.ListSerializer(
+        child=fields.IntegerField(),
+        allow_empty=True,
+    )
+    selected_buildings = serializers.ListSerializer(
+        child=fields.IntegerField(),
+        allow_empty=True,
+    )
+    select_all_checkbox = fields.BooleanField()
