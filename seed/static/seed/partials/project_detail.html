@@ -35,11 +35,7 @@
                             
                             <li ng-show="menu.user.organization.user_role !== 'viewer'"><a data-toggle="modal" data-target="#existingProjectModal" ng-click="create_project_state='create'">Move/copy buildings to another project</a></li>
                             <li class="divider" ng-show="project.is_compliance && menu.user.organization.user_role !== 'viewer'"></li>
-                            <li ng-show="menu.user.organization.user_role !== 'viewer'"><span class="dropdown_menu_title" >Add a label:</span></li>
-                            <li ng-show="menu.user.organization.user_role !== 'viewer'"><a ng-repeat="l in labels" ng-click="apply_label(l)"><be-label name="{$ l.name $}" color="{$ l.color $}"></be-label></a></li>
                             <li class="divider" ng-show="menu.user.organization.user_role !== 'viewer'"></li>
-                            <li ng-show="menu.user.organization.user_role !== 'viewer'"><a ng-click="remove_label()">Remove labels</a></li>
-                            <li ng-show="menu.user.organization.user_role !== 'viewer'"><a ng-click="open_edit_label_modal()">Manage labels</a></li>
                             <li><a ng-click="open_export_modal()">Export Buildings</a></li>
                         </ul>
                     </div>
