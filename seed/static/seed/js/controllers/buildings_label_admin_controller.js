@@ -25,42 +25,14 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
     };
 
 
-  
-    /* Checks for existing label name for inline edit form.
-        Form assumes function will return a string if there's an existing label */
-    $scope.checkLabelBeforeSave = function(data, currentLabelName){
-        if (data === currentLabelName){
-            return;
-        }
-        if (data===undefined || data==="") {
-            return "Enter at least one character";
-        }
-        if(isLabelNameUsed(data)){
-            return "That label name already exists";
-        }         
-    };
 
-    /*  Check if supplied label name
-        exists in current set of labels. 
-    */
-    function isLabelNameUsed(newLabelName) {
-        var len = $scope.labels.length;
-        for (var index=0;index<len;index++){
-            var label = $scope.labels[index];
-            if (label.name===newLabelName){
-                return true;
-            }
-        }
-        return false;
-    }
 
     /*  Take user input from New Label form and submit 
         to service to create a new label. */
     $scope.submitNewLabelForm = function (form){
-        if (isLabelNameUsed($scope.new_label.name)) {
-            alert("That label name is alredy used.");
+        if (form.$invalid) {
             return;
-        } 
+        }
         label_service.create_label($scope.new_label).then(
             function(result){                  
                 get_labels();
@@ -72,15 +44,32 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
             function(message){
                 $log.error("Error creating new label.", message);
             }
-        );
-        
+        );        
     };
 
-    $scope.onLabelNameKeypress = function(e, form) {
+  
+    /* Checks for existing label name for inline edit form.
+        Form assumes function will return a string if there's an existing label */
+    $scope.checkEditLabelBeforeSave = function(data, currentLabelName){
+        if (data === currentLabelName){
+            return;
+        }
+        if (data===undefined || data==="") {
+            return "Enter at least one character";
+        }
+        if(isLabelNameUsed(data)){
+            return "That label name already exists";
+        }         
+    };
+
+    /* Submit edit when 'enter' is pressed */
+    $scope.onEditLabelNameKeypress = function(e, form) {
         if (e.which === 13) {
             form.$submit();
         }
     };
+
+  
     
     $scope.saveLabel = function(label, id, index) {
         //Don't update $scope.label until a 'success' from server

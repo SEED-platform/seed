@@ -39,7 +39,6 @@
                     <input  type="text"      
                             name="name"                       
                             class="form-control" 
-                            id="projectName" 
                             ng-minlength="1" 
                             ng-maxlength="100"
                             style="min-width:300px;"
@@ -102,8 +101,8 @@
                             e-name="name" 
                             e-form="rowform" 
                             ng-show="rowform.$visible" 
-                            onbeforesave="checkLabelBeforeSave($data, label.name)" 
-                            e-ng-keypress="onLabelNameKeypress($event, rowform)"
+                            onbeforesave="checkEditLabelBeforeSave($data, label.name)" 
+                            e-ng-keypress="onEditLabelNameKeypress($event, rowform)"
                             e-maxlength="255"
                             e-required>
                         {$ label.name $}

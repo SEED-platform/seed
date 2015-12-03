@@ -29,7 +29,7 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
         $scope.number_matching_search = "";
     }
     
-    //An array of labels relevant to the current search properties.
+    //An array of all available labels in the system.
     //These label objects should have the is_applied property set so 
     //the modal can show the Remove button if necessary. (Populated
     //during init function below.)
@@ -43,20 +43,28 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
 
     /* Initialize the label props for a 'new' label */
     $scope.initialize_new_label = function() {   
-        $scope.new_label.color = "gray";
-        $scope.new_label.label = "default";
-        $scope.new_label.name = "";
+       $scope.new_label = {color:"gray", label:"default", name:""};
     };
 
     /* Create a new label based on user input */
-    $scope.create_new_label = function(new_label){
-        label_service.create_label(new_label).then(
+    $scope.submitNewLabelForm = function(form){
+        if (form.$invalid) {
+            return;
+        }
+        label_service.create_label($scope.new_label).then(
             function(data){
+                
                 //promise completed successfully
                 var createdLabel = data;
-                createdLabel.is_applied = false;
+
+                $scope.newLabelForm.$setPristine();
                 $scope.labels.unshift(createdLabel);
                 $scope.initialize_new_label();
+
+
+                //Assume that user wants to apply a label they just created
+                //in this modal...
+                createdLabel.is_checked_add = true;
             },
             function(data, status) {
                 // reject promise
