@@ -34,7 +34,8 @@
                 <label  class="control-label sectionLabel" 
                         style="padding-right:20px;">
                         Create new label</label>
-                <div class="input-group" >
+                <div    class="input-group" 
+                        style="padding-right:20px;">
                     <input  type="text"      
                             name="name"                       
                             class="form-control" 
@@ -105,11 +106,11 @@
                             e-ng-keypress="onLabelNameKeypress($event, rowform)"
                             e-maxlength="255"
                             e-required>
-                        {$ label.name || '(empty)' $}
+                        {$ label.name $}
                     </span>
                     <span   ng-show="!rowform.$visible"
                             class="label label-{$ label.label $}">
-                        {$ label.name || '(empty)' $}
+                        {$ label.name $}
                     </span>
                 </td>
 
