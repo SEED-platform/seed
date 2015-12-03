@@ -116,6 +116,11 @@ if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
 
 ALLOWED_HOSTS = ['*']
 
+# ReadTheDocs won't have a local_untracked, so even here in dev, there needs to be a few initializations
+DOMAIN_URLCONFS = {}
+DOMAIN_URLCONFS['default'] = 'config.urls'
+
+
 # use imp module to find the local_untracked file rather than a hard-coded path
 # TODO: There seems to be a bunch of loading of other files in these settings. First this loads the common, then this, then anything in the untracked file
 try:
