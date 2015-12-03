@@ -391,12 +391,12 @@ a:not([href]) {
           &.open {
 
             .dropdown-toggle {
-              @include box-shadow(inset 0px 0px 0px rgba(0, 0, 0, 0.0));
+              @include box-shadow(inset 0 0 0 rgba(0, 0, 0, 0));
             }
           }
 
           .btn {
-            padding: 14px 20px 12px 20px;
+            padding: 14px 20px 12px;
             font-size: 18px;
             color: $blue;
             background-color: rgba(255, 255, 255, 0);
@@ -406,7 +406,7 @@ a:not([href]) {
             &.btn:active,
             &.btn:focus {
               background-color: $gray_lightest;
-              @include box-shadow(inset 0px 0px 0px rgba(0, 0, 0, 0.0));
+              @include box-shadow(inset 0 0 0 rgba(0, 0, 0, 0));
             }
           }
 
@@ -475,7 +475,7 @@ a:not([href]) {
       .page_action_container {
         position: relative;
         float: left;
-        padding: 11px 20px 7px 20px;
+        padding: 11px 20px 7px;
 
         &.left {
           float: left;
@@ -512,7 +512,7 @@ a:not([href]) {
       .page_title {
         position: relative;
         width: 40%;
-        padding: 11px 20px 7px 20px;
+        padding: 11px 20px 7px;
         float: left;
         text-align: center;
 
@@ -606,7 +606,7 @@ a:not([href]) {
       padding: 16px 20% 16px 16px;
     }
     &.wide {
-      padding: 16px 16px 16px 16px;
+      padding: 16px;
     }
   }
 }
@@ -925,7 +925,7 @@ a:not([href]) {
         th, td {
           font-family: $font-family-base-narrow;
           white-space: nowrap;
-          padding: 6px 10px 5px 10px;
+          padding: 6px 10px 5px;
           border-right: 1px solid $gray_lighter;
 
           &.is_aligned_left {
@@ -943,7 +943,7 @@ a:not([href]) {
             white-space: normal;
           }
           &.check {
-            width: 5%;
+            width: 33px;
           }
           &.has_no_padding {
             padding: 0;
@@ -970,7 +970,7 @@ a:not([href]) {
             a {
               border-left: 3px solid $green;
               display: block;
-              padding: 12px 10px 12px 10px;
+              padding: 12px 10px;
               color: $black;
               text-decoration: none;
 
@@ -983,7 +983,7 @@ a:not([href]) {
             padding: 0;
             a {
               color: darken($grayLighter, 10%);
-              padding: 12px 10px 12px 10px;
+              padding: 12px 10px;
               display: block;
               text-decoration: none;
 
@@ -1131,14 +1131,14 @@ a:not([href]) {
             padding: 0;
 
             a {
-              padding: 6px 10px 5px 10px;
+              padding: 6px 10px 5px;
             }
           }
           &.is_not_master {
             padding: 0;
 
             a {
-              padding: 6px 10px 5px 10px;
+              padding: 6px 10px 5px;
               color: darken($grayLighter, 40%);
             }
           }
@@ -1179,7 +1179,7 @@ a:not([href]) {
           label.checkbox_fill_area {
             display: block;
             cursor: pointer;
-            padding: 6px 0 0 0;
+            padding: 6px 0 0;
           }
 
           &.parent_org {
@@ -1440,7 +1440,7 @@ a:not([href]) {
         margin-top: 10px;
 
         .display_number_entries_text {
-          margin: 7px 5px 0 5px;
+          margin: 7px 5px 0;
           float: left;
         }
 
@@ -1540,7 +1540,7 @@ a:not([href]) {
   .form-group {
 
     p {
-      margin: 0 0 8px 0;
+      margin: 0 0 8px;
       font-weight: bold;
       font-size: 14px;
     }
@@ -1792,7 +1792,7 @@ a:not([href]) {
   position: relative;
   &:before {
     font-size: 18px;
-    padding: 4px 8px 4px 8px;
+    padding: 4px 8px;
     -webkit-transform: rotate(-5deg) translateX(-25px) translateY(-25px);
     content: 'Tip!';
     background: #5bc0de;
@@ -1949,7 +1949,7 @@ a:not([href]) {
   }
 
   .progress {
-    margin: 5px 10px 0 10px;
+    margin: 5px 10px 0;
   }
 }
 
@@ -2166,7 +2166,6 @@ gs-input .tags .tag-item .remove-button {
         opacity: 0.7;
     }
 }
-
 
 
 /* OTHER */
