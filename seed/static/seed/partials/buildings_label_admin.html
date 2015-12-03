@@ -103,6 +103,7 @@
                             ng-show="rowform.$visible" 
                             onbeforesave="checkLabelBeforeSave($data, label.name)" 
                             e-ng-keypress="onLabelNameKeypress($event, rowform)"
+                            e-maxlength="255"
                             e-required>
                         {$ label.name || '(empty)' $}
                     </span>
