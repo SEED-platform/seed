@@ -183,18 +183,17 @@ angular.module('BE.seed.service.label',
                                             (success or error)
 
     */
-    function update_building_labels(add_label_ids, remove_label_ids, selected_buildings, select_all_checkbox, filter_params) {
+    function update_building_labels(add_label_ids, remove_label_ids, selected_buildings, select_all_checkbox, search_params) {
         var defer = $q.defer();
         $http({
             method: 'PUT',
             'url': window.BE.urls.update_building_labels,
-            'params': {
+            'params': search_params,
+            'data': {
                 'add_label_ids': add_label_ids,
                 'remove_label_ids': remove_label_ids,
                 'selected_buildings' : selected_buildings,
                 'select_all_checkbox': select_all_checkbox,
-                'filter_params': filter_params,
-                'org_id': user_service.get_organization().id,
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);

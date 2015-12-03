@@ -130,6 +130,22 @@ angular.module('BE.seed.service.search', [])
     };
 
     /**
+     * construct_search_query: constructs an object suitable to be passed to
+     * the api to search for a set of buildings.
+     */
+    search_service.construct_search_query = function(query) {
+        this.sanitize_params();
+        return {
+            'q': query || this.query,
+            'number_per_page': this.number_per_page,
+            'page': this.current_page,
+            'order_by': this.order_by,
+            'sort_reverse': this.sort_reverse,
+            'filter_params': this.filter_params
+        };
+    };
+
+    /**
      * search_buildings: makes a search request. ``url`` must be set before
      * a request can be made successfully.
      *
@@ -138,19 +154,13 @@ angular.module('BE.seed.service.search', [])
      */
     search_service.search_buildings = function(query) {
         this.sanitize_params();
+        this.query = query || this.query;
         var defer = $q.defer();
         var that = this;
-        that.query = query || that.query;
+        var data = this.construct_search_query(query);
         $http({
             'method': 'POST',
-            'data': {
-                'q': that.query,
-                'number_per_page': that.number_per_page,
-                'page': that.current_page,
-                'order_by': that.order_by,
-                'sort_reverse': that.sort_reverse,
-                'filter_params': that.filter_params
-            },
+            'data': data,
             'url': that.url
         }).success(function(data, status, headers, config){
             that.update_results(data);

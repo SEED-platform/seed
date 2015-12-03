@@ -88,8 +88,8 @@
                                 uib-btn-checkbox 
                                 ng-model="label.is_checked_remove"
                                 ng-show="label.is_applied"
-                                btn-checkbox-true="1" 
-                                btn-checkbox-false="0"
+                                btn-checkbox-true="true" 
+                                btn-checkbox-false="false"
                                 class="btn btn-sm btn-default action_link" 
                                 ng-class="{'btn-danger':label.is_checked_remove}"
                                 ng-click="toggle_remove(label)"
@@ -99,8 +99,8 @@
                         <button type="button" 
                                 uib-btn-checkbox 
                                 ng-model="label.is_checked_add"
-                                btn-checkbox-true="1" 
-                                btn-checkbox-false="0"
+                                btn-checkbox-true="true" 
+                                btn-checkbox-false="false"
                                 class="btn btn-sm btn-default action_link" 
                                 ng-class="{'btn-primary':label.is_checked_add}"
                                 ng-click="toggle_add(label)"
