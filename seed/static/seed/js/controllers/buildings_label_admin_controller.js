@@ -105,7 +105,7 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
             okButtonText: 'OK',
             cancelButtonText: 'Cancel',
             headerText: 'Confirm delete',
-            bodyText: "Delete label \"" + label.name + "\"? It will automatically be removed from any buildings it's been applied to."
+            bodyText: "Delete label \"" + label.name + "\" and remove it from all buildings it's been applied to?"
         };
         simple_modal_service.showModal(modalOptions).then(
             function(result){
