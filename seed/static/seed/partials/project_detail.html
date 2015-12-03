@@ -34,8 +34,6 @@
                             <li ng-show="menu.user.organization.user_role !== 'viewer'"><a data-toggle="modal" data-target="#myModal" ng-click="create_project_state='create'">Remove buildings from project</a></li>
                             
                             <li ng-show="menu.user.organization.user_role !== 'viewer'"><a data-toggle="modal" data-target="#existingProjectModal" ng-click="create_project_state='create'">Move/copy buildings to another project</a></li>
-                            <li class="divider" ng-show="project.is_compliance && menu.user.organization.user_role !== 'viewer'"></li>
-                            <li class="divider" ng-show="menu.user.organization.user_role !== 'viewer'"></li>
                             <li><a ng-click="open_export_modal()">Export Buildings</a></li>
                         </ul>
                     </div>
