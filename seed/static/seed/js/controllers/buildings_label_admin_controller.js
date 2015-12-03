@@ -28,9 +28,12 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
   
     /* Checks for existing label name for inline edit form.
         Form assumes function will return a string if there's an existing label */
-    $scope.checkNewLabelNameForUpdate = function(data, currentLabelName){
+    $scope.checkLabelBeforeSave = function(data, currentLabelName){
         if (data === currentLabelName){
             return;
+        }
+        if (data===undefined || data==="") {
+            return "Enter at least one character";
         }
         if(isLabelNameUsed(data)){
             return "That label name already exists";
@@ -102,7 +105,7 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
             okButtonText: 'OK',
             cancelButtonText: 'Cancel',
             headerText: 'Confirm delete',
-            bodyText: "Delete label " + label.name + "? (It will be removed from all buildings it's currently applied to, if any.)"
+            bodyText: "Delete label \"" + label.name + "\"? It will automatically be removed from any buildings it's been applied to."
         };
         simple_modal_service.showModal(modalOptions).then(
             function(result){

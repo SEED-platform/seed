@@ -101,14 +101,14 @@
                             e-name="name" 
                             e-form="rowform" 
                             ng-show="rowform.$visible" 
-                            onbeforesave="checkNewLabelNameForUpdate($data, label.name)" 
+                            onbeforesave="checkLabelBeforeSave($data, label.name)" 
                             e-ng-keypress="onLabelNameKeypress($event, rowform)"
                             e-required>
-                        {$ label.name || 'empty' $}
+                        {$ label.name || '(empty)' $}
                     </span>
                     <span   ng-show="!rowform.$visible"
                             class="label label-{$ label.label $}">
-                        {$ label.name || 'empty' $}
+                        {$ label.name || '(empty)' $}
                     </span>
                 </td>
 
