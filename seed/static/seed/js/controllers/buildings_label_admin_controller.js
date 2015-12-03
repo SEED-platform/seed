@@ -62,6 +62,17 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
         }         
     };
 
+    function isLabelNameUsed(newLabelName) {
+        var len = $scope.labels.length;
+        for (var index=0;index<len;index++){
+            var label = $scope.labels[index];
+            if (label.name===newLabelName){
+                return true;
+            }
+        }
+        return false;
+    }
+
     /* Submit edit when 'enter' is pressed */
     $scope.onEditLabelNameKeypress = function(e, form) {
         if (e.which === 13) {
