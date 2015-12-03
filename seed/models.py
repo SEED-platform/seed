@@ -1420,6 +1420,7 @@ class BuildingSnapshot(TimeStampedModel):
             result['canonical_building'] = (
                 self.canonical_building and self.canonical_building.pk
             )
+            result['labels'] = [label.to_dict() for label in self.labels]
 
             # should probably also return children, parents, and coparent
             result['children'] = map(lambda c: c.id, self.children.all())
@@ -1442,6 +1443,13 @@ class BuildingSnapshot(TimeStampedModel):
         return u_repr.format(
             self.pk, self.pm_property_id, self.tax_lot_id, self.confidence
         )
+
+    @property
+    def labels(self):
+        if self.canonical_building:
+            return self.canonical_building.labels.all()
+        else:
+            return StatusLabel.objects.none()
 
     @property
     def has_children(self):

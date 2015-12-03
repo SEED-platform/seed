@@ -197,52 +197,6 @@ def search_and_project(header, main_url, organization_id, log):
     except:
         pass
 
-	#-- Labels
-    print ('\n-------Labels-------\n')
-
-	# Create label
-    print ('API Function: add_label\n'),
-    partmsg = 'add_label'
-    label_payload = {'label': {'name': 'test label', 
-							   'color': 'gray'} }
-    try:
-        result = requests.post(main_url+'/app/projects/add_label/',
-								headers=header,
-								data=json.dumps(label_payload))
-        check_status(result, partmsg, log)
-    except:
-        log.error("Could not create a label. Following API in SEARCH_AND_PROJECT not tested")
-        return project_slug
-
-	# Get label_id
-    label_id = result.json()['label_id']
-
-	# Get organization labels
-    print ('API Function: get_labels\n'),	
-    partmsg = 'get_labels'
-    try:
-        result = requests.get(main_url+'/app/projects/get_labels/',
-								headers=header)
-        check_status(result, partmsg, log)
-    except:
-        pass
-
-	# Apply to buildings that have ENERGY STAR Score > 50
-    print ('API Function: apply_label\n'),	
-    partmsg = 'apply_label'
-    payload = {'label':{'id':label_id},
-						'project_slug':project_slug,
-						'buildings':[],
-						'select_all_checkbox':True,
-						'search_params':{'filter_params':{'project__slug':project_slug}} }
-    try:
-        result = requests.post(main_url+'/app/projects/apply_label/',
-								headers=header,
-								data=json.dumps(payload))
-        check_status(result, partmsg, log)
-    except:
-        pass
-
 	#-- Export
     print ('\n-------Export-------\n')
 

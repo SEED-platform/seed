@@ -318,30 +318,6 @@ angular.module('BE.seed.controller.building_list', [])
         $scope.project.end_date = null;
     };
 
-    /* DMcQ: (Nov 26, 2015) We are removing project-label functionality until a later date.
-    $scope.apply_label = function(label) {
-        var search_params = {
-            'q': $scope.query,
-            'filter_params': $scope.search.filter_params,
-            'project_slug': $scope.project.id || null
-        };
-        project_service.apply_label($scope.user.project_id, $scope.search.selected_buildings, $scope.search.select_all_checkbox, label, search_params).then(function(data){
-            // resolve promise
-            $scope.search.selected_buildings = [];
-            $scope.search.select_all_checkbox = false;
-            refresh_search();
-        }, function(data, status){
-            // rejet promise
-            console.log({data: data, status: status});
-        });
-    };
-    $scope.remove_label = function() {
-        var empty_label = {};
-        $scope.apply_label(empty_label);
-    };
-    */
-
-    
     /**
      * open_export_modal: opens the export modal
      */

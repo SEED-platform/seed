@@ -53,9 +53,6 @@ from seed.utils.buildings import (
 )
 from seed.utils.api import api_endpoint
 from seed.utils.generic import median, round_down_hundred_thousand
-from seed.utils.labels import (
-    update_buildings_with_labels,
-)
 from seed.utils.projects import (
     get_projects,
 )
@@ -629,18 +626,6 @@ def search_buildings(request):
         whitelist_orgs=request.user.orgs.all(),
         below_threshold=below_threshold,
     )
-
-    project_slug = None
-
-    other_search_params = params['other_search_params']
-    if other_search_params and 'project__slug' in other_search_params:
-        project_slug = other_search_params['project__slug']
-    if params['project_id']:
-        buildings = update_buildings_with_labels(
-            buildings, params['project_id'])
-    elif project_slug:
-        project_id = Project.objects.get(slug=project_slug).pk
-        buildings = update_buildings_with_labels(buildings, project_id)
 
     return {
         'status': 'success',
