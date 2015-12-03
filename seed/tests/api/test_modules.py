@@ -7,8 +7,8 @@ import pprint
 
 
 def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, filetype, mappingfilepath, log):
-    
-    # Upload the covered-buildings-sample file 
+
+    # Upload the covered-buildings-sample file
     print ('API Function: upload_file\n'),
     partmsg = 'upload_file'
     try:
@@ -22,7 +22,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
         log.error("Following API could not be tested")
         return
 
-    # Get import ID 
+    # Get import ID
     import_id = result.json()['import_file_id']
 
     # Save the data to BuildingSnapshots
@@ -53,7 +53,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
     except:
         pass
 
-    # Save the column mappings 
+    # Save the column mappings
     print ('API Function: save_column_mappings\n'),
     partmsg = 'save_column_mappings'
     payload = {'import_file_id': import_id,
@@ -77,7 +77,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
         result = requests.get(main_url+'/app/remap_buildings/',
                               headers=header,
                               data=json.dumps(payload))
-                      
+
         progress = check_progress(main_url, header, result.json()['progress_key'])
         check_status(result, partmsg, log)
     except:
@@ -105,7 +105,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
         result = requests.post(main_url+'/app/start_system_matching/',
                               headers=header,
                               data=json.dumps(payload))
-                      
+
         progress = check_progress(main_url, header, result.json()['progress_key'])
         check_status(result, partmsg, log)
     except:
@@ -138,15 +138,15 @@ def search_and_project(header, main_url, organization_id, log):
         pass
 
 
-	#-- Project 
+	#-- Project
     print ('\n-------Project-------\n')
 
 	# Create a Project for 'Condo' in 'use_description'
     print ('API Function: create_project\n'),
     partmsg = 'create_project'
     time1 = dt.datetime.now()
-    newproject_payload = {'project': {'name': 'New Project_'+str(time1.day)+str(time1.second), 
-									'compliance_type': 'describe compliance type', 
+    newproject_payload = {'project': {'name': 'New Project_'+str(time1.day)+str(time1.second),
+									'compliance_type': 'describe compliance type',
 									'description': 'project description'},
 						  'organization_id': organization_id}
     try:
@@ -158,7 +158,7 @@ def search_and_project(header, main_url, organization_id, log):
         log.error("Could not create a project. Following API in SEARCH_AND_PROJECT not tested")
         return
 
-	# Get project slug 
+	# Get project slug
     project_slug = result.json()['project_slug']
 
 	# Get the projects for the organization
@@ -172,15 +172,15 @@ def search_and_project(header, main_url, organization_id, log):
     except:
         pass
 
-	# Populate project by search buildings result 
+	# Populate project by search buildings result
     print ('API Function: add_buildings_to_project\n'),
     partmsg = 'add_buildings_to_project'
     projectbldg_payload = {'project':{'status':'active',
 									  'project_slug':project_slug,
-									  'slug':project_slug, 
-									  'select_all_checkbox':True, 
+									  'slug':project_slug,
+									  'select_all_checkbox':True,
 									  'selected_buildings':[],
-									  'filter_params':{'use_description':'CONDO'}}, 
+									  'filter_params':{'use_description':'CONDO'}},
 						   'organization_id':organization_id}
     try:
         result = requests.post(main_url+'/app/projects/add_buildings_to_project/',
@@ -189,7 +189,7 @@ def search_and_project(header, main_url, organization_id, log):
         time.sleep(10)
         check_status(result, partmsg, log)
 
-		# Get the percent/progress of buildings added to project 
+		# Get the percent/progress of buildings added to project
         progress = requests.post(main_url+'/app/projects/get_adding_buildings_to_project_status_percentage/',
 								 headers=header,
 								 data=json.dumps({'project_loading_cache_key':result.json()['project_loading_cache_key']}))
@@ -247,9 +247,9 @@ def search_and_project(header, main_url, organization_id, log):
     print ('\n-------Export-------\n')
 
 	# Export all buildings.
-    print ('API Function: export_buildings\n'),	
+    print ('API Function: export_buildings\n'),
     partmsg = 'export_buildings'
-    export_payload = {'export_name': 'project_buildings', 
+    export_payload = {'export_name': 'project_buildings',
 					  'export_type': "csv",
 					  'select_all_checkbox': True,
 					  'filter_params':{'project__slug':project_slug}}
@@ -273,9 +273,9 @@ def search_and_project(header, main_url, organization_id, log):
 
     except:
         log.error("Could not export building. Following API in SEARCH_AND_PROJECT not tested")
-        return project_slug		
+        return project_slug
 
-    print ('API Function: export_buildings_download\n'),	
+    print ('API Function: export_buildings_download\n'),
     partmsg = 'export_buildings_download'
     try:
         result = requests.post(main_url+'/app/export_buildings/download/',
@@ -288,7 +288,7 @@ def search_and_project(header, main_url, organization_id, log):
     return project_slug
 
 def account(header, main_url, username, log):
-    # Retrieve the user profile 
+    # Retrieve the user profile
     print ('API Function: get_user_profile\n'),
     partmsg = 'get_user_profile'
     result = requests.get(main_url+'/app/accounts/get_user_profile',
@@ -301,10 +301,10 @@ def account(header, main_url, username, log):
     result = requests.get(main_url+'/app/accounts/get_organizations/',
                           headers=header)
     check_status(result, partmsg, log, PIIDflag='organizations')
-    
+
 	# # Get the organization id to be used.
-	# # NOTE: Loop through the organizations and get the org_id 
-	# # where the organization owner is 'username' else get the first organization. 
+	# # NOTE: Loop through the organizations and get the org_id
+	# # where the organization owner is 'username' else get the first organization.
     orgs_result = result.json()
     for ctr in range(len(orgs_result['organizations'])):
         if orgs_result['organizations'][ctr]['owners'][0]['email'] == username:
@@ -312,26 +312,26 @@ def account(header, main_url, username, log):
             break
         else:
             organization_id = orgs_result['organizations'][0]['org_id']
-    
-    # Get the organization details 
+
+    # Get the organization details
     partmsg = 'get_organization (2)'
     mod_url = main_url+'/app/accounts/get_organization/?organization_id='+str(organization_id)
     result = requests.get(mod_url,
                           headers=header)
     check_status(result, partmsg, log)
-    
-    # Change user profile 
+
+    # Change user profile
     # NOTE: Make sure these credentials are ok.
     print ('API Function: update_user\n'),
     partmsg = 'update_user'
-    user_payload={'user': {'first_name': 'Sherlock', 
+    user_payload={'user': {'first_name': 'Sherlock',
                            'last_name':'Holmes',
-                           'email': username}} 
+                           'email': username}}
     result = requests.post(main_url+'/app/accounts/update_user/',
                           headers=header,
                           data=json.dumps(user_payload))
     check_status(result, partmsg, log)
-                                            
+
     # Get organization users
     print ('API Function: get_organizations_users\n'),
     partmsg = 'get_organizations_users'

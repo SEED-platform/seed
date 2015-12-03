@@ -2136,7 +2136,7 @@ class TestMCMViews(TestCase):
         self.assertEqual(json_result['message'], 'Mapped buildings already merged')
         self.assertEqual(json_result['progress'], 100)
         # self.assertItemsEqualqual(json_result['progress_key'], 100)
-        
+
         # Verify that we haven't deleted those mapped buildings.
         self.assertEqual(
             BuildingSnapshot.objects.filter(
