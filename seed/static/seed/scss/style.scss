@@ -1608,6 +1608,10 @@ a:not([href]) {
       float: none;
     }
   }
+  
+  .btn {
+    min-width:90px;
+  }
 }
 
 #newCustomViewModal {
