@@ -4,7 +4,8 @@
 from __future__ import absolute_import
 from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
-import aws
+# import aws
+from config.settings.aws import aws
 
 # AWS settings
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
@@ -22,6 +23,7 @@ ENV = STACK_OUTPUTS.get('StackFlavor', 'dev')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 TEMPLATE_DEBUG = DEBUG
+DOMAIN_URLCONFS = {}
 DOMAIN_URLCONFS[STACK_OUTPUTS.get('HostName')] = 'config.urls'
 
 # Handle SSL with django-sslify
