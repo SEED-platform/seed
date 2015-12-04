@@ -57,15 +57,14 @@ angular.module('BE.seed.service.label',
             }
     */
     
-    function get_labels(selected_buildings, select_all_checkbox, filter_params) {
+    function get_labels(selected_buildings, select_all_checkbox, search_params) {
         var defer = $q.defer();
        
-        var searchArgs = {
+        var searchArgs = _.extend({
             'selected_buildings' : selected_buildings,
             'select_all_checkbox' : select_all_checkbox,
-            'filter_params' : filter_params,
              organization_id: user_service.get_organization().id
-        };
+        }, search_params);
        
         $http({
             method: 'GET',
@@ -188,12 +187,13 @@ angular.module('BE.seed.service.label',
         $http({
             method: 'PUT',
             'url': window.BE.urls.update_building_labels,
-            'params': search_params,
+            'params': _.extend({
+                'selected_buildings' : selected_buildings,
+                'select_all_checkbox': select_all_checkbox
+            }, search_params),
             'data': {
                 'add_label_ids': add_label_ids,
-                'remove_label_ids': remove_label_ids,
-                'selected_buildings' : selected_buildings,
-                'select_all_checkbox': select_all_checkbox,
+                'remove_label_ids': remove_label_ids
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);

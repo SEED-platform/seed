@@ -6,6 +6,7 @@ from seed.decorators import (
     DecoratorMixin,
 )
 from seed.filters import (
+    LabelFilterBackend,
     BuildingFilterBackend,
 )
 from seed.utils.api import (
@@ -14,6 +15,7 @@ from seed.utils.api import (
 from seed.models import (
     StatusLabel as Label,
     BuildingSnapshot,
+    CanonicalBuilding,
 )
 from seed.serializers.labels import (
     LabelSerializer,
@@ -25,6 +27,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
                    viewsets.ModelViewSet):
     serializer_class = LabelSerializer
     queryset = Label.objects.none()
+    filter_backends = (LabelFilterBackend,)
 
     def get_queryset(self):
         return Label.objects.filter(
@@ -33,12 +36,18 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
 
     def get_serializer(self, *args, **kwargs):
         kwargs['super_organization'] = self.request.user.orgs.first()
+        building_snapshots = BuildingFilterBackend().filter_queryset(
+            request=self.request,
+            queryset=BuildingSnapshot.objects.all(),
+            view=self,
+        )
+        kwargs['building_snapshots'] = building_snapshots
         return super(LabelViewSet, self).get_serializer(*args, **kwargs)
 
 
 class UpdateBuildingLabelsAPIView(generics.GenericAPIView):
     filter_backends = (BuildingFilterBackend,)
-    queryset = BuildingSnapshot.objects.none()
+    queryset = BuildingSnapshot.objects.all()
     serializer_class = UpdateBuildingLabelsSerializer
 
     def put(self, *args, **kwargs):
@@ -65,7 +74,10 @@ class UpdateBuildingLabelsAPIView(generics.GenericAPIView):
             }
 
         """
-        queryset = self.filter_queryset(self.get_queryset())
+        building_snapshots = self.filter_queryset(self.get_queryset())
+        queryset = CanonicalBuilding.objects.filter(
+            id__in=building_snapshots.values_list('canonical_building', flat=True),
+        )
         serializer = self.get_serializer(
             data=self.request.data,
             queryset=queryset,
@@ -73,8 +85,8 @@ class UpdateBuildingLabelsAPIView(generics.GenericAPIView):
         )
         serializer.is_valid(raise_exception=True)
 
-        updated_buildings = serializer.save()
+        serializer.save()
 
         return response.Response({
-            "num_buildings_updated": updated_buildings.count(),
+            "num_buildings_updated": building_snapshots.count(),
         })

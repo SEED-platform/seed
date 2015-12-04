@@ -3,7 +3,6 @@ from rest_framework import serializers
 
 from seed.models import (
     StatusLabel as Label,
-    CanonicalBuilding,
 )
 
 
@@ -12,6 +11,7 @@ class LabelSerializer(serializers.ModelSerializer):
         source="super_organization",
         read_only=True,
     )
+    is_applied = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
         """
@@ -23,16 +23,29 @@ class LabelSerializer(serializers.ModelSerializer):
 
         """
         super_organization = kwargs.pop('super_organization')
+        self.building_snapshots = kwargs.pop('building_snapshots')
         super(LabelSerializer, self).__init__(*args, **kwargs)
         if getattr(self, 'initial_data', None):
             self.initial_data['super_organization'] = super_organization.pk
 
     class Meta:
-        fields = ("id", "name", "color", "organization_id", "super_organization")
+        fields = (
+            "id",
+            "name",
+            "color",
+            "organization_id",
+            "super_organization",
+            "is_applied",
+        )
         extra_kwargs = {
             "super_organization": {"write_only": True},
         }
         model = Label
+
+    def get_is_applied(self, obj):
+        return self.building_snapshots.filter(
+            canonical_building__labels=obj,
+        ).exists()
 
 
 class UpdateBuildingLabelsSerializer(serializers.Serializer):
@@ -44,11 +57,6 @@ class UpdateBuildingLabelsSerializer(serializers.Serializer):
         child=fields.IntegerField(),
         allow_empty=True,
     )
-    selected_buildings = serializers.ListSerializer(
-        child=fields.IntegerField(),
-        allow_empty=True,
-    )
-    select_all_checkbox = fields.BooleanField()
 
     def __init__(self, *args, **kwargs):
         self.queryset = kwargs.pop('queryset')
@@ -56,17 +64,6 @@ class UpdateBuildingLabelsSerializer(serializers.Serializer):
         super(UpdateBuildingLabelsSerializer, self).__init__(*args, **kwargs)
 
     def create(self, validated_data):
-        if validated_data['select_all_checkbox']:
-            building_snapshots = self.queryset
-        else:
-            building_snapshots = self.queryset.filter(
-                id__in=validated_data['selected_buildings'],
-            )
-
-        canonical_buildings = CanonicalBuilding.objects.filter(
-            id__in=building_snapshots.values_list('canonical_building', flat=True),
-        )
-
         if validated_data['add_label_ids']:
             add_labels = Label.objects.filter(
                 pk__in=validated_data['add_label_ids'],
@@ -83,8 +80,8 @@ class UpdateBuildingLabelsSerializer(serializers.Serializer):
         else:
             remove_labels = []
 
-        for cb in canonical_buildings:
+        for cb in self.queryset:
             cb.labels.remove(*remove_labels)
             cb.labels.add(*add_labels)
 
-        return building_snapshots
+        return self.queryset
