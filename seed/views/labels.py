@@ -14,7 +14,6 @@ from seed.utils.api import (
 from seed.models import (
     StatusLabel as Label,
     BuildingSnapshot,
-    CanonicalBuilding,
 )
 from seed.serializers.labels import (
     LabelSerializer,
@@ -66,44 +65,16 @@ class UpdateBuildingLabelsAPIView(generics.GenericAPIView):
             }
 
         """
-        serializer = self.get_serializer(data=self.request.data)
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(
+            data=self.request.data,
+            queryset=queryset,
+            super_organization=self.request.user.orgs.first(),
+        )
         serializer.is_valid(raise_exception=True)
 
-        data = serializer.validated_data
-
-        if data['select_all_checkbox']:
-            building_snapshots = self.filter_queryset(self.get_queryset())
-        else:
-            building_snapshots = self.filter_queryset(self.get_queryset()).filter(
-                id__in=data['selected_buildings'],
-            )
-
-        canonical_buildings = CanonicalBuilding.objects.filter(
-            id__in=building_snapshots.values_list('canonical_building', flat=True),
-        )
-
-        super_organization = self.request.user.orgs.first()
-
-        if data['add_label_ids']:
-            add_labels = Label.objects.filter(
-                pk__in=data['add_label_ids'],
-                super_organization=super_organization,
-            )
-        else:
-            add_labels = []
-
-        if data['remove_label_ids']:
-            remove_labels = Label.objects.filter(
-                pk__in=data['remove_label_ids'],
-                super_organization=super_organization,
-            )
-        else:
-            remove_labels = []
-
-        for cb in canonical_buildings:
-            cb.labels.remove(*remove_labels)
-            cb.labels.add(*add_labels)
+        updated_buildings = serializer.save()
 
         return response.Response({
-            "num_buildings_updated": building_snapshots.count(),
+            "num_buildings_updated": updated_buildings.count(),
         })
