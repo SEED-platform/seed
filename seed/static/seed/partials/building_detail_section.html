@@ -8,7 +8,6 @@
                 <strong>Labels:</strong>
                 <span ng-show="labels.length === 0" class="label label-default">Not Labeled</span>
                 <span ng-repeat="label in labels" class="label label-{$ label.label $}">{$ label.name $}</span>
-                <a ng-click"edit_labels" title="Edit labels"><i class="fa fa-pencil"></i>Edit</a>
             </div>
             <div class="section_action_container right" ng-hide="building.edit_form_showing">
                 <a ng-click="building.edit_form_showing = true; save_building_state()" ng-show="user_role !== 'viewer'" ><i class="fa fa-pencil"></i> Edit</a>
