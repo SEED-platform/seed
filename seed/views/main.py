@@ -508,6 +508,7 @@ def get_building(request):
     return {
         'status': 'success',
         'building': building_dict,
+        'labels': [l.to_dict() for l in canon.labels.all()],
         'imported_buildings': imported_buildings_list,
         'projects': projects,
         'user_role': _get_js_role(ou.role_level) if ou else "",

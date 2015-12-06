@@ -16,11 +16,16 @@ angular.module('BE.seed.controller.building_detail', [])
   '$filter',
   '$location',
   'audit_service',
-  function($scope, $routeParams, $uibModal, $log, building_services, project_service, building_payload, all_columns, audit_payload, urls, $filter, $location, audit_service) {
+  'label_helper_service',
+  function($scope, $routeParams, $uibModal, $log, building_services, project_service, building_payload, all_columns, audit_payload, urls, $filter, $location, audit_service, label_helper_service) {
     $scope.user = {};
     $scope.user.building_id = $routeParams.building_id;
     $scope.user.project_slug = $routeParams.project_id;
     $scope.projects = [];
+    $scope.labels = _.map(building_payload.labels, function(lbl) {
+      lbl.label = label_helper_service.lookup_label(lbl.color);
+      return lbl;
+    });
     $scope.building = building_payload.building;
     $scope.user_role = building_payload.user_role;
     $scope.user_org_id = building_payload.user_org_id;
