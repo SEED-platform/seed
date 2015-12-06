@@ -5,7 +5,7 @@ describe("controller: update_building_labels_modal_ctrl", function(){
     
     var return_obj_for_create_label = {
         "color":"gray",
-        "is_applied":true,
+        "num_buildings_updated": 0,
         "id":100,
         "name":"new label 1",
         "label":"default",
@@ -24,7 +24,12 @@ describe("controller: update_building_labels_modal_ctrl", function(){
     ];
 
     var all_available_labels = [
-        {"color":"green","is_applied":true,"id":70,"name":"new label","label":"success","text":"new label"},{"color":"orange","is_applied":true,"id":44,"name":"data cleansing warning3","label":"warning","text":"data cleansing warning3"},{"color":"red","is_applied":true,"id":43,"name":"data cleansing error!","label":"danger","text":"data cleansing error!"},{"color":"green","is_applied":false,"id":74,"name":"dafdsfsa fa","label":"success","text":"dafdsfsa fa"},{"color":"gray","is_applied":true,"id":66,"name":"abc3","label":"default","text":"abc3"},{"color":"light blue","is_applied":false,"id":65,"name":"abc","label":"info","text":"abc"}
+        {"color":"green","num_buildings_updated":0,"id":70,"name":"new label","label":"success","text":"new label"},
+        {"color":"orange","num_buildings_updated":0,"id":44,"name":"data cleansing warning3","label":"warning","text":"data cleansing warning3"},
+        {"color":"red","num_buildings_updated":0,"id":43,"name":"data cleansing error!","label":"danger","text":"data cleansing error!"},
+        {"color":"green","num_buildings_updated":0,"id":74,"name":"dafdsfsa fa","label":"success","text":"dafdsfsa fa"},
+        {"color":"gray","num_buildings_updated":0,"id":66,"name":"abc3","label":"default","text":"abc3"},
+        {"color":"light blue","num_buildings_updated":0,"id":65,"name":"abc","label":"info","text":"abc"}
     ];
                    
 
@@ -94,14 +99,14 @@ describe("controller: update_building_labels_modal_ctrl", function(){
         // These labels are 
         var supplied_labels = [
             {   "color":"gray",
-                "is_applied":true,
+                "num_buildings_updated":0,
                 "id":71,
                 "name":"test label 1",
                 "label":"default",
                 "text":"test label 1",
             },
             {   "color":"green",
-                "is_applied":false,
+                "num_buildings_updated":0,
                 "id":69,
                 "name":"test label 2",
                 "label":"success",
