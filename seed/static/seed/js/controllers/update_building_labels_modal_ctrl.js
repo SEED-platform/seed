@@ -140,7 +140,8 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
         $scope.initialize_new_label();
         //get labels with 'is-applied' property by passing in current search state
         $scope.loading = true;
-        label_service.get_labels(selected_buildings, select_all_checkbox, filter_params).then(function(data){
+        var search_params = search.construct_search_query();
+        label_service.get_labels(selected_buildings, select_all_checkbox, search_params).then(function(data){
              $scope.labels = data.results;
              $scope.loading = false;
         });
