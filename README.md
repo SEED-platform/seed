@@ -1,5 +1,5 @@
 ## Standard Energy Efficiency Data (SEED) Platform™
-[![Build Status][travis-img]][travis-url] [![Coverage Status][coveralls-img]][coveralls-url]
+[![Build Status][travis-img]][travis-url] [![Coverage Status][coveralls-img]][coveralls-url] [![](https://readthedocs.org/projects/seed-platform/badge/?version=stable)](http://seed-platform.readthedocs.org/en/stable/) [![](https://readthedocs.org/projects/seed-platform/badge/?version=latest)](http://seed-platform.readthedocs.org/en/latest/)
 
 The SEED Platform is a web-based application that helps organizations easily manage data on the energy performance of large groups of buildings. Users can combine data from multiple sources, clean and validate it, and share the information with others. The software application provides an easy, flexible, and cost-effective method to improve the quality and availability of data to help demonstrate the economic and environmental benefits of energy efficiency, to implement programs, and to target investment activity.
 

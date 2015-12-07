@@ -17,7 +17,7 @@ angular.module('BE.seed.controller.cleansing', [])
     importFileId
   ) {
     $scope.name = name;
-    $scope.uploaded = uploaded;
+    $scope.uploaded = moment.utc(uploaded).local().format('MMMM Do YYYY, h:mm:ss A Z');
     $scope.cleansingResults = cleansingResults;
     $scope.importFileId = importFileId;
 
