@@ -67,7 +67,7 @@ describe("The search_service service", function() {
 
         expect(saas.query).toEqual("not hotels");
     });
-    /* DMcQ: (12/8/15) We've turned off instantaneous filtering 
+  
     it('filter search resets the current page', function() {
         // arrange
         saas.current_page = 22;
@@ -80,7 +80,7 @@ describe("The search_service service", function() {
         expect(saas.current_page).toEqual(1);
         expect(saas.search_buildings).toHaveBeenCalled();
     });
-    */
+ 
 
     it('search_buildings function will default to its query if' +
         ' no query is passed as an argument', function() {

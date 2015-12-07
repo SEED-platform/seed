@@ -199,7 +199,6 @@ angular.module('BE.seed.service.search', [])
     /**
      * filter_search: triggered when a filter param changes
      */
-    /* DMcQ: Commenting out. We're turning off instantaneous filtering b/c of the issues its causing
     search_service.filter_search = function() {
         this.current_page = 1;
         this.search_buildings();
@@ -207,7 +206,7 @@ angular.module('BE.seed.service.search', [])
             sessionStorage.setItem(this.prefix + ':' + 'seedBuildingFilterParams', JSON.stringify(this.filter_params));
         }
     };
-    */
+   
 
 
     /**
