@@ -1,6 +1,6 @@
 describe("controller: update_building_labels_modal_ctrl", function(){
     // globals set up and used in each test scenario
-    var mock_label_service, scope, controller, modal_state, mock_notification, mock_search ;
+    var mock_label_service, mock_search_service, scope, controller, modal_state, mock_notification;
     var update_ctrl, update_ctrl_scope, modalInstance, labels;
     
     var return_obj_for_create_label = {
@@ -40,7 +40,7 @@ describe("controller: update_building_labels_modal_ctrl", function(){
     });
 
     // inject AngularJS dependencies for the controller
-    beforeEach(inject(function($controller, $rootScope, $uibModal, $q, label_service, Notification) {
+    beforeEach(inject(function($controller, $rootScope, $uibModal, $q, label_service, search_service, Notification) {
 
         controller = $controller;
         scope = $rootScope;
@@ -49,6 +49,8 @@ describe("controller: update_building_labels_modal_ctrl", function(){
         // mock the label_service factory methods used in the controller
         // and return their promises (if necessary).
         mock_label_service = label_service;
+        mock_search_service = search_service;
+
         spyOn(mock_label_service, "get_labels")
             .andCallFake(function(){
                 // return $q.reject for error scenario
@@ -72,6 +74,14 @@ describe("controller: update_building_labels_modal_ctrl", function(){
                 return available_colors;
             }
         );    
+
+        //mock the search_service service
+        spyOn(mock_search_service, "construct_search_query")
+            .andCallFake(function(){
+                // return $q.reject for error scenario
+                return {};
+            }
+        );   
 
         //mock the notification service
         mock_notification = Notification;
@@ -126,7 +136,7 @@ describe("controller: update_building_labels_modal_ctrl", function(){
                 }
             },
             label_service: mock_label_service,
-            search: mock_search,
+            search: mock_search_service,
             notification: mock_notification
         });
     }
