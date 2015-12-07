@@ -1,15 +1,28 @@
 ﻿"""
 API Testing for remote SEED installations.
-:copyright (c) 2014, The Regents of the University of California, Department of Energy contract-operators of the Lawrence Berkeley National Laboratory.
+:copyright (c) 2015, The Regents of the University of California, Department of Energy contract-operators of the Lawrence Berkeley National Laboratory.
 :author Claudine Custodio / Baptiste Ravache
 
 Instructions:
-- Copy and paste the three python modules: test_seed_host_api.py, seed_readingtools.py, test_modules.py
-as well as the document seed_API_test.txt and the folder seed-sample-data in a custom directory
+- Download the three python modules: test_seed_host_api.py, seed_readingtools.py, test_modules.py
+as well as seed_API_test.ini and the folder seed-sample-data in a custom directory
 
-- Fill out the different fields in seed_API_test.txt by replacing the <content> on each line
+- Fill out the different fields in seed_API_test.ini by replacing the <content> on each line (don't include the <>)
 
 - Run the script in test_seed_host_api.py
+
+Description:
+The script reproduce the different steps that a SEED user would do to upload a building file and portfolio manager file,
+map each files, match them, create a project and a label and export a list of buildings.
+
+List of arguments:
+The script requires a host name (i.e. output file name), the main URL tested (e.g. https://seed.lbl.gov),
+the SEED username and the corresponding API key.
+Those information can be listed as follow in the .ini file contained with the script or entered at the beginning of the script.
+
+Outputs:
+The script will create a .txt file that contains the log of the test, i.e. the success/failure of each apps test and the results of
+some apps.
 
 """
 
