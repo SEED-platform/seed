@@ -87,7 +87,6 @@ angular.module('BE.seed.controller.building_list', [])
     */
 
     /*  This method is required by the ngTagsInput input control.
-        TODO: Write function to dynamically build array based on query.
     */
     $scope.loadLabelsForFilter = function(query) {
         return _.filter($scope.labels, function(lbl) {

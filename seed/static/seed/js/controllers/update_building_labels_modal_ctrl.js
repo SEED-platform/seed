@@ -56,11 +56,9 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
                 
                 //promise completed successfully
                 var createdLabel = data;
-
                 $scope.newLabelForm.$setPristine();
                 $scope.labels.unshift(createdLabel);
                 $scope.initialize_new_label();
-
 
                 //Assume that user wants to apply a label they just created
                 //in this modal...
@@ -138,7 +136,7 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
     /* init: Gets the list of labels. Sets up new label object. */
     var init = function() {    
         $scope.initialize_new_label();
-        //get labels with 'is-applied' property by passing in current search state
+        //get labels with 'is_applied' property by passing in current search state
         $scope.loading = true;
         var search_params = search.construct_search_query();
         label_service.get_labels(selected_buildings, select_all_checkbox, search_params).then(function(data){

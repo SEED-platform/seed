@@ -43,8 +43,8 @@ angular.module('BE.seed.service.label',
             label {string}          the css class (usually in bootstrap) used to generate the color style
                                     (poorly named, we should refactor to 'css-class' or something more accurate
                                     or change how color is applied)
-            num_buildings_updated {boolean}     if a search object was passed in, this boolean indicates
-                                                how many buildings in the current filtered set have this label
+            is_applied {boolean}    if a search object was passed in, this boolean indicates
+                                    if buildings in the current filtered set have this label
 
         For example
             {                
@@ -52,7 +52,7 @@ angular.module('BE.seed.service.label',
                 name: "test9"
                 color: "blue"
                 label: "primary"
-                num_buildings_updated : 12
+                is_applied : true
             }
     */
     

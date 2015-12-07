@@ -19,7 +19,7 @@
 
             <div style="margin:10px 0px; padding:0px 10px;">
                 <strong>Labels:</strong>
-                <span ng-show="labels.length === 0" class="label label-default">Not Labeled</span>
+                <span ng-show="labels.length === 0" style="color:#999">(no labels applied)</span>
                 <span ng-repeat="label in labels" class="label label-{$ label.label $}">{$ label.name $}</span>
             </div>
 
