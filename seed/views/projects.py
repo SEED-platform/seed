@@ -8,7 +8,10 @@ import logging
 
 # django imports
 from django.contrib.auth.decorators import login_required
-from seed.utils.cache import get_cache
+from seed.utils.cache import (
+    get_cache,
+    set_cache_raw,
+)
 
 # vendor imports
 from dateutil import parser
@@ -304,6 +307,10 @@ def add_buildings_to_project(request):
     body = json.loads(request.body)
     project_json = body.get('project')
     project = Project.objects.get(slug=project_json['project_slug'])
+    set_cache_raw(
+        project.adding_buildings_status_percentage_cache_key,
+        {'status': 'pending'},
+    )
     add_buildings.delay(
         project_slug=project.slug, project_dict=project_json,
         user_pk=request.user.pk)
@@ -447,11 +454,11 @@ def get_adding_buildings_to_project_status_percentage(request):
     project_loading_cache_key = body.get('project_loading_cache_key')
 
     try:
-      progress_object = get_cache(project_loading_cache_key)
+        progress_object = get_cache(project_loading_cache_key)
     except:
-      msg = "Couldn't find project loading key %s in cache " % project_loading_cache_key
-      _log.error(msg)
-      raise Exception(msg) 
+        msg = "Couldn't find project loading key %s in cache " % project_loading_cache_key
+        _log.error(msg)
+        raise Exception(msg)
 
 
     return {

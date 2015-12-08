@@ -164,7 +164,12 @@ def add_buildings(project_slug, project_dict, user_pk):
 
     set_cache_raw(
         project.adding_buildings_status_percentage_cache_key,
-        {'percentage_done': 0, 'numerator': 0, 'denominator': 0}
+        {
+            'status': 'processing',
+            'percentage_done': 0,
+            'numerator': 0,
+            'denominator': 0,
+        },
     )
     i = 0
     denominator = 1
@@ -176,6 +181,7 @@ def add_buildings(project_slug, project_dict, user_pk):
                 set_cache_raw(
                     project.adding_buildings_status_percentage_cache_key,
                     {
+                        'status': 'processing',
                         'percentage_done': (
                             float(i) / len(selected_buildings) * 100
                         ),
@@ -193,7 +199,12 @@ def add_buildings(project_slug, project_dict, user_pk):
         denominator = query_buildings.count() - len(selected_buildings)
         set_cache_raw(
             project.adding_buildings_status_percentage_cache_key,
-            {'percentage_done': 10, 'numerator': i, 'denominator': denominator}
+            {
+                'status': 'processing',
+                'percentage_done': 10,
+                'numerator': i,
+                'denominator': denominator,
+            },
         )
         i = 0
         for b in query_buildings:
@@ -207,6 +218,7 @@ def add_buildings(project_slug, project_dict, user_pk):
             set_cache_raw(
                 project.adding_buildings_status_percentage_cache_key,
                 {
+                    'status': 'processing',
                     'percentage_done': float(i) / denominator * 100,
                     'numerator': i, 'denominator': denominator
                 }
@@ -219,6 +231,7 @@ def add_buildings(project_slug, project_dict, user_pk):
             set_cache_raw(
                 project.adding_buildings_status_percentage_cache_key,
                 {
+                    'status': 'processing',
                     'percentage_done': (
                         float(denominator - len(selected_buildings) + i) /
                         denominator * 100
@@ -230,7 +243,12 @@ def add_buildings(project_slug, project_dict, user_pk):
 
     set_cache_raw(
         project.adding_buildings_status_percentage_cache_key,
-        {'percentage_done': 100, 'numerator': i, 'denominator': denominator}
+        {
+            'status': 'done',
+            'percentage_done': 100,
+            'numerator': i,
+            'denominator': denominator,
+        },
     )
 
     deadline_date = project_dict.get('deadline_date')
