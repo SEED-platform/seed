@@ -1,7 +1,5 @@
 cache:
   directories: 
-    - node_modules
-    - seed/static/vendors/bower_components
     - $HOME/.pip-cache/
 
 language: python
