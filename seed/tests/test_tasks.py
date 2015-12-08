@@ -577,7 +577,7 @@ class TestTasks(TestCase):
     def test_separates_system_and_possible_match_types(self):
         """We save possible matches separately."""
         bs1_data = {
-           'pm_property_id': 123,
+           'pm_property_id': 1243,
            'tax_lot_id': '435/422',
            'property_name': 'Greenfield Complex',
            'custom_id_1': 1243,
