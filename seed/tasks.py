@@ -1370,7 +1370,12 @@ def _match_buildings(file_pk, user_pk):
     import_file.save()
     # this section spencer changed to make the exact match
     for i, un_m_address in enumerate(unmatched_normalized_addresses):
-        results = _find_matches(un_m_address, canonical_buildings_addresses)
+        # If we have an address, try to match it
+        if un_m_address is not None:
+            results = _find_matches(un_m_address, canonical_buildings_addresses)
+        else:
+            results = []
+
         if results:
             handle_results(
                 results, i, can_rev_idx, unmatched_buildings, user_pk
