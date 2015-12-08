@@ -4,6 +4,7 @@
 # system imports
 import json
 import datetime
+import logging
 
 # django imports
 from django.contrib.auth.decorators import login_required
@@ -31,6 +32,7 @@ from seed.utils.api import api_endpoint
 from ..utils import projects as utils
 from ..utils.time import convert_to_js_timestamp
 
+_log = logging.getLogger(__name__)
 
 DEFAULT_CUSTOM_COLUMNS = [
     'project_id',
@@ -440,12 +442,21 @@ def get_adding_buildings_to_project_status_percentage(request):
         }
 
     """
+
     body = json.loads(request.body)
     project_loading_cache_key = body.get('project_loading_cache_key')
 
+    try:
+      progress_object = get_cache(project_loading_cache_key)
+    except:
+      msg = "Couldn't find project loading key %s in cache " % project_loading_cache_key
+      _log.error(msg)
+      raise Exception(msg) 
+
+
     return {
         'status': 'success',
-        'progress_object': get_cache(project_loading_cache_key)
+        'progress_object': progress_object
     }
 
 
