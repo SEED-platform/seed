@@ -175,7 +175,8 @@ def filter_other_params(queryset, other_params, db_columns):
             exact_match = search_utils.is_exact_match(v)
             empty_match = search_utils.is_empty_match(v)
             not_empty_match = search_utils.is_not_empty_match(v)
-            is_expression = search_utils.is_expression(v)
+            is_numeric_expression = search_utils.is_numeric_expression(v)
+            is_string_expression = search_utils.is_string_expression(v)
 
             if exact_match:
                 query_filters &= Q(**{"%s__exact" % k: exact_match.group(2)})
@@ -183,8 +184,12 @@ def filter_other_params(queryset, other_params, db_columns):
                 query_filters &= Q(**{"%s__exact" % k: ''}) | Q(**{"%s__isnull" % k: True})
             elif not_empty_match:
                 query_filters &= ~Q(**{"%s__exact" % k: ''}) & Q(**{"%s__isnull" % k: False})
-            elif is_expression:
-                query_filters &= search_utils.parse_expression(k, v)
+            elif is_numeric_expression:
+                parts = search_utils.NUMERIC_EXPRESSION_REGEX.findall(v)
+                query_filters &= search_utils.parse_expression(k, parts)
+            elif is_string_expression:
+                parts = search_utils.STRING_EXPRESSION_REGEX.findall(v)
+                query_filters &= search_utils.parse_expression(k, parts)
             elif ('__lt' in k or
                           '__lte' in k or
                           '__gt' in k or

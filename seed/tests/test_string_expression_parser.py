@@ -5,8 +5,9 @@ import itertools
 from django.test import TestCase
 
 from seed.utils.search import (
-    is_expression,
+    is_string_expression,
     parse_expression,
+    STRING_EXPRESSION_REGEX,
 )
 
 
@@ -28,47 +29,50 @@ class TestCaseFactory(type):
         return super(TestCaseFactory, cls).__new__(cls, name, bases, attrs)
 
 
-def make_is_expression_method(value, expected):
+def make_is_string_expression_method(value, expected):
     def run(self):
-        result = is_expression(value)
-        self.assertEquals(bool(expected), bool(result))
+        result = is_string_expression(value)
+        self.assertEquals(expected, bool(result), (expected, result, value))
     return run
 
 
-class IsExpressionTests(TestCase):
+class IsStringExpressionTests(TestCase):
     __metaclass__ = TestCaseFactory
-    method_maker = make_is_expression_method
-    prefix = "test_is_expression"
+    method_maker = make_is_string_expression_method
+    prefix = "test_is_string_expression"
 
     # test name, input, expected output
     cases = [
         # Non expressions
-        ('not_expression_1', '1234', False),
+        ('not_expression_1', 'abcd', False),
         ('not_expression_2', '', False),
         ('not_expression_3', None, False),
+        # Invalid operators
+        ('not_expression_9', "<abc", False),
+        ('not_expression_10', "<=abc", False),
+        ('not_expression_11', ">abc", False),
+        ('not_expression_12', ">=abc", False),
         # Incomplete expressions
         ('not_expression_4', "=", False),
         ('not_expression_5', "==", False),
         ('not_expression_6', "!=", False),
         ('not_expression_7', "!", False),
         ('not_expression_8', "<>", False),
-        ('not_expression_9', "<", False),
-        ('not_expression_10', "<=", False),
-        ('not_expression_11', ">", False),
-        ('not_expression_12', ">=", False),
         # Basic expressions
-        ('equality_1', "=1234", True),
-        ('equality_2', "==1234", True),
-        ('inequality_1', "!=1234", True),
-        ('inequality_2', "!1234", True),
-        ('inequality_3', "<>1234", True),
-        ('less_than', "<1234", True),
-        ('less_than_or_equal', "<=1234", True),
-        ('greater_than', ">1234", True),
-        ('greater_than_or_equal', ">=1234", True),
+        ('equality_1', "=abcd", True),
+        ('equality_2', "==abcd", True),
+        ('inequality_1', "!=abcd", True),
+        ('inequality_2', "!abcd", True),
+        ('inequality_3', "<>abcd", True),
+        # Empty string expressions
+        ('empty_string_expression_1', "==''", True),
+        ('empty_string_expression_2', '=""', True),
         # Whitespace
-        ('whitespace_1', "=  1234", True),
-        ('whitespace_2', " == 1234 ", True),
+        ('whitespace_1', "=  abcd", True),
+        ('whitespace_2', " == abcd ", True),
+        # Internal whitespace
+        ('internal_whitespace_1', "=  ab cd", True),
+        ('internal_whitespace_2', "=  123 abcd", True),
         # Nulls checks
         ('is_null_1', "=null", True),
         ('is_null_2', "==null", True),
@@ -76,11 +80,11 @@ class IsExpressionTests(TestCase):
         ('is_not_null_2', "!null", True),
         ('is_not_null_3', "<>null", True),
         # Complex Expressions
-        ('complex_1', ">123,<456", True),
-        ('complex_2', ">123, <456", True),
-        ('complex_3', ">123 , <456", True),
-        ('complex_4', ">123,<456,!null", True),
-        ('complex_5', ">123,<", True),
+        ('complex_1', "!=abc,<>xyz", True),
+        ('complex_2', "!abc, !xyz", True),
+        ('complex_3', "!=abc , !=xyz", True),
+        ('complex_4', "!abc,!xyz,!null", True),
+        ('complex_5', "!abc,==", True),
     ]
 
 
@@ -103,7 +107,8 @@ def query_to_child_tuples(query):
 
 def make_parse_expression_method(value, expected):
     def run(self):
-        result = parse_expression("field", value)
+        parts = STRING_EXPRESSION_REGEX.findall(value)
+        result = parse_expression("field", parts)
         query_children = query_to_child_tuples(result)
         self.assertEquals(expected, query_children)
     return run
@@ -112,19 +117,15 @@ def make_parse_expression_method(value, expected):
 class ExpressionParserTests(TestCase):
     __metaclass__ = TestCaseFactory
     method_maker = make_parse_expression_method
-    prefix = "test_expression_parser"
+    prefix = "test_string_expression_parser"
 
     # test name, input, expected output
     cases = [
-        ("equality_1", "=1234", [(False, "field", "1234")]),
-        ("equality_2", "==1234", [(False, "field", "1234")]),
-        ("inequality_1", "!=1234", [(True, "field", "1234")]),
-        ("inequality_2", "!1234", [(True, "field", "1234")]),
-        ("inequality_3", "<>1234", [(True, "field", "1234")]),
-        ("greater_than", ">1234", [(False, "field__gt", "1234")]),
-        ("greater_than_or_equal", ">=1234", [(False, "field__gte", "1234")]),
-        ("less_than", "<1234", [(False, "field__lt", "1234")]),
-        ("less_than_or_equal", "<=1234", [(False, "field__lte", "1234")]),
+        ("equality_1", "=abcd", [(False, "field", "abcd")]),
+        ("equality_2", "==abcd", [(False, "field", "abcd")]),
+        ("inequality_1", "!=abcd", [(True, "field", "abcd")]),
+        ("inequality_2", "!abcd", [(True, "field", "abcd")]),
+        ("inequality_3", "<>abcd", [(True, "field", "abcd")]),
         # null
         ("is_null_1", "=null", [(False, "field__isnull", True)]),
         ("is_null_2", "==null", [(False, "field__isnull", True)]),
@@ -132,8 +133,8 @@ class ExpressionParserTests(TestCase):
         ("is_not_null_2", "!=null", [(False, "field__isnull", False)]),
         ("is_not_null_3", "<>null", [(False, "field__isnull", False)]),
         # complex expressions
-        ("complex_1", "!=1234,<1234", [(True, "field", "1234"), (False, "field__lt", "1234")]),
-        ("complex_2", ">1234,<4567", [(False, "field__gt", "1234"), (False, "field__lt", "4567")]),
+        ("complex_1", "!=abcd,<>wxyz", [(True, "field", "abcd"), (True, "field", "wxyz")]),
+        ("complex_2", "!null,!=wxyz", [(False, "field__isnull", False), (True, "field", "wxyz")]),
         # invalid
         ("invalid_null_1", ">null", []),
         ("invalid_null_2", ">=null", []),

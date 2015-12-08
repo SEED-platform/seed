@@ -53,23 +53,43 @@ def is_not_empty_match(q):
     return False
 
 
-EXPRESSION_REGEX = re.compile((
+NUMERIC_EXPRESSION_REGEX = re.compile((
     r'('                                     # open expression grp
     r'(?P<operator>==|=|>|>=|<|<=|<>|!|!=)'  # operator
     r'\s*'                                   # whitespace
-    r'(?P<value>(?:-?[0-9]+)|(?:null))'        # numeric value or the string null
+    r'(?P<value>(?:-?[0-9]+)|(?:null))\s*(?:,|$)'      # numeric value or the string null
     r')'                                     # close expression grp
 ))
 
 
-def is_expression(q):
+def is_numeric_expression(q):
     """
     Checks whether a value looks like an expression, meaning that it contains a
     substring that begins with a comparison operator followed by a numeric
     value, optionally separated by whitespace.
     """
     if is_string_query(q):
-        return EXPRESSION_REGEX.findall(q)
+        return NUMERIC_EXPRESSION_REGEX.findall(q)
+    return False
+
+
+STRING_EXPRESSION_REGEX = re.compile((
+    r'('                                     # open expression grp
+    r'(?P<operator>==|(?<!<|>)=|<>|!|!=)'            # operator
+    r'\s*'                                   # whitespace
+    r'(?P<value>\'\'|""|null|[a-zA-Z0-9\s]+)\s*(?:,|$)'        # open value grp
+    r')'                                     # close expression grp
+))
+
+
+def is_string_expression(q):
+    """
+    Checks whether a value looks like an expression, meaning that it contains a
+    substring that begins with a comparison operator followed by a numeric
+    value, optionally separated by whitespace.
+    """
+    if is_string_query(q):
+        return STRING_EXPRESSION_REGEX.findall(q)
     return False
 
 
@@ -109,12 +129,11 @@ def _translate_expression_parts(op, val):
     return suffix, val, is_negated
 
 
-def parse_expression(k, v):
+def parse_expression(k, parts):
     """
     Parse a complex expression into a Q object.
     """
     query_filters = []
-    parts = EXPRESSION_REGEX.findall(v)
 
     for src, op, val in parts:
         try:
