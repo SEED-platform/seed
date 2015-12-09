@@ -33,8 +33,8 @@ def populate_default_labels(app, schema_editor, **kwargs):
         for label in DEFAULT_LABELS:
             Label.objects.get_or_create(
                 name=label,
-                color='blue',
                 super_organization=org,
+                defaults={'color': 'blue'},
             )
 
 

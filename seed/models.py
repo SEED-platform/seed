@@ -782,8 +782,25 @@ class StatusLabel(TimeStampedModel):
         verbose_name=_('SeedOrg'),
         blank=True,
         null=True,
-        related_name='status_labels'
+        related_name='labels'
     )
+
+    DEFAULT_LABELS = [
+        "Residential",
+        "Non-Residential",
+        "Violation",
+        "Compliant",
+        "Missing Data",
+        "Questionable Report",
+        "Update Bldg Info",
+        "Call",
+        "Email",
+        "High EUI",
+        "Low EUI",
+        "Exempted",
+        "Extension",
+        "Change of Ownership",
+    ]
 
     class Meta:
         unique_together = ('name', 'super_organization')
