@@ -12,11 +12,21 @@ def create_organization(user, org_name='', *args, **kwargs):
     :param (optional) kwargs: 'role', int; 'status', str.
 
     """
+    from seed.models import (
+        StatusLabel as Label,
+    )
     org = SuperOrganization.objects.create(
         name=org_name
     )
     org_user, user_added = SuperOrganizationUser.objects.get_or_create(
         user=user, organization=org
     )
+
+    for label in Label.DEFAULT_LABELS:
+        Label.objects.get_or_create(
+            name=label,
+            super_organization=org,
+            defaults={'color': 'blue'},
+        )
 
     return org, org_user, user_added
