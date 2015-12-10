@@ -143,6 +143,7 @@ class LogIn(StaticLiveServerTestCase):
         # Navigate through Data Saving/Matching
         print "It's about to happen"
         self.selenium.find_element_by_id('map-data-button').click()
+        time.sleep(30)
         print "======================BEGIN HTML======================="
         print self.selenium.page_source
         print "=======================END HTML======================="
