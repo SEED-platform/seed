@@ -37,7 +37,7 @@ before_script:
   - cp config/settings/local_untracked.py.dist config/settings/local_untracked.py
 
 script:
-  - coverage run manage.py seed.tests.functional.test_firefox
+  - coverage run manage.py test seed.tests.functional.test_firefox
   - coverage report -m
 
 after_script:
