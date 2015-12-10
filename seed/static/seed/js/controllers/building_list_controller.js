@@ -149,11 +149,11 @@ angular.module('BE.seed.controller.building_list', [])
         var stop = $timeout(function(){
             project_service.add_buildings_status(cache_key).then(function(data) {
                 // resolve promise
-                if (typeof data.progress_object !== "undefined" && data.progress_object !== null && typeof data.progress_object.percentage_done !== "undefined") {
-                    $scope.progress_percentage = data.progress_object.percentage_done;
+                if (typeof data.progress_object !== "undefined" && data.progress_object !== null && typeof data.progress_object.progress !== "undefined") {
+                    $scope.progress_percentage = data.progress_object.progress;
                     $scope.progress_numerator = data.progress_object.numerator;
                     $scope.progress_denominator = data.progress_object.denominator;
-                    if (data.progress_object.percentage_done < 100) {
+                    if (data.progress_object.progress < 100) {
                         monitor_adding_buildings(cache_key);
                     } else {
                         $scope.create_project_state = 'success';

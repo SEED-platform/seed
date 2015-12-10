@@ -433,7 +433,9 @@ def get_adding_buildings_to_project_status_percentage(request):
     Returns::
         {'status': 'success',
          'progress_object': {
-             'percentage_done': percent job done,
+             'status': job status,
+             'progress': percent job done (out of 100),
+             'progress_key': progress_key for job,
              'numerator': number buildings added,
              'denominator': total number of building to add
          }

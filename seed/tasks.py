@@ -161,11 +161,16 @@ def add_buildings(project_slug, project_dict, user_pk):
     project.save()
 
     selected_buildings = project_dict.get('selected_buildings', [])
+    prog_key = project.adding_buildings_status_percentage_cache_key
+    data = {
+        'status': 'processing',
+        'progress': 0,
+        'progress_key': prog_key,
+        'numerator': 0,
+        'denominator': 0,
+    }
+    set_cache(project.adding_buildings_status_percentage_cache_key, data['status'], data)
 
-    set_cache_raw(
-        project.adding_buildings_status_percentage_cache_key,
-        {'percentage_done': 0, 'numerator': 0, 'denominator': 0}
-    )
     i = 0
     denominator = 1
     if not project_dict.get('select_all_checkbox', False):
@@ -173,15 +178,14 @@ def add_buildings(project_slug, project_dict, user_pk):
             i += 1
             denominator = len(selected_buildings)
             try:
-                set_cache_raw(
-                    project.adding_buildings_status_percentage_cache_key,
-                    {
-                        'percentage_done': (
-                            float(i) / len(selected_buildings) * 100
-                        ),
-                        'numerator': i, 'denominator': denominator
+                data = {
+                        'status': 'processing',
+                        'progress': (float(i) / len(selected_buildings) * 100),
+                        'progress_key': prog_key,
+                        'numerator': i,
+                        'denominator': denominator
                     }
-                )
+                set_cache(prog_key, data['status'], data)
             except ZeroDivisionError:
                 pass
             ab = BuildingSnapshot.objects.get(pk=sfid)
@@ -191,10 +195,14 @@ def add_buildings(project_slug, project_dict, user_pk):
     else:
         query_buildings = get_search_query(user, project_dict)
         denominator = query_buildings.count() - len(selected_buildings)
-        set_cache_raw(
-            project.adding_buildings_status_percentage_cache_key,
-            {'percentage_done': 10, 'numerator': i, 'denominator': denominator}
-        )
+        data = {
+            'status': 'processing',
+            'progress': 10,
+            'progress_key': prog_key,
+            'numerator': i,
+            'denominator': denominator,
+        }
+        set_cache(prog_key, data['status'], data)
         i = 0
         for b in query_buildings:
             # todo: only get back query_buildings pks as a list, and create
@@ -204,34 +212,35 @@ def add_buildings(project_slug, project_dict, user_pk):
             ProjectBuilding.objects.get_or_create(
                 project=project, building_snapshot=b
             )
-            set_cache_raw(
-                project.adding_buildings_status_percentage_cache_key,
-                {
-                    'percentage_done': float(i) / denominator * 100,
-                    'numerator': i, 'denominator': denominator
-                }
-            )
+            data = {
+                'status': 'processing',
+                'progress': (float(i) / denominator * 100),
+                'progress_key': prog_key,
+                'numerator': i,
+                'denominator': denominator
+            }
+            set_cache(prog_key, data['status'], data)
         for building in selected_buildings:
             i += 1
             project.building_snapshots.remove(
                 BuildingSnapshot.objects.get(pk=building)
             )
-            set_cache_raw(
-                project.adding_buildings_status_percentage_cache_key,
-                {
-                    'percentage_done': (
-                        float(denominator - len(selected_buildings) + i) /
-                        denominator * 100
-                    ),
-                    'numerator': denominator - len(selected_buildings) + i,
-                    'denominator': denominator
-                }
-            )
-
-    set_cache_raw(
-        project.adding_buildings_status_percentage_cache_key,
-        {'percentage_done': 100, 'numerator': i, 'denominator': denominator}
-    )
+            data = {
+                'status': 'processing',
+                'progress': (float(denominator - len(selected_buildings) + i) / denominator * 100),
+                'progress_key': prog_key,
+                'numerator': denominator - len(selected_buildings) + i,
+                'denominator': denominator
+            }
+            set_cache(prog_key, data['status'], data)
+    result = {
+        'status': 'completed',
+        'progress': 100,
+        'progress_key': prog_key,
+        'numerator': i,
+        'denominator': denominator
+    }
+    set_cache(prog_key, result['status'], result)
 
     deadline_date = project_dict.get('deadline_date')
     if isinstance(deadline_date, (int, float)):
@@ -282,27 +291,29 @@ def remove_buildings(project_slug, project_dict, user_pk):
     project.save()
 
     selected_buildings = project_dict.get('selected_buildings', [])
-
-    set_cache_raw(
-        project.removing_buildings_status_percentage_cache_key,
-        {'percentage_done': 0, 'numerator': 0, 'denominator': 0}
-    )
+    prog_key = project.removing_buildings_status_percentage_cache_key
+    data = {
+        'status': 'processing',
+        'progress': 0,
+        'progress_key': prog_key,
+        'numerator': 0,
+        'denominator': 0,
+    }
+    set_cache(prog_key, data['status'], data)
     i = 0
     denominator = 1
     if not project_dict.get('select_all_checkbox', False):
         for sfid in selected_buildings:
             i += 1
             denominator = len(selected_buildings)
-            set_cache_raw(
-                project.removing_buildings_status_percentage_cache_key,
-                {
-                    'percentage_done': (
-                        float(i) / max(len(selected_buildings), 1) * 100
-                    ),
-                    'numerator': i,
-                    'denominator': denominator
-                }
-            )
+            data = {
+                'status': 'processing',
+                'progress': (float(i) / max(len(selected_buildings), 1) * 100),
+                'progress_key': prog_key,
+                'numerator': i,
+                'denominator': denominator
+            }
+            set_cache(prog_key, data['status'], data)
             ab = BuildingSnapshot.objects.get(pk=sfid)
             ProjectBuilding.objects.get(
                 project=project, building_snapshot=ab
@@ -310,48 +321,49 @@ def remove_buildings(project_slug, project_dict, user_pk):
     else:
         query_buildings = get_search_query(user, project_dict)
         denominator = query_buildings.count() - len(selected_buildings)
-        set_cache_raw(
-            project.adding_buildings_status_percentage_cache_key,
-            {
-                'percentage_done': 10,
-                'numerator': i,
-                'denominator': denominator
-            }
-        )
+        data = {
+            'status': 'processing',
+            'progress': 10,
+            'progress_key': prog_key,
+            'numerator': i,
+            'denominator': denominator
+        }
+        set_cache(prog_key, data['status'], data)
         for b in query_buildings:
             ProjectBuilding.objects.get(
                 project=project, building_snapshot=b
             ).delete()
-        set_cache_raw(
-            project.adding_buildings_status_percentage_cache_key,
-            {
-                'percentage_done': 50,
-                'numerator': denominator - len(selected_buildings),
-                'denominator': denominator
-            }
-        )
+        data = {
+            'status': 'processing',
+            'progress': 50,
+            'progress_key': prog_key,
+            'numerator': denominator - len(selected_buildings),
+            'denominator': denominator
+        }
+        set_cache(prog_key, data['status'], data)
         for building in selected_buildings:
             i += 1
             ab = BuildingSnapshot.objects.get(source_facility_id=building)
             ProjectBuilding.objects.create(
                 project=project, building_snapshot=ab
             )
-            set_cache_raw(
-                project.adding_buildings_status_percentage_cache_key,
-                {
-                    'percentage_done': (
-                        float(denominator - len(selected_buildings) + i) /
-                        denominator * 100
-                    ),
-                    'numerator': denominator - len(selected_buildings) + i,
-                    'denominator': denominator
-                }
-            )
+            data = {
+                'status': 'processing',
+                'progress': (float(denominator - len(selected_buildings) + i) / denominator * 100),
+                'progress_key': prog_key,
+                'numerator': denominator - len(selected_buildings) + i,
+                'denominator': denominator
+            }
+            set_cache(prog_key, data['status'], data)
 
-    set_cache_raw(
-        project.removing_buildings_status_percentage_cache_key,
-        {'percentage_done': 100, 'numerator': i, 'denominator': denominator}
-    )
+    result = {
+        'status': 'complete',
+        'progress': 100,
+        'progress_key': prog_key,
+        'numerator': i,
+        'denominator': denominator
+    }
+    set_cache(prog_key, result['status'], result)
 
 
 #
