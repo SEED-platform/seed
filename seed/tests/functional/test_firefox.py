@@ -108,7 +108,7 @@ class LogIn(StaticLiveServerTestCase):
 
         # Access Mapping Webpage
         self.selenium.find_element_by_id('data-mapping-0').click()
-        self.wait_for_visibility('mapped-header-0')
+        self.wait_for_visibility('mapped-header-0', 30)
 
         # Map Data
 
@@ -141,8 +141,12 @@ class LogIn(StaticLiveServerTestCase):
             self.selenium.find_element_by_css_selector("#duplicate-row-input-%s > #duplicate-row-input-box-%s" % (i, i)).send_keys(mapping_dict[dict_key])
 
         # Navigate through Data Saving/Matching
+        print "It's about to happen"
         self.selenium.find_element_by_id('map-data-button').click()
-        self.wait_for_visibility('verify-mapping-table',120)
+        print "======================BEGIN HTML======================="
+        print self.selenium.page_source
+        print "=======================END HTML======================="
+        self.wait_for_visibility('verify-mapping-table',30)
         self.selenium.find_element_by_id('save-mapping').click()
         self.wait_for_visibility('confirm-mapping')
         self.selenium.find_element_by_id('confirm-mapping').click()
