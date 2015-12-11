@@ -48,6 +48,7 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
 
     /* Create a new label based on user input */
     $scope.submitNewLabelForm = function(form){
+        $scope.createdLabel = null;
         if (form.$invalid) {
             return;
         }
@@ -56,13 +57,14 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
                 
                 //promise completed successfully
                 var createdLabel = data;
-                $scope.newLabelForm.$setPristine();
-                $scope.labels.unshift(createdLabel);
-                $scope.initialize_new_label();
 
                 //Assume that user wants to apply a label they just created
                 //in this modal...
                 createdLabel.is_checked_add = true;
+                
+                $scope.newLabelForm.$setPristine();
+                $scope.labels.unshift(createdLabel);
+                $scope.initialize_new_label();
             },
             function(data, status) {
                 // reject promise
@@ -72,7 +74,6 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
                 } else {
                     alert('error creating new label');
                 }
-
             }
         );
     };

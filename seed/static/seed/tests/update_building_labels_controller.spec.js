@@ -1,16 +1,9 @@
 describe("controller: update_building_labels_modal_ctrl", function(){
     // globals set up and used in each test scenario
-    var mock_label_service, mock_search_service, scope, controller, modal_state, mock_notification;
+    var mock_label_service, mock_search_service, scope, controller, modal_state, mock_notification, mock_new_label_form;
     var update_ctrl, update_ctrl_scope, modalInstance, labels;
     
-    var return_obj_for_create_label = {
-        "color":"gray",
-        "is_applied": true,
-        "id":100,
-        "name":"new label 1",
-        "label":"default",
-        "text":"new label 1"
-    };
+    
 
     var available_colors  = [
         {
@@ -31,6 +24,21 @@ describe("controller: update_building_labels_modal_ctrl", function(){
         {"color":"gray","is_applied":true,"id":66,"name":"abc3","label":"default","text":"abc3"},
         {"color":"light blue","is_applied":true,"id":65,"name":"abc","label":"info","text":"abc"}
     ];
+
+    //A new label created by the user via the form
+    var new_label_by_user = {
+        "color":"green",
+        "name":"user new label"
+    };
+
+    var return_obj_for_create_label = {
+        "color":"green",
+        "is_applied": true,
+        "id":100,
+        "name":"user new label",
+        "label":"default",
+        "text":"user new label"
+    };
                    
 
     // make the seed app available for each test
@@ -54,13 +62,13 @@ describe("controller: update_building_labels_modal_ctrl", function(){
         spyOn(mock_label_service, "get_labels")
             .andCallFake(function(){
                 // return $q.reject for error scenario
-                return $q.when({"status": "success", "labels": all_available_labels});
+                return $q.when(all_available_labels);
             }
         );        
         spyOn(mock_label_service, "create_label")
             .andCallFake(function(){
                 // return $q.reject for error scenario
-                return $q.when({"status": "success", "label": return_obj_for_create_label});
+                return $q.when(return_obj_for_create_label);
             }
         );
         spyOn(mock_label_service, "update_building_labels")
@@ -91,7 +99,13 @@ describe("controller: update_building_labels_modal_ctrl", function(){
             }
         );  
 
+        mock_new_label_form = {
+            "$dirty" : false,
+            "$valid" : true,           
+        };
+        mock_new_label_form.$setPristine = function(){};
 
+        scope.form = mock_new_label_form;
 
     }));
 
@@ -139,6 +153,7 @@ describe("controller: update_building_labels_modal_ctrl", function(){
             search: mock_search_service,
             notification: mock_notification
         });
+
     }
 
     /*
@@ -149,7 +164,6 @@ describe("controller: update_building_labels_modal_ctrl", function(){
         
         // arrange
         create_update_building_labels_modal_ctrl();
-
         // act
         update_ctrl_scope.$digest();
         update_ctrl_scope.initialize_new_label();
@@ -157,6 +171,28 @@ describe("controller: update_building_labels_modal_ctrl", function(){
         // assertions
         expect(update_ctrl_scope.new_label.color).toBe("gray");
         expect(update_ctrl_scope.new_label.label).toBe("default");
+    });
+
+    it("should create a new label and add it to labels array", function(){
+
+        //arrange        
+        create_update_building_labels_modal_ctrl();
+        //assume user entered following value on form and bindings were updated
+        update_ctrl_scope.new_label = new_label_by_user;
+        update_ctrl_scope.newLabelForm = mock_new_label_form;
+
+        //act
+        update_ctrl_scope.$digest();
+        update_ctrl_scope.labels = all_available_labels;
+
+        update_ctrl_scope.submitNewLabelForm(mock_new_label_form);
+
+        expect(mock_label_service.create_label)
+            .toHaveBeenCalledWith(new_label_by_user);
+
+        update_ctrl_scope.$digest();
+        expect(update_ctrl_scope.labels[0]).toEqual(return_obj_for_create_label);
+
     });
 
 
