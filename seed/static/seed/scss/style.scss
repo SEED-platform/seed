@@ -1608,48 +1608,15 @@ a:not([href]) {
       float: none;
     }
   }
+  
+  .btn {
+    min-width:90px;
+  }
 }
 
 #newCustomViewModal {
   .modal-body {
     padding-bottom: 0;
-  }
-}
-
-#manageLabelsModal .modal-body {
-  .add_text, .edit_text {
-    font-weight: bold;
-  }
-  .add_text {
-    margin-bottom: 3px;
-  }
-  .edit_text {
-    margin-top: 16px;
-    margin-bottom: 4px;
-  }
-  .add_label_row {
-    padding-bottom: 16px;
-    border-bottom: 1px solid $grayLightest;
-  }
-  .label_row {
-    padding: 6px 0;
-  }
-  .table {
-    td {
-      &.label_column {
-        vertical-align: middle;
-      }
-    }
-  }
-
-  .input-group-btn {
-    .btn-default {
-      color: $white;
-      background-color: #999;
-    }
-    .caret {
-      border-top-color: $white;
-    }
   }
 }
 
@@ -1842,6 +1809,33 @@ a:not([href]) {
   }
 }
 
+
+/* A more subtle alternative to the above 'tip' class */
+.tip-subtle {
+  position: relative;
+  margin-top:5px;
+  margin-left:35px;
+  margin-bottom:0px;
+  color:#999;
+  &:before {
+    font-size: 12px;
+    font-family: FontAwesome;
+    padding: 4px 8px 4px 8px;
+    content: '\f129';
+    background: #5bc0de;
+    line-height: 12px;
+    color: #FFF;
+    position: absolute;
+    left: -30px;
+    top: 0;
+    border-radius: 6px;
+  }
+  i.fa {
+    padding-right: 0;
+  }
+}
+
+
 .important-tip:before {
   top: -10px;
   background: $red;
@@ -1888,6 +1882,10 @@ a:not([href]) {
 .ui-sortable .ui-sortable-handle {
   cursor: move;
 }
+
+
+
+/* STYLES FOR REPORTS */
 
 /* Styles for building reports page */
 .building-reports {
@@ -1987,3 +1985,200 @@ a:not([href]) {
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
+
+
+
+
+/* STYLES FOR LABELS AND RELATED */
+
+/* Holds inline form for creating new labels */
+.newLabelInput{
+    margin: 20px 0px; 
+    border:1px solid #EEE; 
+    padding: 10px 10px 5px 10px; 
+    border-radius: 5px;
+    background-color: #F1F1F1;
+}
+
+#label_admin {
+
+      .table_list_container{
+        border: 1px solid #cdcdcd;
+    }
+
+    .sectionLabel {
+         font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    .tableHeader {
+        font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        white-space: nowrap;
+        padding: 6px 10px 5px 10px;
+        text-transform: uppercase;
+        background-color: #cdcdcd !important;
+        text-shadow: 0 1px 0 white;
+        border-bottom: 1px solid #b3b3b3;
+    }   
+
+    /* Get xeditable fields to extend 100% of td */
+    form[editable-form] > div {
+      margin: 10px 0;
+    }
+    .editable-wrap {
+      width: 100%;
+    }
+
+}
+
+.label-edit-section {
+
+  margin:5px 10px 10px 20px;
+
+  .label-action {      
+    display: inline-block;
+    .label-edit-text {
+      margin-right: 20px;
+    }
+    a {
+      margin-right: 20px;
+    }
+  }
+
+  .label-container {
+    display: inline-block;
+  }
+
+  .label {
+    padding: .6em .6em .5em .6em;
+    display: inline-block;
+    margin-bottom: 5px;
+  }
+}
+
+
+.label {  
+    margin-right: 5px;
+}
+
+
+/* Styles for update labels modal */
+
+#update-building-labels-modal {
+
+  .labels-status-msg {
+    min-height: 150px;
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .add_text, .edit_text {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .edit_text{
+    margin-left:10px;
+  }
+
+  .add-label-row {
+    margin-right: -5px;
+    margin-bottom: 20px;
+  }
+
+  .btn-default {
+    min-width: 70px;
+  }
+
+  .table-list-container {
+    border: 1px solid #EEE;
+    overflow-y:auto;
+    max-height:350px;
+    margin-bottom: 10px;
+    table {
+      
+    }
+    th, td {
+      border: 0px;
+    }
+  }
+
+}
+
+/* Styles to override ngInputTags to get correct tag colors */
+
+tags-input .tags {
+    min-width:550px;
+}
+
+.tag-primary {
+  border-color: #428bca !important;
+  background: #428bca !important;
+}
+  
+.tag-success {
+  border-color: #5cb85c !important;
+  background: #5cb85c !important;
+}
+
+.tag-info {
+  border-color: #5bc0de !important;
+  background: #5bc0de !important;
+}
+
+.tag-warning {
+  border-color: #f0ad4e !important;
+  background: #f0ad4e !important;
+}
+
+.tag-danger {
+  border-color:  #d43f3a !important;
+  background: #d43f3a !important;
+}
+gs-input .tags .tag-item .remove-button { 
+  color: #FFF;
+}
+
+
+
+/* NOTIFICATIONS */
+
+.ui-notification {
+
+  background-color: #EEE;
+  color: #000;
+  border-left: thick solid $blue;
+  
+  &.warning {
+    border-left: thick solid $warningBackground;
+    }
+    &.error {     
+    border-left: thick solid $errorBackground;
+    }
+    &.success {
+      border-left: thick solid $successBackground;
+    }
+    &.info {
+      border-left: thick solid $infoBackground;
+    }
+    &:hover {
+        opacity: 0.7;
+    }
+}
+
+
+/* OTHER */
+
+/* Styles for building list controls and table */
+.buildingListControls{
+    padding: 20px 10px;
+
+  .form-group {
+    margin-right: 20px;
+  }
+}
+
+
+
+

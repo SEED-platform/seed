@@ -2,7 +2,7 @@ import time
 import json
 import os
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from selenium.webdriver.firefox.webdriver import WebDriver
+from selenium import webdriver
 from selenium.common.exceptions import NoSuchAttributeException, StaleElementReferenceException, NoSuchElementException
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.landing.models import SEEDUser as User
@@ -14,7 +14,7 @@ class LogIn(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(self):
         super(LogIn, self).setUpClass()
-        self.selenium = WebDriver()
+        self.selenium = webdriver.Firefox()
 
     @classmethod
     def tearDownClass(cls):
@@ -142,7 +142,7 @@ class LogIn(StaticLiveServerTestCase):
 
         # Navigate through Data Saving/Matching
         self.selenium.find_element_by_id('map-data-button').click()
-        self.wait_for_visibility('verify-mapping-table',15)
+        self.wait_for_visibility('verify-mapping-table',30)
         self.selenium.find_element_by_id('save-mapping').click()
         self.wait_for_visibility('confirm-mapping')
         self.selenium.find_element_by_id('confirm-mapping').click()

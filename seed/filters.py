@@ -1,0 +1,46 @@
+import json
+
+from rest_framework import filters
+
+from seed import search
+
+
+class LabelFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        if 'organization_id' in request.query_params:
+            return queryset.filter(
+                super_organization_id=request.query_params['organization_id'],
+            )
+        return queryset
+
+
+class BuildingFilterBackend(filters.BaseFilterBackend):
+    """
+    Implements the filtering and searching of buildings as a Django Rest
+    Framework filter backend.
+    """
+    def filter_queryset(self, request, queryset, view):
+        # TODO: this needs to be filled in with the same logic that implements
+        # search/filtering in `seed.views.main.search_buildings`.
+        params = request.query_params.dict()
+        # Since this is being passed in as a query string, the object ends up
+        # coming through as a string.
+        params['filter_params'] = json.loads(params.get('filter_params', '{}'))
+
+        params = search.process_search_params(
+            params=params,
+            user=request.user,
+            is_api_request=True,
+        )
+        buildings_queryset = search.orchestrate_search_filter_sort(
+            params=params,
+            user=request.user,
+        )
+
+        if request.query_params.get('select_all_checkbox', 'false') == 'true':
+            pass
+        elif 'selected_buildings' in request.query_params:
+            return buildings_queryset.filter(
+                id__in=request.query_params.getlist('selected_buildings'),
+            )
+        return buildings_queryset

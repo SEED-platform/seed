@@ -172,7 +172,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
 
   $scope.checkInvalidDate = function() {
      $scope.invalidDates = ($scope.endDate < $scope.startDate);
-  }
+  };
 
   
   /* Update data used by the chart. This will force the charts to re-render*/
@@ -201,7 +201,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
     getChartData();
     getAggChartData();
     updateChartTitles();    
-  }
+  };
 
 
   /* FLAGS FOR CHART STATE */
@@ -210,12 +210,12 @@ angular.module('BE.seed.controller.buildings_reports', [])
   /* The directive will call this, so we can update our flag for the state of the chart. */
   $scope.chartRendered = function(){
     $scope.chartIsLoading = false;     
-  }
+  };
 
   /* The directive will call this, so we can update our flag for the state of the chart. */
   $scope.aggChartRendered = function(){
     $scope.aggChartIsLoading = false;
-  }
+  };
 
 
   /* PRIVATE FUNCTIONS (so to speak) */
@@ -237,7 +237,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
 
   function setChartStatusMessages(chartData){
     if (chartData.chartData && chartData.chartData.length>0) {
-      return ""
+      return "";
     } else {
       return "No Data";
     }
@@ -278,20 +278,20 @@ angular.module('BE.seed.controller.buildings_reports', [])
             "xAxisTickFormat": $scope.xAxisSelectedItem.axisTickFormat,
             "yAxisTickFormat": $scope.yAxisSelectedItem.axisTickFormat,
             "colors": colorsArr
-          } 
+          }; 
           if($scope.chartData.chartData && $scope.chartData.chartData.length > 0) {
-            $scope.chartStatusMessage = "" 
+            $scope.chartStatusMessage = "" ;
           } else {
             $scope.chartStatusMessage = "No Data";  
           } 
         },
         function(data, status){
-          $scope.chartStatusMessage = "Data load error."
+          $scope.chartStatusMessage = "Data load error.";
           $log.error("#BuildingReportsController: Error loading chart data : " + status);
         })
       .finally(function(){
         $scope.chartIsLoading = false;
-      })
+      });
   }
 
   /** Get the aggregated chart data from the server for the scatter plot chart.
@@ -324,20 +324,20 @@ angular.module('BE.seed.controller.buildings_reports', [])
             "yAxisTitle": $scope.yAxisSelectedItem.axisLabel,
             "yAxisType": "Category",
             "colors": colorsArr
-          }
+          };
           if($scope.aggChartData.chartData && $scope.aggChartData.chartData.length > 0) {
-            $scope.aggChartStatusMessage = "" 
+            $scope.aggChartStatusMessage = ""; 
           } else {
             $scope.aggChartStatusMessage = "No Data";  
           }  
         },
         function(data, status){
-          $scope.aggChartStatusMessage = "Data load error."
+          $scope.aggChartStatusMessage = "Data load error.";
           $log.error("#BuildingReportsController: Error loading agg chart data : " + status);
         })
       .finally(function(){
         $scope.aggChartIsLoading = false;
-      })
+      });
   }
 
   /*  Generate an array of color objects to be used as part of chart configuration

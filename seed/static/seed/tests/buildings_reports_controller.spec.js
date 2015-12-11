@@ -87,7 +87,7 @@ describe("controller: buildings_reports_controller", function(){
                     yr_e: "2012-12-31"   
                 },
             ]                       
-        }
+        };
 
         /* Assuming site_eui vs. gross_floor_area */
         fake_aggregated_report_data_payload = {
@@ -125,7 +125,7 @@ describe("controller: buildings_reports_controller", function(){
                     yr_e: "2012-12-31"   
                 },
             ]
-        }
+        };
         
         buildings_reports_ctrl = controller('buildings_reports_controller', {
             $scope: buildings_reports_ctrl_scope,
@@ -193,8 +193,8 @@ describe("controller: buildings_reports_controller", function(){
         expect(buildings_reports_ctrl_scope.chart2Title).toBeDefined();
 
         //make sure colors are set right, based on the incoming (mock) building_counts.
-        var bldgCounts = fake_report_data_payload.building_counts
-        var bldgCountsAgg = fake_aggregated_report_data_payload.building_counts
+        var bldgCounts = fake_report_data_payload.building_counts;
+        var bldgCountsAgg = fake_aggregated_report_data_payload.building_counts;
         var defaultColors = buildings_reports_ctrl_scope.defaultColors;
         var chartData = buildings_reports_ctrl_scope.chartData;
         var aggChartData = buildings_reports_ctrl_scope.aggChartData;

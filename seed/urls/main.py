@@ -9,7 +9,8 @@ urls/urls.py
 Copyright (c) 2013 Building Energy. All rights reserved.
 """
 
-from django.conf.urls import patterns, url
+from django.conf.urls import include, patterns, url
+
 
 urlpatterns = patterns(
     'seed.views.main',
@@ -65,12 +66,11 @@ urlpatterns = patterns(
     url(r'^delete_dataset/$', 'delete_dataset', name='delete_dataset'),
     url(r'^update_dataset/$', 'update_dataset', name='update_dataset'),
     url(r'^update_building/$', 'update_building', name='update_building'),
-    
-    #DMcQ: Test for building reports    
+
+    #Building reports
     url(r'^get_building_summary_report_data/$', 'get_building_summary_report_data', name='get_building_summary_report_data'),
     url(r'^get_building_report_data/$', 'get_building_report_data', name='get_building_report_data'),
     url(r'^get_aggregated_building_report_data/$', 'get_aggregated_building_report_data', name='get_aggregated_building_report_data'),
-
 
     # New MCM endpoints
     url(

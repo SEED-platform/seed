@@ -41,6 +41,7 @@ angular.module('BE.seed.controller.mapping', [])
     $filter,
     cleansing_service
 ) {
+
     $scope.typeahead_columns = suggested_mappings_payload.building_columns;
     var original_columns = angular.copy($scope.typeahead_columns);
 
@@ -96,6 +97,10 @@ angular.module('BE.seed.controller.mapping', [])
     $scope.search.url = urls.search_building_snapshots;
     $scope.search.has_checkbox = false;
     $scope.search.update_results();
+
+    $scope.do_update_filters = function(){
+      $scope.search.search_buildings();
+    };
 
     /*
      * Opens modal for making changes to concatenation changes.
@@ -506,12 +511,12 @@ angular.module('BE.seed.controller.mapping', [])
         }
       }
       else {
-        if(dropdown.length === 0 || dropdown.css('display') == 'none') {
+        if(dropdown.length === 0 || dropdown.css('display') === 'none') {
           var input_focus = $(document.activeElement);
 
           $('.header-field').each(function(){
 
-            if(!$(this).is(input_focus) && $(this).val() == input_focus.val()) {
+            if(!$(this).is(input_focus) && $(this).val() === input_focus.val()) {
               return $scope.duplicates_present();
             }
           });

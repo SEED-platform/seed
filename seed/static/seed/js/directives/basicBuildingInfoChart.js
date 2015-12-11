@@ -101,7 +101,7 @@ angular.module('basicBuildingInfoChart', [])
         // create an svg element
         var svgID = '#dng-'+ id +'';
         svg = dimple.newSvg(svgID, width, height);     
-      }
+      };
 
       /*  Define the Dimple chart and load data based on the configuration and data arguments passed in. 
           We do a complete recreation of the chart each time this method is called.  */ 
@@ -124,10 +124,11 @@ angular.module('basicBuildingInfoChart', [])
         }
 
         //set type of chart and the series it will use to group data
-        if (chartType=="bar"){
-          var s = chart.addSeries(series, dimple.plot.bar);
+        var s;
+        if (chartType==="bar"){
+           s = chart.addSeries(series, dimple.plot.bar);
         } else {
-          var s = chart.addSeries(series, dimple.plot.bubble);
+          s = chart.addSeries(series, dimple.plot.bubble);
         }
         s.getTooltipText = function(e){
           var arr = [];
@@ -136,7 +137,7 @@ angular.module('basicBuildingInfoChart', [])
           arr.push( yAxisTitle + " : " + e.cy.toString());
           arr.push( xAxisTitle +" : " + e.cx.toString());
           return arr;
-        }
+        };
         
         //attach data and titles and redraw
         chart.data = chartData;
@@ -149,7 +150,7 @@ angular.module('basicBuildingInfoChart', [])
 
         chart.draw(0);    
 
-      }
+      };
 
       /*  Create the Dimple chart, attaching it to pre-existing svg element.
           This method can be called each time we need a complete refresh.  */
@@ -161,21 +162,21 @@ angular.module('basicBuildingInfoChart', [])
        
         chart.noFormats = false; //use autostyle
         chart.draw(0);
-      }
+      };
 
       /* Create the axes for the chart, using value passed in from external controller. */
       this.createChartAxes = function (yAxisType, yAxisMin, xAxisTickFormat, yAxisTickFormat){
         
         if (!xAxisTickFormat){
-          xAxisTickFormat = ",.0f"
+          xAxisTickFormat = ",.0f";
         }       
 
         xAxis = chart.addMeasureAxis('x', 'x');
         xAxis.tickFormat = xAxisTickFormat;
      
-        if (yAxisType=="Measure"){
+        if (yAxisType==="Measure"){
           if (!yAxisTickFormat){
-            yAxisTickFormat = ",.0f"
+            yAxisTickFormat = ",.0f";
           }
           yAxis = chart.addMeasureAxis('y', 'y');
           yAxis.tickFormat = yAxisTickFormat;
@@ -184,7 +185,7 @@ angular.module('basicBuildingInfoChart', [])
           yAxis.addOrderRule("y", false);     
           yAxis._getFormat = function() { return my_custom_format; };
         }
-      }
+      };
 
       function my_custom_format(value) {
           if (value && value.length>truncateLength){
@@ -195,24 +196,24 @@ angular.module('basicBuildingInfoChart', [])
 
       this.createChartLegend = function (){
         legend = chart.addLegend(200, 10, 360, 20, "right bottom");
-      }      
+      };      
 
       this.clearChart = function() {
         if (chart && chart.svg && hasData){
           chart.svg.selectAll('*').remove();
           hasData = false;
         }        
-      }
+      };
 
       this.setChartType = function(chType){
         chartType = chType;
-      }
+      };
 
       this.resizeChart = function (){
         if (chart){
           chart.draw(0, true);
         }   
-      }
+      };
 
       this.getYAxisType = function() {
         return yAxisType;

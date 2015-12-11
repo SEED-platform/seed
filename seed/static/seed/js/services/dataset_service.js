@@ -20,7 +20,7 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
                 'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
-            dataset_factory.total_datasets_for_user = (data.datasets != undefined) ? data.datasets.length : 0;
+            dataset_factory.total_datasets_for_user = (data.datasets !== undefined) ? data.datasets.length : 0;
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);

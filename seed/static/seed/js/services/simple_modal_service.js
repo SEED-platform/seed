@@ -64,8 +64,8 @@ angular.module('BE.seed.service.simple_modal', [])
         */
         function showModal(customModalOptions, customModalDefaults) {
 
-            if (customModalOptions && customModalOptions.type != null){
-                if (validModalTypes.indexOf(customModalOptions.type)==-1 ){
+            if (customModalOptions && customModalOptions.type !== null){
+                if (validModalTypes.indexOf(customModalOptions.type) === -1 ){
                     throw "Invalid modal type";
                 }                
             }
@@ -74,7 +74,7 @@ angular.module('BE.seed.service.simple_modal', [])
             if (!customModalOptions) customModalOptions = {};
             
             return show(customModalOptions, customModalDefaults);
-        };
+        }
 
 
         /* Private method. Show Angular UI modal based on config options */        
@@ -84,7 +84,7 @@ angular.module('BE.seed.service.simple_modal', [])
             var tempModalOptions = {};
 
             //Do styling and modifications specific to "errors"
-            if (customModalOptions.type == TYPE_ERROR){
+            if (customModalOptions.type === TYPE_ERROR){
                 customModalOptions.headerText = "Error: " + customModalOptions.headerText;
             }
 
@@ -94,15 +94,15 @@ angular.module('BE.seed.service.simple_modal', [])
             //Map modal.html $scope custom properties to defaults defined in service
             angular.extend(tempModalOptions, modalOptions, customModalOptions);
 
-            tempModalDefaults.controller = function ($scope, $uibModalInstance) {
+            tempModalDefaults.controller = function ($scope, $modalInstance) {
                 $scope.modalOptions = tempModalOptions;
                 $scope.modalOptions.ok = function (result) {
-                    $uibModalInstance.close(tempModalOptions.okResult);
+                    $modalInstance.close(tempModalOptions.okResult);
                 };
                 $scope.modalOptions.cancel = function (result) {
-                    $uibModalInstance.dismiss('cancel');
+                    $modalInstance.dismiss('cancel');
                 };
-            };     
+            };          
 
             return $uibModal.open(tempModalDefaults).result;
         };

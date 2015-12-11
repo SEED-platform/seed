@@ -50,14 +50,14 @@ angular.module('BE.seed.service.buildings_reports',
                 url: window.BE.urls.get_building_report_data,
                 params: args
         }).success(function(data, status, headers, config) {
-            building_reports_factory.report_data = (data != undefined && data.report_data != undefined) ? data.report_data : [];
+            building_reports_factory.report_data = (data !== undefined && data.report_data !== undefined) ? data.report_data : [];
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             building_reports_factory.reports_data = [];
             defer.reject(data, status);
         });
         return defer.promise;
-    };
+    }
 
 
     /**     Get aggregated building data given the provided parameters. 
@@ -99,14 +99,14 @@ angular.module('BE.seed.service.buildings_reports',
                 url: window.BE.urls.get_aggregated_building_report_data,
                 params: args
         }).success(function(data, status, headers, config) {
-            building_reports_factory.aggregated_reports_data = (data != undefined && data.report_data != undefined) ? data.report_data : [];
+            building_reports_factory.aggregated_reports_data = (data !== undefined && data.report_data !== undefined) ? data.report_data : [];
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             building_reports_factory.aggregated_reports_data = [];
             defer.reject(data, status);
         });
         return defer.promise;
-    };
+    }
 
     /*  This method is not current used in the first verion of the building reports page.
         Uncomment this method when the back end endpoint ahas been implemented.*/

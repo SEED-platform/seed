@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.project', [])
   'projects_payload',
   function($scope, $http, project_service, urls, $log, $uibModal, projects_payload) {
 
+    $scope.autoFilter = true;
     $scope.user = {};
     $scope.user.projects = projects_payload.projects;
     $scope.$on('projects_updated', function() {

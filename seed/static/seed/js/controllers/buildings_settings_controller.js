@@ -132,7 +132,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
           }
         });
         $scope.is_show_reorder = true;
-    }
+    };
 
 
   }]);

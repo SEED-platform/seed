@@ -21,6 +21,7 @@ from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.managers.json import JsonManager
 from seed.utils.time import convert_datestr
 from seed.utils.generic import split_model_fields
+from django.db.models.fields.related import ManyToManyField
 
 PROJECT_NAME_MAX_LENGTH = 255
 
@@ -736,7 +737,6 @@ class ProjectBuilding(TimeStampedModel):
     approver = models.ForeignKey(
         User, verbose_name=_('User'), blank=True, null=True
     )
-    status_label = models.ForeignKey('StatusLabel', null=True, blank=True)
 
     class Meta:
         ordering = ['project', 'building_snapshot']
@@ -758,6 +758,7 @@ class StatusLabel(TimeStampedModel):
     BLUE_CHOICE = 'blue'
     LIGHT_BLUE_CHOICE = 'light blue'
     GREEN_CHOICE = 'green'
+    GRAY_CHOICE = 'gray'
 
     COLOR_CHOICES = (
         (RED_CHOICE, _('red')),
@@ -766,6 +767,7 @@ class StatusLabel(TimeStampedModel):
         (GREEN_CHOICE, _('green')),
         (WHITE_CHOICE, _('white')),
         (ORANGE_CHOICE, _('orange')),
+        (GRAY_CHOICE, _('gray')),
     )
 
     name = models.CharField(_('name'), max_length=PROJECT_NAME_MAX_LENGTH)
@@ -780,8 +782,25 @@ class StatusLabel(TimeStampedModel):
         verbose_name=_('SeedOrg'),
         blank=True,
         null=True,
-        related_name='status_labels'
+        related_name='labels'
     )
+
+    DEFAULT_LABELS = [
+        "Residential",
+        "Non-Residential",
+        "Violation",
+        "Compliant",
+        "Missing Data",
+        "Questionable Report",
+        "Update Bldg Info",
+        "Call",
+        "Email",
+        "High EUI",
+        "Low EUI",
+        "Exempted",
+        "Extension",
+        "Change of Ownership",
+    ]
 
     class Meta:
         unique_together = ('name', 'super_organization')
@@ -1032,6 +1051,8 @@ class CanonicalBuilding(models.Model):
 
     objects = CanonicalManager()
     raw_objects = models.Manager()
+
+    labels = ManyToManyField(StatusLabel)
 
     def __unicode__(self):
         snapshot_pk = "None"
@@ -1501,6 +1522,10 @@ class BuildingSnapshot(TimeStampedModel):
         else:
             return self
 
+
+class NonCanonicalProjectBuildings(models.Model):
+    """Holds a reference to all project buildings that do not point at a canonical building snapshot."""
+    projectbuilding = models.ForeignKey(ProjectBuilding, primary_key=True)
 
 class AttributeOption(models.Model):
     """Holds a single conflicting value for a BuildingSnapshot attribute."""

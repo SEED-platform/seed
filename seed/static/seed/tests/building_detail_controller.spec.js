@@ -4,7 +4,7 @@
 describe("controller: building_detail_controller", function(){
     // globals set up and used in each test scenario
     var mockService, scope, controller, ngFilter, delete_called;
-    var building_detail_ctrl, building_detail_ctrl_scope, modalInstance, labels;
+    var building_detail_ctrl, building_detail_ctrl_scope, modalInstance;
     var mock_building_services, mock_project_service;
     var mock_building;
 
@@ -45,31 +45,6 @@ describe("controller: building_detail_controller", function(){
                                 name: "test project",
                                 slug: project_slug
                             }
-                        }
-                    );
-                }
-            );
-            spyOn(mock_project_service, "get_labels")
-                .andCallFake(function(){
-                    return $q.when(
-                        {
-                            "status": "success",
-                            "labels": [{
-                                id: 44,
-                                name: "bad label",
-                                color: "red"
-                            }]
-                        }
-                    );
-                }
-            );
-            spyOn(mock_project_service, "update_project_building")
-                .andCallFake(function(building_id, project, label){
-                    return $q.when(
-                        {
-                            "status": "success",
-                            "approver": "bob doe",
-                            "approved_date": "01/01/2012"
                         }
                     );
                 }
@@ -245,18 +220,7 @@ describe("controller: building_detail_controller", function(){
         expect(building_detail_ctrl_scope.imported_buildings[0].id).toBe(2);
     });
 
-    it("should get labels on load", function() {
-        // arrange
-        create_building_detail_controller();
-
-        // act
-        building_detail_ctrl_scope.$digest();
-
-        // assertions
-        expect(building_detail_ctrl_scope.labels[0].id).toBe(44);
-        expect(building_detail_ctrl_scope.labels[0].name).toBe("bad label");
-        expect(building_detail_ctrl_scope.labels[0].color).toBe("red");
-    });
+    
 
     it("should highlight the active project", function() {
         // arrange
@@ -318,33 +282,7 @@ describe("controller: building_detail_controller", function(){
         .toHaveBeenCalledWith(building_detail_ctrl_scope.building, 42);
         expect(mock_building.gross_floor_area).toEqual(43214);
     });
-    it("should show a default label if a building doesn't have one", function() {
-        // arrange
-        create_building_detail_controller();
-        var building_with_label = {
-            label: {
-                name: "hello",
-                label: "success"
-            }
-        };
-        var building_without_label = {};
-        var label_with, label_without;
-
-        // act
-        building_detail_ctrl_scope.$digest();
-        label_with = building_detail_ctrl_scope.get_label(building_with_label);
-        label_without = building_detail_ctrl_scope.get_label(building_without_label);
-
-        // assertions
-        expect(label_with).toEqual({
-                name: "hello",
-                label: "success"
-            });
-        expect(label_without).toEqual({
-                name: "Add Label",
-                label: "default"
-            });
-    });
+    
 
     it("should show a project or buildings breadcrumb", function() {
         // arrange
@@ -390,31 +328,7 @@ describe("controller: building_detail_controller", function(){
         expect(building_detail_ctrl_scope.is_valid_key('gross_floor_area'))
           .toEqual(true);
     });
-    it("should update a project-building label", function() {
-        // arrange
-        create_building_detail_controller();
-        var project = {
-            id: 2,
-            building: {}
-        };
-
-        // act
-        building_detail_ctrl_scope.$digest();
-        building_detail_ctrl_scope.update_project_building(project,
-            {
-                name: "label name",
-                color: "red"
-            });
-        building_detail_ctrl_scope.$digest();
-
-        // assertions
-        expect(mock_project_service.update_project_building).toHaveBeenCalled();
-        expect(project.building.approver).toEqual("bob doe");
-        expect(project.building.approved_date).toEqual("01/01/2012");
-        expect(project.building.label.name).toEqual("label name");
-        expect(project.building.label.color).toEqual("red");
-
-    });
+   
     it("should set a field as source when clicked", function() {
         // arrange
         create_building_detail_controller();

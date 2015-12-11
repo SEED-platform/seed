@@ -44,28 +44,27 @@ describe("Controller: matching_controller", function(){
             spyOn(mock_building_services, "search_matching_buildings")
                 .andCallFake(function(q, number_per_page, current_page, order_by, sort_reverse, 
                                         filter_params, file_id ){
-                    
+                    var bldgs;
                     if(filter_params.children__isnull === undefined){                        
-                        var bldgs = [
+                        bldgs = [
                             {
                                 pm_property_id: 1
                             },
                             {
                                 pm_property_id: 2
-                            }
-                            ,
+                            },
                             {
                                 pm_property_id: 3
                             }
                         ];
                     } else if (filter_params.children__isnull === false){
-                        var bldgs = [
+                        bldgs = [
                             {
                                 pm_property_id: 1
                             }
                         ];
                     } else if (filter_params.children__isnull === true){
-                        var bldgs = [
+                        bldgs = [
                             {
                                 pm_property_id: 2
                             },
@@ -234,7 +233,7 @@ describe("Controller: matching_controller", function(){
         create_dataset_detail_controller();
 
         //act
-        matching_ctrl_scope.update_show_filter("Show Matched") //DMcQ: This really should be a ref to the 'constant' defined in the controller, but not sure how to do that yet...      
+        matching_ctrl_scope.update_show_filter("Show Matched"); //DMcQ: This really should be a ref to the 'constant' defined in the controller, but not sure how to do that yet...      
         matching_ctrl_scope.$digest();
 
         //assertions
@@ -247,7 +246,7 @@ describe("Controller: matching_controller", function(){
         create_dataset_detail_controller();
 
         //act
-        matching_ctrl_scope.update_show_filter("Show Unmatched") //DMcQ: This really should be a ref to the 'constant' defined in the controller, but not sure how to do that yet...
+        matching_ctrl_scope.update_show_filter("Show Unmatched"); //DMcQ: This really should be a ref to the 'constant' defined in the controller, but not sure how to do that yet...
         matching_ctrl_scope.$digest();
         
         //assertions
@@ -260,7 +259,7 @@ describe("Controller: matching_controller", function(){
         create_dataset_detail_controller();
 
         //act
-        matching_ctrl_scope.update_show_filter("Show All") //DMcQ: This really should be a ref to the 'constant' defined in the controller, but not sure how to do that yet...
+        matching_ctrl_scope.update_show_filter("Show All"); //DMcQ: This really should be a ref to the 'constant' defined in the controller, but not sure how to do that yet...
         matching_ctrl_scope.$digest();
 
         //assertions
