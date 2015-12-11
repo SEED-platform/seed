@@ -88,7 +88,9 @@ def export_buildings(export_id, export_name, export_type,
     selected_buildings = model.objects.filter(pk__in=building_ids)
 
     def _row_cb(i):
-        set_cache_raw("export_buildings__%s" % export_id, i)
+        data = get_cache("export_buildings__%s" % export_id)
+        data['buildings_processed'] = i
+        set_cache("export_buildings__%s" % export_id, data['status'], data)
 
     exporter = Exporter(export_id, export_name, export_type)
     if not exporter.valid_export_type():

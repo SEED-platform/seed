@@ -58,7 +58,7 @@ from seed.utils.projects import (
 )
 from seed.utils.time import convert_to_js_timestamp
 from seed.utils.mapping import get_mappable_types, get_mappable_columns
-from seed.utils.cache import get_cache, set_cache
+from seed.utils.cache import get_cache, set_cache, get_cache_raw
 from .. import search
 from seed.lib.exporter import Exporter
 from seed.common import mapper as simple_mapper
@@ -277,15 +277,27 @@ def export_buildings(request):
     result = {
         'progress_key': progress_key,
         'status': 'not-started',
-        'progress': 0
+        'progress': 0,
+        'buildings_processed': 0,
+        'total_buildings': selected_buildings.count()
     }
     set_cache(progress_key, result['status'], result)
 
     tasks.export_buildings.delay(export_id, export_name, export_type, building_ids, export_model, selected_fields)
 
+    result = {
+        'progress_key': progress_key,
+        'status': 'not-started',
+        'progress': 100,
+        'buildings_processed': selected_buildings.count(),
+        'total_buildings': selected_buildings.count()
+    }
+    set_cache(progress_key, result['status'], result)
     return {
         "success": True,
         "status": "success",
+        'progress': 100,
+        'progress_key': progress_key,
         "export_id": export_id,
         "total_buildings": selected_buildings.count(),
     }
@@ -316,7 +328,8 @@ def export_buildings_progress(request):
     return {
         "success": True,
         "status": "success",
-        "buildings_processed": get_cache(progress_key)['progress']
+        'total_buildings': get_cache(progress_key)['total_buildings'],
+        "buildings_processed": get_cache(progress_key)['progress'] * get_cache(progress_key)['total_buildings']
     }
 
 
