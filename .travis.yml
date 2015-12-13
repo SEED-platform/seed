@@ -1,11 +1,3 @@
-sudo: false
-
-cache:
-  directories: 
-    - node_modules
-    - seed/static/vendors/bower_components
-    - $HOME/.pip-cache/
-
 language: python
 
 python:
@@ -37,7 +29,7 @@ before_script:
   - cp config/settings/local_untracked.py.dist config/settings/local_untracked.py
 
 script:
-  - coverage run manage.py test
+  - coverage run manage.py test seed.tests.functional.test_firefox
   - coverage report -m
 
 after_script:
