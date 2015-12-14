@@ -324,6 +324,7 @@ angular.module('BE.seed.service.search', [])
      *   should **always** be called before load_state_from_selected_buildings.
      */
     search_service.select_or_deselect_all_buildings = function() {
+        this.selected_buildings = [];
         for (var i = 0; i < this.buildings.length; i++) {
             this.buildings[i].checked = this.select_all_checkbox;
         }
@@ -334,7 +335,6 @@ angular.module('BE.seed.service.search', [])
      *   checked
      */
     search_service.select_all_changed = function(){
-        this.selected_buildings = [];
         this.select_or_deselect_all_buildings();
     };
 
