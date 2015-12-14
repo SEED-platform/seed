@@ -201,7 +201,9 @@ def filter_other_params(queryset, other_params, db_columns):
                 query_filters &= Q(**{"%s" % k: v})
             elif k == 'canonical_building__labels':
                 for l in v:
-                    query_filters &= Q(**{k: l})
+                    queryset &= queryset.filter(**{
+                        'canonical_building__labels': l
+                    })
             else:
                 query_filters &= Q(**{"%s__icontains" % k: v})
 
