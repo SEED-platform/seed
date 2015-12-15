@@ -475,6 +475,18 @@ def apply_data_func(mappable_columns):
     return result_fn
 
 
+def _normalize_tax_lot_id(value):
+    return value.strip().lstrip('0').upper().replace(
+        '-', ''
+    ).replace(
+        ' ', ''
+    ).replace(
+        '/', ''
+    ).replace(
+        '\\', ''
+    )
+
+
 @shared_task
 def map_row_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwargs):
     """Does the work of matching a mapping to a source type and saving
@@ -528,6 +540,9 @@ def map_row_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwa
             *args,
             **kwargs
         )
+
+        if model.tax_lot_id:
+            model.tax_lot_id = _normalize_tax_lot_id(model.tax_lot_id)
 
         model.import_file = import_file
         model.source_type = save_type
