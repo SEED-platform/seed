@@ -29,7 +29,7 @@ angular.module('BE.seed.service.label',
     
         @param {object} search  -   Optional search object. If provided, server should
                                     mark each label in the response with a boolean 
-                                    property 'exists-in-set'
+                                    property 'is_applied'
 
         @return {object}            Returns a promise object that will resolve an
                                     array of label objects on success.
@@ -60,9 +60,9 @@ angular.module('BE.seed.service.label',
         var defer = $q.defer();
        
         var searchArgs = _.extend({
-            'selected_buildings' : selected_buildings,
-            'select_all_checkbox' : select_all_checkbox,
-             organization_id: user_service.get_organization().id
+            'selected_buildings' :  selected_buildings,
+            'select_all_checkbox':  select_all_checkbox,
+            'organization_id':      user_service.get_organization().id
         }, search_params);
        
         $http({
@@ -87,16 +87,17 @@ angular.module('BE.seed.service.label',
 
     /*  Add a label to an organization's list of labels 
 
-        @return {object}    Returns a promise object which will resolve
-                            with either a success if the label was created
-                            on the server, or an error if the label could not be
-                            created on the server. 
+        @param {object} label   A label object representing the new label to create                                
 
-                            Return object should also have a 'label' property assigned 
-                            to the newly created label object.
+        @return {object}        Returns a promise object which will resolve
+                                with either a success if the label was created
+                                on the server, or an error if not.   
     */
     function create_label(label){
         var defer = $q.defer();
+        label = _.extend({
+            'organization_id': user_service.get_organization().id
+        }, label);
         $http({
             method: 'POST',
             'url': window.BE.urls.label_list,
@@ -115,16 +116,17 @@ angular.module('BE.seed.service.label',
 
     /*  Update an existing a label in an organization 
         
-        @param {object} label object, which must include label ID. 
+        @param {object} label       label object, which must include label ID. 
 
-        @return {object}    Returns a promise object which will resolve
-                            with either a success if the label was updated, 
-                            or an error if not.                             
-                            Return object should also have a 'label' property assigned 
-                            to the updated label object.
+        @return {object}            Returns a promise object which will resolve
+                                    with either a success if the label was updated, 
+                                    or an error if not.                
     */
     function update_label(label){
         var defer = $q.defer();
+        label = _.extend({
+            'organization_id': user_service.get_organization().id
+        }, label);
         $http({
             method: 'PUT',
             'url': window.BE.urls.label_list + label.id + '/',
@@ -142,14 +144,17 @@ angular.module('BE.seed.service.label',
 
     /*  Delete a label from the set of labels for an organization 
 
-        @param {object} label object, which must include label ID. 
+        @param {object} label       label object, which must include the label ID. 
 
-        @return {object}    Returns a promise object which will resolve
-                            with either a success if the label was deleted, 
-                            or an error if not
+        @return {object}            Returns a promise object which will resolve
+                                    with either a success if the label was deleted, 
+                                    or an error if not
     */
     function delete_label(label){
         var defer = $q.defer();
+        label = _.extend({
+            'organization_id': user_service.get_organization().id
+        }, label);
         $http({
             method: 'DELETE',
             'url': window.BE.urls.label_list + label.id + '/',
@@ -173,12 +178,12 @@ angular.module('BE.seed.service.label',
     
     @param {array} add_label_ids            An array of label ids to apply to selected buildings
     @param {array} remove_label_ids         An array of label ids to remove from selected buildings
-    @param {object} search                  A reference to the Search object, which includes
-                                            properties for selected buildings, active filters
-                                            and the status of the 'select all' checkbox.
+    @param {array} selected_buildings       An array of ids for the currently selected building ids (empty if select_all_checkbox is true)
+    @param {boolean} select_all_checkbox    A boolean indicating whether the select all checkbox was selected.
+    @param {object} search_params           A reference to the Search object, which includes
+                                            properties for active filters.
 
-    @return {object}                        A promise object that resolves server response
-                                            (success or error)
+    @return {object}                        A promise object that resolves server response (success or error)
 
     */
     function update_building_labels(add_label_ids, remove_label_ids, selected_buildings, select_all_checkbox, search_params) {
@@ -191,8 +196,9 @@ angular.module('BE.seed.service.label',
                 'select_all_checkbox': select_all_checkbox
             }, search_params),
             'data': {
-                'add_label_ids': add_label_ids,
-                'remove_label_ids': remove_label_ids
+                'add_label_ids':        add_label_ids,
+                'remove_label_ids':     remove_label_ids,
+                'organization_id':      user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
