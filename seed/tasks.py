@@ -1028,17 +1028,25 @@ def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
     params = []
     can_snapshots = get_canonical_snapshots(org_id)
     if pm_id:
-        params.append(Q(pm_property_id=pm_id) | Q(pm_property_id__isnull=True))
+        params.append(Q(pm_property_id=pm_id))
+        params.append(Q(tax_lot_id=pm_id))
+        params.append(Q(custom_id_1=pm_id))
     if tax_id:
-        params.append(Q(tax_lot_id=tax_id) | Q(tax_lot_id__isnull=True))
+        params.append(Q(pm_property_id=tax_id))
+        params.append(Q(tax_lot_id=tax_id))
+        params.append(Q(custom_id_1=tax_id))
     if custom_id:
-        params.append(Q(custom_id_1=custom_id) | Q(custom_id_1__isnull=True))
+        params.append(Q(pm_property_id=custom_id))
+        params.append(Q(tax_lot_id=custom_id))
+        params.append(Q(custom_id_1=custom_id))
 
     if not params:
         # Return an empty QuerySet if we don't have any params.
         return can_snapshots.none()
 
-    canonical_matches = can_snapshots.filter(*params)
+    canonical_matches = can_snapshots.filter(
+        reduce(operator.or_, params)
+    )
 
     return canonical_matches
 
