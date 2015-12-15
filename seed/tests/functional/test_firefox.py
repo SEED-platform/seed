@@ -2,7 +2,8 @@ import time
 import json
 import os
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from selenium import webdriver
+#from selenium import webdriver
+from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.common.exceptions import NoSuchAttributeException, StaleElementReferenceException, NoSuchElementException
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.landing.models import SEEDUser as User
@@ -14,7 +15,8 @@ class LogIn(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(self):
         super(LogIn, self).setUpClass()
-        self.selenium = webdriver.Firefox()
+        #self.selenium = webdriver.Firefox()
+        self.selenium = WebDriver()
 
     @classmethod
     def tearDownClass(cls):
@@ -108,7 +110,7 @@ class LogIn(StaticLiveServerTestCase):
 
         # Access Mapping Webpage
         self.selenium.find_element_by_id('data-mapping-0').click()
-        self.wait_for_visibility('mapped-header-0')
+        self.wait_for_visibility('mapped-header-0', 30)
 
         # Map Data
 
@@ -141,8 +143,9 @@ class LogIn(StaticLiveServerTestCase):
             self.selenium.find_element_by_css_selector("#duplicate-row-input-%s > #duplicate-row-input-box-%s" % (i, i)).send_keys(mapping_dict[dict_key])
 
         # Navigate through Data Saving/Matching
+        print "It's about to happen"
         self.selenium.find_element_by_id('map-data-button').click()
-        self.wait_for_visibility('verify-mapping-table',30)
+        self.wait_for_visibility('verify-mapping-table',600)
         self.selenium.find_element_by_id('save-mapping').click()
         self.wait_for_visibility('confirm-mapping')
         self.selenium.find_element_by_id('confirm-mapping').click()
