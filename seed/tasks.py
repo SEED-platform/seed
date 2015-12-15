@@ -558,15 +558,7 @@ def map_row_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwa
 
 
 def _normalize_tax_lot_id(value):
-    return value.strip().lstrip('0').upper().replace(
-        '-', ''
-    ).replace(
-        ' ', ''
-    ).replace(
-        '/', ''
-    ).replace(
-        '\\', ''
-    )
+    return value.strip().upper().replace('-', '').replace(' ', '').replace('/', '').replace('\\', '')
 
 
 def split(value, delimiters):
