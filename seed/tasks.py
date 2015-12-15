@@ -9,7 +9,6 @@ import re
 import string
 import operator
 import traceback
-import itertools
 from _csv import Error
 from dateutil import parser
 from django.core.mail import send_mail
@@ -519,9 +518,9 @@ def map_row_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwa
 
     for row in chunk:
         model = mapper.map_row(
-            row=row,
-            mapping=mapping,
-            model_class=BuildingSnapshot,
+            row,
+            mapping,
+            BuildingSnapshot,
             cleaner=map_cleaner,
             concat=concats,
             apply_columns=apply_columns,
@@ -534,56 +533,12 @@ def map_row_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwa
         model.source_type = save_type
         model.clean()
         model.super_organization = import_file.import_record.super_organization
-
-        # Tax Lot ID can potentially contain multiple deliniated values.  These
-        # need to be split and normalized.
-        tax_lot_ids = _extract_tax_lot_ids(model.tax_lot_id)
-        model.tax_lot_id, additional_ids = tax_lot_ids[0], tax_lot_ids[1:]
         model.save()
-
-        # If there is more than a single ID, duplicate the building.
-        for tax_lot_id in additional_ids:
-            model.id = None
-            model.tax_lot_id = tax_lot_id
-            model.save()
-
-    try:
+    if model:
         # Make sure that we've saved all of the extra_data column names
         save_column_names(model, mapping=mapping)
-    except NameError:
-        # There were no rows in the chunk.
-        pass
 
     increment_cache(prog_key, increment)
-
-
-def _normalize_tax_lot_id(value):
-    return value.strip().upper().replace('-', '').replace(' ', '').replace('/', '').replace('\\', '')
-
-
-def split(value, delimiters):
-    """
-    Given a string, and an iterable of delimeters, return an iterable
-    containing all of the substrings that were deliniated by the delimeters.
-    """
-    _value = [str(value)]
-    for delimiter in delimiters:
-        _value = tuple(itertools.chain.from_iterable((
-            v.split(delimiter) for v in _value
-        )))
-    return _value
-
-
-def _extract_tax_lot_ids(value):
-    if not value:
-        return [value]
-
-    tax_lot_ids = [
-        _normalize_tax_lot_id(tax_lot_id)
-        for tax_lot_id in split(value, ",;")
-        if tax_lot_id
-    ]
-    return tax_lot_ids
 
 
 @shared_task
