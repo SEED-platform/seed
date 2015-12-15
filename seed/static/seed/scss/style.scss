@@ -693,6 +693,14 @@ a:not([href]) {
           padding-right: 0;
         }
       }
+      &.right_half {
+        float: right;
+        width: 50%;
+        text-align: right;
+        i {
+          padding-right: 0;
+        }
+      }
       &.right_wide {
         float: right;
         width: 75%;
