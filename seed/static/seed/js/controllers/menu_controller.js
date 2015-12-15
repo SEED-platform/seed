@@ -339,6 +339,7 @@ angular.module('BE.seed.controller.menu', [])
         organization_service.get_organizations().then(function (data) {
             // resolve promise
             $scope.organizations_count = data.organizations.length;
+            $scope.menu.user.organizations = data.organizations;
         });
     };
     init();
