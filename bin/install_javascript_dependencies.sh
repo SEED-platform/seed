@@ -8,7 +8,7 @@ echo ""
 echo ""
 echo ""
 echo "starting bower install"
-bower install
+bower install --config.interactive
 
 if [ ! -f seed/static/vendors/bower_components/fine-uploader/_build/s3.fineuploader.js ];
 then
