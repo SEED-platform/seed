@@ -145,7 +145,7 @@ class LogIn(StaticLiveServerTestCase):
         # Navigate through Data Saving/Matching
         print "It's about to happen"
         self.selenium.find_element_by_id('map-data-button').click()
-        self.wait_for_visibility('verify-mapping-table',30)
+        self.wait_for_visibility('verify-mapping-table',300)
         self.selenium.find_element_by_id('save-mapping').click()
         self.wait_for_visibility('confirm-mapping')
         self.selenium.find_element_by_id('confirm-mapping').click()
