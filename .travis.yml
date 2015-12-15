@@ -34,8 +34,6 @@ install:
 
 before_script:
   - psql -c "create database seeddb;" -U postgres
-  - ./bin/install_javascript_dependencies.sh
-  - cp config/settings/local_untracked.py.dist config/settings/local_untracked.py
 
 script:
   - tox -e $TOX_ENV
