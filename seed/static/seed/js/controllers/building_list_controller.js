@@ -74,6 +74,7 @@ angular.module('BE.seed.controller.building_list', [])
     };
 
     var refresh_search = function() {
+        $scope.search.deselect_all_buildings();
         $scope.search.search_buildings();
     };
 
