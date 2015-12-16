@@ -663,9 +663,9 @@ a:not([href]) {
         float: left;
         width: 25%;
       }
-      &.left_half {
+      &.left_40 {
         float: left;
-        width: 50%;
+        width: 40%;
       }
       &.left_wide {
         float: left;
@@ -693,12 +693,12 @@ a:not([href]) {
           padding-right: 0;
         }
       }
-      &.right_half {
+      &.right_60 {
         float: right;
-        width: 50%;
+        width: 60%;
         text-align: right;
-        i {
-          padding-right: 0;
+        button {
+          margin-left: 7px;
         }
       }
       &.right_wide {
