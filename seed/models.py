@@ -457,7 +457,9 @@ def unmatch_snapshot_tree(building_pk):
     bachelor = root
     newborn_child = None
     for bereaved_parent in coparents_to_keep:
-        newborn_child, _ = save_snapshot_match(bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk)
+        newborn_child, _ = save_snapshot_match(
+            bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk,
+        )
         bachelor = newborn_child
 
     # set canonical_snapshot for root's canonical building
@@ -1296,7 +1298,8 @@ class BuildingSnapshot(TimeStampedModel):
         'BuildingSnapshot', related_name='+', null=True, blank=True
     )
 
-    # Need a field to indicate that a record is a duplicate of another.  Mainly used for cleaning up.
+    # Need a field to indicate that a record is a duplicate of another.  Mainly
+    # used for cleaning up.
     duplicate = models.ForeignKey(
         'BuildingSnapshot', related_name='+', null=True, blank=True
     )
@@ -1386,7 +1389,7 @@ class BuildingSnapshot(TimeStampedModel):
             self.postal_code = self.postal_code[:255]
         if self.state_province and isinstance(self.state_province, types.StringTypes):
             self.state_province = self.state_province[:255]
-        if self.building_certification and isinstance(self.building_certification, types.StringTypes):
+        if self.building_certification and isinstance(self.building_certification, types.StringTypes):  # NOQA
             self.building_certification = self.building_certification[:255]
 
         super(BuildingSnapshot, self).save(*args, **kwargs)
@@ -1524,7 +1527,8 @@ class BuildingSnapshot(TimeStampedModel):
 
 
 class NonCanonicalProjectBuildings(models.Model):
-    """Holds a reference to all project buildings that do not point at a canonical building snapshot."""
+    """Holds a reference to all project buildings that do not point at a
+    canonical building snapshot."""
     projectbuilding = models.ForeignKey(ProjectBuilding, primary_key=True)
 
 

@@ -616,7 +616,8 @@ def _map_data(file_pk, *args, **kwargs):
         serialized_data = [obj.extra_data for obj in chunk]
         tasks.append(map_row_chunk.s(serialized_data, file_pk, source_type, prog_key))
 
-    # need to rework how the progress keys are implemented here, but at least the method gets called above for cleansing
+    # need to rework how the progress keys are implemented here, but at least
+    # the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
     if tasks:
         chord(tasks, interval=15)(finish_mapping.subtask([file_pk]))
@@ -629,8 +630,8 @@ def _map_data(file_pk, *args, **kwargs):
 def _cleanse_data(file_pk):
     """
 
-    Get the mapped data and run the cleansing class against it in chunks. The mapped data are pulled from the
-    BuildingSnapshot table.
+    Get the mapped data and run the cleansing class against it in chunks. The
+    mapped data are pulled from the BuildingSnapshot table.
 
     @lock_and_track returns a progress_key
 
@@ -645,8 +646,11 @@ def _cleanse_data(file_pk):
         'Green Button Raw': GREEN_BUTTON_BS,
     }
 
-    # This is non-ideal, but the source type of the input file is never updated, but the data are stages as if it were.
-    # After the mapping stage occurs, the data end up in the BuildingSnapshot table under the *_BS value.
+    # This is non-ideal, but the source type of the input file is never
+    # updated, but the data are stages as if it were.
+    #
+    # After the mapping stage occurs, the data end up in the BuildingSnapshot
+    # table under the *_BS value.
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_BS)
     qs = BuildingSnapshot.objects.filter(
         import_file=import_file,
@@ -663,7 +667,8 @@ def _cleanse_data(file_pk):
         ids = [obj.id for obj in chunk]
         tasks.append(cleanse_data_chunk.s(ids, file_pk))  # note that increment will be added to end
 
-    # need to rework how the progress keys are implemented here, but at least the method gets called above for cleansing
+    # need to rework how the progress keys are implemented here, but at least
+    # the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
     if tasks:
         chord(tasks, interval=15)(finish_cleansing.subtask([file_pk]))
@@ -939,14 +944,20 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
     building_pk = unmatched_list[b_idx][0]  # First element is PK
 
     bs, changes = save_snapshot_match(
-        can_snap_pk, building_pk, confidence=confidence, match_type=match_type, default_pk=building_pk
+        can_snap_pk,
+        building_pk,
+        confidence=confidence,
+        match_type=match_type,
+        default_pk=building_pk,
     )
     canon = bs.canonical_building
     action_note = 'System matched building.'
     if changes:
         action_note += "  Fields changed in cannonical building:\n"
         for change in changes:
-            action_note += "\t{field}:\t".format(field=change["field"].replace("_", " ").replace("-", "").capitalize())
+            action_note += "\t{field}:\t".format(
+                field=change["field"].replace("_", " ").replace("-", "").capitalize(),
+            )
             if "from" in change:
                 action_note += "From:\t{prev}\tTo:\t".format(prev=change["from"])
 
@@ -964,7 +975,8 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
 @shared_task
 @lock_and_track
 def match_buildings(file_pk, user_pk):
-    """kicks off system matching, returns progress key #NL -- this seems to return a JSON--not a progress key?"""
+    """kicks off system matching, returns progress key #NL -- this seems to
+    return a JSON--not a progress key?"""
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
     if import_file.matching_done:
@@ -1239,7 +1251,7 @@ def _normalize_address_str(address_val):
 
         if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
             # remove any periods from abbreviations
-            normalized_address = normalized_address + ' ' + _normalize_address_post_type(addr['StreetNamePostType'])
+            normalized_address = normalized_address + ' ' + _normalize_address_post_type(addr['StreetNamePostType'])  # NOQA
 
         if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePostDirectional'])  # NOQA
@@ -1301,7 +1313,9 @@ def _match_buildings(file_pk, user_pk):
         return
 
     # here we deal with duplicates
-    unmatched_buildings = unmatched_buildings.exclude(pk__in=duplicates).values_list(*BS_VALUES_LIST)
+    unmatched_buildings = unmatched_buildings.exclude(
+        pk__in=duplicates,
+    ).values_list(*BS_VALUES_LIST)
     if not unmatched_buildings:
         _finish_matching(import_file, prog_key)
         return

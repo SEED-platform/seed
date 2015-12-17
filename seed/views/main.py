@@ -282,7 +282,14 @@ def export_buildings(request):
     }
     set_cache(progress_key, result['status'], result)
 
-    tasks.export_buildings.delay(export_id, export_name, export_type, building_ids, export_model, selected_fields)
+    tasks.export_buildings.delay(
+        export_id,
+        export_name,
+        export_type,
+        building_ids,
+        export_model,
+        selected_fields,
+    )
 
     result = {
         'progress_key': progress_key,
@@ -324,11 +331,13 @@ def export_buildings_progress(request):
     body = json.loads(request.body)
     export_id = body.get('export_id')
     progress_key = "export_buildings__%s" % export_id
+    percent_done = get_cache(progress_key)['progress']
+    total_buildings = get_cache(progress_key)['total_buildings']
     return {
         "success": True,
         "status": "success",
         'total_buildings': get_cache(progress_key)['total_buildings'],
-        "buildings_processed": get_cache(progress_key)['progress'] * get_cache(progress_key)['total_buildings']
+        "buildings_processed": percent_done * total_buildings
     }
 
 
@@ -357,9 +366,10 @@ def export_buildings_download(request):
     body = json.loads(request.body)
     export_id = body.get('export_id')
 
-    # This is non-ideal, it is returning the directory/s3 key and assumes that only one file lives in that
-    # directory. This should really just return the file to be downloaded. Not sure we are doing multiple downloads at
-    # the moment.
+    # This is non-ideal, it is returning the directory/s3 key and assumes that
+    # only one file lives in that directory. This should really just return the
+    # file to be downloaded. Not sure we are doing multiple downloads at the
+    # moment.
     export_subdir = Exporter.subdirectory_from_export_id(export_id)
 
     if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
@@ -372,7 +382,8 @@ def export_buildings_download(request):
                 'status': 'error'
             }
         else:
-            # get the first file in the directory -- which is the first entry of the second part of the tuple
+            # get the first file in the directory -- which is the first entry
+            # of the second part of the tuple
             file_name = os.path.join(export_subdir, files[1][0])
 
             if file_storage.exists(file_name):
@@ -2204,7 +2215,8 @@ def get_building_summary_report_data(request):
 
     """
 
-    # TODO: Generate this data the right way! Will be implemented by Stephen C. The following is just dummy data...
+    # TODO: Generate this data the right way! Will be implemented by Stephen C.
+    # The following is just dummy data...
 
     if request.method != 'GET':
         return HttpResponseBadRequest("This view replies only to GET methods")
@@ -2280,8 +2292,9 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
 
         """
 
-    # year_ending in the BuildingSnapshot model is a DateField which corresponds to a python datetime.date
-    # not a datetime.datetime.  Ensure a conversion here
+    # year_ending in the BuildingSnapshot model is a DateField which
+    # corresponds to a python datetime.date not a datetime.datetime.  Ensure a
+    # conversion here
     try:
         from_date = from_date.date()
     except:
@@ -2340,8 +2353,9 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
             bldg_counts[year_ending_year] = {"buildings": set(), "buildings_w_data": set()}
         release_date = get_attr_f(snapshot, "release_date")
 
-        # if there is no release_date then we have no way of priotizing vs other records with the same
-        # year_ending.  Plus it is an indication of something wrong so just exit here
+        # if there is no release_date then we have no way of priotizing vs
+        # other records with the same year_ending.  Plus it is an indication of
+        # something wrong so just exit here
         if not release_date:
             return
 
@@ -2354,9 +2368,9 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
         ):
             bldg_x = get_attr_f(snapshot, x_var)
             bldg_y = get_attr_f(snapshot, y_var)
-            # what does it mean for a building to "have data"?  I am assuming it must have values for
-            # both x and y fields.  Change "and" to "or" to make it either and "True"
-            # to return everything
+            # what does it mean for a building to "have data"?  I am assuming
+            # it must have values for both x and y fields.  Change "and" to
+            # "or" to make it either and "True" to return everything
             if bldg_x and bldg_y:
                 bldg_counts[year_ending_year]["buildings_w_data"].add(canonical_building_id)
 
@@ -2390,27 +2404,34 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     for canonical_building in canonical_buildings:
         canonical_building_id = canonical_building.id
 
-        # we changed from only using the unmerged snapshots to only using the merged snapshots.
+        # we changed from only using the unmerged snapshots to only using the
+        # merged snapshots.
         # So start at the current canonical building and work back
         process_snapshot(canonical_building_id, canonical_building)
 
         if canonical_building.parent_tree:
             current_canonical_bldg = canonical_building
 
-            # progress up the the tree processing merged snapshots until there aren't any more
+            # progress up the the tree processing merged snapshots until there
+            # aren't any more
             while current_canonical_bldg:
                 # unmerged_snapshots = bldg.parents.filter(parents__isnull = True)
-                previous_canonical_bldg = current_canonical_bldg.parents.filter(parents__isnull=False)
-                # get the parent that is merged, if any.  If not then we're done when we finish this iteration
-                # bldg = bldg.parents.filter(parents__isnull = False)# .exclude(id = bldg.id)
+                previous_canonical_bldg = current_canonical_bldg.parents.filter(
+                    parents__isnull=False,
+                )
+
                 if previous_canonical_bldg.count():
                     current_canonical_bldg = previous_canonical_bldg[0]
                     process_snapshot(canonical_building_id, current_canonical_bldg)
                 else:
-                    # There are no parents who have non-null parents themselves meaning the parent
-                    # must be the first record imported and therefore the first canonical building
-                    current_canonical_bldg = current_canonical_bldg.parents.filter(parents__isnull=True)
-                    # hopefully the record is always in index 1.  Otherwise I'm not sure how to pick the right one.
+                    # There are no parents who have non-null parents themselves
+                    # meaning the parent must be the first record imported and
+                    # therefore the first canonical building
+                    current_canonical_bldg = current_canonical_bldg.parents.filter(
+                        parents__isnull=True,
+                    )
+                    # hopefully the record is always in index 1.  Otherwise I'm
+                    # not sure how to pick the right one.
                     current_canonical_bldg = current_canonical_bldg.all()[1]
                     process_snapshot(canonical_building_id, current_canonical_bldg)
                     current_canonical_bldg = None
@@ -2428,8 +2449,8 @@ def get_building_report_data(request):
         :GET:
         * start_date:       The starting date for the data series with the format  `YYYY-MM-DD`
         * end_date:         The starting date for the data series with the format  `YYYY-MM-DD`
-        * x_var:            The variable name to be assigned to the "x" value in the returned data series
-        * y_var:            The variable name to be assigned to the "y" value in the returned data series
+        * x_var:            The variable name to be assigned to the "x" value in the returned data series  # NOQA
+        * y_var:            The variable name to be assigned to the "y" value in the returned data series  # NOQA
         * organization_id:  The organization to be used when querying data.
 
         The x_var values should be from the following set of variable names:
@@ -2478,7 +2499,7 @@ def get_building_report_data(request):
                     ...
                 ]
                 "num_buildings": total number of buildings in query results,
-                "num_buildings_w_data": total number of buildings with valid data in the query results
+                "num_buildings_w_data": total number of buildings with valid data in the query results  # NOQA
             }
         ```
 
@@ -2630,10 +2651,10 @@ def get_aggregated_building_report_data(request):
     """ This method returns a set of aggregated building data for graphing. It expects as parameters
 
         :GET:
-        * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
-        * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
-        * x_var:            The variable name to be assigned to the "x" value in the returned data series
-        * y_var:            The variable name to be assigned to the "y" value in the returned data series
+        * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`  # NOQA
+        * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`  # NOQA
+        * x_var:            The variable name to be assigned to the "x" value in the returned data series  # NOQA
+        * y_var:            The variable name to be assigned to the "y" value in the returned data series  # NOQA
         * organization_id:  The organization to be used when querying data.
 
         The x_var values should be from the following set of variable names:
@@ -2682,7 +2703,7 @@ def get_aggregated_building_report_data(request):
                     {
                         "yr_e": string for year ending - group by
                         "num_buildings": number of buildings in query results
-                        "num_buildings_w_data": number of buildings with valid data in this group, BOTH x and y?
+                        "num_buildings_w_data": number of buildings with valid data in this group, BOTH x and y?  # NOQA
                     },
                     ...
                 ]
@@ -2761,7 +2782,7 @@ def get_aggregated_building_report_data(request):
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
     except KeyError, e:
-        msg = "Error while calling the API function get_aggregated_building_report_data, missing parameter"
+        msg = "Error while calling the API function get_aggregated_building_report_data, missing parameter"  # NOQA
         _log.error(msg)
         _log.exception(str(e))
         return HttpResponseBadRequest(msg)
