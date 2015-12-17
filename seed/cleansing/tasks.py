@@ -14,7 +14,7 @@ def cleanse_data_chunk(ids, file_pk, increment):
 
     :param ids: list of primary key ids to process
     :param file_pk: import file primary key
-    :param increment: currently unused, but needed because of the special method that appends this onto the function
+    :param increment: currently unused, but needed because of the special method that appends this onto the function  # NOQA
     :return: None
     """
 

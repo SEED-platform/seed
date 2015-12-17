@@ -69,7 +69,14 @@ def get_csv(request):
             field = result['field']
             if field in Cleansing.ASSESSOR_FIELDS_BY_COLUMN:
                 field = Cleansing.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
-            writer.writerow([row['address_line_1'], row['pm_property_id'], row['tax_lot_id'], row['custom_id_1'], field,
-                             result['message'], result['severity']])
+            writer.writerow([
+                row['address_line_1'],
+                row['pm_property_id'],
+                row['tax_lot_id'],
+                row['custom_id_1'],
+                field,
+                result['message'],
+                result['severity']
+            ])
 
     return response

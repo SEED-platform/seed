@@ -32,7 +32,11 @@ urlpatterns = patterns(
         'password_reset_confirm',
         name='password_reset_confirm'
     ),
-    url(r'^accounts/password/reset/complete/$', 'password_reset_complete', name='password_reset_complete'),
+    url(
+        r'^accounts/password/reset/complete/$',
+        'password_reset_complete',
+        name='password_reset_complete',
+    ),
     url(
         (
             r'^accounts/setup/(?P<uidb64>[0-9A-Za-z_\-]+)/'

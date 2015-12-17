@@ -221,7 +221,8 @@ def filter_other_params(queryset, other_params, db_columns):
                 # Filter for records that DO NOT contain this field OR
                 # contain a blank value for this field.
                 queryset = queryset.filter(
-                    Q(**{'extra_data__at_%s__isnull' % k: True}) | Q(**{'extra_data__at_%s' % k: ''})
+                    Q(**{'extra_data__at_%s__isnull' % k: True}) |
+                    Q(**{'extra_data__at_%s' % k: ''})
                 )
                 continue
             elif not_empty_match:
