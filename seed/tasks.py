@@ -8,6 +8,7 @@ import time
 import re
 import string
 import traceback
+import operator
 from _csv import Error
 from dateutil import parser
 from django.core.mail import send_mail
