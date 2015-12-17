@@ -6,6 +6,3 @@ urlpatterns = patterns(
     url(r'progress/', 'get_progress', name='get_progress'),
     url(r'download/', 'get_csv', name='get_csv'),
 )
-
-
-

@@ -38,8 +38,8 @@ def finish_cleansing(results, file_pk):
 
     prog_key = get_prog_key('cleanse_data', file_pk)
     result = {
-            'status': 'success',
-            'progress': 100,
-            'message': 'cleansing complete'
-        }
+        'status': 'success',
+        'progress': 100,
+        'message': 'cleansing complete'
+    }
     set_cache(prog_key, result['status'], result)
