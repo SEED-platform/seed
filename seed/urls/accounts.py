@@ -1,15 +1,11 @@
-"""
-:copyright: (c) 2014 Building Energy Inc
-"""
 #!/usr/bin/env python
 # encoding: utf-8
 """
-urls/accounts.py
-
-Copyright (c) 2013 Building Energy. All rights reserved.
+:copyright: (c) 2014 Building Energy Inc
 """
 
 from django.conf.urls import patterns, url
+
 
 urlpatterns = patterns(
     'seed.views.accounts',

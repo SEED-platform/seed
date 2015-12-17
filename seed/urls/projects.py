@@ -1,15 +1,11 @@
-"""
-:copyright: (c) 2014 Building Energy Inc
-"""
 # !/usr/bin/env python
 # encoding: utf-8
 """
-urls/urls.py
-
-Copyright (c) 2013 Building Energy. All rights reserved.
+:copyright: (c) 2014 Building Energy Inc
 """
 
 from django.conf.urls import patterns, url
+
 
 urlpatterns = patterns(
     'seed.views.projects',
@@ -28,6 +24,4 @@ urlpatterns = patterns(
     url(r'^remove_buildings_from_project/$', 'remove_buildings_from_project', name='remove_buildings_from_project'),
     url(r'^update_project/$', 'update_project', name='update_project'),
     url(r'^update_project_building/$', 'update_project_building', name='update_project_building'),
-    
-    
 )
