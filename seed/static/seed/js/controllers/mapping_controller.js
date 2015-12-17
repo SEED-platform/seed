@@ -99,7 +99,6 @@ angular.module('BE.seed.controller.mapping', [])
     $scope.search.update_results();
 
     $scope.do_update_filters = function(){
-      $scope.search.deselect_all_buildings();
       $scope.search.search_buildings();
     };
 
