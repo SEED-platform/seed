@@ -9,7 +9,6 @@ import re
 import string
 import operator
 import traceback
-import itertools
 from _csv import Error
 from dateutil import parser
 from django.core.mail import send_mail
@@ -476,6 +475,18 @@ def apply_data_func(mappable_columns):
     return result_fn
 
 
+def _normalize_tax_lot_id(value):
+    return value.strip().lstrip('0').upper().replace(
+        '-', ''
+    ).replace(
+        ' ', ''
+    ).replace(
+        '/', ''
+    ).replace(
+        '\\', ''
+    )
+
+
 @shared_task
 def map_row_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwargs):
     """Does the work of matching a mapping to a source type and saving
@@ -519,9 +530,9 @@ def map_row_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwa
 
     for row in chunk:
         model = mapper.map_row(
-            row=row,
-            mapping=mapping,
-            model_class=BuildingSnapshot,
+            row,
+            mapping,
+            BuildingSnapshot,
             cleaner=map_cleaner,
             concat=concats,
             apply_columns=apply_columns,
@@ -530,68 +541,19 @@ def map_row_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwa
             **kwargs
         )
 
+        if model.tax_lot_id:
+            model.tax_lot_id = _normalize_tax_lot_id(model.tax_lot_id)
+
         model.import_file = import_file
         model.source_type = save_type
         model.clean()
         model.super_organization = import_file.import_record.super_organization
-
-        # Tax Lot ID can potentially contain multiple deliniated values.  These
-        # need to be split and normalized.
-        tax_lot_ids = _extract_tax_lot_ids(model.tax_lot_id)
-        model.tax_lot_id, additional_ids = tax_lot_ids[0], tax_lot_ids[1:]
         model.save()
-
-        # If there is more than a single ID, duplicate the building.
-        for tax_lot_id in additional_ids:
-            model.id = None
-            model.tax_lot_id = tax_lot_id
-            model.save()
-
-    try:
+    if model:
         # Make sure that we've saved all of the extra_data column names
         save_column_names(model, mapping=mapping)
-    except NameError:
-        # There were no rows in the chunk.
-        pass
 
     increment_cache(prog_key, increment)
-
-
-def _normalize_tax_lot_id(value):
-    return value.strip().lstrip('0').upper().replace(
-        '-', ''
-    ).replace(
-        ' ', ''
-    ).replace(
-        '/', ''
-    ).replace(
-        '\\', ''
-    )
-
-
-def split(value, delimiters):
-    """
-    Given a string, and an iterable of delimeters, return an iterable
-    containing all of the substrings that were deliniated by the delimeters.
-    """
-    _value = [str(value)]
-    for delimiter in delimiters:
-        _value = tuple(itertools.chain.from_iterable((
-            v.split(delimiter) for v in _value
-        )))
-    return _value
-
-
-def _extract_tax_lot_ids(value):
-    if not value:
-        return [value]
-
-    tax_lot_ids = [
-        _normalize_tax_lot_id(tax_lot_id)
-        for tax_lot_id in split(value, ",;")
-        if tax_lot_id
-    ]
-    return tax_lot_ids
 
 
 @shared_task
@@ -1036,17 +998,25 @@ def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
     params = []
     can_snapshots = get_canonical_snapshots(org_id)
     if pm_id:
-        params.append(Q(pm_property_id=pm_id) | Q(pm_property_id__isnull=True))
+        params.append(Q(pm_property_id=pm_id))
+        params.append(Q(tax_lot_id=pm_id))
+        params.append(Q(custom_id_1=pm_id))
     if tax_id:
-        params.append(Q(tax_lot_id=tax_id) | Q(tax_lot_id__isnull=True))
+        params.append(Q(pm_property_id=tax_id))
+        params.append(Q(tax_lot_id=tax_id))
+        params.append(Q(custom_id_1=tax_id))
     if custom_id:
-        params.append(Q(custom_id_1=custom_id) | Q(custom_id_1__isnull=True))
+        params.append(Q(pm_property_id=custom_id))
+        params.append(Q(tax_lot_id=custom_id))
+        params.append(Q(custom_id_1=custom_id))
 
     if not params:
         # Return an empty QuerySet if we don't have any params.
         return can_snapshots.none()
 
-    canonical_matches = can_snapshots.filter(*params)
+    canonical_matches = can_snapshots.filter(
+        reduce(operator.or_, params)
+    )
 
     return canonical_matches
 
