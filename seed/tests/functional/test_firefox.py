@@ -1,6 +1,8 @@
 import time
 import json
 import os
+import unittest
+
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchAttributeException, StaleElementReferenceException, NoSuchElementException
@@ -21,6 +23,7 @@ class LogIn(StaticLiveServerTestCase):
         cls.selenium.quit()
         super(LogIn, cls).tearDownClass()
 
+    @unittest.skipIf(os.environ.get("TRAVIS") == "true", "https://github.com/SEED-platform/seed/issues/531")
     def test_login(self):
 
         # Test LogIn Process
