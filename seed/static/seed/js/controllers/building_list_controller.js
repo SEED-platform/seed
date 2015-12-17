@@ -65,14 +65,20 @@ angular.module('BE.seed.controller.building_list', [])
     * SEARCH CODE
     */
 
-     $scope.do_update_buildings_filters = function(){
+    /* Called by 'Update Filters' click in buildings list UI */
+    $scope.do_update_buildings_filters = function(){
+        $scope.search.deselect_all_buildings();
         refresh_search();
     };
 
-    $scope.do_update_projects_filters = function(){
+    /* Called by 'Update Filters' click in projects buildings list UI */
+    $scope.do_update_project_buildings_filters = function(){
+        $scope.search.deselect_all_buildings();
         refresh_search();
     };
 
+    /*  private function to refresh search, called by UI event handlers
+        or internal methods */
     var refresh_search = function() {
         $scope.search.search_buildings();
     };

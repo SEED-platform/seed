@@ -1,5 +1,9 @@
+sudo: false
+
 cache:
   directories: 
+    - node_modules
+    - seed/static/vendors/bower_components
     - $HOME/.pip-cache/
 
 language: python
@@ -38,4 +42,3 @@ script:
 
 after_script:
   - coveralls
-

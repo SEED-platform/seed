@@ -100,7 +100,10 @@ angular.module('BE.seed.service.label',
         $http({
             method: 'POST',
             'url': window.BE.urls.label_list,
-            'data': label
+            'data': label,
+            'params': {
+                'organization_id': user_service.get_organization().id
+            }
         }).success(function(data, status, headers, config) {
             if(data){
                 data = update_label_w_local_props(data);
@@ -129,6 +132,9 @@ angular.module('BE.seed.service.label',
             method: 'PUT',
             'url': window.BE.urls.label_list + label.id + '/',
             'data': label,
+            'params': {
+                'organization_id': user_service.get_organization().id
+            }
         }).success(function(data, status, headers, config) {
             if(data){
                 data = update_label_w_local_props(data);
@@ -153,6 +159,9 @@ angular.module('BE.seed.service.label',
         $http({
             method: 'DELETE',
             'url': window.BE.urls.label_list + label.id + '/',
+            'params': {
+                'organization_id': user_service.get_organization().id
+            }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -188,7 +197,8 @@ angular.module('BE.seed.service.label',
             'url': window.BE.urls.update_building_labels,
             'params': _.extend({
                 'selected_buildings' : selected_buildings,
-                'select_all_checkbox': select_all_checkbox
+                'select_all_checkbox': select_all_checkbox,
+                'organization_id': user_service.get_organization().id
             }, search_params),
             'data': {
                 'add_label_ids': add_label_ids,

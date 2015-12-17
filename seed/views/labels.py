@@ -1,3 +1,5 @@
+from django.core.exceptions import ObjectDoesNotExist
+
 from rest_framework import viewsets
 from rest_framework import generics
 from rest_framework import response
@@ -29,13 +31,25 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
     queryset = Label.objects.none()
     filter_backends = (LabelFilterBackend,)
 
+    _organization = None
+
+    def get_organization(self):
+        if self._organization is None:
+            try:
+                self._organization = self.request.user.orgs.get(
+                    pk=self.request.query_params["organization_id"],
+                )
+            except (KeyError, ObjectDoesNotExist):
+                self._organization = self.request.user.orgs.all()[0]
+        return self._organization
+
     def get_queryset(self):
         return Label.objects.filter(
-            super_organization__in=self.request.user.orgs.all()
+            super_organization=self.get_organization()
         ).order_by("name").distinct()
 
     def get_serializer(self, *args, **kwargs):
-        kwargs['super_organization'] = self.request.user.orgs.first()
+        kwargs['super_organization'] = self.get_organization()
         building_snapshots = BuildingFilterBackend().filter_queryset(
             request=self.request,
             queryset=BuildingSnapshot.objects.all(),
@@ -49,6 +63,18 @@ class UpdateBuildingLabelsAPIView(generics.GenericAPIView):
     filter_backends = (BuildingFilterBackend,)
     queryset = BuildingSnapshot.objects.all()
     serializer_class = UpdateBuildingLabelsSerializer
+
+    _organization = None
+
+    def get_organization(self):
+        if self._organization is None:
+            try:
+                self._organization = self.request.user.orgs.get(
+                    pk=self.request.query_params["organization_id"],
+                )
+            except ObjectDoesNotExist:
+                self._organization = self.request.user.orgs.all()[0]
+        return self._organization
 
     def put(self, *args, **kwargs):
         """
@@ -81,7 +107,7 @@ class UpdateBuildingLabelsAPIView(generics.GenericAPIView):
         serializer = self.get_serializer(
             data=self.request.data,
             queryset=queryset,
-            super_organization=self.request.user.orgs.first(),
+            super_organization=self.get_organization(),
         )
         serializer.is_valid(raise_exception=True)
 
