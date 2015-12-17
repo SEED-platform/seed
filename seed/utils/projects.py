@@ -1,4 +1,4 @@
-from seed.models import Project, ProjectBuilding, StatusLabel
+from seed.models import Project, ProjectBuilding
 from seed.utils.buildings import get_search_query
 
 

@@ -109,8 +109,6 @@ def get_columns(is_project, org_id, all_fields=False):
         'string': 'string',
         'decimal': 'number',
         'datetime': 'date',
-#        'boolean': 'bool',
-#        'foreignkey': 'int',
     }
     field_types = {}
     for k, v in get_mappable_types().items():

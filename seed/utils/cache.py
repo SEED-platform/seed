@@ -50,8 +50,8 @@ def get_cache(progress_key, default=None):
 
 def set_cache_state(progress_key, state):
     """Sets the cache key or progress_key to a bool."""
-    if type(status) != bool:
-        raise ValueError('Invalid value for status; must be a bool')
+    if type(state) != bool:
+        raise ValueError('Invalid value for state; must be a bool')
 
     result = state
     set_cache_raw(progress_key, result, DEFAULT_TIMEOUT)
@@ -71,6 +71,7 @@ def get_cache_state(progress_key, default=None):
 def delete_cache(progress_key):
     """Delete the chache associated with the progress_key"""
     django_cache.delete(progress_key)
+
 
 def lock_cache(progress_key, timeout=60):
     """Set the lock with a default timeout of 1 minute"""

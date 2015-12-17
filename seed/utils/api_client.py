@@ -19,17 +19,17 @@ class APIClient(object):
                            api_key='your_key_here',
                            email_address='youremail@address.com')
 
-        #get all orgs user belongs to
+        # get all orgs user belongs to
         client.get_organizations()
 
-        #organization id 17 will now be used for most requests
+        # organization id 17 will now be used for most requests
         client.set_organization(17)
 
-        #create a dataset
+        # create a dataset
         client.create_dataset('dataset name here')
         >>> {u'id': 34, u'name': u'test_data_set2', u'status': u'success'}
 
-        #upload a file
+        # upload a file
         client.upload_file('/path/to/file', 34, 'Assessed Raw')
         >>> {'import_file_id': 54,
              'success': true,
@@ -80,7 +80,7 @@ class APIClient(object):
         Args::
             base_url: The base domain for the SEED instance.
             api_key: The user's api key (can be retrieved from
-                /app/#/profile/developer
+                /app/# /profile/developer
             email_address: The user's email address.
         """
         self.base_url = base_url
@@ -96,7 +96,7 @@ class APIClient(object):
         self.schema_uri_by_name = {e['name']: k
                                    for k, e in self.schema.iteritems()}
 
-        #list of endpoint uris which should not have organization_id passed
+        # list of endpoint uris which should not have organization_id passed
         self.no_org_uris = [self.schema_uri_by_name['sign_policy_document']]
 
         for name in self.schema_uri_by_name:
@@ -217,7 +217,7 @@ class APIClient(object):
         if payload is None:
             payload = {}
 
-        #if we have an org id, try to include it in the params or payload
+        # if we have an org id, try to include it in the params or payload
         if self.org_id and uri not in self.no_org_uris:
             if method == 'get':
                 if 'organization_id' not in params:
@@ -352,7 +352,7 @@ class APIClient(object):
              "filename": "DataforSEED_dos15.csv"}
         """
         filename = os.path.basename(filepath)
-        #step 1: get the request signed
+        # step 1: get the request signed
         sig_uri = upload_details['signature']
 
         payload = {}
@@ -372,14 +372,14 @@ class APIClient(object):
 
         sig = self._request(sig_uri, payload=payload)
 
-        #step2: upload the file to S3
+        # step2: upload the file to S3
         upload_url = "http://%s.s3.amazonaws.com/" % (
             upload_details['aws_bucket_name']
         )
 
-        #s3 expects multipart form encoding with files at the end, so this
-        #payload needs to be a list of tuples; the requests library will encode
-        #it property if sent as the 'files' parameter.
+        # s3 expects multipart form encoding with files at the end, so this
+        # payload needs to be a list of tuples; the requests library will encode
+        # it property if sent as the 'files' parameter.
         s3_payload = [
             ('key', key),
             ('AWSAccessKeyId', upload_details['aws_client_key']),
@@ -397,7 +397,7 @@ class APIClient(object):
             msg = "Something went wrong with the S3 upload: %s" % res.content
             raise RuntimeError(msg)
 
-        #Step 3: Notify SEED about the upload
+        # Step 3: Notify SEED about the upload
         completion_uri = upload_details['upload_complete']
         completion_payload = {
             'import_record': import_record_id,

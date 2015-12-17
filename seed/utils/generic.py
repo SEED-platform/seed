@@ -3,6 +3,7 @@
 """
 import math
 
+
 def split_model_fields(obj, fields):
     """
     Takes a Python object and a list of field names.
