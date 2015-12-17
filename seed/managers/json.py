@@ -134,7 +134,7 @@ class JsonQuerySet(QuerySet):
         # We're going to materialize all of these rows to do sorting.'
         # Obviously this is terrible, but there's no way to do an
         # order_by on a  non-field (i.e. non-named column) in Django.
-        #"ORDER BY NULLIF({primary}->>%s, '')::{key_cast}" is the SQL
+        # "ORDER BY NULLIF({primary}->>%s, '')::{key_cast}" is the SQL
         # we'd use if Django allowed it.
 
         # Perhaps in Django 1.7 and its custom field definitions,

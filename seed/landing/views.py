@@ -24,8 +24,11 @@ def landing_page(request):
     if request.user.is_authenticated():
         return HttpResponseRedirect(reverse('seed:home'))
     login_form = LoginForm()
-    return render_to_response('landing/home.html',
-        locals(), context_instance=RequestContext(request))
+    return render_to_response(
+        'landing/home.html',
+        locals(),
+        context_instance=RequestContext(request),
+    )
 
 
 def login_view(request):
@@ -46,11 +49,11 @@ def login_view(request):
                 password=form.cleaned_data['password']
             )
             if new_user and new_user.is_active:
-                #determine if user has accepted ToS, if one exists
+                # determine if user has accepted ToS, if one exists
                 try:
                     user_accepted_tos = has_user_agreed_latest_tos(new_user)
                 except NoActiveTermsOfService:
-                    #there's no active ToS, skip interstitial
+                    # there's no active ToS, skip interstitial
                     user_accepted_tos = True
 
                 if user_accepted_tos:
@@ -75,8 +78,11 @@ def login_view(request):
                 errors.append('Username and/or password were invalid.')
     else:
         form = LoginForm()
-    return render_to_response('landing/login.html',
-        locals(), context_instance=RequestContext(request))
+    return render_to_response(
+        'landing/login.html',
+        locals(),
+        context_instance=RequestContext(request),
+    )
 
 
 def password_set(request, uidb64=None, token=None):
@@ -119,8 +125,11 @@ def password_reset_confirm(request, uidb64=None, token=None):
 
 
 def password_reset_complete(request):
-    return render_to_response("landing/password_reset_complete.html",
-        {}, context_instance=RequestContext(request))
+    return render_to_response(
+        "landing/password_reset_complete.html",
+        {},
+        context_instance=RequestContext(request),
+    )
 
 
 def signup(request, uidb64=None, token=None):

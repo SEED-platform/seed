@@ -6,8 +6,8 @@ import regex
 from django.db.models import Q
 
 #
-## For Reconciliation between data sets.
-###
+# For Reconciliation between data sets.
+#
 
 ADDRESS_REGEX = r'(\d*)(?:\s(\w+))+'
 

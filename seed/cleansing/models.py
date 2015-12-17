@@ -3,9 +3,7 @@ import json
 import datetime
 
 from logging import getLogger
-from django.db import models
 from seed.utils.cache import set_cache_raw, get_cache_raw
-from datetime import datetime
 from datetime import date
 
 logger = getLogger(__name__)

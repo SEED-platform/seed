@@ -43,6 +43,4 @@ PortfolioRaw_to_BuildingSnapshot = (
     (u'third_party_certification', u'building_certification'),
 )
 
-BuildingSnapshot_to_BuildingSnapshot = (
-    #(u'import_records', map_import_records),
-) + tuple([(k, k) for k in get_mappable_columns()])
+BuildingSnapshot_to_BuildingSnapshot = tuple([(k, k) for k in get_mappable_columns()])

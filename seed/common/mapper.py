@@ -16,6 +16,7 @@ _log = logging.getLogger(__name__)
 
 LINEAR_UNITS = set([u'ft', u'm', u'in'])  # ??more??
 
+
 def get_pm_mapping(version, columns, include_none=False):
     """Create and return Portfolio Manager (PM) mapping for
     a given version of PM and the given list of column names.
@@ -40,16 +41,18 @@ def get_pm_mapping(version, columns, include_none=False):
         elif include_none:
             result[col] = None
         else:
-            pass # nothing added to result
+            pass  # nothing added to result
     _log.debug("get_pm_mapping: result={}".format(
-        '\n'.join(['{:40s} => {}'.format(k[:40],v) for k,v in result.iteritems()])))
+        '\n'.join(['{:40s} => {}'.format(k[:40], v) for k, v in result.iteritems()])))
 
     return result
+
 
 class Programs(object):
     """Enumeration of program names.
     """
     PM = "PortfolioManager"
+
 
 class MappingConfiguration(object):
     """Factory for creating Mapping objects
@@ -85,13 +88,14 @@ class MappingConfiguration(object):
                 return f['file']
         return None
 
+
 class Mapping(object):
     """Mapping from one set of fields to another.
     The mapping can be many:1.
     The lookup may be by static string or regular expression.
     """
-    META_BEDES = 'bedes' # BEDES-compliant flag
-    META_TYPE = 'type'   # Type value
+    META_BEDES = 'bedes'  # BEDES-compliant flag
+    META_TYPE = 'type'  # Type value
     META_NUMERIC = 'numeric'  # Is-numeric
 
     def __init__(self, fileobj, encoding=None, regex=False, spc_or_underscore=True,
@@ -128,8 +132,8 @@ class Mapping(object):
             self._transforms.append(self._fix_superscripts)
         if normalize_units:
             self._transforms.append(self._normalize_units)
-        if self._regex and not regex: # input is literal
-            self._transforms.append(self._re_escape) # so escape it first
+        if self._regex and not regex:  # input is literal
+            self._transforms.append(self._re_escape)  # so escape it first
         if spc_or_underscore:
             self._transforms.append(self._space_or_underscore)
 
@@ -197,7 +201,9 @@ class Mapping(object):
                 matched[key] = r
         return matched, nomatch
 
-    ## --- Transforms ----
+    #
+    # --- Transforms ----
+    #
 
     def _to_unicode(self, key):
         if isinstance(key, unicode):
@@ -226,12 +232,12 @@ class Mapping(object):
         """
         found = False
         for pfx in LINEAR_UNITS:
-            if not pfx in key:
+            if pfx not in key:
                 continue
             for (sfx, repl) in ('_', '2'), ('^2', '2'), ('^3', '3'):
                 s = pfx + sfx
                 p = key.find(s)
-                if p >= 0: # yes, the unit has a dimension
+                if p >= 0:  # yes, the unit has a dimension
                     key = key[:p + len(pfx)] + repl + key[p + len(s):]
                     found = True
                     break
@@ -249,8 +255,7 @@ class Mapping(object):
            "foo  bar__baz" -> "foo( |_)+bar( |_)+baz"
         """
         key = key.replace('_', ' ').replace('  ', ' ')
-        return key.replace(' ','( |_)+')
-
+        return key.replace(' ', '( |_)+')
 
 
 class MapItem(object):

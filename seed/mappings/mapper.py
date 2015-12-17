@@ -86,6 +86,7 @@ def merge_extra_data(b1, b2, default=None):
 
     return extra_data, extra_data_sources
 
+
 def merge_building(
     snapshot, b1, b2, can_attrs, conf, default=None, match_type=None
 ):
@@ -113,13 +114,13 @@ def merge_building(
         if len(attr_values) > 1:
             # If we have more than one value for this field,
             # save each of the field options in the DB,
-            # but opt for the default when there is a difference.            
+            # but opt for the default when there is a difference.
             save_variant(snapshot, attr, can_attrs[attr])
             attr_source = default
             attr_value = can_attrs[attr][default]
-            
+
             if attr_values[0] != attr_values[1]:
-                changes.append({"field" : attr, "from" : attr_values[0], "to": attr_values[1]})
+                changes.append({"field": attr, "from": attr_values[0], "to": attr_values[1]})
 
         # No values are set
         elif len(attr_values) < 1:
@@ -139,7 +140,7 @@ def merge_building(
             attr(snapshot, default)
         else:
             setattr(snapshot, attr, attr_value)
-            setattr(snapshot, '{0}_source'.format(attr), attr_source)            
+            setattr(snapshot, '{0}_source'.format(attr), attr_source)
 
     snapshot.extra_data, snapshot.extra_data_sources = merge_extra_data(
         b1, b2, default=default
