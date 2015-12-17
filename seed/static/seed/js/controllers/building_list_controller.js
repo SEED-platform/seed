@@ -65,7 +65,7 @@ angular.module('BE.seed.controller.building_list', [])
     * SEARCH CODE
     */
 
-    /* Called by 'Update Filters' click in buidings list UI */
+    /* Called by 'Update Filters' click in buildings list UI */
     $scope.do_update_buildings_filters = function(){
         $scope.search.deselect_all_buildings();
         refresh_search();
