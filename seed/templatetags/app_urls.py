@@ -10,6 +10,7 @@ from djangular.core.urlresolvers import urls_by_namespace
 
 register = template.Library()
 
+
 @register.simple_tag
 def namespaced_urls():
     """returns all namespaced urls (see urls_by_namespace) into a json object.
