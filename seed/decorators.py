@@ -16,8 +16,9 @@ PROGRESS_CACHE_PREFIX = SEED_CACHE_PREFIX + ':PROG'
 
 FORMAT_TYPES = {
     'application/json': lambda response: json.dumps(response, cls=DjangoJSONEncoder),
-    'text/json':        lambda response: json.dumps(response, cls=DjangoJSONEncoder),
+    'text/json': lambda response: json.dumps(response, cls=DjangoJSONEncoder),
 }
+
 
 def _get_cache_key(prefix, import_file_pk):
     """Makes a key like 'SEED:save_raw_data:LOCK:45'."""
@@ -101,7 +102,7 @@ def ajax_request(func):
         # determine the status code if the object is a dictionary
         status_code = 200
         if isinstance(response, dict):
-            if response.get('status') == 'error' or response.get('success') == False:
+            if response.get('status') == 'error' or response.get('success') is False:
                 status_code = 400
 
         # convert the response into an HttpResponse if it is not already.
