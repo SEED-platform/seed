@@ -72,7 +72,7 @@ angular.module('BE.seed.controller.building_list', [])
     };
 
     /* Called by 'Update Filters' click in projects buildings list UI */
-    $scope.do_update_projects_filters = function(){
+    $scope.do_update_project_buildings_filters = function(){
         $scope.search.deselect_all_buildings();
         refresh_search();
     };
