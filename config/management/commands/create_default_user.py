@@ -7,8 +7,9 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 
 # app
+from seed.utils.organizations import create_organization
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization
 
 
 class Command(BaseCommand):
@@ -55,20 +56,20 @@ class Command(BaseCommand):
             )
             self.stdout.write('Created!', ending='\n')
 
-        org, created = Organization.objects.get_or_create(
-            name=options['organization'])
-        if created:
+        if Organization.objects.filter(name=options['organization']).exists():
+            org, _, _ = create_organization(u, options['organization'])
+            self.stdout.write(
+                'Org <%s> aleady exists' % options['organization'], ending='\n'
+            )
+        else:
+            org, _, user_added = create_organization(u, options['organization'])
             self.stdout.write(
                 'Creating org <%s> ... Created!' % options['organization'],
                 ending='\n'
             )
-        else:
-            self.stdout.write(
-                'Org <%s> aleady exists' % options['organization'], ending='\n'
-            )
+            if user_added:
+                self.stdout.write(
+                    'Creating org user ...', ending=' '
+                )
 
-        self.stdout.write(
-            'Creating org user ...', ending=' '
-        )
-        OrganizationUser.objects.create(user=u, organization=org)
         self.stdout.write('Created!', ending='\n')
