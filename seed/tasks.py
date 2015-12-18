@@ -553,7 +553,7 @@ def map_row_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwa
         )
 
         if model.tax_lot_id:
-            model.tax_lot_id = _normalize_tax_lot_id(model.tax_lot_id)
+            model.tax_lot_id = _normalize_tax_lot_id(str(model.tax_lot_id))
 
         model.import_file = import_file
         model.source_type = save_type
