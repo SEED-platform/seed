@@ -59,7 +59,11 @@ angular.module('BE.seed.controller.building_list', [])
     $scope.assessor_fields = [];
     $scope.create_project_error = false;
     $scope.create_project_error_message = "";
+    $scope.selected_existing_project = null;
     
+    $scope.$watch('project', function(newValue, oldValue) {
+      $log.debug("project changed to ", newValue);
+    });
 
     /**
     * SEARCH CODE
@@ -188,6 +192,17 @@ angular.module('BE.seed.controller.building_list', [])
     /**
      * PROJECTS CODE
      */
+
+    $scope.begin_add_buildings_to_new_project = function() {
+        $scope.set_initial_project_state();
+    };
+
+    $scope.begin_add_buildings_to_existing_project = function(){
+        $scope.selected_existing_project = null;
+        $scope.create_project_state='create';
+    };
+
+
     $scope.nothing_selected = function() {
         if ($scope.search.selected_buildings.length === 0 &&
             $scope.search.select_all_checkbox === false) {

@@ -38,12 +38,12 @@
                     <li ng-hide="menu.user.organization.user_role === 'viewer'">
                         <a  data-toggle="modal" 
                             data-target="#newProjectModal" 
-                            ng-click="set_initial_project_state()">
+                            ng-click="begin_add_buildings_to_new_project()">
                             Create a new project</a></li>
                     <li ng-hide="menu.user.organization.user_role === 'viewer'">
                         <a  data-toggle="modal" 
                             data-target="#existingProjectModal" 
-                            ng-click="create_project_state='create'">
+                            ng-click="begin_add_buildings_to_existing_project()">
                             Add to an existing project</a></li>
                     <li ng-hide="menu.user.organization.user_role === 'viewer'">
                         <a ng-click="open_delete_modal()">Delete Buildings</a></li>
@@ -209,7 +209,10 @@
         <div class="form-group" ng-show="create_project_state == 'create'">
             <label class="sr-only" for="projectName">Project Name</label>
             <div class="col-sm-8">
-                <select class="form-control" id="existingProjectName" ng-options="p as p.name for p in projects" ng-model="project"></select>
+                <select class="form-control" 
+                        id="existingProjectName" 
+                        ng-options="p as p.name for p in projects" 
+                        ng-model="selected_existing_project"></select>
             </div>
         </div>
         <div class="col-sm-7" ng-show="create_project_state == 'adding'">
@@ -231,7 +234,7 @@
                 Cancel</button>
         <button type="button" 
                 class="btn btn-primary" 
-                ng-click="add_buildings(project.slug)" 
+                ng-click="add_buildings(selected_existing_project.slug)" 
                 ng-show="create_project_state == 'create'">
                 Add to Project</button>
         <button type="button" 
