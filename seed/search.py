@@ -193,11 +193,11 @@ def filter_other_params(queryset, other_params, db_columns):
                 parts = search_utils.STRING_EXPRESSION_REGEX.findall(v)
                 query_filters &= search_utils.parse_expression(k, parts)
             elif ('__lt' in k or
-                          '__lte' in k or
-                          '__gt' in k or
-                          '__gte' in k or
-                          '__isnull' in k or
-                          k == 'import_file_id' or k == 'source_type'):
+                  '__lte' in k or
+                  '__gt' in k or
+                  '__gte' in k or
+                  '__isnull' in k or
+                  k == 'import_file_id' or k == 'source_type'):
                 query_filters &= Q(**{"%s" % k: v})
             elif k == 'canonical_building__labels':
                 for l in v:
@@ -221,7 +221,8 @@ def filter_other_params(queryset, other_params, db_columns):
                 # Filter for records that DO NOT contain this field OR
                 # contain a blank value for this field.
                 queryset = queryset.filter(
-                    Q(**{'extra_data__at_%s__isnull' % k: True}) | Q(**{'extra_data__at_%s' % k: ''})
+                    Q(**{'extra_data__at_%s__isnull' % k: True}) |
+                    Q(**{'extra_data__at_%s' % k: ''})
                 )
                 continue
             elif not_empty_match:

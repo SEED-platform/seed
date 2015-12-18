@@ -449,12 +449,11 @@ def get_adding_buildings_to_project_status_percentage(request):
     project_loading_cache_key = body.get('project_loading_cache_key')
 
     try:
-      progress_object = get_cache(project_loading_cache_key)
+        progress_object = get_cache(project_loading_cache_key)
     except:
-      msg = "Couldn't find project loading key %s in cache " % project_loading_cache_key
-      _log.error(msg)
-      raise Exception(msg) 
-
+        msg = "Couldn't find project loading key %s in cache " % project_loading_cache_key
+        _log.error(msg)
+        raise Exception(msg)
 
     return {
         'status': 'success',

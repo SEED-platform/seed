@@ -85,9 +85,9 @@ class UpdateBuildingLabelsAPIView(generics.GenericAPIView):
             {
                 "add_label_ids": {array}            Array of label ids to apply to selected buildings
                 "remove_label_ids": {array}         Array of label ids to remove from selected buildings
-                "buildings": {array}                Array of building ids to apply/remove labels. (this will be empty or null if select_all_checkbox is true),
+                "buildings": {array}                Array of building ids to apply/remove labels. (this will be empty or null if select_all_checkbox is true),  # NOQA
                 "select_all_checkbox": {boolean},   Whether select all checkbox was selected on building list
-                "filter_params": {object}           A 'filter params' object containing key/value pairs for selected filters
+                "filter_params": {object}           A 'filter params' object containing key/value pairs for selected filters  # NOQA
                 "org_id": {integer}                 The user's org ID
             }
 

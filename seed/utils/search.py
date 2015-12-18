@@ -1,6 +1,6 @@
 """
 Utility functions for searching
-:copyright (c) 2015, The Regents of the University of California, Department of Energy contract-operators of the Lawrence Berkeley National Laboratory.
+:copyright (c) 2015, The Regents of the University of California, Department of Energy contract-operators of the Lawrence Berkeley National Laboratory.  # NOQA
 :author Piper Merriam
 """
 import re

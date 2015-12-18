@@ -63,8 +63,8 @@ def get_all_urls(urllist, prefix=''):
         else:
             yield (prefix + entry.regex.pattern, entry.callback)
 
-#API endpoint decorator
-#simple list of all 'registered' endpoints
+# API endpoint decorator
+# simple list of all 'registered' endpoints
 endpoints = []
 
 
@@ -75,7 +75,7 @@ def api_endpoint(fn):
     Decorator must be used before login_required or has_perm to set
     request.user for those decorators.
     """
-    #mark this function as an api endpoint for get_api_endpoints to find
+    # mark this function as an api endpoint for get_api_endpoints to find
     fn.is_api_endpoint = True
     global endpoints
     endpoints.append(fn)
@@ -117,7 +117,7 @@ def get_api_request_user(request):
     if not auth_header:
         return False
     try:
-        #late import
+        # late import
         from seed.landing.models import SEEDUser as User
         username, api_key = auth_header.split(':')
         return User.objects.get(api_key=api_key, username=username)

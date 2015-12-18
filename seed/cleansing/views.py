@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from seed.cleansing.models import Cleansing
 from seed.decorators import ajax_request
 from seed.utils.api import api_endpoint
+from seed.decorators import get_prog_key
 
 
 # TODO The API is returning on both a POST and GET. Make sure to authenticate.
@@ -44,7 +45,7 @@ def get_progress(request):
     """
 
     import_file_id = request.GET.get('import_file_id')
-    return get_cache(get_prog_key(import_file_id))['progress']
+    return get_cache(get_prog_key('get_progress', import_file_id))['progress']
 
 
 @api_endpoint
@@ -68,7 +69,14 @@ def get_csv(request):
             field = result['field']
             if field in Cleansing.ASSESSOR_FIELDS_BY_COLUMN:
                 field = Cleansing.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
-            writer.writerow([row['address_line_1'], row['pm_property_id'], row['tax_lot_id'], row['custom_id_1'], field,
-                             result['message'], result['severity']])
+            writer.writerow([
+                row['address_line_1'],
+                row['pm_property_id'],
+                row['tax_lot_id'],
+                row['custom_id_1'],
+                field,
+                result['message'],
+                result['severity']
+            ])
 
     return response

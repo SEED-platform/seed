@@ -1,12 +1,12 @@
 import os
 import json
-import datetime
 
 from logging import getLogger
-from django.db import models
 from seed.utils.cache import set_cache_raw, get_cache_raw
-from datetime import datetime
-from datetime import date
+from datetime import (
+    date,
+    datetime,
+)
 
 logger = getLogger(__name__)
 
@@ -14,8 +14,9 @@ logger = getLogger(__name__)
 class Cleansing:
     def __init__(self, *args, **kwargs):
         """
-        Initialize the Cleansing class. Right now this class will not need to save anything to the database. It is
-        simply loading the rules from the JSON file upon initialization.
+        Initialize the Cleansing class. Right now this class will not need to
+        save anything to the database. It is simply loading the rules from the
+        JSON file upon initialization.
 
         :param args:
         :param kwargs:
@@ -40,7 +41,8 @@ class Cleansing:
     @staticmethod
     def initialize_cache(file_pk):
         """
-        Initialize the cache for storing the results. This is called before the celery tasks are chunked up.
+        Initialize the cache for storing the results. This is called before the
+        celery tasks are chunked up.
 
         :param file_pk: Import file primary key
         :return:
@@ -66,7 +68,8 @@ class Cleansing:
         """
 
         for datum in data:
-            # Initialize the ID if it doesn't exist yet. Add in the other fields that are of interest to the GUI
+            # Initialize the ID if it doesn't exist yet. Add in the other
+            # fields that are of interest to the GUI
             if datum.id not in self.results:
                 self.results[datum.id] = {}
                 self.results[datum.id]['id'] = datum.id
@@ -99,7 +102,8 @@ class Cleansing:
 
     def missing_matching_field(self, datum):
         """
-        Look for fields in the database that are not matched. Missing is defined as a None in the database
+        Look for fields in the database that are not matched. Missing is
+        defined as a None in the database
 
         :param datum: Database record containing the BS version of the fields populated
         :return: None
@@ -129,10 +133,11 @@ class Cleansing:
 
     def missing_values(self, datum):
         """
-        Look for fields in the database that are empty. Need to know the list of fields that are part of the
-        cleansing section.
+        Look for fields in the database that are empty. Need to know the list
+        of fields that are part of the cleansing section.
 
-        The original intent of this method would be very intensive to run (looking at all fields except the ignored).
+        The original intent of this method would be very intensive to run
+        (looking at all fields except the ignored).
         This method was changed to check for required values.
 
         :param datum: Database record containing the BS version of the fields populated
@@ -219,7 +224,9 @@ class Cleansing:
 
     def data_type_check(self, datum):
         """
-        Check the data types of the fields. These should never be wrong as these are the data in the database.
+        Check the data types of the fields. These should never be wrong as
+        these are the data in the database.
+
         This chunk of code is currently ignored.
 
         :param datum: Database record containing the BS version of the fields populated
@@ -241,22 +248,24 @@ class Cleansing:
                     self.results[datum.id]['cleansing_results'].append(
                         {
                             'field': field,
-                            'message': 'Value ' + str(value) + ' is not a recognized ' + field_data_type + ' format',
+                            'message': 'Value ' + str(value) + ' is not a recognized ' + field_data_type + ' format',  # NOQA
                             'severity': 'error'
                         }
                     )
 
     def save_to_cache(self, file_pk):
         """
-        Save the results to the cache database. The data in the cache are stored as a list of dictionaries. The data in
-        this class are stored as a dict of dict. This is important to remember because the data from the cache cannot
-        be simply loaded into the above structure.
+        Save the results to the cache database. The data in the cache are
+        stored as a list of dictionaries. The data in this class are stored as
+        a dict of dict. This is important to remember because the data from the
+        cache cannot be simply loaded into the above structure.
 
         :param file_pk: Import file primary key
         :return: None
         """
 
-        # change the format of the data in the cache. Make this a list of objects instead of object of objects.
+        # change the format of the data in the cache. Make this a list of
+        # objects instead of object of objects.
         existing_results = get_cache_raw(Cleansing.cache_key(file_pk))
 
         l = []
@@ -428,4 +437,4 @@ class Cleansing:
 
     ASSESSOR_FIELDS_BY_COLUMN = {
         field['sort_column']: field for field in ASSESSOR_FIELDS
-        }
+    }

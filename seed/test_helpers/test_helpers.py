@@ -405,14 +405,6 @@ class Factory(DjangoFunctionalFactory):
         return u, p
 
     @classmethod
-    def userprofile(cls):
-        u, p = cls.user()
-        up = u.get_profile()
-        up.preferred_phone_number = cls.rand_phone()
-        up.save()
-        return up, p
-
-    @classmethod
     def site(cls, portfolio=None, floor_area="undefined", state="undefined", **kwargs):
         if not portfolio:
             portfolio = cls.portfolio()
@@ -509,7 +501,7 @@ class Factory(DjangoFunctionalFactory):
     @classmethod
     def import_record(cls, userprofile=None, num_files=None, **kwargs):
         if not userprofile:
-            userprofile, password = cls.userprofile()
+            userprofile, password = cls.user()
         if not num_files:
             num_files = cls.rand_int(start=2, end=10)
         record = ImportRecord.objects.create(

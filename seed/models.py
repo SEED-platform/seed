@@ -124,8 +124,8 @@ ENERGY_UNITS = (
 )
 
 #
-## Used in ``tasks.match_buildings``
-###
+# Used in ``tasks.match_buildings``
+#
 
 
 def get_ancestors(building):
@@ -401,8 +401,8 @@ def unmatch_snapshot_tree(building_pk):
     # create CanonicalBuilding for coparent that is about to be
     # unmatched
     if (
-                not root_coparent.canonical_building or
-                    root_coparent.canonical_building is root.canonical_building
+            not root_coparent.canonical_building or
+            root_coparent.canonical_building is root.canonical_building
     ):
         new_canon = CanonicalBuilding.objects.create(
             canonical_snapshot=root_coparent
@@ -457,7 +457,9 @@ def unmatch_snapshot_tree(building_pk):
     bachelor = root
     newborn_child = None
     for bereaved_parent in coparents_to_keep:
-        newborn_child, _ = save_snapshot_match(bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk)
+        newborn_child, _ = save_snapshot_match(
+            bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk,
+        )
         bachelor = newborn_child
 
     # set canonical_snapshot for root's canonical building
@@ -1296,14 +1298,15 @@ class BuildingSnapshot(TimeStampedModel):
         'BuildingSnapshot', related_name='+', null=True, blank=True
     )
 
-    #Need a field to indicate that a record is a duplicate of another.  Mainly used for cleaning up.
+    # Need a field to indicate that a record is a duplicate of another.  Mainly
+    # used for cleaning up.
     duplicate = models.ForeignKey(
         'BuildingSnapshot', related_name='+', null=True, blank=True
     )
 
     #
-    ## Meta Data
-    ###
+    # Meta Data
+    #
 
     children = models.ManyToManyField(
         'BuildingSnapshot',
@@ -1338,8 +1341,8 @@ class BuildingSnapshot(TimeStampedModel):
     )
 
     #
-    ## JSON data
-    ###
+    # JSON data
+    #
 
     # 'key' -> 'value'
     extra_data = JsonField(default={})
@@ -1386,7 +1389,7 @@ class BuildingSnapshot(TimeStampedModel):
             self.postal_code = self.postal_code[:255]
         if self.state_province and isinstance(self.state_province, types.StringTypes):
             self.state_province = self.state_province[:255]
-        if self.building_certification and isinstance(self.building_certification, types.StringTypes):
+        if self.building_certification and isinstance(self.building_certification, types.StringTypes):  # NOQA
             self.building_certification = self.building_certification[:255]
 
         super(BuildingSnapshot, self).save(*args, **kwargs)
@@ -1524,8 +1527,10 @@ class BuildingSnapshot(TimeStampedModel):
 
 
 class NonCanonicalProjectBuildings(models.Model):
-    """Holds a reference to all project buildings that do not point at a canonical building snapshot."""
+    """Holds a reference to all project buildings that do not point at a
+    canonical building snapshot."""
     projectbuilding = models.ForeignKey(ProjectBuilding, primary_key=True)
+
 
 class AttributeOption(models.Model):
     """Holds a single conflicting value for a BuildingSnapshot attribute."""

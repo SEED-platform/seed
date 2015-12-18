@@ -14,6 +14,7 @@ from . import mapper
 # use this to recognize when to remove from mapping
 REMOVE_KEY = "REMOVE"
 
+
 def create_map(path_in, path_out):
     """Create a JSON mapping file, suitable for `map.Mapping()`,
     from a CSV input file in our own custom style.
@@ -35,27 +36,24 @@ def create_map(path_in, path_out):
         meta = {bedes_flag: True}
         if len(row[1]) > 0:
             if row[1] == REMOVE_KEY:
-                continue # don't map this
+                continue  # don't map this
             value = row[1]
         elif len(row[0]) > 0:
             value = row[0]
             meta[bedes_flag] = False
         else:
-            value = None # will use PM value
+            value = None  # will use PM value
             meta[bedes_flag] = False
         meta[mapper.Mapping.META_TYPE] = row[4]
         for key in row[2], row[3]:
             if len(key) > 0:
-                if value is None:
-                    field = key
-                else:
-                    field = value
                 map[key] = [value, meta]
     if path_out == '-':
         outfile = sys.stdout
     else:
         outfile = open(path_out, "w")
     json.dump(map, outfile, encoding='latin_1')
+
 
 def apply_map(map_path, data_path, out_file):
     """Apply a JSON mapping to data, and write the output.
@@ -85,11 +83,11 @@ def apply_map(map_path, data_path, out_file):
     try:
         json.dump(d, out_file, ensure_ascii=True)
     except:
-        #print("** Error: While writing:\n{}".format(d))
+        # print("** Error: While writing:\n{}".format(d))
         pass
     # write stats
     print("Mapped {} fields: {} OK and {} did not match".format(
-        len(input_fields),  len(matched), len(nomatch)))
+        len(input_fields), len(matched), len(nomatch)))
 
 
 def find_duplicates(map_path, data_path, out_file):
@@ -113,11 +111,11 @@ def find_duplicates(map_path, data_path, out_file):
         if value is None:
             continue
         dst = value.field
-        if dst in seen_values: # this is a duplicate
-            if src in dup: # we already have >= 1 duplicates
+        if dst in seen_values:  # this is a duplicate
+            if src in dup:  # we already have >= 1 duplicates
                 # add new duplicate to list
                 dup[dst].append(src)
-            else: # first duplicate
+            else:  # first duplicate
                 # add both keys to list
                 seen_key = seen_values[dst]
                 dup[dst] = [seen_key, src]
@@ -126,5 +124,10 @@ def find_duplicates(map_path, data_path, out_file):
     # print results
     for value, keys in dup.items():
         keylist = ' | '.join(keys)
-        out_file.write("({n:d}) {v}: {kl}\n".format(n=len(keys), v=value,
-                                                        kl=keylist))
+        out_file.write(
+            "({n:d}) {v}: {kl}\n".format(
+                n=len(keys),
+                v=value,
+                kl=keylist,
+            ),
+        )

@@ -7,8 +7,8 @@ import datetime
 import time
 import re
 import string
-import operator
 import traceback
+import operator
 from _csv import Error
 from dateutil import parser
 from django.core.mail import send_mail
@@ -20,8 +20,10 @@ from django.db.models import Q
 from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse_lazy
 from celery import chord
-import usaddress
+from celery import shared_task
 from celery.utils.log import get_task_logger
+from seed.decorators import get_prog_key
+import usaddress
 from seed.audit_logs.models import AuditLog
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm import cleaners, mapper, reader
@@ -55,16 +57,23 @@ from seed.models import (
     Compliance,
     Project,
     ProjectBuilding,
+    BuildingSnapshot,
 )
 from seed.decorators import lock_and_track
 from seed.utils.buildings import get_source_type, get_search_query
-from seed.utils.cache import set_cache_raw, set_cache, increment_cache, get_cache
+from seed.utils.cache import set_cache, increment_cache, get_cache
 from seed.utils.mapping import get_mappable_columns
 from seed.lib.superperms.orgs.models import Organization
 from seed.lib.exporter import Exporter
-from seed.cleansing.tasks import *
+from seed.cleansing.models import Cleansing
+from seed.cleansing.tasks import (
+    finish_cleansing,
+    cleanse_data_chunk,
+)
 
-#logger = get_task_logger(__name__)
+
+logger = get_task_logger(__name__)
+
 
 # Maximum number of possible matches under which we'll allow a system match.
 MAX_SEARCH = 5
@@ -96,7 +105,7 @@ def export_buildings(export_id, export_name, export_type,
         _row_cb(-1)  # this means there was an error
         return
 
-    file = exporter.export(selected_buildings, selected_fields, _row_cb)
+    exporter.export(selected_buildings, selected_fields, _row_cb)
     # file return value is not used
 
     _row_cb(selected_buildings.count())  # means we're done!
@@ -180,12 +189,12 @@ def add_buildings(project_slug, project_dict, user_pk):
             denominator = len(selected_buildings)
             try:
                 data = {
-                        'status': 'processing',
-                        'progress': (float(i) / len(selected_buildings) * 100),
-                        'progress_key': prog_key,
-                        'numerator': i,
-                        'denominator': denominator
-                    }
+                    'status': 'processing',
+                    'progress': (float(i) / len(selected_buildings) * 100),
+                    'progress_key': prog_key,
+                    'numerator': i,
+                    'denominator': denominator
+                }
                 set_cache(prog_key, data['status'], data)
             except ZeroDivisionError:
                 pass
@@ -368,12 +377,14 @@ def remove_buildings(project_slug, project_dict, user_pk):
 
 
 #
-## New MCM tasks for importing ESPM data.
-###
+# New MCM tasks for importing ESPM data.
+#
 
 def add_cache_increment_parameter(tasks):
     """This adds the cache increment value to the signature to each subtask."""
-    """This is a really weird way to handle this, it adds the argument after the methods have been added to the tasks list"""
+    """This is a really weird way to handle this, it adds the argument after the
+    methods have been added to the tasks list
+    """
     denom = len(tasks) or 1
     increment = 1.0 / denom * 100
     # This is kind of terrible. Once we know how much progress each task
@@ -605,20 +616,22 @@ def _map_data(file_pk, *args, **kwargs):
         serialized_data = [obj.extra_data for obj in chunk]
         tasks.append(map_row_chunk.s(serialized_data, file_pk, source_type, prog_key))
 
-    # need to rework how the progress keys are implemented here, but at least the method gets called above for cleansing
+    # need to rework how the progress keys are implemented here, but at least
+    # the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
     if tasks:
         chord(tasks, interval=15)(finish_mapping.subtask([file_pk]))
     else:
         finish_mapping.subtask(file_pk)
 
+
 @shared_task
 @lock_and_track
 def _cleanse_data(file_pk):
     """
 
-    Get the mapped data and run the cleansing class against it in chunks. The mapped data are pulled from the
-    BuildingSnapshot table.
+    Get the mapped data and run the cleansing class against it in chunks. The
+    mapped data are pulled from the BuildingSnapshot table.
 
     @lock_and_track returns a progress_key
 
@@ -633,8 +646,11 @@ def _cleanse_data(file_pk):
         'Green Button Raw': GREEN_BUTTON_BS,
     }
 
-    # This is non-ideal, but the source type of the input file is never updated, but the data are stages as if it were.
-    # After the mapping stage occurs, the data end up in the BuildingSnapshot table under the *_BS value.
+    # This is non-ideal, but the source type of the input file is never
+    # updated, but the data are stages as if it were.
+    #
+    # After the mapping stage occurs, the data end up in the BuildingSnapshot
+    # table under the *_BS value.
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_BS)
     qs = BuildingSnapshot.objects.filter(
         import_file=import_file,
@@ -651,7 +667,8 @@ def _cleanse_data(file_pk):
         ids = [obj.id for obj in chunk]
         tasks.append(cleanse_data_chunk.s(ids, file_pk))  # note that increment will be added to end
 
-    # need to rework how the progress keys are implemented here, but at least the method gets called above for cleansing
+    # need to rework how the progress keys are implemented here, but at least
+    # the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
     if tasks:
         chord(tasks, interval=15)(finish_cleansing.subtask([file_pk]))
@@ -718,7 +735,6 @@ def finish_raw_save(results, file_pk):
         'progress_key': prog_key
     }
     set_cache(prog_key, result['status'], result)
-    temp = get_cache(prog_key)
     logger.debug('Returning from finish_raw_save')
     return result
 
@@ -851,7 +867,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
         logger.debug('Added caching increment')
         if tasks:
             logger.debug('Adding chord to queue')
-            a = chord(tasks, interval=15)(finish_raw_save.s(file_pk))
+            chord(tasks, interval=15)(finish_raw_save.s(file_pk))
         else:
             logger.debug('Skipped chord')
             finish_raw_save.s(file_pk)
@@ -928,14 +944,20 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
     building_pk = unmatched_list[b_idx][0]  # First element is PK
 
     bs, changes = save_snapshot_match(
-        can_snap_pk, building_pk, confidence=confidence, match_type=match_type, default_pk=building_pk
+        can_snap_pk,
+        building_pk,
+        confidence=confidence,
+        match_type=match_type,
+        default_pk=building_pk,
     )
     canon = bs.canonical_building
     action_note = 'System matched building.'
     if changes:
         action_note += "  Fields changed in cannonical building:\n"
         for change in changes:
-            action_note += "\t{field}:\t".format(field=change["field"].replace("_", " ").replace("-", "").capitalize())
+            action_note += "\t{field}:\t".format(
+                field=change["field"].replace("_", " ").replace("-", "").capitalize(),
+            )
             if "from" in change:
                 action_note += "From:\t{prev}\tTo:\t".format(prev=change["from"])
 
@@ -953,7 +975,8 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
 @shared_task
 @lock_and_track
 def match_buildings(file_pk, user_pk):
-    """kicks off system matching, returns progress key #NL -- this seems to return a JSON--not a progress key?"""
+    """kicks off system matching, returns progress key #NL -- this seems to
+    return a JSON--not a progress key?"""
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
     if import_file.matching_done:
@@ -962,7 +985,6 @@ def match_buildings(file_pk, user_pk):
             'message': 'matching already complete',
             'progress_key': prog_key
         }
-        set_cache(prog_key, result['status'], result)
 
     if not import_file.mapping_done:
         # Re-add to the queue, hopefully our mapping will be done by then.
@@ -1222,17 +1244,17 @@ def _normalize_address_str(address_val):
             normalized_address = _normalize_address_number(addr['AddressNumber'])
 
         if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
-            normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePreDirectional'])
+            normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePreDirectional'])  # NOQA
 
         if 'StreetName' in addr and addr['StreetName'] is not None:
             normalized_address = normalized_address + ' ' + addr['StreetName']
 
         if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
             # remove any periods from abbreviations
-            normalized_address = normalized_address + ' ' + _normalize_address_post_type(addr['StreetNamePostType'])
+            normalized_address = normalized_address + ' ' + _normalize_address_post_type(addr['StreetNamePostType'])  # NOQA
 
         if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
-            normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePostDirectional'])
+            normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePostDirectional'])  # NOQA
 
         formatter = StreetAddressFormatter()
         normalized_address = formatter.abbrev_street_avenue_etc(normalized_address)
@@ -1257,11 +1279,9 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
 def _match_buildings(file_pk, user_pk):
     """ngram search against all of the canonical_building snapshots for org."""
     #     assert True
-    min_threshold = settings.MATCH_MIN_THRESHOLD
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
     org = Organization.objects.filter(users=import_file.import_record.owner)[0]
-    test = ''
     unmatched_buildings = find_unmatched_buildings(import_file)
 
     duplicates = []
@@ -1293,17 +1313,20 @@ def _match_buildings(file_pk, user_pk):
         return
 
     # here we deal with duplicates
-    unmatched_buildings = unmatched_buildings.exclude(pk__in=duplicates).values_list(*BS_VALUES_LIST)
+    unmatched_buildings = unmatched_buildings.exclude(
+        pk__in=duplicates,
+    ).values_list(*BS_VALUES_LIST)
     if not unmatched_buildings:
         _finish_matching(import_file, prog_key)
         return
-        # here we are going to normalize the addresses to match on address_1 field, this is not ideal because you could match on two locations with same address_1 but different city
+        # here we are going to normalize the addresses to match on address_1
+        # field, this is not ideal because you could match on two locations
+        # with same address_1 but different city
     #     unmatched_normalized_addresses=[]
-
 
     unmatched_normalized_addresses = [
         _normalize_address_str(unmatched[4]) for unmatched in unmatched_buildings
-        ]
+    ]
     # Here we want all the values not related to the BS id for doing comps.
     # dont do this now
     #     unmatched_ngrams = [
@@ -1330,18 +1353,23 @@ def _match_buildings(file_pk, user_pk):
     # This allows us to retrieve the PK for a given NGram after a match.
     can_rev_idx = {
         _normalize_address_str(value[4]): value[0] for value in canonical_buildings
-        }
-    # (SD) This loads up an ngram object with all the canonical buildings. The values are the lists of identifying data for each building
-    # (SD) the stringify is given all but the first item in the values list and it concatenates each item with a space in the middle
+    }
+    # (SD) This loads up an ngram object with all the canonical buildings. The
+    # values are the lists of identifying data for each building
+    #
+    # (SD) the stringify is given all but the first item in the values list and
+    # it concatenates each item with a space in the middle
 
     # we no longer need to
     #     n = ngram.NGram(
     #         [_stringify(values[1:]) for values in canonical_buildings]
     #     )
-    # here we are going to normalize the addresses to match on address_1 field, this is not ideal because you could match on two locations with same address_1 but different city
+    # here we are going to normalize the addresses to match on address_1 field,
+    # this is not ideal because you could match on two locations with same
+    # address_1 but different city
     canonical_buildings_addresses = [
         _normalize_address_str(values[4]) for values in canonical_buildings
-        ]
+    ]
     # For progress tracking
     # sd we now use the address
     #    num_unmatched = len(unmatched_ngrams) or 1

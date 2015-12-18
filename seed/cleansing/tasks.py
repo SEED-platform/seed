@@ -14,7 +14,7 @@ def cleanse_data_chunk(ids, file_pk, increment):
 
     :param ids: list of primary key ids to process
     :param file_pk: import file primary key
-    :param increment: currently unused, but needed because of the special method that appends this onto the function
+    :param increment: currently unused, but needed because of the special method that appends this onto the function  # NOQA
     :return: None
     """
 
@@ -38,8 +38,8 @@ def finish_cleansing(results, file_pk):
 
     prog_key = get_prog_key('cleanse_data', file_pk)
     result = {
-            'status': 'success',
-            'progress': 100,
-            'message': 'cleansing complete'
-        }
+        'status': 'success',
+        'progress': 100,
+        'message': 'cleansing complete'
+    }
     set_cache(prog_key, result['status'], result)

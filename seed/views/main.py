@@ -7,7 +7,6 @@ import logging
 import datetime
 import os
 import uuid
-import traceback
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ImproperlyConfigured
@@ -34,7 +33,6 @@ from seed.models import (
     BuildingSnapshot,
     Column,
     ColumnMapping,
-    Project,
     ProjectBuilding,
     get_ancestors,
     unmatch_snapshot_tree as unmatch_snapshot,
@@ -42,10 +40,9 @@ from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
-    StatusLabel,
 )
 from seed.views.accounts import _get_js_role
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser, ROLE_MEMBER
+from seed.lib.superperms.orgs.models import Organization, ROLE_MEMBER
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
     get_search_query,
@@ -58,7 +55,7 @@ from seed.utils.projects import (
 )
 from seed.utils.time import convert_to_js_timestamp
 from seed.utils.mapping import get_mappable_types, get_mappable_columns
-from seed.utils.cache import get_cache, set_cache, get_cache_raw
+from seed.utils.cache import get_cache, set_cache
 from .. import search
 from seed.lib.exporter import Exporter
 from seed.common import mapper as simple_mapper
@@ -84,8 +81,10 @@ def angular_js_tests(request):
        by ./manage.py harvest
 
     """
-    return render_to_response('seed/jasmine_tests/AngularJSTests.html',
-        locals(), context_instance=RequestContext(request))
+    return render_to_response(
+        'seed/jasmine_tests/AngularJSTests.html',
+        locals(), context_instance=RequestContext(request),
+    )
 
 
 def _get_default_org(user):
@@ -99,9 +98,7 @@ def _get_default_org(user):
     org = user.default_organization
     # check if user is still in the org, i.e. s/he wasn't removed from his/her
     # default org or didn't have a set org and try to set the first one
-    if (not org
-        or not OrganizationUser.objects.filter(organization=org, user=user).exists()
-        ):
+    if (not org or not user.orgs.exists()):
         org = user.orgs.first()
         user.default_organization = org
         user.save()
@@ -142,8 +139,10 @@ def home(request):
         request.user
     )
 
-    return render_to_response('seed/index.html',
-        locals(), context_instance=RequestContext(request))
+    return render_to_response(
+        'seed/index.html',
+        locals(), context_instance=RequestContext(request),
+    )
 
 
 @api_endpoint
@@ -254,7 +253,7 @@ def export_buildings(request):
         # buildings list
         selected_building_ids = [
             x[0] for x in selected_buildings.values_list('pk')
-            ]
+        ]
         selected_buildings = ProjectBuilding.objects.filter(
             project_id=project_id,
             building_snapshot__in=selected_building_ids)
@@ -264,7 +263,7 @@ def export_buildings(request):
         for field in selected_fields:
             components = field.split("__", 1)
             if (components[0] == 'project_building_snapshots'
-                and len(components) > 1):
+                    and len(components) > 1):
                 _selected_fields.append(components[1])
             else:
                 _selected_fields.append("building_snapshot__%s" % field)
@@ -283,7 +282,14 @@ def export_buildings(request):
     }
     set_cache(progress_key, result['status'], result)
 
-    tasks.export_buildings.delay(export_id, export_name, export_type, building_ids, export_model, selected_fields)
+    tasks.export_buildings.delay(
+        export_id,
+        export_name,
+        export_type,
+        building_ids,
+        export_model,
+        selected_fields,
+    )
 
     result = {
         'progress_key': progress_key,
@@ -325,11 +331,13 @@ def export_buildings_progress(request):
     body = json.loads(request.body)
     export_id = body.get('export_id')
     progress_key = "export_buildings__%s" % export_id
+    percent_done = get_cache(progress_key)['progress']
+    total_buildings = get_cache(progress_key)['total_buildings']
     return {
         "success": True,
         "status": "success",
         'total_buildings': get_cache(progress_key)['total_buildings'],
-        "buildings_processed": get_cache(progress_key)['progress'] * get_cache(progress_key)['total_buildings']
+        "buildings_processed": percent_done * total_buildings
     }
 
 
@@ -358,9 +366,10 @@ def export_buildings_download(request):
     body = json.loads(request.body)
     export_id = body.get('export_id')
 
-    # This is non-ideal, it is returning the directory/s3 key and assumes that only one file lives in that
-    # directory. This should really just return the file to be downloaded. Not sure we are doing multiple downloads at
-    # the moment.
+    # This is non-ideal, it is returning the directory/s3 key and assumes that
+    # only one file lives in that directory. This should really just return the
+    # file to be downloaded. Not sure we are doing multiple downloads at the
+    # moment.
     export_subdir = Exporter.subdirectory_from_export_id(export_id)
 
     if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
@@ -373,7 +382,8 @@ def export_buildings_download(request):
                 'status': 'error'
             }
         else:
-            # get the first file in the directory -- which is the first entry of the second part of the tuple
+            # get the first file in the directory -- which is the first entry
+            # of the second part of the tuple
             file_name = os.path.join(export_subdir, files[1][0])
 
             if file_storage.exists(file_name):
@@ -958,29 +968,29 @@ def _parent_tree_coparents(snapshot):
     if called with B9 as the snapshot node (note that B9's
     canonical_building will be C0), then this will return:
     (
-     B0, # root
-     [B0, B1, B3, B5, B8] # parent_coparents
+     B0,  # root
+     [B0, B1, B3, B5, B8]  # parent_coparents
     )
 
     if called with B4, and B4.canonical_building is C0, this
     will return:
     (
-     B0, # root
-     [B0, B1, B3] # parent_coparents
+     B0,  # root
+     [B0, B1, B3]  # parent_coparents
     )
 
     if called with B4, and B4.canonical_building is C1, this
     will return:
     (
-     B3, # root
-     [B2, B3] # parent_coparents
+     B3,  # root
+     [B2, B3]  # parent_coparents
     )
 
     if called with B5 (and B5 has no canonical_building), this
     will use B5's coparent's canonical_building and will return:
     (
-     B0, # root
-     [B0, B1, B3] # parent_coparents
+     B0,  # root
+     [B0, B1, B3]  # parent_coparents
     )
 
     """
@@ -1098,12 +1108,12 @@ def get_PM_filter_by_counts(request):
         import_file__pk=import_file_id,
         source_type__in=[2, 3],
         children__isnull=True,
-        duplicate__isnull = True
+        duplicate__isnull=True
     ).count()
     duplicates = BuildingSnapshot.objects.filter(
         import_file__pk=import_file_id,
         source_type__in=[2, 3],
-        duplicate__isnull = False
+        duplicate__isnull=False
     ).count()
     return {
         'status': 'success',
@@ -1111,6 +1121,7 @@ def get_PM_filter_by_counts(request):
         'unmatched': unmatched,
         'duplicates': duplicates,
     }
+
 
 @api_endpoint
 @ajax_request
@@ -1130,21 +1141,20 @@ def delete_duplicates_from_import_file(request):
     """
     import_file_id = request.GET.get('import_file_id', '')
 
-
     orig_duplicate_ct = BuildingSnapshot.objects.filter(
         import_file__pk=import_file_id,
         source_type__in=[2, 3],
-        duplicate__isnull = False
+        duplicate__isnull=False
     ).count()
     BuildingSnapshot.objects.filter(
         import_file__pk=import_file_id,
         source_type__in=[2, 3],
-        duplicate__isnull = False
+        duplicate__isnull=False
     ).delete()
     new_duplicate_ct = BuildingSnapshot.objects.filter(
         import_file__pk=import_file_id,
         source_type__in=[2, 3],
-        duplicate__isnull = False
+        duplicate__isnull=False
     ).count()
     return {
         'status': 'success',
@@ -1240,8 +1250,8 @@ def get_column_mapping_suggestions(request):
         suggested_mappings = {}
         ver = import_file.source_program_version
 
-        #if there is no pm mapping found but the file has already been matched
-        #then effectively the mappings are already known with a confidence of 100
+        # if there is no pm mapping found but the file has already been matched
+        # then effectively the mappings are already known with a confidence of 100
         no_pm_mappings_confience = 100 if import_file.matching_done else 0
 
         for col, item in simple_mapper.get_pm_mapping(
@@ -1330,7 +1340,7 @@ def get_first_five_rows(request):
     rows = [
         r.split(ROW_DELIMITER)
         for r in import_file.cached_second_to_fifth_row.splitlines()
-        ]
+    ]
 
     return {
         'status': 'success',
@@ -1338,7 +1348,7 @@ def get_first_five_rows(request):
             dict(
                 zip(import_file.first_row_columns, row)
             ) for row in rows
-            ]
+        ]
     }
 
 
@@ -1421,9 +1431,9 @@ def save_column_mappings(request):
         {
             "import_file_id": ID of the ImportFile record,
             "mappings": [
-                ["destination_field": "raw_field"], #direct mapping
+                ["destination_field": "raw_field"],  #direct mapping
                 ["destination_field2":
-                    ["raw_field1", "raw_field2"], #concatenated mapping
+                    ["raw_field1", "raw_field2"],  #concatenated mapping
                 ...
             ]
         }
@@ -1470,7 +1480,7 @@ def save_column_mappings(request):
             [
                 column_mapping.column_mapped.add(dest_col)
                 for dest_col in dest_cols
-                ]
+            ]
 
         column_mapping.user = request.user
         column_mapping.save()
@@ -2126,9 +2136,8 @@ def delete_buildings(request):
     ).update(active=False)
     return {'status': 'success'}
 
-import random
 
-#DMcQ: Test for building reporting
+# DMcQ: Test for building reporting
 
 
 @api_endpoint
@@ -2206,41 +2215,39 @@ def get_building_summary_report_data(request):
 
     """
 
-    #TODO: Generate this data the right way! Will be implemented by Stephen C. The following is just dummy data...
+    # TODO: Generate this data the right way! Will be implemented by Stephen C.
+    # The following is just dummy data...
 
     if request.method != 'GET':
         return HttpResponseBadRequest("This view replies only to GET methods")
 
-
-    #Read in x and y vars requested by client
+    # Read in x and y vars requested by client
     try:
-        orgs = [ request.GET.get('organization_id') ] #How should we capture user orgs here?
-        from_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
+        orgs = [request.GET.get('organization_id')]  # How should we capture user orgs here?
     except Exception, e:
         msg = "Error while calling the API function get_scatter_data_series, missing parameter"
         _log.error(msg)
         _log.exception(str(e))
         return HttpResponseBadRequest(msg)
 
-
     num_buildings = BuildingSnapshot.objects.filter(
-                super_organization__in=orgs,
-                canonicalbuilding__active=True
-            ).count()
+        super_organization__in=orgs,
+        canonicalbuilding__active=True
+    ).count()
 
     avg_eui = 123
     avg_energy_score = 321
 
+    data = {
+        "num_buildings": num_buildings,
+        "avg_eui": avg_eui,
+        "avg_energy_score": avg_energy_score,
+    }
 
-    data = {    "num_buildings" : num_buildings,
-                "avg_eui" : avg_eui,
-                "avg_energy_score": avg_energy_score }
-
-    #Send back to client
+    # Send back to client
     return {
         'status': 'success',
-        'summary_data' : data
+        'summary_data': data
     }
 
 
@@ -2257,32 +2264,37 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
         be in the extra_data too and this works but is currently disabled.
 
         Returns::
-        bldg_counts:  dict that looks like {year_ending : {"buidings_with_data" : set(canonical ids), "buidings" : set(canonical ids)}
-                        This is a collection of all year_ending dates and ids the canonical buildings that have data for that year and those that
-                        have files with that year_ending but no valid data point
+        bldg_counts:  dict that looks like {year_ending : {"buidings_with_data": set(canonical ids), "buidings": set(canonical ids)}  # NOQA
+                        This is a collection of all year_ending dates and ids
+                        the canonical buildings that have data for that year
+                        and those that have files with that year_ending but no
+                        valid data point
                         E.G.
                         "bldg_counts"     (pending)
                             __len__    int: 8
                             2000-12-31 (140037191378512)    dict: {'buildings_w_data': set([35897, 35898]), 'buildings': set([35897, 35898])}
                             2001-12-31 (140037292480784)    dict: {'buildings_w_data': set([35897, 35898]), 'buildings': set([35897, 35898])}
 
-        data:    dict that looks like {canonical_id : { year_ending : {'x' : x_value, 'y' : y_value', 'release_date' : release_date, 'building_snapshot_id' : building_snapshot_id}}}
-                This is the actual data for the building.  The top level key is the canonical_id then the next level is the year_ending and under that
-                is the actual data.  NOTE:  If the year has files for a building but no valid data there will be an entry for that year but the
-                x and y values will be None.
+        data:    dict that looks like {canonical_id : { year_ending : {'x': x_value, 'y': y_value', 'release_date': release_date, 'building_snapshot_id': building_snapshot_id}}}  # NOQA
+                This is the actual data for the building.  The top level key is
+                the canonical_id then the next level is the year_ending and
+                under that is the actual data.  NOTE:  If the year has files
+                for a building but no valid data there will be an entry for
+                that year but the x and y values will be None.
 
                 E.G.
                 "data"     (pending)
                     __len__    int: 2
-                    35897 (28780560)    defaultdict: defaultdict(<type 'dict'>, {datetime.date(2001, 12, 31): {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}, datetime.date(2004, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2004, 12, 31, 0, 0), 'building_snapshot_id': 35866}, datetime.date(2003, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2003, 12, 31, 0, 0), 'building_snapshot_id': 35860}, datetime.date(2009, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2009, 12, 31, 0, 0), 'building_snapshot_id': 35884}, datetime.date(2007, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2007, 12, 31, 0, 0), 'building_snapshot_id': 35878}, datetime.date(2000, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}, datetime.date(2010, 12, 31): {'y': 111.0, 'x': 21.0, 'release_date': datetime.datetime(2011, 12, 31, 0, 0...
+                    35897 (28780560)    defaultdict: defaultdict(<type 'dict'>, {datetime.date(2001, 12, 31): {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}, datetime.date(2004, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2004, 12, 31, 0, 0), 'building_snapshot_id': 35866}, datetime.date(2003, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2003, 12, 31, 0, 0), 'building_snapshot_id': 35860}, datetime.date(2009, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2009, 12, 31, 0, 0), 'building_snapshot_id': 35884}, datetime.date(2007, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2007, 12, 31, 0, 0), 'building_snapshot_id': 35878}, datetime.date(2000, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}, datetime.date(2010, 12, 31): {'y': 111.0, 'x': 21.0, 'release_date': datetime.datetime(2011, 12, 31, 0, 0...  # NOQA
                         __len__    int: 8
-                        2000-12-31 (140037191378512)    dict: {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}
-                        2001-12-31 (140037292480784)    dict: {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}
+                        2000-12-31 (140037191378512)    dict: {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}  # NOQA
+                        2001-12-31 (140037292480784)    dict: {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}  # NOQA
 
         """
 
-    #year_ending in the BuildingSnapshot model is a DateField which corresponds to a python datetime.date
-    #not a datetime.datetime.  Ensure a conversion here
+    # year_ending in the BuildingSnapshot model is a DateField which
+    # corresponds to a python datetime.date not a datetime.datetime.  Ensure a
+    # conversion here
     try:
         from_date = from_date.date()
     except:
@@ -2293,59 +2305,57 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     except:
         pass
 
-    #First get all building records for the orginization in the date range
-    #Can't just look for those that aren't null since one of the things that
-    #needs to get reported is how many for a given year do not have data
-    #(i.e. have a null value for either x_var or y_var
+    # First get all building records for the orginization in the date range
+    # Can't just look for those that aren't null since one of the things that
+    # needs to get reported is how many for a given year do not have data
+    # (i.e. have a null value for either x_var or y_var
     bldgs = BuildingSnapshot.objects.filter(
-                super_organization__in=orgs,
-                year_ending__gte = from_date,
-                year_ending__lte = end_date
-            )
+        super_organization__in=orgs,
+        year_ending__gte=from_date,
+        year_ending__lte=end_date
+    )
 
-    #data will be a dict of canonical building id -> year ending -> building data
+    # data will be a dict of canonical building id -> year ending -> building data
     data = defaultdict(lambda: defaultdict(dict))
 
-    #get a unique list of canonical buildings
+    # get a unique list of canonical buildings
     canonical_buildings = set(bldg.tip for bldg in bldgs)
 
-    #"deleted" buildings just get their canonicalbuilding field set to false
-    #filter them out here.  There may be a way to do this in one query with the above but I
-    #don't see it now.
+    # "deleted" buildings just get their canonicalbuilding field set to false
+    # filter them out here.  There may be a way to do this in one query with the above but I
+    # don't see it now.
     canonical_buildings = BuildingSnapshot.objects.filter(
-                canonicalbuilding__active=True,
-                pk__in=[x.id for x in canonical_buildings]
-            )
+        canonicalbuilding__active=True,
+        pk__in=[x.id for x in canonical_buildings]
+    )
 
-
-    #if the BuildingSnapshot has the attribute use that directly.
-    #in the future if it should search extra_data but extra_data is still not
-    #searchable directly then this can be adjusted by replacing the last None with
+    # if the BuildingSnapshot has the attribute use that directly.
+    # in the future if it should search extra_data but extra_data is still not
+    # searchable directly then this can be adjusted by replacing the last None with
     # obj.extra_data[attr] if hasattr(obj, "extra_data") and attr in obj.extra_data else None
     get_attr_f = lambda obj, attr: getattr(obj, attr) if hasattr(obj, attr) else None
 
     bldg_counts = {}
 
     def process_snapshot(canonical_building_id, snapshot):
-        from datetime import date
-
-        #The data is meaningless here aside if there is no valid year_ending value
-        #even though the query at the beginning specifies a date range since this is using the tree
-        #some other records without a year_ending may have snuck back in.  Ignore them here.
+        # The data is meaningless here aside if there is no valid year_ending value
+        # even though the query at the beginning specifies a date range since this is using the tree
+        # some other records without a year_ending may have snuck back in.  Ignore them here.
         if not hasattr(snapshot, "year_ending") or type(snapshot.year_ending) != datetime.date:
             return
-        #if the snapshot is not in the date range then don't process it
+        # if the snapshot is not in the date range then don't process it
         if not(from_date <= snapshot.year_ending <= end_date):
             return
 
         year_ending_year = snapshot.year_ending
 
         if year_ending_year not in bldg_counts:
-            bldg_counts[year_ending_year] = {"buildings" : set(), "buildings_w_data" : set()}
+            bldg_counts[year_ending_year] = {"buildings": set(), "buildings_w_data": set()}
         release_date = get_attr_f(snapshot, "release_date")
 
-        #if there is no release_date then we have no way of priotizing vs other records with the same
-        #year_ending.  Plus it is an indication of something wrong so just exit here
+        # if there is no release_date then we have no way of priotizing vs
+        # other records with the same year_ending.  Plus it is an indication of
+        # something wrong so just exit here
         if not release_date:
             return
 
@@ -2355,61 +2365,73 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
                 (year_ending_year not in data[canonical_building_id]) or
                 (not data[canonical_building_id][year_ending_year]) or
                 (data[canonical_building_id][year_ending_year]["release_date"] < release_date)
-            ):
+        ):
             bldg_x = get_attr_f(snapshot, x_var)
             bldg_y = get_attr_f(snapshot, y_var)
-            #what does it mean for a building to "have data"?  I am assuming it must have values for
-            #both x and y fields.  Change "and" to "or" to make it either and "True"
-            #to return everything
+            # what does it mean for a building to "have data"?  I am assuming
+            # it must have values for both x and y fields.  Change "and" to
+            # "or" to make it either and "True" to return everything
             if bldg_x and bldg_y:
                 bldg_counts[year_ending_year]["buildings_w_data"].add(canonical_building_id)
 
-                data[canonical_building_id][year_ending_year] = {   "building_snapshot_id" : snapshot.id,
-                                                                    "x" : bldg_x,
-                                                                    "y" : bldg_y,
-                                                                    "release_date" : release_date}
+                data[canonical_building_id][year_ending_year] = {
+                    "building_snapshot_id": snapshot.id,
+                    "x": bldg_x,
+                    "y": bldg_y,
+                    "release_date": release_date,
+                }
             else:
                 try:
                     bldg_counts[year_ending_year]["buildings_w_data"].remove(canonical_building_id)
                 except:
                     pass
 
-                #if this more recent data point does not have both x and y values then the data for the year ending is now invalid
-                #mark that here by giving both 'x' and 'y' a value of None
-                #can't just delete the year since we need to retain the release_date.  If the most recent
-                #release_date for a given year_ending is not value then that means that year is not valid for the building
+                # if this more recent data point does not have both x and y
+                # values then the data for the year ending is now invalid mark
+                # that here by giving both 'x' and 'y' a value of None can't
+                # just delete the year since we need to retain the
+                # release_date.  If the most recent release_date for a given
+                # year_ending is not value then that means that year is not
+                # valid for the building
 
-                data[canonical_building_id][year_ending_year] = {   "building_snapshot_id" : snapshot.id,
-                                                                    "x" : None,
-                                                                    "y" : None,
-                                                                    "release_date" : release_date}
+                data[canonical_building_id][year_ending_year] = {
+                    "building_snapshot_id": snapshot.id,
+                    "x": None,
+                    "y": None,
+                    "release_date": release_date,
+                }
 
     for canonical_building in canonical_buildings:
         canonical_building_id = canonical_building.id
 
-        #we changed from only using the unmerged snapshots to only using the merged snapshots.
-        #So start at the current canonical building and work back
+        # we changed from only using the unmerged snapshots to only using the
+        # merged snapshots.
+        # So start at the current canonical building and work back
         process_snapshot(canonical_building_id, canonical_building)
-
 
         if canonical_building.parent_tree:
             current_canonical_bldg = canonical_building
 
-            #progress up the the tree processing merged snapshots until there aren't any more
+            # progress up the the tree processing merged snapshots until there
+            # aren't any more
             while current_canonical_bldg:
-                cur_id = current_canonical_bldg.id
-                #unmerged_snapshots = bldg.parents.filter(parents__isnull = True)
-                previous_canonical_bldg = current_canonical_bldg.parents.filter(parents__isnull = False)
-                #get the parent that is merged, if any.  If not then we're done when we finish this iteration
-                #bldg = bldg.parents.filter(parents__isnull = False)#.exclude(id = bldg.id)
+                # unmerged_snapshots = bldg.parents.filter(parents__isnull = True)
+                previous_canonical_bldg = current_canonical_bldg.parents.filter(
+                    parents__isnull=False,
+                )
+
                 if previous_canonical_bldg.count():
                     current_canonical_bldg = previous_canonical_bldg[0]
                     process_snapshot(canonical_building_id, current_canonical_bldg)
                 else:
-                    #There are no parents who have non-null parents themselves meaning the parent
-                    #must be the first record imported and therefore the first canonical building
-                    current_canonical_bldg = current_canonical_bldg.parents.filter(parents__isnull = True)
-                    #hopefully the record is always in index 1.  Otherwise I'm not sure how to pick the right one.
+                    # There are no parents who have non-null parents themselves
+                    # meaning the parent must be the first record imported and
+                    # therefore the first canonical building
+                    current_canonical_bldg = current_canonical_bldg.parents.filter(
+                        parents__isnull=True,
+                    )
+                    # hopefully the record is always in index 1.  Otherwise I'm
+                    # not sure how to pick the right one.
                     current_canonical_bldg = current_canonical_bldg.all()[1]
                     process_snapshot(canonical_building_id, current_canonical_bldg)
                     current_canonical_bldg = None
@@ -2427,8 +2449,8 @@ def get_building_report_data(request):
         :GET:
         * start_date:       The starting date for the data series with the format  `YYYY-MM-DD`
         * end_date:         The starting date for the data series with the format  `YYYY-MM-DD`
-        * x_var:            The variable name to be assigned to the "x" value in the returned data series
-        * y_var:            The variable name to be assigned to the "y" value in the returned data series
+        * x_var:            The variable name to be assigned to the "x" value in the returned data series  # NOQA
+        * y_var:            The variable name to be assigned to the "y" value in the returned data series  # NOQA
         * organization_id:  The organization to be used when querying data.
 
         The x_var values should be from the following set of variable names:
@@ -2445,11 +2467,14 @@ def get_building_report_data(request):
             - use_description
             - year_built
 
-        This method includes building record count information as part of the result JSON in a property called "building_counts."
-        This property provides data on the total number of buildings available in each 'year ending' group, as well as the subset of
-        those buildings that have actual data to graph. By sending these  values in the result
-        we allow the client to easily build a message like "200 of 250 buildings in this group have data."
+        This method includes building record count information as part of the
+        result JSON in a property called "building_counts."
 
+        This property provides data on the total number of buildings available
+        in each 'year ending' group, as well as the subset of those buildings
+        that have actual data to graph. By sending these  values in the result
+        we allow the client to easily build a message like "200 of 250
+        buildings in this group have data."
 
         Returns::
         The returned JSON document that has the following structure.
@@ -2459,7 +2484,7 @@ def get_building_report_data(request):
                 "chart_data": [
                     {
                         "id" the id of the building,
-                        "yr_e" : the year ending value for this data point
+                        "yr_e": the year ending value for this data point
                         "x": value for x var,
                         "y": value for y var,
                     },
@@ -2469,12 +2494,12 @@ def get_building_report_data(request):
                     {
                         "yr_e": string for year ending
                         "num_buildings": number of buildings in query results
-                        "num_buildings_w_data" : number of buildings with valid data in query results
+                        "num_buildings_w_data": number of buildings with valid data in query results
                     },
                     ...
                 ]
                 "num_buildings": total number of buildings in query results,
-                "num_buildings_w_data" : total number of buildings with valid data in the query results
+                "num_buildings_w_data": total number of buildings with valid data in the query results  # NOQA
             }
         ```
 
@@ -2537,18 +2562,16 @@ def get_building_report_data(request):
 
 
         """
-
     from dateutil.parser import parse
-    from collections import defaultdict
 
     if request.method != 'GET':
         return HttpResponseBadRequest('This view replies only to GET methods')
 
-    #Read in x and y vars requested by client
+    # Read in x and y vars requested by client
     try:
         x_var = request.GET['x_var']
         y_var = request.GET['y_var']
-        orgs = [ request.GET['organization_id'] ] #How should we capture user orgs here?
+        orgs = [request.GET['organization_id']]  # How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
 
@@ -2577,47 +2600,48 @@ def get_building_report_data(request):
         return HttpResponseBadRequest(msg)
 
     bldg_counts, data = get_raw_report_data(from_date, end_date, orgs, x_var, y_var)
-    #    now we have data as nested dictionaries like canonical_building_id -> year_ending -> {building_snapshot_id, address_line_1, x, y}
-    #    but the comment at the beginning o says to do it like a list of dicts that looks like
-    #                     "chart_data": [
-    #                     {
-    #                         "id" the id of the building,
-    #                         "yr_e" : the year ending value for this data point
-    #                         "x": value for x var,
-    #                         "y": value for y var,
-    #                     },
-    #                     ...
-    #                 ],
+    # now we have data as nested dictionaries like:
+    #
+    # canonical_building_id -> year_ending -> {building_snapshot_id, address_line_1, x, y}
+    # but the comment at the beginning o says to do it like a list of dicts
+    # that looks like
+    #                  "chart_data": [
+    #                  {
+    #                      "id" the id of the building,
+    #                      "yr_e": the year ending value for this data point
+    #                      "x": value for x var,
+    #                      "y": value for y var,
+    #                  },
+    #                  ...
+    #              ],
 
     chart_data = []
     building_counts = []
     for year_ending, values in bldg_counts.items():
-        buildingCountItem = {   "num_buildings"         : len(values["buildings"]),
-                                "num_buildings_w_data"  : len(values["buildings_w_data"]),
-                                "yr_e"                  : year_ending.strftime('%Y-%m-%d')
-                            }
+        buildingCountItem = {
+            "num_buildings": len(values["buildings"]),
+            "num_buildings_w_data": len(values["buildings_w_data"]),
+            "yr_e": year_ending.strftime('%Y-%m-%d')
+        }
         building_counts.append(buildingCountItem)
 
     for canonical_id, year_ending_to_data_map in data.iteritems():
         for year_ending, requested_data in year_ending_to_data_map.iteritems():
             d = requested_data
-            #The point must have both an x and a y value or else it is not valid
+            # The point must have both an x and a y value or else it is not valid
             if not (d["x"] and d["y"]):
                 continue
             d["id"] = canonical_id
             d["yr_e"] = year_ending.strftime('%Y-%m-%d')
             chart_data.append(d)
 
+    # Send back to client
+    return {
+        'status': 'success',
+        'chart_data': chart_data,
+        'building_counts': building_counts
+    }
 
-    #Send back to client
-    return {    'status': 'success',
-                'chart_data' : chart_data,
-                'building_counts' : building_counts
-           }
-
-from itertools import groupby
-from operator import itemgetter
-import random
 
 @api_endpoint
 @ajax_request
@@ -2627,10 +2651,10 @@ def get_aggregated_building_report_data(request):
     """ This method returns a set of aggregated building data for graphing. It expects as parameters
 
         :GET:
-        * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
-        * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
-        * x_var:            The variable name to be assigned to the "x" value in the returned data series
-        * y_var:            The variable name to be assigned to the "y" value in the returned data series
+        * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`  # NOQA
+        * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`  # NOQA
+        * x_var:            The variable name to be assigned to the "x" value in the returned data series  # NOQA
+        * y_var:            The variable name to be assigned to the "y" value in the returned data series  # NOQA
         * organization_id:  The organization to be used when querying data.
 
         The x_var values should be from the following set of variable names:
@@ -2647,10 +2671,14 @@ def get_aggregated_building_report_data(request):
             - use_description
             - year_built
 
-        This method includes building record count information as part of the result JSON in a property called "building_counts."
-        This property provides data on the total number of buildings available in each 'year ending' group, as well as the subset of
-        those buildings that have actual data to graph. By sending these  values in the result
-        we allow the client to easily build a message like "200 of 250 buildings in this group have data."
+        This method includes building record count information as part of the
+        result JSON in a property called "building_counts."
+
+        This property provides data on the total number of buildings available
+        in each 'year ending' group, as well as the subset of those buildings
+        that have actual data to graph. By sending these  values in the result
+        we allow the client to easily build a message like "200 of 250
+        buildings in this group have data."
 
 
         Returns::
@@ -2661,13 +2689,13 @@ def get_aggregated_building_report_data(request):
                 "chart_data": [
                     {
                         "yr_e": x - group by year ending
-                        "x" : x, - median value in group
-                        "y" : y - average value thing
+                        "x": x, - median value in group
+                        "y": y - average value thing
                     },
                     {
                         "yr_e": x
-                        "x" : x,
-                        "y" : y
+                        "x": x,
+                        "y": y
                     }
                     ...
                 ],
@@ -2675,12 +2703,12 @@ def get_aggregated_building_report_data(request):
                     {
                         "yr_e": string for year ending - group by
                         "num_buildings": number of buildings in query results
-                        "num_buildings_w_data" : number of buildings with valid data in this group, BOTH x and y?
+                        "num_buildings_w_data": number of buildings with valid data in this group, BOTH x and y?  # NOQA
                     },
                     ...
                 ]
                 "num_buildings": total number of buildings in query results,
-                "num_buildings_w_data" : total number of buildings with valid data in query results
+                "num_buildings_w_data": total number of buildings with valid data in query results
             }
         ```
 
@@ -2742,20 +2770,19 @@ def get_aggregated_building_report_data(request):
 
         """
 
-
-    #TODO: Generate this data the right way! The following is just dummy data...
+    # TODO: Generate this data the right way! The following is just dummy data...
     if request.method != 'GET':
         return HttpResponseBadRequest('This view replies only to GET methods')
 
-    #Read in x and y vars requested by client
+    # Read in x and y vars requested by client
     try:
         x_var = request.GET['x_var']
         y_var = request.GET['y_var']
-        orgs = [ request.GET['organization_id'] ] #How should we capture user orgs here?
+        orgs = [request.GET['organization_id']]  # How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
     except KeyError, e:
-        msg = "Error while calling the API function get_aggregated_building_report_data, missing parameter"
+        msg = "Error while calling the API function get_aggregated_building_report_data, missing parameter"  # NOQA
         _log.error(msg)
         _log.exception(str(e))
         return HttpResponseBadRequest(msg)
@@ -2800,7 +2827,7 @@ def get_aggregated_building_report_data(request):
     chart_data = []
     building_counts = []
     for year_ending, buildings in grouped_buildings.items():
-        yr_e = year_ending.strftime('%b %d, %Y') # Dec 31, 2011
+        yr_e = year_ending.strftime('%b %d, %Y')  # Dec 31, 2011
 
         # Begin filling out building_counts object.
 
@@ -2832,7 +2859,10 @@ def get_aggregated_building_report_data(request):
             for use, buildings_in_uses in grouped_uses.items():
                 chart_data.append({
                     'yr_e': yr_e,
-                    'x': median([getattr(b, x_var) for b in buildings_in_uses if getattr(b, x_var)]),
+                    'x': median([
+                        getattr(b, x_var)
+                        for b in buildings_in_uses if getattr(b, x_var)
+                    ]),
                     'y': use.capitalize()
                 })
 
@@ -2849,8 +2879,11 @@ def get_aggregated_building_report_data(request):
             for decade, buildings_in_decade in grouped_decades.items():
                 chart_data.append({
                     'yr_e': yr_e,
-                    'x': median([getattr(b, x_var) for b in buildings_in_decade if getattr(b, x_var)]),
-                    'y': '%s-%s' % (decade, '%s9' % str(decade)[:-1]) # 1990-1999
+                    'x': median([
+                        getattr(b, x_var)
+                        for b in buildings_in_decade if getattr(b, x_var)
+                    ]),
+                    'y': '%s-%s' % (decade, '%s9' % str(decade)[:-1])  # 1990-1999
                 })
 
         elif y_var == 'gross_floor_area':
@@ -2875,7 +2908,8 @@ def get_aggregated_building_report_data(request):
                 if not getattr(b, y_var):
                     continue
                 area = getattr(b, y_var)
-                #make sure anything greater than the biggest bin gets put in the biggest bin
+                # make sure anything greater than the biggest bin gets put in
+                # the biggest bin
                 range_bin = min(max_bin, round_down_hundred_thousand(area))
                 grouped_ranges[range_bin].append(b)
 
@@ -2883,13 +2917,16 @@ def get_aggregated_building_report_data(request):
             for range_floor, buildings_in_range in grouped_ranges.items():
                 chart_data.append({
                     'yr_e': yr_e,
-                    'x': median([getattr(b, x_var) for b in buildings_in_range if getattr(b, x_var)]),
+                    'x': median([
+                        getattr(b, x_var)
+                        for b in buildings_in_range if getattr(b, x_var)
+                    ]),
                     'y': y_display_map[range_floor]
                 })
 
-    #Send back to client
+    # Send back to client
     return {
         'status': 'success',
-        'chart_data' : chart_data,
-        'building_counts' : building_counts
+        'chart_data': chart_data,
+        'building_counts': building_counts
     }
