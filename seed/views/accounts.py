@@ -21,7 +21,6 @@ from seed.lib.superperms.orgs.models import (
 from passwords.validators import (
     validate_length, common_sequences, dictionary_words, complexity
 )
-from seed.utils.organizations import create_organization
 from seed.utils.buildings import get_columns as utils_get_columns
 from seed.models import CanonicalBuilding
 from seed.landing.models import SEEDUser as User
