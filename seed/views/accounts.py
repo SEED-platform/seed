@@ -29,6 +29,7 @@ from seed.tasks import (
     invite_to_seed,
 )
 from seed.utils.api import api_endpoint
+from seed.utils.organizations import create_organization
 from seed.public.models import INTERNAL, PUBLIC, SharedBuildingField
 
 
@@ -442,17 +443,18 @@ def add_user(request):
                 'message': 'Choose either an existing org or provide a new one'
             }
 
-    if org_id:
-        org = Organization.objects.get(pk=org_id)
-        org_created = False
-    else:
-        org, org_created = Organization.objects.get_or_create(name=org_name)
-
     first_name = body['first_name']
     last_name = body['last_name']
     email = body['email']
     username = body['email']
     user, created = User.objects.get_or_create(username=username.lower())
+
+    if org_id:
+        org = Organization.objects.get(pk=org_id)
+        org_created = False
+    else:
+        org, _, _ = create_organization(user, org_name)
+        org_created = True
 
     # Add the user to the org.  If this is the org's first user,
     # the user becomes the owner/admin automatically.
