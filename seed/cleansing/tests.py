@@ -109,7 +109,7 @@ class CleansingDataTestCoveredBuilding(TestCase):
                {'field': u'gross_floor_area', 'message': 'Value [10000000000.0] > 7000000', 'severity': u'error'},
                {'field': u'custom_id_1', 'message': 'Value is missing', 'severity': 'error'},
                {'field': u'pm_property_id', 'message': 'Value is missing', 'severity': 'error'}]
-        self.assertEqual(res, result['cleansing_results'])
+        self.assertItemsEqual(res, result['cleansing_results'])
 
         result = [v for v in c.results.values() if v['address_line_1'] == '1234 Peach Tree Avenue']
         self.assertEqual(len(result), 0)
