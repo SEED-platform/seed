@@ -11,6 +11,9 @@ from seed.filters import (
     LabelFilterBackend,
     BuildingFilterBackend,
 )
+from seed.pagination import (
+    FakePaginiation,
+)
 from seed.utils.api import (
     drf_api_endpoint,
 )
@@ -30,6 +33,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
     serializer_class = LabelSerializer
     queryset = Label.objects.none()
     filter_backends = (LabelFilterBackend,)
+    pagination_class = FakePaginiation
 
     _organization = None
 
