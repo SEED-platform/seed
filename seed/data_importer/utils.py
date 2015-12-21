@@ -61,16 +61,3 @@ class CoercionRobot(object):
 
 	def make_key(self, value, model, field):
 		return "%s|%s|%s" % (value, model,field)
-
-
-
-
-
-
-
-
-
-
-
-
-

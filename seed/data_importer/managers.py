@@ -3,6 +3,7 @@
 """
 from django.db import models
 
+
 class NotDeletedManager(models.Manager):
     use_for_related_fields = True
 

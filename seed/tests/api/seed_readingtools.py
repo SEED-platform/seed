@@ -8,12 +8,12 @@ import datetime as dt
 import time
 from calendar import timegm
 
-# Three-step upload process 
+# Three-step upload process
 def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upload_datatype):
     """
-    Checks if the upload is through an AWS system or through filesystem. 
-    Proceeds with the appropriate upload method. 
-    
+    Checks if the upload is through an AWS system or through filesystem.
+    Proceeds with the appropriate upload method.
+
     - uploadFilepath: full path to file
     - uploadDatasetID: What ImportRecord to associate file with.
     - uploadDatatype: Type of data in file (Assessed Raw, Portfolio Raw)
@@ -21,7 +21,7 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
 
     def _upload_file_to_aws(aws_upload_details):
         """
-        This code is from the original APIClient. 
+        This code is from the original APIClient.
         Implements uploading a data file to S3 directly.
         This is a 3-step process:
         1. SEED instance signs the upload request.
@@ -137,8 +137,8 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
     else:
         raise RuntimeError("Upload mode unknown: %s" %
                            upload_details['upload_mode'])
-                             
-def check_status(resultOut, partmsg, log, PIIDflag=None): 
+
+def check_status(resultOut, partmsg, log, PIIDflag=None):
     """Checks the status of the API endpoint and makes the appropriate print outs."""
     if resultOut.status_code in [200, 403, 401]:
         if PIIDflag == 'cleansing':
@@ -178,16 +178,16 @@ def check_status(resultOut, partmsg, log, PIIDflag=None):
         log.error(partmsg+'...not passed')
         log.debug(msg)
         raise RuntimeError
-        
-    return 
-                       
+
+    return
+
 def check_progress(mainURL, Header, progress_key):
     """Delays the sequence until progress is at 100 percent."""
     time.sleep(5)
     progressResult = requests.get(mainURL+'/app/progress/',
                        headers = Header,
                        data = json.dumps({'progress_key':progress_key}))
-    
+
     if progressResult.json()['progress'] == 100:
         return (progressResult)
     else:
@@ -195,39 +195,39 @@ def check_progress(mainURL, Header, progress_key):
 
 def read_map_file(mapfilePath):
     """Read in the mapping file"""
-    
+
     assert (os.path.isfile(mapfilePath)),"Cannot find file:\t"+mapfilePath
-    
+
     mapReader = csv.reader(open(mapfilePath,'r'))
     mapReader.next()    #Skip the header
-    
+
     # Open the mapping file and fill list
     maplist = list()
-    
+
     for rowitem in mapReader:
         maplist.append(rowitem)
-    
+
     return maplist
 
 def setup_logger(filename):
     """Set-up the logger object"""
-    
+
     logging.getLogger("requests").setLevel(logging.WARNING)
-    
+
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
-    
+
     formatter = logging.Formatter('%(message)s')
     formatter_console = logging.Formatter('%(levelname)s - %(message)s')
-    
+
     fh = logging.FileHandler(filename, mode='a')
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(formatter)
     logger.addHandler(fh)
-    
+
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
     ch.setFormatter(formatter_console)
     logger.addHandler(ch)
-    
+
     return logger

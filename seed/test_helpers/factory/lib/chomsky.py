@@ -1,7 +1,7 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
-# Chomsky random text generator, version 1.1, Raymond Hettinger, 2005/09/13 
+# Chomsky random text generator, version 1.1, Raymond Hettinger, 2005/09/13
 # PSF License
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/440546
 
@@ -130,5 +130,5 @@ def generate_chomsky(times=5, line_length=72):
     output = chain(*islice(izip(*parts), 0, times))
     return textwrap.fill(string.join(output), line_length)
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     generate_chomsky()

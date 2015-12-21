@@ -5,7 +5,7 @@ from seed.models import BuildingSnapshot
 class TestBuildingSnapshot(TestCase):
     def setUp(self):
         self.bs = BuildingSnapshot()
-        
+
     def tearDown(self):
         self.bs = None
 
