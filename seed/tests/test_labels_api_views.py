@@ -1,8 +1,12 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author 'Piper Merriam <pipermerriam@gmail.com>'
+"""
 """
 Unit tests for seed/views/labels.py
 """
-__author__ = 'Piper Merriam <pipermerriam@gmail.com>'
-__date__ = '2015/12/18'
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse

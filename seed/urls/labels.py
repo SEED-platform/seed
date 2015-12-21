@@ -1,9 +1,11 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author 'Piper Merriam <pmerriam@quickleft.com>'
+"""
+"""
 Url patterns for endpoints associated with Labels
-:copyright (c) 2015, The Regents of the University of California, Department of Energy contract-operators of the Lawrence Berkeley National Laboratory.  # NOQA
-:author Piper Merriam
 """
 
 from django.conf.urls import url

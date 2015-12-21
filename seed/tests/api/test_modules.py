@@ -1,4 +1,10 @@
-﻿from seed_readingtools import check_progress, check_status, read_map_file, setup_logger, upload_file
+﻿# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
+from seed_readingtools import check_progress, check_status, read_map_file, setup_logger, upload_file
 import requests
 import json
 import datetime as dt
