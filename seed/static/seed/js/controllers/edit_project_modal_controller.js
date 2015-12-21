@@ -1,7 +1,7 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
-// called from open_edit_modal
 angular.module('BE.seed.controller.edit_project_modal', [])
 .controller('edit_project_modal_ctrl', [
   '$scope',
