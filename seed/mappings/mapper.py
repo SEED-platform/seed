@@ -75,14 +75,20 @@ def merge_extra_data(b1, b2, default=None):
     extra_data_sources = {}
     default_extra_data = getattr(default, 'extra_data', {})
     non_default_extra_data = getattr(non_default, 'extra_data', {})
-    extra_data = copy.deepcopy(non_default_extra_data)
-    extra_data.update(default_extra_data)
+
+    all_keys = set(default_extra_data.keys() + non_default_extra_data.keys())
+    extra_data = {
+        k: default_extra_data.get(k) or non_default_extra_data.get(k)
+        for k in all_keys
+    }
 
     for item in extra_data:
-        if item in default_extra_data:
+        if item in default_extra_data and default_extra_data[item]:
             extra_data_sources[item] = default.pk
-        elif item in non_default_extra_data:
+        elif item in non_default_extra_data and non_default_extra_data[item]:
             extra_data_sources[item] = non_default.pk
+        else:
+            extra_data_sources[item] = default.pk
 
     return extra_data, extra_data_sources
 
