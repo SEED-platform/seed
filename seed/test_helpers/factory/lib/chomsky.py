@@ -1,7 +1,10 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
-# Chomsky random text generator, version 1.1, Raymond Hettinger, 2005/09/13 
+# Chomsky random text generator, version 1.1, Raymond Hettinger, 2005/09/13
 # PSF License
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/440546
 
@@ -130,5 +133,5 @@ def generate_chomsky(times=5, line_length=72):
     output = chain(*islice(izip(*parts), 0, times))
     return textwrap.fill(string.join(output), line_length)
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     generate_chomsky()

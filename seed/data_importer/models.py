@@ -1,5 +1,8 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 import csv
 import datetime
@@ -15,7 +18,7 @@ except ImportError:
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.core.exceptions import ObjectDoesNotExist
-from seed.utils.cache import set_cache_raw, set_cache_state, set_cache, increment_cache, get_cache, get_cache_raw, get_cache_state, delete_cache
+from seed.utils.cache import set_cache_raw, set_cache_state, get_cache, get_cache_raw, get_cache_state, delete_cache
 from django.core.urlresolvers import reverse
 from django.db import models, IntegrityError
 from django.db.models import Q

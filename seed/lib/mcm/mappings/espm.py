@@ -1,6 +1,10 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
-
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
+"""
 This module describes how data is mapped from our ontology to Django Models.
 The structure pulls out the read data from our espm-based MCM run
 like follows:

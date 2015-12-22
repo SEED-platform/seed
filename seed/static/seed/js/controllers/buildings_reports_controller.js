@@ -1,3 +1,7 @@
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
+ */
 /**
   This controller handles the building reports page, watching for and remembering
   the user's selections for chart parameters like date range and x and y variables,

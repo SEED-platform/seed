@@ -1,7 +1,8 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-Utility functions for searching
-:copyright (c) 2015, The Regents of the University of California, Department of Energy contract-operators of the Lawrence Berkeley National Laboratory.  # NOQA
-:author Piper Merriam
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author 'Piper Merriam <pmerriam@quickleft.com'
 """
 import re
 import operator

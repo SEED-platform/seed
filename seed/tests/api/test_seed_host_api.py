@@ -1,7 +1,11 @@
-﻿"""
-API Testing for remote SEED installations.
-:copyright (c) 2015, The Regents of the University of California, Department of Energy contract-operators of the Lawrence Berkeley National Laboratory.
+﻿# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Claudine Custodio / Baptiste Ravache
+"""
+"""
+API Testing for remote SEED installations.
 
 Instructions:
 - Download the three python modules: test_seed_host_api.py, seed_readingtools.py, test_modules.py
@@ -77,17 +81,17 @@ sample_dir = os.path.join("seed-sample-data")
 raw_building_file = os.path.relpath(os.path.join(sample_dir, 'covered-buildings-sample.csv'))
 assert (os.path.isfile(raw_building_file)), 'Missing file '+raw_building_file
 raw_map_file = os.path.relpath(os.path.join(sample_dir, 'covered-buildings-mapping.csv'))
-assert (os.path.isfile(raw_map_file)), 'Missing file '+raw_map_file 
+assert (os.path.isfile(raw_map_file)), 'Missing file '+raw_map_file
 pm_building_file = os.path.relpath(os.path.join(sample_dir, 'portfolio-manager-sample.csv'))
-assert (os.path.isfile(pm_building_file)), 'Missing file '+pm_building_file 
+assert (os.path.isfile(pm_building_file)), 'Missing file '+pm_building_file
 pm_map_file = os.path.relpath(os.path.join(sample_dir, 'portfolio-manager-mapping.csv'))
-assert (os.path.isfile(pm_map_file)), 'Missing file '+pm_map_file 
+assert (os.path.isfile(pm_map_file)), 'Missing file '+pm_map_file
 
 # -- Accounts
 print ('\n-------Accounts-------\n')
 organization_id = account(header, main_url, username, log)
 
-## Create a dataset 
+## Create a dataset
 print ('API Function: create_dataset')
 partmsg = 'create_dataset'
 payload={'organization_id': organization_id,
@@ -97,7 +101,7 @@ result = requests.post(main_url+'/app/create_dataset/',
 					  data=json.dumps(payload))
 check_status(result, partmsg, log)
 
-# Get the dataset id to be used 
+# Get the dataset id to be used
 dataset_id = result.json()['id']
 
 # Upload and test the raw building file

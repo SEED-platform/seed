@@ -1,8 +1,12 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author 'Dan Gunter <dkgunter@lbl.gov>'
+"""
 """
 Unit tests for map.py
 """
-__author__ = 'Dan Gunter <dkgunter@lbl.gov>'
-__date__ = '2/13/15'
 
 import json
 from StringIO import StringIO
@@ -32,7 +36,7 @@ class TestMapping(TestCase):
             d[key] = [d[key], {mapper.Mapping.META_BEDES: True,
                                mapper.Mapping.META_TYPE: 'string'}]
         return StringIO(json.dumps(d))
-    
+
     def setUp(self):
         self.json_file = self.jsonfile()
 
@@ -41,17 +45,17 @@ class TestMapping(TestCase):
         m = mapper.Mapping(self.json_file)
         self.assertIsNotNone(m)
 
-    def test_mapping_regex(self):        
+    def test_mapping_regex(self):
         m = mapper.Mapping(self.json_file, regex=True)
         self.assertEqual(m['.*1'].field, "value1")
-    
+
     def test_mapping_case(self):
         m = mapper.Mapping(self.json_file, ignore_case=True)
         self.assertEqual(m['key1'].field, "value1")
         self.assertEqual(m['KEY1'].field, "value1")
         m = mapper.Mapping(self.jsonfile(), ignore_case=True, regex=True)
         self.assertEqual(m["K..1"].field, "value1")
-    
+
     def test_mapping_spc(self):
         m = mapper.Mapping(self.json_file)
         self.assertEqual(m['has_spaces'].field, 'value3')
@@ -59,19 +63,19 @@ class TestMapping(TestCase):
         self.assertEqual(m['has underscores'].field, 'value4')
         self.assertEqual(m['has_multi spaces'].field, 'value5')
         self.assertEqual(m['has_multi underscores'].field, 'value6')
-    
+
     def test_units(self):
         m = mapper.Mapping(self.json_file, encoding='latin_1')
         self.assertEqual(m['normal ft2'].field, 'value7')
         self.assertEqual(m['caret ft^2'].field, 'value8')
         self.assertEqual(m['super ft_'].field, 'value9')
         self.assertEqual(m[(u"super ft" + u'\u00B2').encode('latin_1')].field, 'value9')
-    
+
     def test_mapping_conf(self):
         conf = mapper.MappingConfiguration()
         pm_mapping = conf.pm((1,0))
         self.assertIsInstance(pm_mapping, mapper.Mapping)
-    
+
     def test_mapping_pm_to_SEED(self):
         expected = {"Address 1": "Address Line 1",
                     "Property ID": "PM Property ID",
@@ -84,7 +88,7 @@ class TestMapping(TestCase):
                 self.assertEqual(pm[src].is_bedes, False)
             else:
                 self.assertFalse(src in pm)
-                
+
     def test_mapping_pm_to_SEED_include_none(self):
         expected = {"Address 1": "Address Line 1",
                     "Property ID": "PM Property ID",
@@ -96,4 +100,4 @@ class TestMapping(TestCase):
                 self.assertEqual(pm[src].field, tgt)
                 self.assertEqual(pm[src].is_bedes, False)
             else:
-                self.assertIsNone(pm[src])    
+                self.assertIsNone(pm[src])

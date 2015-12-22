@@ -1,9 +1,9 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-Common functions used by Django views.
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author Dan Gunter <dkgunter@lbl.gov>
 """
-__author__ = 'Dan Gunter <dkgunter@lbl.gov>'
-__date__ = '2/26/15'
-
 import logging
 
 _log = logging.getLogger(__name__)
