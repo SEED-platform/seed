@@ -57,13 +57,11 @@ def merge_extra_data_from_parents(bs):
     for parent in bs.parents.order_by('created').all():
         # First do a recursive call to do a recursive merge of all extra_data
         # fields deeper down the tree.
-        print "recursive merge on: ", parent.pk
         merge_extra_data_from_parents(parent)
 
         # Now do a merge with this bs, prioritizing the data that is already in
         # place which will merge in any non-blank data from deeper down the
         # tree.
-        print "merging: ", bs.pk, parent.pk
         extra_data, extra_data_sources = merge_extra_data(bs, parent)
         bs.extra_data = extra_data
         bs.extra_data_sources = extra_data_sources
