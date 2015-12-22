@@ -1,7 +1,6 @@
 """
 :copyright: (c) 2014 Building Energy Inc
 """
-import copy
 from collections import defaultdict
 
 from seed.mappings import seed_mappings
