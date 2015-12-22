@@ -54,7 +54,7 @@ def recover_extra_data(app, schema_editor, **kwargs):
 
 
 def merge_extra_data_from_parents(bs):
-    for parent in bs.parents.all():
+    for parent in bs.parents.order_by('created').all():
         # First do a recursive call to do a recursive merge of all extra_data
         # fields deeper down the tree.
         print "recursive merge on: ", parent.pk
