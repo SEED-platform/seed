@@ -4,8 +4,6 @@
  */
 angular.module('BE.seed.controller.admin', [])
 .controller('seed_admin_controller', [
-angular.module('BE.seed.controller.admin', [])
-.controller('seed_admin_controller', [
   '$scope',
   'user_service',
   'organization_service',
@@ -25,7 +23,7 @@ angular.module('BE.seed.controller.admin', [])
     $scope.alert.bootstrap_class.ok = 'alert-success';
     $scope.alert.bootstrap_class.error = 'alert-danger';
     $scope.alert.css = $scope.alert.bootstrap_class.ok;
-    $scope.username = user_profile_payload.user.first_name + " " + 
+    $scope.username = user_profile_payload.user.first_name + " " +
         user_profile_payload.user.last_name;
 
 
@@ -35,7 +33,7 @@ angular.module('BE.seed.controller.admin', [])
         $scope.alert.message = message;
     };
     $scope.update_alert = update_alert;
-    
+
     $scope.org_form.reset = function() {
         $scope.org.user_email = "";
         $scope.org.name = "";
@@ -56,7 +54,7 @@ angular.module('BE.seed.controller.admin', [])
         user_service.add(user).then(function(data){
             // resolve promise
             $scope.user_form.invalid = false;
-            
+
             var alert_message = 'User ' + user.email + 'created and added ';
             if (data.org_created){
                 alert_message = alert_message + " as head of new org " + data.org;
@@ -81,7 +79,7 @@ angular.module('BE.seed.controller.admin', [])
     $scope.user_form.reset = function() {
         $scope.user = {};
     };
-     
+
     $scope.org_form.reset();
 
     $scope.user_form.reset();
