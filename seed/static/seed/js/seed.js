@@ -66,7 +66,8 @@ angular.module('BE.seed.directives', [
     'beResizable',
     'basicBuildingInfoChart',
     'dropdown',
-    'checkLabelExists'
+    'checkLabelExists',
+    'sdOnEnterKey'
     ]);
 angular.module('BE.seed.services', [
     'BE.seed.service.audit',
