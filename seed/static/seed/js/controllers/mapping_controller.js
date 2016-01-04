@@ -99,6 +99,12 @@ angular.module('BE.seed.controller.mapping', [])
     $scope.search.has_checkbox = false;
     $scope.search.update_results();
 
+
+    /* Called by 'Enter' key submit on filter fields form */
+    $scope.on_filter_enter_key = function(){
+        $scope.do_update_filters();
+    };
+
     $scope.do_update_filters = function(){
       $scope.search.search_buildings();
     };

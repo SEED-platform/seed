@@ -67,6 +67,15 @@ angular.module('BE.seed.controller.building_list', [])
     * SEARCH CODE
     */
 
+    /* Called by 'Enter' key submit on filter fields form */
+    $scope.on_filter_enter_key = function(){
+        if ($scope.is_project){
+            $scope.do_update_project_buildings_filters();
+        } else {
+            $scope.do_update_buildings_filters();
+        }
+    };
+
     /* Called by 'Update Filters' click in buildings list UI */
     $scope.do_update_buildings_filters = function(){
         $scope.search.deselect_all_buildings();
