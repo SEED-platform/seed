@@ -91,7 +91,7 @@ angular.module('BE.seed.controller.building_list', [])
     /*  private function to refresh search, called by UI event handlers
         or internal methods */
     var refresh_search = function() {
-        $scope.search.search_buildings();
+        $scope.search.filter_search();
     };
 
     /**

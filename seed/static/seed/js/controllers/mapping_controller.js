@@ -102,12 +102,14 @@ angular.module('BE.seed.controller.mapping', [])
 
     /* Handle 'Enter' key on filter fields */
     $scope.on_filter_enter_key = function(){
-        $scope.do_update_filters();
+      $scope.current_page = 1;
+      $scope.do_update_filters();
     };
 
     /* Handle 'update filters' button click */
     $scope.do_update_filters = function(){
-      $scope.search.search_buildings();
+      $scope.current_page = 1;
+      $scope.search.filter_search();
     };
 
     /*
