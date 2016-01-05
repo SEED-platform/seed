@@ -100,11 +100,12 @@ angular.module('BE.seed.controller.mapping', [])
     $scope.search.update_results();
 
 
-    /* Called by 'Enter' key submit on filter fields form */
+    /* Handle 'Enter' key on filter fields */
     $scope.on_filter_enter_key = function(){
         $scope.do_update_filters();
     };
 
+    /* Handle 'update filters' button click */
     $scope.do_update_filters = function(){
       $scope.search.search_buildings();
     };
