@@ -67,6 +67,16 @@ angular.module('BE.seed.controller.matching', [])
     $scope.detail.match_tree = [];
     var order_by = $filter('orderBy');
 
+    /* Handle 'update filters' button click */
+    $scope.do_update_filters = function() {
+        $scope.filter_search();
+    };
+
+    /* Handle 'Enter' key on filter fields */
+    $scope.on_filter_enter_key = function() {
+        $scope.filter_search();
+    };
+
     /*
      * filter_search: searches TODO(ALECK): use the search_service for search
      *   and pagination here.
