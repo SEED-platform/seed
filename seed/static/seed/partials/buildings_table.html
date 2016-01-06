@@ -26,7 +26,7 @@
                             class="form-control input-sm show" 
                             ng-class="{active: search.filter_params[c.sort_column].length > 0}" 
                             placeholder="{$ c.title $}" 
-                            sd-on-enter-key="on_filter_enter_key()"
+                            sd-enter="on_filter_enter_key()"
                             ng-model="search.filter_params[c.sort_column]">
 
                     <!-- for date range filters -->
@@ -36,7 +36,7 @@
                                 class="form-control input-sm" 
                                 placeholder="Min" 
                                 ng-model="search.filter_params[c.min]" 
-                                sd-on-enter-key="on_filter_enter_key()"
+                                sd-enter="on_filter_enter_key()"
                                 ng-class="{active: search.filter_params[c.min].length > 0}">
                     </div>
                     <div ng-if="c.type == 'date'" class="col-xs-6">
@@ -45,7 +45,7 @@
                                 class="form-control input-sm" 
                                 placeholder="Max" 
                                 ng-model="search.filter_params[c.max]" 
-                                sd-on-enter-key="on_filter_enter_key()"
+                                sd-enter="on_filter_enter_key()"
                                 ng-class="{active: search.filter_params[c.max].length > 0}">
                     </div>
                 </th>       

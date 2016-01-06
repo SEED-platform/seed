@@ -63,7 +63,7 @@
                                         class="form-control input-sm show" 
                                         placeholder="{$ c.title $}" 
                                         ng-model="filter_params[c.sort_column]" 
-                                        sd-on-enter-key="on_filter_enter_key()"
+                                        sd-enter="on_filter_enter_key()"
                                         ng-class="{active: filter_params[c.sort_column].length > 0}">
                             </th>
                             <th class="sub_head" ng-hide="filter_params.children__isnull"></th>
