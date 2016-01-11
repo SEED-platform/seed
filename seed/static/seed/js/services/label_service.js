@@ -20,40 +20,48 @@ angular.module('BE.seed.service.label',
         --------------------------------------------------
         Provides methods to CRUD labels on the server
         as well as apply and remove labels to buildings.
+
+        Note: This is the first service to use proper REST verbs and REST-based 
+        server APIs (provided by django-rest-framework).
+        If this approach works well, the hope is to refactor all Angular services
+        to use REST verbs and APIs.
     */
-
-
 
 
     /** Returns an array of labels.
     
-        @param {object} search  -   Optional search object. If provided, server should
-                                    mark each label in the response with a boolean 
-                                    property 'exists-in-set'
+        @param {array} selected_buildings       An array of building ids corresponding to 
+                                                selected buildings (should be empty if 
+                                                select_all_checkbox is true).
+        @param {boolean} select_all_checkbox    A boolean indicating whether user checked 
+                                                'Select all' checkbox.
+        @param {object} search_params           A reference to the Search object, which 
+                                                includes properties for active filters.
 
-        @return {object}            Returns a promise object that will resolve an
-                                    array of label objects on success.
-
-        Label objects have the following properties, with 'text' and 'color' props assigned locally.
+        Returned label objects should have the following properties, 
+        with 'text' and 'color' properties assigned locally.
         
-            id {integer}            the id of the label
-            name {string}           the text that appears in the label
-            text {string}           same as name, needed for ngTagsInput control
-            color {string}          the text description of the label's color (e.g. 'blue')
-            label {string}          the css class (usually in bootstrap) used to generate the color style
-                                    (poorly named, we should refactor to 'css-class' or something more accurate
-                                    or change how color is applied)
-            is_applied {boolean}    if a search object was passed in, this boolean indicates
-                                    if buildings in the current filtered set have this label
+            id {integer}            The id of the label.
+            name {string}           The text that appears in the label.
+            text {string}           Same as name, needed for ngTagsInput control.
+            color {string}          The text description of the label's color (e.g. 'blue').
+            label {string}          The css class, usually in bootstrap, used to generate
+                                    the color style (poorly named, needs refactoring).
+            is_applied {boolean}    If a search object was passed in, this boolean 
+                                    indicates if buildings in the current filtered 
+                                    set have this label.
 
-        For example
+        For example...
+        [
             {                
-                id: 8                
-                name: "test9"
-                color: "blue"
-                label: "primary"
+                id: 1,                
+                name: "test1",
+                color: "blue",
+                label: "primary",
+                text: "test1",
                 is_applied : true
             }
+        ]
     */
     
     function get_labels(selected_buildings, select_all_checkbox, search_params) {
@@ -87,13 +95,15 @@ angular.module('BE.seed.service.label',
 
     /*  Add a label to an organization's list of labels 
 
-        @return {object}    Returns a promise object which will resolve
-                            with either a success if the label was created
-                            on the server, or an error if the label could not be
-                            created on the server. 
+        @param {object} label       Label object to use for creating label on server.
+                                   
+        @return {object}            Returns a promise object which will resolve
+                                    with either a success if the label was created
+                                    on the server, or an error if the label could not be
+                                    created on the server. 
 
-                            Return object should also have a 'label' property assigned 
-                            to the newly created label object.
+                                    Return object should also have a 'label' property assigned 
+                                    to the newly created label object.
     */
     function create_label(label){
         var defer = $q.defer();
@@ -118,13 +128,14 @@ angular.module('BE.seed.service.label',
 
     /*  Update an existing a label in an organization 
         
-        @param {object} label object, which must include label ID. 
+        @param {object} label   A label object with changed properties to update on server.
+                                The object must include property 'id' for label ID. 
 
-        @return {object}    Returns a promise object which will resolve
-                            with either a success if the label was updated, 
-                            or an error if not.                             
-                            Return object should also have a 'label' property assigned 
-                            to the updated label object.
+        @return {object}        Returns a promise object which will resolve
+                                with either a success if the label was updated, 
+                                or an error if not.                             
+                                Return object will have a 'label' property assigned 
+                                to the updated label object.
     */
     function update_label(label){
         var defer = $q.defer();
@@ -146,13 +157,14 @@ angular.module('BE.seed.service.label',
         return defer.promise;
     }
 
-    /*  Delete a label from the set of labels for an organization 
+    /*  Delete a label from the set of labels for an organization.
 
-        @param {object} label object, which must include label ID. 
+        @param {object} label       Label object to delete on server.
+                                    Must include property 'id' for label ID. 
 
-        @return {object}    Returns a promise object which will resolve
-                            with either a success if the label was deleted, 
-                            or an error if not
+        @return {object}            Returns a promise object which will resolve
+                                    with either a success if the label was deleted, 
+                                    or an error if not.
     */
     function delete_label(label){
         var defer = $q.defer();
@@ -180,14 +192,16 @@ angular.module('BE.seed.service.label',
     and a group of "remove" labels. 
 
     
-    @param {array} add_label_ids            An array of label ids to apply to selected buildings
-    @param {array} remove_label_ids         An array of label ids to remove from selected buildings
-    @param {object} search                  A reference to the Search object, which includes
-                                            properties for selected buildings, active filters
-                                            and the status of the 'select all' checkbox.
+    @param {array} add_label_ids            An array of label ids to apply to selected buildings.
+    @param {array} remove_label_ids         An array of label ids to remove from selected buildings.
+    @param {array} selected_buildings       An array of building ids corresponding to selected buildings
+                                            (should be empty if select_all_checkbox is true).
+    @param {boolean} select_all_checkbox    A boolean indicating whether user checked 'Select all' checkbox.
+    @param {object} search_params           A reference to the Search object, which includes
+                                            properties for active filters.
 
     @return {object}                        A promise object that resolves server response
-                                            (success or error)
+                                            (success or error).
 
     */
     function update_building_labels(add_label_ids, remove_label_ids, selected_buildings, select_all_checkbox, search_params) {
@@ -215,7 +229,7 @@ angular.module('BE.seed.service.label',
     /*  Gets the list of supported colors for labels, based on default bootstrap
         styles for labels. These are defined locally.
 
-        @return {array}     List of label option objects 
+        @return {array}     List of label option objects.
 
         Label option objects have the following structure
         {
@@ -225,8 +239,8 @@ angular.module('BE.seed.service.label',
 
         NOTE: At some point label colors should be defined on the server and not 
         directly related to bootstrap colors. If we do stay with Bootstrap colors
-        we should change the property names to  something like 'bootstrap-class' and 
-        'color-description' to make them more clear.
+        we should change the property names to something like 'bootstrap-class' and 
+        'color-description' (rather than 'label') to make them more clear.
 
     */
     function get_available_colors() {
