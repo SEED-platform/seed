@@ -60,7 +60,7 @@ angular.module('BE.seed.filters', [
     'typedNumber'
     ]);
 angular.module('BE.seed.directives', [
-    'beEnter',
+    'sdEnter',
     'beUploader',
     'beLabel',
     'beResizable',

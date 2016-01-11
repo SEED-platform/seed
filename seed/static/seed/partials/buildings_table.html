@@ -3,26 +3,53 @@
         <thead>
             <tr>
                 <th class="check is_aligned_center" ng-if="search.has_checkbox">
-                    <input type="checkbox" ng-model="search.select_all_checkbox" ng-change="search.select_all_changed()">
+                    <input  type="checkbox" 
+                            ng-model="search.select_all_checkbox" 
+                            ng-change="search.select_all_changed()">
                 </th>
-                <th be-resizable ng-repeat="c in columns" class="{$ c.title_class $}" ng-click="c.toggle_sort()" ng-class="c.sorted_class()">{$ c.title $} <span class="subtitle">{$ c.subtitle $}</span>
+                <th be-resizable 
+                    ng-repeat="c in columns" 
+                    class="{$ c.title_class $}" 
+                    ng-click="c.toggle_sort()" 
+                    ng-class="c.sorted_class()">{$ c.title $} 
+                    <span class="subtitle">{$ c.subtitle $}</span>
                 </th>
             </tr>
-            <tr class="sub_head">
-                <th class="sub_head check_row" ng-if="search.has_checkbox"></th>
-                <th class="sub_head" ng-repeat="c in columns" style="min-width: 110px;">
+            <tr class="sub_head">                
+                <th class="sub_head check_row" ng-if="search.has_checkbox"></th>                
+                <th class="sub_head" 
+                    ng-repeat="c in columns" 
+                    style="min-width: 110px;">
                     <!-- for string & numeric filters -->
-                    <input ng-if="c.type == 'string' || c.type == 'link' || c.type == 'number' || c.type == 'floor_area'" type="text" class="form-control input-sm show" ng-class="{active: search.filter_params[c.sort_column].length > 0}" placeholder="{$ c.title $}" ng-model="search.filter_params[c.sort_column]">
+                    <input  ng-if="c.type == 'string' || c.type == 'link' || c.type == 'number' || c.type == 'floor_area'" 
+                            type="text" 
+                            class="form-control input-sm show" 
+                            ng-class="{active: search.filter_params[c.sort_column].length > 0}" 
+                            placeholder="{$ c.title $}" 
+                            sd-enter="on_filter_enter_key()"
+                            ng-model="search.filter_params[c.sort_column]">
 
                     <!-- for date range filters -->
                     <div ng-if="c.type == 'date'" class="col-xs-6">
-                        <input ng-if="c.type == 'date'" type="date" class="form-control input-sm" placeholder="Min" ng-model="search.filter_params[c.min]" ng-class="{active: search.filter_params[c.min].length > 0}">
+                        <input  ng-if="c.type == 'date'" 
+                                type="date" 
+                                class="form-control input-sm" 
+                                placeholder="Min" 
+                                ng-model="search.filter_params[c.min]" 
+                                sd-enter="on_filter_enter_key()"
+                                ng-class="{active: search.filter_params[c.min].length > 0}">
                     </div>
                     <div ng-if="c.type == 'date'" class="col-xs-6">
-                        <input ng-if="c.type == 'date'" type="date" class="form-control input-sm" placeholder="Max" ng-model="search.filter_params[c.max]" ng-class="{active: search.filter_params[c.max].length > 0}">
+                        <input  ng-if="c.type == 'date'" 
+                                type="date" 
+                                class="form-control input-sm" 
+                                placeholder="Max" 
+                                ng-model="search.filter_params[c.max]" 
+                                sd-enter="on_filter_enter_key()"
+                                ng-class="{active: search.filter_params[c.max].length > 0}">
                     </div>
-                </th>
-            </tr>
+                </th>       
+            </tr> 
         </thead>
         <tbody>
             <tr ng-repeat="b in search.buildings">
