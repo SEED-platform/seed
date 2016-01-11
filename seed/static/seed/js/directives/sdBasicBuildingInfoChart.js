@@ -2,8 +2,8 @@
  * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-angular.module('basicBuildingInfoChart', [])
-.directive('basicBuildingInfoChart', ['$window', function ($window) {
+angular.module('sdBasicBuildingInfoChart', [])
+.directive('sdBasicBuildingInfoChart', ['$window', function ($window) {
   return {
     restrict: 'E',
     replace: true,
@@ -13,7 +13,7 @@ angular.module('basicBuildingInfoChart', [])
             chartType: '@',
             height: '@'
     },
-    require: ['basicBuildingInfoChart'],
+    require: ['sdBasicBuildingInfoChart'],
     link: function (scope, element, attrs, controllers) {
 
 

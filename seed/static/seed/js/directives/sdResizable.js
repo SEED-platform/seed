@@ -6,8 +6,8 @@
     'use strict';
 
     angular
-        .module('beResizable',[])
-        .directive('beResizable', resizable);
+        .module('sdResizable',[])
+        .directive('sdResizable', resizable);
 
     /**
      * angular directive to wrap jQuery's resizable functionality

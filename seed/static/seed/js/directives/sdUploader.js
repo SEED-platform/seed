@@ -3,7 +3,7 @@
  * :author
  */
 /**
- * directive be-uploader: wraps fineuploader.js assumed AWS creds are in global
+ * directive sd-uploader: wraps fineuploader.js assumed AWS creds are in global
  *                        namespace: window.config.AWS_UPLOAD_BUCKET_NAME window.config.AWS_CLIENT_ACCESS_KEY
  *   buttontext: string - text for the button
  *   sourcetype: string - upon upload successful, send the sourcetype param to 
@@ -291,7 +291,7 @@ var makeFileSystemUploader = function(scope, element, attrs, filename) {
     return uploader;
 };
  
-var beUploaderFineUploader = function(scope, element, attrs, filename) {
+var sdUploaderFineUploader = function(scope, element, attrs, filename) {
     var dest = window.BE.FILE_UPLOAD_DESTINATION;
     var uploader;
     if (dest === 'S3'){
@@ -305,7 +305,7 @@ var beUploaderFineUploader = function(scope, element, attrs, filename) {
     return uploader;
 };
 
-angular.module('beUploader', []).directive('beUploader', function() {
+angular.module('sdUploader', []).directive('sdUploader', function() {
     return {
         scope: {
             buttontext: "@",
@@ -318,7 +318,7 @@ angular.module('beUploader', []).directive('beUploader', function() {
         restrict: 'A',
         link: function (scope, element, attrs) {
             var filename;
-            $(beUploaderFineUploader(scope, element, attrs, filename));
+            $(sdUploaderFineUploader(scope, element, attrs, filename));
         }
     };
 });

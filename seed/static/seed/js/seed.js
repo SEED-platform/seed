@@ -60,13 +60,13 @@ angular.module('BE.seed.filters', [
     'typedNumber'
     ]);
 angular.module('BE.seed.directives', [
-    'beEnter',
-    'beUploader',
-    'beLabel',
-    'beResizable',
-    'basicBuildingInfoChart',
+    'sdEnter',
+    'sdUploader',
+    'sdLabel',
+    'sdResizable',
+    'sdBasicBuildingInfoChart',
     'dropdown',
-    'checkLabelExists'
+    'sdCheckLabelExists'
     ]);
 angular.module('BE.seed.services', [
     'BE.seed.service.audit',

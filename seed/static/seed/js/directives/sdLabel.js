@@ -1,10 +1,11 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 /**
- * directive be-label: adds a bootstrap label from a color
+ * directive sd-label: adds a bootstrap label from a color
  */
-angular.module('beLabel', []).directive('beLabel', function () {
+angular.module('sdLabel', []).directive('sdLabel', function () {
     return {
         scope: {},
         restrict: 'E',
