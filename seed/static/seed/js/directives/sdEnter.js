@@ -3,7 +3,7 @@
  * :author
  */
 /**
- * directive sd-enter used for search input to only fire on 'enter' or 'return'
+ * Directive sd-enter used for search or filter input to only fire on 'enter' or 'return'
  */
 angular.module('sdEnter', []).directive('sdEnter', function () {
     return function (scope, element, attrs) {
@@ -12,7 +12,6 @@ angular.module('sdEnter', []).directive('sdEnter', function () {
                 scope.$apply(function (){
                     scope.$eval(attrs.sdEnter);
                 });
-
                 event.preventDefault();
             }
         });

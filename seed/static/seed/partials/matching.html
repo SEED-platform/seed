@@ -48,13 +48,31 @@
     </div>
     <div class="section_header_container has_no_border">
         <div class="section_header fixed_height">
-            <div class="left section_action_container row matching_toggle">
-                <div class="col-sm-2" ng-hide="show_building_list">
-                <button type="button" class="btn btn-primary btn-sm" ng-disabled="duplicates_present()" ng-click="back_to_list()"><i class="fa fa-chevron-left"></i>Back to List</button>
-                </div>
+            <div    class="left section_action_container row matching_toggle" 
+                    style="margin-left:0px;">
+         
+                <button type="button" 
+                        ng-hide="show_building_list"
+                        class="btn btn-primary btn-sm" 
+                        ng-disabled="duplicates_present()" 
+                        ng-click="back_to_list()"
+                        style="margin-right:10px;"
+                        >
+                    <i class="fa fa-chevron-left"></i>Back to List
+                </button>
+                <button type="button" 
+                        class="btn btn-primary btn-sm"
+                        ng-click="do_update_filters()"  >
+                    Update Filters
+                </button>
+                
             </div>
             <div class="right section_action_container section_action_btn">
-                <button type="button" class="btn btn-default btn-sm" ng-click="open_edit_columns_modal()"><i class="fa fa-columns"></i>View/Hide Columns</button>
+                <button type="button" 
+                        class="btn btn-default btn-sm" 
+                        ng-click="open_edit_columns_modal()">
+                    <i class="fa fa-columns"></i>View/Hide Columns
+                </button>
             </div>
         </div>
     </div>
