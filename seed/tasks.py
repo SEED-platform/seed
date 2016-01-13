@@ -13,7 +13,6 @@ import string
 import traceback
 import operator
 from _csv import Error
-from dateutil import parser
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
@@ -27,6 +26,7 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from seed.decorators import get_prog_key
 import usaddress
+from seed import search
 from seed.audit_logs.models import AuditLog
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm import cleaners, mapper, reader
@@ -63,6 +63,7 @@ from seed.models import (
     BuildingSnapshot,
 )
 from seed.decorators import lock_and_track
+from seed.utils import time as time_utils
 from seed.utils.buildings import get_source_type, get_search_query
 from seed.utils.cache import set_cache, increment_cache, get_cache
 from seed.utils.mapping import get_mappable_columns
@@ -169,11 +170,8 @@ def add_buildings(project_slug, project_dict, user_pk):
 
     """
     project = Project.objects.get(slug=project_slug)
-    user = User.objects.get(pk=user_pk)
-    project.last_modified_by = user
-    project.save()
 
-    selected_buildings = project_dict.get('selected_buildings', [])
+    # Initialize the progress cache
     prog_key = project.adding_buildings_status_percentage_cache_key
     data = {
         'status': 'processing',
@@ -184,91 +182,57 @@ def add_buildings(project_slug, project_dict, user_pk):
     }
     set_cache(project.adding_buildings_status_percentage_cache_key, data['status'], data)
 
-    i = 0
-    denominator = 1
-    if not project_dict.get('select_all_checkbox', False):
-        for sfid in selected_buildings:
-            i += 1
-            denominator = len(selected_buildings)
-            try:
-                data = {
-                    'status': 'processing',
-                    'progress': (float(i) / len(selected_buildings) * 100),
-                    'progress_key': prog_key,
-                    'numerator': i,
-                    'denominator': denominator
-                }
-                set_cache(prog_key, data['status'], data)
-            except ZeroDivisionError:
-                pass
-            ab = BuildingSnapshot.objects.get(pk=sfid)
-            ProjectBuilding.objects.get_or_create(
-                project=project, building_snapshot=ab
-            )
+    user = User.objects.get(pk=user_pk)
+    project.last_modified_by = user
+    project.save()
+
+    # Perform the appropriate filtering to get the raw list of buildings.
+    params = search.process_search_params(project_dict, user, is_api_request=False)
+    buildings_queryset = search.orchestrate_search_filter_sort(
+        params=params,
+        user=user,
+    )
+
+    # Get selected buildings based on either individual selection or select-all
+    # selection.
+    if project_dict.get('select_all_checkbox'):
+        selected_buildings = buildings_queryset
     else:
-        query_buildings = get_search_query(user, project_dict)
-        denominator = query_buildings.count() - len(selected_buildings)
+        selected_buildings = buildings_queryset.filter(
+            id__in=project_dict.get('selected_buildings'),
+        )
+
+    denominator = len(selected_buildings)
+
+    # Loop over the buildings adding them to the project and updating the
+    # progress cache.
+    for idx, bs in enumerate(selected_buildings):
         data = {
             'status': 'processing',
-            'progress': 10,
+            'progress': (float(idx) / denominator * 100),
             'progress_key': prog_key,
-            'numerator': i,
-            'denominator': denominator,
+            'numerator': idx,
+            'denominator': denominator
         }
         set_cache(prog_key, data['status'], data)
-        i = 0
-        for b in query_buildings:
-            # todo: only get back query_buildings pks as a list, and create
-            # using the pk,
-            #       not the python object
-            i += 1
-            ProjectBuilding.objects.get_or_create(
-                project=project, building_snapshot=b
-            )
-            data = {
-                'status': 'processing',
-                'progress': (float(i) / denominator * 100),
-                'progress_key': prog_key,
-                'numerator': i,
-                'denominator': denominator
-            }
-            set_cache(prog_key, data['status'], data)
-        for building in selected_buildings:
-            i += 1
-            project.building_snapshots.remove(
-                BuildingSnapshot.objects.get(pk=building)
-            )
-            data = {
-                'status': 'processing',
-                'progress': (float(denominator - len(selected_buildings) + i) / denominator * 100),
-                'progress_key': prog_key,
-                'numerator': denominator - len(selected_buildings) + i,
-                'denominator': denominator
-            }
-            set_cache(prog_key, data['status'], data)
+        ProjectBuilding.objects.get_or_create(
+            project=project, building_snapshot=bs
+        )
+
+    # Mark the progress cache as complete.
     result = {
         'status': 'completed',
         'progress': 100,
         'progress_key': prog_key,
-        'numerator': i,
+        'numerator': denominator,
         'denominator': denominator
     }
     set_cache(prog_key, result['status'], result)
 
-    deadline_date = project_dict.get('deadline_date')
-    if isinstance(deadline_date, (int, float)):
-        deadline_date = datetime.datetime.fromtimestamp(deadline_date / 1000)
-    elif isinstance(deadline_date, basestring):
-        deadline_date = parser.parse(deadline_date)
-    else:
-        deadline_date = None
-    end_date = project_dict.get('end_date')
-    if isinstance(end_date, (int, float)):
-        end_date = datetime.datetime.fromtimestamp(end_date / 1000)
-    elif isinstance(end_date, basestring):
-        end_date = parser.parse(end_date)
-    else:
-        end_date = None
+    deadline_date = time_utils.parse_datetime(project_dict.get('deadline_date'))
+
+    end_date = time_utils.parse_datetime(project_dict.get('end_date'))
+
     if end_date:
         last_day_of_month = calendar.monthrange(
             end_date.year, end_date.month
