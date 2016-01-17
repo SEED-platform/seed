@@ -99,6 +99,47 @@ angular.module('BE.seed.controller.building_list', [])
     */
 
 
+    /** TEMP: Matching filter experient */
+
+    /**
+    *  Code for filter dropdown
+    */
+
+    var SHOW_ALL = "Show All";
+    var SHOW_MATCHED = "Show Matched";
+    var SHOW_UNMATCHED = "Show Unmatched";
+
+    $scope.matching_filter_options = [
+        {id:SHOW_ALL, value:SHOW_ALL},
+        {id:SHOW_MATCHED, value:SHOW_MATCHED},
+        {id:SHOW_UNMATCHED, value:SHOW_UNMATCHED}
+    ];
+
+    $scope.matching_filter_selection = {selected: SHOW_ALL};     //default setting
+
+    $scope.update_show_matching_filter = function(optionValue) {
+
+        switch(optionValue){
+            case SHOW_ALL:               
+                $scope.search.filter_params.children__isnull = undefined;
+                break;
+            case SHOW_MATCHED:
+                $scope.search.filter_params.children__isnull = false;  //has children therefore is matched               
+                break;
+            case SHOW_UNMATCHED:
+                $scope.search.filter_params.children__isnull = true;   //does not have children therefore is unmatched
+                break;
+            default:
+                $log.error("#matching_controller: unexpected filter value: ", optionValue);
+                return;
+        }
+        $scope.do_update_buildings_filters();
+    };
+
+
+    /** END TEMP **/
+
+
     /**
     * LABELS CODE
     */
