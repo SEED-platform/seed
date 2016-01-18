@@ -381,6 +381,7 @@ def export_buildings_download(request):
         try:
             files = file_storage.listdir(export_subdir)
         except OSError:
+            # Likely scenario is that the file hasn't been written to disk yet.
             return {
                 'success': False,
                 'status': 'working'
