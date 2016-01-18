@@ -340,7 +340,7 @@ def export_buildings_progress(request):
         "success": True,
         "status": "success",
         'total_buildings': get_cache(progress_key)['total_buildings'],
-        "buildings_processed": percent_done * total_buildings
+        "buildings_processed": (percent_done / 100) * total_buildings
     }
 
 
