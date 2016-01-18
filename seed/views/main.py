@@ -377,7 +377,14 @@ def export_buildings_download(request):
 
     if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
         file_storage = DefaultStorage()
-        files = file_storage.listdir(export_subdir)
+
+        try:
+            files = file_storage.listdir(export_subdir)
+        except OSError:
+            return {
+                'success': False,
+                'status': 'working'
+            }
 
         if not files:
             return {
