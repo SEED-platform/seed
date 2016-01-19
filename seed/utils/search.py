@@ -54,6 +54,13 @@ def is_not_empty_match(q):
     return False
 
 
+def is_case_insensitive_match(q):
+    # Carat and matching quotes? eg ^"sacramento"
+    if is_string_query(q):
+        return re.match(r"""^\^(["'])(.+)\1$""", q)
+    return False
+
+
 NUMERIC_EXPRESSION_REGEX = re.compile((
     r'('                                     # open expression grp
     r'(?P<operator>==|=|>|>=|<|<=|<>|!|!=)'  # operator

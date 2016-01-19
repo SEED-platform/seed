@@ -180,11 +180,14 @@ def filter_other_params(queryset, other_params, db_columns):
             exact_match = search_utils.is_exact_match(v)
             empty_match = search_utils.is_empty_match(v)
             not_empty_match = search_utils.is_not_empty_match(v)
+            case_insensitive_match = search_utils.is_case_insensitive_match(v)
             is_numeric_expression = search_utils.is_numeric_expression(v)
             is_string_expression = search_utils.is_string_expression(v)
 
             if exact_match:
                 query_filters &= Q(**{"%s__exact" % k: exact_match.group(2)})
+            elif case_insensitive_match:
+                query_filters &= Q(**{"%s__iexact" % k: case_insensitive_match.group(2)})
             elif empty_match:
                 query_filters &= Q(**{"%s__exact" % k: ''}) | Q(**{"%s__isnull" % k: True})
             elif not_empty_match:
@@ -219,6 +222,7 @@ def filter_other_params(queryset, other_params, db_columns):
             exact_match = search_utils.is_exact_match(v)
             empty_match = search_utils.is_empty_match(v)
             not_empty_match = search_utils.is_not_empty_match(v)
+            case_insensitive_match = search_utils.is_case_insensitive_match(v)
 
             if empty_match:
                 # Filter for records that DO NOT contain this field OR
@@ -243,6 +247,10 @@ def filter_other_params(queryset, other_params, db_columns):
             if exact_match:
                 conditions['value'] = exact_match.group(2)
                 conditions['key_cast'] = 'text'
+            elif case_insensitive_match:
+                conditions['value'] = case_insensitive_match.group(2)
+                conditions['key_cast'] = 'text'
+                conditions['case_insensitive'] = True
             elif k.endswith(('__gt', '__gte')):
                 k = search_utils.strip_suffixes(k, ['__gt', '__gte'])
                 conditions['cond'] = '>'
