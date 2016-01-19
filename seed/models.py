@@ -204,10 +204,10 @@ def obj_to_dict(obj):
     response[u'model'] = struct['model']
     # JsonField doesn't get serialized by `serialize`
     for f in obj._meta.fields:
-        if type(f) == JsonField:
+        if isinstance(f, JsonField):
             e = getattr(obj, f.name)
             # postgres < 9.3 support
-            while type(e) == unicode:
+            while isinstance(e, unicode):
                 e = json.loads(e)
             response[unicode(f.name)] = e
     return response
@@ -304,8 +304,12 @@ def clean_canonicals(b1, b2, new_snapshot):
 
 
 def save_snapshot_match(
-        b1_pk, b2_pk, confidence=None, user=None, match_type=None, default_pk=None
-):
+        b1_pk,
+        b2_pk,
+        confidence=None,
+        user=None,
+        match_type=None,
+        default_pk=None):
     """Saves a match between two models as a new snapshot; updates Canonical.
 
     :param b1_pk: int, id for building snapshot.
@@ -518,7 +522,7 @@ def update_building(old_snapshot, updated_values, user, *args, **kwargs):
     # Need to hydrate sources
     sources = {
         k: BuildingSnapshot.objects.get(pk=v) for k, v in sources.items() if v
-        }
+    }
 
     # Handle the mapping of "normal" attributes.
     new_snapshot = mapper.map_row(
@@ -1357,40 +1361,53 @@ class BuildingSnapshot(TimeStampedModel):
     def save(self, *args, **kwargs):
         if self.tax_lot_id and isinstance(self.tax_lot_id, types.StringTypes):
             self.tax_lot_id = self.tax_lot_id[:128]
-        if self.pm_property_id and isinstance(self.pm_property_id, types.StringTypes):
+        if self.pm_property_id and isinstance(
+                self.pm_property_id, types.StringTypes):
             self.pm_property_id = self.pm_property_id[:128]
-        if self.custom_id_1 and isinstance(self.custom_id_1, types.StringTypes):
+        if self.custom_id_1 and isinstance(
+                self.custom_id_1, types.StringTypes):
             self.custom_id_1 = self.custom_id_1[:128]
         if self.lot_number and isinstance(self.lot_number, types.StringTypes):
             self.lot_number = self.lot_number[:128]
-        if self.block_number and isinstance(self.block_number, types.StringTypes):
+        if self.block_number and isinstance(
+                self.block_number, types.StringTypes):
             self.block_number = self.block_number[:128]
         if self.district and isinstance(self.district, types.StringTypes):
             self.district = self.district[:128]
         if self.owner and isinstance(self.owner, types.StringTypes):
             self.owner = self.owner[:128]
-        if self.owner_email and isinstance(self.owner_email, types.StringTypes):
+        if self.owner_email and isinstance(
+                self.owner_email, types.StringTypes):
             self.owner_email = self.owner_email[:128]
-        if self.owner_telephone and isinstance(self.owner_telephone, types.StringTypes):
+        if self.owner_telephone and isinstance(
+                self.owner_telephone, types.StringTypes):
             self.owner_telephone = self.owner_telephone[:128]
-        if self.owner_address and isinstance(self.owner_address, types.StringTypes):
+        if self.owner_address and isinstance(
+                self.owner_address, types.StringTypes):
             self.owner_address = self.owner_address[:128]
-        if self.owner_city_state and isinstance(self.owner_city_state, types.StringTypes):
+        if self.owner_city_state and isinstance(
+                self.owner_city_state, types.StringTypes):
             self.owner_city_state = self.owner_city_state[:128]
-        if self.owner_postal_code and isinstance(self.owner_postal_code, types.StringTypes):
+        if self.owner_postal_code and isinstance(
+                self.owner_postal_code, types.StringTypes):
             self.owner_postal_code = self.owner_postal_code[:128]
 
-        if self.property_name and isinstance(self.property_name, types.StringTypes):
+        if self.property_name and isinstance(
+                self.property_name, types.StringTypes):
             self.property_name = self.property_name[:255]
-        if self.address_line_1 and isinstance(self.address_line_1, types.StringTypes):
+        if self.address_line_1 and isinstance(
+                self.address_line_1, types.StringTypes):
             self.address_line_1 = self.address_line_1[:255]
-        if self.address_line_2 and isinstance(self.address_line_2, types.StringTypes):
+        if self.address_line_2 and isinstance(
+                self.address_line_2, types.StringTypes):
             self.address_line_2 = self.address_line_2[:255]
         if self.city and isinstance(self.city, types.StringTypes):
             self.city = self.city[:255]
-        if self.postal_code and isinstance(self.postal_code, types.StringTypes):
+        if self.postal_code and isinstance(
+                self.postal_code, types.StringTypes):
             self.postal_code = self.postal_code[:255]
-        if self.state_province and isinstance(self.state_province, types.StringTypes):
+        if self.state_province and isinstance(
+                self.state_province, types.StringTypes):
             self.state_province = self.state_province[:255]
         if self.building_certification and isinstance(self.building_certification, types.StringTypes):  # NOQA
             self.building_certification = self.building_certification[:255]
@@ -1433,10 +1450,10 @@ class BuildingSnapshot(TimeStampedModel):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-                }
+            }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-                }
+            }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk
@@ -1450,7 +1467,7 @@ class BuildingSnapshot(TimeStampedModel):
             result['co_parent'] = (self.co_parent and self.co_parent.pk)
             result['coparent'] = (self.co_parent and {
                 field: self.co_parent.pk for field in ['pk', 'id']
-                })
+            })
 
             return result
 
