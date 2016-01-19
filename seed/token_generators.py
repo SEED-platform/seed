@@ -58,8 +58,7 @@ class SignupTokenGenerator(object):
         # Check the timestamp is within limit
         if (
             (self._num_days(self._today()) - ts) >
-            settings.PASSWORD_RESET_TIMEOUT_DAYS
-            and token_expires
+            settings.PASSWORD_RESET_TIMEOUT_DAYS and token_expires
         ):
             return False
 
