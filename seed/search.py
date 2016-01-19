@@ -3,8 +3,7 @@
 """
 :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
-"""
-"""
+
 Search methods pertaining to buildings.
 
 """
@@ -235,8 +234,9 @@ def filter_other_params(queryset, other_params, db_columns):
             elif not_empty_match:
                 # Only return records that have the key in extra_data, but the value is not empty.
                 queryset = queryset.filter(
-                    Q(**{'extra_data__at_%s__isnull' % k: False})
-                    & ~Q(**{'extra_data__at_%s' % k: ''})
+                    Q(
+                        **{'extra_data__at_%s__isnull' % k: False}
+                    ) & ~Q(**{'extra_data__at_%s' % k: ''})
                 )
                 continue
 

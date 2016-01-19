@@ -3,8 +3,7 @@
 """
 :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
-"""
-"""
+
 token_generator.py
 Aleck Landgraf, taken from django core master branch
 
@@ -56,11 +55,11 @@ class SignupTokenGenerator(object):
             return False
 
         # Check the timestamp is within limit
-        if (
-            (self._num_days(self._today()) - ts) >
-            settings.PASSWORD_RESET_TIMEOUT_DAYS
-            and token_expires
-        ):
+        token_is_expired = all(
+            token_expires,
+            (self._num_days(self._today()) - ts) > settings.PASSWORD_RESET_TIMEOUT_DAYS,
+        )
+        if token_is_expired:
             return False
 
         return True
