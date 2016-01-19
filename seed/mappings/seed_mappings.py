@@ -3,16 +3,13 @@
 """
 :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
-"""
-"""
+
 How to map dataset attributes to CanonicalBuilding.
 
 If the first element in the tuple is a callable, it will be passed
 a model instance for that type of mapping (AssessedBuilding for
 AssessedBuilding_to_CanonicalBuilding, etc.)
-
 """
-
 from seed.utils.mapping import get_mappable_columns
 
 
