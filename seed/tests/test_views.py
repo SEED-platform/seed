@@ -755,8 +755,15 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['status'], 'success')
         self.assertEqual(data['number_matching_search'], 2)
         self.assertEqual(len(data['buildings']), 2)
-        self.assertEqual(data['buildings'][0]['address_line_1'], 'Address')
-        self.assertEqual(data['buildings'][1]['address_line_1'], 'address')
+
+        addresses = []
+
+        addresses.append(data['buildings'][0]['address_line_1'])
+        addresses.append(data['buildings'][1]['address_line_1'])
+
+        self.assertIn('address', addresses)
+        self.assertIn('Address', addresses)
+        self.assertNotIn('fake address', addresses)
 
     def test_search_empty_column(self):
         """
