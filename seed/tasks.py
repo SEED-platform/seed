@@ -384,7 +384,8 @@ def remove_buildings(project_slug, project_dict, user_pk):
 
 def add_cache_increment_parameter(tasks):
     """This adds the cache increment value to the signature to each subtask."""
-    # TODO: This is a really weird way to handle this, it adds the argument after the methods have been added to the tasks list
+    # TODO: This is a really weird way to handle this, it adds the argument
+    # after the methods have been added to the tasks list
     denom = len(tasks) or 1
     increment = 1.0 / denom * 100
     # This is kind of terrible. Once we know how much progress each task
@@ -415,7 +416,7 @@ def finish_import_record(import_record_pk):
 
 
 @shared_task
-def finish_mapping(results, file_pk):
+def finish_mapping(file_pk):
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.mapping_done = True
     import_file.save()
@@ -616,13 +617,14 @@ def _map_data(file_pk, *args, **kwargs):
     tasks = []
     for chunk in batch(qs, 100):
         ids = [obj.id for obj in chunk]
-        tasks.append(map_row_chunk.s(ids, file_pk, source_type, prog_key))  # note that increment will be added to end
+        tasks.append(map_row_chunk.s(ids, file_pk, source_type, prog_key))
 
     # need to rework how the progress keys are implemented here, but at least
     # the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
     if tasks:
-        chord(tasks, interval=15)(finish_mapping.subtask([file_pk]))
+        # specify the chord as an immutable with .si
+        chord(tasks, interval=15)(finish_mapping.si(file_pk))
     else:
         finish_mapping.subtask(file_pk)
 
@@ -665,7 +667,6 @@ def _cleanse_data(file_pk):
     prog_key = get_prog_key('cleanse_data', file_pk)
     tasks = []
     for chunk in batch(qs, 100):
-        # serialized_data = [obj.extra_data for obj in chunk]
         ids = [obj.id for obj in chunk]
         tasks.append(cleanse_data_chunk.s(ids, file_pk))  # note that increment will be added to end
 
@@ -673,9 +674,10 @@ def _cleanse_data(file_pk):
     # the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
     if tasks:
-        chord(tasks, interval=15)(finish_cleansing.subtask([file_pk]))
+        # specify the chord as an immutable with .si
+        chord(tasks, interval=15)(finish_cleansing.si(file_pk))
     else:
-        finish_cleansing.subtask(file_pk)
+        finish_cleansing.s(file_pk)
 
     result = {
         'status': 'success',
