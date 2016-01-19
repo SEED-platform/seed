@@ -3,11 +3,9 @@
 """
 :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pmerriam@quickleft.com>'
-"""
-"""
+
 Url patterns for endpoints associated with Labels
 """
-
 from django.conf.urls import url
 
 from rest_framework import routers
