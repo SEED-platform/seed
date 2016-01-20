@@ -265,8 +265,7 @@ def export_buildings(request):
         _selected_fields = []
         for field in selected_fields:
             components = field.split("__", 1)
-            if (components[0] == 'project_building_snapshots'
-                    and len(components) > 1):
+            if (components[0] == 'project_building_snapshots' and len(components) > 1):
                 _selected_fields.append(components[1])
             else:
                 _selected_fields.append("building_snapshot__%s" % field)
@@ -340,7 +339,7 @@ def export_buildings_progress(request):
         "success": True,
         "status": "success",
         'total_buildings': get_cache(progress_key)['total_buildings'],
-        "buildings_processed": percent_done * total_buildings
+        "buildings_processed": (percent_done / 100) * total_buildings
     }
 
 
@@ -377,7 +376,15 @@ def export_buildings_download(request):
 
     if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
         file_storage = DefaultStorage()
-        files = file_storage.listdir(export_subdir)
+
+        try:
+            files = file_storage.listdir(export_subdir)
+        except OSError:
+            # Likely scenario is that the file hasn't been written to disk yet.
+            return {
+                'success': False,
+                'status': 'working'
+            }
 
         if not files:
             return {
@@ -2336,7 +2343,8 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     # in the future if it should search extra_data but extra_data is still not
     # searchable directly then this can be adjusted by replacing the last None with
     # obj.extra_data[attr] if hasattr(obj, "extra_data") and attr in obj.extra_data else None
-    get_attr_f = lambda obj, attr: getattr(obj, attr) if hasattr(obj, attr) else None
+    def get_attr_f(obj, attr):
+        return getattr(obj, attr, None)
 
     bldg_counts = {}
 

@@ -3,8 +3,7 @@
 """
 :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
-"""
-"""
+
 Demo and testing features for interacting with a SEED API.
 """
 from datetime import datetime, timedelta
@@ -110,7 +109,8 @@ class APIClient(object):
                 continue
 
             def make_function(name):
-                fn = lambda obj, **args: obj._request(name=name, **args)
+                def fn(obj, **kwargs):
+                    return obj._request(name=name, **kwargs)
                 endpoint = self._get_endpoint_by_name(name)
                 fn.__doc__ = endpoint['description']
                 fn.__name__ = str(endpoint['name'])  # de-unicode it

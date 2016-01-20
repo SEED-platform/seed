@@ -3,8 +3,7 @@
 """
 :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
-"""
-"""
+
 Search methods pertaining to buildings.
 
 """
@@ -324,6 +323,8 @@ def process_search_params(params, user, is_api_request=False):
     if order_by == '':
         order_by = 'tax_lot_id'
     sort_reverse = params.get('sort_reverse', False)
+    if isinstance(sort_reverse, basestring):
+        sort_reverse = sort_reverse == 'true'
     page = int(params.get('page', 1))
     number_per_page = int(params.get('number_per_page', 10))
     if 'show_shared_buildings' in params:
@@ -570,7 +571,7 @@ def mask_results(search_results):
     return results
 
 
-def orchestrate_search_filter_sort(params, user):
+def orchestrate_search_filter_sort(params, user, skip_sort=False):
     """
     Given a parsed set of params, perform the search, filter, and sort for
     BuildingSnapshot's
@@ -605,7 +606,7 @@ def orchestrate_search_filter_sort(params, user):
     )
 
     # sorting
-    if extra_data_sort:
+    if extra_data_sort and not skip_sort:
         ed_mapping = ColumnMapping.objects.filter(
             super_organization__in=orgs,
             column_mapped__column_name=params['order_by'],

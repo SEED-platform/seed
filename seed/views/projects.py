@@ -264,9 +264,7 @@ def create_project(request):
     compliance_type = project_json.get('compliance_type', None)
     end_date = project_json.get('end_date', None)
     deadline_date = project_json.get('deadline_date', None)
-    if ((compliance_type is not None
-         and end_date is not None
-         and deadline_date is not None)):
+    if all(v is not None for v in (compliance_type, end_date, deadline_date)):
         c = Compliance(project=project)
         c.compliance_type = compliance_type
         c.end_date = parser.parse(project_json['end_date'])
