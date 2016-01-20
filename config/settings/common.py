@@ -4,6 +4,7 @@
 from __future__ import absolute_import
 
 import os
+import sys  # Needed for coverage
 from os.path import abspath, join, dirname
 from kombu import Exchange, Queue
 
