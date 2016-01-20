@@ -339,7 +339,7 @@ def export_buildings_progress(request):
         "success": True,
         "status": "success",
         'total_buildings': get_cache(progress_key)['total_buildings'],
-        "buildings_processed": percent_done * total_buildings
+        "buildings_processed": (percent_done / 100) * total_buildings
     }
 
 
@@ -376,7 +376,15 @@ def export_buildings_download(request):
 
     if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
         file_storage = DefaultStorage()
-        files = file_storage.listdir(export_subdir)
+
+        try:
+            files = file_storage.listdir(export_subdir)
+        except OSError:
+            # Likely scenario is that the file hasn't been written to disk yet.
+            return {
+                'success': False,
+                'status': 'working'
+            }
 
         if not files:
             return {
