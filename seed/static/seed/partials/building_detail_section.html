@@ -18,7 +18,8 @@
 
 
             <div style="margin:10px 0px; padding:0px 10px;">
-                <span style="padding-right:5px;"><strong>Labels:</strong></span>
+                <span ng-hide="building.edit_form_showing" style="padding-right:5px;"><strong>Labels:</strong></span>
+                <button ng-show="building.edit_form_showing" type="button" class="btn btn-default" ng-click="()"><i class="fa fa-tag"></i>Add/Remove Labels</button>
                 <span ng-show="labels.length === 0" style="color:#999">(no labels applied)</span>
                 <span ng-repeat="label in labels" class="label label-{$ label.label $}">{$ label.name $}</span>
             </div>
