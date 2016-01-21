@@ -201,7 +201,7 @@ def filter_other_params(queryset, other_params, db_columns):
                   '__gte' in k or
                   '__isnull' in k or
                   k == 'import_file_id' or k == 'source_type'):
-                query_filters &= Q(**{"%s" % k: v})
+                  query_filters &= Q(**{"%s" % k: v})
             elif k == 'canonical_building__labels':
                 for l in v:
                     queryset &= queryset.filter(**{
@@ -372,9 +372,14 @@ def build_json_params(order_by, sort_reverse):
     """
     extra_data_sort = False
     db_columns = get_mappable_types()
+
+    # TODO nicholasserra Should these extra "fields" be up one level inside of
+    # get_mappable_types()?
     db_columns['project_building_snapshots__status_label__name'] = ''
     db_columns['project__slug'] = ''
     db_columns['canonical_building__labels'] = ''
+    db_columns['children'] = ''
+    db_columns['parents'] = ''
 
     if order_by not in db_columns:
         extra_data_sort = True

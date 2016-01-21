@@ -23,7 +23,7 @@ def strip_suffixes(k, suffixes):
 
 
 def is_column(k, columns):
-    sanitized = strip_suffixes(k, ['__lt', '__gt', '__lte', '__gte'])
+    sanitized = strip_suffixes(k, ['__lt', '__gt', '__lte', '__gte', '__isnull'])
     if sanitized in columns:
         return True
     return False
