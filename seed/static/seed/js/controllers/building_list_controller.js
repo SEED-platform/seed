@@ -98,9 +98,6 @@ angular.module('BE.seed.controller.building_list', [])
     * END SEARCH CODE
     */
 
-
-    /** TEMP: Matching filter experient */
-
     /**
     *  Code for filter dropdown
     */
@@ -135,10 +132,6 @@ angular.module('BE.seed.controller.building_list', [])
         }
         $scope.do_update_buildings_filters();
     };
-
-
-    /** END TEMP **/
-
 
     /**
     * LABELS CODE
