@@ -49,14 +49,14 @@ angular.module('BE.seed.controller.building_detail', [])
         isopen: false
     };
 
-    var get_labels = function() {
-        return _.map(building_payload.labels, function(lbl) {
+    var get_labels = function(building) {
+        return _.map(building.labels, function(lbl) {
           lbl.label = label_helper_service.lookup_label(lbl.color);
           return lbl;
         });
     };
 
-    $scope.labels = get_labels();
+    $scope.labels = get_labels(building_payload);
 
     /**
      * is_project: returns true is building breadcrumb is from a project, used
@@ -356,9 +356,12 @@ angular.module('BE.seed.controller.building_detail', [])
         });
         modalInstance.result.then(
             function () {
-                //dialog was closed with 'Done' button.
-                $scope.labels = get_labels();
-            }, 
+                // Grab fresh building data for get_labels()
+                var canonical_id = $scope.building.canonical_building;
+                building_services.get_building(canonical_id).then(function(building_refresh) {
+                    $scope.labels = get_labels(building_refresh);
+                });
+            },
             function (message) {
                //dialog was 'dismissed,' which means it was cancelled...so nothing to do. 
             }
