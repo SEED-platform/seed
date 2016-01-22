@@ -22,6 +22,7 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.accounts',
     'BE.seed.controller.admin',
     'BE.seed.controller.building_detail',
+    'BE.seed.controller.building_detail_update_labels_modal_ctrl',
     'BE.seed.controller.building_list',
     'BE.seed.controller.buildings_reports',
     'BE.seed.controller.buildings_settings',
