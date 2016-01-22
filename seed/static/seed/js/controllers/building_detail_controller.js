@@ -23,10 +23,6 @@ angular.module('BE.seed.controller.building_detail', [])
     $scope.user.building_id = $routeParams.building_id;
     $scope.user.project_slug = $routeParams.project_id;
     $scope.projects = [];
-    $scope.labels = _.map(building_payload.labels, function(lbl) {
-      lbl.label = label_helper_service.lookup_label(lbl.color);
-      return lbl;
-    });
     $scope.building = building_payload.building;
     $scope.user_role = building_payload.user_role;
     $scope.user_org_id = building_payload.user_org_id;
@@ -48,12 +44,19 @@ angular.module('BE.seed.controller.building_detail', [])
 
     // set the tab
     $scope.section = $location.hash();
-    
+
     $scope.status = {
         isopen: false
     };
 
-      
+    var get_labels = function() {
+        return _.map(building_payload.labels, function(lbl) {
+          lbl.label = label_helper_service.lookup_label(lbl.color);
+          return lbl;
+        });
+    };
+
+    $scope.labels = get_labels();
 
     /**
      * is_project: returns true is building breadcrumb is from a project, used
@@ -354,6 +357,7 @@ angular.module('BE.seed.controller.building_detail', [])
         modalInstance.result.then(
             function () {
                 //dialog was closed with 'Done' button.
+                $scope.labels = get_labels();
             }, 
             function (message) {
                //dialog was 'dismissed,' which means it was cancelled...so nothing to do. 
