@@ -121,10 +121,10 @@ angular.module('BE.seed.controller.building_list', [])
                 $scope.search.filter_params.parents__isnull = undefined;
                 break;
             case SHOW_MATCHED:
-                $scope.search.filter_params.parents__isnull = false;  //has children therefore is matched
+                $scope.search.filter_params.parents__isnull = false;  //has parents therefore is matched
                 break;
             case SHOW_UNMATCHED:
-                $scope.search.filter_params.parents__isnull = true;   //does not have children therefore is unmatched
+                $scope.search.filter_params.parents__isnull = true;   //does not have parents therefore is unmatched
                 break;
             default:
                 $log.error("#matching_controller: unexpected filter value: ", optionValue);
