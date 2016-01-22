@@ -341,6 +341,26 @@ angular.module('BE.seed.controller.building_detail', [])
         return num;
     };
 
+    $scope.open_update_building_labels_modal = function() {
+        var modalInstance = $uibModal.open({
+            templateUrl: urls.static_url + 'seed/partials/building_detail_update_labels_modal.html',
+            controller: 'building_detail_update_labels_modal_ctrl',
+            resolve: {
+                building: function () {
+                    return $scope.building;
+                }
+            }
+        });
+        modalInstance.result.then(
+            function () {
+                //dialog was closed with 'Done' button.
+            }, 
+            function (message) {
+               //dialog was 'dismissed,' which means it was cancelled...so nothing to do. 
+            }
+        );
+    };
+
     /**
      * init: sets default state of building detail page, gets the breadcrumb
      *   project if exists, sets the field arrays for each section, performs
