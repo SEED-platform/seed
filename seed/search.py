@@ -374,7 +374,6 @@ def build_json_params(order_by, sort_reverse):
     """
     extra_data_sort = False
     db_columns = get_mappable_types()
-
     db_columns['project_building_snapshots__status_label__name'] = ''
     db_columns['project__slug'] = ''
     db_columns['canonical_building__labels'] = ''
