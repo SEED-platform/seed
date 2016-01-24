@@ -73,10 +73,9 @@ from seed.cleansing.tasks import (
     finish_cleansing,
     cleanse_data_chunk,
 )
-
+from functools import reduce
 
 logger = get_task_logger(__name__)
-
 
 # Maximum number of possible matches under which we'll allow a system match.
 MAX_SEARCH = 5
@@ -385,9 +384,8 @@ def remove_buildings(project_slug, project_dict, user_pk):
 
 def add_cache_increment_parameter(tasks):
     """This adds the cache increment value to the signature to each subtask."""
-    """This is a really weird way to handle this, it adds the argument after the
-    methods have been added to the tasks list
-    """
+    # TODO: This is a really weird way to handle this, it adds the argument
+    # after the methods have been added to the tasks list
     denom = len(tasks) or 1
     increment = 1.0 / denom * 100
     # This is kind of terrible. Once we know how much progress each task
@@ -418,7 +416,7 @@ def finish_import_record(import_record_pk):
 
 
 @shared_task
-def finish_mapping(results, file_pk):
+def finish_mapping(file_pk):
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.mapping_done = True
     import_file.save()
@@ -502,10 +500,10 @@ def _normalize_tax_lot_id(value):
 
 
 @shared_task
-def map_row_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwargs):
+def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwargs):
     """Does the work of matching a mapping to a source type and saving
 
-    :param chunk: list of dict of str. One row's worth of parse data.
+    :param ids: list of BuildingSnapshot IDs to map.
     :param file_pk: int, the PK for an ImportFile obj.
     :param source_type: int, represented by either ASSESSED_RAW, or
         PORTFOLIO_RAW.
@@ -542,9 +540,11 @@ def map_row_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwa
 
     apply_func = apply_data_func(mappable_columns)
 
-    for row in chunk:
+    data = BuildingSnapshot.objects.filter(id__in=ids).only('extra_data').iterator()
+    for row in data:
+        # get the data from the database
         model = mapper.map_row(
-            row,
+            row.extra_data,
             mapping,
             BuildingSnapshot,
             cleaner=map_cleaner,
@@ -612,18 +612,19 @@ def _map_data(file_pk, *args, **kwargs):
     qs = BuildingSnapshot.objects.filter(
         import_file=import_file,
         source_type=source_type,
-    ).iterator()
+    ).only('id').iterator()
 
     tasks = []
     for chunk in batch(qs, 100):
-        serialized_data = [obj.extra_data for obj in chunk]
-        tasks.append(map_row_chunk.s(serialized_data, file_pk, source_type, prog_key))
+        ids = [obj.id for obj in chunk]
+        tasks.append(map_row_chunk.s(ids, file_pk, source_type, prog_key))
 
     # need to rework how the progress keys are implemented here, but at least
     # the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
     if tasks:
-        chord(tasks, interval=15)(finish_mapping.subtask([file_pk]))
+        # specify the chord as an immutable with .si
+        chord(tasks, interval=15)(finish_mapping.si(file_pk))
     else:
         finish_mapping.subtask(file_pk)
 
@@ -658,7 +659,7 @@ def _cleanse_data(file_pk):
     qs = BuildingSnapshot.objects.filter(
         import_file=import_file,
         source_type=source_type,
-    ).iterator()
+    ).only('id').iterator()
 
     # initialize the cache for the cleansing results using the cleansing static method
     Cleansing.initialize_cache(file_pk)
@@ -666,7 +667,6 @@ def _cleanse_data(file_pk):
     prog_key = get_prog_key('cleanse_data', file_pk)
     tasks = []
     for chunk in batch(qs, 100):
-        # serialized_data = [obj.extra_data for obj in chunk]
         ids = [obj.id for obj in chunk]
         tasks.append(cleanse_data_chunk.s(ids, file_pk))  # note that increment will be added to end
 
@@ -674,9 +674,10 @@ def _cleanse_data(file_pk):
     # the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
     if tasks:
-        chord(tasks, interval=15)(finish_cleansing.subtask([file_pk]))
+        # specify the chord as an immutable with .si
+        chord(tasks, interval=15)(finish_cleansing.si(file_pk))
     else:
-        finish_cleansing.subtask(file_pk)
+        finish_cleansing.s(file_pk)
 
     result = {
         'status': 'success',
@@ -1075,6 +1076,7 @@ def is_same_snapshot(s1, s2):
 
 
 class DuplicateDataError(RuntimeError):
+
     def __init__(self, id):
         super(DuplicateDataError, self).__init__()
         self.id = id
@@ -1186,11 +1188,11 @@ def _normalize_address_post_type(post_type):
 ADDRESS_NUMBER_RE = re.compile((
     r''
     r'(?P<start>[0-9]+)'  # The left part of the range
-    r'\s?'                         # Optional whitespace before the separator
-    r'[\\/-]?'                     # Optional Separator
-    r'\s?'                         # Optional whitespace after the separator
-    r'(?<=[\s\\/-])'               # Enforce match of at least one separator char.
-    r'(?P<end>[0-9]+)'    # THe right part of the range
+    r'\s?'  # Optional whitespace before the separator
+    r'[\\/-]?'  # Optional Separator
+    r'\s?'  # Optional whitespace after the separator
+    r'(?<=[\s\\/-])'  # Enforce match of at least one separator char.
+    r'(?P<end>[0-9]+)'  # THe right part of the range
 ))
 
 
@@ -1247,17 +1249,20 @@ def _normalize_address_str(address_val):
             normalized_address = _normalize_address_number(addr['AddressNumber'])
 
         if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
-            normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePreDirectional'])  # NOQA
+            normalized_address = normalized_address + ' ' + _normalize_address_direction(
+                    addr['StreetNamePreDirectional'])  # NOQA
 
         if 'StreetName' in addr and addr['StreetName'] is not None:
             normalized_address = normalized_address + ' ' + addr['StreetName']
 
         if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
             # remove any periods from abbreviations
-            normalized_address = normalized_address + ' ' + _normalize_address_post_type(addr['StreetNamePostType'])  # NOQA
+            normalized_address = normalized_address + ' ' + _normalize_address_post_type(
+                    addr['StreetNamePostType'])  # NOQA
 
         if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
-            normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePostDirectional'])  # NOQA
+            normalized_address = normalized_address + ' ' + _normalize_address_direction(
+                    addr['StreetNamePostDirectional'])  # NOQA
 
         formatter = StreetAddressFormatter()
         normalized_address = formatter.abbrev_street_avenue_etc(normalized_address)
@@ -1533,7 +1538,7 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
         # we could also use .s instead of .subtask and not wrap the *args
         tasks.append(
             _delete_organization_buildings_chunk.subtask(
-                (del_ids, deleting_cache_key, step, org_pk)
+                    (del_ids, deleting_cache_key, step, org_pk)
             )
         )
     chord(tasks, interval=15)(finish_delete.subtask([org_pk]))

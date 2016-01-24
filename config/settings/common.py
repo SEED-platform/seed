@@ -4,8 +4,7 @@
 from __future__ import absolute_import
 
 import os
-import sys
-import logging
+import sys  # Needed for coverage
 from os.path import abspath, join, dirname
 from kombu import Exchange, Queue
 
@@ -222,10 +221,10 @@ CELERY_QUEUES = (
         routing_key=CELERY_DEFAULT_QUEUE
     ),
 )
-CELERY_ACCEPT_CONTENT = ['pickle']
-CELERY_TASK_SERIALIZER = 'pickle'
-CELERY_RESULT_SERIALIZER = 'pickle'
-CELERY_TASK_RESULT_EXPIRES = 18000 # 5 hours
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_RESULT_EXPIRES = 18000  # 5 hours
 
 SOUTH_TESTS_MIGRATE = False
 SOUTH_MIGRATION_MODULES = {

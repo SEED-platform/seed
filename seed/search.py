@@ -19,6 +19,7 @@ from .models import (
 from .utils.mapping import get_mappable_types
 from .utils import search as search_utils
 from seed.public.models import PUBLIC
+from functools import reduce
 
 
 def convert_to_js_timestamp(timestamp):
@@ -185,9 +186,13 @@ def filter_other_params(queryset, other_params, db_columns):
             if exact_match:
                 query_filters &= Q(**{"%s__exact" % k: exact_match.group(2)})
             elif empty_match:
-                query_filters &= Q(**{"%s__exact" % k: ''}) | Q(**{"%s__isnull" % k: True})
+                query_filters &= Q(**{"%s__exact" %
+                                      k: ''}) | Q(**{"%s__isnull" %
+                                                     k: True})
             elif not_empty_match:
-                query_filters &= ~Q(**{"%s__exact" % k: ''}) & Q(**{"%s__isnull" % k: False})
+                query_filters &= ~Q(**{"%s__exact" %
+                                       k: ''}) & Q(**{"%s__isnull" %
+                                                      k: False})
             elif is_numeric_expression:
                 parts = search_utils.NUMERIC_EXPRESSION_REGEX.findall(v)
                 query_filters &= search_utils.parse_expression(k, parts)
@@ -228,11 +233,10 @@ def filter_other_params(queryset, other_params, db_columns):
                 )
                 continue
             elif not_empty_match:
-                # Only return records that have the key in extra_data, but the value is not empty.
+                # Only return records that have the key in extra_data, but the
+                # value is not empty.
                 queryset = queryset.filter(
-                    Q(
-                        **{'extra_data__at_%s__isnull' % k: False}
-                    ) & ~Q(**{'extra_data__at_%s' % k: ''})
+                    Q(**{'extra_data__at_%s__isnull' % k: False}) & ~Q(**{'extra_data__at_%s' % k: ''})
                 )
                 continue
 

@@ -33,11 +33,10 @@ def cleanse_data_chunk(ids, file_pk, increment):
 
 
 @shared_task
-def finish_cleansing(results, file_pk):
+def finish_cleansing(file_pk):
     """
     Chord that is called after the cleansing is complete
 
-    :param results:
     :param file_pk: import file primary key
     :return:
     """
