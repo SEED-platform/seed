@@ -22,7 +22,5 @@ def stats(request):
         StdDev('gross_floor_area'),
     )
 
-    return render_to_response(
-        'stats/stats.html',
-        locals(),
-        context_instance=RequestContext(request))
+    return render_to_response('stats/stats.html',
+        locals(), context_instance=RequestContext(request))

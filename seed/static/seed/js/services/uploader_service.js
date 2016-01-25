@@ -79,6 +79,47 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
         });
         return defer.promise;
     };
+	
+	uploader_factory.parse_pm_energy_file = function(file_id) {
+        var defer = $q.defer();
+        $http({
+            method: 'GET',
+            url: window.BE.urls.parse_pm_energy_file,
+            'params': {
+              'file_id': file_id
+            }
+        }).success(function(data, status) {
+            if (data.status === "error"){
+                defer.reject(data, status);
+            } else {
+                defer.resolve(data);
+            }
+        }).error(function(data, status) {
+            defer.reject(data, status);
+        });
+        return defer.promise;
+    };
+
+    uploader_factory.parse_energy_template = function(file_id) {
+        var defer = $q.defer();
+        $http({
+            method: 'GET',
+            url: window.BE.urls.parse_energy_template,
+            'params': {
+              'file_id': file_id
+            }
+        }).success(function(data, status) {
+            if (data.status === "error"){
+                defer.reject(data, status);
+            } else {
+                defer.resolve(data);
+            }
+
+        }).error(function(data, status) {
+            defer.reject(data, status);
+        });
+        return defer.promise;
+    };
 
     /*
     * check_progress: gets the progress for saves, maps, and matches

@@ -41,7 +41,6 @@ class BuildingFilterBackend(filters.BaseFilterBackend):
         buildings_queryset = search.orchestrate_search_filter_sort(
             params=params,
             user=request.user,
-            skip_sort=True,
         )
 
         if request.query_params.get('select_all_checkbox', 'false') == 'true':
