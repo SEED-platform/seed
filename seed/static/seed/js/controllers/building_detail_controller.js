@@ -11,6 +11,16 @@ angular.module('BE.seed.controller.building_detail', [])
   'building_services',
   'project_service',
   'building_payload',
+  
+  // include ts data payload
+  'building_finer_energy_payload',
+  'building_monthly_payload',
+  // include ts data payload ends
+
+  // include previous gb request info
+  'gb_req_info',
+  // include previous gb request info ends
+  
   'all_columns',
   'audit_payload',
   'urls',
@@ -18,7 +28,7 @@ angular.module('BE.seed.controller.building_detail', [])
   '$location',
   'audit_service',
   'label_helper_service',
-  function($scope, $routeParams, $uibModal, $log, building_services, project_service, building_payload, all_columns, audit_payload, urls, $filter, $location, audit_service, label_helper_service) {
+  function($scope, $routeParams, $uibModal, $log, building_services, project_service, building_payload, building_finer_energy_payload, building_monthly_payload, gb_req_info, all_columns, audit_payload, urls, $filter, $location, audit_service, label_helper_service) {
     $scope.user = {};
     $scope.user.building_id = $routeParams.building_id;
     $scope.user.project_slug = $routeParams.project_id;
@@ -39,6 +49,71 @@ angular.module('BE.seed.controller.building_detail', [])
     $scope.audit_logs = audit_payload.audit_logs;
     $scope.green_button_filenames = [];
 
+    // scope models for GreenButton Request Information
+    $scope.time_type = '';
+    $scope.active = '';
+    $scope.loopback = '';
+    
+    $scope.gb_req_flag = 'N';
+    $scope.gb_req_url = '';
+    $scope.gb_req_min_date_para = '';
+    $scope.gb_req_max_date_para = '';
+    $scope.gb_req_date_pattern = '';
+    // scope models ends
+
+    // add ts data object to $scope
+    if(building_finer_energy_payload['status'] === 'success'){
+        $scope.finer_ts_data_meta = [];
+        $scope.finer_ts_data_readings = [];
+        $scope.finer_ts_data_interval = '0';
+
+        if(building_finer_energy_payload['reading'].length>0){
+            $scope.finer_ts_data_readings = building_finer_energy_payload['reading'];
+
+            $scope.finer_ts_data_meta = [];
+            $scope.finer_ts_data_meta.push({'key':'Energy Type', 'value':building_finer_energy_payload['tags']['energy_type'][0]});
+            $scope.finer_ts_data_meta.push({'key':'Tens Multiplier', 'value':building_finer_energy_payload['tags']['tens'][0]});
+            $scope.finer_ts_data_meta.push({'key':'Unit', 'value':building_finer_energy_payload['tags']['uom'][0]});
+
+            $scope.finer_ts_data_interval = building_finer_energy_payload['tags']['interval'][0];
+        }
+
+        $scope.finer_ts_data_flag = true;
+    }else {
+        $scope.finer_ts_data_flag = true;
+        $scope.finer_ts_data_readings = [];
+        $scope.finer_ts_data_meta = [];
+        $scope.finer_ts_data_error = building_finer_ts_data_payload['status'];
+    }
+
+    if(building_monthly_payload['status'] === 'success'){
+        $scope.monthly_data_readings = [];
+
+        if(building_monthly_payload['reading'].length>0){
+            $scope.monthly_data_readings = building_monthly_payload['reading'];
+        }
+
+        $scope.monthly_data_flag = true;
+    }else {
+        $scope.monthly_data_flag = true;
+        $scope.monthly_data_readings = [];
+        $scope.monthly_data_error = building_monthly_payload['status'];
+    }
+    // add ts data object to $scope ends
+
+    // parse gb_req_info
+    if(gb_req_info['status'] === 'found'){
+        $scope.gb_req_flag = 'Y';
+        $scope.gb_req_url = gb_req_info['url'];
+        $scope.gb_req_subscription_id = gb_req_info['subscription_id'];
+        $scope.gb_req_min_date_para = gb_req_info['min_date_para'];
+        $scope.gb_req_max_date_para = gb_req_info['max_date_para'];
+        $scope.time_type = gb_req_info['time_type'];
+        $scope.gb_req_date_pattern = gb_req_info['date_pattern'];
+        $scope.active = gb_req_info['active'];
+    }
+    // parse gb_req_info ends
+	
     // gather green button filenames
     building_payload.imported_buildings.forEach(function(e) {
         if (e.source_type === 6) { // GREEN_BUTTON_BS
@@ -53,7 +128,82 @@ angular.module('BE.seed.controller.building_detail', [])
         isopen: false
     };
 
-      
+    $scope.time_type_change = function(time_type){
+        $scope.time_type = time_type; 
+    }
+
+    $scope.active_change = function(active){
+        $scope.active = active;
+    }
+
+    $scope.loopback_change = function(loopback){
+        $scope.loopback = loopback;
+    }
+
+    $scope.save_gb_request_info = function(){
+        //TODO Front-end validation and URL request testing
+        
+        // read user front-end input
+        var gb_url_input = angular.element(document.querySelector('#gb_url'))[0].value;
+        var gb_subscription_id = angular.element(document.querySelector('#gb_subscription_id'))[0].value;  
+        var min_time_para = angular.element(document.querySelector('#min_para'))[0].value;
+        var max_time_para = angular.element(document.querySelector('#max_para'))[0].value;
+        var time_type = $scope.time_type;
+        var date_pattern = angular.element(document.querySelector('#date_pattern'))[0].value;
+        var active_flag = $scope.active;
+        var loopback_flag = $scope.loopback;
+        // read user front-end input ends
+        
+        // empty input check
+        if(!(gb_url_input && min_time_para && max_time_para && time_type && active_flag && gb_subscription_id
+                && ($scope.gb_req_flag==='Y' || loopback_flag)
+                && (time_type==='timestamp' || date_pattern))){
+            alert('Please fill all the fields!');
+            return;
+        }
+        // empty check ends
+
+        // get canonical building ID from $scope
+        var canonical_building_id = $scope.building.canonical_building;
+        var building_snapshot_id = $scope.building.id;
+        // get building ID ends
+
+        // assemble save-to-DB data
+        var data = {};
+        data['url'] = gb_url_input;
+        data['subscription_id'] = gb_subscription_id;
+        data['min_date_parameter'] = min_time_para;
+        data['max_date_parameter'] = max_time_para;
+        data['building_id'] = canonical_building_id;
+        data['time_type'] = time_type;
+        if(time_type === 'date'){
+            data['date_pattern'] = date_pattern;
+        }else {
+            data['date_pattern'] = '';
+        }
+        data['active'] = active_flag;
+        data['loopback'] = loopback_flag;
+        // assemble save-to-DB data ends
+
+        // call building_services save_gb_request_info method
+        $scope.$emit('show_saving');
+        building_services.save_gb_request_info(data)
+            .then(function (data){
+                // resolve promise
+                audit_service.get_building_logs($scope.building.canonical_building)
+                    .then(function(data){
+                        $scope.audit_logs = data.audit_logs;
+                    });
+                $scope.$emit('finished_saving');
+                alert('Saving finished');
+            }, function (data, status){
+                // reject promise
+                $scope.$emit('finished_saving');
+            }).catch(function (data) {
+                console.log( String(data) );
+            });
+        // call method ends
+    }
 
     /**
      * is_project: returns true is building breadcrumb is from a project, used

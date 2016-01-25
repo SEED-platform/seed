@@ -3,7 +3,6 @@ from tos.models import TermsOfService
 
 # Translations for django-tos
 
-
 class TermsOfServiceTranslationOptions(TranslationOptions):
     fields = ('content', )
 

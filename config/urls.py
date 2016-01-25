@@ -59,6 +59,7 @@ urlpatterns = patterns(
 if settings.DEBUG:
     import debug_toolbar
 
+
     urlpatterns += staticfiles_urlpatterns()
     urlpatterns += patterns(
         '',
