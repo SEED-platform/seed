@@ -1,0 +1,6 @@
+Base URL: https://epo.schneider-electric.com/PEPCO
+Subcription ID: C8C25FC1C944B813A5CB790
+Min Parameter: Published_Min
+Max Parameter: Published_Max
+Time Type: date
+Date Pattern: month/day/year

@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import
 from config.settings.common import *  # noqa
+from kombu import Exchange, Queue
 from celery.utils import LOG_LEVELS
 
 LOGGING = {
@@ -96,3 +97,4 @@ if 'local_untracked_exists' in locals():
     from config.settings.local_untracked import *  # noqa
 else:
     print >> sys.stderr, "Unable to find the local_untracked module in config/settings/local_untracked.py"
+

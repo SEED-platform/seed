@@ -281,6 +281,76 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         }
     };
 
+    // timeseries data retrieve
+    building_factory.get_finer_timeseries_data = function(building_id, snapshot_id){
+        // django uses request.user for user information
+        var defer = $q.defer();
+        $http({
+            method: 'GET',
+            'url': window.BE.urls.retrieve_finer_timeseries_data_url,
+            'params': {
+                'building_id': building_id,
+                'organization_id': user_service.get_organization().id
+            }
+        }).success(function(data, status, headers, config) {
+            defer.resolve(data);
+        }).error(function(data, status, headers, config) {
+            defer.reject(data, status);
+        });
+        return defer.promise;
+    };
+    building_factory.get_monthly_data = function(building_id, snapshot_id){
+        // django uses request.user for user information
+        var defer = $q.defer();
+        $http({
+            method: 'GET',
+            'url': window.BE.urls.retrieve_monthly_data_url,
+            'params': {
+                'building_id': building_id,
+                'organization_id': user_service.get_organization().id
+            }
+        }).success(function(data, status, headers, config) {
+            defer.resolve(data);
+        }).error(function(data, status, headers, config) {
+            defer.reject(data, status);
+        });
+        return defer.promise;
+    }; 
+    // timeseries data retrive ends
 
+    // save building GreenButton Request Information
+    building_factory.save_gb_request_info = function(gb_request_info){
+        //console.log(gb_request_info);
+        var defer = $q.defer();
+        $http({
+            'method': 'POST',
+            'data': gb_request_info,
+            'url': window.BE.urls.save_gb_request_info_url
+        }).success(function(data, status, headers, config){
+            defer.resolve(data);
+        }).error(function(data, status, headers, config){
+            defer.reject(data, status);
+        });
+        return defer.promise;
+    };
+    // save building GreenButton Request Information ends
+
+    // get building GreenButton Request Information
+    building_factory.get_gb_request_info = function(building_id){
+        var defer = $q.defer();
+        $http({
+            'method': 'GET',
+            'params': {
+                'building_id': building_id
+            },
+            'url': window.BE.urls.get_gb_request_info_url
+        }).success(function(data, status, headers, config){
+            defer.resolve(data);
+        }).error(function(data, status, headers, config){
+            defer.reject(data, status);
+        });
+        return defer.promise;
+    };
+    // get building GreenButton Request Information ends
     return building_factory;
 }]);

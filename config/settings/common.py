@@ -4,7 +4,8 @@
 from __future__ import absolute_import
 
 import os
-import sys  # Needed for coverage
+import sys
+import logging
 from os.path import abspath, join, dirname
 from kombu import Exchange, Queue
 
@@ -212,6 +213,9 @@ SERVER_EMAIL = 'no-reply@seedplatform.org'
 
 CELERYD_MAX_TASKS_PER_CHILD = 1
 
+BROKER_URL = 'redis://127.0.0.1:6379/1'
+CELERY_RESULT_BACKEND = BROKER_URL
+
 # Default queue
 CELERY_DEFAULT_QUEUE = 'seed-common'
 CELERY_QUEUES = (
@@ -221,16 +225,30 @@ CELERY_QUEUES = (
         routing_key=CELERY_DEFAULT_QUEUE
     ),
 )
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TASK_RESULT_EXPIRES = 18000  # 5 hours
+CELERY_ACCEPT_CONTENT = ['pickle']
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_RESULT_SERIALIZER = 'pickle'
+CELERY_TASK_RESULT_EXPIRES = 18000 # 5 hours
+
+CELERY_IMPORTS=("seed.energy.meter_data_processor.monthly_data_aggregator",
+                "seed.energy.meter_data_processor.green_button_task")
+
+CELERYBEAT_SCHEDULE = {
+    'Run daily': {
+        'task': 'green_button_task_runner',
+        'schedule': timedelta(seconds=2), # For Demo purpose, should be days=1 in product environment
+        'args': ()
+    },
+    'Run monthly': {
+        'task': 'aggregate_monthly_data',
+        'schedule': timedelta(seconds=5), # For Demo purpose, should be months=1 in product environment
+        'args': ()
+    },
+}
 
 SOUTH_TESTS_MIGRATE = False
 SOUTH_MIGRATION_MODULES = {
 }
-
-BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 
 LOG_FILE = join(SITE_ROOT, '../logs/py.log/')
 

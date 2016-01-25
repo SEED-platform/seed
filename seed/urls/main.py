@@ -48,6 +48,8 @@ urlpatterns = patterns(
     url(r'^get_match_tree/$', 'get_match_tree', name='get_match_tree'),
     url(r'^get_coparents/$', 'get_coparents', name='get_coparents'),
     url(r'^save_raw_data/$', 'save_raw_data', name='save_raw_data'),
+    url(r'^parse_pm_energy_file/$', 'parse_pm_energy_file', name='parse_pm_energy_file'),
+    url(r'^parse_energy_template/$', 'parse_energy_template', name='parse_energy_template'),
     url(
         r'^get_PM_filter_by_counts/$',
         'get_PM_filter_by_counts',
@@ -141,6 +143,43 @@ urlpatterns = patterns(
         name='delete_organization_buildings'
     ),
 
+    # timeseries data
+    url(
+        r'^retrieve_finer_timeseries_data_url/$',
+        'retrieve_finer_timeseries_data_url',
+        name='retrieve_finer_timeseries_data_url'
+    ),
+    url(
+        r'^retrieve_monthly_data_url/$',
+        'retrieve_monthly_data_url',
+        name='retrieve_monthly_data_url'
+    ),
+    # timeseries data ends
+
+    # monthly data
+    url(
+        r'^retrieve_monthly_data_url/$',
+        'retrieve_monthly_data_url',
+        name='retrieve_monthly_data_url'
+    ),
+    # monthly data ends
+
+    # save gb request info
+    url(
+        r'^save_gb_request_info_url/$',
+        'save_gb_request_info_url',
+        name='save_gb_request_info_url'
+    ),
+    # save gb request info ends
+
+    # get gb request info
+    url(
+        r'^get_gb_request_info_url/$',
+        'get_gb_request_info_url',
+        name='get_gb_request_info_url'
+    ),
+    # get gb request info ends
+	
     # delete
     url(
         r'^delete_buildings/$',
