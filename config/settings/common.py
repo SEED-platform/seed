@@ -236,12 +236,12 @@ CELERY_IMPORTS=("seed.energy.meter_data_processor.monthly_data_aggregator",
 CELERYBEAT_SCHEDULE = {
     'Run daily': {
         'task': 'green_button_task_runner',
-        'schedule': timedelta(seconds=6000),
+        'schedule': timedelta(seconds=2), # For Demo purpose, should be days=1 in product environment
         'args': ()
     },
     'Run monthly': {
         'task': 'aggregate_monthly_data',
-        'schedule': timedelta(seconds=5000),
+        'schedule': timedelta(seconds=5), # For Demo purpose, should be months=1 in product environment
         'args': ()
     },
 }
