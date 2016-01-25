@@ -198,7 +198,7 @@ def add_buildings(project_slug, project_dict, user_pk):
         selected_buildings = buildings_queryset
     else:
         selected_buildings = buildings_queryset.filter(
-            id__in=project_dict.get('selected_buildings'),
+            id__in=project_dict.get('selected_buildings', []),
         )
 
     denominator = len(selected_buildings)
