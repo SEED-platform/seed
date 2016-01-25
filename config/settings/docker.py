@@ -107,7 +107,7 @@ CELERY_QUEUES = (
 )
 
 try:
-    INSTALLED_APPS += ( )
+    INSTALLED_APPS += ()
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
     NOSE_PLUGINS = [
         'nose_exclude.NoseExclude',

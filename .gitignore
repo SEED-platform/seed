@@ -47,4 +47,4 @@ docs/build/
 dump.rdb
 log
 *.log
-
+.tox
