@@ -1,3 +1,9 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 import re
 from importlib import import_module
 from functools import wraps
@@ -63,8 +69,8 @@ def get_all_urls(urllist, prefix=''):
         else:
             yield (prefix + entry.regex.pattern, entry.callback)
 
-#API endpoint decorator
-#simple list of all 'registered' endpoints
+# API endpoint decorator
+# simple list of all 'registered' endpoints
 endpoints = []
 
 
@@ -75,7 +81,7 @@ def api_endpoint(fn):
     Decorator must be used before login_required or has_perm to set
     request.user for those decorators.
     """
-    #mark this function as an api endpoint for get_api_endpoints to find
+    # mark this function as an api endpoint for get_api_endpoints to find
     fn.is_api_endpoint = True
     global endpoints
     endpoints.append(fn)
@@ -92,6 +98,19 @@ def api_endpoint(fn):
     return _wrapped
 
 
+def drf_api_endpoint(fn):
+    """
+    Decorator to register a Django Rest Framework view with the list of API
+    endpoints.  Marks it with `is_api_endpoint = True` as well as appending it
+    to the global `endpoints` list.
+    """
+    fn.is_api_endpoint = True
+    global endpoints
+    endpoints.append(fn)
+
+    return fn
+
+
 def get_api_request_user(request):
     """
     Determines if this is an API request and returns the corresponding user
@@ -104,8 +123,8 @@ def get_api_request_user(request):
     if not auth_header:
         return False
     try:
-        #late import
-        from landing.models import SEEDUser as User
+        # late import
+        from seed.landing.models import SEEDUser as User
         username, api_key = auth_header.split(':')
         return User.objects.get(api_key=api_key, username=username)
     except (ValueError, User.DoesNotExist):

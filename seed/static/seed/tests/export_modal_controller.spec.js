@@ -6,13 +6,13 @@ describe("controller: export_modal_controller", function(){
     var mock_export_service, scope, controller, modal_state;
     var ctrl, ctrl_scope, modalInstance, timeout;
     // make the seed app available for each test
-    // 'BE.seed' is created in TestFilters.html
+    // 'config.seed' is created in TestFilters.html
     beforeEach(function() {
         module('BE.seed');
     });
 
     // inject AngularJS dependencies for the controller
-    beforeEach(inject(function($controller, $rootScope, $modal, $q, export_service, $timeout) {
+    beforeEach(inject(function($controller, $rootScope, $uibModal, $q, export_service, $timeout) {
         ctrl = $controller;
         scope = $rootScope;
         ctrl_scope = $rootScope.$new();
@@ -52,7 +52,7 @@ describe("controller: export_modal_controller", function(){
     function create_export_modal_controller(){
         ctrl = ctrl('export_modal_controller', {
             $scope: ctrl_scope,
-            $modalInstance: {
+            $uibModalInstance: {
                 close: function() {
                     modal_state = "close";
                 },

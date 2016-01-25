@@ -1,25 +1,25 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
-"""
-"""
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+
 Search methods pertaining to buildings.
 
 """
-# python
 import operator
 import json
-import re
 
-# django
 from django.db.models import Q
-
-# vendor
-from superperms.orgs.models import Organization
-
-# app
-from .models import BuildingSnapshot
+from seed.lib.superperms.orgs.models import Organization
+from .models import (
+    BuildingSnapshot,
+    ColumnMapping,
+)
 from .utils.mapping import get_mappable_types
-from public.models import PUBLIC
+from .utils import search as search_utils
+from seed.public.models import PUBLIC
+from functools import reduce
 
 
 def convert_to_js_timestamp(timestamp):
@@ -141,7 +141,7 @@ def generate_paginated_results(queryset, number_per_page=25, page=1,
         # only add the buildings if it is in an org the user belongs or the
         # query count exceeds the query threshold
         if not below_threshold or not is_not_whitelist_building(
-            parent_org, b, whitelist_orgs
+                parent_org, b, whitelist_orgs
         ):
             building_list.append(building_dict)
 
@@ -156,11 +156,11 @@ def is_not_whitelist_building(parent_org, building, whitelist_orgs):
     :param whitelist_orgs: queryset of Organization insts.
     :returns: bool
     """
-    return (parent_org and building.super_organization not in whitelist_orgs)
+    return parent_org and building.super_organization not in whitelist_orgs
 
 
 def filter_other_params(queryset, other_params, db_columns):
-    """applyes a dictionary filter to the query set. Does some domain specific
+    """applies a dictionary filter to the query set. Does some domain specific
     parsing,
        mostly to remove extra query params and deal with ranges.
        Ranges should be passed in as '<field name>__lte' or '<field name>__gte'
@@ -171,47 +171,46 @@ def filter_other_params(queryset, other_params, db_columns):
     :param dict db_columns: list of column names, extra_data blob outsite these
     :returns: Django Queryset:
     """
-    def strip_suffix(k, suffix):
-        match = k.find(suffix)
-        if match >= 0:
-            return k[:match]
-        else:
-            return k
-
-    def strip_suffixes(k, suffixes):
-        return reduce(strip_suffix, suffixes, k)
-
-    def is_column(k, columns):
-        sanitized = strip_suffixes(k, ['__lt', '__gt', '__lte', '__gte'])
-        if sanitized in columns:
-            return True
-        else:
-            return False
 
     # Build query as Q objects so we can AND and OR.
     query_filters = Q()
     for k, v in other_params.iteritems():
-        in_columns = is_column(k, db_columns)
-        if in_columns and k != 'q' and v is not None:
-
-            # Is this query a string?
-            is_string_query = isinstance(v, basestring)
-
-            # Is this query surrounded by matching quotes?
-            exact_match = re.match(r"""^(["'])(.+)\1$""", v) if is_string_query else False
-            empty_match = re.match(r"""^(["'])\1$""", v) if is_string_query else False
+        in_columns = search_utils.is_column(k, db_columns)
+        if in_columns and k != 'q' and v is not None and v != '' and v != []:
+            exact_match = search_utils.is_exact_match(v)
+            empty_match = search_utils.is_empty_match(v)
+            not_empty_match = search_utils.is_not_empty_match(v)
+            is_numeric_expression = search_utils.is_numeric_expression(v)
+            is_string_expression = search_utils.is_string_expression(v)
 
             if exact_match:
                 query_filters &= Q(**{"%s__exact" % k: exact_match.group(2)})
             elif empty_match:
-                query_filters &= Q(**{"%s__exact" % k: ''}) | Q(**{"%s__isnull" % k: True})
+                query_filters &= Q(**{"%s__exact" %
+                                      k: ''}) | Q(**{"%s__isnull" %
+                                                     k: True})
+            elif not_empty_match:
+                query_filters &= ~Q(**{"%s__exact" %
+                                       k: ''}) & Q(**{"%s__isnull" %
+                                                      k: False})
+            elif is_numeric_expression:
+                parts = search_utils.NUMERIC_EXPRESSION_REGEX.findall(v)
+                query_filters &= search_utils.parse_expression(k, parts)
+            elif is_string_expression:
+                parts = search_utils.STRING_EXPRESSION_REGEX.findall(v)
+                query_filters &= search_utils.parse_expression(k, parts)
             elif ('__lt' in k or
-                '__lte' in k or
-                '__gt' in k or
-                '__gte' in k or
-                '__isnull' in k or
-               k == 'import_file_id' or k == 'source_type'):
+                  '__lte' in k or
+                  '__gt' in k or
+                  '__gte' in k or
+                  '__isnull' in k or
+                  k == 'import_file_id' or k == 'source_type'):
                 query_filters &= Q(**{"%s" % k: v})
+            elif k == 'canonical_building__labels':
+                for l in v:
+                    queryset &= queryset.filter(**{
+                        'canonical_building__labels': l
+                    })
             else:
                 query_filters &= Q(**{"%s__icontains" % k: v})
 
@@ -219,28 +218,50 @@ def filter_other_params(queryset, other_params, db_columns):
 
     # handle extra_data with json_query
     for k, v in other_params.iteritems():
-        if (not is_column(k, db_columns)) and k != 'q' and v != '':
-            if k.endswith(('__gt', '__gte')):
-                k = strip_suffixes(k, ['__gt', '__gte'])
-                cond = '>'
-                key_cast = 'float'
-            elif k.endswith(('__lt', '__lte')):
-                k = strip_suffixes(k, ['__lt', '__lte'])
-                cond = '<'
-                key_cast = 'float'
-            else:
-                cond = 'LIKE'
-                key_cast = 'text'
-                v = "%{0}%".format(v)
-            case_insensitive = key_cast == 'text'
+        if (not search_utils.is_column(k, db_columns)) and k != 'q' and v:
 
-            queryset = queryset.json_query(
-                k,
-                cond=cond,
-                key_cast=key_cast,
-                value=v,
-                case_insensitive=case_insensitive,
-            )
+            exact_match = search_utils.is_exact_match(v)
+            empty_match = search_utils.is_empty_match(v)
+            not_empty_match = search_utils.is_not_empty_match(v)
+
+            if empty_match:
+                # Filter for records that DO NOT contain this field OR
+                # contain a blank value for this field.
+                queryset = queryset.filter(
+                    Q(**{'extra_data__at_%s__isnull' % k: True}) |
+                    Q(**{'extra_data__at_%s' % k: ''})
+                )
+                continue
+            elif not_empty_match:
+                # Only return records that have the key in extra_data, but the
+                # value is not empty.
+                queryset = queryset.filter(
+                    Q(**{'extra_data__at_%s__isnull' % k: False}) & ~Q(**{'extra_data__at_%s' % k: ''})
+                )
+                continue
+
+            conditions = {
+                'value': v
+            }
+
+            if exact_match:
+                conditions['value'] = exact_match.group(2)
+                conditions['key_cast'] = 'text'
+            elif k.endswith(('__gt', '__gte')):
+                k = search_utils.strip_suffixes(k, ['__gt', '__gte'])
+                conditions['cond'] = '>'
+                conditions['key_cast'] = 'float'
+            elif k.endswith(('__lt', '__lte')):
+                k = search_utils.strip_suffixes(k, ['__lt', '__lte'])
+                conditions['cond'] = '<'
+                conditions['key_cast'] = 'float'
+            else:
+                conditions['cond'] = 'LIKE'
+                conditions['key_cast'] = 'text'
+                conditions['value'] = "%{0}%".format(v)
+                conditions['case_insensitive'] = True
+
+            queryset = queryset.json_query(k, **conditions)
 
     return queryset
 
@@ -266,25 +287,51 @@ def parse_body(request):
     except ValueError:
         body = {}
 
-    q = body.get('q', '')
-    other_search_params = body.get('filter_params', {})
-    if 'exclude' in other_search_params:
-        exclude = other_search_params['exclude']
-        del(other_search_params['exclude'])
-    else:
-        exclude = {}
+    return process_search_params(
+        params=body,
+        user=request.user,
+        is_api_request=getattr(request, 'is_api_request', False),
+    )
 
-    order_by = body.get('order_by', 'tax_lot_id')
+
+def process_search_params(params, user, is_api_request=False):
+    """
+    Given a python representation of a search query, process it into the
+    internal format that is used for searching, filtering, sorting, and
+    pagination.
+
+    :param params: a python object representing the search query
+    :param user: the user this search is for
+    :param is_api_request: bool, boolean whether this search is being done as an api request.
+    :returns: dict {
+        'exclude': dict, exclude dict for django queryset
+        'order_by': str, query order_by, defaults to 'tax_lot_id'
+        'sort_reverse': bool, True if ASC, False if DSC
+        'page': int, pagination page
+        'number_per_page': int, number per pagination page
+        'show_shared_buildings': bool, whether to search across all user's orgs
+        'q': str, global search param
+        'other_search_params': dict, filter params
+        'project_id': str, project id if exists in body
+    }
+    """
+    q = params.get('q', '')
+    other_search_params = params.get('filter_params', {})
+    exclude = other_search_params.pop('exclude', {})
+
+    order_by = params.get('order_by', 'tax_lot_id')
     if order_by == '':
         order_by = 'tax_lot_id'
-    sort_reverse = body.get('sort_reverse', False)
-    page = int(body.get('page', 1))
-    number_per_page = int(body.get('number_per_page', 10))
-    if 'show_shared_buildings' in body:
-        show_shared_buildings = body.get('show_shared_buildings')
-    elif not getattr(request, 'is_api_request', False):
+    sort_reverse = params.get('sort_reverse', False)
+    if isinstance(sort_reverse, basestring):
+        sort_reverse = sort_reverse == 'true'
+    page = int(params.get('page', 1))
+    number_per_page = int(params.get('number_per_page', 10))
+    if 'show_shared_buildings' in params:
+        show_shared_buildings = params.get('show_shared_buildings')
+    elif not is_api_request:
         show_shared_buildings = getattr(
-            request.user, 'show_shared_buildings', False
+            user, 'show_shared_buildings', False
         )
     else:
         show_shared_buildings = False
@@ -298,7 +345,7 @@ def parse_body(request):
         'show_shared_buildings': show_shared_buildings,
         'q': q,
         'other_search_params': other_search_params,
-        'project_id': body.get('project_id')
+        'project_id': params.get('project_id')
     }
 
 
@@ -325,7 +372,7 @@ def build_json_params(order_by, sort_reverse):
 
     :param str order_by: field to order_by
     :returns: tuple: db_columns: dict of known DB columns i.e. non-JSONfFeld,
-        extra_data_sort bool if order_by is in ``extra_data`` JSONField,
+        extra_data_sort bool if order_by is in ``extra_data`` JsonField,
         order_by str if sort_reverse and DB column prepend a '-' for the django
         order_by
     """
@@ -333,6 +380,7 @@ def build_json_params(order_by, sort_reverse):
     db_columns = get_mappable_types()
     db_columns['project_building_snapshots__status_label__name'] = ''
     db_columns['project__slug'] = ''
+    db_columns['canonical_building__labels'] = ''
 
     if order_by not in db_columns:
         extra_data_sort = True
@@ -393,11 +441,11 @@ def search_public_buildings(request, orgs):
 
 
 def create_building_queryset(
-    orgs,
-    exclude,
-    order_by,
-    other_orgs=None,
-    extra_data_sort=False,
+        orgs,
+        exclude,
+        order_by,
+        other_orgs=None,
+        extra_data_sort=False,
 ):
     """creates a querset of buildings within orgs. If ``other_orgs``, buildings
     in both orgs and other_orgs will be represented in the queryset.
@@ -511,7 +559,7 @@ def mask_results(search_results):
         if parent_org.id not in whitelist_fields:
             whitelist_fields[parent_org.id] = []
             for s in parent_org.sharedbuildingfield_set.filter(
-                field_type=PUBLIC
+                    field_type=PUBLIC
             ):
                 whitelist_fields[parent_org.id].append(s.field.name)
 
@@ -521,3 +569,58 @@ def mask_results(search_results):
                 d[key] = b[key]
         results.append(d)
     return results
+
+
+def orchestrate_search_filter_sort(params, user, skip_sort=False):
+    """
+    Given a parsed set of params, perform the search, filter, and sort for
+    BuildingSnapshot's
+    """
+    other_search_params = params['other_search_params']
+    # add some filters to the dict of known column names so search_buildings
+    # doesn't think they are part of extra_data
+    db_columns, extra_data_sort, params['order_by'] = build_json_params(
+        params['order_by'], params['sort_reverse']
+    )
+
+    # get all buildings for a user's orgs and sibling orgs
+    orgs = user.orgs.all()
+    other_orgs = []
+    if params['show_shared_buildings']:
+        other_orgs = build_shared_buildings_orgs(orgs)
+
+    building_snapshots = create_building_queryset(
+        orgs,
+        params['exclude'],
+        params['order_by'],
+        other_orgs=other_orgs,
+        extra_data_sort=extra_data_sort,
+    )
+
+    # full text search across a couple common fields
+    buildings_queryset = search_buildings(
+        params['q'], queryset=building_snapshots
+    )
+    buildings_queryset = filter_other_params(
+        buildings_queryset, other_search_params, db_columns
+    )
+
+    # sorting
+    if extra_data_sort and not skip_sort:
+        ed_mapping = ColumnMapping.objects.filter(
+            super_organization__in=orgs,
+            column_mapped__column_name=params['order_by'],
+        ).first()
+        ed_column = ed_mapping.column_mapped.filter(
+            column_name=params['order_by']
+        ).first()
+        ed_unit = ed_column.unit
+
+        buildings_queryset = buildings_queryset.json_query(
+            params['order_by'],
+            order_by=params['order_by'],
+            order_by_rev=params['sort_reverse'],
+            unit=ed_unit,
+        )
+
+    return buildings_queryset

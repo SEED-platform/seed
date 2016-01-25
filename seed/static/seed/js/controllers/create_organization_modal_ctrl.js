@@ -1,14 +1,15 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 angular.module('BE.seed.controller.create_organization_modal', [])
 .controller('create_organization_modal_ctrl', [
     '$scope',
-    '$modalInstance',
+    '$uibModalInstance',
     'organization_service',
     'organization',
     '$timeout',
-    function ($scope, $modalInstance, organization_service, organization, $timeout) {
+    function ($scope, $uibModalInstance, organization_service, organization, $timeout) {
         $scope.sub_org = {};
         $scope.error_message = "";
 
@@ -20,7 +21,7 @@ angular.module('BE.seed.controller.create_organization_modal', [])
       organization_service.create_sub_org(organization, $scope.sub_org)
         .then(function(data){
             // resolve promise
-            $modalInstance.close();
+            $uibModalInstance.close();
 
         }, function(data) {
             // reject promise
@@ -30,11 +31,11 @@ angular.module('BE.seed.controller.create_organization_modal', [])
     
     
     $scope.close = function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
     };
 
     $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss('cancel');
     };
 
     /**

@@ -1,15 +1,16 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 angular.module('BE.seed.controller.dataset', [])
 .controller('dataset_list_controller', [
     '$scope',
     'datasets_payload',
-    '$modal',
+    '$uibModal',
     'urls',
     'dataset_service',
     '$location',
-    function ($scope, datasets_payload, $modal, urls, dataset_service, $location) {
+    function ($scope, datasets_payload, $uibModal, urls, dataset_service, $location) {
     $scope.datasets = datasets_payload.datasets;
     $scope.columns = [
         {
@@ -57,7 +58,7 @@ angular.module('BE.seed.controller.dataset', [])
         } else if ($scope.missing_assessor_files(dataset)) {
             step = 2;
         }
-        var dataModalInstance = $modal.open({
+        var dataModalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
             controller: 'data_upload_modal_ctrl',
             resolve: {

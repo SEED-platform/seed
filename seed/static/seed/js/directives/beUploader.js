@@ -1,9 +1,10 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 /**
  * directive be-uploader: wraps fineuploader.js assumed AWS creds are in global
- *                        namespace: window.BE.AWS_UPLOAD_BUCKET_NAME window.BE.AWS_CLIENT_ACCESS_KEY
+ *                        namespace: window.config.AWS_UPLOAD_BUCKET_NAME window.config.AWS_CLIENT_ACCESS_KEY
  *   buttontext: string - text for the button
  *   sourcetype: string - upon upload successful, send the sourcetype param to 
  *                        the server to store the linked file
@@ -60,7 +61,7 @@ var makeS3Uploader = function(scope, element, attrs, filename) {
      * uploadSuccess: makes a POST to `data/s3_upload_complete` with the 
      * params. `source_type` is set as an HTML element attribute and should
      * semantically define the source type of the file. In the case of 
-     * SEED: a Porfolio Manager file or a covered assessor buildings file
+     * SEED: a Portfolio Manager file or a covered assessor buildings file
      */
     uploadSuccess: {
         endpoint: window.BE.urls.uploader_success_endpoint,

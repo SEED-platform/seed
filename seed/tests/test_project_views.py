@@ -1,24 +1,24 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 import json
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
-
-from superperms.orgs.models import Organization
-
-from landing.models import SEEDUser as User
-from superperms.orgs.models import (
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
     ROLE_VIEWER,
     OrganizationUser,
+    Organization
 )
-
 from seed.tests.util import FakeRequest
 from seed.models import Project
-from data_importer.models import ImportRecord
+from seed.data_importer.models import ImportRecord
 
 
 class ProjectsViewTests(TestCase):

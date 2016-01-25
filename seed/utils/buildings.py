@@ -1,7 +1,12 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 import datetime
 
 from django.db.models import Q
-
 from seed import models
 from seed.models import ASSESSED_RAW, BuildingSnapshot
 from seed import search
@@ -85,7 +90,7 @@ def get_search_query(user, params):
 
 
 def get_columns(is_project, org_id, all_fields=False):
-    """gets default columns, to be overriden in future
+    """gets default columns, to be overridden in future
 
         title: HTML presented title of column
         sort_column: semantic name used by js and for searching DB
@@ -118,7 +123,6 @@ def get_columns(is_project, org_id, all_fields=False):
             "sort_column": k,
             "type": translator[v],
             "class": "is_aligned_right",
-            "field_type": "assessor",
             "sortable": True,
             "checked": False,
             "static": False,

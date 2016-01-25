@@ -6,7 +6,7 @@
     <h4 class="modal-title" ng-switch-when="5">Successful upload!</h4>
     <h4 class="modal-title" ng-switch-when="6">What type of file would you like to upload?</h4>
     <h4 class="modal-title" ng-switch-when="7">Finding building matches.</h4>
-    <h4 class="modal-title" ng-switch-when="8">{$ matched_buildings|number:0 $} building matches found.</h4>
+    <h4 class="modal-title" ng-switch-when="8">Matching Results for file: <strong>{$ dataset.filename $}</strong></h4>
     <h4 class="modal-title" ng-switch-when="9">Add files to {$ dataset.name $}.</h4>
     <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|titleCase $}</h4>
     <h4 class="modal-title" ng-switch-when="11">Confirm Save Mappings?</h4>
@@ -18,11 +18,11 @@
         <div class="alert alert-danger alert-dismissable" ng-show="dataset.alert">
             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
             The data set <strong>name "{$ dataset.name $}" already exists</strong>. Please select a new one.
-        </div>   
+        </div>
         <div class="form-group" ng-class="{'has-error': dataset.alert, 'has-feedback': dataset.alert}">
             <label class="control-label col-lg-3 col-sm-3" for="inputDataUploadName">Data Set Name</label>
             <div class="col-lg-8 col-sm-8">
-                <input type="text" class="form-control" id="inputDataUploadName" ng-model="dataset.name" placeholder="your data set name" be-enter="create_dataset(dataset.name)" required>
+                <input type="text" class="form-control" id="inputDataUploadName" ng-model="dataset.name" placeholder="your data set name" sd-enter="create_dataset(dataset.name)" required>
             </div>
         </div>
     </div>
@@ -37,13 +37,12 @@
                 <div class="row">
                     <div class="col-lg-4" be-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload a spreadsheet" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                     <div class="col-lg-4 orange_button" be-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Upload Portfolio Manager data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
-                    <div class="col-lg-8 green_button" be-uploader sourcetype="Green Button Raw"
-                         sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Green Button Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                    <div class="col-lg-8 green_button" be-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Green Button Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                 </div>
                 <div class="progress_bar_container" ng-show="uploader.in_progress">
                     <div class="progress_bar_copy_top">Uploading <strong>{$ dataset.filename $}</strong></div>
 
-                    <progressbar class="progress-striped active" value="uploader.progress" type="success"></progressbar>
+                    <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
                     <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ uploader.status_message $}</div>
                 </div>
             </div>
@@ -78,7 +77,7 @@
                 <div class="progress_bar_container" ng-show="uploader.in_progress">
                     <div class="progress_bar_copy_top">Uploading <strong>{$ dataset.filename $}</strong></div>
 
-                    <progressbar class="progress-striped active" value="uploader.progress" type="success"></progressbar>
+                    <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
                     <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ uploader.status_message $}</div>
                 </div>
             </div>
@@ -108,7 +107,7 @@
             <div class="form-group col-lg-12 col-sm-12">
                 <div class="progress_bar_container">
                     <div class="progress_bar_copy_top">Finding building matches for <strong>{$ dataset.filename $}</strong></div>
-                    <progressbar class="progress-striped active" value="uploader.progress" type="success"></progressbar>
+                    <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
                     <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% Complete</div>
                 </div>
             </div>
@@ -119,7 +118,12 @@
         <div class="row">
             <div class="alert alert-success alert-dismissable">
                 <button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
-                SEED successfully matched <strong>{$ matched_buildings|number:0 $}</strong> of the <strong>{$ (matched_buildings + unmatched_buildings)|number:0 $}</strong> buildings from your <strong>{$ dataset.filename $}</strong> file.
+		<ul>
+	        <li>Total records in the file: {$ (matched_buildings + unmatched_buildings + duplicate_buildings)|number:0 $}</li> 
+	        <li>Duplicate records, not merged into existing Master buildings: {$ duplicate_buildings|number:0 $}</li> 
+	        <li>Records that were matched to existing (or new) Master buildings: {$ matched_buildings|number:0 $}</li> 
+	        <li>Records that were made into new Master buildings (not duplicates, not matches): {$ unmatched_buildings|number:0 $}</li> 
+		</ul>
             </div>
         </div>
     </div>
@@ -137,7 +141,7 @@
             <div class="alert alert-{$ step_10_style $} alert-dismissable">
                 <button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
                     <span ng-show="step_10_error_message">{$ step_10_error_message $}</span>
-                    <span ng-hide="step_10_error_message">SEED could not locate any matches. Would you like to add another file?</span>
+                    <span ng-hide="step_10_error_message">SEED could not locate any non-duplicate matches and found <strong>{$ duplicate_buildings|number:0 $} duplicates</strong>. Would you like to add another file?</span>
             </div>
             <div class="form-group col-lg-12 col-sm-12">
             </div>
@@ -169,7 +173,7 @@
     <div ng-switch-when="1">
         <div class="row text-center">
            <button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="create_dataset(dataset.name)" ng-disabled="dataset.disabled()">Create Data Set</button>
-        </div>    
+        </div>
     </div>
     <div ng-switch-when="2">
     </div>
@@ -197,7 +201,7 @@
             <button type="button" class="btn btn-default col-sm-6 col-lg-6 col-md-6 center-block" ng-click="view_my_buildings()">View my buildings</button>
         </div>
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_data_matching()">Review matches</button>
+            <button id="review-mapping" type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_data_matching()">Review matches</button>
         </div>
     </div>
     <div ng-switch-when="9">
@@ -210,12 +214,12 @@
             <button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_step(2)">Add another file</button>
         </div>
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="view_my_buildings()">View my buildings</button>
+            <button id="view-buildings" type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="view_my_buildings()">View my buildings</button>
         </div>
     </div>
     <div ng-switch-when="11">
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_step(7); find_matches();">Confirm mappings &amp; start matching</button>
+            <button type="button" id="confirm-mapping" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_step(7); find_matches();">Confirm mappings &amp; start matching</button>
         </div>
     </div>
     <div class="row text-center">

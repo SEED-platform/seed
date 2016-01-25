@@ -1,11 +1,12 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 angular.module('BE.seed.controller.building_detail', [])
 .controller('building_detail_controller', [
   '$scope',
   '$routeParams',
-  '$modal',
+  '$uibModal',
   '$log',
   'building_services',
   'project_service',
@@ -16,12 +17,16 @@ angular.module('BE.seed.controller.building_detail', [])
   '$filter',
   '$location',
   'audit_service',
-  function($scope, $routeParams, $modal, $log, building_services, project_service, building_payload, all_columns, audit_payload, urls, $filter, $location, audit_service) {
+  'label_helper_service',
+  function($scope, $routeParams, $uibModal, $log, building_services, project_service, building_payload, all_columns, audit_payload, urls, $filter, $location, audit_service, label_helper_service) {
     $scope.user = {};
     $scope.user.building_id = $routeParams.building_id;
     $scope.user.project_slug = $routeParams.project_id;
     $scope.projects = [];
-    $scope.labels = [];
+    $scope.labels = _.map(building_payload.labels, function(lbl) {
+      lbl.label = label_helper_service.lookup_label(lbl.color);
+      return lbl;
+    });
     $scope.building = building_payload.building;
     $scope.user_role = building_payload.user_role;
     $scope.user_org_id = building_payload.user_org_id;
@@ -32,84 +37,23 @@ angular.module('BE.seed.controller.building_detail', [])
     $scope.building_copy = {};
     $scope.data_columns = [];
     $scope.audit_logs = audit_payload.audit_logs;
+    $scope.green_button_filenames = [];
+
+    // gather green button filenames
+    building_payload.imported_buildings.forEach(function(e) {
+        if (e.source_type === 6) { // GREEN_BUTTON_BS
+            $scope.green_button_filenames.push(e.import_file_name);
+        }
+    });
+
     // set the tab
     $scope.section = $location.hash();
-    /**
-     * label section
-     */
-
+    
     $scope.status = {
         isopen: false
     };
 
-    /**
-     * get_label: returns a building's label or a default
-     */
-    $scope.get_label = function(building) {
-        // helper function to get a label for a building or return a
-        // default the label doesn't exist
-        if (typeof building.label === "undefined") {
-            return {
-                'name': 'Add Label',
-                'label': 'default'
-            };
-        }
-        return building.label;
-    };
-
-    /**
-     * get_labels: gets all labels for a user's org, called by init()
-     */
-    var get_labels = function() {
-        // gets all labels for an org user
-        project_service.get_labels().then(function(data) {
-            // resolve promise
-            $scope.labels = data.labels;
-        });
-    };
-
-    /**
-     * remove_label: removes a label from a project building, on success calls
-     *   init() to refresh the list of project buildings from the server
-     */
-    $scope.remove_label = function(project) {
-        project_service.remove_label(project, $scope.building).then(function(data){
-            // resolve promise
-            init();
-            delete(project.building.label);
-        }, function(data, status){
-            // reject promise
-            console.log({data: data, status: status});
-        });
-    };
-
-    /**
-     * open_edit_label_modal: opens the edit label modal, on close or dismiss
-     *   init() is called to refresh available labels
-     */
-    $scope.open_edit_label_modal = function() {
-        var modalInstance = $modal.open({
-            templateUrl: urls.static_url + 'seed/partials/manage_labels_modal.html',
-            controller: 'edit_label_modal_ctrl',
-            resolve: {
-                labels: function () {
-                    return $scope.labels;
-                }
-            }
-        });
-
-        modalInstance.result.then(
-            function () {
-                init();
-        }, function (message) {
-                $log.info(message);
-                $log.info('Modal dismissed at: ' + new Date());
-                init();
-        });
-    };
-    /**
-     * end label section
-     */
+      
 
     /**
      * is_project: returns true is building breadcrumb is from a project, used
@@ -149,22 +93,6 @@ angular.module('BE.seed.controller.building_detail', [])
         }
     };
 
-    /**
-     * update_project_building: adds or updates a label for on the the project-
-     *   buildings. Since a building can have different labels across projects,
-     *   the project is used to determine the correct project-building.
-     */
-    $scope.update_project_building = function(project, label) {
-        project_service.update_project_building($scope.building.pk, project.slug, label).then(function(data){
-            // resolve promise
-            project.building.approver = data.approver;
-            project.building.approved_date = data.approved_date;
-            project.building.label = label;
-        }, function(data, status) {
-            // reject promise
-            console.log({data: data, status: status});
-        });
-    };
 
     /**
      * set_building_attribute: sets the building attribute from a star click
@@ -228,7 +156,8 @@ angular.module('BE.seed.controller.building_detail', [])
             'parents',
             'pk',
             'super_organization',
-            'source_type'
+            'source_type',
+            'duplicate'
         ];
         var no_invalid_key = known_invalid_keys.indexOf(key) === -1;
 
@@ -342,7 +271,7 @@ angular.module('BE.seed.controller.building_detail', [])
         // handle extra_data
         angular.forEach(buildings, function(b){
             angular.forEach(b.extra_data, function (val, key){
-                if (key_list.indexOf(key) === -1 && val !== null){
+                if (key_list.indexOf(key) === -1){
                     key_list.push(key);
                     $scope.data_columns.push({
                         "key": key,
@@ -353,7 +282,7 @@ angular.module('BE.seed.controller.building_detail', [])
         });
         // hanlde building properties
         angular.forEach($scope.building, function ( val, key ) {
-            if ( $scope.is_valid_key(key) && val !== null && typeof val !== "undefined" && key_list.indexOf(key) === -1) {
+            if ( $scope.is_valid_key(key) && typeof val !== "undefined" && key_list.indexOf(key) === -1) {
                 key_list.push(key);
                 $scope.data_columns.push({
                         "key": key,
@@ -367,7 +296,7 @@ angular.module('BE.seed.controller.building_detail', [])
      * create_note
      */
     $scope.open_create_note_modal = function(existing_note) {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/create_note_modal.html',
             controller: 'create_note_modal_ctrl',
             resolve: {
@@ -415,8 +344,8 @@ angular.module('BE.seed.controller.building_detail', [])
     /**
      * init: sets default state of building detail page, gets the breadcrumb
      *   project if exists, sets the field arrays for each section, performs
-     *   some date string manipulation for better display rendering, gets
-     *   all the org's labels, and gets all the extra_data fields
+     *   some date string manipulation for better display rendering, 
+     *   and gets all the extra_data fields
      *
      */
     var init = function() {
@@ -464,7 +393,6 @@ angular.module('BE.seed.controller.building_detail', [])
                 }
             );
         }
-        get_labels();
         $scope.generate_data_columns(
             [$scope.building].concat($scope.imported_buildings)
         );

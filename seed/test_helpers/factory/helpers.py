@@ -1,11 +1,16 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 import random
-from django.contrib.webdesign import lorem_ipsum
 import datetime
 import base64
 from decimal import getcontext, Decimal
+
+from django.contrib.webdesign import lorem_ipsum
+
 getcontext().prec = 7
 from localflavor.us.us_states import STATE_CHOICES
 from seed.test_helpers.factory.lib.chomsky import generate_chomsky

@@ -1,15 +1,12 @@
-"""
-:copyright: (c) 2014 Building Energy Inc
-"""
-#!/usr/bin/env python
+# !/usr/bin/env python
 # encoding: utf-8
 """
-urls/main.py
-
-Copyright (c) 2013 Building Energy. All rights reserved.
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 
 from django.conf.urls import patterns, url
+
 
 urlpatterns = patterns(
     'seed.views.main',
@@ -56,6 +53,11 @@ urlpatterns = patterns(
         'get_PM_filter_by_counts',
         name='get_PM_filter_by_counts'
     ),
+    url(
+        r'^delete_duplicates_from_import_file/$',
+        'delete_duplicates_from_import_file',
+        name='delete_duplicates_from_import_file',
+    ),
     url(r'^create_dataset/$', 'create_dataset', name='create_dataset'),
     url(r'^get_datasets/$', 'get_datasets', name='get_datasets'),
     url(r'^get_dataset/$', 'get_dataset', name='get_dataset'),
@@ -64,6 +66,23 @@ urlpatterns = patterns(
     url(r'^delete_dataset/$', 'delete_dataset', name='delete_dataset'),
     url(r'^update_dataset/$', 'update_dataset', name='update_dataset'),
     url(r'^update_building/$', 'update_building', name='update_building'),
+
+    # Building reports
+    url(
+        r'^get_building_summary_report_data/$',
+        'get_building_summary_report_data',
+        name='get_building_summary_report_data',
+    ),
+    url(
+        r'^get_building_report_data/$', 'get_building_report_data',
+        name='get_building_report_data',
+    ),
+    url(
+        r'^get_aggregated_building_report_data/$',
+        'get_aggregated_building_report_data',
+        name='get_aggregated_building_report_data',
+    ),
+
     # New MCM endpoints
     url(
         r'^get_column_mapping_suggestions/$',
@@ -99,7 +118,6 @@ urlpatterns = patterns(
     ),
     url(r'^progress/$', 'progress', name='progress'),
 
-
     # exporter routes
     url(r'^export_buildings/$', 'export_buildings', name='export_buildings'),
     url(
@@ -115,7 +133,6 @@ urlpatterns = patterns(
 
     # test urls
     url(r'^angular_js_tests/$', 'angular_js_tests', name='angular_js_tests'),
-
 
     # org
     url(

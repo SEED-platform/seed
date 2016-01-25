@@ -1,13 +1,14 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 angular.module('BE.seed.controller.delete_modal', [])
 .controller('delete_modal_controller', [
   '$scope',
-  '$modalInstance',
+  '$uibModalInstance',
   'search',
   'building_services',
-  function($scope, $modalInstance, search, building_services) {
+  function($scope, $uibModalInstance, search, building_services) {
     $scope.delete_state = 'delete';
     $scope.delete_payload = {};
     $scope.delete_payload.selected_buildings = search.selected_buildings;
@@ -26,7 +27,16 @@ angular.module('BE.seed.controller.delete_modal', [])
           function (data) {
             // resolve promise
             $scope.delete_state = 'success';
-        });
+          }
+        ).then(
+          function(){
+            //update building count. 
+            building_services.get_total_number_of_buildings_for_user().then(
+              function (data){
+                //we don't need to do anything with the data as it's bound to relevant UI
+              });
+          }
+        );
     };
 
     /**
@@ -45,13 +55,13 @@ angular.module('BE.seed.controller.delete_modal', [])
      * cancel: dismisses the modal
      */
     $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss('cancel');
     };
 
     /**
      * close: closes the modal
      */
     $scope.close = function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
     };
 }]);

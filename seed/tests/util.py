@@ -1,5 +1,8 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 #
 ## Utilities for testing SEED modules.
@@ -7,7 +10,7 @@
 
 import json
 
-from seed.models import(
+from seed.models import (
     BuildingSnapshot,
     CanonicalBuilding,
     Column,
@@ -36,13 +39,13 @@ def make_fake_mappings(mappings, org):
         column_mapping = ColumnMapping.objects.create(
             super_organization=org
         )
-        column_mapping.column_raw.add(*columns_raw)
+        # For some reason the splat operator was causing problems here, just add them one at a time
+        for col in columns_raw:
+            column_mapping.column_raw.add(col)
         column_mapping.column_mapped.add(column_mapped)
 
 
-def make_fake_snapshot(
-    import_file, init_data, bs_type, is_canon=False, org=None
-):
+def make_fake_snapshot(import_file, init_data, bs_type, is_canon=False, org=None):
     """For making fake mapped BuildingSnapshots to test matching against."""
     snapshot = BuildingSnapshot.objects.create(**init_data)
     snapshot.import_file = import_file
@@ -73,7 +76,7 @@ class FakeRequest(object):
     GET = POST = {}
 
     def __init__(
-        self, data=None, headers=None, user=None, method='POST', **kwargs
+            self, data=None, headers=None, user=None, method='POST', **kwargs
     ):
         if 'body' in kwargs:
             self.body = kwargs['body']

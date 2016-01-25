@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 // dataset services
 angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
@@ -8,7 +9,8 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
   '$timeout',
   'user_service',
   function ($http, $q, $timeout, user_service) {
-    var dataset_factory = {};
+
+    var dataset_factory = { total_datasets_for_user : 0};
 
     dataset_factory.get_datasets = function() {
         var defer = $q.defer();
@@ -19,6 +21,7 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
                 'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
+            dataset_factory.total_datasets_for_user = (data.datasets !== undefined) ? data.datasets.length : 0;
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);

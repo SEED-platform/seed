@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 
 angular.module('BE.seed.service.auth', []).factory('auth_service', [
@@ -36,9 +37,6 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
                 'organization_id': organization_id
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            }
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
@@ -56,9 +54,6 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
             method: 'GET',
             'url': urls.accounts.get_actions
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            }
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);

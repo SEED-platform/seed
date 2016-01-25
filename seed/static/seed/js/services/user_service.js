@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 // user services
 angular.module('BE.seed.service.user', []).factory('user_service', [
@@ -18,7 +19,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      */
     user_factory.get_organization = function() {
         // yes this is a global, but otherwise we'll have to use a promise in
-        // front of every request that needs this. window.BE.initial_org_id is
+        // front of every request that needs this. window.config.initial_org_id is
         // set in base.html via the seed.views.main home view
         return organization || {
             id: window.BE.initial_org_id,
@@ -43,9 +44,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
                 'organization': org
             }
         }).success(function(data) {
-            if (data.status === 'error') {
-                defer.reject(data);
-            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -83,9 +81,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             'url': urls.accounts.add_user,
             'data': new_user_details
         }).success(function(data) {
-            if (data.status === 'error') {
-                defer.reject(data);
-            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -99,9 +94,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             method: 'GET',
             'url': urls.seed.get_default_columns
         }).success(function(data) {
-            if (data.status === 'error') {
-                defer.reject(data);
-            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -115,9 +107,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             method: 'GET',
             'url': urls.accounts.get_shared_buildings
         }).success(function(data) {
-            if (data.status === 'error') {
-                defer.reject(data);
-            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -135,9 +124,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             method: 'GET',
             'url': urls.accounts.get_user_profile
         }).success(function(data) {
-            if (data.status === 'error') {
-                defer.reject(data);
-            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -155,9 +141,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             method: 'POST',
             'url': urls.accounts.generate_api_key
         }).success(function(data) {
-            if (data.status === 'error') {
-                defer.reject(data);
-            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -172,9 +155,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             'url': urls.seed.set_default_columns,
             'data': {'columns': columns, 'show_shared_buildings': show_shared_buildings}
         }).success(function(data) {
-            if (data.status === 'error') {
-                defer.reject(data);
-            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -193,9 +173,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             'url': urls.accounts.update_user,
             'data': {user: user}
         }).success(function(data) {
-            if (data.status === 'error') {
-                defer.reject(data);
-            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -220,9 +197,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
                 'password_2': password_2
             }
         }).success(function(data) {
-            if (data.status === 'error') {
-                defer.reject(data);
-            }
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);

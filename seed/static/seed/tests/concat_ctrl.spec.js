@@ -7,7 +7,7 @@ describe("controller: concat_modal_ctrl", function(){
     var global_dataset = {};
 
     // make the seed app available for each test
-    // 'BE.seed' is created in TestFilters.html
+    // 'config.seed' is created in TestFilters.html
     beforeEach(function() {
         module('BE.seed');
     });
@@ -15,7 +15,7 @@ describe("controller: concat_modal_ctrl", function(){
     // inject AngularJS dependencies for the controller
     beforeEach(inject(
         function(
-            $controller, $rootScope, $modal, urls, $q
+            $controller, $rootScope, $uibModal, urls, $q
         ) {
             controller = $controller;
             scope = $rootScope;
@@ -70,7 +70,7 @@ describe("controller: concat_modal_ctrl", function(){
     function create_concat_modal_controller(){
         edit_ctrl = controller('concat_modal_ctrl', {
             $scope: concat_modal_ctrl_scope,
-            $modalInstance: {
+            $uibModalInstance: {
                 close: function() {
                     modal_state = "close";
                 },

@@ -1,20 +1,29 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 """
 Tests related to sharing of data between users, orgs, suborgs, etc.
 """
+import json
+
 from django.test import TestCase
-from landing.models import SEEDUser as User
-from superperms.orgs.models import Organization, ROLE_OWNER, ExportableField,\
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import (
+    Organization,
+    ROLE_OWNER,
+    ExportableField,
     ROLE_MEMBER
+)
 from seed.models import (
     CanonicalBuilding,
     BuildingSnapshot
 )
 from seed.factory import SEEDFactory
-
-from public.models import INTERNAL, PUBLIC, SharedBuildingField
-
+from seed.public.models import INTERNAL, PUBLIC, SharedBuildingField
 from django.core.urlresolvers import reverse_lazy
-import json
 
 
 class SharingViewTests(TestCase):
@@ -24,7 +33,7 @@ class SharingViewTests(TestCase):
 
     def setUp(self):
         self.admin_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com',
             'show_shared_buildings': True
@@ -34,7 +43,7 @@ class SharingViewTests(TestCase):
         self.parent_org.add_member(self.admin_user, ROLE_OWNER)
 
         self.eng_user_details = {
-            'username': 'eng_user',
+            'username': 'eng_owner@demo.com',
             'password': 'eng_pass',
             'email': 'eng_owner@demo.com'
         }
@@ -44,7 +53,7 @@ class SharingViewTests(TestCase):
         self.eng_org.add_member(self.eng_user, ROLE_OWNER)
 
         self.des_user_details = {
-            'username': 'des_user',
+            'username': 'des_owner@demo.com',
             'password': 'des_pass',
             'email': 'des_owner@demo.com'
         }
@@ -190,7 +199,7 @@ class SharingViewTests(TestCase):
         self.assertEqual(len(result['buildings']),
                          BuildingSnapshot.objects.count())
 
-        #parent org sees all fields on all buildings
+        # parent org sees all fields on all buildings
         for b in result['buildings']:
             self.assertTrue(b['property_name'] in
                             ('ENG BUILDING', 'DES BUILDING', 'ADMIN BUILDING'))
@@ -221,7 +230,7 @@ class SharingViewTests(TestCase):
         self.assertEqual(len(result['buildings']),
                          expected_count)
 
-        #eng org only sees own buildings
+        # eng org only sees own buildings
         for b in result['buildings']:
             self.assertEqual(b['property_name'], 'ENG BUILDING')
             self.assertEqual(b['address_line_1'], '100 Eng St')
@@ -245,13 +254,13 @@ class SharingViewTests(TestCase):
         self.assertEqual(len(result['buildings']),
                          expected_count)
 
-        #des org user should see shared fields
+        # des org user should see shared fields
         for b in result['buildings']:
-            #property_name is shared
+            # property_name is shared
             self.assertTrue(b['property_name'] in
                             ('ENG BUILDING', 'DES BUILDING', 'ADMIN BUILDING'))
             if b['property_name'] == 'ENG BUILDING':
-                #address_line_1 is unshared
+                # address_line_1 is unshared
                 self.assertTrue('address_line_1' not in b)
             elif b['property_name'] == 'DES BUILDING':
                 self.assertEqual(b['address_line_1'],

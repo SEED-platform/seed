@@ -16,7 +16,7 @@ describe("controller: members_controller", function(){
         function(
           $controller,
           $rootScope,
-          $modal,
+          $uibModal,
           $q,
           organization_service) {
             ctrl = $controller;

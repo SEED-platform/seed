@@ -1,8 +1,9 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 /**
- * AngularJS app 'BE.seed' for SEED SPA
+ * AngularJS app 'config.seed' for SEED SPA
  */
 
 angular.module('BE.seed.angular_dependencies', [
@@ -11,14 +12,20 @@ angular.module('BE.seed.angular_dependencies', [
     ]);
 angular.module('BE.seed.vendor_dependencies', [
     'ui.bootstrap',
-    'ui.tree'
+    'ui.sortable',
+    'ui.tree',
+    'xeditable',
+    'ngTagsInput',
+    'ui-notification',
     ]);
 angular.module('BE.seed.controllers', [
     'BE.seed.controller.accounts',
     'BE.seed.controller.admin',
     'BE.seed.controller.building_detail',
     'BE.seed.controller.building_list',
+    'BE.seed.controller.buildings_reports',
     'BE.seed.controller.buildings_settings',
+    'BE.seed.controller.cleansing',
     'BE.seed.controller.concat_modal',
     'BE.seed.controller.create_note_modal',
     'BE.seed.controller.create_organization_modal',
@@ -27,10 +34,10 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.dataset_detail',
     'BE.seed.controller.delete_modal',
     'BE.seed.controller.developer',
-    'BE.seed.controller.edit_label_modal',
     'BE.seed.controller.edit_project_modal',
     'BE.seed.controller.existing_members_modal',
     'BE.seed.controller.export_modal',
+    'BE.seed.controller.label_admin',
     'BE.seed.controller.mapping',
     'BE.seed.controller.matching',
     'BE.seed.controller.matching_detail',
@@ -41,6 +48,7 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.organization',
     'BE.seed.controller.organization_settings',
     'BE.seed.controller.project',
+    'BE.seed.controller.update_building_labels_modal',
     'BE.seed.controller.security'
     ]);
 angular.module('BE.seed.filters', [
@@ -52,16 +60,23 @@ angular.module('BE.seed.filters', [
     'typedNumber'
     ]);
 angular.module('BE.seed.directives', [
-    'beEnter',
+    'sdEnter',
     'beUploader',
-    'beLabel'
+    'beLabel',
+    'beResizable',
+    'basicBuildingInfoChart',
+    'dropdown',
+    'checkLabelExists'
     ]);
 angular.module('BE.seed.services', [
     'BE.seed.service.audit',
     'BE.seed.service.auth',
     'BE.seed.service.building',
+    'BE.seed.service.buildings_reports',
+    'BE.seed.service.cleansing',
     'BE.seed.service.dataset',
     'BE.seed.service.export',
+    'BE.seed.service.label',
     'BE.seed.service.mapping',
     'BE.seed.service.matching',
     'BE.seed.service.organization',
@@ -69,7 +84,8 @@ angular.module('BE.seed.services', [
     'BE.seed.service.uploader',
     'BE.seed.service.user',
     'mappingValidatorService',
-    'BE.seed.service.search'
+    'BE.seed.service.search',
+    'BE.seed.service.simple_modal'
     ]);
 
 var SEED_app = angular.module('BE.seed', [
@@ -91,12 +107,17 @@ var SEED_app = angular.module('BE.seed', [
 SEED_app.run([
   '$http',
   '$cookies',
-  function ($http, $cookies) {
-    $http.defaults.headers.common['X-CSRFToken'] = $cookies.csrftoken;
-    BE.csrftoken = $cookies.csrftoken;
-    $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;
+  'editableOptions',
+  function ($http, $cookies, editableOptions) {
+    var csrftoken = $cookies.get('csrftoken');
+    BE.csrftoken = csrftoken;
+    $http.defaults.headers.common['X-CSRFToken'] = csrftoken;
+    $http.defaults.headers.post['X-CSRFToken'] = csrftoken;
     $http.defaults.xsrfCookieName = 'csrftoken';
     $http.defaults.xsrfHeaderName = 'X-CSRFToken';
+
+    //config ANGULAR-XEDITABLE ... (this is the recommended place rather than in .config)...
+    editableOptions.theme = 'bs3';
   }
 ]);
 
@@ -222,7 +243,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'shared_fields_payload': ['user_service', '$route', function(user_service, $route) {
                     return user_service.get_shared_buildings();
                 }],
-                '$modalInstance': function() {
+                '$uibModalInstance': function() {
                     return {close: function () {}};
                 },
                 'project_payload': ['$route', 'project_service', function($route, project_service) {
@@ -254,18 +275,33 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             templateUrl: static_url + 'seed/partials/buildings.html',
             resolve: {
                 'search_payload': ['building_services', '$route', function(building_services, $route){
-                    var params = $route.current.params;
-                    var q = params.q || "";
+                    // Defaults
+                    var q = $route.current.params.q || "";
+                    var orderBy = "";
+                    var sortReverse = false;
+                    var params = {};
+                    var numberPerPage = 10;
 
-                    // Check session storage for order and sort values.
-                    var orderBy = (typeof(Storage) !== "undefined" && sessionStorage.getItem('seedBuildingOrderBy') !== null) ?
-                        sessionStorage.getItem('seedBuildingOrderBy') : "";
+                    // Check session storage for order, sort, and filter values.
+                    if (typeof(Storage) !== "undefined") {
 
-                    var sortReverse = (typeof(Storage) !== "undefined" && sessionStorage.getItem('seedBuildingSortReverse') !== null) ?
-                        JSON.parse(sessionStorage.getItem('seedBuildingSortReverse')) : false;
+                        var prefix = $route.current.$$route.originalPath;
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
+                            orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
+                        }
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
+                            sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
+                        }
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
+                            params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
+                        }
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
+                            numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
+                        }
+                    }
 
-                    // params: (query, number_per_page, page_number, order_by, sort_reverse, other_params, project_id)
-                    return building_services.search_buildings(q, 10, 1, orderBy, sortReverse, params, null);
+                    // params: (query, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id)
+                    return building_services.search_buildings(q, numberPerPage, 1, orderBy, sortReverse, params, null);
                 }],
                 'default_columns': ['user_service', function(user_service){
                     return user_service.get_default_columns();
@@ -293,7 +329,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'shared_fields_payload': ['user_service', '$route', function(user_service, $route) {
                     return user_service.get_shared_buildings();
                 }],
-                '$modalInstance': function() {
+                '$uibModalInstance': function() {
                     return {close: function () {}};
                 },
                 'project_payload': function() {
@@ -301,6 +337,14 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 }
             }
 
+        })
+        .when('/buildings/reports', {
+            templateUrl: static_url + 'seed/partials/buildings_reports.html',
+            controller: 'buildings_reports_controller'
+        })
+        .when('/buildings/labels', {
+            templateUrl: static_url + 'seed/partials/buildings_label_admin.html',
+            controller: 'label_admin_controller'
         })
         .when('/buildings/:building_id', {
             controller: 'building_detail_controller',
@@ -603,6 +647,10 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 }]
             }
         })
+        .when('/labels', {
+            controller: 'labels_controller',
+            templateUrl: static_url + 'seed/partials/labels.html'
+        })
         .otherwise({ redirectTo: '/' });
 
 }]);
@@ -613,11 +661,18 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
  */
 SEED_app.config([
   '$sceDelegateProvider',
-  function ($sceDelegateProvider) {
+  'NotificationProvider',
+  function ($sceDelegateProvider, NotificationProvider) {
     $sceDelegateProvider.resourceUrlWhitelist([
       'self',
       '**'
     ]);
+
+    //config ANGULAR-UI-NOTIFICATION...
+    var static_url = BE.urls.STATIC_URL;
+    NotificationProvider.setOptions({
+        templateUrl: static_url + 'seed/partials/custom_notification_template.html'
+    });
   }
 ]);
 

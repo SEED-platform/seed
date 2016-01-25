@@ -1,20 +1,19 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
-# system imports
 import json
 import logging
 
-# django imports
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
-
-# vendor imports
-from annoying.decorators import ajax_request
-from superperms.orgs.decorators import has_perm, PERMS
-from superperms.orgs.exceptions import TooManyNestedOrgs
-from superperms.orgs.models import (
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm, PERMS
+from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
+from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
     ROLE_VIEWER,
@@ -24,21 +23,19 @@ from superperms.orgs.models import (
 from passwords.validators import (
     validate_length, common_sequences, dictionary_words, complexity
 )
-
-from seed.utils.organizations import create_organization
 from seed.utils.buildings import get_columns as utils_get_columns
-
-# app imports
 from seed.models import CanonicalBuilding
-from landing.models import SEEDUser as User
+from seed.landing.models import SEEDUser as User
 from seed.tasks import (
     invite_to_seed,
 )
 from seed.utils.api import api_endpoint
+from seed.utils.organizations import create_organization
+from seed.public.models import INTERNAL, PUBLIC, SharedBuildingField
 
-from public.models import INTERNAL, PUBLIC, SharedBuildingField
 
 _log = logging.getLogger(__name__)
+
 
 def _dict_org(request, organizations):
     """returns a dicti  onary of an organization's data."""
@@ -447,17 +444,18 @@ def add_user(request):
                 'message': 'Choose either an existing org or provide a new one'
             }
 
-    if org_id:
-        org = Organization.objects.get(pk=org_id)
-        org_created = False
-    else:
-        org, org_created = Organization.objects.get_or_create(name=org_name)
-
     first_name = body['first_name']
     last_name = body['last_name']
     email = body['email']
     username = body['email']
     user, created = User.objects.get_or_create(username=username.lower())
+
+    if org_id:
+        org = Organization.objects.get(pk=org_id)
+        org_created = False
+    else:
+        org, _, _ = create_organization(user, org_name)
+        org_created = True
 
     # Add the user to the org.  If this is the org's first user,
     # the user becomes the owner/admin automatically.
@@ -1055,7 +1053,7 @@ def update_user(request):
 @login_required
 def set_password(request):
     """sets/updates a user's password, follows the min requiremnent of
-    django-passwords settings in BE/settings/common.py
+    django-passwords settings in config/settings/common.py
 
     :PUT: {
             'current_password': current_password,

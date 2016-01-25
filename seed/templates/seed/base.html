@@ -1,6 +1,7 @@
 {% load compress analytical %}
 <!DOCTYPE html>
 <html>
+    <!-- :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
     <head>
     {% analytical_head_top %}
 
@@ -30,20 +31,23 @@
             </script>
         <![endif]-->
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-	{# <link rel="Shortcut Icon" href="PATH_TO_FAVICON.ico" type="image/x-icon" /> #}
+	   {# <link rel="Shortcut Icon" href="PATH_TO_FAVICON.ico" type="image/x-icon" /> #}
         <link href="//fonts.googleapis.com/css?family=PT+Sans:400,700|PT+Sans+Narrow:400,700" rel="stylesheet" type="text/css">
-        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.2/css/font-awesome.css" rel="stylesheet" type="text/css">
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-        <link href="{{STATIC_URL}}vendors/angular-ui-tree/angular-ui-tree.min.css" rel="stylesheet" type="text/css" />
-
+        <link href="{{STATIC_URL}}vendors/bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link href="{{STATIC_URL}}vendors/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+        <link href="{{STATIC_URL}}vendors/bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css" rel="stylesheet" type="text/css">
+        <link href="{{STATIC_URL}}vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.css" rel="stylesheet" type="text/css">
+         <link href="{{STATIC_URL}}vendors/bower_components/ng-tags-input/ng-tags-input.css" rel="stylesheet" type="text/css"/>   
+        <link href="{{STATIC_URL}}vendors/bower_components/ng-tags-input/ng-tags-input.bootstrap.css" rel="stylesheet" type="text/css">  
+         <link href="{{STATIC_URL}}vendors/bower_components/angular-xeditable/dist/css/xeditable.css" rel="stylesheet" type="text/css">  
+        <link href="{{STATIC_URL}}vendors/bower_components/angular-ui-notification/dist/angular-ui-notification.min.css" rel="stylesheet" type="text/css">
+       
+       
         {% block css %}{{block.super}}
             {% compress css %}
-                <link href="{{STATIC_URL}}seed/less/style.less" rel="stylesheet" type="text/less">
-                <link href="{{STATIC_URL}}seed/css/mapping.css" rel="stylesheet" type="text/css" />
+                <link href="{{STATIC_URL}}seed/css/style.css" rel="stylesheet" type="text/css">
             {% endcompress %}
         {% endblock %}
-
-
 
         {% block js %}{{block.super}}
             <script>
@@ -69,13 +73,33 @@
 
             {# js vendor imports #}
             {# todo: switch angular.js to minified version, same with the rest #}
-            <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
-            <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.1/js/bootstrap.min.js"></script>
-            <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.js"></script>
-            <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-cookies.min.js"></script>
-            <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-route.min.js"></script>
-            <script src="{{STATIC_URL}}vendors/angular-ui/ui-bootstrap-tpls-0.12.0-SNAPSHOT.min.js"></script>
-            <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.3.1/moment.min.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/jquery/dist/jquery.min.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/jquery-ui/jquery-ui.min.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/underscore/underscore-min.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+            <script src="{{STATIC_URL}}vendors/bower_components/lodash/lodash.min.js"></script>
+            
+            <script src="{{STATIC_URL}}vendors/bower_components/angular/angular.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/angular-cookies/angular-cookies.min.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/angular-route/angular-route.min.js"></script>
+            
+            <script src="{{STATIC_URL}}vendors/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-sortable/sortable.min.js"></script>
+           
+
+            <script src="{{STATIC_URL}}vendors/bower_components/moment/min/moment.min.js"></script>
+
+            <!-- reports -->
+            <script src="{{STATIC_URL}}vendors/bower_components/d3/d3.min.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/dimple/dist/dimple.latest.min.js"></script>
+            <!-- / reports -->
+        
+            <script src="{{STATIC_URL}}vendors/bower_components/angular-xeditable/dist/js/xeditable.min.js"></script>                     
+            <script src="{{STATIC_URL}}vendors/bower_components/ng-tags-input/ng-tags-input.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-notification/dist/angular-ui-notification.min.js"></script>
+          
 
             {% ifequal FILE_UPLOAD_DESTINATION 'S3' %}
             <script src="{{STATIC_URL}}vendors/bower_components/fine-uploader/_build/s3.fineuploader.js" ></script>
@@ -83,14 +107,10 @@
             <script src="{{STATIC_URL}}vendors/bower_components/fine-uploader/_build/fineuploader.js" ></script>
             {% endifequal %}
 
-            <script src="{{STATIC_URL}}vendors/angular-ui-tree/angular-ui-tree.min.js"></script>
 
             {# all seed js files #}
             {% include "seed/_scripts.html" %}
 
-            {% if not COMPRESS_ENABLED %}
-                <script src="{{STATIC_URL}}vendors/lesscss_org/js/less-1.5.0.min.js"></script>
-            {% endif %}
         {% endblock js%}
     {% analytical_head_bottom %}
     </head>

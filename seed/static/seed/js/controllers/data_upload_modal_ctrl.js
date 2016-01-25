@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 /**
  * data_upload_modal_ctrl: the AngularJS controller for the data upload modal.
@@ -24,7 +25,7 @@
 angular.module('BE.seed.controller.data_upload_modal', [])
 .controller('data_upload_modal_ctrl', [
   '$scope',
-  '$modalInstance',
+  '$uibModalInstance',
   '$log',
   'step',
   'dataset',
@@ -36,7 +37,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
   'building_services',
   function (
     $scope,
-    $modalInstance,
+    $uibModalInstance,
     $log,
     step,
     dataset,
@@ -105,18 +106,18 @@ angular.module('BE.seed.controller.data_upload_modal', [])
      * close: closes the modal, routes to the close function of the parent scope
      */
     $scope.close = function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
     };
     $scope.goto_data_mapping = function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
         $location.path('/data/mapping/' + $scope.dataset.import_file_id);
     };
     $scope.goto_data_matching = function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
         $location.path('/data/matching/' + $scope.dataset.import_file_id);
     };
     $scope.view_my_buildings = function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
         $location.path('/buildings/');
     };
     /**
@@ -124,7 +125,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
      *  scope
      */
     $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss('cancel');
     };
     /**
      * create_dataset: uses the `uploader_service` to create a new data set. If
@@ -310,19 +311,36 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                     data.progress_key,
                     0,
                     1.0,
-                    function (data){
+                    function (data){                    
                         building_services.get_PM_filter_by_counts($scope.dataset.import_file_id)
                         .then(function (data){
                             // resolve promise
                             $scope.matched_buildings = data.matched;
                             $scope.unmatched_buildings = data.unmatched;
+                            $scope.duplicate_buildings = data.duplicates;                            
                             $scope.uploader.complete = true;
                             $scope.uploader.in_progress = false;
                             $scope.uploader.progress = 0;
-                            if ($scope.matched_buildings > 0) {
-                                $scope.step.number = 8;
-                            } else {
-                                $scope.step.number = 10;
+                            if($scope.duplicate_buildings > 0)
+                            {
+                            	//alert("Duplicate buildings found, trying to delete");
+                            	building_services.delete_duplicates_from_import_file($scope.dataset.import_file_id).then(function (data){
+                            		if ($scope.matched_buildings > 0) {
+		                                $scope.step.number = 8;
+		                            } else {
+		                                $scope.step.number = 10;
+		                                building_services.get_total_number_of_buildings_for_user();
+		                            }		
+                        		});
+                            }
+                            else
+                            {
+	                            if ($scope.matched_buildings > 0) {
+	                                $scope.step.number = 8;
+	                            } else {
+	                                $scope.step.number = 10;
+	                                building_services.get_total_number_of_buildings_for_user();
+	                            }
                             }
                         });
                     }, function(data) {

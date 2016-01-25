@@ -9,14 +9,14 @@ describe("controller: dataset_detail_controller", function(){
     
 
     // make the seed app available for each test
-    // 'BE.seed' is created in TestFilters.html
+    // 'config.seed' is created in TestFilters.html
     beforeEach(function() {
         module('BE.seed');
     });
 
     // inject AngularJS dependencies for the controller
     beforeEach(inject(
-        function($controller, $rootScope, $modal, urls, $q, dataset_service, $filter) {
+        function($controller, $rootScope, $uibModal, urls, $q, dataset_service, $filter) {
             controller = $controller;
             scope = $rootScope;
             ngFilter = $filter;

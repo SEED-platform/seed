@@ -1,38 +1,30 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
-# system imports
+
 import types
 import json
 import unicodedata
 
-# django imports
 from django.db import models
 from django.contrib.contenttypes import generic
 from django.core import serializers
 from django.utils.translation import ugettext_lazy as _
-
-# vendor imports
 from autoslug import AutoSlugField
-
-# app imports
-from audit_logs.models import AuditLog, LOG
-from landing.models import SEEDUser as User
-# provides created and modified fields
+from seed.audit_logs.models import AuditLog, LOG
+from seed.landing.models import SEEDUser as User
 from django_extensions.db.models import TimeStampedModel
-from djorm_pgjson.fields import JSONField
-
-from data_importer.models import ImportFile, ImportRecord
-
-from mcm import mapper
-from superperms.orgs.models import (
-    Organization as SuperOrganization,
-)
-
+from django_pgjson.fields import JsonField
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.lib.mcm import mapper
+from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.managers.json import JsonManager
 from seed.utils.time import convert_datestr
 from seed.utils.generic import split_model_fields
-
+from django.db.models.fields.related import ManyToManyField
 
 PROJECT_NAME_MAX_LENGTH = 255
 
@@ -55,11 +47,9 @@ SEED_DATA_SOURCES = (
     (GREEN_BUTTON_RAW, 'Green Button Raw'),
 )
 
-
 SYSTEM_MATCH = 1
 USER_MATCH = 2
 POSSIBLE_MATCH = 3
-
 
 SEED_MATCH_TYPES = (
     (SYSTEM_MATCH, 'System Match'),
@@ -67,13 +57,11 @@ SEED_MATCH_TYPES = (
     (POSSIBLE_MATCH, 'Possible Match'),
 )
 
-
 SEARCH_CONFIDENCE_RANGES = {
     'low': 0.4,
     'medium': 0.75,
     'high': 1.0,
 }
-
 
 BS_VALUES_LIST = [
     'pk',  # needed for matching not to blow up
@@ -82,7 +70,6 @@ BS_VALUES_LIST = [
     'custom_id_1',
     'address_line_1',
 ]
-
 
 NATURAL_GAS = 1
 ELECTRICITY = 2
@@ -129,7 +116,6 @@ ENERGY_TYPES = (
     (OTHER, 'Other'),
 )
 
-
 KILOWATT_HOURS = 1
 THERMS = 2
 WATT_HOURS = 3
@@ -141,8 +127,8 @@ ENERGY_UNITS = (
 )
 
 #
-## Used in ``tasks.match_buildings``
-###
+# Used in ``tasks.match_buildings``
+#
 
 
 def get_ancestors(building):
@@ -152,15 +138,16 @@ def get_ancestors(building):
        source_type {
            2: ASSESSED_BS,
            3: PORTFOLIO_BS,
-           4: COMPOSITE_BS
+           4: COMPOSITE_BS,
+           6: GREEN_BUTTON_BS
        }
 
        :param building: BuildingSnapshot inst.
        :returns: list of BuildingSnapshot inst., ancestors of building
     """
     ancestors = []
-    parents = building.parents.filter(source_type__in=[2, 3, 4])
-    ancestors.extend(parents.filter(source_type__in=[2, 3]))
+    parents = building.parents.filter(source_type__in=[2, 3, 4, 6])
+    ancestors.extend(parents.filter(source_type__in=[2, 3, 6]))
     for p in parents:
         ancestors.extend(get_ancestors(p))
     return ancestors
@@ -207,7 +194,7 @@ def find_canonical_building_values(org):
 
 def obj_to_dict(obj):
     """serializes obj for a JSON friendly version
-        tries to serialize JSONField
+        tries to serialize JsonField
 
     """
     data = serializers.serialize('json', [obj, ])
@@ -215,12 +202,12 @@ def obj_to_dict(obj):
     response = struct['fields']
     response[u'id'] = response[u'pk'] = struct['pk']
     response[u'model'] = struct['model']
-    # JSONField doesn't get serialized by `serialize`
+    # JsonField doesn't get serialized by `serialize`
     for f in obj._meta.fields:
-        if type(f) == JSONField:
+        if isinstance(f, JsonField):
             e = getattr(obj, f.name)
             # postgres < 9.3 support
-            while type(e) == unicode:
+            while isinstance(e, unicode):
                 e = json.loads(e)
             response[unicode(f.name)] = e
     return response
@@ -317,8 +304,12 @@ def clean_canonicals(b1, b2, new_snapshot):
 
 
 def save_snapshot_match(
-    b1_pk, b2_pk, confidence=None, user=None, match_type=None, default_pk = None
-):
+        b1_pk,
+        b2_pk,
+        confidence=None,
+        user=None,
+        match_type=None,
+        default_pk=None):
     """Saves a match between two models as a new snapshot; updates Canonical.
 
     :param b1_pk: int, id for building snapshot.
@@ -341,7 +332,7 @@ def save_snapshot_match(
     # No point in linking the same building together.
     if b1_pk == b2_pk:
         return
-    
+
     default_pk = default_pk or b1_pk
 
     b1 = BuildingSnapshot.objects.get(pk=b1_pk)
@@ -350,11 +341,11 @@ def save_snapshot_match(
     # we don't want to match in the middle of the tree, so get the tip
     b1 = b1.tip
     b2 = b2.tip
-    
+
     default_building = b1 if default_pk == b1_pk else b2
 
     new_snapshot = BuildingSnapshot.objects.create()
-    new_snapshot = seed_mapper.merge_building(
+    new_snapshot, changes = seed_mapper.merge_building(
         new_snapshot,
         b1,
         b2,
@@ -375,7 +366,7 @@ def save_snapshot_match(
 
     new_snapshot.save()
 
-    return new_snapshot
+    return new_snapshot, changes
 
 
 def unmatch_snapshot_tree(building_pk):
@@ -417,8 +408,8 @@ def unmatch_snapshot_tree(building_pk):
     # create CanonicalBuilding for coparent that is about to be
     # unmatched
     if (
-        not root_coparent.canonical_building or
-        root_coparent.canonical_building is root.canonical_building
+            not root_coparent.canonical_building or
+            root_coparent.canonical_building is root.canonical_building
     ):
         new_canon = CanonicalBuilding.objects.create(
             canonical_snapshot=root_coparent
@@ -454,25 +445,42 @@ def unmatch_snapshot_tree(building_pk):
 
     # delete all sub-children of the unmatched snapshot
     for child in children_to_murder:
+        # If the child we're about to delete is set as the canonical snapshop,
+        # we should update the canonical_building to point at a different node
+        # if possible.
+        canons_to_update = CanonicalBuilding.objects.filter(
+            canonical_snapshot=child,
+        )
+        for cb in canons_to_update:
+            sibling = cb.buildingsnapshot_set.exclude(
+                pk=child.pk,
+            ).first()
+            if sibling:
+                cb.canonical_snapshot = sibling.tip
+                cb.save()
         child.delete()
 
     # re-merge parents whose children have been taken from them
     bachelor = root
     newborn_child = None
     for bereaved_parent in coparents_to_keep:
-        newborn_child = save_snapshot_match(bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk)
+        newborn_child, _ = save_snapshot_match(
+            bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk,
+        )
         bachelor = newborn_child
 
     # set canonical_snapshot for root's canonical building
     tip = newborn_child or root
     canon = root.canonical_building
     canon.canonical_snapshot = tip
+    canon.active = True
     canon.save()
 
 
 def _get_filtered_values(updated_values):
     """Breaks out mappable, meta and source BuildingSnapshot attributes."""
     from seed.utils.constants import META_FIELDS, EXCLUDE_FIELDS
+
     mappable_values = {}
     meta_values = {}
     source_values = {}
@@ -584,6 +592,7 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
 
     """
     from seed.utils.mapping import _get_column_names
+
     if not isinstance(column_raw, list):
         column_raw = [column_raw]
 
@@ -621,6 +630,7 @@ def get_column_mappings(organization):
 
     """
     from seed.utils.mapping import _get_column_names
+
     source_mappings = ColumnMapping.objects.filter(
         super_organization=organization
     )
@@ -655,6 +665,7 @@ def save_column_names(bs, mapping=None):
     :param bs: BuildingSnapshot instance.
     """
     from seed.utils import mapping as mapping_utils
+
     for key in bs.extra_data:
         # Ascertain if our key is ``extra_data`` or not.
         is_extra_data = key not in mapping_utils.get_mappable_columns()
@@ -711,7 +722,7 @@ class Project(TimeStampedModel):
         return self.compliance_set.exists()
 
     def __unicode__(self):
-        return u"Project %s" % (self.name, )
+        return u"Project %s" % (self.name,)
 
     def get_compliance(self):
         if self.has_compliance:
@@ -735,7 +746,6 @@ class ProjectBuilding(TimeStampedModel):
     approver = models.ForeignKey(
         User, verbose_name=_('User'), blank=True, null=True
     )
-    status_label = models.ForeignKey('StatusLabel', null=True, blank=True)
 
     class Meta:
         ordering = ['project', 'building_snapshot']
@@ -757,6 +767,7 @@ class StatusLabel(TimeStampedModel):
     BLUE_CHOICE = 'blue'
     LIGHT_BLUE_CHOICE = 'light blue'
     GREEN_CHOICE = 'green'
+    GRAY_CHOICE = 'gray'
 
     COLOR_CHOICES = (
         (RED_CHOICE, _('red')),
@@ -765,6 +776,7 @@ class StatusLabel(TimeStampedModel):
         (GREEN_CHOICE, _('green')),
         (WHITE_CHOICE, _('white')),
         (ORANGE_CHOICE, _('orange')),
+        (GRAY_CHOICE, _('gray')),
     )
 
     name = models.CharField(_('name'), max_length=PROJECT_NAME_MAX_LENGTH)
@@ -779,8 +791,25 @@ class StatusLabel(TimeStampedModel):
         verbose_name=_('SeedOrg'),
         blank=True,
         null=True,
-        related_name='status_labels'
+        related_name='labels'
     )
+
+    DEFAULT_LABELS = [
+        "Residential",
+        "Non-Residential",
+        "Violation",
+        "Compliant",
+        "Missing Data",
+        "Questionable Report",
+        "Update Bldg Info",
+        "Call",
+        "Email",
+        "High EUI",
+        "Low EUI",
+        "Exempted",
+        "Extension",
+        "Change of Ownership",
+    ]
 
     class Meta:
         unique_together = ('name', 'super_organization')
@@ -812,7 +841,7 @@ class Compliance(TimeStampedModel):
     start_date = models.DateField(_("start_date"), null=True, blank=True)
     end_date = models.DateField(_("end_date"), null=True, blank=True)
     deadline_date = models.DateField(_("deadline_date"), null=True, blank=True)
-    project = models.ForeignKey(Project, verbose_name=_('Project'),)
+    project = models.ForeignKey(Project, verbose_name=_('Project'), )
 
     def __unicode__(self):
         return u"Compliance %s for project %s" % (
@@ -835,7 +864,7 @@ class CustomBuildingHeaders(models.Model):
 
     # 'existing, normalized name' -> 'preferred display name'
     # e.g. {'district': 'Boro'}
-    building_headers = JSONField()
+    building_headers = JsonField(default={})
 
     objects = JsonManager()
 
@@ -1008,6 +1037,7 @@ class Schema(models.Model):
 
 class CanonicalManager(models.Manager):
     """Manager to add useful model filtering methods"""
+
     def get_queryset(self):
         """Return only active CanonicalBuilding rows."""
         return super(CanonicalManager, self).get_queryset().filter(
@@ -1030,6 +1060,8 @@ class CanonicalBuilding(models.Model):
 
     objects = CanonicalManager()
     raw_objects = models.Manager()
+
+    labels = ManyToManyField(StatusLabel)
 
     def __unicode__(self):
         snapshot_pk = "None"
@@ -1273,9 +1305,15 @@ class BuildingSnapshot(TimeStampedModel):
         'BuildingSnapshot', related_name='+', null=True, blank=True
     )
 
+    # Need a field to indicate that a record is a duplicate of another.  Mainly
+    # used for cleaning up.
+    duplicate = models.ForeignKey(
+        'BuildingSnapshot', related_name='+', null=True, blank=True
+    )
+
     #
-    ## Meta Data
-    ###
+    # Meta Data
+    #
 
     children = models.ManyToManyField(
         'BuildingSnapshot',
@@ -1310,65 +1348,78 @@ class BuildingSnapshot(TimeStampedModel):
     )
 
     #
-    ## JSON data
-    ###
+    # JSON data
+    #
 
     # 'key' -> 'value'
-    extra_data = JSONField()
+    extra_data = JsonField(default={})
     # 'key' -> ['model', 'fk'], what was the model and its FK?
-    extra_data_sources = JSONField()
+    extra_data_sources = JsonField(default={})
 
     objects = JsonManager()
 
     def save(self, *args, **kwargs):
         if self.tax_lot_id and isinstance(self.tax_lot_id, types.StringTypes):
             self.tax_lot_id = self.tax_lot_id[:128]
-        if self.pm_property_id and isinstance(self.pm_property_id, types.StringTypes):
+        if self.pm_property_id and isinstance(
+                self.pm_property_id, types.StringTypes):
             self.pm_property_id = self.pm_property_id[:128]
-        if self.custom_id_1 and isinstance(self.custom_id_1, types.StringTypes):
+        if self.custom_id_1 and isinstance(
+                self.custom_id_1, types.StringTypes):
             self.custom_id_1 = self.custom_id_1[:128]
         if self.lot_number and isinstance(self.lot_number, types.StringTypes):
             self.lot_number = self.lot_number[:128]
-        if self.block_number and isinstance(self.block_number, types.StringTypes):
+        if self.block_number and isinstance(
+                self.block_number, types.StringTypes):
             self.block_number = self.block_number[:128]
         if self.district and isinstance(self.district, types.StringTypes):
             self.district = self.district[:128]
         if self.owner and isinstance(self.owner, types.StringTypes):
             self.owner = self.owner[:128]
-        if self.owner_email and isinstance(self.owner_email, types.StringTypes):
+        if self.owner_email and isinstance(
+                self.owner_email, types.StringTypes):
             self.owner_email = self.owner_email[:128]
-        if self.owner_telephone and isinstance(self.owner_telephone, types.StringTypes):
+        if self.owner_telephone and isinstance(
+                self.owner_telephone, types.StringTypes):
             self.owner_telephone = self.owner_telephone[:128]
-        if self.owner_address and isinstance(self.owner_address, types.StringTypes):
+        if self.owner_address and isinstance(
+                self.owner_address, types.StringTypes):
             self.owner_address = self.owner_address[:128]
-        if self.owner_city_state and isinstance(self.owner_city_state, types.StringTypes):
+        if self.owner_city_state and isinstance(
+                self.owner_city_state, types.StringTypes):
             self.owner_city_state = self.owner_city_state[:128]
-        if self.owner_postal_code and isinstance(self.owner_postal_code, types.StringTypes):
+        if self.owner_postal_code and isinstance(
+                self.owner_postal_code, types.StringTypes):
             self.owner_postal_code = self.owner_postal_code[:128]
-            
-        if self.property_name and isinstance(self.property_name, types.StringTypes):
+
+        if self.property_name and isinstance(
+                self.property_name, types.StringTypes):
             self.property_name = self.property_name[:255]
-        if self.address_line_1 and isinstance(self.address_line_1, types.StringTypes):
+        if self.address_line_1 and isinstance(
+                self.address_line_1, types.StringTypes):
             self.address_line_1 = self.address_line_1[:255]
-        if self.address_line_2 and isinstance(self.address_line_2, types.StringTypes):
+        if self.address_line_2 and isinstance(
+                self.address_line_2, types.StringTypes):
             self.address_line_2 = self.address_line_2[:255]
         if self.city and isinstance(self.city, types.StringTypes):
             self.city = self.city[:255]
-        if self.postal_code and isinstance(self.postal_code, types.StringTypes):
+        if self.postal_code and isinstance(
+                self.postal_code, types.StringTypes):
             self.postal_code = self.postal_code[:255]
-        if self.state_province and isinstance(self.state_province, types.StringTypes):
+        if self.state_province and isinstance(
+                self.state_province, types.StringTypes):
             self.state_province = self.state_province[:255]
-        if self.building_certification and isinstance(self.building_certification, types.StringTypes):
+        if self.building_certification and isinstance(self.building_certification, types.StringTypes):  # NOQA
             self.building_certification = self.building_certification[:255]
-        
+
         super(BuildingSnapshot, self).save(*args, **kwargs)
-        
+
     def clean(self, *args, **kwargs):
         super(BuildingSnapshot, self).clean(*args, **kwargs)
 
         # if self.owner:
         #     self.owner = self.owner[:128]
-            
+
         date_field_names = (
             'year_ending',
             'generation_date',
@@ -1427,7 +1478,7 @@ class BuildingSnapshot(TimeStampedModel):
 
     def __unicode__(self):
         u_repr = u'id: {0}, pm_property_id: {1}, tax_lot_id: {2},' + \
-            ' confidence: {3}'
+                 ' confidence: {3}'
         return u_repr.format(
             self.pk, self.pm_property_id, self.tax_lot_id, self.confidence
         )
@@ -1493,6 +1544,12 @@ class BuildingSnapshot(TimeStampedModel):
             return children[-1]
         else:
             return self
+
+
+class NonCanonicalProjectBuildings(models.Model):
+    """Holds a reference to all project buildings that do not point at a
+    canonical building snapshot."""
+    projectbuilding = models.ForeignKey(ProjectBuilding, primary_key=True)
 
 
 class AttributeOption(models.Model):

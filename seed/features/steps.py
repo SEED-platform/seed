@@ -1,10 +1,14 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
+
+# TODO: Convert these to selenium tests
 from salad.steps.everything import *
 from lettuce import step
 from django.core.urlresolvers import reverse
-from landing.features.steps import *
 
 
 @step(u'I visit the home page')

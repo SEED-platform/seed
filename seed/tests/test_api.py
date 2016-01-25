@@ -1,16 +1,20 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 import json
+import logging
+
 from django.core.urlresolvers import reverse_lazy, reverse
 from django.test import TestCase
-
-from superperms.orgs.models import Organization, OrganizationUser
-
-from landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.landing.models import SEEDUser as User
 from seed.factory import SEEDFactory
 from seed.models import CanonicalBuilding
 from seed.utils.api import get_api_endpoints
+
 
 
 class ApiAuthenticationTests(TestCase):
@@ -22,7 +26,7 @@ class ApiAuthenticationTests(TestCase):
 
     def setUp(self):
         user_details = {
-            'username': 'test_user',
+            'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
@@ -97,3 +101,4 @@ class SchemaGenerationTests(TestCase):
         endpoint = endpoints[url]
         self.assertEqual(endpoint['name'], 'get_api_schema')
         self.assertTrue('description' in endpoint)
+

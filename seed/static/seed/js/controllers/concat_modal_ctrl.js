@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 /*
  * concat_modal_ctrl, controls selecting columns to concatenate together.
@@ -9,12 +10,12 @@
 angular.module('BE.seed.controller.concat_modal', [])
 .controller('concat_modal_ctrl', [
   '$scope',
-  '$modalInstance',
+  '$uibModalInstance',
   'building_column_types',
   'raw_columns',
   function(
     $scope,
-    $modalInstance,
+    $uibModalInstance,
     building_column_types,
     raw_columns
   ){
@@ -75,7 +76,7 @@ angular.module('BE.seed.controller.concat_modal', [])
         if (typeof($scope.target_tcm) !== undefined) {
             $scope.raw_columns.push($scope.target_tcm);
         }
-        $modalInstance.close();
+        $uibModalInstance.close();
     };
 
     $scope.close_concat_modal = function () {
@@ -87,7 +88,7 @@ angular.module('BE.seed.controller.concat_modal', [])
             }
         }
 
-        $modalInstance.close();
+        $uibModalInstance.close();
     };
 
   }

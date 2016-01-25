@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 angular.module('BE.seed.controller.mapping', [])
 .controller('mapping_controller', [
@@ -15,11 +16,12 @@ angular.module('BE.seed.controller.mapping', [])
   'mapping_service',
   'search_service',
   'urls',
-  '$modal',
+  '$uibModal',
   'user_service',
   'matching_service',
   'uploader_service',
   '$filter',
+  'cleansing_service',
   function (
     $scope,
     import_file_payload,
@@ -33,12 +35,14 @@ angular.module('BE.seed.controller.mapping', [])
     mapping_service,
     search_service,
     urls,
-    $modal,
+    $uibModal,
     user_service,
     matching_service,
     uploader_service,
-    $filter
+    $filter,
+    cleansing_service
 ) {
+
     $scope.typeahead_columns = suggested_mappings_payload.building_columns;
     var original_columns = angular.copy($scope.typeahead_columns);
 
@@ -95,11 +99,24 @@ angular.module('BE.seed.controller.mapping', [])
     $scope.search.has_checkbox = false;
     $scope.search.update_results();
 
+
+    /* Handle 'Enter' key on filter fields */
+    $scope.on_filter_enter_key = function(){
+      $scope.current_page = 1;
+      $scope.do_update_filters();
+    };
+
+    /* Handle 'update filters' button click */
+    $scope.do_update_filters = function(){
+      $scope.current_page = 1;
+      $scope.search.filter_search();
+    };
+
     /*
      * Opens modal for making changes to concatenation changes.
      */
     $scope.open_concat_modal = function(building_column_types, raw_columns) {
-        var concatModalInstance = $modal.open({
+        var concatModalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/concat_modal.html',
             controller: 'concat_modal_ctrl',
             resolve: {
@@ -387,7 +404,7 @@ angular.module('BE.seed.controller.mapping', [])
             var tcm = $scope.raw_columns[i];
             var header = tcm.name;
             var suggestion;
-            // We're not mapping columns that are getting concatinated.
+            // We're not mapping columns that are getting concatenated.
             if (tcm.is_a_concat_parameter){
                 continue;
             }
@@ -431,14 +448,14 @@ angular.module('BE.seed.controller.mapping', [])
      * reverse titleCase mappings which were titleCase in the suggestion input
      */
     var get_untitle_cased_mappings = function () {
-        var mappings = $scope.get_mappings().map(function (m) {
-            var mapping = m[0];
+        var mappings = $scope.get_mappings().map(function (m) {        	
+            var mapping = m[0];            
             mapping = angular.lowercase(mapping).replace(/ /g, '_');
-            if (~original_columns.indexOf(mapping)) {
+            if (~original_columns.indexOf(mapping)) {            	
                 m[0] = mapping;
             }
             return m;
-        });
+        });        
         return mappings;
     };
 
@@ -451,7 +468,6 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.save_mappings = true;
         $scope.review_mappings = true;
         $scope.raw_columns = $scope.valids.concat($scope.duplicates);
-
         mapping_service.save_mappings(
           $scope.import_file.id,
           get_untitle_cased_mappings()
@@ -491,8 +507,8 @@ angular.module('BE.seed.controller.mapping', [])
      * monitor_typeahead_list: decide if duplicate checking is required in
      * order to enable or disable map data button
      */
-    $scope.monitor_typeahead_list =function() {
-      var dropdown = angular.element('.dropdown-menu.ng-scope');
+    $scope.monitor_typeahead_list = function() {
+      var dropdown = angular.element('.uib-dropdown-menu.ng-scope');
 
       //if dropdown menu is not shown - i.e., the user has typed
       //a new field name and a duplicate field is encountered in the
@@ -505,12 +521,12 @@ angular.module('BE.seed.controller.mapping', [])
         }
       }
       else {
-        if(dropdown.length === 0 || dropdown.css('display') == 'none') {
+        if(dropdown.length === 0 || dropdown.css('display') === 'none') {
           var input_focus = $(document.activeElement);
 
           $('.header-field').each(function(){
 
-            if(!$(this).is(input_focus) && $(this).val() == input_focus.val()) {
+            if(!$(this).is(input_focus) && $(this).val() === input_focus.val()) {
               return $scope.duplicates_present();
             }
           });
@@ -547,11 +563,36 @@ angular.module('BE.seed.controller.mapping', [])
     };
 
     /**
+     * open_cleansing_modal: modal to present data cleansing warnings and errors
+     */
+    $scope.open_cleansing_modal = function() {
+        $uibModal.open({
+            templateUrl: urls.static_url + 'seed/partials/cleansing_modal.html',
+            controller: 'cleansing_controller',
+            size: 'lg',
+            resolve: {
+                'cleansingResults': function() {
+                    return cleansing_service.get_cleansing_results($scope.import_file.id);
+                },
+                'name': function() {
+                    return $scope.import_file.name;
+                },
+                'uploaded': function() {
+                    return $scope.import_file.dataset.finish_time;
+                },
+                'importFileId': function() {
+                  return $scope.import_file.id;
+                }
+            }
+        });
+    };
+
+    /**
      * open_edit_columns_modal: modal to set which columns a user has in the
      *   table
      */
     $scope.open_edit_columns_modal = function() {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/custom_view_modal.html',
             controller: 'buildings_settings_controller',
             resolve: {
@@ -614,7 +655,7 @@ angular.module('BE.seed.controller.mapping', [])
         var ds = angular.copy(dataset);
         ds.filename = $scope.import_file.name;
         ds.import_file_id = $scope.import_file.id;
-        var dataModalInstance = $modal.open({
+        var dataModalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
             controller: 'data_upload_modal_ctrl',
             resolve: {

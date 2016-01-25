@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 // uploader services
 angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
@@ -49,11 +50,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
                 'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status) {
-            if (data.status === "error"){
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
         });
@@ -76,11 +73,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
               'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status) {
-            if (data.status === "error"){
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
+            defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
         });
@@ -120,12 +113,12 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      *   is set with the progress
      */
     uploader_factory.check_progress_loop = function(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj, debug) {
+        debug = true;
         if (typeof debug === 'undefined') {
             debug = false;
         }
         uploader_factory.check_progress(progress_key).then(function (data){
             if (debug) {
-                console.log({progress: data.progress});
             }
             var stop = $timeout(function(){
                 progress_bar_obj.progress = (data.progress * multiplier) + offset;

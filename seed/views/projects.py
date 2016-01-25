@@ -1,26 +1,29 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 # system imports
 import json
 import datetime
+import logging
 
 # django imports
 from django.contrib.auth.decorators import login_required
-from django.core.cache import cache
+from seed.utils.cache import get_cache
 
 # vendor imports
-from annoying.decorators import ajax_request
 from dateutil import parser
 
-
-# BE imports
+# config imports
 from seed.tasks import (
     add_buildings,
     remove_buildings,
 )
 
-from superperms.orgs.decorators import has_perm
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import (
     Compliance,
     Project,
@@ -32,6 +35,7 @@ from seed.utils.api import api_endpoint
 from ..utils import projects as utils
 from ..utils.time import convert_to_js_timestamp
 
+_log = logging.getLogger(__name__)
 
 DEFAULT_CUSTOM_COLUMNS = [
     'project_id',
@@ -260,9 +264,7 @@ def create_project(request):
     compliance_type = project_json.get('compliance_type', None)
     end_date = project_json.get('end_date', None)
     deadline_date = project_json.get('deadline_date', None)
-    if ((compliance_type is not None
-         and end_date is not None
-         and deadline_date is not None)):
+    if all(v is not None for v in (compliance_type, end_date, deadline_date)):
         c = Compliance(project=project)
         c.compliance_type = compliance_type
         c.end_date = parser.parse(project_json['end_date'])
@@ -434,19 +436,29 @@ def get_adding_buildings_to_project_status_percentage(request):
     Returns::
         {'status': 'success',
          'progress_object': {
-             'percentage_done': percent job done,
+             'status': job status,
+             'progress': percent job done (out of 100),
+             'progress_key': progress_key for job,
              'numerator': number buildings added,
              'denominator': total number of building to add
          }
         }
 
     """
+
     body = json.loads(request.body)
     project_loading_cache_key = body.get('project_loading_cache_key')
 
+    try:
+        progress_object = get_cache(project_loading_cache_key)
+    except:
+        msg = "Couldn't find project loading key %s in cache " % project_loading_cache_key
+        _log.error(msg)
+        raise Exception(msg)
+
     return {
         'status': 'success',
-        'progress_object': cache.get(project_loading_cache_key)
+        'progress_object': progress_object
     }
 
 
@@ -563,211 +575,4 @@ def move_buildings(request):
         user=request.user,
         copy_flag=body['copy']
     )
-    return {'status': 'success'}
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def get_labels(request):
-    """
-    Gets all labels for any organization the user has access to.
-
-    Returns::
-
-        {
-         'status': 'success',
-         'labels':
-          [
-            {
-             'name': name of label,
-             'color': color of label,
-             'id': label's ID
-            }, ...
-         ]
-        }
-    """
-    labels = utils.get_labels(request.user)
-    return {'status': 'success', 'labels': labels}
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def add_label(request):
-    """
-    Creates a new label.
-
-    Payload::
-
-        {
-         'label':
-          {
-           "color": "red",
-           "name": "non compliant"
-          }
-        }
-
-    Returns::
-
-        {
-         'status': 'success',
-         'label_id': The ID of the new label.
-        }
-
-    """
-    body = json.loads(request.body)
-    label = body['label']
-    status_label, created = StatusLabel.objects.get_or_create(
-        # need a better way to get this, maybe one per org
-        super_organization=request.user.orgs.all()[0],
-        name=label['name'],
-        color=label['color'],
-    )
-    return {'status': 'success',
-            'label_id': status_label.pk}
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def update_label(request):
-    """
-    Updates a label.
-
-    Payload::
-
-        {
-         "label": {
-            "color": Label's new color,
-            "id": ID of label to change,
-            "name": Label's new name,
-         }
-        }
-
-    Returns::
-
-        {'status': 'success'}
-
-    """
-    body = json.loads(request.body)
-    label = body['label']
-    status_label = StatusLabel.objects.get(pk=label['id'])
-    status_label.color = label['color']
-    status_label.name = label['name']
-    status_label.save()
-    return {'status': 'success'}
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def delete_label(request):
-    """
-    Deletes a label.
-
-    Payload::
-
-        {'label':
-         {'id': ID of label to delete}
-        }
-
-    Returns::
-
-        {'status': 'success'}
-
-    """
-    body = json.loads(request.body)
-    label = body['label']
-    status_label = StatusLabel.objects.get(pk=label['id'])
-    ProjectBuilding.objects.filter(
-        status_label=status_label
-    ).update(status_label=None)
-
-    status_label.delete()
-    return {'status': 'success'}
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def apply_label(request):
-    """
-    Applies a label to buildings (within a project).
-
-    Payload::
-
-        {
-         "buildings": [
-                "00010811",
-                "00010809"
-            ],
-         "label": {"id": 1 },
-         "project_slug": "proj-1",
-         "search_params": {
-            "filter_params": {
-                "project__slug": "proj-1"
-                },
-                "project_slug": 34,
-                "q": ""
-            },
-            "select_all_checkbox": false
-        }
-
-    Returns::
-
-        {'status': 'success'}
-
-    """
-    body = json.loads(request.body)
-
-    utils.apply_label(
-        project_slug=body['project_slug'],
-        buildings=body['buildings'],
-        select_all=body['select_all_checkbox'],
-        label=body['label'],
-        search_params=body['search_params'],
-        user=request.user,
-    )
-    return {'status': 'success'}
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def remove_label(request):
-    """
-    Removes labels from buildings (within a project).
-
-    Payload::
-
-        {
-         "buildings": [
-                "IMP75-0004N0027"
-            ],
-         "project_slug": "proj-1",
-         "search_params": {
-            "filter_params": {
-                "project__slug": "proj-1"
-                },
-                "project_slug": 34,
-                "q": ""
-            },
-            "select_all_checkbox": false
-        }
-
-    Returns::
-
-        {'status': 'success'}
-
-    """
-    body = json.loads(request.body)
-
-    ProjectBuilding.objects.filter(
-        project__pk=body['project']['id'],
-        building_snapshot__pk=body['building']['id']
-    ).update(
-        status_label=None
-    )
-
     return {'status': 'success'}

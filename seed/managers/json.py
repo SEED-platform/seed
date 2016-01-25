@@ -1,4 +1,9 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+
 Query JSON data from Postgres JsonFields.
 
 ::
@@ -92,7 +97,7 @@ class JsonQuerySet(QuerySet):
 
     def json_query(self, key, value=None, cond=None,
                    key_cast='text', unit=None, **kw):
-        """Query JSONField data using simplified syntax.
+        """Query JsonField data using simplified syntax.
 
         See ``build_extra`` for parameter definitions.
         optional parameters pulled from kwargs:
@@ -134,7 +139,7 @@ class JsonQuerySet(QuerySet):
         # We're going to materialize all of these rows to do sorting.'
         # Obviously this is terrible, but there's no way to do an
         # order_by on a  non-field (i.e. non-named column) in Django.
-        #"ORDER BY NULLIF({primary}->>%s, '')::{key_cast}" is the SQL
+        # "ORDER BY NULLIF({primary}->>%s, '')::{key_cast}" is the SQL
         # we'd use if Django allowed it.
 
         # Perhaps in Django 1.7 and its custom field definitions,

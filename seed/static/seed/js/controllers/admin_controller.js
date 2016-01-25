@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 angular.module('BE.seed.controller.admin', [])
 .controller('seed_admin_controller', [
@@ -22,7 +23,7 @@ angular.module('BE.seed.controller.admin', [])
     $scope.alert.bootstrap_class.ok = 'alert-success';
     $scope.alert.bootstrap_class.error = 'alert-danger';
     $scope.alert.css = $scope.alert.bootstrap_class.ok;
-    $scope.username = user_profile_payload.user.first_name + " " + 
+    $scope.username = user_profile_payload.user.first_name + " " +
         user_profile_payload.user.last_name;
 
 
@@ -32,7 +33,7 @@ angular.module('BE.seed.controller.admin', [])
         $scope.alert.message = message;
     };
     $scope.update_alert = update_alert;
-    
+
     $scope.org_form.reset = function() {
         $scope.org.user_email = "";
         $scope.org.name = "";
@@ -53,7 +54,7 @@ angular.module('BE.seed.controller.admin', [])
         user_service.add(user).then(function(data){
             // resolve promise
             $scope.user_form.invalid = false;
-            
+
             var alert_message = 'User ' + user.email + 'created and added ';
             if (data.org_created){
                 alert_message = alert_message + " as head of new org " + data.org;
@@ -78,7 +79,7 @@ angular.module('BE.seed.controller.admin', [])
     $scope.user_form.reset = function() {
         $scope.user = {};
     };
-     
+
     $scope.org_form.reset();
 
     $scope.user_form.reset();

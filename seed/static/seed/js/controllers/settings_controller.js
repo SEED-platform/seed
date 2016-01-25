@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 angular.module('BE.seed.controller.organization_settings', [])
 .controller('settings_controller', [
@@ -55,7 +56,7 @@ angular.module('BE.seed.controller.organization_settings', [])
     };
 
     /**
-     * updates all the fields checkboxs to match the ``select_all`` checkbox
+     * updates all the fields checkboxes to match the ``select_all`` checkbox
      */
     $scope.select_all_clicked = function (type) {
         var fields = $filter('filter')($scope.fields, $scope.filter_params);

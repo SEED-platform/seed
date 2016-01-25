@@ -1,16 +1,20 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 import datetime
 import json
 
 from django.test import TestCase
-from landing.models import SEEDUser as User
-
+from seed.landing.models import SEEDUser as User
 from seed.models import (
     ELECTRICITY, KILOWATT_HOURS, BuildingSnapshot, Meter, TimeSeries
 )
 from seed.views import meters
 from seed.tests.util import FakeRequest
-
-from superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import Organization
 
 
 class TestMeterViews(TestCase):

@@ -1,3 +1,9 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 EXCLUDE_FIELDS = [
     'best_guess_canonical_building',
     'best_guess_confidence',
@@ -17,6 +23,7 @@ EXCLUDE_FIELDS = [
     'seed_org',
     'source_type',
     'super_organization',
+    'duplicate',
 ]
 
 META_FIELDS = [

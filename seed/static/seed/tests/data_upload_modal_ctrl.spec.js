@@ -22,14 +22,14 @@ describe("controller: data_upload_modal_ctrl", function(){
     ];
 
     // make the seed app available for each test
-    // 'BE.seed' is created in TestFilters.html
+    // 'config.seed' is created in TestFilters.html
     beforeEach(function() {
         module('BE.seed');
     });
 
     // inject AngularJS dependencies for the controller
     beforeEach(inject(
-        function($controller, $rootScope, $modal, urls, $q, uploader_service, mapping_service, matching_service) {
+        function($controller, $rootScope, $uibModal, urls, $q, uploader_service, mapping_service, matching_service) {
             controller = $controller;
             scope = $rootScope;
             data_upload_ctrl_scope = $rootScope.$new();
@@ -141,7 +141,7 @@ describe("controller: data_upload_modal_ctrl", function(){
     function create_data_upload_modal_controller(){
         edit_ctrl = controller('data_upload_modal_ctrl', {
             $scope: data_upload_ctrl_scope,
-            $modalInstance: {
+            $uibModalInstance: {
                 close: function() {
                     modal_state = "close";
                 },

@@ -10,7 +10,7 @@ describe("controller: new_member_modal_ctrl", function(){
     });
 
     // inject AngularJS dependencies for the controller
-    beforeEach(inject(function($controller, $rootScope, $modal, $q, user_service, $timeout) {
+    beforeEach(inject(function($controller, $rootScope, $uibModal, $q, user_service, $timeout) {
         ctrl = $controller;
         scope = $rootScope;
         ctrl_scope = $rootScope.$new();
@@ -30,7 +30,7 @@ describe("controller: new_member_modal_ctrl", function(){
     function create_new_member_controller(){
         ctrl = ctrl('new_member_modal_ctrl', {
             $scope: ctrl_scope,
-            $modalInstance: {
+            $uibModalInstance: {
                 close: function() {
                     modal_state = "close";
                 },

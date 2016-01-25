@@ -20,7 +20,7 @@
     <div class="section_header_container">
         <div class="section_header fixed_height_short">
             <div class="left section_action_container"><h2><i class="fa fa-users"></i> Sub-Organizations</h2></div>
-            <div class="right_wide section_action_container"><a href="javascript:void(0);" ng-click="create_organization_modal()">Create a new sub-organization</a></div>
+            <div class="right_wide section_action_container"><a ng-click="create_organization_modal()">Create a new sub-organization</a></div>
         </div>
     </div>
         <div class="section_content_container">
@@ -47,7 +47,7 @@
                                 <span ng-repeat="owner in sub_org.owners">{$ owner.email $}<br /></span>
                             </td>
                             <td ng-if="false">
-                                <a href="javascript:void(0);" ng-click="remove_sub_org(sub_org)">Remove</a>
+                                <a ng-click="remove_sub_org(sub_org)">Remove</a>
                             </td>
                         </tr>
                     </tbody>

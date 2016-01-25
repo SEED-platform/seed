@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 angular.module('BE.seed.controller.matching', [])
 .controller('matching_controller', [
@@ -10,7 +11,7 @@ angular.module('BE.seed.controller.matching', [])
     'default_columns',
     'all_columns',
     'urls',
-    '$modal',
+    '$uibModal',
     '$log',
     'search_service',
     'matching_service',
@@ -23,7 +24,7 @@ angular.module('BE.seed.controller.matching', [])
         default_columns,
         all_columns,
         urls,
-        $modal,
+        $uibModal,
         $log,
         search_service,
         matching_service, 
@@ -66,6 +67,18 @@ angular.module('BE.seed.controller.matching', [])
     $scope.detail.match_tree = [];
     var order_by = $filter('orderBy');
 
+    /* Handle 'update filters' button click */
+    $scope.do_update_filters = function() {        
+        $scope.current_page = 1;
+        $scope.filter_search();
+    };
+
+    /* Handle 'Enter' key on filter fields */
+    $scope.on_filter_enter_key = function() {
+        $scope.current_page = 1;
+        $scope.filter_search();
+    };
+
     /*
      * filter_search: searches TODO(ALECK): use the search_service for search
      *   and pagination here.
@@ -93,27 +106,53 @@ angular.module('BE.seed.controller.matching', [])
         );
     };
 
+
      $scope.closeAlert = function(index) {
         $scope.alerts.splice(index, 1);
     };
 
-    $scope.filter_by_matched = function() {
-        // only show matched buildings
-        $scope.filter_params.children__isnull = false;
+    /**
+    *  Code for filter dropdown
+    */
+
+    var SHOW_ALL = "Show All";
+    var SHOW_MATCHED = "Show Matched";
+    var SHOW_UNMATCHED = "Show Unmatched";
+
+    $scope.filter_options = [
+        {id:SHOW_ALL, value:SHOW_ALL},
+        {id:SHOW_MATCHED, value:SHOW_MATCHED},
+        {id:SHOW_UNMATCHED, value:SHOW_UNMATCHED}
+    ];
+
+    $scope.filter_selection = {selected: SHOW_ALL};     //default setting
+
+    $scope.update_show_filter = function(optionValue) {
+
+        switch(optionValue){
+            case SHOW_ALL:               
+                $scope.filter_params.children__isnull = undefined;
+                break;
+            case SHOW_MATCHED:
+                $scope.filter_params.children__isnull = false;  //has children therefore is matched               
+                break;
+            case SHOW_UNMATCHED:
+                $scope.filter_params.children__isnull = true;   //does not have children therefore is unmatched
+                break;
+            default:
+                $log.error("#matching_controller: unexpected filter value: ", optionValue);
+                return;
+        }
+
         $scope.current_page = 1;
         $scope.filter_search();
+
     };
 
-    $scope.filter_by_unmatched = function() {
-        // only show unmatched buildings
-        $scope.current_page = 1;
-        $scope.filter_params.children__isnull = true;
-        $scope.filter_search();
-    };
 
-     /**
-     * Pagination code
-     */
+    /**
+    * Pagination code
+    */
     $scope.pagination.update_number_per_page = function() {
         $scope.number_per_page = $scope.pagination.number_per_page_options_model;
         $scope.filter_search();
@@ -262,7 +301,7 @@ angular.module('BE.seed.controller.matching', [])
      *   the columns used in the matching list table and matching detail table
      */
     $scope.open_edit_columns_modal = function() {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/custom_view_modal.html',
             controller: 'buildings_settings_controller',
             resolve: {
@@ -304,6 +343,7 @@ angular.module('BE.seed.controller.matching', [])
             // resolve promise
             $scope.matched_buildings = data.matched;
             $scope.unmatched_buildings = data.unmatched;
+            $scope.duplicate_buildings = data.duplicates;
         });
     };
 

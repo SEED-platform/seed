@@ -1,6 +1,10 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
+import math
 
 
 def split_model_fields(obj, fields):
@@ -22,3 +26,16 @@ def split_model_fields(obj, fields):
             other_fields.append(field)
 
     return model_fields, other_fields
+
+
+def median(lst):
+    if not lst:
+        return
+    index = (len(lst) - 1) // 2
+    if (len(lst) % 2):
+        return sorted(lst)[index]
+    return (sorted(lst)[index] + sorted(lst)[index + 1]) / 2.0
+
+
+def round_down_hundred_thousand(x):
+    return int(math.floor(x / 100000.0)) * 100000

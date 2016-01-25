@@ -1,9 +1,14 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 import json
 
-from superperms.orgs.decorators import has_perm
-from annoying.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm
 from django.contrib.auth.decorators import login_required
-
+from seed.decorators import ajax_request
 from seed.models import (
     ENERGY_TYPES,
     ENERGY_UNITS,
@@ -12,7 +17,6 @@ from seed.models import (
     Meter,
     TimeSeries
 )
-
 from seed.utils.time import convert_datestr
 
 

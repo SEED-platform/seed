@@ -1,27 +1,26 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 import json
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
-
-from superperms.orgs.models import Organization
-
-from landing.models import SEEDUser as User
+from seed.landing.models import SEEDUser as User
 from seed.views.main import _get_default_org
 from seed.views.accounts import _dict_org, _get_js_role, _get_role_from_js
-from superperms.orgs.models import (
+from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
     ROLE_VIEWER,
     OrganizationUser,
+    Organization
 )
-from superperms.orgs.exceptions import InsufficientPermission
-
+from seed.lib.superperms.orgs.exceptions import InsufficientPermission
 from seed.models import BuildingSnapshot, CanonicalBuilding
-from public.models import SharedBuildingField
-
+from seed.public.models import SharedBuildingField
 from seed.tests.util import FakeRequest
 
 

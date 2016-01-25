@@ -1,0 +1,57 @@
+<div class="modal-header">
+    <h4 class="modal-title">Data Cleansing Results</h4>
+</div>
+<div class="modal-body" style="padding-bottom: 0;">
+    <div ng-switch on="cleansingResults.length">
+        <div ng-switch-when="0">
+            No warnings/errors
+        </div>
+        <div ng-switch-default>
+            <div class="row">
+                <h4 class="col-sm-4">File Name:</h4>
+                <h5 class="col-sm-8" style="margin-top: 12px;">{$ name $}</h5>
+            </div>
+            <div class="row">
+                <h4 class="col-sm-4">Date Uploaded:</h4>
+                <h5 class="col-sm-8" style="margin-top: 12px;">{$ uploaded $}</h5>
+            </div>
+            <div class="section_content_container">
+                <div class="section_content">
+                    <div class="table_list_container" style="max-height:400px; overflow-y: scroll;">
+                        <table class="table sortable tbody-striped">
+                            <thead>
+                                <tr>
+                                    <th ng-repeat="c in columns" class="{$ c.title_class $}" ng-click="c.toggle_sort()" ng-class="c.sorted_class()">{$ c.title $} <span class="subtitle">{$ c.subtitle $}</span></th>
+                                </tr>
+                                <tr class="sub_head">
+                                    <th class="sub_head" ng-repeat="c in columns" style="min-width: 140px;">
+                                        <!-- for string & numeric filters -->
+                                        <input ng-if="c.type == 'string' || c.type == 'link' || c.type == 'number' || c.type == 'floor_area'" type="text" class="form-control input-sm show" ng-class="{active: search.filter_params[c.sort_column].length > 0}" placeholder="{$ c.title $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.sort_column]">
+
+                                        <!-- for range filters -->
+                                        <div ng-if="c.type == 'date'" class="col-xs-6">
+                                            <input ng-if="c.type == 'date'" type="date" class="form-control input-sm" placeholder="Min" ng-change="search.filter_search()" ng-model="search.filter_params[c.min]" ng-class="{active: search.filter_params[c.min].length > 0}">
+                                        </div>
+                                        <div ng-if="c.type == 'date'" class="col-xs-6">
+                                            <input ng-if="c.type == 'date'" type="date" class="form-control input-sm" placeholder="Max" ng-change="search.filter_search()" ng-model="search.filter_params[c.max]" ng-class="{active: search.filter_params[c.max].length > 0}">
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody ng-repeat="row in cleansingResults | filter: {visible: true}">
+                                <tr ng-repeat="result in row.cleansing_results | filter: {visible: true}" ng-class="{'cleansing-error': result.severity == 'error', 'cleansing-warning': result.severity == 'warning'}">
+                                    <td ng-repeat="c in columns" class="{$ c.class $}" ng-class="{sorted: search.sort_column == c.sort_column}">
+                                        {$ ((c.sort_column == 'field' || c.sort_column == 'message') ? result[c.sort_column] : row[c.sort_column]) || '--' $}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <a href="{$ '/cleansing/download/?import_file_id=' + importFileId $}" download><button type="button" class="btn btn-default">Export</button></a> <button type="button" class="btn btn-default" ng-click="close()">Close</button>
+</div>

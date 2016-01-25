@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 // organization services
 angular.module('BE.seed.service.organization', []).factory('organization_service', [
@@ -8,7 +9,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
   'generated_urls',
   function ($http, $q, generated_urls) {
 
-    var organization_factory = {};
+    var organization_factory = { total_organizations_for_user: 0 };
     // until we switch to replacing ``urls`` everywhere with generated urls
     var urls = generated_urls;
 
@@ -18,6 +19,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
             method: 'GET',
             'url': urls.accounts.get_organizations
         }).success(function(data, status, headers, config) {
+            organization_factory.total_organizations_for_user = (data.organizations !== undefined ) ? data.organizations.length : 0;
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
@@ -33,12 +35,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
             'url': urls.accounts.add_org,
             'data': {'user_id': org.email.user_id, 'organization_name': org.name}
         }).success(function(data, status, headers, config) {
-            if (data.status === 'error') {
-                defer.reject(data);
-            } else {
-               defer.resolve(data);
-            }
-
+            defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
         });
@@ -80,9 +77,6 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
             'url': urls.accounts.remove_user_from_org,
             'data': {'organization_id': org_id, 'user_id':user_id}
         }).success(function(data, status, headers, config) {
-            if (data.status === 'error') {
-                defer.reject(data, status);
-            }
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
@@ -144,9 +138,6 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
                 'organization': org
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            }
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
@@ -208,12 +199,8 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
                 'sub_org': sub_org
             }
         }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            }
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
-            console.log(data);
             defer.reject(data, status);
         });
         return defer.promise;
