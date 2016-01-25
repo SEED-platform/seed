@@ -153,7 +153,6 @@ def invite_to_seed(domain, email_address, token, user_pk, first_name):
         pass
 
 
-# TODO (AK): Ensure this gets tested in PR #61
 @shared_task
 def add_buildings(project_slug, project_dict, user_pk):
     """adds buildings to a project. if a user has selected all buildings,
