@@ -10,14 +10,14 @@ out of CSV files. Fuzzy matches, application to data models happens
 elsewhere.
 
 """
-import datetime
 import mmap
 import operator
 import sys
 import unicodedata
 
 from unicodecsv import DictReader, Sniffer
-from xlrd import XLRDError, open_workbook, xldate_as_tuple, empty_cell
+from xlrd import xldate, XLRDError, open_workbook, empty_cell
+from xlrd.xldate import XLDateAmbiguous
 from seed.lib.mcm import mapper, utils
 
 (
@@ -88,11 +88,12 @@ class ExcelParser(object):
         :returns: items value with dates parsed properly
         """
 
-        # Thx to Augusto C Men to point fast solution for XLS/XLSX dates
         if item.ctype == XL_CELL_DATE:
-            return datetime.datetime(
-                *xldate_as_tuple(item.value, self._workbook.datemode)
-            )
+            try:
+                return xldate.xldate_as_datetime(item.value, self._workbook.datemode)
+            except XLDateAmbiguous:
+                raise Exception('Date fields are not in a format that SEED can interpret. '
+                'A possible solution is to save as a CSV file and reimport.')
 
         if item.ctype == XL_CELL_NUMBER:
             if item.value % 1 == 0:  # integers

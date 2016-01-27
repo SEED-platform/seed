@@ -214,3 +214,19 @@ class TestMCMParserXLSX(TestCase):
             self.parser.headers()[-1],
             'Release Date'
         )
+
+    def test_odd_date_format(self):
+        """
+        Regression test to handle excel date format issues. More info at:
+        https://secure.simplistix.co.uk/svn/xlrd/trunk/xlrd/doc/xlrd.html?p=4966
+        under 'Dates in Excel spreadsheets'
+        """
+        self.xlsx_f.close()
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm_date_format.xlsx'
+        self.xlsx_f = open(test_file, 'rb')
+        self.parser = reader.MCMParser(self.xlsx_f)
+        list(self.parser.reader.excelreader)
+
+    def test_get_all_rows(self):
+        """Force evaluate all rows to make sure we don't get errors."""
+        list(self.parser.reader.excelreader)
