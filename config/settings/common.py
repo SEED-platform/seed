@@ -229,7 +229,7 @@ CELERY_QUEUES = (
 
 # Register our custom JSON serializer so we can serialize datetime objects in celery.
 register('seed_json', CeleryDatetimeSerializer.seed_dumps, CeleryDatetimeSerializer.seed_loads,
-    content_type='application/json', content_encoding='utf-8')
+         content_type='application/json', content_encoding='utf-8')
 
 CELERY_ACCEPT_CONTENT = ['seed_json']
 CELERY_TASK_SERIALIZER = 'seed_json'

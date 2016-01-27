@@ -13,7 +13,7 @@ class CeleryDatetimeSerializer(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime):
             return {
-                '__type__': '__datetime__', 
+                '__type__': '__datetime__',
                 'iso8601': obj.isoformat()
             }
         else:
