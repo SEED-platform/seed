@@ -88,9 +88,12 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            'url': window.BE.urls.update_dataset + '?organization_id=' + user_service.get_organization().id,
+            'url': window.BE.urls.update_dataset,
             'data': {
                 'dataset': dataset
+            },
+            'params': {
+                'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
