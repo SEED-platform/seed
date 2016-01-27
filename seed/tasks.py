@@ -721,7 +721,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
 
 
 @shared_task
-def finish_raw_save(results, file_pk):
+def finish_raw_save(file_pk):
     """
     Finish importing the raw file.
 
@@ -871,7 +871,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
         logger.debug('Added caching increment')
         if tasks:
             logger.debug('Adding chord to queue')
-            chord(tasks, interval=15)(finish_raw_save.s(file_pk))
+            chord(tasks, interval=15)(finish_raw_save.si(file_pk))
         else:
             logger.debug('Skipped chord')
             finish_raw_save.s(file_pk)
