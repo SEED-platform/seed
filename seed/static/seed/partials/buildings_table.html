@@ -7,12 +7,13 @@
                             ng-model="search.select_all_checkbox" 
                             ng-change="search.select_all_changed()">
                 </th>
-                <th be-resizable 
+
+                <th sd-resizable 
                     ng-repeat="c in columns" 
                     class="{$ c.title_class $}" 
                     ng-click="c.toggle_sort()" 
-                    ng-class="c.sorted_class()">{$ c.title $} 
-                    <span class="subtitle">{$ c.subtitle $}</span>
+                    ng-class="c.sorted_class()">{$ c.title $} <span class="subtitle">{$ c.subtitle $}</span>
+
                 </th>
             </tr>
             <tr class="sub_head">                
@@ -84,7 +85,7 @@
                         {$ b[c.sort_column] | typedNumber:c.type:c.sort_column:0 $}
                     </span>
                     <span ng-if="!c.link && c.is_label(b)">
-                        <be-label name="{$ b[c.sort_column].name $}" color="{$ b[c.sort_column].color $}"></be-label>
+                        <sd-label name="{$ b[c.sort_column].name $}" color="{$ b[c.sort_column].color $}"></sd-label>
                     </span>
                 </td>
             </tr>

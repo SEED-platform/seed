@@ -3,9 +3,9 @@
  * :author
  */
 /**
- * directive be-label: adds a bootstrap label from a color
+ * directive sd-label: adds a bootstrap label from a color
  */
-angular.module('beLabel', []).directive('beLabel', function () {
+angular.module('sdLabel', []).directive('sdLabel', function () {
     return {
         scope: {},
         restrict: 'E',

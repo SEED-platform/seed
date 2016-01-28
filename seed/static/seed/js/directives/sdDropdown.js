@@ -2,8 +2,8 @@
  * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-angular.module('dropdown', [])
-.directive('seedDropdown', ['urls', function (urls) {
+angular.module('sdDropdown', [])
+.directive('sdDropdown', ['urls', function (urls) {
   return {
     restrict: 'E',
     require: '^ngModel',
@@ -28,6 +28,6 @@ angular.module('dropdown', [])
         }
       };
     },
-    templateUrl: urls.static_url + 'seed/js/directives/dropdown-template.html'
+    templateUrl: urls.static_url + 'seed/js/directives/sd-dropdown-template.html'
   };
 }]);

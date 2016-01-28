@@ -91,7 +91,7 @@
                                     <a ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b)">{$ b[c.sort_column] | stripImportPrefix $}</a>
                                   </span>
                                   <span ng-switch-when="label">
-                                    <be-label name="{$ b[c.sort_column].name $}" color="{$ b[c.sort_column].color $}"></be-label>
+                                    <sd-label name="{$ b[c.sort_column].name $}" color="{$ b[c.sort_column].color $}"></sd-label>
                                   </span>
                                   <span ng-switch-default class="is_aligned_right">
                                     <a ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b)">{$ b[c.sort_column] | date:'shortDate' $}</a>
@@ -124,7 +124,7 @@
                                     <a ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b.coparent)">{$ b.coparent[c.sort_column] | stripImportPrefix $}</a>
                                   </span>
                                   <span ng-switch-when="label">
-                                    <be-label name="{$ b.coparent[c.sort_column].name $}" color="{$ b.coparent[c.sort_column].color $}"></be-label>
+                                    <sd-label name="{$ b.coparent[c.sort_column].name $}" color="{$ b.coparent[c.sort_column].color $}"></sd-label>
                                   </span>
                                   <span ng-switch-default class="is_aligned_right">
                                     <a ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b.coparent)">{$ b.coparent[c.sort_column] | date:'shortDate' $}</a>

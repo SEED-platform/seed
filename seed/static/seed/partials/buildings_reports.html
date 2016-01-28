@@ -71,17 +71,17 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="to-date">X Axis:</label>
-                                    <seed-dropdown is-button
+                                    <sd-dropdown is-button
                                               ng-model="xAxisSelectedItem" 
                                               items="xAxisVars">
-                                    </seed-dropdown>
+                                    </sd-dropdown>
                                 </div>
                                 <div class="form-group">
                                     <label for="to-date">Y Axis:</label>   
-                                    <seed-dropdown is-button
+                                    <sd-dropdown is-button
                                               ng-model="yAxisSelectedItem" 
                                               items="yAxisVars">
-                                    </seed-dropdown>
+                                    </sd-dropdown>
                                 </div>                       
                                 <div class="form-group">
                                     <button type="submit" 
@@ -101,14 +101,14 @@
                 <div class="col-md-6 col-sm-6">                  
                     <h4 class="chartTitle">{$ chart1Title $}&nbsp;</h4>
                     <div class="chart-holder"  >                      
-                        <basic-building-info-chart  id="chart" 
+                        <sd-basic-building-info-chart  id="chart" 
                                                     data="chartData" 
                                                     autoresize="true" 
                                                     chart-type="scatter"
                                                     height="400"
                                                     onchartrendered="chartRendered()"
                                                     >
-                        </basic-building-info-chart>
+                        </sd-basic-building-info-chart>
                         <div ng-show="chartStatusMessage" class="status-message">
                             {$ chartStatusMessage $}
                             <div class="progress progress-striped active" ng-show="chartIsLoading">
@@ -145,14 +145,14 @@
                 <div class="col-md-6 col-sm-6">                   
                     <h4 class="chartTitle">{$ chart2Title $}&nbsp;</h4>
                     <div class="chart-holder">                       
-                        <basic-building-info-chart  id="aggChart" 
+                        <sd-basic-building-info-chart  id="aggChart" 
                                                     data="aggChartData" 
                                                     autoresize="true" 
                                                     chart-type="bar"
                                                     height="400"
                                                     onchartrendered="aggChartRendered()"
                                                     >
-                        </basic-building-info-chart>
+                        </sd-basic-building-info-chart>
                         <div ng-show="aggChartStatusMessage" class="status-message">
                             <div>{$ aggChartStatusMessage $}
                                 <div class="progress progress-striped active" ng-show="aggChartIsLoading">

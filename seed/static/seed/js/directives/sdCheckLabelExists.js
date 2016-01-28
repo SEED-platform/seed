@@ -2,15 +2,15 @@
  * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-angular.module('checkLabelExists', []).directive('checkLabelExists', function() {
+angular.module('sdCheckLabelExists', []).directive('sdCheckLabelExists', function() {
   return {
     require: 'ngModel',
     scope: {
-      existingLabels: "=checkLabelExists"
+      existingLabels: "=sdCheckLabelExists"
     },
     link: function(scope, elm, attrs, ctrl) {
 
-      ctrl.$validators.checkLabelExists = function(modelValue) {
+      ctrl.$validators.sdCheckLabelExists = function(modelValue) {
 
         if(!modelValue) return true;
 

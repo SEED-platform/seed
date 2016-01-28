@@ -61,12 +61,12 @@ angular.module('BE.seed.filters', [
     ]);
 angular.module('BE.seed.directives', [
     'sdEnter',
-    'beUploader',
-    'beLabel',
-    'beResizable',
-    'basicBuildingInfoChart',
-    'dropdown',
-    'checkLabelExists'
+    'sdUploader',
+    'sdLabel',
+    'sdResizable',
+    'sdBasicBuildingInfoChart',
+    'sdDropdown',
+    'sdCheckLabelExists'
     ]);
 angular.module('BE.seed.services', [
     'BE.seed.service.audit',

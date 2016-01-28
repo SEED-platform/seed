@@ -44,7 +44,7 @@
                             style="min-width:300px;"
                             ng-model="new_label.name" 
                             placeholder="Label Name" 
-                            check-label-exists="labels"
+                            sd-check-label-exists="labels"
                             required>
                    
                     <div uib-dropdown class="input-group-btn">
@@ -69,7 +69,7 @@
                         Create label</button>
                 <div class="help-block">
                     <span   class="has-error" 
-                            ng-show="newLabelForm.name.$error.checkLabelExists">
+                            ng-show="newLabelForm.name.$error.sdCheckLabelExists">
                             This label name is already taken.
                     </span>
                 </div>

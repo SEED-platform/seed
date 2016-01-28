@@ -151,8 +151,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         );
     };
     /**
-     * uploaderfunc: the callback function passed to beUploader. Depending on 
-     *  the `event_message` from beUploader, it will change the state of the 
+     * uploaderfunc: the callback function passed to sdUploader. Depending on 
+     *  the `event_message` from sdUploader, it will change the state of the 
      *  modal, show the `invalid_extension` alert, and update the progress bar.
      */
     $scope.uploaderfunc = function(event_message, file, progress) {
