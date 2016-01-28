@@ -8,6 +8,7 @@ import sys
 import logging
 from os.path import abspath, join, dirname
 from kombu import Exchange, Queue
+from datetime import timedelta
 
 SITE_ROOT = abspath(join(dirname(__file__), "..", ".."))
 
