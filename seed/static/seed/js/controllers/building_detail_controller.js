@@ -23,10 +23,6 @@ angular.module('BE.seed.controller.building_detail', [])
     $scope.user.building_id = $routeParams.building_id;
     $scope.user.project_slug = $routeParams.project_id;
     $scope.projects = [];
-    $scope.labels = _.map(building_payload.labels, function(lbl) {
-      lbl.label = label_helper_service.lookup_label(lbl.color);
-      return lbl;
-    });
     $scope.building = building_payload.building;
     $scope.user_role = building_payload.user_role;
     $scope.user_org_id = building_payload.user_org_id;
@@ -48,12 +44,19 @@ angular.module('BE.seed.controller.building_detail', [])
 
     // set the tab
     $scope.section = $location.hash();
-    
+
     $scope.status = {
         isopen: false
     };
 
-      
+    var get_labels = function(building) {
+        return _.map(building.labels, function(lbl) {
+          lbl.label = label_helper_service.lookup_label(lbl.color);
+          return lbl;
+        });
+    };
+
+    $scope.labels = get_labels(building_payload);
 
     /**
      * is_project: returns true is building breadcrumb is from a project, used
@@ -339,6 +342,30 @@ angular.module('BE.seed.controller.building_detail', [])
             return +num.replace(/,/g, '');
         }
         return num;
+    };
+
+    $scope.open_update_building_labels_modal = function() {
+        var modalInstance = $uibModal.open({
+            templateUrl: urls.static_url + 'seed/partials/building_detail_update_labels_modal.html',
+            controller: 'building_detail_update_labels_modal_ctrl',
+            resolve: {
+                building: function () {
+                    return $scope.building;
+                }
+            }
+        });
+        modalInstance.result.then(
+            function () {
+                // Grab fresh building data for get_labels()
+                var canonical_id = $scope.building.canonical_building;
+                building_services.get_building(canonical_id).then(function(building_refresh) {
+                    $scope.labels = get_labels(building_refresh);
+                });
+            },
+            function (message) {
+               //dialog was 'dismissed,' which means it was cancelled...so nothing to do. 
+            }
+        );
     };
 
     /**
