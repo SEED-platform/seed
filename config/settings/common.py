@@ -7,7 +7,12 @@ from __future__ import absolute_import
 import os
 import sys  # Needed for coverage
 from os.path import abspath, join, dirname
+
 from kombu import Exchange, Queue
+from kombu.serialization import register
+
+from seed.serializers.celery import CeleryDatetimeSerializer
+
 
 SITE_ROOT = abspath(join(dirname(__file__), "..", ".."))
 
@@ -222,9 +227,14 @@ CELERY_QUEUES = (
         routing_key=CELERY_DEFAULT_QUEUE
     ),
 )
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
+
+# Register our custom JSON serializer so we can serialize datetime objects in celery.
+register('seed_json', CeleryDatetimeSerializer.seed_dumps, CeleryDatetimeSerializer.seed_loads,
+         content_type='application/json', content_encoding='utf-8')
+
+CELERY_ACCEPT_CONTENT = ['seed_json']
+CELERY_TASK_SERIALIZER = 'seed_json'
+CELERY_RESULT_SERIALIZER = 'seed_json'
 CELERY_TASK_RESULT_EXPIRES = 18000  # 5 hours
 
 SOUTH_TESTS_MIGRATE = False
