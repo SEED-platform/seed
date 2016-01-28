@@ -688,6 +688,83 @@ class SearchViewTests(TestCase):
         self.assertEqual(len(data['buildings']), 1)
         self.assertEqual(data['buildings'][0]['address_line_1'], 'Address')
 
+    def test_search_case_insensitive_exact_match(self):
+        """
+        Tests search_buidlings method when called with a case insensitive exact match.
+        """
+
+        # Uppercase address
+        cb1 = CanonicalBuilding(active=True)
+        cb1.save()
+        b1 = SEEDFactory.building_snapshot(
+            canonical_building=cb1,
+            address_line_1="Address"
+        )
+        cb1.canonical_snapshot = b1
+        cb1.save()
+        b1.super_organization = self.org
+        b1.save()
+
+        # Lowercase address
+        cb2 = CanonicalBuilding(active=True)
+        cb2.save()
+        b2 = SEEDFactory.building_snapshot(
+            canonical_building=cb2,
+            address_line_1="address"
+        )
+        cb2.canonical_snapshot = b2
+        cb2.save()
+        b2.super_organization = self.org
+        b2.save()
+
+        # Additional words
+        cb3 = CanonicalBuilding(active=True)
+        cb3.save()
+        b3 = SEEDFactory.building_snapshot(
+            canonical_building=cb3,
+            address_line_1="fake address"
+        )
+        cb3.canonical_snapshot = b3
+        cb3.save()
+        b3.super_organization = self.org
+        b3.save()
+
+        url = reverse_lazy("seed:search_buildings")
+        post_data = {
+            'filter_params': {
+                'address_line_1': '^"Address"'
+            },
+            'number_per_page': 10,
+            'order_by': '',
+            'page': 1,
+            'q': '',
+            'sort_reverse': False,
+            'project_id': None,
+        }
+
+        # act
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        json_string = response.content
+        data = json.loads(json_string)
+
+        # assert
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['number_matching_search'], 2)
+        self.assertEqual(len(data['buildings']), 2)
+
+        addresses = []
+
+        addresses.append(data['buildings'][0]['address_line_1'])
+        addresses.append(data['buildings'][1]['address_line_1'])
+
+        self.assertIn('address', addresses)
+        self.assertIn('Address', addresses)
+        self.assertNotIn('fake address', addresses)
+
     def test_search_empty_column(self):
         """
         Tests search_buidlings method when called with an empty column query.
