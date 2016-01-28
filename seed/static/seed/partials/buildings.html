@@ -55,6 +55,15 @@
                     </li>
                 </ul>
             </div>
+
+             <select    id="showHideFilterSelect" 
+                        class="form-control" 
+                        ng-init="matching_filter_options.selected = matching_filter_options[0].id"
+                        ng-model="matching_filter_options.selected" 
+                        ng-options="option.id as option.value for option in matching_filter_options"
+                        ng-change="update_show_matching_filter(matching_filter_options.selected)">
+            </select>
+
         </div>
         <div class="form-group" >
             <label for="tagsInput">Filter by label:</label>  
