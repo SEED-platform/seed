@@ -471,6 +471,7 @@ def create_building_queryset(
     :param other_orgs: list of other orgs to ``or`` the query
     """
     distinct_order_by = order_by.lstrip('-')
+
     if other_orgs:
         if extra_data_sort:
             return BuildingSnapshot.objects.filter(

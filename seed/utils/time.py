@@ -4,6 +4,7 @@
 :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import datetime
 import dateutil
 
 
@@ -20,3 +21,15 @@ def convert_to_js_timestamp(timestamp):
     if timestamp:
         return int(timestamp.strftime("%s")) * 1000
     return None
+
+
+def parse_datetime(maybe_datetime):
+    """
+    Process a datetime value that may be None, timestamp, stftime.
+    """
+    if isinstance(maybe_datetime, (int, float)):
+        return datetime.datetime.fromtimestamp(maybe_datetime / 1000)
+    elif isinstance(maybe_datetime, basestring):
+        return dateutil.parser.parse(maybe_datetime)
+    else:
+        return None
