@@ -217,7 +217,12 @@ def filter_other_params(queryset, other_params, db_columns):
             else:
                 query_filters &= Q(**{"%s__icontains" % k: v})
 
-    queryset = queryset.filter(query_filters)
+    try:
+        queryset = queryset.filter(query_filters)
+    except ValueError:
+        # Return nothing if invalid queries happen. Most likely
+        # this is caused by using operators in the wrong fields.
+        queryset = queryset.none()
 
     # handle extra_data with json_query
     for k, v in other_params.iteritems():
