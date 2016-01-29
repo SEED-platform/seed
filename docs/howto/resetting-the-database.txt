@@ -3,7 +3,7 @@ for the seed application.
 
 There is a convenience script located at
 seed/bin/drop_create_db.sh that will run these commands with
-the defaults of username='demo@buildingenergy.com', password='demo',
+the defaults of username='demo@seed.lbl.gov', password='demo',
 and organization='demo'.
 
 The first two commands below are commands distributed with the

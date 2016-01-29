@@ -1,0 +1,36 @@
+# Docker Compose creates multiple containers on a single machine.
+# run `docker-compose up` to create and run/link the containers
+db-postgres:
+  image: postgres
+  environment:
+    - POSTGRES_USER=seed
+    - POSTGRES_PASSWORD=seed
+    - POSTGRES_DB=seed
+  volumes:
+    - $HOME/seed_data:/seed/collected_static
+db-redis:
+  image: redis
+  volumes:
+    - $HOME/seed_data:/seed/collected_static
+web:
+  build: .
+  command: /seed/bin/start_uwsgi_docker.sh
+  environment:
+    - DJANGO_SETTINGS_MODULE=config.settings.dev
+  links:
+    - db-redis
+    - db-postgres
+  volumes:
+    - $HOME/seed_data:/seed/collected_static
+  ports:
+    - "8000:8000"
+web-celery:
+  build: .
+  command: /seed/bin/start_celery_docker.sh
+  environment:
+    - DJANGO_SETTINGS_MODULE=config.settings.dev
+  links:
+    - db-redis
+    - db-postgres
+  volumes:
+    - $HOME/seed_data:/seed/collected_static
