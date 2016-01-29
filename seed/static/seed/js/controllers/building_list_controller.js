@@ -61,7 +61,11 @@ angular.module('BE.seed.controller.building_list', [])
     $scope.create_project_error = false;
     $scope.create_project_error_message = "";
     $scope.selected_existing_project = null;
-   
+
+    // Matching dropdown values
+    var SHOW_ALL = "Show All";
+    var SHOW_MATCHED = "Show Matched";
+    var SHOW_UNMATCHED = "Show Unmatched";
 
     /**
     * SEARCH CODE
@@ -101,19 +105,6 @@ angular.module('BE.seed.controller.building_list', [])
     /**
     *  Code for filter dropdown
     */
-
-    var SHOW_ALL = "Show All";
-    var SHOW_MATCHED = "Show Matched";
-    var SHOW_UNMATCHED = "Show Unmatched";
-
-    $scope.matching_filter_options = [
-        {id:SHOW_ALL, value:SHOW_ALL},
-        {id:SHOW_MATCHED, value:SHOW_MATCHED},
-        {id:SHOW_UNMATCHED, value:SHOW_UNMATCHED}
-    ];
-
-    $scope.matching_filter_selection = {selected: SHOW_ALL};     //default setting
-
     $scope.update_show_matching_filter = function(optionValue) {
 
         switch(optionValue){
@@ -207,7 +198,6 @@ angular.module('BE.seed.controller.building_list', [])
     */
 
 
-
     /**
      * BUILDING TABLE CODE
      */
@@ -229,6 +219,29 @@ angular.module('BE.seed.controller.building_list', [])
     * END BUILDING TABLE CODE
     */
 
+    var init_matching_dropdown = function() {
+        $scope.matching_filter_options = [
+            {id:SHOW_ALL, value:SHOW_ALL},
+            {id:SHOW_MATCHED, value:SHOW_MATCHED},
+            {id:SHOW_UNMATCHED, value:SHOW_UNMATCHED}
+        ];
+
+        // Initial dropdown state depends on cached filter attrs.
+        switch($scope.search.filter_params.parents__isnull){
+            case undefined:
+                $scope.matching_filter_options_init = SHOW_ALL;
+                break;
+            case false:
+                $scope.matching_filter_options_init = SHOW_MATCHED;
+                break;
+            case true:
+                $scope.matching_filter_options_init = SHOW_UNMATCHED;
+                break;
+            default:
+                $scope.matching_filter_options_init = SHOW_ALL;
+                return;
+        }
+    };
 
     /**
      * PROJECTS CODE
@@ -449,6 +462,46 @@ angular.module('BE.seed.controller.building_list', [])
 
 
     /**
+     * open_edit_columns_modal: modal to set which columns a user has in the
+     *   table
+     */
+    $scope.open_edit_columns_modal = function() {
+        var modalInstance = $uibModal.open({
+            templateUrl: urls.static_url + 'seed/partials/custom_view_modal.html',
+            controller: 'buildings_settings_controller',
+            resolve: {
+                'all_columns': function() {
+                    return all_columns;
+                },
+                'default_columns': function() {
+                    return default_columns;
+                },
+                'buildings_payload': function() {
+                    return {};
+                },
+                'shared_fields_payload': function() {
+                    return {show_shared_buildings: false};
+                },
+                'project_payload': function() {
+                    return {project: {}};
+                }
+            }
+        });
+        modalInstance.result.then(
+            function (columns) {
+                // update columns
+                $scope.columns = $scope.search.generate_columns(
+                    all_columns.fields,
+                    columns,
+                    $scope.search.column_prototype
+                );
+                refresh_search();
+        }, function (message) {
+        });
+    };
+
+
+    /**
      * init: fired on controller load
      *  - grabs the search and filter parameters from the window location and
      *    sets them
@@ -499,45 +552,8 @@ angular.module('BE.seed.controller.building_list', [])
 
         get_columns();
         get_labels();
+        init_matching_dropdown();
+
     };
     init();
-
-    /**
-     * open_edit_columns_modal: modal to set which columns a user has in the
-     *   table
-     */
-    $scope.open_edit_columns_modal = function() {
-        var modalInstance = $uibModal.open({
-            templateUrl: urls.static_url + 'seed/partials/custom_view_modal.html',
-            controller: 'buildings_settings_controller',
-            resolve: {
-                'all_columns': function() {
-                    return all_columns;
-                },
-                'default_columns': function() {
-                    return default_columns;
-                },
-                'buildings_payload': function() {
-                    return {};
-                },
-                'shared_fields_payload': function() {
-                    return {show_shared_buildings: false};
-                },
-                'project_payload': function() {
-                    return {project: {}};
-                }
-            }
-        });
-        modalInstance.result.then(
-            function (columns) {
-                // update columns
-                $scope.columns = $scope.search.generate_columns(
-                    all_columns.fields,
-                    columns,
-                    $scope.search.column_prototype
-                );
-                refresh_search();
-        }, function (message) {
-        });
-    };
 }]);
