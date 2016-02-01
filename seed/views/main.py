@@ -471,7 +471,7 @@ def get_building(request):
                     "building": {
                         "approved_date":07/30/2014,
                         "compliant": null,
-                        "approver": "demo@buildingenergy.com"
+                        "approver": "demo@seed.lbl.gov"
                         "approved_date": "07/30/2014"
                         "compliant": null
                         "label": {

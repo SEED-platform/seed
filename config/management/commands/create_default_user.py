@@ -18,7 +18,7 @@ from seed.lib.superperms.orgs.models import Organization
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--username',
-                    default='demo@buildingenergy.com',
+                    default='demo@seed.lbl.gov',
                     help='Sets the default username.',
                     action='store',
                     type='string',

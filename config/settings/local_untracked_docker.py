@@ -3,7 +3,7 @@
 :author
 :license: see LICENSE for more details.
 
-seed local_untracked.py
+seed local_untracked_docker.py
 
     For this to work with dev settings:
         - run with dev settings (add this line to the .bashrc):
@@ -17,17 +17,31 @@ seed local_untracked.py
 """
 
 from __future__ import absolute_import
+
+import os
 from kombu import Exchange, Queue
+
+# Gather all the settings from the docker environment variables
+ENV_VARS = ['DB_POSTGRES_PORT_5432_TCP_ADDR', 'DB_POSTGRES_PORT_5432_TCP_PORT',
+            'DB_POSTGRES_ENV_POSTGRES_DB', 'DB_POSTGRES_ENV_POSTGRES_USER', 'DB_POSTGRES_ENV_POSTGRES_PASSWORD',
+            'DB_REDIS_PORT_6379_TCP_ADDR', 'DB_REDIS_PORT_6379_TCP_PORT']
+
+for loc in ENV_VARS:
+    locals()[loc] = os.environ.get(loc)
+
+for loc in ENV_VARS:
+    if not locals().get(loc):
+        raise Exception("%s Not defined as env variables" % loc)
 
 # postgres DB config
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'seed',
-        'USER': 'your-username',
-        'PASSWORD': 'your-password',
-        'HOST': 'your-host',
-        'PORT': 'your-port',
+        'NAME': DB_POSTGRES_ENV_POSTGRES_DB,
+        'USER': DB_POSTGRES_ENV_POSTGRES_USER,
+        'PASSWORD': DB_POSTGRES_ENV_POSTGRES_PASSWORD,
+        'HOST': DB_POSTGRES_PORT_5432_TCP_ADDR,
+        'PORT': DB_POSTGRES_PORT_5432_TCP_PORT
     }
 }
 
@@ -42,8 +56,8 @@ AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
 AWS_STORAGE_BUCKET_NAME = AWS_BUCKET_NAME
 
 # choice of DEFAULT_FILE_STORAGE (s3 or filesystem)
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-# DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
 
@@ -56,15 +70,14 @@ DOMAIN_URLCONFS['default'] = 'config.urls'
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.cache.RedisCache',
-        'LOCATION': "your-cache-url:your-cache-port",
+        'LOCATION': "%s:%s" % (DB_REDIS_PORT_6379_TCP_ADDR, DB_REDIS_PORT_6379_TCP_PORT),
         'OPTIONS': {'DB': 1},
         'TIMEOUT': 300
     }
 }
 
 # redis celery/message broker config
-BROKER_URL = 'redis://127.0.0.1:6379/1'
-# BROKER_URL = 'redis://your-broker-url:your-broker-port/1'
+BROKER_URL = "redis://%s:%s/1" % (DB_REDIS_PORT_6379_TCP_ADDR, DB_REDIS_PORT_6379_TCP_PORT)
 # BROKER_URL with AWS ElastiCache redis looks something like:
 # 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
 
