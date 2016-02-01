@@ -75,3 +75,14 @@ CELERY_QUEUES = (
         routing_key=CELERY_DEFAULT_QUEUE
     ),
 )
+
+# KairosDB Settings
+TSDB = {
+    'insert_url': 'http://your-kairosdb-server:8013/api/v1/datapoints',
+    'query_url': 'http://your-kairosdb-server:8013/api/v1/datapoints/query',
+    'measurement': 'your-time-series-db-name'
+}
+LOCAL_TIMEZONE = 'your-local-timezone, e.g. America/New_York'
+
+# GreenButton batch request fixed syntax
+GREEN_BUTTON_BATCH_URL_SYNTAX = '/espi/1_1/resource/Batch/Subscription.aspx?SubscriptionID='

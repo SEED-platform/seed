@@ -13,6 +13,7 @@ import string
 import traceback
 import operator
 from _csv import Error
+from dateutil import parser
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
@@ -74,7 +75,14 @@ from seed.cleansing.tasks import (
     finish_cleansing,
     cleanse_data_chunk,
 )
+
 from functools import reduce
+### time-series support ###
+from celery import Celery
+from celery import task
+celery = Celery('tasks', broker=settings.BROKER_URL)
+celery.config_from_object('config.settings.meter_data_scheduler_loader')
+### time-series support end ###
 
 logger = get_task_logger(__name__)
 
@@ -771,6 +779,20 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
         'progress': 100,
         'progress_key': prog_key
     }
+	
+	
+@task
+@lock_and_track
+def _save_raw_PM_energy_template(file_pk, *args, **kwargs):
+    import_file = ImportFile.objects.get(pk=file_pk)
+
+    import_file.raw_save_done = True
+    import_file.save()
+
+    prog_key = get_prog_key('save_raw_data', file_pk)
+    cache.set(prog_key, 100)
+
+    return {'status': 'success'}
     set_cache(prog_key, result['status'], result)
 
     if res:
@@ -811,6 +833,8 @@ def _save_raw_data(file_pk, *args, **kwargs):
 
         if import_file.source_type == "Green Button Raw":
             return _save_raw_green_button_data(file_pk, *args, **kwargs)
+        #if import_file.source_type == "PM energy Raw":
+        #    return _save_raw_PM_energy_template(file_pk, *args, **kwargs)
 
         parser = reader.MCMParser(import_file.local_file)
         cache_first_rows(import_file, parser)

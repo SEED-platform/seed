@@ -6,11 +6,15 @@
 """
 
 import json
+import requests
 import logging
-import datetime
+
 import os
 import uuid
 
+import time
+import calendar
+from datetime import date, timedelta, datetime
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
@@ -43,6 +47,9 @@ from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
+    GreenButtonBatchRequestsInfo,
+    CanonicalBuilding,
+    TimeSeries,
 )
 from seed.views.accounts import _get_js_role
 from seed.lib.superperms.orgs.models import Organization, ROLE_MEMBER
@@ -65,6 +72,8 @@ from seed.common import mapper as simple_mapper
 from seed.common import views as vutil
 from django.http import HttpResponseBadRequest
 
+from seed.energy.pm_energy_template import pm_energy_processor, energy_template_process
+from seed.energy.meter_data_processor import green_button_data_analyser
 from dateutil.parser import parse
 from collections import defaultdict
 
@@ -2149,6 +2158,225 @@ def delete_buildings(request):
 
 # DMcQ: Test for building reporting
 
+
+@api_endpoint
+@ajax_request
+@login_required
+def parse_pm_energy_file(request):
+    file_id = request.GET.get('file_id')
+
+    import_file = ImportFile.objects.get(pk=file_id)
+    file_path = str(import_file.file)
+    _log.info(file_path)
+
+    pm_energy_processor.parse_pm_energy_file(file_path)
+    processed_file_path = file_path[len(file_path):-5] + '_processed.xlsx'
+    
+    json_data = energy_template_process.parse_energy_template(processed_file_path)
+
+    green_button_data_analyser.data_analyse(json_data, 'PM')
+    
+    res = {}
+    res['status'] = 'success'
+    return res
+
+@api_endpoint
+@ajax_request
+@login_required
+def parse_energy_template(request):
+    file_id = request.GET.get('file_id')
+
+    import_file = ImportFile.objects.get(pk=file_id)
+    file_path = str(import_file.file)
+    _log.info(file_path)
+
+    json_data = energy_template_process.parse_energy_template(file_path)
+ 
+    green_button_data_analyser.data_analyse(json_data, 'Energy Template')
+
+    res = {}
+    res['status'] = 'success'
+    return res
+
+@api_endpoint
+@ajax_request
+@login_required
+def retrieve_finer_timeseries_data_url(request):
+    building_id = request.GET.get('building_id')
+    organization_id = request.GET.get('organization_id')    
+
+    query_body = '{\
+        "start_absolute":1230768000000,\
+        "metrics":[\
+            {\
+                "tags":{\
+                    "canonical_id":"'+str(building_id)+'"\
+                },\
+                "name": '+str(settings.TSDB['measurement'])+',\
+                "aggregators":[\
+                    {\
+                        "name":"sum",\
+                        "align_sampling":true,\
+                        "sampling":{\
+                            "value":1,\
+                            "unit":"minutes"\
+                        }\
+                    }\
+                ]\
+            }\
+        ]\
+    }'
+    
+    headers = {'content-type': 'application/json'}
+
+    response = requests.post(settings.TSDB['query_url'], data=query_body, headers=headers)
+
+    res = {}
+    res['reading'] = []
+    res['tags'] = tags
+
+    if response.status_code == 200:
+        json_data = json.loads(response.text)
+
+        readings = json_data['queries'][0]['results'][0]['values']
+        res['tags'] = json_data['queries'][0]['results'][0]['tags']
+
+        #only return a sample of 10
+        count = 0
+        for ts_data in readings:
+            ts_json = {}
+            ts_json['timestamp'] = ts_data[0]
+            ts_json['value'] = ts_data[1]
+            res['reading'].append(ts_json)
+
+            count = count+1
+            if count==10:
+                break;
+
+        res['status'] = 'success'
+    else:
+        json_data = json.loads(response.text)
+        error_msg = json_data['errors'][0]
+
+        #if response.status_code == 500 and error_msg == 'No such file or directory':
+        #    # no data in kairosdb yet
+        #    res['status'] = 'success'
+        #else:
+        res['status'] = 'error'
+        res['error_code'] = response.status_code
+        res['error_msg'] = error_msg
+
+    return res
+
+@api_endpoint
+@ajax_request
+@login_required
+def retrieve_monthly_data_url(request):
+    building_id = request.GET.get('building_id')
+
+    record = CanonicalBuilding.objects.filter(id=building_id)
+
+    res = {}
+    res['reading'] = []
+    
+    if not record:
+        _log.error('No Canonical Building found! '+str(building_id))
+    else:
+        record = CanonicalBuilding.objects.get(id=building_id)
+
+        meter_ids = record.meters.all()
+        for meter_info in meter_ids:
+            meter_id = meter_info.id
+            record = TimeSeries.objects.filter(meter_id=meter_id)
+            if not record:
+                _log.error('No monthly data found! for meter_id '+str(meter_id))
+            else:
+                record = TimeSeries.objects.filter(meter_id=meter_id)
+                for data in record.iterator():
+                    monthly = {}
+                    monthly['begin_time'] = data.begin_time
+                    monthly['end_time'] = data.end_time
+                    monthly['reading'] = data.reading
+                    monthly['cost'] = data.cost
+                    res['reading'].append(monthly)
+
+        if len(res['reading']) > 0:
+            res['status'] = 'success'
+        else:
+            res['status'] = 'not found'
+
+    return res
+
+@api_endpoint
+@ajax_request
+@login_required
+def save_gb_request_info_url(request):
+    info =  json.loads(request.body)
+
+    building_id = info['building_id']
+    url = info['url']
+    subscription_id = info['subscription_id']
+
+    min_date_parameter = info['min_date_parameter']
+    max_date_parameter = info['max_date_parameter']
+    active = info['active']
+    time_type = info['time_type']
+    date_pattern = info['date_pattern']
+    
+    loopback_flag = info['loopback']
+
+    today_date = date.today()
+    last_date = ''
+    yesterday = date.today() - timedelta(1)
+    if time_type == 'date':
+        last_date = yesterday.strftime(date_pattern)
+        if loopback_flag == 'Y':
+            very_first_date = datetime.strptime('1/1/2014', '%m/%d/%Y').date()
+            last_date = very_first_date.strftime(date_pattern)
+    else:
+        last_date = str(calendar.timegm(time.strptime(yesterday.strftime('%m/%d/%Y'), '%m/%d/%Y')))
+        if loopback_flag == 'Y':
+            last_date = str(1388534400)
+
+    record = GreenButtonBatchRequestsInfo.objects.filter(building_id=building_id)
+    if not record:
+        record = GreenButtonBatchRequestsInfo(url=url, last_date=last_date, min_date_parameter=min_date_parameter, max_date_parameter=max_date_parameter, building_id=building_id, active=active, time_type=time_type, date_pattern=date_pattern, subscription_id=subscription_id)
+    else:
+        record = GreenButtonBatchRequestsInfo.objects.get(building_id=building_id)
+        record.url = url
+        record.subscription_id = subscription_id
+        record.min_date_parameter = min_date_parameter
+        record.max_date_parameter = max_date_parameter
+        record.active = active
+        record.time_type = time_type
+        record.date_pattern = date_pattern
+        
+    record.save()
+
+@api_endpoint
+@ajax_request
+@login_required
+def get_gb_request_info_url(request):
+    building_id = request.GET.get('building_id')
+    
+    record = GreenButtonBatchRequestsInfo.objects.filter(building_id=building_id)
+    
+    res = {}
+    if not record:
+        res['status'] = 'not found'
+    else:
+        res['status'] = 'found'
+        
+        record = GreenButtonBatchRequestsInfo.objects.get(building_id=building_id)
+        res['url'] = record.url
+        res['subscription_id'] = record.subscription_id
+        res['min_date_para'] = record.min_date_parameter
+        res['max_date_para'] = record.max_date_parameter
+        res['time_type'] = record.time_type
+        res['date_pattern'] = record.date_pattern
+        res['active'] = record.active
+
+    return res
 
 @api_endpoint
 @ajax_request
