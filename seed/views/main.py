@@ -768,18 +768,13 @@ def get_default_columns(request):
     columns = request.user.default_custom_columns
 
     if columns == '{}' or type(columns) == dict:
-        initial_columns = True
         columns = DEFAULT_CUSTOM_COLUMNS
-    else:
-        initial_columns = False
     if type(columns) == unicode:
         # postgres 9.1 stores JsonField as unicode
         columns = json.loads(columns)
 
     return {
-        'status': 'success',
         'columns': columns,
-        'initial_columns': initial_columns,
     }
 
 
