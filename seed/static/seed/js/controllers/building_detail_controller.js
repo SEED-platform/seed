@@ -18,7 +18,8 @@ angular.module('BE.seed.controller.building_detail', [])
   '$location',
   'audit_service',
   'label_helper_service',
-  function($scope, $routeParams, $uibModal, $log, building_services, project_service, building_payload, all_columns, audit_payload, urls, $filter, $location, audit_service, label_helper_service) {
+  'default_columns',
+  function($scope, $routeParams, $uibModal, $log, building_services, project_service, building_payload, all_columns, audit_payload, urls, $filter, $location, audit_service, label_helper_service, default_columns) {
     $scope.user = {};
     $scope.user.building_id = $routeParams.building_id;
     $scope.user.project_slug = $routeParams.project_id;
@@ -30,6 +31,7 @@ angular.module('BE.seed.controller.building_detail', [])
     $scope.imported_buildings = building_payload.imported_buildings;
     $scope.projects = building_payload.projects;
     $scope.fields = all_columns.fields;
+    $scope.default_columns = default_columns.columns
     $scope.building_copy = {};
     $scope.data_columns = [];
     $scope.audit_logs = audit_payload.audit_logs;
@@ -262,19 +264,22 @@ angular.module('BE.seed.controller.building_detail', [])
 
     /**
      * generate_data_columns: sets $scope.data_columns to be a list
-     *   of all the data (fixed column and extra_data) fields with non-null
-     *   values for $scope.building and each $scope.imported_buildings, which
-     *   are concatenated in init() and passed in as param ``buildings``.
-     *   Keys/fields are not dupliacated.
+     * of all the data (fixed column and extra_data) fields for
+     * $scope.building and each $scope.imported_buildings, which
+     * are concatenated in init() and passed in as param ``buildings``.
+     * Keys/fields are not duplicated. Only add columns that are in the
+     * default_columns, if default_columns is not empty.
      *
      * @param {Array} buildings: concatenated list of buildings
      */
     $scope.generate_data_columns = function(buildings) {
         var key_list = [];
+        var check_defaults = !!$scope.default_columns.length;
         // handle extra_data
         angular.forEach(buildings, function(b){
             angular.forEach(b.extra_data, function (val, key){
-                if (key_list.indexOf(key) === -1){
+                // Duplicate check and check if default_columns is used and if field in columns
+                if (key_list.indexOf(key) === -1 && (!check_defaults || (check_defaults && $scope.default_columns.indexOf(key) > -1))) {
                     key_list.push(key);
                     $scope.data_columns.push({
                         "key": key,
@@ -285,12 +290,15 @@ angular.module('BE.seed.controller.building_detail', [])
         });
         // hanlde building properties
         angular.forEach($scope.building, function ( val, key ) {
-            if ( $scope.is_valid_key(key) && typeof val !== "undefined" && key_list.indexOf(key) === -1) {
+            // Duplicate check and check if default_columns is used and if field in columns
+            if ( $scope.is_valid_key(key) && typeof val !== "undefined" && key_list.indexOf(key) === -1 && 
+                (!check_defaults || (check_defaults && $scope.default_columns.indexOf(key) > -1))) {
+
                 key_list.push(key);
                 $scope.data_columns.push({
-                        "key": key,
-                        "type": "fixed_column"
-                    });
+                    "key": key,
+                    "type": "fixed_column"
+                });
             }
         });
     };
