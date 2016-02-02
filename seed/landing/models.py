@@ -54,6 +54,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 
     default_custom_columns = JsonField(default={})
+    default_building_detail_custom_columns = JsonField(default={})
     show_shared_buildings = models.BooleanField(
         _('active'), default=False,
         help_text=_('shows shared buildings within search results'))
