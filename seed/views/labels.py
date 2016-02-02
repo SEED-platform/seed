@@ -121,8 +121,13 @@ class UpdateBuildingLabelsAPIView(generics.GenericAPIView):
         )
         serializer.is_valid(raise_exception=True)
 
+        # This needs to happen before `save()` so that we get an accurate
+        # number.  Otherwise, if the save changes the underlying queryset the
+        # call to `count()` will re-evaluate and return a different number.
+        num_updated = building_snapshots.count()
+
         serializer.save()
 
         return response.Response({
-            "num_buildings_updated": building_snapshots.count(),
+            "num_buildings_updated": num_updated,
         })
