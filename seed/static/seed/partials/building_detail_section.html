@@ -60,7 +60,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="f in data_columns | orderBy:'key'">
+                        <tr ng-repeat="f in data_columns">
                             <td>{$ f.key | titleCase $}</td>
                             <td>
                                 <span ng-hide="building.edit_form_showing" ng-if="f.type === 'extra_data'">{$ building.extra_data[f.key] $}</span>

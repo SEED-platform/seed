@@ -31,7 +31,7 @@ angular.module('BE.seed.controller.building_detail', [])
     $scope.imported_buildings = building_payload.imported_buildings;
     $scope.projects = building_payload.projects;
     $scope.fields = all_columns.fields;
-    $scope.default_columns = default_columns.columns
+    $scope.default_columns = default_columns.columns;
     $scope.building_copy = {};
     $scope.data_columns = [];
     $scope.audit_logs = audit_payload.audit_logs;
@@ -273,34 +273,48 @@ angular.module('BE.seed.controller.building_detail', [])
      * @param {Array} buildings: concatenated list of buildings
      */
     $scope.generate_data_columns = function(buildings) {
+        var data_columns = [];
         var key_list = [];
         var check_defaults = !!$scope.default_columns.length;
+
         // handle extra_data
         angular.forEach(buildings, function(b){
             angular.forEach(b.extra_data, function (val, key){
                 // Duplicate check and check if default_columns is used and if field in columns
                 if (key_list.indexOf(key) === -1 && (!check_defaults || (check_defaults && $scope.default_columns.indexOf(key) > -1))) {
                     key_list.push(key);
-                    $scope.data_columns.push({
+                    data_columns.push({
                         "key": key,
                         "type": "extra_data"
                     });
                 }
             });
         });
-        // hanlde building properties
+
+        // handle building properties
         angular.forEach($scope.building, function ( val, key ) {
             // Duplicate check and check if default_columns is used and if field in columns
             if ( $scope.is_valid_key(key) && typeof val !== "undefined" && key_list.indexOf(key) === -1 && 
                 (!check_defaults || (check_defaults && $scope.default_columns.indexOf(key) > -1))) {
-
                 key_list.push(key);
-                $scope.data_columns.push({
+                data_columns.push({
                     "key": key,
                     "type": "fixed_column"
                 });
             }
         });
+
+        if (check_defaults) {
+            data_columns.sort(function(a,b) {
+                if ($scope.default_columns.indexOf(a.key) < $scope.default_columns.indexOf(b.key)) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            });
+        }
+
+        $scope.data_columns = data_columns;
     };
 
     /**
