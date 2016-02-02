@@ -1,3 +1,22 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a href="#/buildings" class="page_action" ng-show="!is_project()"><i class="fa fa-chevron-left"></i> Buildings</a>
+            <a href="#/projects/{$ user.project_slug $}" class="page_action" ng-show="is_project()"><i class="fa fa-chevron-left"></i> Project: {$ project.name $}</a>
+        </div>
+        <div class="page_title">
+            <h1>{$ building.address_line_1 $}</h1>
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav">
+        <a id="building" ng-href="#/buildings/{$ building.canonical_building $}" class="active">Building Info</a>
+        <a id="projects" ng-href="#/buildings/{$ building.canonical_building $}/projects">Projects</a>
+        <a id="audit" ng-href="#/buildings/{$ building.canonical_building $}/audit">Log &amp Notes</a>
+        <a id="energy" ng-href="#/buildings/{$ building.canonical_building $}/energy">Energy</a>
+    </div>
+</div>
 <div class="section">
     <div class="section_header_container">
         <div class="section_header fixed_height_short has_no_padding">

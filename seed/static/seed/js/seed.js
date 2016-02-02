@@ -269,7 +269,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     return audit_service.get_building_logs(building_id);
                 }]
             },
-            templateUrl: static_url + 'seed/partials/building_detail.html'
+            templateUrl: static_url + 'seed/partials/building_detail_section.html'
         })
         .when('/buildings', {
             controller: 'building_list_controller',
@@ -349,7 +349,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
         })
         .when('/buildings/:building_id', {
             controller: 'building_detail_controller',
-            templateUrl: static_url + 'seed/partials/building_detail.html',
+            templateUrl: static_url + 'seed/partials/building_detail_section.html',
             resolve: {
                 'building_payload': ['building_services', '$route', function(building_services, $route){
                     // load `get_building` before page is loaded to avoid
@@ -366,7 +366,26 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 }]
             }
         })
-        .when('/buildings/:building_id/audit_log', {
+        .when('/buildings/:building_id/projects', {
+            controller: 'building_detail_controller',
+            templateUrl: static_url + 'seed/partials/building_projects_section.html',
+            resolve: {
+                'building_payload': ['building_services', '$route', function(building_services, $route){
+                    // load `get_building` before page is loaded to avoid
+                    // page flicker.
+                    var building_id = $route.current.params.building_id;
+                    return building_services.get_building(building_id);
+                }],
+                'all_columns': ['building_services', function(building_services) {
+                    return building_services.get_columns(false);
+                }],
+                'audit_payload': ['audit_service', '$route', function(audit_service, $route){
+                    var building_id = $route.current.params.building_id;
+                    return audit_service.get_building_logs(building_id);
+                }]
+            }
+        })
+        .when('/buildings/:building_id/audit', {
             controller: 'building_detail_controller',
             templateUrl: static_url + 'seed/partials/building_audit_log.html',
             resolve: {
@@ -378,6 +397,29 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 }],
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);
+                }],
+                'audit_payload': ['audit_service', '$route', function(audit_service, $route){
+                    var building_id = $route.current.params.building_id;
+                    return audit_service.get_building_logs(building_id);
+                }]
+            }
+        })
+        .when('/buildings/:building_id/energy', {
+            controller: 'building_detail_controller',
+            templateUrl: static_url + 'seed/partials/building_energy_section.html',
+            resolve: {
+                'building_payload': ['building_services', '$route', function(building_services, $route){
+                    // load `get_building` before page is loaded to avoid
+                    // page flicker.
+                    var building_id = $route.current.params.building_id;
+                    return building_services.get_building(building_id);
+                }],
+                'all_columns': ['building_services', function(building_services) {
+                    return building_services.get_columns(false);
+                }],
+                'audit_payload': ['audit_service', '$route', function(audit_service, $route){
+                    var building_id = $route.current.params.building_id;
+                    return audit_service.get_building_logs(building_id);
                 }]
             }
         })
