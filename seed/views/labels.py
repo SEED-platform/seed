@@ -112,7 +112,11 @@ class UpdateBuildingLabelsAPIView(generics.GenericAPIView):
         """
         building_snapshots = self.filter_queryset(self.get_queryset())
         queryset = CanonicalBuilding.objects.filter(
-            id__in=building_snapshots.values_list('canonical_building', flat=True),
+            # This is a stop-gap solution for a bug in django-pgjson
+            # https://github.com/djangonauts/django-pgjson/issues/35
+            # - once a release has been made with this fixed the 'tuple'
+            # casting can be removed.
+            id__in=tuple(building_snapshots.values_list('canonical_building', flat=True)),
         )
         serializer = self.get_serializer(
             data=self.request.data,
