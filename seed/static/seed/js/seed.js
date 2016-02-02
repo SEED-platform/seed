@@ -453,10 +453,6 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);
                 }],
-                'audit_payload': ['audit_service', '$route', function(audit_service, $route){
-                    var building_id = $route.current.params.building_id;
-                    return audit_service.get_building_logs(building_id);
-                }],
                 'default_columns': ['user_service', function(user_service){
                     return user_service.get_default_building_detail_columns();
                 }],
