@@ -267,10 +267,9 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);
                 }],
-                'audit_payload': ['audit_service', '$route', function(audit_service, $route){
-                    var building_id = $route.current.params.building_id;
-                    return audit_service.get_building_logs(building_id);
-                }],
+                'audit_payload': function(){
+                    return {'audit_logs': {}};
+                },
                 'default_columns': ['user_service', function(user_service){
                     return user_service.get_default_building_detail_columns();
                 }]
@@ -369,10 +368,9 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);
                 }],
-                'audit_payload': ['audit_service', '$route', function(audit_service, $route){
-                    var building_id = $route.current.params.building_id;
-                    return audit_service.get_building_logs(building_id);
-                }],
+                'audit_payload': function(){
+                    return {'audit_logs': {}};
+                },
                 'default_columns': ['user_service', function(user_service){
                     return user_service.get_default_building_detail_columns();
                 }]
@@ -391,13 +389,12 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);
                 }],
-                'audit_payload': ['audit_service', '$route', function(audit_service, $route){
-                    var building_id = $route.current.params.building_id;
-                    return audit_service.get_building_logs(building_id);
-                }],
-                'default_columns': ['user_service', function(user_service){
-                    return user_service.get_default_building_detail_columns();
-                }]
+                'audit_payload': function(){
+                    return {'audit_logs': {}};
+                },
+                'default_columns': function(){
+                    return {'columns': {}};
+                }
             }
         })
         .when('/buildings/:building_id/audit', {
@@ -417,9 +414,9 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     var building_id = $route.current.params.building_id;
                     return audit_service.get_building_logs(building_id);
                 }],
-                'default_columns': ['user_service', function(user_service){
-                    return user_service.get_default_building_detail_columns();
-                }]
+                'default_columns': function(){
+                    return {'columns': {}};
+                }
             }
         })
         .when('/buildings/:building_id/energy', {
@@ -435,13 +432,12 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);
                 }],
-                'audit_payload': ['audit_service', '$route', function(audit_service, $route){
-                    var building_id = $route.current.params.building_id;
-                    return audit_service.get_building_logs(building_id);
-                }],
-                'default_columns': ['user_service', function(user_service){
-                    return user_service.get_default_building_detail_columns();
-                }]
+                'audit_payload': function(){
+                    return {'audit_logs': {}};
+                },
+                'default_columns': function(){
+                    return {'columns': {}};
+                }
             }
         })
         .when('/buildings/:building_id/settings', {
