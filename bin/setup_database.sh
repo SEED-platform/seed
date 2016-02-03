@@ -1,7 +1,8 @@
 #!/bin/bash
+
+# NL (1/29/2016) -- Can we delete this file, it seemed to be for docker
 cd /seed
 
-source ./bin/docker_environment.sh
 ./manage.py syncdb
 ./manage.py migrate
 ./manage.py create_default_user

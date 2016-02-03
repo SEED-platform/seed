@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 # stdlib
@@ -18,7 +18,7 @@ from seed.lib.superperms.orgs.models import Organization
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--username',
-                    default='demo@buildingenergy.com',
+                    default='demo@seed.lbl.gov',
                     help='Sets the default username.',
                     action='store',
                     type='string',

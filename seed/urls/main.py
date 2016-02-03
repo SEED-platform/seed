@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -42,6 +42,16 @@ urlpatterns = patterns(
         r'^set_default_columns/$',
         'set_default_columns',
         name='set_default_columns'
+    ),
+    url(
+        r'^get_default_building_detail_columns/$',
+        'get_default_building_detail_columns',
+        name='get_default_building_detail_columns'
+    ),
+    url(
+        r'^set_default_building_detail_columns/$',
+        'set_default_building_detail_columns',
+        name='set_default_building_detail_columns'
     ),
     url(r'^get_columns/$', 'get_columns', name='get_columns'),
     url(r'^save_match/$', 'save_match', name='save_match'),

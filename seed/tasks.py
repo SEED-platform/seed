@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -1492,7 +1492,8 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
     :param org_pk: int, str, the organization pk
     """
     qs = BuildingSnapshot.objects.filter(super_organization=org_pk)
-    ids = qs.values_list('id', flat=True)
+    ids = list(qs.values_list('id', flat=True))
+
     deleting_cache_key = get_prog_key(
         'delete_organization_buildings',
         org_pk
@@ -1510,6 +1511,7 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
     can_ids = CanonicalBuilding.objects.filter(
         canonical_snapshot__super_organization=org_pk
     ).values_list('id', flat=True)
+    can_ids = list(can_ids)
     _delete_canonical_buildings.delay(can_ids)
 
     step = float(chunk_size) / len(ids)

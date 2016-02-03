@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -480,7 +480,7 @@ def get_building(request):
                     "building": {
                         "approved_date":07/30/2014,
                         "compliant": null,
-                        "approver": "demo@buildingenergy.com"
+                        "approver": "demo@seed.lbl.gov"
                         "approved_date": "07/30/2014"
                         "compliant": null
                         "label": {
@@ -768,7 +768,9 @@ def search_building_snapshots(request):
 @ajax_request
 @login_required
 def get_default_columns(request):
-    """front end is expecting a JSON object with an array of field names
+    """Get default columns for building list view.
+
+    front end is expecting a JSON object with an array of field names
         i.e.
         {
             "columns": ["project_id", "name", "gross_floor_area"]
@@ -777,33 +779,64 @@ def get_default_columns(request):
     columns = request.user.default_custom_columns
 
     if columns == '{}' or type(columns) == dict:
-        initial_columns = True
         columns = DEFAULT_CUSTOM_COLUMNS
-    else:
-        initial_columns = False
     if type(columns) == unicode:
         # postgres 9.1 stores JsonField as unicode
         columns = json.loads(columns)
 
     return {
-        'status': 'success',
         'columns': columns,
-        'initial_columns': initial_columns,
     }
 
 
 @ajax_request
 @login_required
-def set_default_columns(request):
+def get_default_building_detail_columns(request):
+    """Get default columns for building detail view.
+
+    front end is expecting a JSON object with an array of field names
+        i.e.
+        {
+            "columns": ["project_id", "name", "gross_floor_area"]
+        }
+    """
+    columns = request.user.default_building_detail_custom_columns
+
+    if columns == '{}' or type(columns) == dict:
+        # Return empty result, telling the FE to show all.
+        columns = []
+    if type(columns) == unicode:
+        # postgres 9.1 stores JsonField as unicode
+        columns = json.loads(columns)
+
+    return {
+        'columns': columns,
+    }
+
+
+def _set_default_columns_by_request(body, user, field):
     """sets the default value for the user's default_custom_columns"""
-    body = json.loads(request.body)
     columns = body['columns']
     show_shared_buildings = body.get('show_shared_buildings')
-    request.user.default_custom_columns = columns
+    setattr(user, field, columns)
     if show_shared_buildings is not None:
-        request.user.show_shared_buildings = show_shared_buildings
-    request.user.save()
-    return {'status': 'success'}
+        user.show_shared_buildings = show_shared_buildings
+    user.save()
+    return {}
+
+
+@ajax_request
+@login_required
+def set_default_columns(request):
+    body = json.loads(request.body)
+    return _set_default_columns_by_request(body, request.user, 'default_custom_columns')
+
+
+@ajax_request
+@login_required
+def set_default_building_detail_columns(request):
+    body = json.loads(request.body)
+    return _set_default_columns_by_request(body, request.user, 'default_building_detail_custom_columns')
 
 
 @ajax_request

@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.buildings_settings', [])
@@ -13,7 +13,8 @@ angular.module('BE.seed.controller.buildings_settings', [])
   '$filter',
   '$routeParams',
   'project_payload',
-  function(
+  'building_payload',
+    function(
     $scope,
     $uibModalInstance,
     all_columns,
@@ -22,7 +23,8 @@ angular.module('BE.seed.controller.buildings_settings', [])
     user_service,
     $filter,
     $routeParams,
-    project_payload
+    project_payload,
+    building_payload
   ) {
     $scope.user = {};
     $scope.user.project_slug = $routeParams.project_id;
@@ -31,7 +33,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
       select_all: false
     };
     $scope.project = project_payload.project;
-
+    $scope.building = building_payload.building;
     $scope.fields = all_columns.fields;
     // re-check the user's selected columns
     $scope.fields = $scope.fields.map(function(c){
@@ -98,9 +100,15 @@ angular.module('BE.seed.controller.buildings_settings', [])
         columns = columns.map(function(field) {
             return field.sort_column;
         });
-        // save the array of column names for the user
-        user_service.set_default_columns(columns, $scope.user.show_shared_buildings)
-        .then(function (data) {
+        // Save the array of column names for the user. If $scope.building exists,
+        // this is for the detail page, so set detail columns. If not, set list columns.
+        var set_promise;
+        if (_.isEmpty($scope.building)) {
+            set_promise = user_service.set_default_columns(columns, $scope.user.show_shared_buildings)
+        } else {
+            set_promise = user_service.set_default_building_detail_columns(columns)
+        }
+        set_promise.then(function (data) {
             //resolve promise
             $scope.settings_updated = true;
             $uibModalInstance.close(columns);
