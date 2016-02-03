@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.members', [])
     'organization_payload',
     'auth_payload',
     'organization_service',
+    'user_profile_payload',
     'urls',
     function (
       $scope,
@@ -18,6 +19,7 @@ angular.module('BE.seed.controller.members', [])
       organization_payload,
       auth_payload,
       organization_service,
+      user_profile_payload,
       urls
     ) {
     $scope.roles = [
@@ -27,6 +29,8 @@ angular.module('BE.seed.controller.members', [])
     $scope.org = organization_payload.organization;
     $scope.filter_params = {};
     $scope.auth = auth_payload.auth;
+    $scope.user_profile = user_profile_payload.user;
+    console.log(user_profile_payload.user);
 
     /**
      * remove_member: removes a user from the org, an owner can only be removed

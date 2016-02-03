@@ -313,12 +313,29 @@ def remove_user_from_org(request):
             'status': 'error',
             'message': 'user does not exist'
         }
+    else:
+        if user == request.user:
+            return {
+                'status': 'error',
+                'message': 'cannot modify your own membership'
+            }
     if not OrganizationUser.objects.filter(
         user=request.user, organization=org, role_level=ROLE_OWNER
     ).exists():
         return {
             'status': 'error',
             'message': 'only the organization owner can remove a member'
+        }
+
+    is_last_owner = not OrganizationUser.objects.filter(
+        organization=org,
+        role_level=ROLE_OWNER,
+    ).exclude(user=user).exists()
+
+    if is_last_owner:
+        return {
+            'status': 'error',
+            'message': 'an organization must have at least one owner level member'
         }
 
     ou = OrganizationUser.objects.get(user=user, organization=org)
@@ -532,8 +549,13 @@ def update_role(request):
     body = json.loads(request.body)
     role = _get_role_from_js(body['role'])
 
+    user_id = body['user_id']
+
+    if str(user_id) == str(request.user.pk):
+        return {'status': 'error', 'message': 'you cannot modify your own role'}
+
     OrganizationUser.objects.filter(
-        user_id=body['user_id'],
+        user_id=user_id,
         organization_id=body['organization_id']
     ).update(role_level=role)
 
