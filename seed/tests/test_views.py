@@ -146,9 +146,8 @@ class DefaultColumnsViewTests(TestCase):
         json_string = response.content
         data = json.loads(json_string)
 
-        self.assertEqual(data['status'], 'success')
+        self.assertEqual(200, response.status_code)
         self.assertEqual(data['columns'], columns)
-        self.assertEqual(data['initial_columns'], False)
 
     def test_get_default_columns_initial_state(self):
         url = reverse_lazy("seed:get_default_columns")
@@ -156,9 +155,8 @@ class DefaultColumnsViewTests(TestCase):
         json_string = response.content
         data = json.loads(json_string)
 
-        self.assertEqual(data['status'], 'success')
+        self.assertEqual(200, response.status_code)
         self.assertEqual(data['columns'], DEFAULT_CUSTOM_COLUMNS)
-        self.assertEqual(data['initial_columns'], True)
 
     def test_set_default_columns(self):
         url = reverse_lazy("seed:set_default_columns")
@@ -175,7 +173,7 @@ class DefaultColumnsViewTests(TestCase):
         )
         json_string = response.content
         data = json.loads(json_string)
-        self.assertEqual(data['status'], 'success')
+        self.assertEqual(200, response.status_code)
 
         # get the columns
         url = reverse_lazy("seed:get_default_columns")
@@ -201,7 +199,7 @@ class DefaultColumnsViewTests(TestCase):
         )
         json_string = response.content
         data = json.loads(json_string)
-        self.assertEqual(data['status'], 'success')
+        self.assertEqual(200, response.status_code)
 
         # get show_shared_buildings
         url = reverse_lazy("accounts:get_shared_buildings")

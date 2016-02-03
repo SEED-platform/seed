@@ -484,6 +484,9 @@ angular.module('BE.seed.controller.building_list', [])
                 },
                 'project_payload': function() {
                     return {project: {}};
+                },
+                'building_payload': function() {
+                    return {'building': {}};
                 }
             }
         });
