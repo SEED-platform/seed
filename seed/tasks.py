@@ -80,8 +80,8 @@ from functools import reduce
 ### time-series support ###
 from celery import Celery
 from celery import task
-celery = Celery('tasks', broker=settings.BROKER_URL)
-celery.config_from_object('config.settings.meter_data_scheduler_loader')
+#celery = Celery('tasks', broker=settings.BROKER_URL)
+#celery.config_from_object('config.settings.meter_data_scheduler_loader')
 ### time-series support end ###
 
 logger = get_task_logger(__name__)
