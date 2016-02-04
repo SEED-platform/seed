@@ -311,14 +311,14 @@ angular.module('BE.seed.controller.matching', [])
                 'default_columns': function() {
                     return default_columns;
                 },
-                'buildings_payload': function() {
-                    return {};
-                },
                 'shared_fields_payload': function() {
                     return {show_shared_buildings: false};
                 },
                 'project_payload': function() {
                     return {project: {}};
+                },
+                'building_payload': function() {
+                    return {'building': {}};
                 }
             }
         });
