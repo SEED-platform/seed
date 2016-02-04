@@ -1583,8 +1583,8 @@ def create_dataset(request):
     record = ImportRecord.objects.create(
         name=body['name'],
         app="seed",
-        start_time=datetime.datetime.now(),
-        created_at=datetime.datetime.now(),
+        start_time=datetime.now(),
+        created_at=datetime.now(),
         last_modified_by=request.user,
         super_organization=org,
         owner=request.user,
