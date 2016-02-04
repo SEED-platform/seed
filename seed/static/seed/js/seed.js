@@ -16,7 +16,7 @@ angular.module('BE.seed.vendor_dependencies', [
     'ui.tree',
     'xeditable',
     'ngTagsInput',
-    'ui-notification',
+    'ui-notification'
     ]);
 angular.module('BE.seed.controllers', [
     'BE.seed.controller.accounts',
@@ -30,6 +30,7 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.concat_modal',
     'BE.seed.controller.create_note_modal',
     'BE.seed.controller.create_organization_modal',
+    'BE.seed.controller.data_cleansing',
     'BE.seed.controller.data_upload_modal',
     'BE.seed.controller.dataset',
     'BE.seed.controller.dataset_detail',
@@ -613,6 +614,32 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'shared_fields_payload': ['organization_service', '$route', function(organization_service, $route) {
                     var organization_id = $route.current.params.organization_id;
                     return organization_service.get_shared_fields(organization_id);
+                }],
+                'auth_payload': ['auth_service', '$route', '$q', function(auth_service, $route, $q) {
+                    var organization_id = $route.current.params.organization_id;
+                    return auth_service.is_authorized(organization_id, ['requires_owner'])
+                    .then(function (data) {
+                        if (data.auth.requires_owner){
+                            return data;
+                        } else {
+                            return $q.reject("not authorized");
+                        }
+                    }, function (data) {
+                        return $q.reject(data.message);
+                    });
+                }]
+            }
+        })
+        .when('/accounts/:organization_id/data_cleansing', {
+            controller: 'data_cleansing_controller',
+            templateUrl: static_url + 'seed/partials/data_cleansing.html',
+            resolve: {
+                'all_columns': ['building_services', function(building_services) {
+                    return building_services.get_columns(false);
+                }],
+                'organization_payload': ['organization_service', '$route', function(organization_service, $route) {
+                    var organization_id = $route.current.params.organization_id;
+                    return organization_service.get_organization(organization_id);
                 }],
                 'auth_payload': ['auth_service', '$route', '$q', function(auth_service, $route, $q) {
                     var organization_id = $route.current.params.organization_id;
