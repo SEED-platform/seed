@@ -162,7 +162,8 @@ angular.module('BE.seed.controller.building_detail', [])
             'pk',
             'super_organization',
             'source_type',
-            'duplicate'
+            'duplicate',
+            'co_parent'
         ];
         var no_invalid_key = known_invalid_keys.indexOf(key) === -1;
 
