@@ -30,7 +30,11 @@ angular.module('BE.seed.controller.members', [])
     $scope.filter_params = {};
     $scope.auth = auth_payload.auth;
     $scope.user_profile = user_profile_payload.user;
-    console.log(user_profile_payload.user);
+
+    $scope.is_last_owner = (_.chain($scope.users)
+        .filter(function(u) { return u.role === "owner"; })
+        .size()
+        .value() === 1);
 
     /**
      * remove_member: removes a user from the org, an owner can only be removed
