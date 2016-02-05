@@ -116,6 +116,10 @@ angular.module('BE.seed.controller.buildings_settings', [])
         });
     };
 
+    $scope.cancel_settings = function() {
+        $uibModalInstance.close();
+    };
+
     /**
     * when the user is ready to reorder the fields,
      * put the checked ones at the top
