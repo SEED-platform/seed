@@ -322,14 +322,6 @@ angular.module('BE.seed.controller.matching', [])
                 }
             }
         });
-
-        modalInstance.result.then(
-            function (columns) {
-                // reload columns
-                $scope.default_columns = columns;
-                $scope.columns = building_services.create_column_array($scope.fields, columns);
-        }, function (message) {
-        });
     };
 
 
