@@ -192,6 +192,9 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
      *   `all_columns` array 
      * @param {String} key (optional) if provided will filter on `key`,
      *   otherwise filters on `sort_column`
+     *
+     * Currently only used in matching controller. Very similar to
+     * search_service.generate_columns, could be combined. - nicholasserra
      */
     building_factory.create_column_array = function(all_columns, column_names, key) {
         key = key || "sort_column";
