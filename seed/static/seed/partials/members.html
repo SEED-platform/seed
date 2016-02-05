@@ -59,7 +59,7 @@
                                 <div class="row">
                                     <div class="form-group">
                                         <div class="col-sm-12">
-                                            <select class="form-control input-sm" ng-model="u.role" ng-options="role for role in roles" ng-change="update_role(u)" ng-if="auth.requires_owner">
+                                            <select class="form-control input-sm" ng-model="u.role" ng-options="role for role in roles" ng-change="update_role(u)" ng-if="!is_last_owner || auth.requires_owner && u.email != user_profile.email">
                                             </select>
                                             <span ng-if="!auth.requires_owner">{$ u.role $}</span>
                                         </div>
@@ -67,7 +67,7 @@
                                 </div>
                             </td>
                             <td ng-if="auth.can_remove_member">
-                                <a ng-click="remove_member(u)">Remove</a>
+                                <a ng-if="!is_last_owner || u.email != user_profile.email" ng-click="remove_member(u)">Remove</a>
                             </td>
                         </tr>
                     </tbody>
