@@ -77,12 +77,6 @@ from seed.cleansing.tasks import (
 )
 
 from functools import reduce
-### time-series support ###
-from celery import Celery
-from celery import task
-#celery = Celery('tasks', broker=settings.BROKER_URL)
-#celery.config_from_object('config.settings.meter_data_scheduler_loader')
-### time-series support end ###
 
 logger = get_task_logger(__name__)
 
@@ -779,8 +773,8 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
         'progress': 100,
         'progress_key': prog_key
     }
-	
-	
+    
+    
 @task
 @lock_and_track
 def _save_raw_PM_energy_template(file_pk, *args, **kwargs):
