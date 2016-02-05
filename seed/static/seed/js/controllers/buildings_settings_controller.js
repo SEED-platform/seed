@@ -87,7 +87,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
     };
 
     /**
-     * save_custom_view: saves the columns a user wants displayed for a table,
+     * save_settings: saves the columns a user wants displayed for a table,
      *   and closes the modal
      */
     $scope.save_settings = function() {
