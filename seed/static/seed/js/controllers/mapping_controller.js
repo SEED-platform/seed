@@ -587,50 +587,6 @@ angular.module('BE.seed.controller.mapping', [])
         });
     };
 
-    /**
-     * open_edit_columns_modal: modal to set which columns a user has in the
-     *   table
-     */
-    $scope.open_edit_columns_modal = function() {
-        var modalInstance = $uibModal.open({
-            templateUrl: urls.static_url + 'seed/partials/custom_view_modal.html',
-            controller: 'buildings_settings_controller',
-            resolve: {
-                'all_columns': function() {
-                    return building_services.get_columns(false);
-                },
-                'default_columns': function() {
-                    return {columns: $scope.columns.map(function (c) {
-                        return c.sort_column;
-                    })};
-                },
-                'shared_fields_payload': function() {
-                    return {show_shared_buildings: false};
-                },
-                'project_payload': function() {
-                    return {project: {}};
-                },
-                'building_payload': function() {
-                    return {'building': {}};
-                }
-            }
-        });
-        modalInstance.result.then(
-            function (columns) {
-                // update columns
-                building_services.get_columns(false)
-                .then( function ( data ) {
-                  all_columns.fields = data.fields;
-                  $scope.columns = $scope.search.generate_columns(
-                      data.fields,
-                      columns,
-                      $scope.search.column_prototype
-                  );
-                });
-        }, function (message) {
-        });
-    };
-
     var init = function() {
         update_raw_columns();
 
