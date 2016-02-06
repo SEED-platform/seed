@@ -2175,7 +2175,11 @@ def delete_buildings(request):
     )
     # this step might have to move into a task
     CanonicalBuilding.objects.filter(
-        buildingsnapshot=selected_buildings
+        # This is a stop-gap solution for a bug in django-pgjson
+        # https://github.com/djangonauts/django-pgjson/issues/35
+        # - once a release has been made with this fixed the 'tuple'
+        # casting can be removed.
+        buildingsnapshot__in=tuple(selected_buildings)
     ).update(active=False)
     return {'status': 'success'}
 
