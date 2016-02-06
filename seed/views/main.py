@@ -2179,7 +2179,7 @@ def delete_buildings(request):
         # https://github.com/djangonauts/django-pgjson/issues/35
         # - once a release has been made with this fixed the 'tuple'
         # casting can be removed.
-        buildingsnapshot=tuple(bs.pk for bs in selected_buildings)
+        buildingsnapshot__in=tuple(bs.pk for bs in selected_buildings)
     ).update(active=False)
     return {'status': 'success'}
 
