@@ -84,9 +84,9 @@
             <script src="{{STATIC_URL}}vendors/bower_components/angular-cookies/angular-cookies.min.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/angular-route/angular-route.min.js"></script>
 
-            {% if not debug %}
+            {% if not debug and SENTRY_JS_DSN %}
             <script src="https://cdn.ravenjs.com/2.1.0/angular/raven.min.js"></script>
-            <script>Raven.config('https://8e89a27439b74eb0b2717a5544df0472@app.getsentry.com/66484').install();</script>
+            <script>Raven.config('{{ SENTRY_JS_DSN }}').install();</script>
             {% endif %}
 
             <script src="{{STATIC_URL}}vendors/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
