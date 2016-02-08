@@ -21,8 +21,6 @@ SEED_DATADIR = join(SITE_ROOT, 'seed', 'data')
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-# sentry
-SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -169,11 +167,6 @@ LOGGING = {
         },
     },
     'handlers': {
-        'sentry': {
-            'level': 'ERROR',
-            'class': 'raven.contrib.django.handlers.SentryHandler',
-            'formatter': 'verbose'
-        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -197,13 +190,8 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'level': 'WARNING',
-            'handlers': ['sentry'],
-        },
-        'sentry.errors': {
             'level': 'DEBUG',
             'handlers': ['console'],
-            'propagate': False,
         },
     }
 }
