@@ -2253,7 +2253,7 @@ def retrieve_finer_timeseries_data_url(request):
     
     aggregator = {}
     aggregator['name'] = 'sum'
-    aggregator['align_sampling'] = true
+    aggregator['align_sampling'] = True
     aggregator_sampling = {}
     aggregator_sampling['value'] = 1
     aggregator_sampling['unit'] = 'minutes'
@@ -2272,7 +2272,8 @@ def retrieve_finer_timeseries_data_url(request):
 
     res = {}
     res['reading'] = []
-    res['tags'] = tags
+    # TODO: tags is not defined -- fix this
+    # res['tags'] = tags
 
     if response.status_code == 200:
         json_data = json.loads(response.text)

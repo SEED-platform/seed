@@ -29,7 +29,9 @@ angular.module('BE.seed.controller.building_detail', [])
   'audit_service',
   'label_helper_service',
   'default_columns',
-  function($scope, $routeParams, $uibModal, $log, building_services, project_service, building_payload, all_columns, audit_payload, urls, $filter, $location, audit_service, label_helper_service, default_columns) {
+  function($scope, $routeParams, $uibModal, $log, building_services, project_service, building_payload,
+           building_finer_energy_payload, building_monthly_payload, gb_req_info, all_columns,
+           audit_payload, urls, $filter, $location, audit_service, label_helper_service, default_columns) {
     $scope.user = {};
     $scope.user.building_id = $routeParams.building_id;
     $scope.user.project_slug = $routeParams.project_id;
@@ -41,7 +43,8 @@ angular.module('BE.seed.controller.building_detail', [])
     $scope.building = building_payload.building;
     $scope.user_role = building_payload.user_role;
     $scope.user_org_id = building_payload.user_org_id;
-    $scope.building.recent_sale_date = $filter('date')($scope.building.recent_sale_date, 'MM/dd/yyyy');
+      // TODO: Fix this -- filter is not defined
+    //$scope.building.recent_sale_date = $filter('date')($scope.building.recent_sale_date, 'MM/dd/yyyy');
     $scope.imported_buildings = building_payload.imported_buildings;
     $scope.projects = building_payload.projects;
     $scope.fields = all_columns.fields;

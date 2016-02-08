@@ -5,7 +5,7 @@ from seed.models import (
 from billiard import current_process
 from django.conf import settings 
 
-from celery import Celery, task, current_app
+from celery import shared_task
 
 #import psycopg2
 import time
