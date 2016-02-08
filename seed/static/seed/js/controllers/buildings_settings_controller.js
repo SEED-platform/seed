@@ -87,7 +87,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
     };
 
     /**
-     * save_custom_view: saves the columns a user wants displayed for a table,
+     * save_settings: saves the columns a user wants displayed for a table,
      *   and closes the modal
      */
     $scope.save_settings = function() {
@@ -104,9 +104,9 @@ angular.module('BE.seed.controller.buildings_settings', [])
         // this is for the detail page, so set detail columns. If not, set list columns.
         var set_promise;
         if (_.isEmpty($scope.building)) {
-            set_promise = user_service.set_default_columns(columns, $scope.user.show_shared_buildings)
+            set_promise = user_service.set_default_columns(columns, $scope.user.show_shared_buildings);
         } else {
-            set_promise = user_service.set_default_building_detail_columns(columns)
+            set_promise = user_service.set_default_building_detail_columns(columns);
         }
         set_promise.then(function (data) {
             //resolve promise
@@ -114,6 +114,10 @@ angular.module('BE.seed.controller.buildings_settings', [])
             $uibModalInstance.close(columns);
             location.reload();
         });
+    };
+
+    $scope.cancel_settings = function() {
+        $uibModalInstance.close();
     };
 
     /**

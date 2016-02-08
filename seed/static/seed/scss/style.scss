@@ -1535,6 +1535,10 @@ a:not([href]) {
       color: $red;
     }
   }
+
+  .modal-links {
+    font-size: 18px;
+  }
 }
 
 .modal-body {

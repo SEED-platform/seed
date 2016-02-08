@@ -760,6 +760,9 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     }, function (data) {
                         return $q.reject(data.message);
                     });
+                }],
+                'user_profile_payload': ['user_service', function (user_service) {
+                    return user_service.get_user_profile();
                 }]
             }
         })
