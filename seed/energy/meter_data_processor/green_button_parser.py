@@ -1,8 +1,8 @@
 from seed.energy.meter_data_processor import green_button_maps
 from datetime import date
 
-global root_ns
-global gb_ns
+import logging
+_log = logging.getLogger(__name__)
 
 root_ns = '{http://www.w3.org/2005/Atom}'
 gb_ns = '{http://naesb.org/espi}'
@@ -87,6 +87,10 @@ def gb_xml_parser(root, building_id):
     for entry in entries:
         up_link = entry.find(root_ns+'link[@rel="up"]')
         self_link = entry.find(root_ns+'link[@rel="self"]')
+        
+        if up_link==None or self_link==None:
+            _log.error('GreenButton XML format is not valid '+str(building_id))
+            return None
         
         type = get_link_href_tail(up_link)
         if type == 'UsagePoint':

@@ -2238,31 +2238,33 @@ def retrieve_finer_timeseries_data_url(request):
     building_id = request.GET.get('building_id')
     organization_id = request.GET.get('organization_id')    
 
-    query_body = '{\
-        "start_absolute":1230768000000,\
-        "metrics":[\
-            {\
-                "tags":{\
-                    "canonical_id":"'+str(building_id)+'"\
-                },\
-                "name": '+str(settings.TSDB['measurement'])+',\
-                "aggregators":[\
-                    {\
-                        "name":"sum",\
-                        "align_sampling":true,\
-                        "sampling":{\
-                            "value":1,\
-                            "unit":"minutes"\
-                        }\
-                    }\
-                ]\
-            }\
-        ]\
-    }'
+    query_body = {}
+    query_body['start_absolute'] = 1230768000000
+    query_body['metrics'] = []
+    
+    metric = {}
+    metric['tags'] = {}
+    metric['tags']['canonical_id'] = str(building_id)
+    metric['name'] = str(settings.TSDB['measurement'])    
+    
+    aggregator = {}
+    aggregator['name'] = 'sum'
+    aggregator['align_sampling'] = true
+    aggregator_sampling = {}
+    aggregator_sampling['value'] = 1
+    aggregator_sampling['unit'] = 'minutes'
+    aggregator['sampling'] = aggregator_sampling
+    aggregators = []
+    aggregators.append(aggregator)
+    metric['aggregators'] = aggregators
+    
+    query_body['metrics'].append(metric)
+    
+    query_str = json.dumps(query_body)
     
     headers = {'content-type': 'application/json'}
 
-    response = requests.post(settings.TSDB['query_url'], data=query_body, headers=headers)
+    response = requests.post(settings.TSDB['query_url'], data=query_str, headers=headers)
 
     res = {}
     res['reading'] = []
