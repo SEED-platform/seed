@@ -22,8 +22,7 @@ from django.template import loader
 from django.db.models import Q
 from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse_lazy
-from celery import chord
-from celery import shared_task
+from celery import chord, shared_task
 from celery.utils.log import get_task_logger
 from seed.decorators import get_prog_key
 import usaddress
@@ -775,7 +774,7 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
     }
     
     
-@task
+@shared_task
 @lock_and_track
 def _save_raw_PM_energy_template(file_pk, *args, **kwargs):
     import_file = ImportFile.objects.get(pk=file_pk)

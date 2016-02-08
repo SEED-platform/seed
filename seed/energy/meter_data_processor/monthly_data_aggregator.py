@@ -9,7 +9,8 @@ from django.core.cache import cache
 from dateutil import tz
 
 from celery import Celery
-from celery import task 
+from celery import task
+from celery import shared_task
 import datetime
 import time
 import requests
@@ -108,7 +109,7 @@ def insert_into_postgres(localtzone, gb_bldg_canonical_id, gb_mtr_id, gb_energy_
     else:
         _log.info('Insertion Loop ended')
 
-@task(name='aggregate_monthly_data')
+@shared_task(name='aggregate_monthly_data')
 def aggregate_monthly_data(building_id=-1):
     '''
     If building_id is not -1, do immediate aggregate

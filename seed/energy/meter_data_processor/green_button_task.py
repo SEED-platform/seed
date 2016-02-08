@@ -34,7 +34,7 @@ def increment_day(date_str):
     return newdate.strftime('%m/%d/%Y')
 
 
-@task(name='green_button_task_runner')
+@shared_task(name='green_button_task_runner')
 def green_button_task_runner():
     # Get total number of processes and current process index, to set offset
     # Tasks are distributed to all workers in Round-Robin style

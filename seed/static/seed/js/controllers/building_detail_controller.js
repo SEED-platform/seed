@@ -11,7 +11,7 @@ angular.module('BE.seed.controller.building_detail', [])
   'building_services',
   'project_service',
   'building_payload',
-  
+
   // include ts data payload
   'building_finer_energy_payload',
   'building_monthly_payload',
@@ -20,7 +20,7 @@ angular.module('BE.seed.controller.building_detail', [])
   // include previous gb request info
   'gb_req_info',
   // include previous gb request info ends
-  
+
   'all_columns',
   'audit_payload',
   'urls',
@@ -55,7 +55,7 @@ angular.module('BE.seed.controller.building_detail', [])
     $scope.time_type = '';
     $scope.active = '';
     $scope.loopback = '';
-    
+
     $scope.gb_req_flag = 'N';
     $scope.gb_req_url = '';
     $scope.gb_req_min_date_para = '';
@@ -115,7 +115,7 @@ angular.module('BE.seed.controller.building_detail', [])
         $scope.active = gb_req_info['active'];
     }
     // parse gb_req_info ends
-	
+
     // gather green button filenames
     building_payload.imported_buildings.forEach(function(e) {
         if (e.source_type === 6) { // GREEN_BUTTON_BS
@@ -125,13 +125,13 @@ angular.module('BE.seed.controller.building_detail', [])
 
     // set the tab
     $scope.section = $location.hash();
-    
+
     $scope.status = {
         isopen: false
     };
 
     $scope.time_type_change = function(time_type){
-        $scope.time_type = time_type; 
+        $scope.time_type = time_type;
     }
 
     $scope.active_change = function(active){
@@ -144,10 +144,10 @@ angular.module('BE.seed.controller.building_detail', [])
 
     $scope.save_gb_request_info = function(){
         //TODO Front-end validation and URL request testing
-        
+
         // read user front-end input
         var gb_url_input = angular.element(document.querySelector('#gb_url'))[0].value;
-        var gb_subscription_id = angular.element(document.querySelector('#gb_subscription_id'))[0].value;  
+        var gb_subscription_id = angular.element(document.querySelector('#gb_subscription_id'))[0].value;
         var min_time_para = angular.element(document.querySelector('#min_para'))[0].value;
         var max_time_para = angular.element(document.querySelector('#max_para'))[0].value;
         var time_type = $scope.time_type;
@@ -155,7 +155,7 @@ angular.module('BE.seed.controller.building_detail', [])
         var active_flag = $scope.active;
         var loopback_flag = $scope.loopback;
         // read user front-end input ends
-        
+
         // empty input check
         if(!(gb_url_input && min_time_para && max_time_para && time_type && active_flag && gb_subscription_id
                 && ($scope.gb_req_flag==='Y' || loopback_flag)
@@ -451,7 +451,7 @@ angular.module('BE.seed.controller.building_detail', [])
         // handle building properties
         angular.forEach($scope.building, function ( val, key ) {
             // Duplicate check and check if default_columns is used and if field in columns
-            if ( $scope.is_valid_key(key) && typeof val !== "undefined" && key_list.indexOf(key) === -1 && 
+            if ( $scope.is_valid_key(key) && typeof val !== "undefined" && key_list.indexOf(key) === -1 &&
                 (!check_defaults || (check_defaults && $scope.default_columns.indexOf(key) > -1))) {
                 key_list.push(key);
                 data_columns.push({
@@ -542,7 +542,7 @@ angular.module('BE.seed.controller.building_detail', [])
                 });
             },
             function (message) {
-               //dialog was 'dismissed,' which means it was cancelled...so nothing to do. 
+               //dialog was 'dismissed,' which means it was cancelled...so nothing to do.
             }
         );
     };
@@ -550,7 +550,7 @@ angular.module('BE.seed.controller.building_detail', [])
     /**
      * init: sets default state of building detail page, gets the breadcrumb
      *   project if exists, sets the field arrays for each section, performs
-     *   some date string manipulation for better display rendering, 
+     *   some date string manipulation for better display rendering,
      *   and gets all the extra_data fields
      *
      */
