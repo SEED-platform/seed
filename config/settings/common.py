@@ -21,8 +21,6 @@ SEED_DATADIR = join(SITE_ROOT, 'seed', 'data')
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-# sentry
-SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -59,7 +57,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'raven.contrib.django.middleware.Sentry404CatchMiddleware',
     'pagination.middleware.PaginationMiddleware',
 
 )
@@ -87,7 +84,7 @@ INSTALLED_APPS = (
     'compressor',
     'django_extensions',
     'organizations',
-    'raven.contrib.django',
+    'raven.contrib.django.raven_compat',
     'tos',
     'rest_framework',
 )
@@ -170,11 +167,6 @@ LOGGING = {
         },
     },
     'handlers': {
-        'sentry': {
-            'level': 'ERROR',
-            'class': 'raven.contrib.django.handlers.SentryHandler',
-            'formatter': 'verbose'
-        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -198,13 +190,8 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'level': 'WARNING',
-            'handlers': ['sentry'],
-        },
-        'sentry.errors': {
             'level': 'DEBUG',
             'handlers': ['console'],
-            'propagate': False,
         },
     }
 }
