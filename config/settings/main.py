@@ -106,10 +106,14 @@ CACHES = {
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
+    'root': {
+        'level': 'WARNING',
+        'handlers': ['sentry']
+    },
     'handlers': {
         'sentry': {
             'level': 'ERROR',
-            'class': 'raven.contrib.django.handlers.SentryHandler',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         },
         'console': {
             'level': 'ERROR',
@@ -117,12 +121,13 @@ LOGGING = {
         }
     },
     'loggers': {
-        '': {
-            'level': 'ERROR',
-            'handlers': ['sentry'],
+        'raven': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
         },
         'sentry.errors': {
-            'level': 'ERROR',
+            'level': 'DEBUG',
             'handlers': ['console'],
             'propagate': False,
         },

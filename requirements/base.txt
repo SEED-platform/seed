@@ -66,7 +66,7 @@ openpyxl==1.7.0
 python-dateutil>=2.4
 python-memcached==1.53
 PyYAML==3.10
-raven==4.0.4
+raven==5.9.0
 regex==2014.01.10
 requests==1.1.0
 simplejson==3.3.0
