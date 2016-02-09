@@ -25,7 +25,7 @@ def namespaced_urls():
             window.config.app_urls ={% namespaced_urls %};
         </script>
     """
-    apps = settings.BE_URL_APPS
+    apps = settings.SEED_URL_APPS
     app_urls = dict((app, urls_by_namespace(app)) for app in apps)
     app_urls = json.dumps(app_urls)
     return app_urls

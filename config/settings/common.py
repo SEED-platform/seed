@@ -96,6 +96,7 @@ SEED_CORE_APPS = (
     'seed',
     'seed.lib.superperms.orgs',
     'seed.audit_logs',
+    'seed.cleansing',
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
@@ -105,7 +106,7 @@ HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
 # apps to auto load namespaced urls for JS use (see seed.main.views.home)
-BE_URL_APPS = (
+SEED_URL_APPS = (
     'accounts',
     'ajaxuploader',
     'data_importer',
