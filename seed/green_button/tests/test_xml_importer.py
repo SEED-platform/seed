@@ -8,20 +8,19 @@
 import copy
 from os import path
 
-from seed.audit_logs.models import AuditLog
+import xmltodict
+from django.core.files import File
 from django.test import TestCase
-from seed.green_button import xml_importer
+
+import seed.models
+from seed.audit_logs.models import AuditLog
 from seed.data_importer.models import ImportRecord, ImportFile
+from seed.green_button import xml_importer
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     BuildingSnapshot, TimeSeries
 )
-import seed.models
-import xmltodict
-from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from django.core.files import File
-
-
 
 # sample data corresponds to the data that should be extracted by
 # xml_importer.building_data when called with the file

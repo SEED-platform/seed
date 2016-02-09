@@ -1,9 +1,9 @@
 # read a folder containing excel files downloaded from EnergyStar PM
-import os
-import pandas as pd
 import glob
-
 import logging
+
+import pandas as pd
+
 _log = logging.getLogger(__name__)
 
 def read_pm(file_path):

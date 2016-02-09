@@ -1,7 +1,6 @@
-from seed.energy.meter_data_processor import green_button_maps
-from datetime import date
-
 import logging
+
+from seed.energy.meter_data_processor import green_button_maps
 _log = logging.getLogger(__name__)
 
 root_ns = '{http://www.w3.org/2005/Atom}'

@@ -1,7 +1,7 @@
 import json
-import requests
 import logging
 
+import requests
 from django.conf import settings
 
 _log = logging.getLogger(__name__)

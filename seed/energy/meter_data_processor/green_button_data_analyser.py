@@ -1,15 +1,14 @@
 import logging
-from django.db.models import Q
+from datetime import date, datetime
+from time import sleep
+
+from seed.energy.meter_data_processor import kairos_insert as tsdb
+from seed.energy.meter_data_processor import monthly_data_aggregator as aggregator
 from seed.models import (
     Meter,
     CanonicalBuilding,
     TimeSeries,
 )
-from time import sleep
-
-from seed.energy.meter_data_processor import kairos_insert as tsdb
-from seed.energy.meter_data_processor import monthly_data_aggregator as aggregator 
-from datetime import date, timedelta, datetime
 
 _log = logging.getLogger(__name__)
 

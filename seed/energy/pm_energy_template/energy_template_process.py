@@ -1,9 +1,8 @@
-import os
-
-from seed.energy.pm_energy_template import template_to_json as tm
-from seed.energy.pm_energy_template import post_process as ps
-
 import logging
+
+from seed.energy.pm_energy_template import post_process as ps
+from seed.energy.pm_energy_template import template_to_json as tm
+
 _log = logging.getLogger(__name__)
 
 def parse_energy_template(template_file_path):

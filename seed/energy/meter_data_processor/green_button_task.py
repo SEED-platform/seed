@@ -1,22 +1,18 @@
-from django.db.models import Q
+from billiard import current_process
+from celery import shared_task
+from django.conf import settings
+
 from seed.models import (
     GreenButtonBatchRequestsInfo,
 )
-from billiard import current_process
-from django.conf import settings 
-
-from celery import shared_task
-
 #import psycopg2
 import time
 import calendar
-import sys
 import logging
 from datetime import date, timedelta, datetime
 
 from seed.energy.meter_data_processor import green_button_driver as driver
 from seed.energy.meter_data_processor import green_button_data_analyser as analyser
-from seed.energy.meter_data_processor import kairos_insert as db_insert
 
 _log = logging.getLogger(__name__)
 

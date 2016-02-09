@@ -1,7 +1,9 @@
-import requests
 import logging
-from seed.energy.meter_data_processor import green_button_parser as parser
 import xml.etree.ElementTree as ET
+
+import requests
+
+from seed.energy.meter_data_processor import green_button_parser as parser
 
 _log = logging.getLogger(__name__)
 

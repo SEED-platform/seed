@@ -1,7 +1,6 @@
-import os
 import glob
-import logging
 import json
+import logging
 import re
 
 _log = logging.getLogger(__name__)

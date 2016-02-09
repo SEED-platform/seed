@@ -1,13 +1,12 @@
-import os
-import pandas as pd
-import json
-import glob
-import numpy as np
 import datetime as dt
+import glob
+import logging
+
+import numpy as np
+import pandas as pd
 
 from seed.energy.pm_energy_template import query as qr
 
-import logging
 _log = logging.getLogger(__name__)
 
 def pm_to_json(pm_file_path):

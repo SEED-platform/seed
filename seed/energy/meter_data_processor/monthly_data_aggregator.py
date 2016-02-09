@@ -1,24 +1,17 @@
-from django.db.models import Q
-from seed.models import (
-    Meter,
-    CanonicalBuilding,
-    TimeSeries,
-)
+import datetime
+import json
+import logging
+
+import requests
+from celery import shared_task
+from dateutil import tz
 from django.conf import settings
 from django.core.cache import cache
-from dateutil import tz
 
-from celery import Celery
-from celery import task
-from celery import shared_task
-import datetime
-import time
-import requests
-import json
-import sys
-import pytz
-import logging
-from pytz import timezone
+from seed.models import (
+    Meter,
+    TimeSeries,
+)
 
 LOCK_EXPIRE = 60 * 60 * 24 * 30 # Lock expires in 30 days
 
