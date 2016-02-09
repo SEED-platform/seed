@@ -97,6 +97,7 @@ SEED_CORE_APPS = (
     'seed.lib.superperms.orgs',
     'seed.audit_logs',
     'seed.cleansing',
+    'seed.energy',
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
@@ -226,17 +227,14 @@ CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
 CELERY_TASK_RESULT_EXPIRES = 18000  # 5 hours
 
-CELERY_IMPORTS=("seed.energy.meter_data_processor.monthly_data_aggregator",
-                "seed.energy.meter_data_processor.green_button_task")
-
 CELERYBEAT_SCHEDULE = {
     'Run daily': {
-        'task': 'green_button_task_runner',
+        'task': 'seed.energy.tasks.aggregate_monthly_data',
         'schedule': timedelta(seconds=2), # For Demo purpose, should be days=1 in product environment
         'args': ()
     },
     'Run monthly': {
-        'task': 'aggregate_monthly_data',
+        'task': 'seed.energy.tasks.green_button_task_runner',
         'schedule': timedelta(seconds=5), # For Demo purpose, should be months=1 in product environment
         'args': ()
     },
