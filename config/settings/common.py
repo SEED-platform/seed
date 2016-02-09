@@ -124,6 +124,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'config.template_context.compress_enabled',
     'config.template_context.session_key',
+    'config.template_context.sentry_js',
 )
 
 MEDIA_ROOT = join(SITE_ROOT, 'collected_static')
