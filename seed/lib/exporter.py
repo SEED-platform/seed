@@ -175,7 +175,8 @@ class Exporter:
                 else:
                     s3_key = DefaultStorage().bucket.new_key(self.filename())
                     s3_key.set_contents_from_file(f)
-                    os.remove(self.tempfile)
+
+                os.remove(self.tempfile)
 
         return self.filename
 
