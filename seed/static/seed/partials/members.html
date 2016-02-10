@@ -61,7 +61,7 @@
                                         <div class="col-sm-12">
                                             <select class="form-control input-sm" ng-model="u.role" ng-options="role for role in roles" ng-change="update_role(u)" ng-if="!is_last_owner || auth.requires_owner && u.email != user_profile.email">
                                             </select>
-                                            <span ng-if="!auth.requires_owner">{$ u.role $}</span>
+                                            <span ng-if="is_last_owner && u.email == user_profile.email || !auth.requires_owner">{$ u.role $}</span>
                                         </div>
                                     </div>
                                 </div>
