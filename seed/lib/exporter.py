@@ -128,6 +128,7 @@ class Exporter:
     """
     Class to handle the exporting of buildings
     """
+    tempfile = None  # where the temp file is saved after export
 
     def __init__(self, export_id, export_name, export_type):
         """
@@ -143,10 +144,9 @@ class Exporter:
         self.export_id = export_id
         self.export_name = export_name
         self.export_type = export_type
-        self.tempfile = None  # where the temp file is saved after export
 
     def valid_export_type(self):
-        return (self.export_type.lower() == 'csv') or (self.export_type.lower() == 'xls')
+        return self.export_type.lower() in {'csv', 'xls'}
 
     def export(self, buildings, fields, row_cb):
         """
@@ -165,20 +165,17 @@ class Exporter:
             return None
 
         # save the tempfile to the file storage location (s3 or local)
-        if not self.tempfile is None:
-            if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
-                # This is non-ideal. We should just save the file in the right location to start with
-                # or return the file from the "export". This was done to avoid changing the exporter code 'too much'.
-                file_storage = DefaultStorage()
-                f = open(self.tempfile, 'r')
-                file_storage.save(self.filename(), f)
-                f.close()
-            else:
-                s3_key = DefaultStorage().bucket.new_key(self.filename())
-                f = open(self.tempfile)
-                s3_key.set_contents_from_file(f)
-                f.close()
-                os.remove(self.tempfile)
+        if self.tempfile is not None:
+            with open(self.tempfile) as f:
+                if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
+                    # This is non-ideal. We should just save the file in the right location to start with
+                    # or return the file from the "export". This was done to avoid changing the exporter code 'too much'.
+                    file_storage = DefaultStorage()
+                    file_storage.save(self.filename(), f)
+                else:
+                    s3_key = DefaultStorage().bucket.new_key(self.filename())
+                    s3_key.set_contents_from_file(f)
+                    os.remove(self.tempfile)
 
         return self.filename
 
@@ -233,24 +230,23 @@ class Exporter:
 
     def export_csv(self, qs, fields=[], cb=None):
         self.tempfile = tempfile.mktemp('.csv')
-        export_file = open(self.tempfile, 'w')
-        writer = csv.writer(export_file)
 
-        if not fields:
-            fields = list(Exporter.fields_from_queryset(qs))
+        with open(self.tempfile, 'w') as export_file:
+            writer = csv.writer(export_file)
 
-        header = tuple(
-            get_field_name_from_model(field, qs.model)
-            for field in fields
-        )
-        writer.writerow(header)
+            if not fields:
+                fields = list(Exporter.fields_from_queryset(qs))
 
-        for i, row in enumerate(qs_to_rows(qs, fields)):
-            writer.writerow(row)
-            if cb:
-                cb(i)
+            header = tuple(
+                get_field_name_from_model(field, qs.model)
+                for field in fields
+            )
+            writer.writerow(header)
 
-        export_file.close()
+            for i, row in enumerate(qs_to_rows(qs, fields)):
+                writer.writerow(row)
+                if cb:
+                    cb(i)
 
         return self.tempfile
 
