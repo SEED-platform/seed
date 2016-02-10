@@ -773,6 +773,13 @@ SEED_app.config([
 }]);
 
 /**
+ * Disable Angular debugging based on Django DEBUG flag.
+ */
+SEED_app.config(['$compileProvider', function ($compileProvider) {
+  $compileProvider.debugInfoEnabled(window.BE.debug);
+}]);
+
+/**
  * creates the object 'urls' which can be injected into a service, controller, etc.
  */
 SEED_app.constant('urls', {

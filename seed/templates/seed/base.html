@@ -66,6 +66,9 @@
 
                 {# js CSRF config #}
                 window.BE.csrf_token = "{{ csrf_token }}";
+
+                {# Django debug mode flag #}
+                window.BE.debug = {{ debug|yesno:"true,false" }};
             </script>
 
             {# js urls config #}
