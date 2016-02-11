@@ -6,15 +6,13 @@ angular.module('BE.seed.service.label',
                                     'user_service',
                                     'label_helper_service',
                                     'urls',
-                                    'spinner_utility',
                         function (  $http, 
                                     $q, 
                                     $timeout,
                                     $log,
                                     user_service,
                                     label_helper_service,
-                                    urls,
-                                    spinner_utility
+                                    urls
                                     ) {
 
 
