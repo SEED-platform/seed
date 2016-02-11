@@ -6,13 +6,15 @@ angular.module('BE.seed.service.label',
                                     'user_service',
                                     'label_helper_service',
                                     'urls',
+                                    'spinner_utility',
                         function (  $http, 
                                     $q, 
                                     $timeout,
                                     $log,
                                     user_service,
                                     label_helper_service,
-                                    urls
+                                    urls,
+                                    spinner_utility
                                     ) {
 
 
@@ -205,6 +207,7 @@ angular.module('BE.seed.service.label',
 
     */
     function update_building_labels(add_label_ids, remove_label_ids, selected_buildings, select_all_checkbox, search_params) {
+        spinner_utility.show();
         var defer = $q.defer();
         $http({
             method: 'PUT',
@@ -219,6 +222,7 @@ angular.module('BE.seed.service.label',
                 'remove_label_ids': remove_label_ids
             }
         }).success(function(data, status, headers, config) {
+            spinner_utility.hide();
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
