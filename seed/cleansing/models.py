@@ -18,6 +18,7 @@ logger = getLogger(__name__)
 
 
 class Cleansing:
+
     def __init__(self, *args, **kwargs):
         """
         Initialize the Cleansing class. Right now this class will not need to

@@ -775,9 +775,9 @@ def get_default_columns(request):
     """
     columns = request.user.default_custom_columns
 
-    if columns == '{}' or type(columns) == dict:
+    if columns == '{}' or isinstance(columns, dict):
         columns = DEFAULT_CUSTOM_COLUMNS
-    if type(columns) == unicode:
+    if isinstance(columns, unicode):
         # postgres 9.1 stores JsonField as unicode
         columns = json.loads(columns)
 
@@ -799,10 +799,10 @@ def get_default_building_detail_columns(request):
     """
     columns = request.user.default_building_detail_custom_columns
 
-    if columns == '{}' or type(columns) == dict:
+    if columns == '{}' or isinstance(columns, dict):
         # Return empty result, telling the FE to show all.
         columns = []
-    if type(columns) == unicode:
+    if isinstance(columns, unicode):
         # postgres 9.1 stores JsonField as unicode
         columns = json.loads(columns)
 
@@ -2277,7 +2277,7 @@ def get_building_summary_report_data(request):
     # Read in x and y vars requested by client
     try:
         orgs = [request.GET.get('organization_id')]  # How should we capture user orgs here?
-    except Exception, e:
+    except Exception as e:
         msg = "Error while calling the API function get_scatter_data_series, missing parameter"
         _log.error(msg)
         _log.exception(str(e))
@@ -2395,7 +2395,7 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
         # The data is meaningless here aside if there is no valid year_ending value
         # even though the query at the beginning specifies a date range since this is using the tree
         # some other records without a year_ending may have snuck back in.  Ignore them here.
-        if not hasattr(snapshot, "year_ending") or type(snapshot.year_ending) != datetime.date:
+        if not hasattr(snapshot, "year_ending") or not isinstance(snapshot.year_ending, datetime.date):
             return
         # if the snapshot is not in the date range then don't process it
         if not(from_date <= snapshot.year_ending <= end_date):
@@ -2629,7 +2629,7 @@ def get_building_report_data(request):
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
 
-    except Exception, e:
+    except Exception as e:
         msg = "Error while calling the API function get_building_report_data, missing parameter"
         _log.error(msg)
         _log.exception(str(e))
@@ -2647,7 +2647,7 @@ def get_building_report_data(request):
     try:
         from_date = parse(from_date).date()
         end_date = parse(end_date).date()
-    except Exception, e:
+    except Exception as e:
         msg = "Couldn't convert date strings to date objects"
         _log.error(msg)
         _log.exception(str(e))
@@ -2835,7 +2835,7 @@ def get_aggregated_building_report_data(request):
         orgs = [request.GET['organization_id']]  # How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
-    except KeyError, e:
+    except KeyError as e:
         msg = "Error while calling the API function get_aggregated_building_report_data, missing parameter"  # NOQA
         _log.error(msg)
         _log.exception(str(e))
@@ -2858,7 +2858,7 @@ def get_aggregated_building_report_data(request):
     try:
         dt_from = parse(from_date)
         dt_to = parse(end_date)
-    except Exception, e:
+    except Exception as e:
         msg = "Couldn't convert date strings to date objects"
         _log.error(msg)
         _log.exception(str(e))

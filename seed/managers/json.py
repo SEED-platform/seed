@@ -46,6 +46,7 @@ def _key_cast_to_type(key_cast):
 
 
 class JsonQuerySet(QuerySet):
+
     def __init__(self, primary=None, *args, **kwargs):
         self.primary = primary or 'extra_data'
         self.table = kwargs.get('table', 'seed_buildingsnapshot')
@@ -175,5 +176,6 @@ class JsonQuerySet(QuerySet):
 
 
 class JsonManager(Manager):
+
     def get_queryset(self):
         return JsonQuerySet(model=self.model, using=self._db)

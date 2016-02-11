@@ -36,6 +36,7 @@ ACTION_OPTIONS = {
 
 
 class AuditLogQuerySet(ExpressionQuerySet):
+
     def update(self, *args, **kwargs):
         """only notes should be updated, so filter out non-notes"""
         self = self.filter(audit_type=NOTE)

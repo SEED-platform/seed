@@ -461,10 +461,10 @@ def add_user(request):
     org_name = body.get('org_name')
     org_id = body.get('organization_id')
     if ((org_name and org_id) or (not org_name and not org_id)):
-            return {
-                'status': 'error',
-                'message': 'Choose either an existing org or provide a new one'
-            }
+        return {
+            'status': 'error',
+            'message': 'Choose either an existing org or provide a new one'
+        }
 
     first_name = body['first_name']
     last_name = body['last_name']
@@ -1131,7 +1131,7 @@ def set_password(request):
     for validator in default_validators:
         try:
             validator(p2)
-        except ValidationError, e:
+        except ValidationError as e:
             return {'status': 'error', 'message': e.message}
     request.user.set_password(p1)
     request.user.save()
