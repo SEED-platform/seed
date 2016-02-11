@@ -29,7 +29,7 @@ def aggr_sum_metric(data, localtzone):
     r = requests.post(url, data=data, headers=headers)
     # length of output array. Should be 1 per group since it's monthly aggregation and we are querying only for one month
 
-    if not 'queries' in r.json():
+    if 'queries' not in r.json():
         return
 
     res = r.json()['queries'][0]['results']
@@ -56,6 +56,8 @@ def aggr_sum_metric(data, localtzone):
                 tsMonthStart = timestamp.replace(day=1).replace(hour=0).replace(minute=0).replace(second=0)
                 tsMonthEnd = timestamp.replace(hour=23).replace(minute=59).replace(second=59)
 
+                # NL: I hard coded this here because year is not defined. I do not know from where it should be coming
+                year = 2010
                 mlist = [1, 3, 5, 7, 8, 10, 12]
                 if tsMonthEnd.month in mlist:
                     tsMonthEnd = tsMonthEnd.replace(day=31)

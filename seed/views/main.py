@@ -48,7 +48,6 @@ from seed.models import (
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
     GreenButtonBatchRequestsInfo,
-    CanonicalBuilding,
     TimeSeries,
 )
 from seed.views.accounts import _get_js_role
@@ -2248,7 +2247,7 @@ def parse_energy_template(request):
 @login_required
 def retrieve_finer_timeseries_data_url(request):
     building_id = request.GET.get('building_id')
-    organization_id = request.GET.get('organization_id')
+    # organization_id = request.GET.get('organization_id') # unused
 
     query_body = {}
     query_body['start_absolute'] = 1230768000000
@@ -2375,7 +2374,7 @@ def save_gb_request_info_url(request):
 
     loopback_flag = info['loopback']
 
-    today_date = date.today()
+    # today_date = date.today() # unused
     last_date = ''
     yesterday = date.today() - timedelta(1)
     if time_type == 'date':
@@ -3106,7 +3105,7 @@ def get_aggregated_building_report_data(request):
     # Grab building snapshot ids from get_raw_report_data payload.
     snapshot_ids = []
     for k, v in data.items():
-        for date, building in v.items():
+        for _date, building in v.items():
             snapshot_ids.append(building['building_snapshot_id'])
 
     bldgs = BuildingSnapshot.objects.filter(pk__in=snapshot_ids)

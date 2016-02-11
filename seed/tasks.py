@@ -13,7 +13,6 @@ import string
 import traceback
 import operator
 from _csv import Error
-from dateutil import parser
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
@@ -767,11 +766,18 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
     res = xml_importer.import_xml(import_file)
 
     prog_key = get_prog_key('save_raw_data', file_pk)
-    result = {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key
-    }
+    if res:
+        return {
+            'status': 'success',
+            'progress': 100,
+            'progress_key': prog_key
+        }
+    else:
+        return {
+            'status': 'error',
+            'progress': 100,
+            'progress_key': prog_key
+        }
 
 
 @shared_task

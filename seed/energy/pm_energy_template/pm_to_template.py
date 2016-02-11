@@ -8,7 +8,7 @@ _log = logging.getLogger(__name__)
 
 
 def read_pm(file_path):
-    upload_dir = 'static/uploads/'
+    # upload_dir = 'static/uploads/' # unused
     filelist = glob.glob(file_path)
     for excel in filelist:
         process_one_file(excel, file_path)

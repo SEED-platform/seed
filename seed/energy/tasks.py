@@ -1,19 +1,13 @@
-import calendar
 import logging
 import time
 from datetime import date, timedelta, datetime
 
-from billiard import current_process
-from celery import current_app
+# from billiard import current_process # was used in green_button_task_runner
+# from celery import current_app # was used in green_button_task_runner
 from celery import shared_task
 from django.conf import settings
 from django.core.cache import cache
-
-from seed.energy.meter_data_processor import green_button_data_analyser as analyser
-from seed.energy.meter_data_processor import green_button_driver as driver
-from seed.models import (
-    GreenButtonBatchRequestsInfo,
-)
+from seed.energy.meter_data_processor.monthly_data_aggregator import aggr_sum_metric
 
 _log = logging.getLogger(__name__)
 
@@ -42,72 +36,73 @@ def increment_day(date_str):
 def green_button_task_runner():
     # Get total number of processes and current process index, to set offset
     # Tasks are distributed to all workers in Round-Robin style
+    # NL: This is supposedly deprecated. Commenting out for now
     _log.debug("running green_button_task_runner")
-    stats = current_app.control.inspect().stats()
-    num_process = len(stats[stats.keys()[0]]['pool']['processes'])
-    offset = current_process().index
+    # stats = current_app.control.inspect().stats()
+    # num_process = len(stats[stats.keys()[0]]['pool']['processes'])
+    # offset = current_process().index
 
-    record = ts_parser_record.objects.filter(active='Y')
-    if record:
-        today_date = date.today()
-        today_str = today_date.strftime('%m/%d/%Y')
+    # record = ts_parser_record.objects.filter(active='Y')
+    # if record:
+    #     today_date = date.today()
+    #     today_str = today_date.strftime('%m/%d/%Y')
 
-        yesterday = date.today() - timedelta(1)
-        yesterday_str = yesterday.strftime('%m/%d/%Y')
+    #     yesterday = date.today() - timedelta(1)
+    #     yesterday_str = yesterday.strftime('%m/%d/%Y')
 
-        row_index = 0
-        for gb_info in record:
-            row_index = row_index + 1
-            if row_index - 1 < offset:
-                continue
-            else:
-                offset = offset + num_process
+    #     row_index = 0
+    #     for gb_info in record:
+    #         row_index = row_index + 1
+    #         if row_index - 1 < offset:
+    #             continue
+    #         else:
+    #             offset = offset + num_process
 
-            last_date_str = gb_info.last_date
-            row_id = gb_info.id
-            url = gb_info.url
-            subscription_id = gb_info.subscription_id
-            last_ts = gb_info.last_ts
-            min_date_parameter = gb_info.min_date_parameter
-            max_date_parameter = gb_info.max_date_parameter
-            building_id = gb_info.building_id
+    #         last_date_str = gb_info.last_date
+    #         row_id = gb_info.id
+    #         url = gb_info.url
+    #         subscription_id = gb_info.subscription_id
+    #         last_ts = gb_info.last_ts
+    #         min_date_parameter = gb_info.min_date_parameter
+    #         max_date_parameter = gb_info.max_date_parameter
+    #         building_id = gb_info.building_id
 
-            time_type = gb_info.time_type
-            if time_type == 'date':
-                date_pattern = gb_info.date_pattern
+    #         time_type = gb_info.time_type
+    #         if time_type == 'date':
+    #             date_pattern = gb_info.date_pattern
 
-                last_datetime = datetime.strptime(last_date_str, date_pattern)
-                last_date = last_datetime.date()
+    #             last_datetime = datetime.strptime(last_date_str, date_pattern)
+    #             last_date = last_datetime.date()
 
-                if last_date > yesterday:
-                    _log.info('Green Button last date is beyond yesterday')
-                    continue
+    #             if last_date > yesterday:
+    #                 _log.info('Green Button last date is beyond yesterday')
+    #                 continue
 
-                url = url + settings.GREEN_BUTTON_BATCH_URL_SYNTAX + subscription_id + "&" + min_date_parameter + "=" + last_date_str + "&" + max_date_parameter + "=" + yesterday_str
-            elif time_type == 'timestamp':
-                last_date = long(last_date_str)
-                if last_date > yesterday:
-                    _log.info('Green Button last date is beyond yesterday')
-                    continue
-                yesterday_timestamp = str(calendar.timegm(time.strptime(yesterday_str, '%m/%d/%Y')))
-                url = url + settings.GREEN_BUTTON_BATCH_URL_SYNTAX + subscription_id + "&" + min_date_parameter + "=" + last_date_str + "&" + max_date_parameter + "=" + str(
-                    yesterday)
+    #             url = url + settings.GREEN_BUTTON_BATCH_URL_SYNTAX + subscription_id + "&" + min_date_parameter + "=" + last_date_str + "&" + max_date_parameter + "=" + yesterday_str
+    #         elif time_type == 'timestamp':
+    #             last_date = long(last_date_str)
+    #             if last_date > yesterday:
+    #                 _log.info('Green Button last date is beyond yesterday')
+    #                 continue
+    #             yesterday_timestamp = str(calendar.timegm(time.strptime(yesterday_str, '%m/%d/%Y')))
+    #             url = url + settings.GREEN_BUTTON_BATCH_URL_SYNTAX + subscription_id + "&" + min_date_parameter + "=" + last_date_str + "&" + max_date_parameter + "=" + str(
+    #                 yesterday)
 
-            _log.info('Fetching url ' + url)
+    #         _log.info('Fetching url ' + url)
 
-            ts_data = driver.get_gb_data(url, building_id)
+    #         ts_data = driver.get_gb_data(url, building_id)
 
-            _log.info('data fetched')
+    #         _log.info('data fetched')
 
-            if ts_data is not None:
-                analyser.data_analyse(ts_data, 'GreenButton')
+    #         if ts_data is not None:
+    #             analyser.data_analyse(ts_data, 'GreenButton')
 
-            _log.info('update db record: last_date=\'' + today_str + '\' for id=' + str(row_id))
-            record = GreenButtonBatchRequestsInfo.objects.get(id=row_id)
-            record.last_date = today_str
-            record.save()
-    else:
-        _log.info('No GreenButton record info found')
+    #         _log.info('update db record: last_date=\'' + today_str + '\' for id=' + str(row_id))
+    #         record = GreenButtonBatchRequestsInfo.objects.get(id=row_id)
+    #         record.last_date = today_str
+    #         record.save()
+    # else:
+    #     _log.info('No GreenButton record info found')
 
 
 @shared_task
@@ -140,8 +135,8 @@ def aggregate_monthly_data(building_id=-1):
         lastmonth = today.replace(month=(today.month - 1))
 
     # first day of last month
-    firstDayOfLastMonth = lastmonth.replace(day=1).replace(hour=0).replace(minute=0).replace(second=0).replace(
-        microsecond=0)
+    # firstDayOfLastMonth = lastmonth.replace(day=1).replace(hour=0).replace(minute=0).replace(second=0).replace(
+        # microsecond=0) #  unused
 
     # last day of the month
     if lastmonth.month in monthlist:
@@ -156,7 +151,7 @@ def aggregate_monthly_data(building_id=-1):
         microsecond=999999)
 
     # timestamps
-    tsMonthStart = datetime_to_timestamp(firstDayOfLastMonth) * 1000
+    # tsMonthStart = datetime_to_timestamp(firstDayOfLastMonth) * 1000  # unused
     tsMonthEnd = datetime_to_timestamp(lastDayOfLastMonth) * 1000
 
     # direct aggregation called by analyzer

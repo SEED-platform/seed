@@ -57,7 +57,7 @@ def get_reading_type_id_of_meter(mr_entry):
         head = get_link_href_head(link)
         if head == 'ReadingType':
             return link.get('href')
-    return null
+    return None
 
 
 def parse_interval_reading(reading):
@@ -80,7 +80,7 @@ def clean_up_for_key(key):
     Replace undesired special characters for key
     '''
 
-    return string.replace(key, '/', '_')
+    return key.replace(key, '/', '_')
 
 
 def gb_xml_parser(root, building_id):
