@@ -88,6 +88,9 @@ angular.module('BE.seed.services', [
     'BE.seed.service.search',
     'BE.seed.service.simple_modal'
     ]);
+angular.module('BE.seed.utilities', [
+    'BE.seed.utility.spinner'
+    ]);
 
 var SEED_app = angular.module('BE.seed', [
     'BE.seed.angular_dependencies',
@@ -95,7 +98,8 @@ var SEED_app = angular.module('BE.seed', [
     'BE.seed.filters',
     'BE.seed.directives',
     'BE.seed.services',
-    'BE.seed.controllers'
+    'BE.seed.controllers',
+    'BE.seed.utilities'
 ], ['$interpolateProvider', function ($interpolateProvider) {
         $interpolateProvider.startSymbol("{$");
         $interpolateProvider.endSymbol("$}");
@@ -883,6 +887,13 @@ SEED_app.config([
     '$httpProvider',
     function($httpProvider) {
     $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+}]);
+
+/**
+ * Disable Angular debugging based on Django DEBUG flag.
+ */
+SEED_app.config(['$compileProvider', function ($compileProvider) {
+  $compileProvider.debugInfoEnabled(window.BE.debug);
 }]);
 
 /**

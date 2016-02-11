@@ -422,7 +422,13 @@ def export_buildings_download(request):
     else:
         keys = list(DefaultStorage().bucket.list(export_subdir))
 
-        if not keys or len(keys) > 1:
+        if not keys:
+            return {
+                'success': False,
+                'status': 'working'
+            }
+
+        if len(keys) > 1:
             return {
                 "success": False,
                 "status": "error",
