@@ -101,6 +101,7 @@ def export_buildings(export_id, export_name, export_type,
     def _row_cb(i):
         data = get_cache("export_buildings__%s" % export_id)
         data['buildings_processed'] = i
+        data['progress'] = (i * 100) / data['total_buildings']
         set_cache("export_buildings__%s" % export_id, data['status'], data)
 
     exporter = Exporter(export_id, export_name, export_type)

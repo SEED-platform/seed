@@ -327,12 +327,15 @@ def export_buildings_progress(request):
     body = json.loads(request.body)
     export_id = body.get('export_id')
     progress_key = "export_buildings__%s" % export_id
-    percent_done = get_cache(progress_key)['progress']
-    total_buildings = get_cache(progress_key)['total_buildings']
+    progress_data = get_cache(progress_key)
+
+    percent_done = progress_data['progress']
+    total_buildings = progress_data['total_buildings']
+
     return {
         "success": True,
         "status": "success",
-        'total_buildings': get_cache(progress_key)['total_buildings'],
+        'total_buildings': progress_data['total_buildings'],
         "buildings_processed": (percent_done / 100) * total_buildings
     }
 
