@@ -189,7 +189,7 @@ urlpatterns = patterns(
         name='get_gb_request_info_url'
     ),
     # get gb request info ends
-	
+
     # delete
     url(
         r'^delete_buildings/$',

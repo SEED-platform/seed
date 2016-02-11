@@ -9,10 +9,12 @@ from seed.energy.pm_energy_template import query as qr
 
 _log = logging.getLogger(__name__)
 
+
 def pm_to_json(pm_file_path):
     filelist = glob.glob(pm_file_path)
     for excel in filelist:
         pm_to_json_single(excel, pm_file_path)
+
 
 def pm_to_json_single(excel, file_path):
     '''
@@ -30,31 +32,31 @@ def pm_to_json_single(excel, file_path):
     qr.retrieve_building_id(address_dict)
     _log.debug('address_dict: {0}'.format(address_dict))
 
-    meter_con_df['buildingsnapshot_id'] = meter_con_df['Street Address'].map(lambda x:address_dict[x]['buildingsnapshot_id'])
-    meter_con_df['canonical_id'] = meter_con_df['Street Address'].map(lambda x:address_dict[x]['canonical_building'])
+    meter_con_df['buildingsnapshot_id'] = meter_con_df['Street Address'].map(lambda x: address_dict[x]['buildingsnapshot_id'])
+    meter_con_df['canonical_id'] = meter_con_df['Street Address'].map(lambda x: address_dict[x]['canonical_building'])
     _log.info('end query')
 
     # Calculate time interval of days
     meter_con_df['interval'] = meter_con_df['End Date'] - meter_con_df['Start Date']
 
-    meter_con_df['End Date'] = meter_con_df['End Date'].map(lambda x: x+dt.timedelta(hours=12))
-    meter_con_df['Start Date'] = meter_con_df['Start Date'].map(lambda x: x+dt.timedelta(hours=12))
+    meter_con_df['End Date'] = meter_con_df['End Date'].map(lambda x: x + dt.timedelta(hours=12))
+    meter_con_df['Start Date'] = meter_con_df['Start Date'].map(lambda x: x + dt.timedelta(hours=12))
 
     meter_con_df['reading_kind'] = 'energy'
 
-    meter_con_df['Custom Meter ID'] = meter_con_df.apply(lambda row:row['Meter Type']+'_Meter' if np.isnan(row['Custom Meter ID']) else row['Custom Meter ID'], axis=1)
+    meter_con_df['Custom Meter ID'] = meter_con_df.apply(lambda row: row['Meter Type'] + '_Meter' if np.isnan(row['Custom Meter ID']) else row['Custom Meter ID'], axis=1)
 
     # renaming columns of df
-    name_lookup = {u'Start Date':u'start',
-                   u'End Date':u'end',
-                   u'Custom ID':u'custom_id',
-                   u'Custom Meter ID':u'custom_meter_id',
-                   u'Usage/Quantity':u'value',
-                   u'Usage Units':'uom',
-                   u'Cost ($)':u'cost',
-                   u'Meter Type':u'energy_type',
-                   u'Street Address':u'Street_Address',
-                   u'Property Name':u'Property_Name'}
+    name_lookup = {u'Start Date': u'start',
+                   u'End Date': u'end',
+                   u'Custom ID': u'custom_id',
+                   u'Custom Meter ID': u'custom_meter_id',
+                   u'Usage/Quantity': u'value',
+                   u'Usage Units': 'uom',
+                   u'Cost ($)': u'cost',
+                   u'Meter Type': u'energy_type',
+                   u'Street Address': u'Street_Address',
+                   u'Property Name': u'Property_Name'}
 
     meter_con_df = meter_con_df.rename(columns=name_lookup)
 
@@ -62,4 +64,4 @@ def pm_to_json_single(excel, file_path):
     # the 'interval' output is in [ns], so use ns for all time object and
     # post process with postProcess.py
     meter_con_df.to_json(file_out, 'records',
-                         date_unit = 'ns')
+                         date_unit='ns')

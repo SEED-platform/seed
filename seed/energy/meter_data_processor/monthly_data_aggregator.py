@@ -12,7 +12,6 @@ from seed.models import (
 )
 
 
-
 _log = logging.getLogger(__name__)
 
 

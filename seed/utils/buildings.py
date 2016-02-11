@@ -28,7 +28,7 @@ def serialize_building_snapshot(b, pm_cb, building):
     """returns a dict that's safe to JSON serialize"""
     b_as_dict = b.__dict__.copy()
     for key, val in b_as_dict.items():
-        if type(val) == datetime.datetime or type(val) == datetime.date:
+        if isinstance(val, datetime.datetime) or isinstance(val, datetime.date):
             b_as_dict[key] = time.convert_to_js_timestamp(val)
     del(b_as_dict['_state'])
     # check if they're matched

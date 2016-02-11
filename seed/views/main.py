@@ -784,9 +784,9 @@ def get_default_columns(request):
     """
     columns = request.user.default_custom_columns
 
-    if columns == '{}' or type(columns) == dict:
+    if columns == '{}' or isinstance(columns, dict):
         columns = DEFAULT_CUSTOM_COLUMNS
-    if type(columns) == unicode:
+    if isinstance(columns, unicode):
         # postgres 9.1 stores JsonField as unicode
         columns = json.loads(columns)
 
@@ -808,10 +808,10 @@ def get_default_building_detail_columns(request):
     """
     columns = request.user.default_building_detail_custom_columns
 
-    if columns == '{}' or type(columns) == dict:
+    if columns == '{}' or isinstance(columns, dict):
         # Return empty result, telling the FE to show all.
         columns = []
-    if type(columns) == unicode:
+    if isinstance(columns, unicode):
         # postgres 9.1 stores JsonField as unicode
         columns = json.loads(columns)
 
@@ -2214,14 +2214,15 @@ def parse_pm_energy_file(request):
 
     pm_energy_processor.parse_pm_energy_file(file_path)
     processed_file_path = file_path[len(file_path):-5] + '_processed.xlsx'
-    
+
     json_data = energy_template_process.parse_energy_template(processed_file_path)
 
     green_button_data_analyser.data_analyse(json_data, 'PM')
-    
+
     res = {}
     res['status'] = 'success'
     return res
+
 
 @api_endpoint
 @ajax_request
@@ -2234,29 +2235,30 @@ def parse_energy_template(request):
     _log.info(file_path)
 
     json_data = energy_template_process.parse_energy_template(file_path)
- 
+
     green_button_data_analyser.data_analyse(json_data, 'Energy Template')
 
     res = {}
     res['status'] = 'success'
     return res
 
+
 @api_endpoint
 @ajax_request
 @login_required
 def retrieve_finer_timeseries_data_url(request):
     building_id = request.GET.get('building_id')
-    organization_id = request.GET.get('organization_id')    
+    organization_id = request.GET.get('organization_id')
 
     query_body = {}
     query_body['start_absolute'] = 1230768000000
     query_body['metrics'] = []
-    
+
     metric = {}
     metric['tags'] = {}
     metric['tags']['canonical_id'] = str(building_id)
-    metric['name'] = str(settings.TSDB['measurement'])    
-    
+    metric['name'] = str(settings.TSDB['measurement'])
+
     aggregator = {}
     aggregator['name'] = 'sum'
     aggregator['align_sampling'] = True
@@ -2267,11 +2269,11 @@ def retrieve_finer_timeseries_data_url(request):
     aggregators = []
     aggregators.append(aggregator)
     metric['aggregators'] = aggregators
-    
+
     query_body['metrics'].append(metric)
-    
+
     query_str = json.dumps(query_body)
-    
+
     headers = {'content-type': 'application/json'}
 
     response = requests.post(settings.TSDB['query_url'], data=query_str, headers=headers)
@@ -2287,7 +2289,7 @@ def retrieve_finer_timeseries_data_url(request):
         readings = json_data['queries'][0]['results'][0]['values']
         res['tags'] = json_data['queries'][0]['results'][0]['tags']
 
-        #only return a sample of 10
+        # only return a sample of 10
         count = 0
         for ts_data in readings:
             ts_json = {}
@@ -2295,24 +2297,25 @@ def retrieve_finer_timeseries_data_url(request):
             ts_json['value'] = ts_data[1]
             res['reading'].append(ts_json)
 
-            count = count+1
-            if count==10:
-                break;
+            count = count + 1
+            if count == 10:
+                break
 
         res['status'] = 'success'
     else:
         json_data = json.loads(response.text)
         error_msg = json_data['errors'][0]
 
-        #if response.status_code == 500 and error_msg == 'No such file or directory':
+        # if response.status_code == 500 and error_msg == 'No such file or directory':
         #    # no data in kairosdb yet
         #    res['status'] = 'success'
-        #else:
+        # else:
         res['status'] = 'error'
         res['error_code'] = response.status_code
         res['error_msg'] = error_msg
 
     return res
+
 
 @api_endpoint
 @ajax_request
@@ -2324,9 +2327,9 @@ def retrieve_monthly_data_url(request):
 
     res = {}
     res['reading'] = []
-    
+
     if not record:
-        _log.error('No Canonical Building found! '+str(building_id))
+        _log.error('No Canonical Building found! ' + str(building_id))
     else:
         record = CanonicalBuilding.objects.get(id=building_id)
 
@@ -2335,7 +2338,7 @@ def retrieve_monthly_data_url(request):
             meter_id = meter_info.id
             record = TimeSeries.objects.filter(meter_id=meter_id)
             if not record:
-                _log.error('No monthly data found! for meter_id '+str(meter_id))
+                _log.error('No monthly data found! for meter_id ' + str(meter_id))
             else:
                 record = TimeSeries.objects.filter(meter_id=meter_id)
                 for data in record.iterator():
@@ -2353,11 +2356,12 @@ def retrieve_monthly_data_url(request):
 
     return res
 
+
 @api_endpoint
 @ajax_request
 @login_required
 def save_gb_request_info_url(request):
-    info =  json.loads(request.body)
+    info = json.loads(request.body)
 
     building_id = info['building_id']
     url = info['url']
@@ -2368,7 +2372,7 @@ def save_gb_request_info_url(request):
     active = info['active']
     time_type = info['time_type']
     date_pattern = info['date_pattern']
-    
+
     loopback_flag = info['loopback']
 
     today_date = date.today()
@@ -2396,23 +2400,24 @@ def save_gb_request_info_url(request):
         record.active = active
         record.time_type = time_type
         record.date_pattern = date_pattern
-        
+
     record.save()
+
 
 @api_endpoint
 @ajax_request
 @login_required
 def get_gb_request_info_url(request):
     building_id = request.GET.get('building_id')
-    
+
     record = GreenButtonBatchRequestsInfo.objects.filter(building_id=building_id)
-    
+
     res = {}
     if not record:
         res['status'] = 'not found'
     else:
         res['status'] = 'found'
-        
+
         record = GreenButtonBatchRequestsInfo.objects.get(building_id=building_id)
         res['url'] = record.url
         res['subscription_id'] = record.subscription_id
@@ -2423,6 +2428,7 @@ def get_gb_request_info_url(request):
         res['active'] = record.active
 
     return res
+
 
 @api_endpoint
 @ajax_request
@@ -2508,7 +2514,7 @@ def get_building_summary_report_data(request):
     # Read in x and y vars requested by client
     try:
         orgs = [request.GET.get('organization_id')]  # How should we capture user orgs here?
-    except Exception, e:
+    except Exception as e:
         msg = "Error while calling the API function get_scatter_data_series, missing parameter"
         _log.error(msg)
         _log.exception(str(e))
@@ -2626,7 +2632,7 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
         # The data is meaningless here aside if there is no valid year_ending value
         # even though the query at the beginning specifies a date range since this is using the tree
         # some other records without a year_ending may have snuck back in.  Ignore them here.
-        if not hasattr(snapshot, "year_ending") or type(snapshot.year_ending) != datetime.date:
+        if not hasattr(snapshot, "year_ending") or not isinstance(snapshot.year_ending, datetime.date):
             return
         # if the snapshot is not in the date range then don't process it
         if not(from_date <= snapshot.year_ending <= end_date):
@@ -2860,7 +2866,7 @@ def get_building_report_data(request):
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
 
-    except Exception, e:
+    except Exception as e:
         msg = "Error while calling the API function get_building_report_data, missing parameter"
         _log.error(msg)
         _log.exception(str(e))
@@ -2878,7 +2884,7 @@ def get_building_report_data(request):
     try:
         from_date = parse(from_date).date()
         end_date = parse(end_date).date()
-    except Exception, e:
+    except Exception as e:
         msg = "Couldn't convert date strings to date objects"
         _log.error(msg)
         _log.exception(str(e))
@@ -3066,7 +3072,7 @@ def get_aggregated_building_report_data(request):
         orgs = [request.GET['organization_id']]  # How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
-    except KeyError, e:
+    except KeyError as e:
         msg = "Error while calling the API function get_aggregated_building_report_data, missing parameter"  # NOQA
         _log.error(msg)
         _log.exception(str(e))
@@ -3089,7 +3095,7 @@ def get_aggregated_building_report_data(request):
     try:
         dt_from = parse(from_date)
         dt_to = parse(end_date)
-    except Exception, e:
+    except Exception as e:
         msg = "Couldn't convert date strings to date objects"
         _log.error(msg)
         _log.exception(str(e))

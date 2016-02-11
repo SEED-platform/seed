@@ -1606,6 +1606,7 @@ class TimeSeries(models.Model):
         Meter, related_name='timeseries_data', null=True, blank=True
     )
 
+
 class GreenButtonBatchRequestsInfo(models.Model):
     last_ts = models.BigIntegerField(null=True)
     url = models.CharField(max_length=500)
@@ -1619,4 +1620,4 @@ class GreenButtonBatchRequestsInfo(models.Model):
     subscription_id = models.CharField(max_length=200)
 
     def __str__(self):
-        return self.url+', '+str(self.building_id)
+        return self.url + ', ' + str(self.building_id)
