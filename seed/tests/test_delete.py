@@ -218,50 +218,6 @@ class DeleteViewTests(TestCase):
             10
         )
 
-    def test_delete_buildings_deselected_buildings(self):
-        """tests delete_buildings for de-selected_buildings"""
-        # arrange: standard case, try to delete all but 10 unchecked buildings
-        self._set_role_level(ROLE_MEMBER)
-        self.assertEqual(BuildingSnapshot.objects.filter(
-            canonicalbuilding__active=True).count(),
-            self.NUMBER_ACTIVE
-        )
-        ids = BuildingSnapshot.objects.filter(
-            canonicalbuilding__active=True
-        ).values_list('pk', flat=True)[:10]
-
-        # act
-        resp = self.client.delete(
-            reverse_lazy("seed:delete_buildings"),
-            data=json.dumps(
-                {
-                    'organization_id': self.org.id,
-                    'search_payload': {
-                        'select_all_checkbox': True,
-                        'selected_buildings': list(ids),
-                    }
-
-                }
-            ),
-            content_type='application/json',
-        )
-
-        # assert
-        self.assertDictEqual(json.loads(resp.content), {'status': 'success'})
-        # check that we have 10 active buildings
-        self.assertEqual(BuildingSnapshot.objects.filter(
-            canonicalbuilding__active=True).count(),
-            10
-        )
-        # check that the 10 unchecked buildings are active
-        self.assertEqual(
-            BuildingSnapshot.objects.filter(
-                canonicalbuilding__active=True,
-                pk__in=list(ids)
-            ).count(),
-            10
-        )
-
     def test_delete_dataset(self):
         """tests delete_dataset"""
         # arrange
