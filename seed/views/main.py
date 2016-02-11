@@ -45,7 +45,7 @@ from seed.models import (
     GREEN_BUTTON_BS,
 )
 from seed.views.accounts import _get_js_role
-from seed.lib.superperms.orgs.models import Organization, ROLE_MEMBER
+from seed.lib.superperms.orgs.models import Organization
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
     get_search_query,
@@ -2148,30 +2148,33 @@ def delete_buildings(request):
         {'status': 'success' or 'error'}
     """
     # get all orgs the user is in where the user is a member or owner
-    orgs = request.user.orgs.filter(
-        organizationuser__role_level__gte=ROLE_MEMBER
-    )
     body = json.loads(request.body)
-    body = body['search_payload']
+    search_payload = body['search_payload']
 
-    selected_building_ids = body.get('selected_buildings', [])
+    params = search.process_search_params(
+        body['search_payload'],
+        request.user,
+        is_api_request=False,
+    )
 
-    if not body.get('select_all_checkbox', False):
+    buildings_queryset = search.orchestrate_search_filter_sort(
+        params=params,
+        user=request.user,
+        skip_sort=True,
+    )
+
+    if search_payload.get('select_all_checkbox', False):
         # only get the manually selected buildings
-        selected_buildings = get_search_query(request.user, {})
-        selected_buildings = selected_buildings.filter(
-            pk__in=selected_building_ids,
-            super_organization__in=orgs
-        )
+        selected_buildings = buildings_queryset
     else:
+        selected_building_ids = search_payload.get('selected_buildings', [])
         # get all buildings matching the search params minus the de-selected
-        selected_buildings = get_search_query(request.user, body)
-        selected_buildings = selected_buildings.exclude(
+        selected_buildings = buildings_queryset.filter(
             pk__in=selected_building_ids,
-        ).filter(super_organization=orgs)
+        )
 
     tasks.log_deleted_buildings.delay(
-        list(selected_buildings.values_list('id', flat=True)), request.user.pk
+        tuple(selected_buildings.values_list('id', flat=True)), request.user.pk
     )
     # this step might have to move into a task
     CanonicalBuilding.objects.filter(
