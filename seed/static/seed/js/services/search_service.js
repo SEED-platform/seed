@@ -38,7 +38,8 @@ angular.module('BE.seed.service.search', [])
 .factory('search_service', [
   '$http',
   '$q',
-  function ($http, $q) {
+  'spinner_utility',
+  function ($http, $q, spinner_utility) {
     /************
      * variables
      */
@@ -159,11 +160,13 @@ angular.module('BE.seed.service.search', [])
         var defer = $q.defer();
         var that = this;
         var data = this.construct_search_query(query);
+        spinner_utility.show();
         $http({
             'method': 'POST',
             'data': data,
             'url': that.url
         }).success(function(data, status, headers, config){
+            spinner_utility.hide();
             that.update_results(data);
             defer.resolve(data);
         }).error(function(data, status, headers, config){
