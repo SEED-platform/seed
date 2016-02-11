@@ -13,8 +13,9 @@
     <div class="section_nav">
         <a id="building" ng-href="#/buildings/{$ building.canonical_building $}" class="active">Building Info</a>
         <a id="projects" ng-href="#/buildings/{$ building.canonical_building $}/projects">Projects</a>
-        <a id="audit" ng-href="#/buildings/{$ building.canonical_building $}/audit">Log &amp Notes</a>
+        <a id="audit" ng-href="#/buildings/{$ building.canonical_building $}/audit">Log &amp; Notes</a>
         <a id="energy" ng-href="#/buildings/{$ building.canonical_building $}/energy">Energy</a>
+        <a id="settings" ng-href="#/buildings/{$ building.canonical_building $}/settings">Settings</a>
     </div>
 </div>
 <div class="section">
@@ -59,7 +60,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="f in data_columns | orderBy:'key'">
+                        <tr ng-repeat="f in data_columns">
                             <td>{$ f.key | titleCase $}</td>
                             <td>
                                 <span ng-hide="building.edit_form_showing" ng-if="f.type === 'extra_data'">{$ building.extra_data[f.key] $}</span>

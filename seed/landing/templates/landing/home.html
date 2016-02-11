@@ -26,6 +26,7 @@
 				    <input type="reset" class="btn btn-default" value="Cancel"/>
 				    <a class="forgot_password" href="{% url "landing:password_reset" %}">Forgot password?</a>
 				</form>
+                {% include "landing/_password_note.html" %}
 			</div>
 		</div>
 		<!-- END .section_forms -->

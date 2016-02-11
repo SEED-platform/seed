@@ -89,6 +89,9 @@ angular.module('BE.seed.services', [
     'BE.seed.service.search',
     'BE.seed.service.simple_modal'
     ]);
+angular.module('BE.seed.utilities', [
+    'BE.seed.utility.spinner'
+    ]);
 
 var SEED_app = angular.module('BE.seed', [
     'BE.seed.angular_dependencies',
@@ -96,7 +99,8 @@ var SEED_app = angular.module('BE.seed', [
     'BE.seed.filters',
     'BE.seed.directives',
     'BE.seed.services',
-    'BE.seed.controllers'
+    'BE.seed.controllers',
+    'BE.seed.utilities'
 ], ['$interpolateProvider', function ($interpolateProvider) {
         $interpolateProvider.startSymbol("{$");
         $interpolateProvider.endSymbol("$}");
@@ -252,7 +256,10 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     var params = angular.copy($route.current.params);
                     var project_slug = params.project_id;
                     return project_service.get_project(project_slug);
-                }]
+                }],
+                'building_payload': function() {
+                    return {'building': {}};
+                }
             }
         })
         .when('/projects/:project_id/:building_id', {
@@ -265,9 +272,11 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);
                 }],
-                'audit_payload': ['audit_service', '$route', function(audit_service, $route){
-                    var building_id = $route.current.params.building_id;
-                    return audit_service.get_building_logs(building_id);
+                'audit_payload': function(){
+                    return {'audit_logs': {}};
+                },
+                'default_columns': ['user_service', function(user_service){
+                    return user_service.get_default_building_detail_columns();
                 }]
             },
             templateUrl: static_url + 'seed/partials/building_detail_section.html'
@@ -336,6 +345,9 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 },
                 'project_payload': function() {
                     return {'project': {}};
+                },
+                'building_payload': function() {
+                    return {'building': {}};
                 }
             }
 
@@ -361,9 +373,11 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);
                 }],
-                'audit_payload': ['audit_service', '$route', function(audit_service, $route){
-                    var building_id = $route.current.params.building_id;
-                    return audit_service.get_building_logs(building_id);
+                'audit_payload': function(){
+                    return {'audit_logs': {}};
+                },
+                'default_columns': ['user_service', function(user_service){
+                    return user_service.get_default_building_detail_columns();
                 }]
             }
         })
@@ -380,10 +394,12 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);
                 }],
-                'audit_payload': ['audit_service', '$route', function(audit_service, $route){
-                    var building_id = $route.current.params.building_id;
-                    return audit_service.get_building_logs(building_id);
-                }]
+                'audit_payload': function(){
+                    return {'audit_logs': {}};
+                },
+                'default_columns': function(){
+                    return {'columns': {}};
+                }
             }
         })
         .when('/buildings/:building_id/audit', {
@@ -402,7 +418,10 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'audit_payload': ['audit_service', '$route', function(audit_service, $route){
                     var building_id = $route.current.params.building_id;
                     return audit_service.get_building_logs(building_id);
-                }]
+                }],
+                'default_columns': function(){
+                    return {'columns': {}};
+                }
             }
         })
         .when('/buildings/:building_id/energy', {
@@ -418,10 +437,39 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);
                 }],
-                'audit_payload': ['audit_service', '$route', function(audit_service, $route){
+                'audit_payload': function(){
+                    return {'audit_logs': {}};
+                },
+                'default_columns': function(){
+                    return {'columns': {}};
+                }
+            }
+        })
+        .when('/buildings/:building_id/settings', {
+            controller: 'buildings_settings_controller',
+            templateUrl: static_url + 'seed/partials/building_settings_section.html',
+            resolve: {
+                'building_payload': ['building_services', '$route', function(building_services, $route){
+                    // load `get_building` before page is loaded to avoid
+                    // page flicker.
                     var building_id = $route.current.params.building_id;
-                    return audit_service.get_building_logs(building_id);
-                }]
+                    return building_services.get_building(building_id);
+                }],
+                'all_columns': ['building_services', function(building_services) {
+                    return building_services.get_columns(false);
+                }],
+                'default_columns': ['user_service', function(user_service){
+                    return user_service.get_default_building_detail_columns();
+                }],
+                'shared_fields_payload': ['user_service', '$route', function(user_service, $route) {
+                    return {'show_shared_buildings': false};
+                }],
+                '$uibModalInstance': function() {
+                    return {close: function () {}};
+                },
+                'project_payload': function() {
+                    return {'project': {}};
+                }
             }
         })
         .when('/data/mapping/:importfile_id', {
@@ -714,6 +762,9 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     }, function (data) {
                         return $q.reject(data.message);
                     });
+                }],
+                'user_profile_payload': ['user_service', function (user_service) {
+                    return user_service.get_user_profile();
                 }]
             }
         })
@@ -750,6 +801,13 @@ SEED_app.config([
     '$httpProvider',
     function($httpProvider) {
     $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+}]);
+
+/**
+ * Disable Angular debugging based on Django DEBUG flag.
+ */
+SEED_app.config(['$compileProvider', function ($compileProvider) {
+  $compileProvider.debugInfoEnabled(window.BE.debug);
 }]);
 
 /**

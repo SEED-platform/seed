@@ -1,7 +1,7 @@
 {% load compress analytical %}
 <!DOCTYPE html>
 <html>
-    <!-- :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+    <!-- :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved. -->
     <head>
     {% analytical_head_top %}
 
@@ -66,6 +66,9 @@
 
                 {# js CSRF config #}
                 window.BE.csrf_token = "{{ csrf_token }}";
+
+                {# Django debug mode flag #}
+                window.BE.debug = {{ debug|yesno:"true,false" }};
             </script>
 
             {# js urls config #}
@@ -84,6 +87,11 @@
             <script src="{{STATIC_URL}}vendors/bower_components/angular-cookies/angular-cookies.min.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/angular-route/angular-route.min.js"></script>
 
+            {% if not debug and SENTRY_JS_DSN %}
+            <script src="https://cdn.ravenjs.com/2.1.0/angular/raven.min.js"></script>
+            <script>Raven.config('{{ SENTRY_JS_DSN }}').install();</script>
+            {% endif %}
+
             <script src="{{STATIC_URL}}vendors/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-sortable/sortable.min.js"></script>
@@ -99,7 +107,7 @@
             <script src="{{STATIC_URL}}vendors/bower_components/angular-xeditable/dist/js/xeditable.min.js"></script>                     
             <script src="{{STATIC_URL}}vendors/bower_components/ng-tags-input/ng-tags-input.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-notification/dist/angular-ui-notification.min.js"></script>
-
+            <script src="{{STATIC_URL}}vendors/bower_components/spin.js/spin.min.js"></script>
 
             {% ifequal FILE_UPLOAD_DESTINATION 'S3' %}
             <script src="{{STATIC_URL}}vendors/bower_components/fine-uploader/_build/s3.fineuploader.js" ></script>

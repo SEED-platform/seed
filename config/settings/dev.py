@@ -53,10 +53,6 @@ else:
         'disable_existing_loggers': True,
         # set up some log message handlers to choose from
         'handlers': {
-            'sentry': {
-                'level': 'ERROR',
-                'class': 'raven.contrib.django.handlers.SentryHandler',
-            },
             'console': {
                 'level': 'INFO',
                 'class': 'logging.StreamHandler'
@@ -67,14 +63,7 @@ else:
             '': {
                 'level': 'INFO',
                 'handlers': ['console'],
-            },
-            # sentry.errors are any error messages associated with failed
-            # connections to sentry
-            'sentry.errors': {
-                'level': 'DEBUG',
-                'handlers': ['console'],
-                'propagate': False,
-            },
+            }
         },
     }
 

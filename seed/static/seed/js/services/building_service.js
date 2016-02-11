@@ -11,7 +11,8 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
   'label_helper_service',
   'user_service',
   'generated_urls',
-  function ($http, $q, urls, label_helper_service, user_service, generated_urls) {
+  'spinner_utility',
+  function ($http, $q, urls, label_helper_service, user_service, generated_urls, spinner_utility) {
 
     var building_factory = { total_number_of_buildings_for_user: 0};
 
@@ -55,6 +56,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
     };
 
     building_factory.search_buildings = function(query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id, project_slug) {
+        spinner_utility.show();
         var defer = $q.defer();
         $http({
             'method': 'POST',
@@ -70,6 +72,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
             },
             'url': urls.search_buildings
         }).success(function(data, status, headers, config){
+            spinner_utility.hide();
             defer.resolve(data);
         }).error(function(data, status, headers, config){
             defer.reject(data, status);
@@ -78,6 +81,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
     };
 
     building_factory.search_building_snapshots = function(query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id, project_id, project_slug) {
+        spinner_utility.show();
         var defer = $q.defer();
         $http({
             'method': 'POST',
@@ -94,6 +98,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
             },
             'url': urls.search_building_snapshots
         }).success(function(data, status, headers, config){
+            spinner_utility.hide();
             defer.resolve(data);
         }).error(function(data, status, headers, config){
             defer.reject(data, status);
@@ -102,6 +107,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
     };
 
     building_factory.search_matching_buildings = function(query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id) {
+        spinner_utility.show({top: '75%'}, $('.section_content')[0]);
         var defer = $q.defer();
         $http({
             'method': 'POST',
@@ -116,6 +122,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
             },
             'url': urls.search_building_snapshots
         }).success(function(data, status, headers, config){
+            spinner_utility.hide();
             defer.resolve(data);
         }).error(function(data, status, headers, config){
             defer.reject(data, status);
@@ -192,12 +199,36 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
      *   `all_columns` array 
      * @param {String} key (optional) if provided will filter on `key`,
      *   otherwise filters on `sort_column`
+     *
+     * Currently only used in matching controller. Very similar to
+     * search_service.generate_columns, could be combined. - nicholasserra
      */
     building_factory.create_column_array = function(all_columns, column_names, key) {
         key = key || "sort_column";
-        return all_columns.filter(function(f) {
+        var columns = all_columns.filter(function(f) {
             return column_names.indexOf(f[key]) > -1;
         });
+
+        // also apply the user sort order
+        columns.sort(function(a,b) {
+            // when viewing the list of projects, there is an extra "Status" column that is always first
+            if (a.sort_column === 'project_building_snapshots__status_label__name') {
+                return -1;
+            } else if (b.sort_column === 'project_building_snapshots__status_label__name') {
+                return 1;
+            }
+            // if no status, sort according to user's selected order
+            if (column_names.indexOf(a.sort_column) > -1 && column_names.indexOf(b.sort_column) > -1) {
+                return (column_names.indexOf(a.sort_column) - column_names.indexOf(b.sort_column));
+            } else if (column_names.indexOf(a.sort_column) > -1) {
+                return -1;
+            } else if (column_names.indexOf(b.sort_column) > -1) {
+                return 1;
+            } else { // preserve previous order
+                return (all_columns.indexOf(a) - all_columns.indexOf(b));
+            }
+        });
+        return columns;
     };
 
     building_factory.get_PM_filter_by_counts = function(import_file_id) {
@@ -236,6 +267,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
      * start the delete buildings process
      */
     building_factory.delete_buildings = function(search_payload) {
+        spinner_utility.show();
         var defer = $q.defer();
         $http({
             method: 'DELETE',
@@ -245,6 +277,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
                 'search_payload': search_payload
             }
         }).success(function(data, status, headers, config) {
+            spinner_utility.hide();
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);

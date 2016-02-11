@@ -460,47 +460,6 @@ angular.module('BE.seed.controller.building_list', [])
      * end broadcasts
      */
 
-
-    /**
-     * open_edit_columns_modal: modal to set which columns a user has in the
-     *   table
-     */
-    $scope.open_edit_columns_modal = function() {
-        var modalInstance = $uibModal.open({
-            templateUrl: urls.static_url + 'seed/partials/custom_view_modal.html',
-            controller: 'buildings_settings_controller',
-            resolve: {
-                'all_columns': function() {
-                    return all_columns;
-                },
-                'default_columns': function() {
-                    return default_columns;
-                },
-                'buildings_payload': function() {
-                    return {};
-                },
-                'shared_fields_payload': function() {
-                    return {show_shared_buildings: false};
-                },
-                'project_payload': function() {
-                    return {project: {}};
-                }
-            }
-        });
-        modalInstance.result.then(
-            function (columns) {
-                // update columns
-                $scope.columns = $scope.search.generate_columns(
-                    all_columns.fields,
-                    columns,
-                    $scope.search.column_prototype
-                );
-                refresh_search();
-        }, function (message) {
-        });
-    };
-
-
     /**
      * init: fired on controller load
      *  - grabs the search and filter parameters from the window location and

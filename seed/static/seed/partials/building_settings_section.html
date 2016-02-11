@@ -1,0 +1,110 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a href="#/buildings" class="page_action" ng-show="!is_project()"><i class="fa fa-chevron-left"></i> Buildings</a>
+            <a href="#/projects/{$ user.project_slug $}" class="page_action" ng-show="is_project()"><i class="fa fa-chevron-left"></i> Project: {$ project.name $}</a>
+        </div>
+        <div class="page_title">
+            <h1>{$ building.address_line_1 $}</h1>
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav">
+        <a id="building" ng-href="#/buildings/{$ building.canonical_building $}">Building Info</a>
+        <a id="projects" ng-href="#/buildings/{$ building.canonical_building $}/projects">Projects</a>
+        <a id="audit" ng-href="#/buildings/{$ building.canonical_building $}/audit">Log &amp; Notes</a>
+        <a id="energy" ng-href="#/buildings/{$ building.canonical_building $}/energy">Energy</a>
+        <a id="settings" ng-href="#/buildings/{$ building.canonical_building $}/settings" class="active">Settings</a>
+    </div>
+</div>
+<div class="section">
+    <div class="section_header_container">
+        <div id="building-settings" class="section_header has_no_padding fixed_height_short">
+            <div class="section_action_container left_wide">
+                <h2><i class="fa fa-cogs"></i> Building Settings:
+                    <span ng-show="!is_show_reorder">Show/Hide Columns</span>
+                    <a href ng-click="is_show_reorder=false" ng-show="is_show_reorder">Show/Hide Columns</a>
+                    |
+                    <span ng-show="is_show_reorder">Reorder Columns</span>
+                    <a href ng-click="on_show_reorder_fields()" ng-show="!is_show_reorder">Reorder Columns</a>
+                </h2>
+            </div>
+            <div class="section_action_container right section_action_btn">
+                <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">Save Changes <i class="fa fa-check align_right" ng-show="settings_updated"></i></button>
+            </div>
+        </div>
+    </div>
+    <div class="section_content_container" ng-show="!is_show_reorder">
+        <div class="section_content with_padding">
+            <h3>There are {$ fields.length | number $} columns of data available to you.</h3>
+            <p>Select columns from the list below to make them appear in your Building Info table.</p>
+        </div>
+        <div class="section_content with_padding">
+            <div class="table_list_container has_borders">
+                <table class="table table-striped has_no_btm_margin table_highlight_first">
+                    <thead>
+                        <tr>
+                            <th class="check is_aligned_center"><input type="checkbox" ng-model="controls.select_all" ng-change="select_all_clicked()"></th>
+                            <th>Column Name</th>
+                        </tr>
+                        <tr class="sub_head">
+                            <th class="sub_head check_row"></th>
+                            <th class="sub_head">
+                                <input type="text" class="form-control input-sm" ng-model="filter_params.title" placeholder="Search column name" ng-class="{active: filter_params.title.length > 0}">
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+                <div class="vert_table_scroll_container">
+                    <table class="table has_no_btm_margin table-striped table_scroll">
+                        <tbody>
+                            <tr ng-repeat="field in fields | filter:filter_params:strict">
+                                <td class="check is_aligned_center" style="width: 5%; min-width: 30px;">
+                                    <input type="checkbox" ng-model="field.checked">
+                                </td>
+                                <td>
+                                    <span>{$ field.title $}</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section_content_container" ng-show="is_show_reorder">
+        <div class="section_content with_padding">
+            <h3>Drag the columns below to change the order that they appear in your Buildings List table.</h3>
+        </div>
+        <div class="section_content with_padding">
+            <div class="table_list_container has_borders">
+                <table class="table table-striped has_no_btm_margin table_highlight_first">
+                    <thead>
+                    <tr>
+                        <th>Column Name</th>
+                    </tr>
+                    </thead>
+                </table>
+                <div class="vert_table_scroll_container">
+                    <table id="sort" class="table has_no_btm_margin table-striped table_scroll">
+                        <tbody ui-sortable="sortable_options" ng-model="fields">
+                        <tr ng-repeat="field in fields | filter:{ checked: true }  | filter:filter_params:strict">
+                            <td>
+                                <span>{$ field.title $}</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section_content_container has_top_margin">
+        <div class="section_content with_padding">
+            <button type="button" class="btn btn-primary" ng-click="save_settings()">Save Changes <i class="fa fa-check align_right" ng-show="settings_updated"></i></button>
+        </div>
+    </div>
+</div>

@@ -241,6 +241,40 @@ class AccountsViewTests(TestCase):
                 'status': 'success',
             })
 
+    def test_cannot_leave_org_empty(self):
+        """test removing a user"""
+        self.assertEqual(self.org.users.count(), 1)
+
+        resp = self.client.post(
+            reverse_lazy("accounts:remove_user_from_org"),
+            data=json.dumps({'user_id': self.user.id, 'organization_id': self.org.id}),
+            content_type='application/json',
+        )
+        self.assertDictEqual(
+            json.loads(resp.content),
+            {
+                'status': 'error',
+                'message': 'an organization must have at least one member'
+            })
+
+    def test_cannot_leave_org_with_no_owner(self):
+        """test removing a user"""
+        u = User.objects.create(username="b@b.com", email="b@be.com")
+        self.org.add_member(u, role=ROLE_MEMBER)
+        self.assertEqual(self.org.users.count(), 2)
+
+        resp = self.client.post(
+            reverse_lazy("accounts:remove_user_from_org"),
+            data=json.dumps({'user_id': self.user.id, 'organization_id': self.org.id}),
+            content_type='application/json',
+        )
+        self.assertDictEqual(
+            json.loads(resp.content),
+            {
+                'status': 'error',
+                'message': 'an organization must have at least one owner level member'
+            })
+
     def test_remove_user_from_org_missing_org_id(self):
         u = User.objects.create(username="b@b.com", email="b@be.com")
         self.org.add_member(u)
@@ -344,6 +378,63 @@ class AccountsViewTests(TestCase):
                 'status': 'success'
             })
         self.assertEquals(ou.role_level, ROLE_MEMBER)
+
+    def test_allowed_to_update_role_if_not_last_owner(self):
+        u = User.objects.create(username="b@b.com", email="b@be.com")
+        self.org.add_member(u, role=ROLE_OWNER)
+
+        ou = OrganizationUser.objects.get(
+            user_id=self.user.id, organization_id=self.org.id)
+        self.assertEquals(ou.role_level, ROLE_OWNER)
+
+        resp = self.client.put(
+            reverse_lazy("accounts:update_role"),
+            data=json.dumps(
+                {
+                    'organization_id': self.org.id,
+                    'user_id': self.user.id,
+                    'role': 'member'
+                }
+            ),
+            content_type='application/json',
+        )
+        ou = OrganizationUser.objects.get(
+            user_id=self.user.id, organization_id=self.org.id)
+        self.assertDictEqual(
+            json.loads(resp.content),
+            {
+                'status': 'success'
+            })
+        self.assertEquals(ou.role_level, ROLE_MEMBER)
+
+    def test_cannot_update_role_if_last_owner(self):
+        u = User.objects.create(username="b@b.com", email="b@be.com")
+        self.org.add_member(u, role=ROLE_MEMBER)
+
+        ou = OrganizationUser.objects.get(
+            user_id=self.user.id, organization_id=self.org.id)
+        self.assertEquals(ou.role_level, ROLE_OWNER)
+
+        resp = self.client.put(
+            reverse_lazy("accounts:update_role"),
+            data=json.dumps(
+                {
+                    'organization_id': self.org.id,
+                    'user_id': self.user.id,
+                    'role': 'owner'
+                }
+            ),
+            content_type='application/json',
+        )
+        ou = OrganizationUser.objects.get(
+            user_id=self.user.id, organization_id=self.org.id)
+        self.assertDictEqual(
+            json.loads(resp.content),
+            {
+                'status': 'error',
+                'message': 'an organization must have at least one owner level member'
+            })
+        self.assertEquals(ou.role_level, ROLE_OWNER)
 
     def test_update_role_no_perms(self):
         """

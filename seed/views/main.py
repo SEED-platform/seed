@@ -413,7 +413,13 @@ def export_buildings_download(request):
     else:
         keys = list(DefaultStorage().bucket.list(export_subdir))
 
-        if not keys or len(keys) > 1:
+        if not keys:
+            return {
+                'success': False,
+                'status': 'working'
+            }
+
+        if len(keys) > 1:
             return {
                 "success": False,
                 "status": "error",
@@ -759,7 +765,9 @@ def search_building_snapshots(request):
 @ajax_request
 @login_required
 def get_default_columns(request):
-    """front end is expecting a JSON object with an array of field names
+    """Get default columns for building list view.
+
+    front end is expecting a JSON object with an array of field names
         i.e.
         {
             "columns": ["project_id", "name", "gross_floor_area"]
@@ -768,33 +776,64 @@ def get_default_columns(request):
     columns = request.user.default_custom_columns
 
     if columns == '{}' or type(columns) == dict:
-        initial_columns = True
         columns = DEFAULT_CUSTOM_COLUMNS
-    else:
-        initial_columns = False
     if type(columns) == unicode:
         # postgres 9.1 stores JsonField as unicode
         columns = json.loads(columns)
 
     return {
-        'status': 'success',
         'columns': columns,
-        'initial_columns': initial_columns,
     }
 
 
 @ajax_request
 @login_required
-def set_default_columns(request):
+def get_default_building_detail_columns(request):
+    """Get default columns for building detail view.
+
+    front end is expecting a JSON object with an array of field names
+        i.e.
+        {
+            "columns": ["project_id", "name", "gross_floor_area"]
+        }
+    """
+    columns = request.user.default_building_detail_custom_columns
+
+    if columns == '{}' or type(columns) == dict:
+        # Return empty result, telling the FE to show all.
+        columns = []
+    if type(columns) == unicode:
+        # postgres 9.1 stores JsonField as unicode
+        columns = json.loads(columns)
+
+    return {
+        'columns': columns,
+    }
+
+
+def _set_default_columns_by_request(body, user, field):
     """sets the default value for the user's default_custom_columns"""
-    body = json.loads(request.body)
     columns = body['columns']
     show_shared_buildings = body.get('show_shared_buildings')
-    request.user.default_custom_columns = columns
+    setattr(user, field, columns)
     if show_shared_buildings is not None:
-        request.user.show_shared_buildings = show_shared_buildings
-    request.user.save()
-    return {'status': 'success'}
+        user.show_shared_buildings = show_shared_buildings
+    user.save()
+    return {}
+
+
+@ajax_request
+@login_required
+def set_default_columns(request):
+    body = json.loads(request.body)
+    return _set_default_columns_by_request(body, request.user, 'default_custom_columns')
+
+
+@ajax_request
+@login_required
+def set_default_building_detail_columns(request):
+    body = json.loads(request.body)
+    return _set_default_columns_by_request(body, request.user, 'default_building_detail_custom_columns')
 
 
 @ajax_request
@@ -2142,7 +2181,11 @@ def delete_buildings(request):
     )
     # this step might have to move into a task
     CanonicalBuilding.objects.filter(
-        buildingsnapshot=selected_buildings
+        # This is a stop-gap solution for a bug in django-pgjson
+        # https://github.com/djangonauts/django-pgjson/issues/35
+        # - once a release has been made with this fixed the 'tuple'
+        # casting can be removed.
+        buildingsnapshot__in=tuple(selected_buildings)
     ).update(active=False)
     return {'status': 'success'}
 

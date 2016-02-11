@@ -21,8 +21,6 @@ SEED_DATADIR = join(SITE_ROOT, 'seed', 'data')
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-# sentry
-SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -59,7 +57,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'raven.contrib.django.middleware.Sentry404CatchMiddleware',
     'pagination.middleware.PaginationMiddleware',
 
 )
@@ -87,7 +84,7 @@ INSTALLED_APPS = (
     'compressor',
     'django_extensions',
     'organizations',
-    'raven.contrib.django',
+    'raven.contrib.django.raven_compat',
     'tos',
     'rest_framework',
 )
@@ -99,6 +96,7 @@ SEED_CORE_APPS = (
     'seed',
     'seed.lib.superperms.orgs',
     'seed.audit_logs',
+    'seed.cleansing',
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
@@ -108,7 +106,7 @@ HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
 # apps to auto load namespaced urls for JS use (see seed.main.views.home)
-BE_URL_APPS = (
+SEED_URL_APPS = (
     'accounts',
     'ajaxuploader',
     'data_importer',
@@ -127,6 +125,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'config.template_context.compress_enabled',
     'config.template_context.session_key',
+    'config.template_context.sentry_js',
 )
 
 MEDIA_ROOT = join(SITE_ROOT, 'collected_static')
@@ -170,11 +169,6 @@ LOGGING = {
         },
     },
     'handlers': {
-        'sentry': {
-            'level': 'ERROR',
-            'class': 'raven.contrib.django.handlers.SentryHandler',
-            'formatter': 'verbose'
-        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -198,13 +192,8 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'level': 'WARNING',
-            'handlers': ['sentry'],
-        },
-        'sentry.errors': {
             'level': 'DEBUG',
             'handlers': ['console'],
-            'propagate': False,
         },
     }
 }
