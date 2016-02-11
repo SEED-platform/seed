@@ -13,6 +13,7 @@ class FakePaginiation(pagination.PageNumberPagination):
     DRF Paginator class that presents results in the same format as
     `PageNumberPagination` but always includes all results on the first page.
     """
+
     def get_paginated_response(self, data):
         return response.Response({
             "next": None,

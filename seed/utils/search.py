@@ -8,6 +8,7 @@ import re
 import operator
 
 from django.db.models import Q
+from functools import reduce
 
 
 def strip_suffix(k, suffix):

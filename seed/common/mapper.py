@@ -268,6 +268,7 @@ class MapItem(object):
     - is_bedes => flag, whether this field is BEDES-compliant
     - is_numeric => whether the data is numeric (or string)
     """
+
     def __init__(self, key, item):
         """Construct from key and item.
         :param key: The source field for the mapping
