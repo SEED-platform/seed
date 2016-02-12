@@ -2191,6 +2191,8 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
-
-
-
+.building-list-filter-buttons {
+  .btn+.btn {
+    margin-left: 5px;
+  }
+}
