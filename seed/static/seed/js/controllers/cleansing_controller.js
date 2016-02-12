@@ -46,11 +46,11 @@ angular.module('BE.seed.controller.cleansing', [])
       sortable: true,
       title: 'Custom ID'
     }, {
-      sort_column: 'field',
+      sort_column: 'formatted_field',
       sortable: false,
       title: 'Field'
     }, {
-      sort_column: 'message',
+      sort_column: 'detailed_message',
       sortable: false,
       title: 'Error Message'
     }];
@@ -140,7 +140,7 @@ angular.module('BE.seed.controller.cleansing', [])
         value = value.toLowerCase();
         _.each($scope.cleansingResults, function (result) {
           if (result.visible) {
-            if (_.contains(['field', 'message'], column)) {
+            if (_.contains(['formatted_field', 'detailed_message'], column)) {
               _.each(result.cleansing_results, function(row) {
                 if (!_.contains(row[column].toLowerCase(), value)) row.visible = false;
               });
