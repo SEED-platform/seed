@@ -127,14 +127,17 @@ class Cleansing:
         for field in fields:
             if hasattr(datum, field):
                 value = getattr(datum, field)
+                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
                 if value is None:
                     # Field exists but the value is None. Register a cleansing error
                     self.results[datum.id]['cleansing_results'].append(
                         {
                             'field': field,
-                            'message': 'Matching field not found',
+                            'formatted_field': formatted_field,
+                            'value': value,
+                            'message': formatted_field + ' field not found',
+                            'detailed_message': formatted_field + ' field not found',
                             'severity': 'error'
-
                         }
                     )
 
@@ -162,6 +165,7 @@ class Cleansing:
         for field in fields:
             if hasattr(datum, field):
                 value = getattr(datum, field)
+                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
 
                 if value == '':
                     # TODO: check if the value is zero?
@@ -169,7 +173,10 @@ class Cleansing:
                     self.results[datum.id]['cleansing_results'].append(
                         {
                             'field': field,
-                            'message': 'Value is missing',
+                            'formatted_field': formatted_field,
+                            'value': value,
+                            'message': formatted_field + ' is missing',
+                            'detailed_message': formatted_field + ' is missing',
                             'severity': 'error'
                         }
                     )
@@ -194,6 +201,7 @@ class Cleansing:
             # check if the field exists
             if hasattr(datum, field):
                 value = getattr(datum, field)
+                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
 
                 # Don't check the out of range errors if the data are empty
                 if value is None:
@@ -215,7 +223,10 @@ class Cleansing:
                         self.results[datum.id]['cleansing_results'].append(
                             {
                                 'field': field,
-                                'message': 'Value [' + str(value) + '] < ' + str(rule_min),
+                                'formatted_field': formatted_field,
+                                'value': value,
+                                'message': formatted_field + ' out of range',
+                                'detailed_message': formatted_field + ' [' + str(value) + '] < ' + str(rule_min),
                                 'severity': rule['severity']
                             }
                         )
@@ -224,7 +235,10 @@ class Cleansing:
                         self.results[datum.id]['cleansing_results'].append(
                             {
                                 'field': field,
-                                'message': 'Value [' + str(value) + '] > ' + str(rule_max),
+                                'formatted_field': formatted_field,
+                                'value': value,
+                                'message': formatted_field + ' out of range',
+                                'detailed_message': formatted_field + ' [' + str(value) + '] > ' + str(rule_max),
                                 'severity': rule['severity']
                             }
                         )
@@ -246,6 +260,7 @@ class Cleansing:
             # check if the field exists
             if hasattr(datum, field):
                 value = getattr(datum, field)
+                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
 
                 # Don't check the out of range errors if the data are empty
                 if value is None:
@@ -255,7 +270,10 @@ class Cleansing:
                     self.results[datum.id]['cleansing_results'].append(
                         {
                             'field': field,
-                            'message': 'Value ' + str(value) + ' is not a recognized ' + field_data_type + ' format',  # NOQA
+                            'formatted_field': formatted_field,
+                            'value': value,
+                            'message': formatted_field + ' value has incorrect data type',
+                            'detailed_message': formatted_field + ' value ' + str(value) + ' is not a recognized ' + field_data_type + ' format',  # NOQA
                             'severity': 'error'
                         }
                     )
