@@ -1518,6 +1518,12 @@ a:not([href]) {
   }
 }
 
+@media (min-width: 1200px) {
+  .modal-lg {
+    width: 1108px;
+  }
+}
+
 .modal-header {
   .close {
     margin-top: -14px;
