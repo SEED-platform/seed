@@ -50,33 +50,33 @@ def _dict_org(request, organizations):
     orgs = []
     for o in organizations:
         # We don't wish to double count sub organization memberships.
-        owners = [
-            {
-                'first_name': ou.user.first_name,
-                'last_name': ou.user.last_name,
-                'email': ou.user.email,
-                'id': ou.user_id
-            }
-            for ou in OrganizationUser.objects.select_related('user').filter(
-                organization=o, role_level=ROLE_OWNER
-            )
-        ]
-        if OrganizationUser.objects.filter(
-            organization=o, user=request.user
-        ).exists():
-            ou = OrganizationUser.objects.get(
-                organization=o, user=request.user)
-            role_level = _get_js_role(ou.role_level)
-        else:
-            role_level = None
+        org_users = OrganizationUser.objects.select_related('user') \
+            .filter(organization=o)
+
+        owners = []
+        role_level = None
+        user_is_owner = False
+        for ou in org_users:
+            if ou.role_level == ROLE_OWNER:
+                owners.append({
+                    'first_name': ou.user.first_name,
+                    'last_name': ou.user.last_name,
+                    'email': ou.user.email,
+                    'id': ou.user_id
+                })
+
+                if ou.user == request.user:
+                    user_is_owner = True
+
+            if ou.user == request.user:
+                role_level = _get_js_role(ou.role_level)
+
         org = {
             'name': o.name,
             'org_id': o.pk,
             'id': o.pk,
-            'number_of_users': o.users.count(),
-            'user_is_owner': (
-                request.user.pk in [own['id'] for own in owners]
-            ),
+            'number_of_users': len(org_users),
+            'user_is_owner': user_is_owner,
             'user_role': role_level,
             'owners': owners,
             'sub_orgs': _dict_org(request, o.child_orgs.all()),
