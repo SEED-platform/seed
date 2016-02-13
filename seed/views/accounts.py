@@ -39,6 +39,14 @@ _log = logging.getLogger(__name__)
 
 def _dict_org(request, organizations):
     """returns a dicti  onary of an organization's data."""
+
+    cbs = list(CanonicalBuilding.objects.filter(canonical_snapshot__super_organization__in=organizations).values('canonical_snapshot__super_organization_id'))
+
+    org_map = dict((x.pk, 0) for x in organizations)
+    for cb in cbs:
+        org_id = cb['canonical_snapshot__super_organization_id']
+        org_map[org_id] = org_map[org_id] + 1
+
     orgs = []
     for o in organizations:
         # We don't wish to double count sub organization memberships.
@@ -47,9 +55,9 @@ def _dict_org(request, organizations):
                 'first_name': ou.user.first_name,
                 'last_name': ou.user.last_name,
                 'email': ou.user.email,
-                'id': ou.user.pk
+                'id': ou.user_id
             }
-            for ou in OrganizationUser.objects.filter(
+            for ou in OrganizationUser.objects.select_related('user').filter(
                 organization=o, role_level=ROLE_OWNER
             )
         ]
@@ -73,9 +81,7 @@ def _dict_org(request, organizations):
             'owners': owners,
             'sub_orgs': _dict_org(request, o.child_orgs.all()),
             'is_parent': o.is_parent,
-            'num_buildings': CanonicalBuilding.objects.filter(
-                canonical_snapshot__super_organization=o
-            ).count(),
+            'num_buildings': org_map[o.pk],
         }
         orgs.append(org)
 
