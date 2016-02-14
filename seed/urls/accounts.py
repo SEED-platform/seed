@@ -58,6 +58,21 @@ urlpatterns = patterns(
         name='get_shared_fields'
     ),
     url(
+        r'^get_cleansing_rules/$',
+        'get_cleansing_rules',
+        name='get_cleansing_rules'
+    ),
+    url(
+        r'^reset_cleansing_rules/$',
+        'reset_cleansing_rules',
+        name='reset_cleansing_rules'
+    ),
+    url(
+        r'^save_cleansing_rules/$',
+        'save_cleansing_rules',
+        name='save_cleansing_rules'
+    ),
+    url(
         r'^create_sub_org/$',
         'create_sub_org',
         name='create_sub_org'

@@ -186,6 +186,68 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
     };
 
     /**
+     * gets the data cleansing rules for an org
+     * @param  {int} org_id the id of the organization
+     */
+    organization_factory.get_cleansing_rules = function(org_id) {
+        var defer = $q.defer();
+        $http({
+            method: 'GET',
+            'url': urls.accounts.get_cleansing_rules,
+            'params': {
+                'organization_id': org_id
+            }
+        }).success(function(data, status, headers, config) {
+            defer.resolve(data);
+        }).error(function(data, status, headers, config) {
+            defer.reject(data, status);
+        });
+        return defer.promise;
+    };
+
+    /**
+     * resets the default data cleansing rules for an org
+     * @param  {int} org_id the id of the organization
+     */
+    organization_factory.reset_cleansing_rules = function(org_id) {
+        var defer = $q.defer();
+        $http({
+            method: 'GET',
+            'url': urls.accounts.reset_cleansing_rules,
+            'params': {
+                'organization_id': org_id
+            }
+        }).success(function(data, status, headers, config) {
+            defer.resolve(data);
+        }).error(function(data, status, headers, config) {
+            defer.reject(data, status);
+        });
+        return defer.promise;
+    };
+
+    /**
+     * saves the organization data cleansing rules
+     * @param  {int} org_id the id of the organization
+     * @param  {obj} cleansing_rules the updated rules to save
+     */
+    organization_factory.save_cleansing_rules = function(org_id, cleansing_rules) {
+        var defer = $q.defer();
+        $http({
+            method: 'PUT',
+            'url': urls.accounts.save_cleansing_rules,
+            'data': {
+                'organization_id': org_id,
+                'cleansing_rules': cleansing_rules
+            }
+        }).success(function(data, status, headers, config) {
+            defer.resolve(data);
+        }).error(function(data, status, headers, config) {
+            defer.reject(data, status);
+        });
+        return defer.promise;
+    };
+
+    /**
      * gets the query threshold for an org
      * @param  {int} org_id the id of the organization
      */

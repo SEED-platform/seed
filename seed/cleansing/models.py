@@ -7,7 +7,9 @@
 import os
 import json
 
+from django.db import models
 from logging import getLogger
+from seed.lib.superperms.orgs.models import Organization
 from seed.utils.cache import set_cache_raw, get_cache_raw
 from datetime import (
     date,
@@ -15,6 +17,257 @@ from datetime import (
 )
 
 logger = getLogger(__name__)
+
+
+CATEGORY_MISSING_MATCHING_FIELD = 0
+CATEGORY_MISSING_VALUES = 1
+CATEGORY_IN_RANGE_CHECKING = 2
+CATEGORY_DATA_TYPE_CHECK = 3
+CATEGORIES = [
+    (CATEGORY_MISSING_MATCHING_FIELD, "Missing Matching Field"),
+    (CATEGORY_MISSING_VALUES, "Missing Values"),
+    (CATEGORY_IN_RANGE_CHECKING, "In-range Checking"),
+    (CATEGORY_DATA_TYPE_CHECK, "Data Type Check")
+]
+
+TYPE_NUMBER = 0
+TYPE_STRING = 1
+TYPE_DATE = 2
+TYPE_YEAR = 3
+DATA_TYPES = [
+    (TYPE_NUMBER, "number"),
+    (TYPE_STRING, "string"),
+    (TYPE_DATE, "date"),
+    (TYPE_YEAR, "year")
+]
+
+SEVERITY_ERROR = 0
+SEVERITY_WARNING = 1
+SEVERITY = [
+    (SEVERITY_ERROR, "error"),
+    (SEVERITY_WARNING, "warning")
+]
+
+
+class Rules(models.Model):
+    org = models.ForeignKey(Organization)
+    field = models.CharField(max_length=200)
+    enabled = models.BooleanField(default=True)
+    category = models.IntegerField(choices=CATEGORIES)
+    type = models.IntegerField(choices=DATA_TYPES, null=True)
+    min = models.FloatField(null=True)
+    max = models.FloatField(null=True)
+    severity = models.IntegerField(choices=SEVERITY)
+    units = models.CharField(max_length=100, blank=True)
+
+    @staticmethod
+    def initialize_rules(organization):
+        # Required fields
+        missing_matching_field = [
+            'address_line_1',
+            'tax_lot_id',
+            'custom_id_1',
+            'pm_property_id'
+        ]
+        # Ignored fields
+        missing_values = [
+            'address_line_1',
+            'tax_lot_id',
+            'custom_id_1',
+            'pm_property_id'
+        ]
+        # min/max range checks
+        in_range_checking = [{
+            'field': 'year_built',
+            'type': TYPE_YEAR,
+            'min': 1700,
+            'max': 2019,
+            'severity': SEVERITY_ERROR
+        }, {
+            'field': 'year_ending',
+            'type': TYPE_DATE,
+            'min': 18890101,
+            'max': 20201231,
+            'severity': SEVERITY_ERROR
+        }, {
+            'field': 'conditioned_floor_area',
+            'type': TYPE_NUMBER,
+            'min': 0,
+            'max': 7000000,
+            'severity': SEVERITY_ERROR,
+            'units': 'square feet'
+        }, {
+            'field': 'conditioned_floor_area',
+            'type': TYPE_NUMBER,
+            'min': 100,
+            'severity': SEVERITY_WARNING,
+            'units': 'square feet'
+        }, {
+            'field': 'energy_score',
+            'type': TYPE_NUMBER,
+            'min': 0,
+            'max': 100,
+            'severity': SEVERITY_ERROR
+        }, {
+            'field': 'energy_score',
+            'type': TYPE_NUMBER,
+            'min': 10,
+            'severity': SEVERITY_WARNING
+        }, {
+            'field': 'generation_date',
+            'type': TYPE_DATE,
+            'min': 18890101,
+            'max': 20201231,
+            'severity': SEVERITY_ERROR
+        }, {
+            'field': 'gross_floor_area',
+            'type': TYPE_NUMBER,
+            'min': 100,
+            'max': 7000000,
+            'severity': SEVERITY_ERROR,
+            'units': 'square feet'
+        }, {
+            'field': 'occupied_floor_area',
+            'type': TYPE_NUMBER,
+            'min': 100,
+            'max': 7000000,
+            'severity': SEVERITY_ERROR,
+            'units': 'square feet'
+        }, {
+            'field': 'recent_sale_date',
+            'type': TYPE_DATE,
+            'min': 18890101,
+            'max': 20201231,
+            'severity': SEVERITY_ERROR
+        }, {
+            'field': 'release_date',
+            'type': TYPE_DATE,
+            'min': 18890101,
+            'max': 20201231,
+            'severity': SEVERITY_ERROR
+        }, {
+            'field': 'site_eui',
+            'type': TYPE_NUMBER,
+            'min': 0,
+            'max': 1000,
+            'severity': SEVERITY_ERROR,
+            'units': 'kBtu/sq. ft./year'
+        }, {
+            'field': 'site_eui',
+            'type': TYPE_NUMBER,
+            'min': 10,
+            'severity': SEVERITY_WARNING,
+            'units': 'kBtu/sq. ft./year'
+        }, {
+            'field': 'site_eui_weather_normalized',
+            'type': TYPE_NUMBER,
+            'min': 0,
+            'max': 1000,
+            'severity': SEVERITY_ERROR,
+            'units': 'kBtu/sq. ft./year'
+        }, {
+            'field': 'source_eui',
+            'type': TYPE_NUMBER,
+            'min': 0,
+            'max': 1000,
+            'severity': SEVERITY_ERROR,
+            'units': 'kBtu/sq. ft./year'
+        }, {
+            'field': 'source_eui',
+            'type': TYPE_NUMBER,
+            'min': 10,
+            'severity': SEVERITY_WARNING,
+            'units': 'kBtu/sq. ft./year'
+        }, {
+            'field': 'source_eui_weather_normalized',
+            'type': TYPE_NUMBER,
+            'min': 10,
+            'max': 1000,
+            'severity': SEVERITY_ERROR,
+            'units': 'kBtu/sq. ft./year'
+        }]
+        data_type_check = [
+            {'address_line_1': TYPE_STRING},
+            {'address_line_2': TYPE_STRING},
+            {'block_number': TYPE_NUMBER},
+            {'building_certification': TYPE_STRING},
+            {'building_count': TYPE_NUMBER},
+            {'city': TYPE_STRING},
+            {'conditioned_floor_area': TYPE_NUMBER},
+            {'custom_id_1': TYPE_STRING},
+            {'district': TYPE_STRING},
+            {'energy_alerts': TYPE_STRING},
+            {'energy_score': TYPE_NUMBER},
+            {'generation_date': TYPE_DATE},
+            {'gross_floor_area': TYPE_NUMBER},
+            {'lot_number': TYPE_NUMBER},
+            {'occupied_floor_area': TYPE_NUMBER},
+            {'owner': TYPE_STRING},
+            {'owner_address': TYPE_STRING},
+            {'owner_city_state': TYPE_STRING},
+            {'owner_email': TYPE_STRING},
+            {'owner_postal_code': TYPE_STRING},
+            {'owner_telephone': TYPE_STRING},
+            {'pm_property_id': TYPE_STRING},
+            {'postal_code': TYPE_NUMBER},
+            {'property_name': TYPE_STRING},
+            {'property_notes': TYPE_STRING},
+            {'recent_sale_date': TYPE_DATE},
+            {'release_date': TYPE_DATE},
+            {'site_eui': TYPE_NUMBER},
+            {'site_eui_weather_normalized': TYPE_NUMBER},
+            {'source_eui': TYPE_NUMBER},
+            {'source_eui_weather_normalized': TYPE_NUMBER},
+            {'space_alerts': TYPE_STRING},
+            {'state_province': TYPE_STRING},
+            {'tax_lot_id': TYPE_STRING},
+            {'use_description': TYPE_STRING},
+            {'year_built': TYPE_YEAR},
+            {'year_ending': TYPE_DATE}
+        ]
+
+        for field in missing_matching_field:
+            Rules.objects.create(
+                org=organization,
+                field=field,
+                category=CATEGORY_MISSING_MATCHING_FIELD,
+                severity=SEVERITY_ERROR
+            )
+        for ignored_field in missing_values:
+            Rules.objects.create(
+                org=organization,
+                field=ignored_field,
+                category=CATEGORY_MISSING_VALUES,
+                severity=SEVERITY_ERROR
+            )
+        for rule in in_range_checking:
+            Rules.objects.create(
+                org=organization,
+                field=rule['field'],
+                category=CATEGORY_IN_RANGE_CHECKING,
+                type=rule['type'],
+                min=rule.get('min'),
+                max=rule.get('max'),
+                severity=rule['severity'],
+                units=rule.get('units', '')
+            )
+        # for pair in data_type_check:
+        #     Rules.objects.create(
+        #         org=organization,
+        #         field=pair[0],
+        #         category=CATEGORY_DATA_TYPE_CHECK,
+        #         type=pair[1],
+        #         severity=SEVERITY_ERROR
+        #     )
+
+    @staticmethod
+    def restore_defaults(organization):
+        Rules.delete_rules(organization)
+        Rules.initialize_rules(organization)
+
+    @staticmethod
+    def delete_rules(organization):
+        Rules.objects.filter(org=organization).delete()
 
 
 class Cleansing:
@@ -126,12 +379,16 @@ class Cleansing:
         for field in fields:
             if hasattr(datum, field):
                 value = getattr(datum, field)
+                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
                 if value is None:
                     # Field exists but the value is None. Register a cleansing error
                     self.results[datum.id]['cleansing_results'].append(
                         {
                             'field': field,
-                            'message': 'Matching field not found',
+                            'formatted_field': formatted_field,
+                            'value': value,
+                            'message': formatted_field + ' field not found',
+                            'detailed_message': formatted_field + ' field not found',
                             'severity': 'error'
 
                         }
@@ -161,6 +418,7 @@ class Cleansing:
         for field in fields:
             if hasattr(datum, field):
                 value = getattr(datum, field)
+                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
 
                 if value == '':
                     # TODO: check if the value is zero?
@@ -168,7 +426,10 @@ class Cleansing:
                     self.results[datum.id]['cleansing_results'].append(
                         {
                             'field': field,
-                            'message': 'Value is missing',
+                            'formatted_field': formatted_field,
+                            'value': value,
+                            'message': formatted_field + ' is missing',
+                            'detailed_message': formatted_field + ' is missing',
                             'severity': 'error'
                         }
                     )
@@ -193,6 +454,7 @@ class Cleansing:
             # check if the field exists
             if hasattr(datum, field):
                 value = getattr(datum, field)
+                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
 
                 # Don't check the out of range errors if the data are empty
                 if value is None:
@@ -202,7 +464,7 @@ class Cleansing:
                     rule_min = rule['min']
                     rule_max = rule['max']
                     # need to compare against a data time in the rule - this should be moved to
-                    # a preprocessing method of the cleansing.json file as this is run every time
+                    # a preprocessing method of the cleansing rules as this is run every time
                     if isinstance(value, datetime):
                         rule_min = datetime.strptime(rule_min, '%m/%d/%Y')
                         rule_max = datetime.strptime(rule_max, '%m/%d/%Y')
@@ -214,7 +476,10 @@ class Cleansing:
                         self.results[datum.id]['cleansing_results'].append(
                             {
                                 'field': field,
-                                'message': 'Value [' + str(value) + '] < ' + str(rule_min),
+                                'formatted_field': formatted_field,
+                                'value': value,
+                                'message': formatted_field + ' out of range',
+                                'detailed_message': formatted_field + ' [' + str(value) + '] < ' + str(rule_min),
                                 'severity': rule['severity']
                             }
                         )
@@ -223,7 +488,10 @@ class Cleansing:
                         self.results[datum.id]['cleansing_results'].append(
                             {
                                 'field': field,
-                                'message': 'Value [' + str(value) + '] > ' + str(rule_max),
+                                'formatted_field': formatted_field,
+                                'value': value,
+                                'message': formatted_field + ' out of range',
+                                'detailed_message': formatted_field + ' [' + str(value) + '] > ' + str(rule_max),
                                 'severity': rule['severity']
                             }
                         )
@@ -245,6 +513,7 @@ class Cleansing:
             # check if the field exists
             if hasattr(datum, field):
                 value = getattr(datum, field)
+                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
 
                 # Don't check the out of range errors if the data are empty
                 if value is None:
@@ -254,7 +523,10 @@ class Cleansing:
                     self.results[datum.id]['cleansing_results'].append(
                         {
                             'field': field,
-                            'message': 'Value ' + str(value) + ' is not a recognized ' + field_data_type + ' format',  # NOQA
+                            'formatted_field': formatted_field,
+                            'value': value,
+                            'message': formatted_field + ' value has incorrect data type',
+                            'detailed_message': formatted_field + ' value ' + str(value) + ' is not a recognized ' + field_data_type + ' format',  # NOQA
                             'severity': 'error'
                         }
                     )

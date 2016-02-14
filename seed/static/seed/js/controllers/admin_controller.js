@@ -55,11 +55,11 @@ angular.module('BE.seed.controller.admin', [])
             // resolve promise
             $scope.user_form.invalid = false;
 
-            var alert_message = 'User ' + user.email + 'created and added ';
+            var alert_message = 'User ' + user.email + ' created and added';
             if (data.org_created){
-                alert_message = alert_message + " as head of new org " + data.org;
+                alert_message = alert_message + ' as head of new org ' + data.org;
             } else {
-                alert_message = alert_message + " to existing org " + data.org;
+                alert_message = alert_message + ' to existing org ' + data.org;
             }
 
             update_alert(true, alert_message);

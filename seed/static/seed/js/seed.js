@@ -27,10 +27,10 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.buildings_reports',
     'BE.seed.controller.buildings_settings',
     'BE.seed.controller.cleansing',
+    'BE.seed.controller.cleansing_admin',
     'BE.seed.controller.concat_modal',
     'BE.seed.controller.create_note_modal',
     'BE.seed.controller.create_organization_modal',
-    'BE.seed.controller.data_cleansing',
     'BE.seed.controller.data_upload_modal',
     'BE.seed.controller.dataset',
     'BE.seed.controller.dataset_detail',
@@ -679,8 +679,8 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             }
         })
         .when('/accounts/:organization_id/data_cleansing', {
-            controller: 'data_cleansing_controller',
-            templateUrl: static_url + 'seed/partials/data_cleansing.html',
+            controller: 'cleansing_admin_controller',
+            templateUrl: static_url + 'seed/partials/cleansing_admin.html',
             resolve: {
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);
@@ -688,6 +688,10 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'organization_payload': ['organization_service', '$route', function(organization_service, $route) {
                     var organization_id = $route.current.params.organization_id;
                     return organization_service.get_organization(organization_id);
+                }],
+                'cleansing_rules_payload': ['organization_service', '$route', function(organization_service, $route) {
+                    var organization_id = $route.current.params.organization_id;
+                    return organization_service.get_cleansing_rules(organization_id);
                 }],
                 'auth_payload': ['auth_service', '$route', '$q', function(auth_service, $route, $q) {
                     var organization_id = $route.current.params.organization_id;

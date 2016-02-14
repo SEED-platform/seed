@@ -472,7 +472,6 @@ class ImportRecord(NotDeletableModel):
     def add_files_url(self):
         return reverse("%s:new_import" % self.app_namespace, args=(self.pk,))
 
-
     @property
     def status_url(self):
         if self.status <= STATUS_READY_TO_PRE_MERGE:

@@ -28,12 +28,6 @@ def get_cleansing_results(request):
     import_file_id = request.GET.get('import_file_id')
     cleansing_results = get_cache_raw(Cleansing.cache_key(import_file_id))
 
-    # add in additional fields for view
-    for i, row in enumerate(cleansing_results):
-        for j, result in enumerate(row['cleansing_results']):
-            if result['field'] in Cleansing.ASSESSOR_FIELDS_BY_COLUMN:
-                result['field'] = Cleansing.ASSESSOR_FIELDS_BY_COLUMN[result['field']]['title']
-
     return {
         'status': 'success',
         'message': 'Cleansing complete',
@@ -72,16 +66,13 @@ def get_csv(request):
                      'Error Message', 'Severity'])
     for row in cleansing_results:
         for result in row['cleansing_results']:
-            field = result['field']
-            if field in Cleansing.ASSESSOR_FIELDS_BY_COLUMN:
-                field = Cleansing.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
             writer.writerow([
                 row['address_line_1'],
                 row['pm_property_id'],
                 row['tax_lot_id'],
                 row['custom_id_1'],
-                field,
-                result['message'],
+                result['formatted_field'],
+                result['detailed_message'],
                 result['severity']
             ])
 
