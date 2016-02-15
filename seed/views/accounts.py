@@ -945,13 +945,13 @@ def save_cleansing_rules(request):
                 'missing_matching_field': [
                     {
                         'field': 'address_line_1',
-		                'severity': 'error'
+                        'severity': 'error'
                     }
                 ],
                 'missing_values': [
                     {
                         'field': 'address_line_1',
-		                'severity': 'error'
+                        'severity': 'error'
                     }
                 ],
                 'in_range_checking': [
