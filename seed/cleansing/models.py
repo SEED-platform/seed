@@ -4,9 +4,6 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import os
-import json
-
 from django.db import models
 from logging import getLogger
 from seed.lib.superperms.orgs.models import Organization
@@ -17,7 +14,6 @@ from datetime import (
 )
 
 logger = getLogger(__name__)
-
 
 CATEGORY_MISSING_MATCHING_FIELD = 0
 CATEGORY_MISSING_VALUES = 1
@@ -270,32 +266,20 @@ class Rules(models.Model):
         Rules.objects.filter(org=organization).delete()
 
 
-class Cleansing:
-    def __init__(self, *args, **kwargs):
+class Cleansing(object):
+    def __init__(self, organization, *args, **kwargs):
         """
-        Initialize the Cleansing class. Right now this class will not need to
-        save anything to the database. It is simply loading the rules from the
-        JSON file upon initialization.
+        Initialize the Cleansing class.
 
         :param args:
         :param kwargs:
         :return:
         """
 
-        # Uncomment this line if this becomes a django model.
-        # super(Cleansing, self).__init__(*args, **kwargs)
+        self.org = organization
+        super(Cleansing, self).__init__(*args, **kwargs)
 
-        # load in the configuration file
-        cleansing_file = os.path.dirname(os.path.realpath(__file__)) + '/lib/cleansing.json'
-
-        if not os.path.isfile(cleansing_file):
-            raise Exception('Could not find cleansing JSON file on server %s' % cleansing_file)
-
-        self.rules = None
         self.reset_results()
-        with open(cleansing_file) as data_file:
-            self.rules = json.load(data_file)
-            # TODO: validate this file and load into it's own data object
 
     @staticmethod
     def initialize_cache(file_pk):
@@ -370,29 +354,21 @@ class Cleansing:
         # TODO: NL: Should we check the extra_data field for the data?
         """
 
-        fields = [v for v in self.rules['modules'] if v['name'] == 'Missing Matching Field']
-        if len(fields) == 1:
-            fields = fields[0]['fields']
-        else:
-            raise RuntimeError('Could not find Missing Matching Field rules')
-
-        for field in fields:
-            if hasattr(datum, field):
-                value = getattr(datum, field)
-                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
+        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_MISSING_MATCHING_FIELD) \
+                .order_by('field', 'severity'):
+            if hasattr(datum, rule.field):
+                value = getattr(datum, rule.field)
+                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
                 if value is None:
                     # Field exists but the value is None. Register a cleansing error
-                    self.results[datum.id]['cleansing_results'].append(
-                        {
-                            'field': field,
-                            'formatted_field': formatted_field,
-                            'value': value,
-                            'message': formatted_field + ' field not found',
-                            'detailed_message': formatted_field + ' field not found',
-                            'severity': 'error'
-
-                        }
-                    )
+                    self.results[datum.id]['cleansing_results'].append({
+                        'field': rule.field,
+                        'formatted_field': formatted_field,
+                        'value': value,
+                        'message': formatted_field + ' field not found',
+                        'detailed_message': formatted_field + ' field not found',
+                        'severity': dict(SEVERITY)[rule.severity]
+                    })
 
     def missing_values(self, datum):
         """
@@ -409,30 +385,23 @@ class Cleansing:
         # TODO: Check the extra_data field for the data?
         """
 
-        fields = [v for v in self.rules['modules'] if v['name'] == 'Missing Matching Field']
-        if len(fields) == 1:
-            fields = fields[0]['fields']
-        else:
-            raise RuntimeError('Could not find Missing Matching Field rules')
-
-        for field in fields:
-            if hasattr(datum, field):
-                value = getattr(datum, field)
-                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
+        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_MISSING_VALUES) \
+                .order_by('field', 'severity'):
+            if hasattr(datum, rule.field):
+                value = getattr(datum, rule.field)
+                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
 
                 if value == '':
                     # TODO: check if the value is zero?
                     # Field exists but the value is empty. Register a cleansing error
-                    self.results[datum.id]['cleansing_results'].append(
-                        {
-                            'field': field,
-                            'formatted_field': formatted_field,
-                            'value': value,
-                            'message': formatted_field + ' is missing',
-                            'detailed_message': formatted_field + ' is missing',
-                            'severity': 'error'
-                        }
-                    )
+                    self.results[datum.id]['cleansing_results'].append({
+                        'field': rule.field,
+                        'formatted_field': formatted_field,
+                        'value': value,
+                        'message': formatted_field + ' is missing',
+                        'detailed_message': formatted_field + ' is missing',
+                        'severity': dict(SEVERITY)[rule.severity]
+                    })
 
     def in_range_checking(self, datum):
         """
@@ -441,60 +410,53 @@ class Cleansing:
         :param datum: Database record containing the BS version of the fields populated
         :return: None
         """
-
-        fields = [v for v in self.rules['modules'] if v['name'] == 'In-range Checking']
-        if len(fields) == 1:
-            fields = fields[0]['fields']
-        else:
-            raise RuntimeError('Could not find in-range checking rules')
-
-        for field in fields:
-            rules = self.rules['modules'][2]['fields'][field]
+        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_IN_RANGE_CHECKING) \
+                .order_by('field', 'severity'):
 
             # check if the field exists
-            if hasattr(datum, field):
-                value = getattr(datum, field)
-                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
+            if hasattr(datum, rule.field):
+                value = getattr(datum, rule.field)
+                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
 
                 # Don't check the out of range errors if the data are empty
                 if value is None:
                     continue
 
-                for rule in rules:
-                    rule_min = rule['min']
-                    rule_max = rule['max']
-                    # need to compare against a data time in the rule - this should be moved to
-                    # a preprocessing method of the cleansing rules as this is run every time
-                    if isinstance(value, datetime):
-                        rule_min = datetime.strptime(rule_min, '%m/%d/%Y')
-                        rule_max = datetime.strptime(rule_max, '%m/%d/%Y')
-                    elif isinstance(value, date):
-                        rule_min = datetime.strptime(rule_min, '%m/%d/%Y').date()
-                        rule_max = datetime.strptime(rule_max, '%m/%d/%Y').date()
+                rule_min = rule.min
+                rule_max = rule.max
+                if rule.type == TYPE_YEAR:
+                    rule_min = int(rule_min)
+                    rule_max = int(rule_max)
+                if rule.type == TYPE_DATE:
+                    rule_min = str(int(rule_min))
+                    rule_max = str(int(rule_max))
 
-                    if rule_min is not None and value < rule_min:
-                        self.results[datum.id]['cleansing_results'].append(
-                            {
-                                'field': field,
-                                'formatted_field': formatted_field,
-                                'value': value,
-                                'message': formatted_field + ' out of range',
-                                'detailed_message': formatted_field + ' [' + str(value) + '] < ' + str(rule_min),
-                                'severity': rule['severity']
-                            }
-                        )
+                if isinstance(value, datetime):
+                    rule_min = datetime.strptime(rule_min, '%Y%m%d')
+                    rule_max = datetime.strptime(rule_max, '%Y%m%d')
+                elif isinstance(value, date):
+                    rule_min = datetime.strptime(rule_min, '%Y%m%d').date()
+                    rule_max = datetime.strptime(rule_max, '%Y%m%d').date()
 
-                    if rule_max is not None and value > rule_max:
-                        self.results[datum.id]['cleansing_results'].append(
-                            {
-                                'field': field,
-                                'formatted_field': formatted_field,
-                                'value': value,
-                                'message': formatted_field + ' out of range',
-                                'detailed_message': formatted_field + ' [' + str(value) + '] > ' + str(rule_max),
-                                'severity': rule['severity']
-                            }
-                        )
+                if rule_min is not None and value < rule_min:
+                    self.results[datum.id]['cleansing_results'].append({
+                        'field': rule.field,
+                        'formatted_field': formatted_field,
+                        'value': value,
+                        'message': formatted_field + ' out of range',
+                        'detailed_message': formatted_field + ' [' + str(value) + '] < ' + str(rule_min),
+                        'severity': dict(SEVERITY)[rule.severity]
+                    })
+
+                if rule_max is not None and value > rule_max:
+                    self.results[datum.id]['cleansing_results'].append({
+                        'field': rule.field,
+                        'formatted_field': formatted_field,
+                        'value': value,
+                        'message': formatted_field + ' out of range',
+                        'detailed_message': formatted_field + ' [' + str(value) + '] > ' + str(rule_max),
+                        'severity': dict(SEVERITY)[rule.severity]
+                    })
 
     def data_type_check(self, datum):
         """
@@ -507,28 +469,28 @@ class Cleansing:
         :return: None
         """
 
-        fields = self.rules['modules'][3]['fields']
-
-        for field, field_data_type in fields.iteritems():
+        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_DATA_TYPE_CHECK) \
+                .order_by('field', 'severity'):
             # check if the field exists
-            if hasattr(datum, field):
-                value = getattr(datum, field)
-                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[field]['title']
+            if hasattr(datum, rule.field):
+                value = getattr(datum, rule.field)
+                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
 
                 # Don't check the out of range errors if the data are empty
                 if value is None:
                     continue
 
-                if type(value).__name__ != field_data_type:
+                if type(value).__name__ != rule.type:
                     self.results[datum.id]['cleansing_results'].append(
-                        {
-                            'field': field,
-                            'formatted_field': formatted_field,
-                            'value': value,
-                            'message': formatted_field + ' value has incorrect data type',
-                            'detailed_message': formatted_field + ' value ' + str(value) + ' is not a recognized ' + field_data_type + ' format',  # NOQA
-                            'severity': 'error'
-                        }
+                            {
+                                'field': rule.field,
+                                'formatted_field': formatted_field,
+                                'value': value,
+                                'message': formatted_field + ' value has incorrect data type',
+                                'detailed_message': formatted_field + ' value ' + str(
+                                    value) + ' is not a recognized ' + rule.type + ' format',
+                                'severity': dict(SEVERITY)[rule.severity]
+                            }
                     )
 
     def save_to_cache(self, file_pk):
@@ -715,4 +677,4 @@ class Cleansing:
 
     ASSESSOR_FIELDS_BY_COLUMN = {
         field['sort_column']: field for field in ASSESSOR_FIELDS
-    }
+        }
