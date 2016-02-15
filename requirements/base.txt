@@ -1,6 +1,5 @@
 # Django
-# django==1.6.7
-django==1.7.9
+Django==1.8.1
 
 # Configuration
 django-environ==0.3.0
