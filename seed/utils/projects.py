@@ -109,9 +109,9 @@ def copy_buildings(source_project, target_project, buildings,
     pbs = []
     for b in pb_queryset:
             # setting pk to None will create a copy the django instance
-            b.pk = None
-            b.project = target_project
-            pbs.append(b)
+        b.pk = None
+        b.project = target_project
+        pbs.append(b)
 
     ProjectBuilding.objects.bulk_create(pbs)
 

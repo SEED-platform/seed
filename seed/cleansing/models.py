@@ -481,17 +481,15 @@ class Cleansing(object):
                     continue
 
                 if type(value).__name__ != rule.type:
-                    self.results[datum.id]['cleansing_results'].append(
-                            {
-                                'field': rule.field,
-                                'formatted_field': formatted_field,
-                                'value': value,
-                                'message': formatted_field + ' value has incorrect data type',
-                                'detailed_message': formatted_field + ' value ' + str(
-                                    value) + ' is not a recognized ' + rule.type + ' format',
-                                'severity': dict(SEVERITY)[rule.severity]
-                            }
-                    )
+                    self.results[datum.id]['cleansing_results'].append({
+                        'field': rule.field,
+                        'formatted_field': formatted_field,
+                        'value': value,
+                        'message': formatted_field + ' value has incorrect data type',
+                        'detailed_message': formatted_field + ' value ' + str(
+                            value) + ' is not a recognized ' + rule.type + ' format',
+                        'severity': dict(SEVERITY)[rule.severity]
+                    })
 
     def save_to_cache(self, file_pk):
         """
@@ -677,4 +675,4 @@ class Cleansing(object):
 
     ASSESSOR_FIELDS_BY_COLUMN = {
         field['sort_column']: field for field in ASSESSOR_FIELDS
-        }
+    }

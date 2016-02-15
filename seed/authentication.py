@@ -14,6 +14,7 @@ class SEEDAuthentication(authentication.BaseAuthentication):
     `seed.utils.api.get_api_request_user` functionality to extract the User
     from the HTTP_AUTHORIZATION header using an API key.
     """
+
     def authenticate(self, request):
         auth_header = request.META.get('HTTP_AUTHORIZATION')
 

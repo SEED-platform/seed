@@ -25,11 +25,11 @@ def set_cache(progress_key, status, data):
     Sets the cache key to a pickled dictionary containing at least status and progress.
     If data is not a dict, it is assumed to be a progress percentage.
     """
-    if type(status) != str:
+    if not isinstance(status, str):
         raise ValueError('Invalid value for status; must be a string')
 
     result = {}
-    if type(data) != dict:
+    if not isinstance(data, dict):
         result['progress'] = data
     else:
         result = data
@@ -42,7 +42,7 @@ def set_cache(progress_key, status, data):
 def get_cache(progress_key, default=None):
     """Unpickles the cache key to a dictionary and resets the timeout"""
     if default is not None:
-        if type(default) != dict:
+        if not isinstance(default, dict):
             default = {'status': 'Unknown', 'progress': default}
     data = get_cache_raw(progress_key, default)
     if data is None:
@@ -56,7 +56,7 @@ def get_cache(progress_key, default=None):
 
 def set_cache_state(progress_key, state):
     """Sets the cache key or progress_key to a bool."""
-    if type(state) != bool:
+    if not isinstance(state, bool):
         raise ValueError('Invalid value for state; must be a bool')
 
     result = state
@@ -68,7 +68,7 @@ def set_cache_state(progress_key, state):
 def get_cache_state(progress_key, default=None):
     """Gets the state of progress_key"""
     if default is not None:
-        if type(default) != bool:
+        if not isinstance(default, bool):
             raise ValueError('Invalid value for default; must be a bool')
     data = get_cache_raw(progress_key, default)
     return data
