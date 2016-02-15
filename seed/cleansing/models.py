@@ -354,7 +354,7 @@ class Cleansing(object):
         # TODO: NL: Should we check the extra_data field for the data?
         """
 
-        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_MISSING_MATCHING_FIELD) \
+        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_MISSING_MATCHING_FIELD, enabled=True) \
                 .order_by('field', 'severity'):
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
@@ -385,7 +385,7 @@ class Cleansing(object):
         # TODO: Check the extra_data field for the data?
         """
 
-        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_MISSING_VALUES) \
+        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_MISSING_VALUES, enabled=True) \
                 .order_by('field', 'severity'):
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
@@ -410,7 +410,7 @@ class Cleansing(object):
         :param datum: Database record containing the BS version of the fields populated
         :return: None
         """
-        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_IN_RANGE_CHECKING) \
+        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_IN_RANGE_CHECKING, enabled=True) \
                 .order_by('field', 'severity'):
 
             # check if the field exists
@@ -469,7 +469,7 @@ class Cleansing(object):
         :return: None
         """
 
-        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_DATA_TYPE_CHECK) \
+        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_DATA_TYPE_CHECK, enabled=True) \
                 .order_by('field', 'severity'):
             # check if the field exists
             if hasattr(datum, rule.field):
