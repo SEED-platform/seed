@@ -110,6 +110,14 @@ angular.module('BE.seed.service.search', [])
         }
     };
 
+    search_service.clear_filters = function() {
+        saas.filter_params = {};
+        if (typeof(Storage) !== "undefined") {
+            sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingFilterParams', {});
+        }
+        saas.filter_search();
+    }
+
     /**
      * sanitize_params: removes filter params with null or undefined values
      */
