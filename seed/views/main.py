@@ -48,7 +48,6 @@ from seed.views.accounts import _get_js_role
 from seed.lib.superperms.orgs.models import Organization
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
-    get_search_query,
     get_buildings_for_user_count
 )
 from seed.utils.api import api_endpoint
