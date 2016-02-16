@@ -117,7 +117,7 @@ class Organization(models.Model):
 
     # If below this threshold, we don't show results from this Org
     # in exported views of its data.
-    query_threshold = models.IntegerField(max_length=4, blank=True, null=True)
+    query_threshold = models.IntegerField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
