@@ -45,7 +45,7 @@ from seed.models import (
     GREEN_BUTTON_BS,
 )
 from seed.views.accounts import _get_js_role
-from seed.lib.superperms.orgs.models import Organization, ROLE_MEMBER
+from seed.lib.superperms.orgs.models import Organization
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
     get_search_query,
@@ -224,22 +224,23 @@ def export_buildings(request):
     export_name = body.get('export_name')
     export_type = body.get('export_type')
 
-    building_ids = body.get('building_ids')
-
     selected_fields = body.get('selected_fields', [])
-
     selected_building_ids = body.get('selected_buildings', [])
 
-    project_id = body.get('project_id')
+    params = search.parse_body(request)
 
-    if not body.get('select_all_checkbox', False):
-        selected_buildings = get_search_query(request.user, {})
-        selected_buildings = selected_buildings.filter(
-            pk__in=selected_building_ids
-        )
+    project_id = params['project_id']
+
+    buildings_queryset = search.orchestrate_search_filter_sort(
+        params=params,
+        user=request.user,
+        skip_sort=True,
+    )
+
+    if body.get('select_all_checkbox', False):
+        selected_buildings = buildings_queryset
     else:
-        selected_buildings = get_search_query(request.user, body)
-        selected_buildings = selected_buildings.exclude(
+        selected_buildings = selected_buildings.filter(
             pk__in=selected_building_ids
         )
 
@@ -254,18 +255,19 @@ def export_buildings(request):
 
         # Grab the project buildings associated with the given project id and
         # buildings list
-        selected_building_ids = [
-            x[0] for x in selected_buildings.values_list('pk')
-        ]
         selected_buildings = ProjectBuilding.objects.filter(
             project_id=project_id,
-            building_snapshot__in=selected_building_ids)
+            building_snapshot__in=tuple(
+                selected_buildings.values_list('pk', flat=True)
+            ),  # NOQA
+        )
 
         # Swap the requested fieldnames to reflect the new point of reference
         _selected_fields = []
         for field in selected_fields:
             components = field.split("__", 1)
-            if (components[0] == 'project_building_snapshots' and len(components) > 1):
+            if (components[0] == 'project_building_snapshots'
+                    and len(components) > 1):
                 _selected_fields.append(components[1])
             else:
                 _selected_fields.append("building_snapshot__%s" % field)
@@ -273,14 +275,14 @@ def export_buildings(request):
     else:
         export_model = 'seed.BuildingSnapshot'
 
-    building_ids = [x[0] for x in selected_buildings.values_list('pk')]
+    building_ids = tuple(selected_buildings.values_list('pk', flat=True))
     progress_key = "export_buildings__%s" % export_id
     result = {
         'progress_key': progress_key,
         'status': 'not-started',
         'progress': 0,
         'buildings_processed': 0,
-        'total_buildings': selected_buildings.count()
+        'total_buildings': len(building_ids),
     }
     set_cache(progress_key, result['status'], result)
 
@@ -293,21 +295,13 @@ def export_buildings(request):
         selected_fields,
     )
 
-    result = {
-        'progress_key': progress_key,
-        'status': 'not-started',
-        'progress': 100,
-        'buildings_processed': selected_buildings.count(),
-        'total_buildings': selected_buildings.count()
-    }
-    set_cache(progress_key, result['status'], result)
     return {
         "success": True,
         "status": "success",
         'progress': 100,
         'progress_key': progress_key,
         "export_id": export_id,
-        "total_buildings": selected_buildings.count(),
+        "total_buildings": len(building_ids),
     }
 
 
@@ -333,12 +327,15 @@ def export_buildings_progress(request):
     body = json.loads(request.body)
     export_id = body.get('export_id')
     progress_key = "export_buildings__%s" % export_id
-    percent_done = get_cache(progress_key)['progress']
-    total_buildings = get_cache(progress_key)['total_buildings']
+    progress_data = get_cache(progress_key)
+
+    percent_done = progress_data['progress']
+    total_buildings = progress_data['total_buildings']
+
     return {
         "success": True,
         "status": "success",
-        'total_buildings': get_cache(progress_key)['total_buildings'],
+        'total_buildings': progress_data['total_buildings'],
         "buildings_processed": (percent_done / 100) * total_buildings
     }
 
@@ -2154,30 +2151,33 @@ def delete_buildings(request):
         {'status': 'success' or 'error'}
     """
     # get all orgs the user is in where the user is a member or owner
-    orgs = request.user.orgs.filter(
-        organizationuser__role_level__gte=ROLE_MEMBER
-    )
     body = json.loads(request.body)
-    body = body['search_payload']
+    search_payload = body['search_payload']
 
-    selected_building_ids = body.get('selected_buildings', [])
+    params = search.process_search_params(
+        body['search_payload'],
+        request.user,
+        is_api_request=False,
+    )
 
-    if not body.get('select_all_checkbox', False):
+    buildings_queryset = search.orchestrate_search_filter_sort(
+        params=params,
+        user=request.user,
+        skip_sort=True,
+    )
+
+    if search_payload.get('select_all_checkbox', False):
         # only get the manually selected buildings
-        selected_buildings = get_search_query(request.user, {})
-        selected_buildings = selected_buildings.filter(
-            pk__in=selected_building_ids,
-            super_organization__in=orgs
-        )
+        selected_buildings = buildings_queryset
     else:
+        selected_building_ids = search_payload.get('selected_buildings', [])
         # get all buildings matching the search params minus the de-selected
-        selected_buildings = get_search_query(request.user, body)
-        selected_buildings = selected_buildings.exclude(
+        selected_buildings = buildings_queryset.filter(
             pk__in=selected_building_ids,
-        ).filter(super_organization=orgs)
+        )
 
     tasks.log_deleted_buildings.delay(
-        list(selected_buildings.values_list('id', flat=True)), request.user.pk
+        tuple(selected_buildings.values_list('id', flat=True)), request.user.pk
     )
     # this step might have to move into a task
     CanonicalBuilding.objects.filter(
