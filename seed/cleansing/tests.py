@@ -87,7 +87,7 @@ class CleansingDataTestCoveredBuilding(TestCase):
             source_type=ASSESSED_BS,
         ).iterator()
 
-        c = Cleansing()
+        c = Cleansing(self.org)
         c.cleanse(qs)
 
         data = c.results
@@ -130,7 +130,7 @@ class CleansingDataTestCoveredBuilding(TestCase):
             'formatted_field': u'Gross Floor Area',
             'value': 10000000000.0,
             'message': u'Gross Floor Area out of range',
-            'detailed_message': u'Gross Floor Area [10000000000.0] > 7000000',
+            'detailed_message': u'Gross Floor Area [10000000000.0] > 7000000.0',
             'severity': u'error'
         }, {
             'field': u'custom_id_1',
@@ -214,7 +214,7 @@ class CleansingDataTestPM(TestCase):
             source_type=PORTFOLIO_BS,
         ).iterator()
 
-        c = Cleansing()
+        c = Cleansing(self.org)
         c.cleanse(qs)
 
         data = c.results
@@ -248,7 +248,7 @@ class CleansingDataTestPM(TestCase):
             'formatted_field': u'Site EUI',
             'value': 0.1,
             'message': u'Site EUI out of range',
-            'detailed_message': u'Site EUI [0.1] < 10',
+            'detailed_message': u'Site EUI [0.1] < 10.0',
             'severity': u'warning'
         }]
         self.assertEqual(res, result['cleansing_results'])
@@ -339,7 +339,7 @@ class CleansingDataSample(TestCase):
             source_type=ASSESSED_BS,
         ).iterator()
 
-        c = Cleansing()
+        c = Cleansing(self.org)
         c.cleanse(qs)
 
         data = c.results

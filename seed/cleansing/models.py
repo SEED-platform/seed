@@ -182,45 +182,45 @@ class Rules(models.Model):
             'severity': SEVERITY_ERROR,
             'units': 'kBtu/sq. ft./year'
         }]
-        data_type_check = [
-            {'address_line_1': TYPE_STRING},
-            {'address_line_2': TYPE_STRING},
-            {'block_number': TYPE_NUMBER},
-            {'building_certification': TYPE_STRING},
-            {'building_count': TYPE_NUMBER},
-            {'city': TYPE_STRING},
-            {'conditioned_floor_area': TYPE_NUMBER},
-            {'custom_id_1': TYPE_STRING},
-            {'district': TYPE_STRING},
-            {'energy_alerts': TYPE_STRING},
-            {'energy_score': TYPE_NUMBER},
-            {'generation_date': TYPE_DATE},
-            {'gross_floor_area': TYPE_NUMBER},
-            {'lot_number': TYPE_NUMBER},
-            {'occupied_floor_area': TYPE_NUMBER},
-            {'owner': TYPE_STRING},
-            {'owner_address': TYPE_STRING},
-            {'owner_city_state': TYPE_STRING},
-            {'owner_email': TYPE_STRING},
-            {'owner_postal_code': TYPE_STRING},
-            {'owner_telephone': TYPE_STRING},
-            {'pm_property_id': TYPE_STRING},
-            {'postal_code': TYPE_NUMBER},
-            {'property_name': TYPE_STRING},
-            {'property_notes': TYPE_STRING},
-            {'recent_sale_date': TYPE_DATE},
-            {'release_date': TYPE_DATE},
-            {'site_eui': TYPE_NUMBER},
-            {'site_eui_weather_normalized': TYPE_NUMBER},
-            {'source_eui': TYPE_NUMBER},
-            {'source_eui_weather_normalized': TYPE_NUMBER},
-            {'space_alerts': TYPE_STRING},
-            {'state_province': TYPE_STRING},
-            {'tax_lot_id': TYPE_STRING},
-            {'use_description': TYPE_STRING},
-            {'year_built': TYPE_YEAR},
-            {'year_ending': TYPE_DATE}
-        ]
+        # data_type_check = [
+        #     {'address_line_1': TYPE_STRING},
+        #     {'address_line_2': TYPE_STRING},
+        #     {'block_number': TYPE_NUMBER},
+        #     {'building_certification': TYPE_STRING},
+        #     {'building_count': TYPE_NUMBER},
+        #     {'city': TYPE_STRING},
+        #     {'conditioned_floor_area': TYPE_NUMBER},
+        #     {'custom_id_1': TYPE_STRING},
+        #     {'district': TYPE_STRING},
+        #     {'energy_alerts': TYPE_STRING},
+        #     {'energy_score': TYPE_NUMBER},
+        #     {'generation_date': TYPE_DATE},
+        #     {'gross_floor_area': TYPE_NUMBER},
+        #     {'lot_number': TYPE_NUMBER},
+        #     {'occupied_floor_area': TYPE_NUMBER},
+        #     {'owner': TYPE_STRING},
+        #     {'owner_address': TYPE_STRING},
+        #     {'owner_city_state': TYPE_STRING},
+        #     {'owner_email': TYPE_STRING},
+        #     {'owner_postal_code': TYPE_STRING},
+        #     {'owner_telephone': TYPE_STRING},
+        #     {'pm_property_id': TYPE_STRING},
+        #     {'postal_code': TYPE_NUMBER},
+        #     {'property_name': TYPE_STRING},
+        #     {'property_notes': TYPE_STRING},
+        #     {'recent_sale_date': TYPE_DATE},
+        #     {'release_date': TYPE_DATE},
+        #     {'site_eui': TYPE_NUMBER},
+        #     {'site_eui_weather_normalized': TYPE_NUMBER},
+        #     {'source_eui': TYPE_NUMBER},
+        #     {'source_eui_weather_normalized': TYPE_NUMBER},
+        #     {'space_alerts': TYPE_STRING},
+        #     {'state_province': TYPE_STRING},
+        #     {'tax_lot_id': TYPE_STRING},
+        #     {'use_description': TYPE_STRING},
+        #     {'year_built': TYPE_YEAR},
+        #     {'year_ending': TYPE_DATE}
+        # ]
 
         for field in missing_matching_field:
             Rules.objects.create(
@@ -279,6 +279,10 @@ class Cleansing(object):
         self.org = organization
         super(Cleansing, self).__init__(*args, **kwargs)
 
+        # Create rules if none exist
+        if not Rules.objects.filter(org=organization).exists():
+            Rules.initialize_rules(organization)
+
         self.reset_results()
 
     @staticmethod
@@ -306,7 +310,7 @@ class Cleansing(object):
         """
         Send in data as a queryset from the BuildingSnapshot ids.
 
-        :param data: row of data to be cleansed
+        :param data: rows of data to be cleansed
         :return:
         """
 
