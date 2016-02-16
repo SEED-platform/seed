@@ -66,6 +66,7 @@ def aggr_sum_metric(data, localtzone):
                 tsMonthEnd = timestamp.replace(hour=23).replace(minute=59).replace(second=59)
 
                 mlist = [1,3,5,7,8,10,12]
+                year = tsMonthEnd.year
                 if tsMonthEnd.month in mlist:
                     tsMonthEnd = tsMonthEnd.replace(day=31)
                 elif (tsMonthEnd.month == 2):
