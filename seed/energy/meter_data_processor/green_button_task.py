@@ -7,7 +7,6 @@ from django.conf import settings
 
 from celery import Celery, task, current_app
 
-#import psycopg2
 import time
 import calendar
 import sys

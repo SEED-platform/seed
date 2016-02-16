@@ -237,6 +237,7 @@ CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
 CELERY_TASK_RESULT_EXPIRES = 18000  # 5 hours
 
+# import schedulers
 CELERY_IMPORTS=("seed.energy.meter_data_processor.monthly_data_aggregator",
                 "seed.energy.meter_data_processor.green_button_task")
 
