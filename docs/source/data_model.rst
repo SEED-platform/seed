@@ -23,10 +23,16 @@ The tree structure comes to fruition when a building, BS0 in our case, is
 matched with a new building, say BS1, enters the system and is auto-matched.
 
 Here BS1 entered the system and was matched with BS0. When a match occurs,
-a new BuildingSnapshot is created, BS2, with the fields from the primary
-BuildingSnapshot, BS0, and the secondary BuildingSnapshot, BS1, merged
-together. If both the primary and secondary BuildingSnapshot have data for a
-given field, the primary's fields are preferred and merged into the child, B3.
+a new BuildingSnapshot is created, BS2, with the fields from the existing
+BuildingSnapshot, BS0, and the new BuildingSnapshot, BS1, merged
+together. If both the existing and new BuildingSnapshot have data for a
+given field, the new record's fields are preferred and merged into the child, B3.
+
+The fields from new snapshot are preferred because that is the newer of the
+two records from the perspective of the system.  By preferring the most recent fields
+this allows for evolving building snapshots over time.  For example, if an existing
+canonical record has a Site EUI value of 75 and some changes happen to a building
+that cause this to change to 80 the user can submit a new record with that change. 
 
 All BuildingSnapshot instances point to a CanonicalBuilding.
 
@@ -46,7 +52,11 @@ parents and children
 
 BuildingSnapshots also have linkage to other BuildingSnapshots in order to
 keep track of their *parents* and *children*. This is represented in the
-database as a many-to-many relation from BuildingSnapshot to BuildingSnapshot.
+Django model as a many-to-many relation from BuildingSnapshot to BuildingSnapshot.
+It is represented in the Postres database as an additional seed_buildingsnapshot_children
+table.
+
+
 In our case here, BS0 and BS1 would both have *children* BS2, and BS2 would
 have *parents* BS0 and BS1.
 
@@ -110,7 +120,7 @@ happened to B0 and C0 above.
 +-------+--------+--------+-------------+
 | id3   | **14** |        | 14          |
 +-------+--------+--------+-------------+
-| id4   | **13** | 14     | 13          |
+| id4   | 13     | **14** | 13          |
 +-------+--------+--------+-------------+
 
 
@@ -159,4 +169,158 @@ CanonicalBuilding pointing to it has its field ``active`` set to ``False``.
     anytime a match is **unmatched** the system will create a new
     CanonicalBuilding or set an existing CanonicalBuilding's active field to
     ``True`` for any leaf BuildingSnapshot trees.
+    
+what really happens on import
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The above is conceptually what happens but sometimes the devil is in the details.
+Here is what happens to the BuildingSnapshot table in the database when records
+are imported.
+
+
+Every time a record is added at least two BuildingSnapshot records are created.
+
+Consider the following simple record:
+
+Property Id,Year Ending,Property Floor Area,Address 1,Release Date
+499045,2000,1234,1 fake st,12/12/2000
+
+The first thing the user is upload the file.  When the user sees the
+"Successful Upload!" dialog one record has been added to the 
+BuildingSnapshot table.  
+
+This new record has an id (73700 in this case) and a created and
+modified timestamp.  Then there are a lot of empty fields and a
+source_type of 0.  Then there is the extra_data column which contains
+the contents of the record in key-value form:
+
+"{"Address 1": "1 fake st", 
+  "Property Id": "499045", 
+  "Year Ending": "2000",
+  "Release Date": "12/12/2000", 
+  "Property Floor Area": "1234"}"
+  
+And a corresponding extra_data_sources that looks like
+"{"Address 1": 73700, "Property Id": 73700, "Year Ending": 73700, 
+  "Release Date": 73700, "Property Floor Area": 73700}"
+  
+All of the fields that look like _souce_id are also populated
+with 73700 like owner_postal_code_source_id.
+
+The other fields of interest are the super_organization field
+is populated with the user's default organization and the import_file_id
+field is populated with a reference to a data_importer_importfile record.
+
+At this point the record has been created before the user hits the
+"Continue to data mapping" button.
+
+The second record (id = 73701) is created by the time the user gets to the screen 
+with the "Save Mappings" button.  This second record has the following fields populated:
+id, created, modified, pm_property_id, year_ending, gross_floow_area, address_line_1,
+release_date, source_type (this is 2 instead of 0 as with the other record), 
+import_file_id, super_organization_id.  That is all.
+
+In this case that is all that happens.
+
+Now consider the same user uploading a new file from the next year that looks like
+
+Property Id,Year Ending,Property Floor Area,Address 1,Release Date
+499045,2001,1234,1 fake st,12/12/2001
+
+As before one new record is created on upload.  This has id 73702 and follows the same 
+pattern as 73700.  And similarly 73703 is created like 73701 before the "Save Mappings" 
+button appears.
+
+However this time the system was able to make a match.  After the user clicks the 
+"Confirm mappings & start matching" button a new record is created with ID 73704.
+
+73704 is identical to 73703 (in terms of contents of the BuildingSnapshot table only)
+with the following exceptions:
+created and modified timestamps are different
+match type is populated and has a value of 1
+confidance is populated and has a value of .9
+source_type is 4 instead of 2
+address_line_1_source_id is 73701
+canonical_building_id is populated with a value
+gross_floor_area_source_id is populated with value 73701
+import_file_id is NULL
+last_modified_by_id is populated with value 2
+pm_property_id_source_id is populated with 73701
+release_date_source_id is populated with 73701
+year_ending_source_id is populated with 73701
+
+
+organization
+^^^^^^^^^^^^
+
+BuildingSnapshots belong to an Organization by virtue of a super_organization
+field that is a foreign key into the organization model (orgs_organization in Postgres).
+Many endpoints filter the buildings based on the organizations the requesting user
+belongs to.  E.G. get_buildings changes which fields are returned based on the
+requesting user's membership in the BuildingSnapshot's organization.
+
+*_source_id fields
+^^^^^^^^^^^^^^^^^^
+
+Any field in the BuildingSnapshot table that is populated with data from a
+submitted record will have a corresponding _source_id field.  E.G
+pm_property_id has pm_property_id_source_id, 
+address_line_1 has address_line_1_source_id,
+etc...
+
+These are foreign keys into the BuildingSnapshot that is the source of that
+value.  To extend the above table
+
++-------+--------+--------+-------------+------------------------+
+| field | BS0    | BS1    | BS2 (child) | BS2 (child) _source_id |
++=======+========+========+=============+========================+
+| id1   | **11** | 11     | 11          | BS0                    |
++-------+--------+--------+-------------+------------------------+
+| id2   |        | **12** | 12          | BS1                    |
++-------+--------+--------+-------------+------------------------+
+
+extra_data
+^^^^^^^^^^
+
+The BuildingSnapshot model has many "named" fields.  Fields like "address_line_1", 
+"year_built", and "pm_property_id".  However the users are allowed to submit files
+with arbitrary fields.  Some of those arbitrary fields can be mapped to "named"
+fields.  E.G. "Street Address" can usually be mapped to "Address Line 1".
+For all the fields that cannot be mapped like that there is the extra_data field.
+
+extra_data is Django json field that serves as key-value storage for other
+user-submitted fields.  As with the other "named" fields there is a corresponding
+extra_data_sources field that serves the same role as the other _source_id fields.
+E.G. If a BuildingSnapshot has an extra_data field that looks like
+{"an_unknown_field" : 1, "something_else" : 2}
+It should have an extra_data_sources field that looks like
+{"an_unknown_field" : some_BuildingSnapshot_id, "something_else" : some_BuildingSnapshot_id}
+
+saving and possible data loss
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving a BuildingSnapshot file some fields that are truncated if too long.
+The following are truncated to 128 characters
+	tax_lot_id
+	pm_property_id
+	custom_id_1
+	lot_number
+	block_number
+	district
+	owner
+	owner_email
+	owner_telephone
+	owner_address
+	owner_city_state
+	owner_postal_code
+
+And the following are truncated to 255:
+	property_name
+	address_line_1
+	address_line_2
+	city
+	postal_code
+	state_province
+	building_certification
+ 
 
