@@ -28,7 +28,9 @@
     "angular-xeditable": "~0.1.9",
     "ng-tags-input": "~3.0.0",
     "angular-ui-notification": "~0.1.0",
-    "underscore": "~1.8.3"
+    "underscore": "~1.8.3",
+	"spin.js": "*",
+	"ngToast": "ngtoast#~1.5.6"
   },
   "resolutions": {
     "angular": "1.4.7"

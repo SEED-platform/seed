@@ -59,7 +59,7 @@ def pm_to_json_single(excel, file_path):
 
     meter_con_df = meter_con_df.rename(columns=name_lookup)
 
-    file_out = file_path[len(file_path):-5] + '_json.txt'
+    file_out = file_path[0:-5] + '_json.txt'
     # the 'interval' output is in [ns], so use ns for all time object and
     # post process with postProcess.py
     meter_con_df.to_json(file_out, 'records',

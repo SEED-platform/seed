@@ -287,7 +287,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': window.BE.urls.retrieve_finer_timeseries_data_url,
+            'url': window.BE.urls.retrieve_finer_timeseries_data,
             'params': {
                 'building_id': building_id,
                 'organization_id': user_service.get_organization().id
@@ -304,7 +304,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': window.BE.urls.retrieve_monthly_data_url,
+            'url': window.BE.urls.retrieve_monthly_data,
             'params': {
                 'building_id': building_id,
                 'organization_id': user_service.get_organization().id
@@ -325,7 +325,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         $http({
             'method': 'POST',
             'data': gb_request_info,
-            'url': window.BE.urls.save_gb_request_info_url
+            'url': window.BE.urls.save_gb_request_info
         }).success(function(data, status, headers, config){
             defer.resolve(data);
         }).error(function(data, status, headers, config){
@@ -343,7 +343,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
             'params': {
                 'building_id': building_id
             },
-            'url': window.BE.urls.get_gb_request_info_url
+            'url': window.BE.urls.get_gb_request_info
         }).success(function(data, status, headers, config){
             defer.resolve(data);
         }).error(function(data, status, headers, config){

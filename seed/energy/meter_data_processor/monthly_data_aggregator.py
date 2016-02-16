@@ -12,6 +12,7 @@ from celery import Celery
 from celery import task 
 import datetime
 import time
+import calendar
 import requests
 import json
 import sys
@@ -44,24 +45,21 @@ def aggr_sum_metric(data, localtzone):
         return
     
     res = r.json()['queries'][0]['results']
-    
-    length =  len(res)
 
     #Retrieve required values from array and call posgres insert function
-    for num in range(0, length):
-        if len(res[num]['tags']) > 0:
-            res_tags = res[num]['tags']
+	for idx_res, value_res in enumerate(res):
+        if len(value_res['tags']) > 0:
+            res_tags = value_res['tags']
         
             gb_bldg_canonical_id =  res_tags['canonical_id'][0]
             gb_mtr_id =  res_tags['custom_meter_id'][0]
             gb_energy_type_id =  res_tags['energy_type_int'][0]
 
-            resultarrlen =  len(res[num]['values'])
-            res_values = res[num]['values']
+            res_values = value_res['values']
 
-            for numv in range(0, resultarrlen):
-                gb_timestamp =  res_values[numv][0]
-                gb_agg_reading = res_values[numv][1]
+            for idx_res_values, value_res_values in enumerate(res_values):
+                gb_timestamp =  value_res_values[0]
+                gb_agg_reading = value_res_values[1]
 
                 timestamp = datetime.datetime.fromtimestamp(gb_timestamp/1000.0, tz.gettz(localtzone))
                 tsMonthStart =  timestamp.replace(day=1).replace(hour=0).replace(minute=0).replace(second=0)
@@ -71,7 +69,7 @@ def aggr_sum_metric(data, localtzone):
                 if tsMonthEnd.month in mlist:
                     tsMonthEnd = tsMonthEnd.replace(day=31)
                 elif (tsMonthEnd.month == 2):
-                    if (year%100!=0 and year%4==0) or (year%100==0 and year%400==0):
+                    if calendar.isleap(tsMonthEnd.year):
                         tsMonthEnd = tsMonthEnd.replace(day=29)
                     else:
                         tsMonthEnd = tsMonthEnd.replace(day=28)
@@ -155,32 +153,40 @@ def aggregate_monthly_data(building_id=-1):
     tsMonthStart = datetime_to_timestamp(firstDayOfLastMonth) * 1000
     tsMonthEnd = datetime_to_timestamp(lastDayOfLastMonth) * 1000
 
+	#KairosDB query body
+    query_body = {}
+    query_body['start_absolute'] = 1230768000000 #Jan 01, 2009. An early enough time stamp
+    query_body['end_absolute'] = tsMonthEnd
+    query_body['metrics'] = []
+    
+    metric = {}
+    metric['tags'] = {}
+    metric['name'] = str(settings.TSDB['measurement'])    
+    
+    aggregator = {}
+    aggregator['name'] = 'sum'
+    aggregator['align_sampling'] = True
+    aggregator_sampling = {}
+    aggregator_sampling['value'] = 1
+    aggregator_sampling['unit'] = 'months'
+    aggregator['sampling'] = aggregator_sampling
+    aggregators = []
+    aggregators.append(aggregator)
+    metric['aggregators'] = aggregators
+    
+    group_by = {};
+    group_by['name'] = 'tag'
+    group_by['tags'] = ['enerty_type','canonical_id','custom_meter_id','interval']
+    group_bys = []
+    group_bys.append(group_by)
+    metric['group_by'] = group_bys
+        
+    query_body['metrics'].append(metric)
+    
     # direct aggregation called by analyzer
     if building_id>0:
-        agg_query = {
-            "start_absolute": 1230768000000,    # an early enough timestamp
-            "end_absolute": tsMonthEnd,
-            "metrics":[{
-                "tags": {
-                    "canonical_id": int(building_id)
-                },
-                "name": settings.TSDB['measurement'],
-                "group_by": [{
-                    "name": "tag",
-                    "tags": ["enerty_type","canonical_id","custom_meter_id","interval"]
-                }],
-                "aggregators": [{
-                    "name": "sum",
-                    "align_sampling": "true",
-                    "sampling": {
-                        "value": 1,
-                        "unit": "months"
-                    }
-                }]
-            }]
-        }
-
-        return aggr_sum_metric(agg_query, localtzone)
+        query_body['metrics'][0]['tags']['canonical_id'] = str(building_id)
+        return aggr_sum_metric(query_body, localtzone)
     # direct call end
 
     insert_ts_tag_array = []
@@ -188,28 +194,7 @@ def aggregate_monthly_data(building_id=-1):
         insert_ts_tag_array.append(lastDayOfLastMonth.strftime('%m')+'/'+str(x)+'/'+lastDayOfLastMonth.strftime('%Y'))
 
     #kairos aggregation query
-    agg_query = {
-        "start_absolute": 1230768000000,    # an early enough timestamp
-        "end_absolute": tsMonthEnd,
-        "metrics":[{
-            "tags": {
-                "insert_date": [str(insert_ts_tag_array[0]), str(insert_ts_tag_array[1]), str(insert_ts_tag_array[2]), str(insert_ts_tag_array[3]), str(insert_ts_tag_array[4]), str(insert_ts_tag_array[5]), str(insert_ts_tag_array[6]), str(insert_ts_tag_array[7]), str(insert_ts_tag_array[8]), str(insert_ts_tag_array[9]), str(insert_ts_tag_array[10]), str(insert_ts_tag_array[11]), str(insert_ts_tag_array[12]), str(insert_ts_tag_array[13]), str(insert_ts_tag_array[14]), str(insert_ts_tag_array[15]), str(insert_ts_tag_array[16]), str(insert_ts_tag_array[17]), str(insert_ts_tag_array[18]), str(insert_ts_tag_array[19]), str(insert_ts_tag_array[20]), str(insert_ts_tag_array[21]), str(insert_ts_tag_array[22]), str(insert_ts_tag_array[23]), str(insert_ts_tag_array[24]), str(insert_ts_tag_array[25]), str(insert_ts_tag_array[26]), str(insert_ts_tag_array[27]), str(insert_ts_tag_array[28]), str(insert_ts_tag_array[29]), str(insert_ts_tag_array[30])]
-            },
-            "name": settings.TSDB['measurement'],
-            "group_by": [{
-                "name": "tag",
-                "tags": ["enerty_type","canonical_id","custom_meter_id","interval"]
-            }],
-            "aggregators": [{
-                "name": "sum",
-                "align_sampling": "true",
-                "sampling": {
-                    "value": 1,
-                    "unit": "months"
-                }
-            }]
-        }]
-    }
+    query_body['metrics'][0]['tags']['canonical_id'] = [str(insert_ts_tag_array[0]), str(insert_ts_tag_array[1]), str(insert_ts_tag_array[2]), str(insert_ts_tag_array[3]), str(insert_ts_tag_array[4]), str(insert_ts_tag_array[5]), str(insert_ts_tag_array[6]), str(insert_ts_tag_array[7]), str(insert_ts_tag_array[8]), str(insert_ts_tag_array[9]), str(insert_ts_tag_array[10]), str(insert_ts_tag_array[11]), str(insert_ts_tag_array[12]), str(insert_ts_tag_array[13]), str(insert_ts_tag_array[14]), str(insert_ts_tag_array[15]), str(insert_ts_tag_array[16]), str(insert_ts_tag_array[17]), str(insert_ts_tag_array[18]), str(insert_ts_tag_array[19]), str(insert_ts_tag_array[20]), str(insert_ts_tag_array[21]), str(insert_ts_tag_array[22]), str(insert_ts_tag_array[23]), str(insert_ts_tag_array[24]), str(insert_ts_tag_array[25]), str(insert_ts_tag_array[26]), str(insert_ts_tag_array[27]), str(insert_ts_tag_array[28]), str(insert_ts_tag_array[29]), str(insert_ts_tag_array[30])]
 
     #aggregate data using the agg_query
     aggr_sum_metric(agg_query, localtzone)

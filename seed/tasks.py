@@ -773,34 +773,6 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
         'progress': 100,
         'progress_key': prog_key
     }
-    
-    
-@task
-@lock_and_track
-def _save_raw_PM_energy_template(file_pk, *args, **kwargs):
-    import_file = ImportFile.objects.get(pk=file_pk)
-
-    import_file.raw_save_done = True
-    import_file.save()
-
-    prog_key = get_prog_key('save_raw_data', file_pk)
-    cache.set(prog_key, 100)
-
-    return {'status': 'success'}
-    set_cache(prog_key, result['status'], result)
-
-    if res:
-        return {
-            'status': 'success',
-            'progress': 100,
-            'progress_key': prog_key
-        }
-
-    return {
-        'status': 'error',
-        'message': 'data failed to import',
-        'progress_key': prog_key
-    }
 
 
 @shared_task
@@ -827,8 +799,6 @@ def _save_raw_data(file_pk, *args, **kwargs):
 
         if import_file.source_type == "Green Button Raw":
             return _save_raw_green_button_data(file_pk, *args, **kwargs)
-        #if import_file.source_type == "PM energy Raw":
-        #    return _save_raw_PM_energy_template(file_pk, *args, **kwargs)
 
         parser = reader.MCMParser(import_file.local_file)
         cache_first_rows(import_file, parser)
