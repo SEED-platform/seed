@@ -365,7 +365,7 @@ E.G. If a BuildingSnapshot has an extra_data field that looks like
 It should have an extra_data_sources field that looks like
 
 :an_unknown_field: some_BuildingSnapshot_id
-:something_else: : another_BuildingSnapshot_id
+:something_else: another_BuildingSnapshot_id
 
 saving and possible data loss
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
