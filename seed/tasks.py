@@ -1215,7 +1215,7 @@ def _normalize_address_str(address_val):
     except usaddress.RepeatedLabelError:
         # usaddress can't parse this at all
         normalized_address = str(address_val)
-    except UnicodeEncodeError: 
+    except UnicodeEncodeError:
         # Some kind of odd character issue that we aren't handling yet.
         normalized_address = str(address_val)
     else:
