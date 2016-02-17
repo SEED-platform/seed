@@ -1199,11 +1199,24 @@ def _normalize_address_str(address_val):
     if not address_val:
         return None
 
+    address_val = unicode(address_val).encode('utf-8')
+
+    # Do some string replacements to remove odd characters that we come across
+    replacements = {
+        '\xef\xbf\xbd': '',
+        '\uFFFD': '',
+    }
+    for k, v in replacements.items():
+        address_val = address_val.replace(k, v)
+
     # now parse the address into number, street name and street type
     try:
         addr = usaddress.tag(str(address_val))[0]
     except usaddress.RepeatedLabelError:
         # usaddress can't parse this at all
+        normalized_address = str(address_val)
+    except UnicodeEncodeError: 
+        # Some kind of odd character issue that we aren't handling yet.
         normalized_address = str(address_val)
     else:
         # Address can be parsed, so let's format it.
