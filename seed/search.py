@@ -462,7 +462,7 @@ def create_building_queryset(
         other_orgs=None,
         extra_data_sort=False,
 ):
-    """creates a querset of buildings within orgs. If ``other_orgs``, buildings
+    """creates a queryset of buildings within orgs. If ``other_orgs``, buildings
     in both orgs and other_orgs will be represented in the queryset.
 
     :param orgs: queryset of Organization inst.

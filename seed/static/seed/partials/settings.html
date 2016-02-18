@@ -13,7 +13,11 @@
 </div>
 <div class="section_nav_container">
     <div class="section_nav">
-        <a ng-href="#/accounts/{$ org.id $}" class="active">Settings</a><a ng-href="#/accounts/{$ org.id $}/sharing" ng-if="org.is_parent && auth.requires_owner">Sharing</a><a ng-href="#/accounts/{$ org.id $}/sub_org" ng-if="org.is_parent && auth.requires_owner">Sub-Organizations</a><a ng-href="#/accounts/{$ org.id $}/members">Members</a>
+        <a ng-href="#/accounts/{$ org.id $}" class="active">Settings</a>
+        <a ng-href="#/accounts/{$ org.id $}/sharing" ng-if="org.is_parent && auth.requires_owner">Sharing</a>
+        <a ng-href="#/accounts/{$ org.id $}/data_cleansing" ng-if="org.is_parent && auth.requires_owner">Data Cleansing</a>
+        <a ng-href="#/accounts/{$ org.id $}/sub_org" ng-if="org.is_parent && auth.requires_owner">Sub-Organizations</a>
+        <a ng-href="#/accounts/{$ org.id $}/members">Members</a>
     </div>
 </div>
 <div class="section">

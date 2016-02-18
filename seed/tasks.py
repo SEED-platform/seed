@@ -101,6 +101,7 @@ def export_buildings(export_id, export_name, export_type,
     def _row_cb(i):
         data = get_cache("export_buildings__%s" % export_id)
         data['buildings_processed'] = i
+        data['progress'] = (i * 100) / data['total_buildings']
         set_cache("export_buildings__%s" % export_id, data['status'], data)
 
     exporter = Exporter(export_id, export_name, export_type)
@@ -1198,11 +1199,24 @@ def _normalize_address_str(address_val):
     if not address_val:
         return None
 
+    address_val = unicode(address_val).encode('utf-8')
+
+    # Do some string replacements to remove odd characters that we come across
+    replacements = {
+        '\xef\xbf\xbd': '',
+        '\uFFFD': '',
+    }
+    for k, v in replacements.items():
+        address_val = address_val.replace(k, v)
+
     # now parse the address into number, street name and street type
     try:
         addr = usaddress.tag(str(address_val))[0]
     except usaddress.RepeatedLabelError:
         # usaddress can't parse this at all
+        normalized_address = str(address_val)
+    except UnicodeEncodeError:
+        # Some kind of odd character issue that we aren't handling yet.
         normalized_address = str(address_val)
     else:
         # Address can be parsed, so let's format it.
