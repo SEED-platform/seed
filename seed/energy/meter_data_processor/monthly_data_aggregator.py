@@ -1,3 +1,4 @@
+import calendar
 import datetime
 import json
 import logging
@@ -10,18 +11,6 @@ from seed.models import (
     Meter,
     TimeSeries,
 )
-
-from celery import Celery
-from celery import task
-import datetime
-import time
-import calendar
-import requests
-import json
-import sys
-import pytz
-import logging
-from pytz import timezone
 
 LOCK_EXPIRE = 60 * 60 * 24 * 30  # Lock expires in 30 days
 
@@ -67,7 +56,7 @@ def aggr_sum_metric(data, localtzone):
                 tsMonthEnd = timestamp.replace(hour=23).replace(minute=59).replace(second=59)
 
                 mlist = [1, 3, 5, 7, 8, 10, 12]
-                year = tsMonthEnd.year
+                # year = tsMonthEnd.year  # Not used
                 if tsMonthEnd.month in mlist:
                     tsMonthEnd = tsMonthEnd.replace(day=31)
                 elif (tsMonthEnd.month == 2):

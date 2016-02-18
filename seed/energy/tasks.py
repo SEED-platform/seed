@@ -135,8 +135,8 @@ def aggregate_monthly_data(building_id=-1):
         lastmonth = today.replace(month=(today.month - 1))
 
     # first day of last month
-    firstDayOfLastMonth = lastmonth.replace(day=1).replace(hour=0).replace(minute=0).replace(second=0).replace(
-        microsecond=0)
+    # firstDayOfLastMonth = lastmonth.replace(day=1).replace(hour=0).replace(minute=0).replace(second=0).replace(
+    #    microsecond=0)  # Not used
 
     # last day of the month
     if lastmonth.month in monthlist:
@@ -151,7 +151,7 @@ def aggregate_monthly_data(building_id=-1):
         microsecond=999999)
 
     # timestamps
-    tsMonthStart = datetime_to_timestamp(firstDayOfLastMonth) * 1000
+    # tsMonthStart = datetime_to_timestamp(firstDayOfLastMonth) * 1000  # Not used
     tsMonthEnd = datetime_to_timestamp(lastDayOfLastMonth) * 1000
 
     # KairosDB query body
@@ -214,7 +214,7 @@ def aggregate_monthly_data(building_id=-1):
                                                         str(insert_ts_tag_array[30])]
 
     # aggregate data using the agg_query
-    aggr_sum_metric(agg_query, localtzone)
+    aggr_sum_metric(query_body, localtzone)
 
     if building_id == -1:
         release_lock()

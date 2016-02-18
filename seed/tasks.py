@@ -5,38 +5,50 @@
 :author
 """
 from __future__ import absolute_import
+
 import calendar
 import datetime
-import time
+import operator
 import re
 import string
+import time
 import traceback
-import operator
 from _csv import Error
-from django.core.mail import send_mail
-from django.conf import settings
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.template import loader
-from django.db.models import Q
-from django.db.models.loading import get_model
-from django.core.urlresolvers import reverse_lazy
+from functools import reduce
+
+import usaddress
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
-from seed.decorators import get_prog_key
-import usaddress
+from django.conf import settings
+from django.core.mail import send_mail
+from django.core.urlresolvers import reverse_lazy
+from django.db.models import Q
+from django.db.models.loading import get_model
+from django.template import loader
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from streetaddress import StreetAddressFormatter
+
 from seed import search
 from seed.audit_logs.models import AuditLog
+from seed.cleansing.models import Cleansing
+from seed.cleansing.tasks import (
+    finish_cleansing,
+    cleanse_data_chunk,
+)
+from seed.data_importer.models import (
+    ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
+)
+from seed.decorators import get_prog_key
+from seed.decorators import lock_and_track
+from seed.green_button import xml_importer
 from seed.landing.models import SEEDUser as User
+from seed.lib.exporter import Exporter
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.data.ESPM import espm as espm_schema
 from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.utils import batch
-from streetaddress import StreetAddressFormatter
-from seed.data_importer.models import (
-    ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
-)
-from seed.green_button import xml_importer
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     ASSESSED_RAW,
     PORTFOLIO_RAW,
@@ -61,20 +73,10 @@ from seed.models import (
     ProjectBuilding,
     BuildingSnapshot,
 )
-from seed.decorators import lock_and_track
 from seed.utils import time as time_utils
 from seed.utils.buildings import get_source_type, get_search_query
 from seed.utils.cache import set_cache, increment_cache, get_cache
 from seed.utils.mapping import get_mappable_columns
-from seed.lib.superperms.orgs.models import Organization
-from seed.lib.exporter import Exporter
-from seed.cleansing.models import Cleansing
-from seed.cleansing.tasks import (
-    finish_cleansing,
-    cleanse_data_chunk,
-)
-
-from functools import reduce
 
 logger = get_task_logger(__name__)
 
