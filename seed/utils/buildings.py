@@ -46,7 +46,7 @@ def get_buildings_for_user_count(user):
     building_snapshots = BuildingSnapshot.objects.filter(
         super_organization__in=user.orgs.all(),
         canonicalbuilding__active=True,
-    ).distinct('pk')
+    ).order_by('pk').distinct('pk')
 
     return building_snapshots.count()
 
