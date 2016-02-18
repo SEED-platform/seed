@@ -693,6 +693,15 @@ a:not([href]) {
           padding-right: 0;
         }
       }
+      &.right_40 {
+        float: right;
+        width: 40%;
+        text-align: right;
+
+        i {
+          padding-right: 0;
+        }
+      }
       &.right_60 {
         float: right;
         width: 60%;
@@ -1778,6 +1787,22 @@ a:not([href]) {
 .cleansing-warning td:last-child {
   background-color: #FDF4BF !important;
 }
+
+select {
+  &.error-bg {
+    background-color: #FFB7B7;
+  }
+
+  &.warning-bg {
+    background-color: #FDF4BF;
+  }
+
+  > option {
+    background-color: #F7F7F7;
+  }
+}
+
+
 
 .export_radio .radio-inline {
   input[type=radio] {

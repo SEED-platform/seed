@@ -2,7 +2,7 @@
     <div class="page_header">
         <div class="left page_action_container">
 
-          
+
         </div>
         <div class="page_title">
             <h1>Organizations</h1>
@@ -54,18 +54,33 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="account_org parent_org"><a ng-href="#/accounts/{$ org.id $}/members">{$ org.name $}</td>
+                            <td class="account_org parent_org">
+                                <a ng-href="#/accounts/{$ org.id $}/members">{$ org.name $}</a>
+                            </td>
                             <td class="account_org right">
-                                <a href="#/accounts/{$ org.id $}"><i class="fa fa-cogs"></i>Settings</a> <a href="#/accounts/{$ org.id $}/sharing" ng-show="org.is_parent"><i class="fa fa-share-square-o"></i>Sharing</a><a href="#/accounts/{$ org.id $}/sub_org" ng-show="org.is_parent"><i class="fa fa-users"></i>Sub-Organizations</a> <a href="#/accounts/{$ org.id $}/members"><i class="fa fa-user"></i>Members</a> <a href="" ng-if="false"><i class="fa fa-times"></i>Remove</a> <i class="fa fa-cog"></i>
+                                <a ng-href="#/accounts/{$ org.id $}"><i class="fa fa-cogs"></i>Settings</a>
+                                <a ng-href="#/accounts/{$ org.id $}/sharing" ng-show="org.is_parent"><i class="fa fa-share-square-o"></i>Sharing</a>
+                                <a ng-href="#/accounts/{$ org.id $}/data_cleansing" ng-show="org.is_parent"><i class="fa fa-flag"></i>Data Cleansing</a>
+                                <a ng-href="#/accounts/{$ org.id $}/sub_org" ng-show="org.is_parent"><i class="fa fa-users"></i>Sub-Organizations</a>
+                                <a ng-href="#/accounts/{$ org.id $}/members"><i class="fa fa-user"></i>Members</a>
+                                <i class="fa fa-cog"></i>
                             </td>
                         </tr>
                         <tr ng-show="org.is_parent">
                             <th class="sub_head sub_org">Sub-Organizations</th>
-                            <th class="sub_head sub_org right"><a ng-click="create_organization_modal(org)"><i class="fa fa-plus"></i>Create new sub-organization</a> <i class="fa fa-cog"></i></th>
+                            <th class="sub_head sub_org right">
+                                <a ng-click="create_organization_modal(org)"><i class="fa fa-plus"></i>Create new sub-organization</a>
+                                <i class="fa fa-cog"></i>
+                            </th>
                         </tr>
                         <tr ng-repeat="sub_org in org.sub_orgs">
-                            <td class="account_org left"><a ng-href="#/accounts/{$ sub_org.id $}/members">{$ sub_org.name $}</td>
-                            <td class="account_org right"><a ng-href="#/accounts/{$ sub_org.id $}/members"><i class="fa fa-user"></i>Members</a> <a ng-click="remove_sub_org(sub_org)" ng-if="false"><i class="fa fa-times"></i>Remove</a> <i class="fa fa-cog"></i></td>
+                            <td class="account_org left">
+                                <a ng-href="#/accounts/{$ sub_org.id $}/members">{$ sub_org.name $}</a>
+                            </td>
+                            <td class="account_org right">
+                                <a ng-href="#/accounts/{$ sub_org.id $}/members"><i class="fa fa-user"></i>Members</a>
+                                <i class="fa fa-cog"></i>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

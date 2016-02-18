@@ -84,10 +84,9 @@ angular.module('BE.seed.controller.organization_settings', [])
      * saves the updates settings
      */
     $scope.save_settings = function () {
-        var fields = $scope.fields.filter(function (f) {
+        $scope.org.fields = $scope.fields.filter(function (f) {
             return f.checked;
         });
-        $scope.org.fields = fields;
         $scope.org.public_fields = $scope.fields.filter(function (f) {
             return f.public_checked;
         });
