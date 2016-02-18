@@ -204,10 +204,14 @@ class Exporter:
         fields = qs.model._meta.get_all_field_names()
         for field in fields:
             try:
-                qs.model._meta.get_field(field)
-                yield field
+                f = qs.model._meta.get_field(field)
+                # Filter out related fields.
+                if f.is_relation:
+                    continue
             except FieldDoesNotExist:
                 continue
+            else:
+                yield field
 
     def subdirectory(self):
         """
