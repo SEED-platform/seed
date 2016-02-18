@@ -15,7 +15,7 @@ def ns2s(string):
 
 
 def post_process(file_path):
-    json_file_path = file_path[len(file_path):-5] + '_json.txt'
+    json_file_path = file_path[0:-5] + '_json.txt'
     filelist = glob.glob(json_file_path)
     for file_in in filelist:
         _log.info('post process {0}'.format(file_in))
@@ -50,8 +50,8 @@ def post_process(file_path):
             post_processed = json.dumps(json_data)
             post_processed = ns2s(post_processed)
 
-        file_out = file_path[len(file_path):-5] + '_post.txt'
-        with open(file_out, 'w') as out:
+        file_out = file_path[0:-5] + '_post.txt'
+        with open (file_out, 'w') as out:
             out.write(post_processed)
 
         return json.loads(post_processed)

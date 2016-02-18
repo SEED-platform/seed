@@ -11,6 +11,19 @@ from seed.models import (
     TimeSeries,
 )
 
+from celery import Celery
+from celery import task
+import datetime
+import time
+import calendar
+import requests
+import json
+import sys
+import pytz
+import logging
+from pytz import timezone
+
+LOCK_EXPIRE = 60 * 60 * 24 * 30  # Lock expires in 30 days
 
 _log = logging.getLogger(__name__)
 
@@ -34,35 +47,31 @@ def aggr_sum_metric(data, localtzone):
 
     res = r.json()['queries'][0]['results']
 
-    length = len(res)
-
     # Retrieve required values from array and call posgres insert function
-    for num in range(0, length):
-        if len(res[num]['tags']) > 0:
-            res_tags = res[num]['tags']
+    for idx_res, value_res in enumerate(res):
+        if len(value_res['tags']) > 0:
+            res_tags = value_res['tags']
 
             gb_bldg_canonical_id = res_tags['canonical_id'][0]
             gb_mtr_id = res_tags['custom_meter_id'][0]
             gb_energy_type_id = res_tags['energy_type_int'][0]
 
-            resultarrlen = len(res[num]['values'])
-            res_values = res[num]['values']
+            res_values = value_res['values']
 
-            for numv in range(0, resultarrlen):
-                gb_timestamp = res_values[numv][0]
-                gb_agg_reading = res_values[numv][1]
+            for idx_res_values, value_res_values in enumerate(res_values):
+                gb_timestamp = value_res_values[0]
+                gb_agg_reading = value_res_values[1]
 
                 timestamp = datetime.datetime.fromtimestamp(gb_timestamp / 1000.0, tz.gettz(localtzone))
                 tsMonthStart = timestamp.replace(day=1).replace(hour=0).replace(minute=0).replace(second=0)
                 tsMonthEnd = timestamp.replace(hour=23).replace(minute=59).replace(second=59)
 
-                # NL: I hard coded this here because year is not defined. I do not know from where it should be coming
-                year = 2010
                 mlist = [1, 3, 5, 7, 8, 10, 12]
+                year = tsMonthEnd.year
                 if tsMonthEnd.month in mlist:
                     tsMonthEnd = tsMonthEnd.replace(day=31)
                 elif (tsMonthEnd.month == 2):
-                    if (year % 100 != 0 and year % 4 == 0) or (year % 100 == 0 and year % 400 == 0):
+                    if calendar.isleap(tsMonthEnd.year):
                         tsMonthEnd = tsMonthEnd.replace(day=29)
                     else:
                         tsMonthEnd = tsMonthEnd.replace(day=28)
@@ -104,3 +113,6 @@ def insert_into_postgres(localtzone, gb_bldg_canonical_id, gb_mtr_id, gb_energy_
                     '%Y-%m-%d'))
     else:
         _log.info('Insertion Loop ended')
+
+
+@task(name='aggregate_monthly_data')

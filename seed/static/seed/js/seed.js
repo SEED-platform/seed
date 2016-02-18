@@ -470,7 +470,6 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     var monthly_data = building_services.get_monthly_data(building_id);
 
                     return monthly_data;
-                    //return '';
                 }],
                 // create payload for monthly data ends
 

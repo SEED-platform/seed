@@ -2212,8 +2212,8 @@ def parse_pm_energy_file(request):
     _log.info(file_path)
 
     pm_energy_processor.parse_pm_energy_file(file_path)
-    processed_file_path = file_path[len(file_path):-5] + '_processed.xlsx'
-
+    processed_file_path = file_path[0:-5] + '_processed.xlsx'
+    
     json_data = energy_template_process.parse_energy_template(processed_file_path)
 
     green_button_data_analyser.data_analyse(json_data, 'PM')
@@ -2245,12 +2245,12 @@ def parse_energy_template(request):
 @api_endpoint
 @ajax_request
 @login_required
-def retrieve_finer_timeseries_data_url(request):
+def retrieve_finer_timeseries_data(request):
     building_id = request.GET.get('building_id')
     # organization_id = request.GET.get('organization_id') # unused
 
     query_body = {}
-    query_body['start_absolute'] = 1230768000000
+    query_body['start_absolute'] = 1230768000000 #Jan 01, 2009. An early enough time stamp
     query_body['metrics'] = []
 
     metric = {}
@@ -2305,10 +2305,6 @@ def retrieve_finer_timeseries_data_url(request):
         json_data = json.loads(response.text)
         error_msg = json_data['errors'][0]
 
-        # if response.status_code == 500 and error_msg == 'No such file or directory':
-        #    # no data in kairosdb yet
-        #    res['status'] = 'success'
-        # else:
         res['status'] = 'error'
         res['error_code'] = response.status_code
         res['error_msg'] = error_msg
@@ -2319,7 +2315,7 @@ def retrieve_finer_timeseries_data_url(request):
 @api_endpoint
 @ajax_request
 @login_required
-def retrieve_monthly_data_url(request):
+def retrieve_monthly_data(request):
     building_id = request.GET.get('building_id')
 
     record = CanonicalBuilding.objects.filter(id=building_id)
@@ -2359,8 +2355,8 @@ def retrieve_monthly_data_url(request):
 @api_endpoint
 @ajax_request
 @login_required
-def save_gb_request_info_url(request):
-    info = json.loads(request.body)
+def save_gb_request_info(request):
+    info =  json.loads(request.body)
 
     building_id = info['building_id']
     url = info['url']
@@ -2406,7 +2402,7 @@ def save_gb_request_info_url(request):
 @api_endpoint
 @ajax_request
 @login_required
-def get_gb_request_info_url(request):
+def get_gb_request_info(request):
     building_id = request.GET.get('building_id')
 
     record = GreenButtonBatchRequestsInfo.objects.filter(building_id=building_id)

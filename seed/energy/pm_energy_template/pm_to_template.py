@@ -29,5 +29,5 @@ def process_one_file(filename, file_path):
                               'Portfolio Manager Meter ID': 'Custom Meter ID'},
                      inplace=True)
 
-    file_out = file_path[len(file_path):-5] + '_processed.xlsx'
+    file_out = file_path[0:-5] + '_processed.xlsx'
     df_energy.to_excel(file_out, index=False)

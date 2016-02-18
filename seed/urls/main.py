@@ -155,38 +155,38 @@ urlpatterns = patterns(
 
     # timeseries data
     url(
-        r'^retrieve_finer_timeseries_data_url/$',
-        'retrieve_finer_timeseries_data_url',
-        name='retrieve_finer_timeseries_data_url'
+        r'^retrieve_finer_timeseries_data/$',
+        'retrieve_finer_timeseries_data',
+        name='retrieve_finer_timeseries_data'
     ),
     url(
-        r'^retrieve_monthly_data_url/$',
-        'retrieve_monthly_data_url',
-        name='retrieve_monthly_data_url'
+        r'^retrieve_monthly_data/$',
+        'retrieve_monthly_data',
+        name='retrieve_monthly_data'
     ),
     # timeseries data ends
 
     # monthly data
     url(
-        r'^retrieve_monthly_data_url/$',
-        'retrieve_monthly_data_url',
-        name='retrieve_monthly_data_url'
+        r'^retrieve_monthly_data/$',
+        'retrieve_monthly_data',
+        name='retrieve_monthly_data'
     ),
     # monthly data ends
 
     # save gb request info
     url(
-        r'^save_gb_request_info_url/$',
-        'save_gb_request_info_url',
-        name='save_gb_request_info_url'
+        r'^save_gb_request_info/$',
+        'save_gb_request_info',
+        name='save_gb_request_info'
     ),
     # save gb request info ends
 
     # get gb request info
     url(
-        r'^get_gb_request_info_url/$',
-        'get_gb_request_info_url',
-        name='get_gb_request_info_url'
+        r'^get_gb_request_info/$',
+        'get_gb_request_info',
+        name='get_gb_request_info'
     ),
     # get gb request info ends
 
