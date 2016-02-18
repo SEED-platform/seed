@@ -51,7 +51,7 @@ def post_process(file_path):
             post_processed = ns2s(post_processed)
 
         file_out = file_path[0:-5] + '_post.txt'
-        with open (file_out, 'w') as out:
+        with open(file_out, 'w') as out:
             out.write(post_processed)
 
         return json.loads(post_processed)

@@ -175,7 +175,7 @@ def aggregate_monthly_data(building_id=-1):
     aggregators.append(aggregator)
     metric['aggregators'] = aggregators
 
-    group_by = {};
+    group_by = {}
     group_by['name'] = 'tag'
     group_by['tags'] = ['enerty_type', 'canonical_id', 'custom_meter_id', 'interval']
     group_bys = []

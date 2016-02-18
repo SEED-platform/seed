@@ -2213,7 +2213,7 @@ def parse_pm_energy_file(request):
 
     pm_energy_processor.parse_pm_energy_file(file_path)
     processed_file_path = file_path[0:-5] + '_processed.xlsx'
-    
+
     json_data = energy_template_process.parse_energy_template(processed_file_path)
 
     green_button_data_analyser.data_analyse(json_data, 'PM')
@@ -2250,7 +2250,7 @@ def retrieve_finer_timeseries_data(request):
     # organization_id = request.GET.get('organization_id') # unused
 
     query_body = {}
-    query_body['start_absolute'] = 1230768000000 #Jan 01, 2009. An early enough time stamp
+    query_body['start_absolute'] = 1230768000000  # Jan 01, 2009. An early enough time stamp
     query_body['metrics'] = []
 
     metric = {}
@@ -2356,7 +2356,7 @@ def retrieve_monthly_data(request):
 @ajax_request
 @login_required
 def save_gb_request_info(request):
-    info =  json.loads(request.body)
+    info = json.loads(request.body)
 
     building_id = info['building_id']
     url = info['url']
