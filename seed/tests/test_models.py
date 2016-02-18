@@ -118,6 +118,8 @@ class TestBuildingSnapshot(TestCase):
 
         """
         bs1 = seed_models.BuildingSnapshot()
+        bs1.save()
+
         bs1.year_ending = datetime.utcnow()
         bs1.year_ending_source = bs1
         bs1.property_name = 'Test 1234'
@@ -125,6 +127,8 @@ class TestBuildingSnapshot(TestCase):
         bs1.save()
 
         bs2 = seed_models.BuildingSnapshot()
+        bs2.save()
+
         bs2.property_name = 'Not Test 1234'
         bs2.property_name_source = bs2
         bs2.year_ending = bs1.year_ending
