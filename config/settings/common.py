@@ -83,7 +83,6 @@ INSTALLED_APPS = (
 
     'compressor',
     'django_extensions',
-    'organizations',
     'raven.contrib.django.raven_compat',
     'tos',
     'rest_framework',
