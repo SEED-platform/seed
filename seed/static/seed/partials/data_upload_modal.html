@@ -41,7 +41,9 @@
                     <div class="col-lg-6" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Upload Portfolio Manager Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                     <div class="col-lg-6 green_button" sd-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Green Button Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                     <div class="col-lg-6" sd-uploader sourcetype="PM energy Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Portfolio Manager Energy Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
-                    <button ng-click="open_PM_energy_template()" class="btn btn-sm btn-primary" type="button" style="margin-left:1.1em;margin-bottom:1em;font-weight:bold;font-size:1.15em;background-color:#FC882A;border:1px solid #FC882A;" ng-hide="uploader.in_progress">Download Energy Data Template</button>
+                    <div class="col-lg-6" style="padding-top: 10px;padding-bottom: 10px;">
+                        <button ng-click="open_PM_energy_template()" class="btn button btn-primary col-lg-12" type="button" ng-hide="uploader.in_progress"><strong>Download Energy Data Template</strong></button>
+                    </div>
                     <div class="col-lg-6 orange_button" sd-uploader sourcetype="Energy Template Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Energy Data Template" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                 </div>
                 <div class="progress_bar_container" ng-show="uploader.in_progress">
