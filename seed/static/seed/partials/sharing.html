@@ -13,7 +13,11 @@
 </div>
 <div class="section_nav_container">
     <div class="section_nav">
-        <a ng-href="#/accounts/{$ org.id $}">Settings</a><a ng-href="#/accounts/{$ org.id $}/sharing" ng-if="org.is_parent && auth.requires_owner" class="active">Sharing</a><a ng-href="#/accounts/{$ org.id $}/sub_org" ng-if="org.is_parent && auth.requires_owner">Sub-Organizations</a><a ng-href="#/accounts/{$ org.id $}/members">Members</a>
+        <a ng-href="#/accounts/{$ org.id $}">Settings</a>
+        <a ng-href="#/accounts/{$ org.id $}/sharing" ng-if="org.is_parent && auth.requires_owner" class="active">Sharing</a>
+        <a ng-href="#/accounts/{$ org.id $}/data_cleansing" ng-if="org.is_parent && auth.requires_owner">Data Cleansing</a>
+        <a ng-href="#/accounts/{$ org.id $}/sub_org" ng-if="org.is_parent && auth.requires_owner">Sub-Organizations</a>
+        <a ng-href="#/accounts/{$ org.id $}/members">Members</a>
     </div>
 </div>
 <div class="section">
@@ -63,10 +67,10 @@
                     <table class="table table-striped table_scroll">
                         <tbody>
                             <tr ng-repeat="field in fields | filter:filter_params:strict">
-                                <td class="check is_aligned_center" style="width: 5%; min-width: 70px;">
+                                <td class="check is_aligned_center" style="width: 70px;">
                                     <input type="checkbox" ng-model="field.checked">
                                 </td>
-                                <td class="check is_aligned_center" style="width: 5%; min-width: 70px;">
+                                <td class="check is_aligned_center" style="width: 70px;">
                                     <input type="checkbox" ng-model="field.public_checked">
                                 </td>
                                 <td>
@@ -78,14 +82,14 @@
                 </div>
             </div>
         </div>
-           <div class="section_content with_padding">
+        <div class="section_content with_padding">
             <div ng-if="org.is_parent && auth.requires_owner">
                 <h3>Set a Query Threshold</h3>
                 <p>Enter the minimum threshold count of buildings that can be returned in a shared query. The building count threshold is important for allowing other organizations to perform statistical analysis on your data without revealing information about individual buildings.</p>
                 <form class="form-horizontal" role="form">
                     <div class="form-group">
                         <div class="col-sm-2">
-                        <input type="number" class="form-control" id="editQueryThreshold" placeholder="Count #" ng-model="org.query_threshold" min="0">
+                            <input type="number" class="form-control" id="editQueryThreshold" placeholder="Count #" ng-model="org.query_threshold" min="0">
                         </div>
                     </div>
                 </form>

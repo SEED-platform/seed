@@ -12,10 +12,10 @@ from django.contrib.contenttypes import generic
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db import models
+from django.db.models.query import QuerySet
 
 # vendor imports
 from django_extensions.db.models import TimeStampedModel
-from djorm_expressions.models import ExpressionManager, ExpressionQuerySet
 from django_pgjson.fields import JsonField
 from seed.lib.superperms.orgs.models import Organization
 
@@ -35,7 +35,7 @@ ACTION_OPTIONS = {
 }
 
 
-class AuditLogQuerySet(ExpressionQuerySet):
+class AuditLogQuerySet(QuerySet):
 
     def update(self, *args, **kwargs):
         """only notes should be updated, so filter out non-notes"""
@@ -43,7 +43,7 @@ class AuditLogQuerySet(ExpressionQuerySet):
         return super(AuditLogQuerySet, self).update(*args, **kwargs)
 
 
-class AuditLogManager(ExpressionManager):
+class AuditLogManager(models.Manager):
     """ExpressionManager with ``update`` preventing the update of non-notes"""
     use_for_related_fields = True
 
@@ -96,8 +96,6 @@ class AuditLog(TimeStampedModel):
     class Meta:
         ordering = ('-created', )
 
-    # extends djorm_expressions.models.ExpressionManager to prevent update of
-    # non-notes
     objects = AuditLogManager()
 
     def __unicode__(self):

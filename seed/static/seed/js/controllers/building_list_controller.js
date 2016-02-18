@@ -71,6 +71,12 @@ angular.module('BE.seed.controller.building_list', [])
     * SEARCH CODE
     */
 
+    $scope.clear_filters = function() {
+        $scope.search.filter_params = {};
+        $scope.search.clear_filters();
+        $scope.selected_labels = [];
+    };
+
     /* Called by 'Enter' key submit on filter fields form */
     $scope.on_filter_enter_key = function(){
         if ($scope.is_project){

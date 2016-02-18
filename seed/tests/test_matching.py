@@ -71,4 +71,6 @@ class NormalizeStreetAddressTests(TestCase):
         ('\\ as separator whitespace', '300 \\ 322 S Green St', '300-322 s green st'),
         # Ranges which leave off common prefix.
         ('end of range leaves off common prefix', '300-22 S Green St', '300-322 s green st'),
+        # Odd characters
+        ('unicode characters', u'123 Main St\uFFFD', '123 main st'),
     ]

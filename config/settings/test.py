@@ -25,6 +25,10 @@ LOGGING = {
     },
 }
 
+PASSWORD_HASHERS = (
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+)
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 SESSION_COOKIE_SECURE = False
