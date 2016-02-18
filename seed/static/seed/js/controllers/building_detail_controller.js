@@ -2,7 +2,14 @@
  * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-angular.module('BE.seed.controller.building_detail', [])
+angular.module('BE.seed.controller.building_detail', ['ngToast'])
+.config(['ngToastProvider', function(ngToast) {
+    ngToast.configure({
+        verticalPosition: 'top',
+        horizontalPosition: 'center',
+        maxNumber: 1
+    });
+}])
 .controller('building_detail_controller', [
   '$scope',
   '$routeParams',
@@ -163,7 +170,13 @@ angular.module('BE.seed.controller.building_detail', [])
         if(!(gb_url_input && min_time_para && max_time_para && time_type && active_flag && gb_subscription_id
                 && ($scope.gb_req_flag==='Y' || loopback_flag)
                 && (time_type==='timestamp' || date_pattern))){
-            alert('Please fill all the fields!');
+            ngToast.create({
+                className: 'warning',
+                dismissOnTimeout: true,
+                timeout: 3000,
+                dismissOnClick: true,
+                content: 'Please fill all the fields!'
+            });
             return;
         }
         // empty check ends
@@ -200,7 +213,13 @@ angular.module('BE.seed.controller.building_detail', [])
                         $scope.audit_logs = data.audit_logs;
                     });
                 $scope.$emit('finished_saving');
-                alert('Saving finished');
+                ngToast.create({
+                    className: 'success',
+                    dismissOnTimeout: true,
+                    timeout: 3000,
+                    dismissOnClick: true,
+                    content: 'Saving finished!'
+                });
             }, function (data, status){
                 // reject promise
                 $scope.$emit('finished_saving');
