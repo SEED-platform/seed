@@ -9,8 +9,6 @@ import datetime
 import base64
 from decimal import getcontext, Decimal
 
-from django.contrib.webdesign import lorem_ipsum
-
 getcontext().prec = 7
 from localflavor.us.us_states import STATE_CHOICES
 from seed.test_helpers.factory.lib.chomsky import generate_chomsky
@@ -36,12 +34,6 @@ class DjangoFunctionalFactory:
         newlen = int(len(uc) / 2) * 2
         ba = bytearray.fromhex(uc[:newlen])
         return base64.urlsafe_b64encode(str(ba))[:length]
-
-    @classmethod
-    def rand_text(cls, num_paragraphs=None):
-        if not num_paragraphs:
-            num_paragraphs = cls.rand_int(start=1, end=5)
-        return lorem_ipsum.paragraphs(num_paragraphs, common=False)
 
     @classmethod
     def rand_phone(cls):
