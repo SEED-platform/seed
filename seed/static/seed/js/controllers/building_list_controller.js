@@ -74,6 +74,7 @@ angular.module('BE.seed.controller.building_list', [])
     $scope.clear_filters = function() {
         $scope.search.filter_params = {};
         $scope.search.clear_filters();
+        $scope.selected_labels = [];
     };
 
     /* Called by 'Enter' key submit on filter fields form */
