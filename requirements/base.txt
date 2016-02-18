@@ -45,7 +45,7 @@ kombu==3.0.26
 # Custom
 ajaxuploader==0.3.8
 argparse==1.2.1
-boto==2.24.0
+boto==2.39.0
 csvkit==0.6.1
 dbf==0.95.004
 dj-database-url==0.2.1
