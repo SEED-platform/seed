@@ -113,6 +113,3 @@ def insert_into_postgres(localtzone, gb_bldg_canonical_id, gb_mtr_id, gb_energy_
                     '%Y-%m-%d'))
     else:
         _log.info('Insertion Loop ended')
-
-
-@task(name='aggregate_monthly_data')
