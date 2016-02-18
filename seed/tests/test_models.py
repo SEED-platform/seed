@@ -636,6 +636,7 @@ class TestCanonicalBuilding(TestCase):
         self.assertTrue('- active: False' in str(c))
 
         b = seed_models.BuildingSnapshot()
+        b.save()
         c.canonical_snapshot = b
         c.save()
         self.assertTrue('snapshot: %s' % b.pk in str(c))
