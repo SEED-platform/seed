@@ -65,12 +65,6 @@ NOSE_ARGS = [
     '--nologcapture'
 ]
 
-# You have to run south tests migration due to the BEDES migration (30-32) that adds a bunch of columns
-# There are two test failures if you disable this
-#   File "/Users/nlong/working/seed/seed/tests/test_views.py", line 262, in test_get_columns
-#   Assertion on ?
-# To make tests run faster pass the REUSE_DB=1 env var to the test command
-SOUTH_TESTS_MIGRATE = True
 
 REQUIRE_UNIQUE_EMAIL = False
 
