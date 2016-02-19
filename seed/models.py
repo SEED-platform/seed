@@ -532,6 +532,8 @@ def update_building(old_snapshot, updated_values, user, *args, **kwargs):
         initial_data=sources  # Copy parent's source attributes.
     )
 
+    new_snapshot.save()
+
     diff_sources = _get_diff_sources(mappable, old_snapshot)
     for diff in diff_sources:
         setattr(new_snapshot, '{0}_source'.format(diff), new_snapshot)
