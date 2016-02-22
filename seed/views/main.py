@@ -239,7 +239,7 @@ def export_buildings(request):
     if body.get('select_all_checkbox', False):
         selected_buildings = buildings_queryset
     else:
-        selected_buildings = selected_buildings.filter(
+        selected_buildings = buildings_queryset.filter(
             pk__in=selected_building_ids
         )
 
