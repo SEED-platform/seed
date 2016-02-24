@@ -183,6 +183,8 @@ def filter_other_params(queryset, other_params, db_columns):
             case_insensitive_match = search_utils.is_case_insensitive_match(v)
             is_numeric_expression = search_utils.is_numeric_expression(v)
             is_string_expression = search_utils.is_string_expression(v)
+            exclude_filter = search_utils.is_exclude_filter(v)
+            exact_exclude_filter = search_utils.is_exact_exclude_filter(v)
 
             if exact_match:
                 query_filters &= Q(**{"%s__exact" % k: exact_match.group(2)})
@@ -202,6 +204,10 @@ def filter_other_params(queryset, other_params, db_columns):
             elif is_string_expression:
                 parts = search_utils.STRING_EXPRESSION_REGEX.findall(v)
                 query_filters &= search_utils.parse_expression(k, parts)
+            elif exclude_filter:
+                query_filters &= ~Q(**{"%s__icontains" % k: exclude_filter.group(1)})
+            elif exact_exclude_filter:
+                query_filters &= ~Q(**{"%s__exact" % k: exact_exclude_filter.group(2)})
             elif ('__lt' in k or
                   '__lte' in k or
                   '__gt' in k or
@@ -232,6 +238,8 @@ def filter_other_params(queryset, other_params, db_columns):
             empty_match = search_utils.is_empty_match(v)
             not_empty_match = search_utils.is_not_empty_match(v)
             case_insensitive_match = search_utils.is_case_insensitive_match(v)
+            exclude_filter = search_utils.is_exclude_filter(v)
+            exact_exclude_filter = search_utils.is_exact_exclude_filter(v)
 
             if empty_match:
                 # Filter for records that DO NOT contain this field OR
@@ -246,6 +254,18 @@ def filter_other_params(queryset, other_params, db_columns):
                 # value is not empty.
                 queryset = queryset.filter(
                     Q(**{'extra_data__at_%s__isnull' % k: False}) & ~Q(**{'extra_data__at_%s' % k: ''})
+                )
+                continue
+            elif exclude_filter:
+                # Exclude this value
+                queryset = queryset.filter(
+                    ~Q(**{'extra_data__at_%s__icontains' % k: exclude_filter.group(1)})
+                )
+                continue
+            elif exact_exclude_filter:
+                # Exclude this exact value
+                queryset = queryset.filter(
+                    ~Q(**{'extra_data__at_%s__exact' % k: exact_exclude_filter.group(2)})
                 )
                 continue
 
