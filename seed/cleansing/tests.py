@@ -6,6 +6,7 @@
 """
 import json
 from os import path
+from django.core.cache import cache
 from django.core.files import File
 from django.test import TestCase
 from django.core.urlresolvers import reverse
@@ -89,8 +90,6 @@ class CleansingDataTestCoveredBuilding(TestCase):
 
         c = Cleansing(self.org)
         c.cleanse(qs)
-
-        data = c.results
 
         self.assertEqual(len(c.results), 2)
 
@@ -217,8 +216,6 @@ class CleansingDataTestPM(TestCase):
         c = Cleansing(self.org)
         c.cleanse(qs)
 
-        data = c.results
-
         self.assertEqual(len(c.results), 2)
 
         result = [v for v in c.results.values() if v['address_line_1'] == '120243 E True Lane']
@@ -342,8 +339,45 @@ class CleansingDataSample(TestCase):
         c = Cleansing(self.org)
         c.cleanse(qs)
 
-        data = c.results
-
         # print data
         # This only checks to make sure the 35 errors have occurred.
         self.assertEqual(len(c.results), 35)
+
+
+class CleansingViewTests(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details)
+        self.client.login(**user_details)
+
+    def test_get_cleansing_results(self):
+        data = {'test': 'test'}
+        cache.set('cleansing_results__1', data)
+        response = self.client.get(reverse('cleansing:get_cleansing_results'), {'import_file_id': 1})
+        self.assertEqual(json.loads(response.content)['data'], data)
+
+    def test_get_progress(self):
+        data = {'status': 'success', 'progress': 85}
+        cache.set(':1:SEED:get_progress:PROG:1', data)
+        response = self.client.get(reverse('cleansing:get_progress'), {'import_file_id': 1})
+        self.assertEqual(json.loads(response.content), 85)
+
+    def test_get_csv(self):
+        data = [{
+            'address_line_1': '',
+            'pm_property_id': '',
+            'tax_lot_id': '',
+            'custom_id_1': '',
+            'cleansing_results': [{
+                'formatted_field': '',
+                'detailed_message': '',
+                'severity': '',
+            }]
+        }]
+        cache.set('cleansing_results__1', data)
+        response = self.client.get(reverse('cleansing:get_csv'), {'import_file_id': 1})
+        self.assertEqual(200, response.status_code)
