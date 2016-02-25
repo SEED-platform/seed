@@ -1152,6 +1152,59 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['pk'], b2.pk)
 
 
+class SearchBuildingSnapshotsTests(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org = Organization.objects.create()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.client.login(**user_details)
+
+    def test_search_building_snapshots(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+        import_file = ImportFile.objects.create(
+            import_record=import_record
+        )
+
+        cb1 = CanonicalBuilding(active=True)
+        cb1.save()
+        b1 = SEEDFactory.building_snapshot(
+            canonical_building=cb1,
+            address_line_1="test",
+            import_file=import_file,
+            source_type=ASSESSED_BS
+        )
+        cb1.canonical_snapshot = b1
+        cb1.save()
+        b1.super_organization = self.org
+        b1.save()
+
+        post_data = {
+            'filter_params': {},
+            'number_per_page': 10,
+            'order_by': '',
+            'page': 1,
+            'q': '',
+            'sort_reverse': False,
+            'project_id': None,
+            'import_file_id': import_file.pk
+        }
+
+        # act
+        response = self.client.post(
+            reverse_lazy("seed:search_building_snapshots"),
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        self.assertEqual(1, json.loads(response.content)['number_returned'])
+
+
 class BuildingDetailViewTests(TestCase):
     """
     Tests of the SEED Building Detail page
@@ -2101,6 +2154,7 @@ class MatchTreeTests(TestCase):
             'email': 'test_user@demo.com'
         }
         self.user = User.objects.create_superuser(**user_details)
+        self.client.login(**user_details)
         self.org = Organization.objects.create()
         OrganizationUser.objects.create(user=self.user, organization=self.org)
 
@@ -2176,7 +2230,6 @@ class MatchTreeTests(TestCase):
             reloaded = BuildingSnapshot.objects.get(pk=bs.pk)
             setattr(self, k, reloaded)
 
-    @skip("Test doesn't pass.  Skipping for the moment.")
     def test_parent_tree_coparents(self):
         """Tests that _parent_tree_coparents returns what we expect"""
 
@@ -2220,3 +2273,9 @@ class MatchTreeTests(TestCase):
 
         self.assertEqual(bs4_root, self.bs3)
         self.assertItemsEqual(bs4_cps, bs4_expected_parent_coparents)
+
+    def test_get_coparents(self):
+        response = self.client.get(reverse('seed:get_coparents'),
+            {'organization_id': self.org.pk,
+            'building_id': self.cb0.canonical_snapshot.pk})
+        self.assertEqual('success', json.loads(response.content)['status'])
