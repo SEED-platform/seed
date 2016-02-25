@@ -8,7 +8,8 @@ import copy
 import json
 from unittest import skip
 
-from django.core.urlresolvers import reverse_lazy
+from django.core.cache import cache
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.test import TestCase
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.audit_logs.models import AuditLog, LOG
@@ -21,7 +22,6 @@ from seed.models import (
     ColumnMapping,
     CanonicalBuilding,
     BuildingSnapshot,
-    StatusLabel,
     Unit,
     ASSESSED_RAW,
     ASSESSED_BS,
@@ -39,6 +39,55 @@ from seed.views.main import (
 from seed.utils.cache import set_cache, get_cache
 from seed.utils.mapping import _get_column_names
 from seed.tests import util as test_util
+
+
+class MainViewTests(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details)
+        self.org = Organization.objects.create()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.client.login(**user_details)
+
+    def test_home(self):
+        response = self.client.get(reverse('seed:home'))
+        self.assertEqual(200, response.status_code)
+
+    def test_create_pm_mapping(self):
+        response = self.client.post(reverse('seed:create_pm_mapping'), '{"columns": ["name1", "name2"]}',
+            content_type='application/json')
+        self.assertTrue(json.loads(response.content)['success'])
+
+    def test_export_buildings(self):
+        cb = CanonicalBuilding(active=True)
+        cb.save()
+        b = SEEDFactory.building_snapshot(canonical_building=cb)
+        cb.canonical_snapshot = b
+        cb.save()
+        b.super_organization = self.org
+        b.save()
+
+        payload = {
+          "export_name": "My Export",
+          "export_type": "csv",
+          "selected_buildings": [b.pk]
+        }
+        response = self.client.post(reverse('seed:export_buildings'), json.dumps(payload),
+            content_type='application/json')
+        self.assertTrue(json.loads(response.content)['success'])
+
+    def test_export_buildings_progress(self):
+        payload = {
+          "export_id": "1234"
+        }
+        cache.set('export_buildings__1234', {'progress': 85, 'total_buildings': 1, 'status': 'success'})
+        response = self.client.post(reverse('seed:export_buildings_progress'), json.dumps(payload),
+            content_type='application/json')
+        self.assertTrue(json.loads(response.content)['success'])
 
 
 # Gavin 02/18/2014
@@ -1525,7 +1574,7 @@ class BuildingDetailViewTests(TestCase):
     def test_save_unmatch_audit_log(self):
         """tests that a building unmatch logs an audit_log"""
         # arrange match to unmatch
-        resp = self.client.post(
+        self.client.post(
             reverse_lazy("seed:save_match"),
             data=json.dumps({
                 'organization_id': self.org.pk,
@@ -1535,7 +1584,6 @@ class BuildingDetailViewTests(TestCase):
             }),
             content_type='application/json'
         )
-        body = json.loads(resp.content)
         # act
         self.client.post(
             reverse_lazy("seed:save_match"),
@@ -1721,7 +1769,7 @@ class TestMCMViews(TestCase):
 
         # create a National Median Site Energy use
         float_unit = Unit.objects.create(unit_name='test energy use intensity', unit_type=FLOAT)
-        c = Column.objects.create(column_name='Global National Median Site Energy Use',
+        Column.objects.create(column_name='Global National Median Site Energy Use',
                                   unit=float_unit)
 
         resp = self.client.post(
