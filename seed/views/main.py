@@ -204,7 +204,7 @@ def export_buildings(request):
         {
           "export_name": "My Export",
           "export_type": "csv",
-          "selected_building": [1234,], (optional list of building ids)
+          "selected_buildings": [1234,], (optional list of building ids)
           "selected_fields": optional list of fields to export
           "select_all_checkbox": True // optional, defaults to False
         }
