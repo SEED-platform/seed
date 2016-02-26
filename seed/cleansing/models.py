@@ -617,7 +617,7 @@ class Cleansing(object):
             "sort_column": "gross_floor_area",
         },
         {
-            "title": "Energy Star Score",
+            "title": "Energy Score",
             "sort_column": "energy_score",
         },
         {
