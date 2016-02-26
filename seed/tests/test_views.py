@@ -1152,7 +1152,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['pk'], b2.pk)
 
 
-class SearchBuildingSnapshotsTests(TestCase):
+class SearchBuildingSnapshotsViewTests(TestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1203,6 +1203,153 @@ class SearchBuildingSnapshotsTests(TestCase):
             data=json.dumps(post_data)
         )
         self.assertEqual(1, json.loads(response.content)['number_returned'])
+
+
+class GetColumnMappingSuggestionsViewTests(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org = Organization.objects.create()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.client.login(**user_details)
+
+    def test_get_column_mapping_suggestions(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            cached_first_row="Name|#*#|Address"
+        )
+
+        post_data = {
+            'import_file_id': import_file.pk,
+            'ord_id': self.org.pk
+        }
+
+        response = self.client.post(
+            reverse_lazy("seed:get_column_mapping_suggestions"),
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        self.assertEqual('success', json.loads(response.content)['status'])
+
+
+class GetDatasetsViewsTests(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org = Organization.objects.create()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.client.login(**user_details)
+
+    def test_get_datasets(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+        response = self.client.get(reverse("seed:get_datasets"), {'organization_id': self.org.pk})
+        self.assertEqual(1, len(json.loads(response.content)['datasets']))
+
+    def test_get_dataset(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+        response = self.client.get(reverse("seed:get_dataset"), {'dataset_id': import_record.pk})
+        self.assertEqual('success', json.loads(response.content)['status'])
+
+    def test_delete_dataset(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+
+        post_data = {
+            'dataset_id': import_record.pk,
+            'organization_id': self.org.pk
+        }
+
+        response = self.client.delete(
+            reverse_lazy("seed:delete_dataset"),
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        self.assertEqual('success', json.loads(response.content)['status'])
+        self.assertFalse(ImportRecord.objects.filter(pk=import_record.pk).exists())
+
+    def test_update_dataset(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+
+        post_data = {
+            'dataset': {
+                'id': import_record.pk,
+                'name': 'new'
+            }
+        }
+
+        response = self.client.post(
+            reverse_lazy("seed:update_dataset"),
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        self.assertEqual('success', json.loads(response.content)['status'])
+        self.assertTrue(ImportRecord.objects.filter(pk=import_record.pk, name='new').exists())
+
+
+class ImportFileViewsTests(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org = Organization.objects.create()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.client.login(**user_details)
+
+    def test_get_import_file(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            cached_first_row="Name|#*#|Address"
+        )
+
+        response = self.client.get(reverse("seed:get_import_file"),
+            {'import_file_id': import_file.pk})
+        self.assertEqual(import_file.pk, json.loads(response.content)['import_file']['id'])
+
+    def test_delete_file(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            cached_first_row="Name|#*#|Address"
+        )
+
+        post_data = {
+            'file_id': import_file.pk,
+            'organization_id': self.org.pk
+        }
+
+        response = self.client.delete(
+            reverse_lazy("seed:delete_file"),
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        self.assertEqual('success', json.loads(response.content)['status'])
+        self.assertFalse(ImportFile.objects.filter(pk=import_file.pk).exists())
 
 
 class BuildingDetailViewTests(TestCase):
