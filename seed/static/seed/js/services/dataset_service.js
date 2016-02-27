@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // dataset services
@@ -91,6 +91,9 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
             'url': window.BE.urls.update_dataset,
             'data': {
                 'dataset': dataset
+            },
+            'params': {
+                'organization_id': user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);

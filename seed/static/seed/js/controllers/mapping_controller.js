@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.mapping', [])
@@ -584,50 +584,6 @@ angular.module('BE.seed.controller.mapping', [])
                   return $scope.import_file.id;
                 }
             }
-        });
-    };
-
-    /**
-     * open_edit_columns_modal: modal to set which columns a user has in the
-     *   table
-     */
-    $scope.open_edit_columns_modal = function() {
-        var modalInstance = $uibModal.open({
-            templateUrl: urls.static_url + 'seed/partials/custom_view_modal.html',
-            controller: 'buildings_settings_controller',
-            resolve: {
-                'all_columns': function() {
-                    return building_services.get_columns(false);
-                },
-                'default_columns': function() {
-                    return {columns: $scope.columns.map(function (c) {
-                        return c.sort_column;
-                    })};
-                },
-                'buildings_payload': function() {
-                    return {};
-                },
-                'shared_fields_payload': function() {
-                    return {show_shared_buildings: false};
-                },
-                'project_payload': function() {
-                    return {project: {}};
-                }
-            }
-        });
-        modalInstance.result.then(
-            function (columns) {
-                // update columns
-                building_services.get_columns(false)
-                .then( function ( data ) {
-                  all_columns.fields = data.fields;
-                  $scope.columns = $scope.search.generate_columns(
-                      data.fields,
-                      columns,
-                      $scope.search.column_prototype
-                  );
-                });
-        }, function (message) {
         });
     };
 

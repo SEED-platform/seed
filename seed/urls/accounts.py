@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -56,6 +56,21 @@ urlpatterns = patterns(
         r'^get_shared_fields/$',
         'get_shared_fields',
         name='get_shared_fields'
+    ),
+    url(
+        r'^get_cleansing_rules/$',
+        'get_cleansing_rules',
+        name='get_cleansing_rules'
+    ),
+    url(
+        r'^reset_cleansing_rules/$',
+        'reset_cleansing_rules',
+        name='reset_cleansing_rules'
+    ),
+    url(
+        r'^save_cleansing_rules/$',
+        'save_cleansing_rules',
+        name='save_cleansing_rules'
     ),
     url(
         r'^create_sub_org/$',

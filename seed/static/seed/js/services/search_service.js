@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -38,7 +38,8 @@ angular.module('BE.seed.service.search', [])
 .factory('search_service', [
   '$http',
   '$q',
-  function ($http, $q) {
+  'spinner_utility',
+  function ($http, $q, spinner_utility) {
     /************
      * variables
      */
@@ -109,6 +110,14 @@ angular.module('BE.seed.service.search', [])
         }
     };
 
+    search_service.clear_filters = function() {
+        saas.filter_params = {};
+        if (typeof(Storage) !== "undefined") {
+            sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingFilterParams', {});
+        }
+        saas.filter_search();
+    }
+
     /**
      * sanitize_params: removes filter params with null or undefined values
      */
@@ -159,11 +168,13 @@ angular.module('BE.seed.service.search', [])
         var defer = $q.defer();
         var that = this;
         var data = this.construct_search_query(query);
+        spinner_utility.show();
         $http({
             'method': 'POST',
             'data': data,
             'url': that.url
         }).success(function(data, status, headers, config){
+            spinner_utility.hide();
             that.update_results(data);
             defer.resolve(data);
         }).error(function(data, status, headers, config){

@@ -25,14 +25,13 @@ env:
     - TOX_ENV=py27-dj17
     - TOX_ENV=flake8
 
-before_install:
-  - "sh -e /etc/init.d/xvfb start"
-
 install:
   - pip install --upgrade pip
-  - pip install tox==1.8.0
+  - pip install tox==2.3.1
 
 before_script:
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
   - psql -c "create database seeddb;" -U postgres
 
 script:

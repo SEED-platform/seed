@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import copy
@@ -146,9 +146,8 @@ class DefaultColumnsViewTests(TestCase):
         json_string = response.content
         data = json.loads(json_string)
 
-        self.assertEqual(data['status'], 'success')
+        self.assertEqual(200, response.status_code)
         self.assertEqual(data['columns'], columns)
-        self.assertEqual(data['initial_columns'], False)
 
     def test_get_default_columns_initial_state(self):
         url = reverse_lazy("seed:get_default_columns")
@@ -156,9 +155,8 @@ class DefaultColumnsViewTests(TestCase):
         json_string = response.content
         data = json.loads(json_string)
 
-        self.assertEqual(data['status'], 'success')
+        self.assertEqual(200, response.status_code)
         self.assertEqual(data['columns'], DEFAULT_CUSTOM_COLUMNS)
-        self.assertEqual(data['initial_columns'], True)
 
     def test_set_default_columns(self):
         url = reverse_lazy("seed:set_default_columns")
@@ -175,7 +173,7 @@ class DefaultColumnsViewTests(TestCase):
         )
         json_string = response.content
         data = json.loads(json_string)
-        self.assertEqual(data['status'], 'success')
+        self.assertEqual(200, response.status_code)
 
         # get the columns
         url = reverse_lazy("seed:get_default_columns")
@@ -201,7 +199,7 @@ class DefaultColumnsViewTests(TestCase):
         )
         json_string = response.content
         data = json.loads(json_string)
-        self.assertEqual(data['status'], 'success')
+        self.assertEqual(200, response.status_code)
 
         # get show_shared_buildings
         url = reverse_lazy("accounts:get_shared_buildings")
@@ -687,6 +685,83 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['number_matching_search'], 1)
         self.assertEqual(len(data['buildings']), 1)
         self.assertEqual(data['buildings'][0]['address_line_1'], 'Address')
+
+    def test_search_case_insensitive_exact_match(self):
+        """
+        Tests search_buidlings method when called with a case insensitive exact match.
+        """
+
+        # Uppercase address
+        cb1 = CanonicalBuilding(active=True)
+        cb1.save()
+        b1 = SEEDFactory.building_snapshot(
+            canonical_building=cb1,
+            address_line_1="Address"
+        )
+        cb1.canonical_snapshot = b1
+        cb1.save()
+        b1.super_organization = self.org
+        b1.save()
+
+        # Lowercase address
+        cb2 = CanonicalBuilding(active=True)
+        cb2.save()
+        b2 = SEEDFactory.building_snapshot(
+            canonical_building=cb2,
+            address_line_1="address"
+        )
+        cb2.canonical_snapshot = b2
+        cb2.save()
+        b2.super_organization = self.org
+        b2.save()
+
+        # Additional words
+        cb3 = CanonicalBuilding(active=True)
+        cb3.save()
+        b3 = SEEDFactory.building_snapshot(
+            canonical_building=cb3,
+            address_line_1="fake address"
+        )
+        cb3.canonical_snapshot = b3
+        cb3.save()
+        b3.super_organization = self.org
+        b3.save()
+
+        url = reverse_lazy("seed:search_buildings")
+        post_data = {
+            'filter_params': {
+                'address_line_1': '^"Address"'
+            },
+            'number_per_page': 10,
+            'order_by': '',
+            'page': 1,
+            'q': '',
+            'sort_reverse': False,
+            'project_id': None,
+        }
+
+        # act
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        json_string = response.content
+        data = json.loads(json_string)
+
+        # assert
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['number_matching_search'], 2)
+        self.assertEqual(len(data['buildings']), 2)
+
+        addresses = []
+
+        addresses.append(data['buildings'][0]['address_line_1'])
+        addresses.append(data['buildings'][1]['address_line_1'])
+
+        self.assertIn('address', addresses)
+        self.assertIn('Address', addresses)
+        self.assertNotIn('fake address', addresses)
 
     def test_search_empty_column(self):
         """

@@ -1,10 +1,9 @@
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
-
 from __future__ import absolute_import
 from config.settings.common import *  # noqa
-from kombu import Exchange, Queue
 from celery.utils import LOG_LEVELS
 
 LOGGING = {
@@ -25,6 +24,10 @@ LOGGING = {
         },
     },
 }
+
+PASSWORD_HASHERS = (
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+)
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -97,4 +100,3 @@ if 'local_untracked_exists' in locals():
     from config.settings.local_untracked import *  # noqa
 else:
     print >> sys.stderr, "Unable to find the local_untracked module in config/settings/local_untracked.py"
-

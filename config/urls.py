@@ -1,12 +1,9 @@
-"""
-:copyright: (c) 2014 Building Energy Inc
-"""
+
 # !/usr/bin/env python
 # encoding: utf-8
 """
-urls/base.py
-
-Copyright (c) 2012 Building Energy. All rights reserved.
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 from django.conf.urls import patterns, include, url
 from django.conf import settings
@@ -58,7 +55,6 @@ urlpatterns = patterns(
 
 if settings.DEBUG:
     import debug_toolbar
-
 
     urlpatterns += staticfiles_urlpatterns()
     urlpatterns += patterns(

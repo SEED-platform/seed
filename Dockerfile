@@ -1,9 +1,7 @@
 # VERSION 0.1
-# AUTHOR:         Clay Teeter <teeterc@gmail.com>
-# DESCRIPTION:    Image with seed platform and dependencies
-# TO_BUILD:       docker build -rm -t seed-platform .
-# TO_RUN_CELERY:  docker run -d -name seed-celery -v $HOME/seed_data:/seed/collected_static --link seed-redis:redis --link seed-postgres:postgres seed-platform /seed/bin/start_celery_docker.sh
-# TO_RUN_UWSGI:   docker run -d -name seed-uwsgi -v $HOME/seed_data:/seed/collected_static --link seed-redis:redis --link seed-postgres:postgres -p 8000:8000 seed-platform /seed/bin/start_uwsgi_docker.sh
+# AUTHOR:           Clay Teeter <teeterc@gmail.com>, Nicholas Long <nicholas.long@nrel.gov>
+# DESCRIPTION:      Image with seed platform and dependencies running in production mode
+# TO_BUILD_AND_RUN: docker-compose up
 
 # Latest Ubuntu LTS
 FROM ubuntu:14.04
@@ -23,13 +21,16 @@ RUN apt-get update \
         libpq-dev \
         nodejs \
         npm \
+        libpcre3 \
+        libpcre3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 ### install python requirements
 COPY ./requirements.txt /seed/requirements.txt
+COPY ./requirements/*.txt /seed/requirements/
 
 WORKDIR /seed
-RUN pip install -r requirements.txt
+RUN pip install -r requirements/local.txt
 
 ### link the apt install of nodejs to node (expected by bower)
 RUN ln -s /usr/bin/nodejs /usr/bin/node
@@ -49,7 +50,8 @@ RUN if npm install; then echo "installed"; else true; fi
 RUN grunt package
 
 COPY . /seed/
+COPY ./config/settings/local_untracked_docker.py /seed/config/settings/local_untracked.py
 
-WORKDIR /root
+WORKDIR /seed
 
 EXPOSE 8000

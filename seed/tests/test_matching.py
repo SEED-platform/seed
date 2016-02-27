@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.test import TestCase
@@ -71,4 +71,6 @@ class NormalizeStreetAddressTests(TestCase):
         ('\\ as separator whitespace', '300 \\ 322 S Green St', '300-322 s green st'),
         # Ranges which leave off common prefix.
         ('end of range leaves off common prefix', '300-22 S Green St', '300-322 s green st'),
+        # Odd characters
+        ('unicode characters', u'123 Main St\uFFFD', '123 main st'),
     ]

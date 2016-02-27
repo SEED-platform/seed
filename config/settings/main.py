@@ -1,5 +1,6 @@
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 from __future__ import absolute_import
 from config.settings.common import *  # noqa
@@ -32,7 +33,7 @@ SESSION_COOKIE_SECURE = ONLY_HTTPS
 CSRF_COOKIE_SECURE = ONLY_HTTPS
 if ONLY_HTTPS:
     MIDDLEWARE_CLASSES = ('sslify.middleware.SSLifyMiddleware',) + \
-                         MIDDLEWARE_CLASSES
+        MIDDLEWARE_CLASSES
 
 # Upload to S3
 AWS_S3_MAX_MEMORY_SIZE = 1024 * 1024
@@ -105,10 +106,14 @@ CACHES = {
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
+    'root': {
+        'level': 'WARNING',
+        'handlers': ['sentry']
+    },
     'handlers': {
         'sentry': {
             'level': 'ERROR',
-            'class': 'raven.contrib.django.handlers.SentryHandler',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         },
         'console': {
             'level': 'ERROR',
@@ -116,12 +121,13 @@ LOGGING = {
         }
     },
     'loggers': {
-        '': {
-            'level': 'ERROR',
-            'handlers': ['sentry'],
+        'raven': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
         },
         'sentry.errors': {
-            'level': 'ERROR',
+            'level': 'DEBUG',
             'handlers': ['console'],
             'propagate': False,
         },

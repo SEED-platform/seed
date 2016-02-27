@@ -1,13 +1,18 @@
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 from __future__ import absolute_import
 
 import os
-import sys
-import logging
+import sys  # Needed for coverage
 from os.path import abspath, join, dirname
+
 from kombu import Exchange, Queue
+from kombu.serialization import register
+
+from seed.serializers.celery import CeleryDatetimeSerializer
+
 
 SITE_ROOT = abspath(join(dirname(__file__), "..", ".."))
 
@@ -16,8 +21,6 @@ SEED_DATADIR = join(SITE_ROOT, 'seed', 'data')
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-# sentry
-SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -54,7 +57,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'raven.contrib.django.middleware.Sentry404CatchMiddleware',
     'pagination.middleware.PaginationMiddleware',
 
 )
@@ -82,7 +84,7 @@ INSTALLED_APPS = (
     'compressor',
     'django_extensions',
     'organizations',
-    'raven.contrib.django',
+    'raven.contrib.django.raven_compat',
     'tos',
     'rest_framework',
 )
@@ -94,6 +96,7 @@ SEED_CORE_APPS = (
     'seed',
     'seed.lib.superperms.orgs',
     'seed.audit_logs',
+    'seed.cleansing',
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
@@ -103,7 +106,7 @@ HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
 # apps to auto load namespaced urls for JS use (see seed.main.views.home)
-BE_URL_APPS = (
+SEED_URL_APPS = (
     'accounts',
     'ajaxuploader',
     'data_importer',
@@ -122,6 +125,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'config.template_context.compress_enabled',
     'config.template_context.session_key',
+    'config.template_context.sentry_js',
 )
 
 MEDIA_ROOT = join(SITE_ROOT, 'collected_static')
@@ -165,11 +169,6 @@ LOGGING = {
         },
     },
     'handlers': {
-        'sentry': {
-            'level': 'ERROR',
-            'class': 'raven.contrib.django.handlers.SentryHandler',
-            'formatter': 'verbose'
-        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -184,22 +183,12 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
-        },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
+        }
     },
     'loggers': {
         '': {
-            'level': 'WARNING',
-            'handlers': ['sentry'],
-        },
-        'sentry.errors': {
             'level': 'DEBUG',
             'handlers': ['console'],
-            'propagate': False,
         },
     }
 }
@@ -222,10 +211,15 @@ CELERY_QUEUES = (
         routing_key=CELERY_DEFAULT_QUEUE
     ),
 )
-CELERY_ACCEPT_CONTENT = ['pickle']
-CELERY_TASK_SERIALIZER = 'pickle'
-CELERY_RESULT_SERIALIZER = 'pickle'
-CELERY_TASK_RESULT_EXPIRES = 18000 # 5 hours
+
+# Register our custom JSON serializer so we can serialize datetime objects in celery.
+register('seed_json', CeleryDatetimeSerializer.seed_dumps, CeleryDatetimeSerializer.seed_loads,
+         content_type='application/json', content_encoding='utf-8')
+
+CELERY_ACCEPT_CONTENT = ['seed_json']
+CELERY_TASK_SERIALIZER = 'seed_json'
+CELERY_RESULT_SERIALIZER = 'seed_json'
+CELERY_TASK_RESULT_EXPIRES = 18000  # 5 hours
 
 SOUTH_TESTS_MIGRATE = False
 SOUTH_MIGRATION_MODULES = {

@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.members', [])
@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.members', [])
     'organization_payload',
     'auth_payload',
     'organization_service',
+    'user_profile_payload',
     'urls',
     function (
       $scope,
@@ -18,6 +19,7 @@ angular.module('BE.seed.controller.members', [])
       organization_payload,
       auth_payload,
       organization_service,
+      user_profile_payload,
       urls
     ) {
     $scope.roles = [
@@ -27,6 +29,12 @@ angular.module('BE.seed.controller.members', [])
     $scope.org = organization_payload.organization;
     $scope.filter_params = {};
     $scope.auth = auth_payload.auth;
+    $scope.user_profile = user_profile_payload.user;
+
+    $scope.is_last_owner = (_.chain($scope.users)
+        .filter(function(u) { return u.role === "owner"; })
+        .size()
+        .value() === 1);
 
     /**
      * remove_member: removes a user from the org, an owner can only be removed

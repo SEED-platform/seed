@@ -220,7 +220,12 @@ body {
           font-weight: normal;
           color: $bdp-landing-dk-gray;
           text-shadow: 1px 1px 1px $white;
+        }
 
+        p.password_note {
+          color: $red;
+          text-align: left;
+          padding: 0px 32px;
         }
       }
       .disable_login {

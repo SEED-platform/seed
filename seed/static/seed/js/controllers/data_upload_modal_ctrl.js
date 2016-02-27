@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -35,6 +35,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
   'mapping_service',
   'matching_service',
   'building_services',
+  'spinner_utility',
   function (
     $scope,
     $uibModalInstance,
@@ -46,7 +47,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     $location,
     mapping_service,
     matching_service,
-    building_services
+    building_services,
+    spinner_utility
     ) {
     $scope.step_10_style = "info";
     $scope.step_10_title = "load more data";
@@ -118,7 +120,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     };
     $scope.view_my_buildings = function () {
         $uibModalInstance.close();
+        spinner_utility.show();
         $location.path('/buildings/');
+        spinner_utility.hide();
     };
     /**
      * cancel: dismissed the modal, routes to the dismiss function of the parent
@@ -151,8 +155,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         );
     };
     /**
-     * uploaderfunc: the callback function passed to beUploader. Depending on 
-     *  the `event_message` from beUploader, it will change the state of the 
+     * uploaderfunc: the callback function passed to sdUploader. Depending on 
+     *  the `event_message` from sdUploader, it will change the state of the 
      *  modal, show the `invalid_extension` alert, and update the progress bar.
      */
     $scope.uploaderfunc = function(event_message, file, progress) {

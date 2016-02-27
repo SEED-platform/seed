@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // user services
@@ -101,6 +101,19 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         return defer.promise;
     };
 
+    user_factory.get_default_building_detail_columns = function() {
+        var defer = $q.defer();
+        $http({
+            method: 'GET',
+            'url': urls.seed.get_default_building_detail_columns
+        }).success(function(data) {
+            defer.resolve(data);
+        }).error(function(data, status) {
+            defer.reject(data, status);
+        });
+        return defer.promise;
+    };
+
     user_factory.get_shared_buildings = function() {
         var defer = $q.defer();
         $http({
@@ -154,6 +167,20 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             method: 'POST',
             'url': urls.seed.set_default_columns,
             'data': {'columns': columns, 'show_shared_buildings': show_shared_buildings}
+        }).success(function(data) {
+            defer.resolve(data);
+        }).error(function(data, status) {
+            defer.reject(data, status);
+        });
+        return defer.promise;
+    };
+
+    user_factory.set_default_building_detail_columns = function(columns) {
+        var defer = $q.defer();
+        $http({
+            method: 'POST',
+            'url': urls.seed.set_default_building_detail_columns,
+            'data': {'columns': columns}
         }).success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {

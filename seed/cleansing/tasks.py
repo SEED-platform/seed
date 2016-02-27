@@ -1,15 +1,16 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from models import Cleansing
+from seed.data_importer.models import ImportFile
 from seed.decorators import get_prog_key
-from seed.utils.cache import set_cache
 from seed.models import BuildingSnapshot
+from seed.utils.cache import set_cache
 
 logger = get_task_logger(__name__)
 
@@ -27,17 +28,19 @@ def cleanse_data_chunk(ids, file_pk, increment):
     # get the db objects based on the ids
     qs = BuildingSnapshot.objects.filter(id__in=ids).iterator()
 
-    c = Cleansing()
+    import_file = ImportFile.objects.get(pk=file_pk)
+    super_org = import_file.import_record.super_organization
+
+    c = Cleansing(super_org.get_parent())
     c.cleanse(qs)
     c.save_to_cache(file_pk)
 
 
 @shared_task
-def finish_cleansing(results, file_pk):
+def finish_cleansing(file_pk):
     """
     Chord that is called after the cleansing is complete
 
-    :param results:
     :param file_pk: import file primary key
     :return:
     """

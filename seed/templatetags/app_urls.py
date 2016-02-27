@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -25,7 +25,7 @@ def namespaced_urls():
             window.config.app_urls ={% namespaced_urls %};
         </script>
     """
-    apps = settings.BE_URL_APPS
+    apps = settings.SEED_URL_APPS
     app_urls = dict((app, urls_by_namespace(app)) for app in apps)
     app_urls = json.dumps(app_urls)
     return app_urls

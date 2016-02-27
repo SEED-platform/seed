@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -20,10 +20,115 @@ from django.db.models.fields.related import (
 )
 
 
+def batch_qs(qs, batch_size=1000):
+    """
+    From: https://djangosnippets.org/snippets/1170/
+
+    Returns a (start, end, total, queryset) tuple for each batch in the given
+    queryset.
+
+    Usage:
+        # Make sure to order your querset
+        article_qs = Article.objects.order_by('id')
+        for start, end, total, qs in batch_qs(article_qs):
+            print 'Now processing %s - %s of %s' % (start + 1, end, total)
+            for article in qs:
+                print article.body
+    """
+    if not qs.ordered:
+        qs = qs.order_by('pk')
+    total = qs.count()
+    for start in range(0, total, batch_size):
+        end = min(start + batch_size, total)
+        yield (start, end, total, qs[start:end])
+
+
+def get_field_name_from_model(field, model):
+    """
+    Takes a field name like "building_snapshot__state" and returns the verbose
+    field name as set in django, to be used as the header in exported files.
+
+    :param field:
+    :param qs:
+    :return:
+    """
+    par = model
+    components = field.split("__")
+    for component in components[:-1]:  # iterate through the parent models
+        par = getattr(par, component)
+
+        # If the component resolves to a Manager or Descriptor,
+        # we have to get to the model differently than a standard field
+        if isinstance(par, (Manager,
+                            ForeignRelatedObjectsDescriptor)):
+            par = par.related.model
+
+        # Special case for status_label in project exports, where we want
+        # the name from the relation field -- not the field the value comes
+        # from.
+        elif component == 'status_label':
+            components[-1] = component
+            par = par.field.model
+
+        # Reverse descriptors also have some special ways to get to the model
+        elif isinstance(par, ReverseSingleRelatedObjectDescriptor):
+            par = par.field.related_field.model
+
+    # Use unicode to force this to something the XLS writer can handle properly
+    try:
+        name = unicode(par._meta.get_field(components[-1]).verbose_name)
+    except FieldDoesNotExist:
+        name = unicode(components[-1])
+
+    return name
+
+
+def get_field_value_from_instance(field, obj):
+    """
+    Does some deep deiving to find the right value given a string like
+    "building_snapshot__state"
+    """
+    par = obj
+    components = field.split("__")
+    for component in components[:-1]:
+        par = getattr(par, component)
+        if par is None:
+            break
+
+    try:
+        return getattr(par, components[-1]) if par else None
+    except AttributeError:
+        # try extra_data JsonField
+        return par.extra_data.get(components[-1])
+
+
+def construct_obj_row(obj, fields):
+    """
+    Creates an exportable row of data from an object and a list of fields.
+    Ignores nones and instances of the Django Manager object, replacing them
+    with blank unicode strings.
+    """
+    row = []
+    for field in fields:
+        value = get_field_value_from_instance(field, obj)
+        if isinstance(value, Manager) or value is None:
+            row.append(u'')
+        else:
+            row.append(unicode(value))
+    return row
+
+
+def qs_to_rows(qs, fields):
+    for start, end, total, sub_qs in batch_qs(qs):
+        for obj in sub_qs:
+            yield construct_obj_row(obj, fields)
+
+
 class Exporter:
     """
     Class to handle the exporting of buildings
     """
+    tempfile = None  # where the temp file is saved after export
 
     def __init__(self, export_id, export_name, export_type):
         """
@@ -39,10 +144,9 @@ class Exporter:
         self.export_id = export_id
         self.export_name = export_name
         self.export_type = export_type
-        self.tempfile = None  # where the temp file is saved after export
 
     def valid_export_type(self):
-        return (self.export_type.lower() == 'csv') or (self.export_type.lower() == 'xls')
+        return self.export_type.lower() in {'csv', 'xls'}
 
     def export(self, buildings, fields, row_cb):
         """
@@ -61,19 +165,17 @@ class Exporter:
             return None
 
         # save the tempfile to the file storage location (s3 or local)
-        if not self.tempfile == None:
-            if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
-                # This is non-ideal. We should just save the file in the right location to start with
-                # or return the file from the "export". This was done to avoid changing the exporter code 'too much'.
-                file_storage = DefaultStorage()
-                f = open(self.tempfile, 'r')
-                file_storage.save(self.filename(), f)
-                f.close()
-            else:
-                s3_key = DefaultStorage().bucket.new_key(self.filename())
-                f = open(self.tempfile)
-                s3_key.set_contents_from_file(f)
-                f.close()
+        if self.tempfile is not None:
+            with open(self.tempfile) as f:
+                if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
+                    # This is non-ideal. We should just save the file in the right location to start with
+                    # or return the file from the "export". This was done to avoid changing the exporter code 'too much'.
+                    file_storage = DefaultStorage()
+                    file_storage.save(self.filename(), f)
+                else:
+                    s3_key = DefaultStorage().bucket.new_key(self.filename())
+                    s3_key.set_contents_from_file(f)
+
                 os.remove(self.tempfile)
 
         return self.filename
@@ -127,101 +229,25 @@ class Exporter:
 
     # Old methods that should be converted into private methods (will require test changes)
 
-    def _make_object_row(self, obj, fields):
-        """
-        Creates an exportable row of data from an object and a list of fields.
-        Ignores nones and instances of the Django Manager object, replacing them
-        with blank unicode strings.
-        """
-        row = []
-        for field in fields:
-            value = self._get_field_value(field, obj)
-            if isinstance(value, Manager) or value is None:
-                row.append(u'')
-            else:
-                row.append(unicode(value))
-        return row
-
-    def _get_field_name(self, field, qs):
-        """
-        Takes a field name like "building_snapshot__state" and returns the verbose
-        field name as set in django, to be used as the header in exported files.
-
-        :param field:
-        :param qs:
-        :return:
-        """
-        par = qs.model
-        components = field.split("__")
-        for component in components[:-1]:  # iterate through the parent models
-            par = getattr(par, component)
-
-            # If the component resolves to a Manager or Descriptor,
-            # we have to get to the model differently than a standard field
-            if isinstance(par, (Manager,
-                                ForeignRelatedObjectsDescriptor)):
-                par = par.related.model
-
-            # Special case for status_label in project exports, where we want
-            # the name from the relation field -- not the field the value comes
-            # from.
-            elif component == 'status_label':
-                components[-1] = component
-                par = par.field.model
-
-            # Reverse descriptors also have some special ways to get to the model
-            elif isinstance(par, ReverseSingleRelatedObjectDescriptor):
-                par = par.field.related_field.model
-
-        # Use unicode to force this to something the XLS writer can handle properly
-        try:
-            name = unicode(par._meta.get_field(components[-1]).verbose_name)
-        except FieldDoesNotExist:
-            name = unicode(components[-1])
-
-        return name
-
-    def _get_field_value(self, field, obj):
-        """
-        Does some deep deiving to find the right value given a string like
-        "building_snapshot__state"
-        """
-        par = obj
-        components = field.split("__")
-        for component in components[:-1]:
-            par = getattr(par, component)
-            if par is None:
-                break
-
-        try:
-            return getattr(par, components[-1]) if par else None
-        except AttributeError:
-            # try extra_data JsonField
-            return par.extra_data.get(components[-1])
-
     def export_csv(self, qs, fields=[], cb=None):
         self.tempfile = tempfile.mktemp('.csv')
-        export_file = open(self.tempfile, 'w')
-        writer = csv.writer(export_file)
 
-        if not fields:
-            fields = list(Exporter.fields_from_queryset(qs))
+        with open(self.tempfile, 'w') as export_file:
+            writer = csv.writer(export_file)
 
-        header = []
-        for field in fields:
-            field_name = self._get_field_name(field, qs)
-            header.append(field_name)
-        writer.writerow(header)
+            if not fields:
+                fields = list(Exporter.fields_from_queryset(qs))
 
-        i = 0
-        for obj in qs:
-            row = self._make_object_row(obj, fields)
-            writer.writerow(row)
-            if cb:
-                cb(i)
-            i += 1
+            header = tuple(
+                get_field_name_from_model(field, qs.model)
+                for field in fields
+            )
+            writer.writerow(header)
 
-        export_file.close()
+            for i, row in enumerate(qs_to_rows(qs, fields)):
+                writer.writerow(row)
+                if cb:
+                    cb(i)
 
         return self.tempfile
 
@@ -232,18 +258,15 @@ class Exporter:
         if not fields:
             fields = list(Exporter.fields_from_queryset(qs))
 
-        for i in range(len(fields)):
-            header = self._get_field_name(fields[i], qs)
+        for i, field in enumerate(fields):
+            header = get_field_name_from_model(field, qs.model)
             worksheet.write(0, i, header)
 
-        i = 0
-        for obj in qs:
-            row = self._make_object_row(obj, fields)
-            for j in range(len(row)):
-                worksheet.write(i + 1, j, row[j])
+        for i, row in enumerate(qs_to_rows(qs, fields)):
+            for j, v in enumerate(row):
+                worksheet.write(i + 1, j, v)
             if cb:
                 cb(i)
-            i += 1
 
         self.tempfile = tempfile.mktemp('.xls')
         workbook.save(self.tempfile)

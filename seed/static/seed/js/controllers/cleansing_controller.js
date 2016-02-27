@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.cleansing', [])
@@ -46,11 +46,11 @@ angular.module('BE.seed.controller.cleansing', [])
       sortable: true,
       title: 'Custom ID'
     }, {
-      sort_column: 'field',
+      sort_column: 'formatted_field',
       sortable: false,
       title: 'Field'
     }, {
-      sort_column: 'message',
+      sort_column: 'detailed_message',
       sortable: false,
       title: 'Error Message'
     }];
@@ -140,7 +140,7 @@ angular.module('BE.seed.controller.cleansing', [])
         value = value.toLowerCase();
         _.each($scope.cleansingResults, function (result) {
           if (result.visible) {
-            if (_.contains(['field', 'message'], column)) {
+            if (_.contains(['formatted_field', 'detailed_message'], column)) {
               _.each(result.cleansing_results, function(row) {
                 if (!_.contains(row[column].toLowerCase(), value)) row.visible = false;
               });

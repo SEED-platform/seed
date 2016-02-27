@@ -1,3 +1,23 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a href="#/buildings" class="page_action" ng-show="!is_project()"><i class="fa fa-chevron-left"></i> Buildings</a>
+            <a ng-href="#/projects/{$ user.project_slug $}" class="page_action" ng-show="is_project()"><i class="fa fa-chevron-left"></i> Project: {$ project.name $}</a>
+        </div>
+        <div class="page_title">
+            <h1>{$ building.address_line_1 $}</h1>
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav">
+        <a id="building" ng-href="#/buildings/{$ building.canonical_building $}" class="active">Building Info</a>
+        <a id="projects" ng-href="#/buildings/{$ building.canonical_building $}/projects">Projects</a>
+        <a id="audit" ng-href="#/buildings/{$ building.canonical_building $}/audit">Log &amp; Notes</a>
+        <a id="energy" ng-href="#/buildings/{$ building.canonical_building $}/energy">Energy</a>
+        <a id="settings" ng-href="#/buildings/{$ building.canonical_building $}/settings">Settings</a>
+    </div>
+</div>
 <div class="section">
     <div class="section_header_container">
         <div class="section_header fixed_height_short has_no_padding">
@@ -18,6 +38,7 @@
 
 
             <div style="margin:10px 0px; padding:0px 10px;">
+                <button type="button" class="btn btn-default" ng-click="open_update_building_labels_modal()"><i class="fa fa-tag"></i>Add/Remove Labels</button>
                 <span style="padding-right:5px;"><strong>Labels:</strong></span>
                 <span ng-show="labels.length === 0" style="color:#999">(no labels applied)</span>
                 <span ng-repeat="label in labels" class="label label-{$ label.label $}">{$ label.name $}</span>
@@ -39,7 +60,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="f in data_columns | orderBy:'key'">
+                        <tr ng-repeat="f in data_columns">
                             <td>{$ f.key | titleCase $}</td>
                             <td>
                                 <span ng-hide="building.edit_form_showing" ng-if="f.type === 'extra_data'">{$ building.extra_data[f.key] $}</span>

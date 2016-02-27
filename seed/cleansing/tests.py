@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -87,7 +87,7 @@ class CleansingDataTestCoveredBuilding(TestCase):
             source_type=ASSESSED_BS,
         ).iterator()
 
-        c = Cleansing()
+        c = Cleansing(self.org)
         c.cleanse(qs)
 
         data = c.results
@@ -102,7 +102,14 @@ class CleansingDataTestCoveredBuilding(TestCase):
 
         self.assertTrue(result['address_line_1'], '95373 E Peach Avenue')
         self.assertTrue(result['tax_lot_id'], '10107/c6596')
-        res = [{'field': u'pm_property_id', 'message': 'Value is missing', 'severity': 'error'}]
+        res = [{
+            'field': u'pm_property_id',
+            'formatted_field': u'PM Property ID',
+            'value': u'',
+            'message': u'PM Property ID is missing',
+            'detailed_message': u'PM Property ID is missing',
+            'severity': u'error'
+        }]
         self.assertEqual(res, result['cleansing_results'])
 
         result = [v for v in c.results.values() if v['address_line_1'] == '120243 E True Lane']
@@ -111,10 +118,35 @@ class CleansingDataTestCoveredBuilding(TestCase):
         else:
             raise RuntimeError('Non unity results')
 
-        res = [{'field': u'year_built', 'message': 'Value [0] < 1700', 'severity': u'error'},
-               {'field': u'gross_floor_area', 'message': 'Value [10000000000.0] > 7000000', 'severity': u'error'},
-               {'field': u'custom_id_1', 'message': 'Value is missing', 'severity': 'error'},
-               {'field': u'pm_property_id', 'message': 'Value is missing', 'severity': 'error'}]
+        res = [{
+            'field': u'year_built',
+            'formatted_field': u'Year Built',
+            'value': 0,
+            'message': u'Year Built out of range',
+            'detailed_message': u'Year Built [0] < 1700',
+            'severity': u'error'
+        }, {
+            'field': u'gross_floor_area',
+            'formatted_field': u'Gross Floor Area',
+            'value': 10000000000.0,
+            'message': u'Gross Floor Area out of range',
+            'detailed_message': u'Gross Floor Area [10000000000.0] > 7000000.0',
+            'severity': u'error'
+        }, {
+            'field': u'custom_id_1',
+            'formatted_field': u'Custom ID 1',
+            'value': u'',
+            'message': u'Custom ID 1 is missing',
+            'detailed_message': u'Custom ID 1 is missing',
+            'severity': u'error'
+        }, {
+            'field': u'pm_property_id',
+            'formatted_field': u'PM Property ID',
+            'value': u'',
+            'message': u'PM Property ID is missing',
+            'detailed_message': u'PM Property ID is missing',
+            'severity': u'error'
+        }]
         self.assertItemsEqual(res, result['cleansing_results'])
 
         result = [v for v in c.results.values() if v['address_line_1'] == '1234 Peach Tree Avenue']
@@ -155,7 +187,7 @@ class CleansingDataTestPM(TestCase):
     def test_cleanse(self):
         # Import the file and run mapping
 
-        # Year Ending,ENERGY STAR Score,Total GHG Emissions (MtCO2e),Weather Normalized Site EUI (kBtu/ft2),
+        # Year Ending,Energy Score,Total GHG Emissions (MtCO2e),Weather Normalized Site EUI (kBtu/ft2),
         # National Median Site EUI (kBtu/ft2),Source EUI (kBtu/ft2),Weather Normalized Source EUI (kBtu/ft2),
         # National Median Source EUI (kBtu/ft2),Parking - Gross Floor Area (ft2),Organization
         # Release Date
@@ -182,7 +214,7 @@ class CleansingDataTestPM(TestCase):
             source_type=PORTFOLIO_BS,
         ).iterator()
 
-        c = Cleansing()
+        c = Cleansing(self.org)
         c.cleanse(qs)
 
         data = c.results
@@ -195,7 +227,14 @@ class CleansingDataTestPM(TestCase):
         else:
             raise RuntimeError('Non unity results')
 
-        res = [{'field': u'pm_property_id', 'message': 'Value is missing', 'severity': 'error'}]
+        res = [{
+            'field': u'pm_property_id',
+            'formatted_field': u'PM Property ID',
+            'value': u'',
+            'message': u'PM Property ID is missing',
+            'detailed_message': u'PM Property ID is missing',
+            'severity': u'error'
+        }]
         self.assertEqual(res, result['cleansing_results'])
 
         result = [v for v in c.results.values() if v['address_line_1'] == '95373 E Peach Avenue']
@@ -204,7 +243,14 @@ class CleansingDataTestPM(TestCase):
         else:
             raise RuntimeError('Non unity results')
 
-        res = [{'field': u'site_eui', 'message': 'Value [0.1] < 10', 'severity': u'warning'}]
+        res = [{
+            'field': u'site_eui',
+            'formatted_field': u'Site EUI',
+            'value': 0.1,
+            'message': u'Site EUI out of range',
+            'detailed_message': u'Site EUI [0.1] < 10.0',
+            'severity': u'warning'
+        }]
         self.assertEqual(res, result['cleansing_results'])
 
 
@@ -293,7 +339,7 @@ class CleansingDataSample(TestCase):
             source_type=ASSESSED_BS,
         ).iterator()
 
-        c = Cleansing()
+        c = Cleansing(self.org)
         c.cleanse(qs)
 
         data = c.results

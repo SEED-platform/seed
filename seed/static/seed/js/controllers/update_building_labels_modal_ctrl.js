@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.update_building_labels_modal', [])
@@ -113,11 +113,12 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
         // Parameters used to limit the loaded building list.
         var search_params = search.construct_search_query();
 
+        $uibModalInstance.close();
+
         label_service.update_building_labels(addLabelIDs, removeLabelIDs, selected_buildings, select_all_checkbox, search_params).then(
             function(data){  
                 var msg = data.num_buildings_updated.toString() + " buildings updated.";
-                notification.primary(msg);       
-                $uibModalInstance.close();
+                notification.primary(msg);
             },
             function(data, status) {
                // Rejected promise, error occurred.

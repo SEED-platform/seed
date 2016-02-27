@@ -1,13 +1,13 @@
 /*
- * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 (function() {
     'use strict';
 
     angular
-        .module('beResizable',[])
-        .directive('beResizable', resizable);
+        .module('sdResizable',[])
+        .directive('sdResizable', resizable);
 
     /**
      * angular directive to wrap jQuery's resizable functionality

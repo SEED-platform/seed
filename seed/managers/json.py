@@ -1,10 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
-"""
-"""
+
 Query JSON data from Postgres JsonFields.
 
 ::
@@ -47,6 +46,7 @@ def _key_cast_to_type(key_cast):
 
 
 class JsonQuerySet(QuerySet):
+
     def __init__(self, primary=None, *args, **kwargs):
         self.primary = primary or 'extra_data'
         self.table = kwargs.get('table', 'seed_buildingsnapshot')
@@ -176,5 +176,6 @@ class JsonQuerySet(QuerySet):
 
 
 class JsonManager(Manager):
+
     def get_queryset(self):
         return JsonQuerySet(model=self.model, using=self._db)

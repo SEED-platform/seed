@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import csv
@@ -28,7 +28,6 @@ from django.contrib.auth.models import User
 
 from config.utils import de_camel_case
 from seed.data_importer.managers import NotDeletedManager
-from organizations.models import Organization
 from seed.common import mapper
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
@@ -107,7 +106,6 @@ class ImportRecord(NotDeletableModel):
     import_completed_at = models.DateTimeField(blank=True, null=True)
     merge_completed_at = models.DateTimeField(blank=True, null=True)
     mcm_version = models.IntegerField(max_length=10, blank=True, null=True)
-    organization = models.ManyToManyField(Organization, blank=True, null=True)
     super_organization = models.ForeignKey(
         SuperOrganization, blank=True, null=True, related_name='import_records'
     )
@@ -471,7 +469,6 @@ class ImportRecord(NotDeletableModel):
     @property
     def add_files_url(self):
         return reverse("%s:new_import" % self.app_namespace, args=(self.pk,))
-
 
     @property
     def status_url(self):

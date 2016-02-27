@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Claudine Custodio / Baptiste Ravache
 """
 """
@@ -45,7 +45,7 @@ from test_modules import upload_match_sort, account, delete_set, search_and_proj
 
 # ---
 # Set up the request credentials
-defaultchoice = raw_input('Use "seed_API_test.txt" credentials? [Y]es or Press Any Key')
+defaultchoice = raw_input('Use "seed_API_test.ini" credentials? [Y]es or Press Any Key')
 
 if defaultchoice.upper() == 'Y':
     with open('seed_API_test.txt', 'r') as f:

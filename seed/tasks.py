@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -13,7 +13,6 @@ import string
 import traceback
 import operator
 from _csv import Error
-from dateutil import parser
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
@@ -27,6 +26,7 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from seed.decorators import get_prog_key
 import usaddress
+from seed import search
 from seed.audit_logs.models import AuditLog
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm import cleaners, mapper, reader
@@ -63,6 +63,7 @@ from seed.models import (
     BuildingSnapshot,
 )
 from seed.decorators import lock_and_track
+from seed.utils import time as time_utils
 from seed.utils.buildings import get_source_type, get_search_query
 from seed.utils.cache import set_cache, increment_cache, get_cache
 from seed.utils.mapping import get_mappable_columns
@@ -73,10 +74,9 @@ from seed.cleansing.tasks import (
     finish_cleansing,
     cleanse_data_chunk,
 )
-
+from functools import reduce
 
 logger = get_task_logger(__name__)
-
 
 # Maximum number of possible matches under which we'll allow a system match.
 MAX_SEARCH = 5
@@ -101,6 +101,7 @@ def export_buildings(export_id, export_name, export_type,
     def _row_cb(i):
         data = get_cache("export_buildings__%s" % export_id)
         data['buildings_processed'] = i
+        data['progress'] = (i * 100) / data['total_buildings']
         set_cache("export_buildings__%s" % export_id, data['status'], data)
 
     exporter = Exporter(export_id, export_name, export_type)
@@ -153,7 +154,6 @@ def invite_to_seed(domain, email_address, token, user_pk, first_name):
         pass
 
 
-# TODO (AK): Ensure this gets tested in PR #61
 @shared_task
 def add_buildings(project_slug, project_dict, user_pk):
     """adds buildings to a project. if a user has selected all buildings,
@@ -169,11 +169,8 @@ def add_buildings(project_slug, project_dict, user_pk):
 
     """
     project = Project.objects.get(slug=project_slug)
-    user = User.objects.get(pk=user_pk)
-    project.last_modified_by = user
-    project.save()
 
-    selected_buildings = project_dict.get('selected_buildings', [])
+    # Initialize the progress cache
     prog_key = project.adding_buildings_status_percentage_cache_key
     data = {
         'status': 'processing',
@@ -184,91 +181,57 @@ def add_buildings(project_slug, project_dict, user_pk):
     }
     set_cache(project.adding_buildings_status_percentage_cache_key, data['status'], data)
 
-    i = 0
-    denominator = 1
-    if not project_dict.get('select_all_checkbox', False):
-        for sfid in selected_buildings:
-            i += 1
-            denominator = len(selected_buildings)
-            try:
-                data = {
-                    'status': 'processing',
-                    'progress': (float(i) / len(selected_buildings) * 100),
-                    'progress_key': prog_key,
-                    'numerator': i,
-                    'denominator': denominator
-                }
-                set_cache(prog_key, data['status'], data)
-            except ZeroDivisionError:
-                pass
-            ab = BuildingSnapshot.objects.get(pk=sfid)
-            ProjectBuilding.objects.get_or_create(
-                project=project, building_snapshot=ab
-            )
+    user = User.objects.get(pk=user_pk)
+    project.last_modified_by = user
+    project.save()
+
+    # Perform the appropriate filtering to get the raw list of buildings.
+    params = search.process_search_params(project_dict, user, is_api_request=False)
+    buildings_queryset = search.orchestrate_search_filter_sort(
+        params=params,
+        user=user,
+    )
+
+    # Get selected buildings based on either individual selection or select-all
+    # selection.
+    if project_dict.get('select_all_checkbox'):
+        selected_buildings = buildings_queryset
     else:
-        query_buildings = get_search_query(user, project_dict)
-        denominator = query_buildings.count() - len(selected_buildings)
+        selected_buildings = buildings_queryset.filter(
+            id__in=project_dict.get('selected_buildings', []),
+        )
+
+    denominator = len(selected_buildings)
+
+    # Loop over the buildings adding them to the project and updating the
+    # progress cache.
+    for idx, bs in enumerate(selected_buildings):
         data = {
             'status': 'processing',
-            'progress': 10,
+            'progress': (float(idx) / denominator * 100),
             'progress_key': prog_key,
-            'numerator': i,
-            'denominator': denominator,
+            'numerator': idx,
+            'denominator': denominator
         }
         set_cache(prog_key, data['status'], data)
-        i = 0
-        for b in query_buildings:
-            # todo: only get back query_buildings pks as a list, and create
-            # using the pk,
-            #       not the python object
-            i += 1
-            ProjectBuilding.objects.get_or_create(
-                project=project, building_snapshot=b
-            )
-            data = {
-                'status': 'processing',
-                'progress': (float(i) / denominator * 100),
-                'progress_key': prog_key,
-                'numerator': i,
-                'denominator': denominator
-            }
-            set_cache(prog_key, data['status'], data)
-        for building in selected_buildings:
-            i += 1
-            project.building_snapshots.remove(
-                BuildingSnapshot.objects.get(pk=building)
-            )
-            data = {
-                'status': 'processing',
-                'progress': (float(denominator - len(selected_buildings) + i) / denominator * 100),
-                'progress_key': prog_key,
-                'numerator': denominator - len(selected_buildings) + i,
-                'denominator': denominator
-            }
-            set_cache(prog_key, data['status'], data)
+        ProjectBuilding.objects.get_or_create(
+            project=project, building_snapshot=bs
+        )
+
+    # Mark the progress cache as complete.
     result = {
         'status': 'completed',
         'progress': 100,
         'progress_key': prog_key,
-        'numerator': i,
+        'numerator': denominator,
         'denominator': denominator
     }
     set_cache(prog_key, result['status'], result)
 
-    deadline_date = project_dict.get('deadline_date')
-    if isinstance(deadline_date, (int, float)):
-        deadline_date = datetime.datetime.fromtimestamp(deadline_date / 1000)
-    elif isinstance(deadline_date, basestring):
-        deadline_date = parser.parse(deadline_date)
-    else:
-        deadline_date = None
-    end_date = project_dict.get('end_date')
-    if isinstance(end_date, (int, float)):
-        end_date = datetime.datetime.fromtimestamp(end_date / 1000)
-    elif isinstance(end_date, basestring):
-        end_date = parser.parse(end_date)
-    else:
-        end_date = None
+    deadline_date = time_utils.parse_datetime(project_dict.get('deadline_date'))
+
+    end_date = time_utils.parse_datetime(project_dict.get('end_date'))
+
     if end_date:
         last_day_of_month = calendar.monthrange(
             end_date.year, end_date.month
@@ -385,9 +348,8 @@ def remove_buildings(project_slug, project_dict, user_pk):
 
 def add_cache_increment_parameter(tasks):
     """This adds the cache increment value to the signature to each subtask."""
-    """This is a really weird way to handle this, it adds the argument after the
-    methods have been added to the tasks list
-    """
+    # TODO: This is a really weird way to handle this, it adds the argument
+    # after the methods have been added to the tasks list
     denom = len(tasks) or 1
     increment = 1.0 / denom * 100
     # This is kind of terrible. Once we know how much progress each task
@@ -418,7 +380,7 @@ def finish_import_record(import_record_pk):
 
 
 @shared_task
-def finish_mapping(results, file_pk):
+def finish_mapping(file_pk):
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.mapping_done = True
     import_file.save()
@@ -502,10 +464,10 @@ def _normalize_tax_lot_id(value):
 
 
 @shared_task
-def map_row_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwargs):
+def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwargs):
     """Does the work of matching a mapping to a source type and saving
 
-    :param chunk: list of dict of str. One row's worth of parse data.
+    :param ids: list of BuildingSnapshot IDs to map.
     :param file_pk: int, the PK for an ImportFile obj.
     :param source_type: int, represented by either ASSESSED_RAW, or
         PORTFOLIO_RAW.
@@ -542,9 +504,11 @@ def map_row_chunk(chunk, file_pk, source_type, prog_key, increment, *args, **kwa
 
     apply_func = apply_data_func(mappable_columns)
 
-    for row in chunk:
+    data = BuildingSnapshot.objects.filter(id__in=ids).only('extra_data').iterator()
+    for row in data:
+        # get the data from the database
         model = mapper.map_row(
-            row,
+            row.extra_data,
             mapping,
             BuildingSnapshot,
             cleaner=map_cleaner,
@@ -612,18 +576,19 @@ def _map_data(file_pk, *args, **kwargs):
     qs = BuildingSnapshot.objects.filter(
         import_file=import_file,
         source_type=source_type,
-    ).iterator()
+    ).only('id').iterator()
 
     tasks = []
     for chunk in batch(qs, 100):
-        serialized_data = [obj.extra_data for obj in chunk]
-        tasks.append(map_row_chunk.s(serialized_data, file_pk, source_type, prog_key))
+        ids = [obj.id for obj in chunk]
+        tasks.append(map_row_chunk.s(ids, file_pk, source_type, prog_key))
 
     # need to rework how the progress keys are implemented here, but at least
     # the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
     if tasks:
-        chord(tasks, interval=15)(finish_mapping.subtask([file_pk]))
+        # specify the chord as an immutable with .si
+        chord(tasks, interval=15)(finish_mapping.si(file_pk))
     else:
         finish_mapping.subtask(file_pk)
 
@@ -658,7 +623,7 @@ def _cleanse_data(file_pk):
     qs = BuildingSnapshot.objects.filter(
         import_file=import_file,
         source_type=source_type,
-    ).iterator()
+    ).only('id').iterator()
 
     # initialize the cache for the cleansing results using the cleansing static method
     Cleansing.initialize_cache(file_pk)
@@ -666,7 +631,6 @@ def _cleanse_data(file_pk):
     prog_key = get_prog_key('cleanse_data', file_pk)
     tasks = []
     for chunk in batch(qs, 100):
-        # serialized_data = [obj.extra_data for obj in chunk]
         ids = [obj.id for obj in chunk]
         tasks.append(cleanse_data_chunk.s(ids, file_pk))  # note that increment will be added to end
 
@@ -674,9 +638,10 @@ def _cleanse_data(file_pk):
     # the method gets called above for cleansing
     tasks = add_cache_increment_parameter(tasks)
     if tasks:
-        chord(tasks, interval=15)(finish_cleansing.subtask([file_pk]))
+        # specify the chord as an immutable with .si
+        chord(tasks, interval=15)(finish_cleansing.si(file_pk))
     else:
-        finish_cleansing.subtask(file_pk)
+        finish_cleansing.s(file_pk)
 
     result = {
         'status': 'success',
@@ -720,7 +685,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
 
 
 @shared_task
-def finish_raw_save(results, file_pk):
+def finish_raw_save(file_pk):
     """
     Finish importing the raw file.
 
@@ -870,7 +835,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
         logger.debug('Added caching increment')
         if tasks:
             logger.debug('Adding chord to queue')
-            chord(tasks, interval=15)(finish_raw_save.s(file_pk))
+            chord(tasks, interval=15)(finish_raw_save.si(file_pk))
         else:
             logger.debug('Skipped chord')
             finish_raw_save.s(file_pk)
@@ -1075,6 +1040,7 @@ def is_same_snapshot(s1, s2):
 
 
 class DuplicateDataError(RuntimeError):
+
     def __init__(self, id):
         super(DuplicateDataError, self).__init__()
         self.id = id
@@ -1186,11 +1152,11 @@ def _normalize_address_post_type(post_type):
 ADDRESS_NUMBER_RE = re.compile((
     r''
     r'(?P<start>[0-9]+)'  # The left part of the range
-    r'\s?'                         # Optional whitespace before the separator
-    r'[\\/-]?'                     # Optional Separator
-    r'\s?'                         # Optional whitespace after the separator
-    r'(?<=[\s\\/-])'               # Enforce match of at least one separator char.
-    r'(?P<end>[0-9]+)'    # THe right part of the range
+    r'\s?'  # Optional whitespace before the separator
+    r'[\\/-]?'  # Optional Separator
+    r'\s?'  # Optional whitespace after the separator
+    r'(?<=[\s\\/-])'  # Enforce match of at least one separator char.
+    r'(?P<end>[0-9]+)'  # THe right part of the range
 ))
 
 
@@ -1233,11 +1199,24 @@ def _normalize_address_str(address_val):
     if not address_val:
         return None
 
+    address_val = unicode(address_val).encode('utf-8')
+
+    # Do some string replacements to remove odd characters that we come across
+    replacements = {
+        '\xef\xbf\xbd': '',
+        '\uFFFD': '',
+    }
+    for k, v in replacements.items():
+        address_val = address_val.replace(k, v)
+
     # now parse the address into number, street name and street type
     try:
         addr = usaddress.tag(str(address_val))[0]
     except usaddress.RepeatedLabelError:
         # usaddress can't parse this at all
+        normalized_address = str(address_val)
+    except UnicodeEncodeError:
+        # Some kind of odd character issue that we aren't handling yet.
         normalized_address = str(address_val)
     else:
         # Address can be parsed, so let's format it.
@@ -1247,17 +1226,20 @@ def _normalize_address_str(address_val):
             normalized_address = _normalize_address_number(addr['AddressNumber'])
 
         if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
-            normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePreDirectional'])  # NOQA
+            normalized_address = normalized_address + ' ' + _normalize_address_direction(
+                    addr['StreetNamePreDirectional'])  # NOQA
 
         if 'StreetName' in addr and addr['StreetName'] is not None:
             normalized_address = normalized_address + ' ' + addr['StreetName']
 
         if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
             # remove any periods from abbreviations
-            normalized_address = normalized_address + ' ' + _normalize_address_post_type(addr['StreetNamePostType'])  # NOQA
+            normalized_address = normalized_address + ' ' + _normalize_address_post_type(
+                    addr['StreetNamePostType'])  # NOQA
 
         if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
-            normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePostDirectional'])  # NOQA
+            normalized_address = normalized_address + ' ' + _normalize_address_direction(
+                    addr['StreetNamePostDirectional'])  # NOQA
 
         formatter = StreetAddressFormatter()
         normalized_address = formatter.abbrev_street_avenue_etc(normalized_address)
@@ -1500,7 +1482,8 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
     :param org_pk: int, str, the organization pk
     """
     qs = BuildingSnapshot.objects.filter(super_organization=org_pk)
-    ids = qs.values_list('id', flat=True)
+    ids = list(qs.values_list('id', flat=True))
+
     deleting_cache_key = get_prog_key(
         'delete_organization_buildings',
         org_pk
@@ -1518,6 +1501,7 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
     can_ids = CanonicalBuilding.objects.filter(
         canonical_snapshot__super_organization=org_pk
     ).values_list('id', flat=True)
+    can_ids = list(can_ids)
     _delete_canonical_buildings.delay(can_ids)
 
     step = float(chunk_size) / len(ids)
@@ -1533,7 +1517,7 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
         # we could also use .s instead of .subtask and not wrap the *args
         tasks.append(
             _delete_organization_buildings_chunk.subtask(
-                (del_ids, deleting_cache_key, step, org_pk)
+                    (del_ids, deleting_cache_key, step, org_pk)
             )
         )
     chord(tasks, interval=15)(finish_delete.subtask([org_pk]))

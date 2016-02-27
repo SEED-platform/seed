@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -16,16 +16,18 @@ angular.module('BE.seed.vendor_dependencies', [
     'ui.tree',
     'xeditable',
     'ngTagsInput',
-    'ui-notification',
+    'ui-notification'
     ]);
 angular.module('BE.seed.controllers', [
     'BE.seed.controller.accounts',
     'BE.seed.controller.admin',
     'BE.seed.controller.building_detail',
+    'BE.seed.controller.building_detail_update_labels_modal_ctrl',
     'BE.seed.controller.building_list',
     'BE.seed.controller.buildings_reports',
     'BE.seed.controller.buildings_settings',
     'BE.seed.controller.cleansing',
+    'BE.seed.controller.cleansing_admin',
     'BE.seed.controller.concat_modal',
     'BE.seed.controller.create_note_modal',
     'BE.seed.controller.create_organization_modal',
@@ -61,12 +63,12 @@ angular.module('BE.seed.filters', [
     ]);
 angular.module('BE.seed.directives', [
     'sdEnter',
-    'beUploader',
-    'beLabel',
-    'beResizable',
-    'basicBuildingInfoChart',
-    'dropdown',
-    'checkLabelExists'
+    'sdUploader',
+    'sdLabel',
+    'sdResizable',
+    'sdBasicBuildingInfoChart',
+    'sdDropdown',
+    'sdCheckLabelExists'
     ]);
 angular.module('BE.seed.services', [
     'BE.seed.service.audit',
@@ -87,6 +89,9 @@ angular.module('BE.seed.services', [
     'BE.seed.service.search',
     'BE.seed.service.simple_modal'
     ]);
+angular.module('BE.seed.utilities', [
+    'BE.seed.utility.spinner'
+    ]);
 
 var SEED_app = angular.module('BE.seed', [
     'BE.seed.angular_dependencies',
@@ -94,7 +99,8 @@ var SEED_app = angular.module('BE.seed', [
     'BE.seed.filters',
     'BE.seed.directives',
     'BE.seed.services',
-    'BE.seed.controllers'
+    'BE.seed.controllers',
+    'BE.seed.utilities'
 ], ['$interpolateProvider', function ($interpolateProvider) {
         $interpolateProvider.startSymbol("{$");
         $interpolateProvider.endSymbol("$}");
@@ -250,7 +256,10 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     var params = angular.copy($route.current.params);
                     var project_slug = params.project_id;
                     return project_service.get_project(project_slug);
-                }]
+                }],
+                'building_payload': function() {
+                    return {'building': {}};
+                }
             }
         })
         .when('/projects/:project_id/:building_id', {
@@ -263,12 +272,14 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);
                 }],
-                'audit_payload': ['audit_service', '$route', function(audit_service, $route){
-                    var building_id = $route.current.params.building_id;
-                    return audit_service.get_building_logs(building_id);
+                'audit_payload': function(){
+                    return {'audit_logs': {}};
+                },
+                'default_columns': ['user_service', function(user_service){
+                    return user_service.get_default_building_detail_columns();
                 }]
             },
-            templateUrl: static_url + 'seed/partials/building_detail.html'
+            templateUrl: static_url + 'seed/partials/building_detail_section.html'
         })
         .when('/buildings', {
             controller: 'building_list_controller',
@@ -334,6 +345,9 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 },
                 'project_payload': function() {
                     return {'project': {}};
+                },
+                'building_payload': function() {
+                    return {'building': {}};
                 }
             }
 
@@ -348,7 +362,49 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
         })
         .when('/buildings/:building_id', {
             controller: 'building_detail_controller',
-            templateUrl: static_url + 'seed/partials/building_detail.html',
+            templateUrl: static_url + 'seed/partials/building_detail_section.html',
+            resolve: {
+                'building_payload': ['building_services', '$route', function(building_services, $route){
+                    // load `get_building` before page is loaded to avoid
+                    // page flicker.
+                    var building_id = $route.current.params.building_id;
+                    return building_services.get_building(building_id);
+                }],
+                'all_columns': ['building_services', function(building_services) {
+                    return building_services.get_columns(false);
+                }],
+                'audit_payload': function(){
+                    return {'audit_logs': {}};
+                },
+                'default_columns': ['user_service', function(user_service){
+                    return user_service.get_default_building_detail_columns();
+                }]
+            }
+        })
+        .when('/buildings/:building_id/projects', {
+            controller: 'building_detail_controller',
+            templateUrl: static_url + 'seed/partials/building_projects_section.html',
+            resolve: {
+                'building_payload': ['building_services', '$route', function(building_services, $route){
+                    // load `get_building` before page is loaded to avoid
+                    // page flicker.
+                    var building_id = $route.current.params.building_id;
+                    return building_services.get_building(building_id);
+                }],
+                'all_columns': ['building_services', function(building_services) {
+                    return building_services.get_columns(false);
+                }],
+                'audit_payload': function(){
+                    return {'audit_logs': {}};
+                },
+                'default_columns': function(){
+                    return {'columns': {}};
+                }
+            }
+        })
+        .when('/buildings/:building_id/audit', {
+            controller: 'building_detail_controller',
+            templateUrl: static_url + 'seed/partials/building_audit_log.html',
             resolve: {
                 'building_payload': ['building_services', '$route', function(building_services, $route){
                     // load `get_building` before page is loaded to avoid
@@ -362,12 +418,15 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'audit_payload': ['audit_service', '$route', function(audit_service, $route){
                     var building_id = $route.current.params.building_id;
                     return audit_service.get_building_logs(building_id);
-                }]
+                }],
+                'default_columns': function(){
+                    return {'columns': {}};
+                }
             }
         })
-        .when('/buildings/:building_id/audit_log', {
+        .when('/buildings/:building_id/energy', {
             controller: 'building_detail_controller',
-            templateUrl: static_url + 'seed/partials/building_audit_log.html',
+            templateUrl: static_url + 'seed/partials/building_energy_section.html',
             resolve: {
                 'building_payload': ['building_services', '$route', function(building_services, $route){
                     // load `get_building` before page is loaded to avoid
@@ -377,7 +436,40 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 }],
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);
-                }]
+                }],
+                'audit_payload': function(){
+                    return {'audit_logs': {}};
+                },
+                'default_columns': function(){
+                    return {'columns': {}};
+                }
+            }
+        })
+        .when('/buildings/:building_id/settings', {
+            controller: 'buildings_settings_controller',
+            templateUrl: static_url + 'seed/partials/building_settings_section.html',
+            resolve: {
+                'building_payload': ['building_services', '$route', function(building_services, $route){
+                    // load `get_building` before page is loaded to avoid
+                    // page flicker.
+                    var building_id = $route.current.params.building_id;
+                    return building_services.get_building(building_id);
+                }],
+                'all_columns': ['building_services', function(building_services) {
+                    return building_services.get_columns(false);
+                }],
+                'default_columns': ['user_service', function(user_service){
+                    return user_service.get_default_building_detail_columns();
+                }],
+                'shared_fields_payload': ['user_service', '$route', function(user_service, $route) {
+                    return {'show_shared_buildings': false};
+                }],
+                '$uibModalInstance': function() {
+                    return {close: function () {}};
+                },
+                'project_payload': function() {
+                    return {'project': {}};
+                }
             }
         })
         .when('/data/mapping/:importfile_id', {
@@ -586,6 +678,36 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 }]
             }
         })
+        .when('/accounts/:organization_id/data_cleansing', {
+            controller: 'cleansing_admin_controller',
+            templateUrl: static_url + 'seed/partials/cleansing_admin.html',
+            resolve: {
+                'all_columns': ['building_services', function(building_services) {
+                    return building_services.get_columns(false);
+                }],
+                'organization_payload': ['organization_service', '$route', function(organization_service, $route) {
+                    var organization_id = $route.current.params.organization_id;
+                    return organization_service.get_organization(organization_id);
+                }],
+                'cleansing_rules_payload': ['organization_service', '$route', function(organization_service, $route) {
+                    var organization_id = $route.current.params.organization_id;
+                    return organization_service.get_cleansing_rules(organization_id);
+                }],
+                'auth_payload': ['auth_service', '$route', '$q', function(auth_service, $route, $q) {
+                    var organization_id = $route.current.params.organization_id;
+                    return auth_service.is_authorized(organization_id, ['requires_owner'])
+                    .then(function (data) {
+                        if (data.auth.requires_owner){
+                            return data;
+                        } else {
+                            return $q.reject("not authorized");
+                        }
+                    }, function (data) {
+                        return $q.reject(data.message);
+                    });
+                }]
+            }
+        })
         .when('/accounts/:organization_id/sub_org', {
             controller: 'organization_controller',
             templateUrl: static_url + 'seed/partials/sub_org.html',
@@ -644,6 +766,9 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     }, function (data) {
                         return $q.reject(data.message);
                     });
+                }],
+                'user_profile_payload': ['user_service', function (user_service) {
+                    return user_service.get_user_profile();
                 }]
             }
         })
@@ -680,6 +805,13 @@ SEED_app.config([
     '$httpProvider',
     function($httpProvider) {
     $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+}]);
+
+/**
+ * Disable Angular debugging based on Django DEBUG flag.
+ */
+SEED_app.config(['$compileProvider', function ($compileProvider) {
+  $compileProvider.debugInfoEnabled(window.BE.debug);
 }]);
 
 /**

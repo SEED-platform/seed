@@ -24,9 +24,9 @@ Amazon AWS S3 Expires headers should be set on the AngularJS partials if using S
 The default user invite reply-to email can be overridden in the config/settings/common.py file. The `SERVER_EMAIL` settings var is the reply-to email sent along with new account emails.
 
 ```python
-# BE/settings/common.py
-PASSWORD_RESET_EMAIL = 'reset@buildingenergy.com'
-SERVER_EMAIL = 'no-reply@buildingenergy.com'
+# config/settings/common.py
+PASSWORD_RESET_EMAIL = 'reset@seed.lbl.gov'
+SERVER_EMAIL = 'no-reply@seed.lbl.gov'
 ```
 
 ### AngularJS notes
@@ -132,7 +132,7 @@ celery -A seed worker -l info -c 4 --maxtasksperchild 1000 --events
 #### flower
 monitor background tasks `flower --port=5555 --broker=redis://localhost:6379/1`
 assuming your redis broker is running on `localhost` and on port `6379`, DB `1`. Then goto localhost:5555 to check celery.
-If running on AWS, the `bin/start_flower.sh` will start flower on port `8080` and be available for google credentialed buildingenergy.com accounts.
+If running on AWS, the `bin/start_flower.sh` will start flower on port `8080` and be available for google credentialed accounts.
 
 ### dev setup
 * `git clone git@github.com:seed-platform/seed.git`
@@ -174,7 +174,8 @@ A logger is configured to have a log level. This log level describes the severit
 Each message that is written to the logger is a Log Record. The log record is stored in the webserver & Celery
 
 ### Copyright:
-Copyright ©  2014 Building Energy Inc.
+Copyright ©  2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+
 
 
 [travis-img]: https://travis-ci.org/SEED-platform/seed.svg?branch=develop

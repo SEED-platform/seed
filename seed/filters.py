@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -12,6 +12,7 @@ from seed import search
 
 
 class LabelFilterBackend(filters.BaseFilterBackend):
+
     def filter_queryset(self, request, queryset, view):
         if 'organization_id' in request.query_params:
             return queryset.filter(
@@ -25,6 +26,7 @@ class BuildingFilterBackend(filters.BaseFilterBackend):
     Implements the filtering and searching of buildings as a Django Rest
     Framework filter backend.
     """
+
     def filter_queryset(self, request, queryset, view):
         # TODO: this needs to be filled in with the same logic that implements
         # search/filtering in `seed.views.main.search_buildings`.
@@ -41,6 +43,7 @@ class BuildingFilterBackend(filters.BaseFilterBackend):
         buildings_queryset = search.orchestrate_search_filter_sort(
             params=params,
             user=request.user,
+            skip_sort=True,
         )
 
         if request.query_params.get('select_all_checkbox', 'false') == 'true':

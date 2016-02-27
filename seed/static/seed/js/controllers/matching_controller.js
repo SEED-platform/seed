@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.matching', [])
@@ -311,24 +311,16 @@ angular.module('BE.seed.controller.matching', [])
                 'default_columns': function() {
                     return default_columns;
                 },
-                'buildings_payload': function() {
-                    return {};
-                },
                 'shared_fields_payload': function() {
                     return {show_shared_buildings: false};
                 },
                 'project_payload': function() {
                     return {project: {}};
+                },
+                'building_payload': function() {
+                    return {'building': {}};
                 }
             }
-        });
-
-        modalInstance.result.then(
-            function (columns) {
-                // reload columns
-                $scope.default_columns = columns;
-                $scope.columns = building_services.create_column_array($scope.fields, columns);
-        }, function (message) {
         });
     };
 

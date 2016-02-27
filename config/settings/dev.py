@@ -1,8 +1,7 @@
 """
-:copyright: (c) 2014 Building Energy Inc
-
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
-
 from __future__ import absolute_import
 
 from config.settings.common import *  # noqa
@@ -54,10 +53,6 @@ else:
         'disable_existing_loggers': True,
         # set up some log message handlers to choose from
         'handlers': {
-            'sentry': {
-                'level': 'ERROR',
-                'class': 'raven.contrib.django.handlers.SentryHandler',
-            },
             'console': {
                 'level': 'INFO',
                 'class': 'logging.StreamHandler'
@@ -68,14 +63,7 @@ else:
             '': {
                 'level': 'INFO',
                 'handlers': ['console'],
-            },
-            # sentry.errors are any error messages associated with failed
-            # connections to sentry
-            'sentry.errors': {
-                'level': 'DEBUG',
-                'handlers': ['console'],
-                'propagate': False,
-            },
+            }
         },
     }
 

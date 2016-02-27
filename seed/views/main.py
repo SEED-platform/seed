@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -45,10 +45,9 @@ from seed.models import (
     GREEN_BUTTON_BS,
 )
 from seed.views.accounts import _get_js_role
-from seed.lib.superperms.orgs.models import Organization, ROLE_MEMBER
+from seed.lib.superperms.orgs.models import Organization
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
-    get_search_query,
     get_buildings_for_user_count
 )
 from seed.utils.api import api_endpoint
@@ -224,22 +223,23 @@ def export_buildings(request):
     export_name = body.get('export_name')
     export_type = body.get('export_type')
 
-    building_ids = body.get('building_ids')
-
     selected_fields = body.get('selected_fields', [])
-
     selected_building_ids = body.get('selected_buildings', [])
 
-    project_id = body.get('project_id')
+    params = search.parse_body(request)
 
-    if not body.get('select_all_checkbox', False):
-        selected_buildings = get_search_query(request.user, {})
-        selected_buildings = selected_buildings.filter(
-            pk__in=selected_building_ids
-        )
+    project_id = params['project_id']
+
+    buildings_queryset = search.orchestrate_search_filter_sort(
+        params=params,
+        user=request.user,
+        skip_sort=True,
+    )
+
+    if body.get('select_all_checkbox', False):
+        selected_buildings = buildings_queryset
     else:
-        selected_buildings = get_search_query(request.user, body)
-        selected_buildings = selected_buildings.exclude(
+        selected_buildings = buildings_queryset.filter(
             pk__in=selected_building_ids
         )
 
@@ -254,12 +254,12 @@ def export_buildings(request):
 
         # Grab the project buildings associated with the given project id and
         # buildings list
-        selected_building_ids = [
-            x[0] for x in selected_buildings.values_list('pk')
-        ]
         selected_buildings = ProjectBuilding.objects.filter(
             project_id=project_id,
-            building_snapshot__in=selected_building_ids)
+            building_snapshot__in=tuple(
+                selected_buildings.values_list('pk', flat=True)
+            ),  # NOQA
+        )
 
         # Swap the requested fieldnames to reflect the new point of reference
         _selected_fields = []
@@ -274,14 +274,14 @@ def export_buildings(request):
     else:
         export_model = 'seed.BuildingSnapshot'
 
-    building_ids = [x[0] for x in selected_buildings.values_list('pk')]
+    building_ids = tuple(selected_buildings.values_list('pk', flat=True))
     progress_key = "export_buildings__%s" % export_id
     result = {
         'progress_key': progress_key,
         'status': 'not-started',
         'progress': 0,
         'buildings_processed': 0,
-        'total_buildings': selected_buildings.count()
+        'total_buildings': len(building_ids),
     }
     set_cache(progress_key, result['status'], result)
 
@@ -294,21 +294,13 @@ def export_buildings(request):
         selected_fields,
     )
 
-    result = {
-        'progress_key': progress_key,
-        'status': 'not-started',
-        'progress': 100,
-        'buildings_processed': selected_buildings.count(),
-        'total_buildings': selected_buildings.count()
-    }
-    set_cache(progress_key, result['status'], result)
     return {
         "success": True,
         "status": "success",
         'progress': 100,
         'progress_key': progress_key,
         "export_id": export_id,
-        "total_buildings": selected_buildings.count(),
+        "total_buildings": len(building_ids),
     }
 
 
@@ -334,13 +326,16 @@ def export_buildings_progress(request):
     body = json.loads(request.body)
     export_id = body.get('export_id')
     progress_key = "export_buildings__%s" % export_id
-    percent_done = get_cache(progress_key)['progress']
-    total_buildings = get_cache(progress_key)['total_buildings']
+    progress_data = get_cache(progress_key)
+
+    percent_done = progress_data['progress']
+    total_buildings = progress_data['total_buildings']
+
     return {
         "success": True,
         "status": "success",
-        'total_buildings': get_cache(progress_key)['total_buildings'],
-        "buildings_processed": percent_done * total_buildings
+        'total_buildings': progress_data['total_buildings'],
+        "buildings_processed": (percent_done / 100) * total_buildings
     }
 
 
@@ -377,7 +372,15 @@ def export_buildings_download(request):
 
     if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
         file_storage = DefaultStorage()
-        files = file_storage.listdir(export_subdir)
+
+        try:
+            files = file_storage.listdir(export_subdir)
+        except OSError:
+            # Likely scenario is that the file hasn't been written to disk yet.
+            return {
+                'success': False,
+                'status': 'working'
+            }
 
         if not files:
             return {
@@ -406,7 +409,13 @@ def export_buildings_download(request):
     else:
         keys = list(DefaultStorage().bucket.list(export_subdir))
 
-        if not keys or len(keys) > 1:
+        if not keys:
+            return {
+                'success': False,
+                'status': 'working'
+            }
+
+        if len(keys) > 1:
             return {
                 "success": False,
                 "status": "error",
@@ -464,7 +473,7 @@ def get_building(request):
                     "building": {
                         "approved_date":07/30/2014,
                         "compliant": null,
-                        "approver": "demo@buildingenergy.com"
+                        "approver": "demo@seed.lbl.gov"
                         "approved_date": "07/30/2014"
                         "compliant": null
                         "label": {
@@ -728,6 +737,7 @@ def search_building_snapshots(request):
     # doesn't parse them as extra_data
     db_columns = get_mappable_types()
     db_columns['children__isnull'] = ''
+    db_columns['children'] = ''
     db_columns['project__slug'] = ''
     db_columns['import_file_id'] = ''
 
@@ -752,7 +762,9 @@ def search_building_snapshots(request):
 @ajax_request
 @login_required
 def get_default_columns(request):
-    """front end is expecting a JSON object with an array of field names
+    """Get default columns for building list view.
+
+    front end is expecting a JSON object with an array of field names
         i.e.
         {
             "columns": ["project_id", "name", "gross_floor_area"]
@@ -760,34 +772,65 @@ def get_default_columns(request):
     """
     columns = request.user.default_custom_columns
 
-    if columns == '{}' or type(columns) == dict:
-        initial_columns = True
+    if columns == '{}' or isinstance(columns, dict):
         columns = DEFAULT_CUSTOM_COLUMNS
-    else:
-        initial_columns = False
-    if type(columns) == unicode:
+    if isinstance(columns, unicode):
         # postgres 9.1 stores JsonField as unicode
         columns = json.loads(columns)
 
     return {
-        'status': 'success',
         'columns': columns,
-        'initial_columns': initial_columns,
     }
 
 
 @ajax_request
 @login_required
-def set_default_columns(request):
+def get_default_building_detail_columns(request):
+    """Get default columns for building detail view.
+
+    front end is expecting a JSON object with an array of field names
+        i.e.
+        {
+            "columns": ["project_id", "name", "gross_floor_area"]
+        }
+    """
+    columns = request.user.default_building_detail_custom_columns
+
+    if columns == '{}' or isinstance(columns, dict):
+        # Return empty result, telling the FE to show all.
+        columns = []
+    if isinstance(columns, unicode):
+        # postgres 9.1 stores JsonField as unicode
+        columns = json.loads(columns)
+
+    return {
+        'columns': columns,
+    }
+
+
+def _set_default_columns_by_request(body, user, field):
     """sets the default value for the user's default_custom_columns"""
-    body = json.loads(request.body)
     columns = body['columns']
     show_shared_buildings = body.get('show_shared_buildings')
-    request.user.default_custom_columns = columns
+    setattr(user, field, columns)
     if show_shared_buildings is not None:
-        request.user.show_shared_buildings = show_shared_buildings
-    request.user.save()
-    return {'status': 'success'}
+        user.show_shared_buildings = show_shared_buildings
+    user.save()
+    return {}
+
+
+@ajax_request
+@login_required
+def set_default_columns(request):
+    body = json.loads(request.body)
+    return _set_default_columns_by_request(body, request.user, 'default_custom_columns')
+
+
+@ajax_request
+@login_required
+def set_default_building_detail_columns(request):
+    body = json.loads(request.body)
+    return _set_default_columns_by_request(body, request.user, 'default_building_detail_custom_columns')
 
 
 @ajax_request
@@ -2108,34 +2151,41 @@ def delete_buildings(request):
         {'status': 'success' or 'error'}
     """
     # get all orgs the user is in where the user is a member or owner
-    orgs = request.user.orgs.filter(
-        organizationuser__role_level__gte=ROLE_MEMBER
-    )
     body = json.loads(request.body)
-    body = body['search_payload']
+    search_payload = body['search_payload']
 
-    selected_building_ids = body.get('selected_buildings', [])
+    params = search.process_search_params(
+        body['search_payload'],
+        request.user,
+        is_api_request=False,
+    )
 
-    if not body.get('select_all_checkbox', False):
+    buildings_queryset = search.orchestrate_search_filter_sort(
+        params=params,
+        user=request.user,
+        skip_sort=True,
+    )
+
+    if search_payload.get('select_all_checkbox', False):
         # only get the manually selected buildings
-        selected_buildings = get_search_query(request.user, {})
-        selected_buildings = selected_buildings.filter(
-            pk__in=selected_building_ids,
-            super_organization__in=orgs
-        )
+        selected_buildings = buildings_queryset
     else:
+        selected_building_ids = search_payload.get('selected_buildings', [])
         # get all buildings matching the search params minus the de-selected
-        selected_buildings = get_search_query(request.user, body)
-        selected_buildings = selected_buildings.exclude(
+        selected_buildings = buildings_queryset.filter(
             pk__in=selected_building_ids,
-        ).filter(super_organization=orgs)
+        )
 
     tasks.log_deleted_buildings.delay(
-        list(selected_buildings.values_list('id', flat=True)), request.user.pk
+        tuple(selected_buildings.values_list('id', flat=True)), request.user.pk
     )
     # this step might have to move into a task
     CanonicalBuilding.objects.filter(
-        buildingsnapshot=selected_buildings
+        # This is a stop-gap solution for a bug in django-pgjson
+        # https://github.com/djangonauts/django-pgjson/issues/35
+        # - once a release has been made with this fixed the 'tuple'
+        # casting can be removed.
+        buildingsnapshot__in=tuple(selected_buildings)
     ).update(active=False)
     return {'status': 'success'}
 
@@ -2227,7 +2277,7 @@ def get_building_summary_report_data(request):
     # Read in x and y vars requested by client
     try:
         orgs = [request.GET.get('organization_id')]  # How should we capture user orgs here?
-    except Exception, e:
+    except Exception as e:
         msg = "Error while calling the API function get_scatter_data_series, missing parameter"
         _log.error(msg)
         _log.exception(str(e))
@@ -2336,7 +2386,8 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     # in the future if it should search extra_data but extra_data is still not
     # searchable directly then this can be adjusted by replacing the last None with
     # obj.extra_data[attr] if hasattr(obj, "extra_data") and attr in obj.extra_data else None
-    get_attr_f = lambda obj, attr: getattr(obj, attr) if hasattr(obj, attr) else None
+    def get_attr_f(obj, attr):
+        return getattr(obj, attr, None)
 
     bldg_counts = {}
 
@@ -2344,7 +2395,7 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
         # The data is meaningless here aside if there is no valid year_ending value
         # even though the query at the beginning specifies a date range since this is using the tree
         # some other records without a year_ending may have snuck back in.  Ignore them here.
-        if not hasattr(snapshot, "year_ending") or type(snapshot.year_ending) != datetime.date:
+        if not hasattr(snapshot, "year_ending") or not isinstance(snapshot.year_ending, datetime.date):
             return
         # if the snapshot is not in the date range then don't process it
         if not(from_date <= snapshot.year_ending <= end_date):
@@ -2578,7 +2629,7 @@ def get_building_report_data(request):
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
 
-    except Exception, e:
+    except Exception as e:
         msg = "Error while calling the API function get_building_report_data, missing parameter"
         _log.error(msg)
         _log.exception(str(e))
@@ -2596,7 +2647,7 @@ def get_building_report_data(request):
     try:
         from_date = parse(from_date).date()
         end_date = parse(end_date).date()
-    except Exception, e:
+    except Exception as e:
         msg = "Couldn't convert date strings to date objects"
         _log.error(msg)
         _log.exception(str(e))
@@ -2784,7 +2835,7 @@ def get_aggregated_building_report_data(request):
         orgs = [request.GET['organization_id']]  # How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
-    except KeyError, e:
+    except KeyError as e:
         msg = "Error while calling the API function get_aggregated_building_report_data, missing parameter"  # NOQA
         _log.error(msg)
         _log.exception(str(e))
@@ -2807,7 +2858,7 @@ def get_aggregated_building_report_data(request):
     try:
         dt_from = parse(from_date)
         dt_to = parse(end_date)
-    except Exception, e:
+    except Exception as e:
         msg = "Couldn't convert date strings to date objects"
         _log.error(msg)
         _log.exception(str(e))

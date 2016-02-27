@@ -39,7 +39,7 @@ Cake Systems
 
 ---
 NREL		
-- Nick Long (https://github.com/nllong)
+- Nicholas Long (https://github.com/nllong)
 - Alex Swindler (https://github.com/axelstudios)
 
 ---

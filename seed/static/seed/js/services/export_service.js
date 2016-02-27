@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // dataset services
@@ -7,9 +7,9 @@ angular.module('BE.seed.service.export', []).factory('export_service', [
   '$http',
   '$q',
   function ($http, $q) {
-    var export_factpry = {};
+    var export_factory = {};
 
-    export_factpry.export_buildings = function(buildings_payload) {
+    export_factory.export_buildings = function(buildings_payload) {
         var defer = $q.defer();
         $http({
             method: 'POST',
@@ -22,7 +22,7 @@ angular.module('BE.seed.service.export', []).factory('export_service', [
         });
         return defer.promise;
     };
-    export_factpry.export_buildings_progress = function(export_id) {
+    export_factory.export_buildings_progress = function(export_id) {
         var defer = $q.defer();
         $http({
             method: 'POST',
@@ -35,7 +35,7 @@ angular.module('BE.seed.service.export', []).factory('export_service', [
         });
         return defer.promise;
     };
-    export_factpry.export_buildings_download = function(export_id) {
+    export_factory.export_buildings_download = function(export_id) {
         var defer = $q.defer();
         $http({
             method: 'POST',
@@ -49,5 +49,5 @@ angular.module('BE.seed.service.export', []).factory('export_service', [
         return defer.promise;
     };
 
-    return export_factpry;
+    return export_factory;
 }]);

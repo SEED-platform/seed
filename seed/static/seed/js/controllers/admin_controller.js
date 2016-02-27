@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.admin', [])
@@ -55,11 +55,11 @@ angular.module('BE.seed.controller.admin', [])
             // resolve promise
             $scope.user_form.invalid = false;
 
-            var alert_message = 'User ' + user.email + 'created and added ';
+            var alert_message = 'User ' + user.email + ' created and added';
             if (data.org_created){
-                alert_message = alert_message + " as head of new org " + data.org;
+                alert_message = alert_message + ' as head of new org ' + data.org;
             } else {
-                alert_message = alert_message + " to existing org " + data.org;
+                alert_message = alert_message + ' to existing org ' + data.org;
             }
 
             update_alert(true, alert_message);

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from seed.models import Project, ProjectBuilding
@@ -109,9 +109,9 @@ def copy_buildings(source_project, target_project, buildings,
     pbs = []
     for b in pb_queryset:
             # setting pk to None will create a copy the django instance
-            b.pk = None
-            b.project = target_project
-            pbs.append(b)
+        b.pk = None
+        b.project = target_project
+        pbs.append(b)
 
     ProjectBuilding.objects.bulk_create(pbs)
 

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 from django.core.exceptions import ObjectDoesNotExist
@@ -95,10 +95,10 @@ class UpdateBuildingLabelsAPIView(generics.GenericAPIView):
             {
                 "add_label_ids": {array}            Array of label ids to apply to selected buildings
                 "remove_label_ids": {array}         Array of label ids to remove from selected buildings
-                "buildings": {array}                Array of building ids to apply/remove labels. (this will be empty or null if select_all_checkbox is true),  # NOQA
+                "selected_buildings": {array}       Array of building ids to apply/remove labels. (this will be empty or null if select_all_checkbox is true),  # NOQA
                 "select_all_checkbox": {boolean},   Whether select all checkbox was selected on building list
                 "filter_params": {object}           A 'filter params' object containing key/value pairs for selected filters  # NOQA
-                "org_id": {integer}                 The user's org ID
+                "organization_id": {integer}        The user's org ID
             }
 
         Returns::
@@ -112,7 +112,11 @@ class UpdateBuildingLabelsAPIView(generics.GenericAPIView):
         """
         building_snapshots = self.filter_queryset(self.get_queryset())
         queryset = CanonicalBuilding.objects.filter(
-            id__in=building_snapshots.values_list('canonical_building', flat=True),
+            # This is a stop-gap solution for a bug in django-pgjson
+            # https://github.com/djangonauts/django-pgjson/issues/35
+            # - once a release has been made with this fixed the 'tuple'
+            # casting can be removed.
+            id__in=tuple(building_snapshots.values_list('canonical_building', flat=True)),
         )
         serializer = self.get_serializer(
             data=self.request.data,
@@ -121,8 +125,13 @@ class UpdateBuildingLabelsAPIView(generics.GenericAPIView):
         )
         serializer.is_valid(raise_exception=True)
 
+        # This needs to happen before `save()` so that we get an accurate
+        # number.  Otherwise, if the save changes the underlying queryset the
+        # call to `count()` will re-evaluate and return a different number.
+        num_updated = building_snapshots.count()
+
         serializer.save()
 
         return response.Response({
-            "num_buildings_updated": building_snapshots.count(),
+            "num_buildings_updated": num_updated,
         })

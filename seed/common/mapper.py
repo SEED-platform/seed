@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2015, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Dan Gunter <dkgunter@lbl.gov>
 """
 from fnmatch import fnmatchcase
@@ -268,6 +268,7 @@ class MapItem(object):
     - is_bedes => flag, whether this field is BEDES-compliant
     - is_numeric => whether the data is numeric (or string)
     """
+
     def __init__(self, key, item):
         """Construct from key and item.
         :param key: The source field for the mapping

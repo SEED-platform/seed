@@ -1,5 +1,6 @@
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 
 from django.contrib.auth.decorators import login_required
@@ -22,5 +23,7 @@ def stats(request):
         StdDev('gross_floor_area'),
     )
 
-    return render_to_response('stats/stats.html',
-        locals(), context_instance=RequestContext(request))
+    return render_to_response(
+        'stats/stats.html',
+        locals(),
+        context_instance=RequestContext(request))

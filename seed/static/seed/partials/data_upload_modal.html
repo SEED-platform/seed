@@ -35,9 +35,9 @@
             </div>
             <div class="form-group col-lg-12 col-sm-12">
                 <div class="row">
-                    <div class="col-lg-4" be-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload a spreadsheet" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
-                    <div class="col-lg-4 orange_button" be-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Upload Portfolio Manager data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
-                    <div class="col-lg-8 green_button" be-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Green Button Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                    <div class="col-lg-4" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload a spreadsheet" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                    <div class="col-lg-4 orange_button" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Upload Portfolio Manager data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                    <div class="col-lg-8 green_button" sd-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Green Button Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                 </div>
                 <div class="progress_bar_container" ng-show="uploader.in_progress">
                     <div class="progress_bar_copy_top">Uploading <strong>{$ dataset.filename $}</strong></div>
@@ -73,7 +73,7 @@
                 <strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported.
             </div>
             <div class="form-group col-lg-12 col-sm-12">
-                <div be-uploader sourcetype="Portfolio Raw" importrecord="dataset.id" buttontext="Upload your energy data file(s)" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                <div sd-uploader sourcetype="Portfolio Raw" importrecord="dataset.id" buttontext="Upload your energy data file(s)" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                 <div class="progress_bar_container" ng-show="uploader.in_progress">
                     <div class="progress_bar_copy_top">Uploading <strong>{$ dataset.filename $}</strong></div>
 
