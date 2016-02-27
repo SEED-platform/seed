@@ -1727,7 +1727,7 @@ def delete_dataset(request):
     Deletes all files from a dataset and the dataset itself.
 
     :DELETE: payload:
-    
+
     {
         "dataset_id": 1,
         "organization_id": 1
