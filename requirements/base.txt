@@ -36,7 +36,7 @@ django-autoslug==1.8.0
 pytz==2012h
 
 # background process management
-# django-celery==3.1.16
+django-celery==3.1.16
 celery==3.1.18
 redis==2.10.3
 flower==0.8.3
