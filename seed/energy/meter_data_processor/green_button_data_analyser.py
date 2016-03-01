@@ -16,7 +16,7 @@ global interval_threshold
 interval_threshold = 60 * 60 * 24 * 20  # 20 days seconds
 
 
-def getMonthFromTS(ts):
+def get_month_from_ts(ts):
     dateObj = datetime.fromtimestamp(long(ts))
     return {'year': int(dateObj.year), 'month': int(dateObj.month)}
 
@@ -52,7 +52,7 @@ def data_analyse(ts_data, name):
         if interval < interval_threshold:
             ts_cell['insert_date'] = today_str
 
-            ts_dateObj = getMonthFromTS(ts_cell['start'])
+            ts_dateObj = get_month_from_ts(ts_cell['start'])
             if ts_dateObj['month'] != today_month and ts_dateObj['year'] != today_year:
                 # has back filling
                 immediate_aggregate = True
