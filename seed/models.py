@@ -1554,7 +1554,7 @@ class NonCanonicalProjectBuildings(models.Model):
 
 class AttributeOption(models.Model):
     """Holds a single conflicting value for a BuildingSnapshot attribute."""
-    value = models.CharField(max_length=255)
+    value = models.TextField()
     value_source = models.IntegerField(choices=SEED_DATA_SOURCES)
     building_variant = models.ForeignKey(
         'BuildingAttributeVariant',
