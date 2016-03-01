@@ -4,7 +4,7 @@
 .. toctree::
    :maxdepth: 4
 
-   BE
+   config
    data_importer
    landing
    manage
