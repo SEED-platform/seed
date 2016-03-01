@@ -145,7 +145,7 @@ class JsonQuerySet(QuerySet):
 
         # Perhaps in Django 1.7 and its custom field definitions,
         # this will be easily doable.
-        if not cond or not excludes:
+        if not order_by and (not cond or not excludes):
             # Restrict the number of rows we materialize
             qs = qs.filter(**{'{0}__contains'.format(field): key})
 
