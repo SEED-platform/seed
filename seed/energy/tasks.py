@@ -15,7 +15,7 @@ LOCK_EXPIRE = 60 * 60 * 24 * 30  # Lock expires in 30 days
 
 
 def datetime_to_timestamp(dt):
-    return (dt - datetime.datetime(1970, 1, 1)).total_seconds()
+    return (dt - datetime(1970, 1, 1)).total_seconds()
 
 
 def increment_day(date_str):
@@ -126,7 +126,7 @@ def aggregate_monthly_data(building_id=-1):
     _log.info('Starting Aggregation')
     # find out last month's start and end timestamps
     monthlist = [1, 3, 5, 7, 8, 10, 12]
-    today = datetime.datetime.today()
+    today = datetime.today()
     # last month
     if today.month == 1:
         lastmonth = today.replace(year=(today.year - 1))
