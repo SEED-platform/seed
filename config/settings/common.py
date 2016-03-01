@@ -224,15 +224,16 @@ CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
 CELERY_TASK_RESULT_EXPIRES = 18000  # 5 hours
 
+CELERY_IMPORTS = ('seed.energy.meter_data_processor.tasks')
 CELERYBEAT_SCHEDULE = {
-    'Run daily': {
-        'task': 'seed.energy.tasks.aggregate_monthly_data',
-        'schedule': timedelta(seconds=2), # For Demo purpose, should be days=1 in product environment
+    'Run monthly': {
+        'task': 'seed.energy.meter_data_processor.tasks.aggregate_monthly_data',
+        'schedule': timedelta(weeks=4),
         'args': ()
     },
-    'Run monthly': {
-        'task': 'seed.energy.tasks.green_button_task_runner',
-        'schedule': timedelta(seconds=5), # For Demo purpose, should be months=1 in product environment
+    'Run daily': {
+        'task': 'seed.energy.meter_data_processor.tasks.green_button_task_runner',
+        'schedule': timedelta(days=1),
         'args': ()
     },
 }

@@ -72,6 +72,7 @@ from django.http import HttpResponseBadRequest
 
 from seed.energy.pm_energy_template import pm_energy_processor, energy_template_process
 from seed.energy.meter_data_processor import green_button_data_analyser
+from seed.energy.meter_data_processor.tasks import process_green_button_batch_request
 from dateutil.parser import parse
 from collections import defaultdict
 
@@ -2385,6 +2386,8 @@ def save_gb_request_info(request):
     record = GreenButtonBatchRequestsInfo.objects.filter(building_id=building_id)
     if not record:
         record = GreenButtonBatchRequestsInfo(url=url, last_date=last_date, min_date_parameter=min_date_parameter, max_date_parameter=max_date_parameter, building_id=building_id, active=active, time_type=time_type, date_pattern=date_pattern, subscription_id=subscription_id)
+        record.save()
+        process_green_button_batch_request.delay(record.id, url, subscription_id, building_id, time_type, date_pattern, min_date_parameter, last_date, max_date_parameter)
     else:
         record = GreenButtonBatchRequestsInfo.objects.get(building_id=building_id)
         record.url = url
@@ -2394,8 +2397,8 @@ def save_gb_request_info(request):
         record.active = active
         record.time_type = time_type
         record.date_pattern = date_pattern
-
-    record.save()
+        record.save()
+        process_green_button_batch_request.delay(record.id, url, subscription_id, building_id, time_type, date_pattern, min_date_parameter, record.last_date, max_date_parameter)
 
 
 @api_endpoint

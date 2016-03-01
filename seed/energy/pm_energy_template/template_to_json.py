@@ -20,9 +20,25 @@ def pm_to_json_single(excel, file_path):
     '''
     Assume PM is in local time
     '''
-    _log.info('\ntemplate to json:{0}'.format(excel))
+
     meter_con_df = pd.read_excel(excel, sheetname=0)
-    _log.debug(meter_con_df.ix[:10])
+    
+    # Replace empty cell with NaN
+    for c in meter_con_df.select_dtypes(include=["object"]).columns:
+        meter_con_df[c] = meter_con_df[c].replace('', np.nan)
+
+    # Remove rows missing critical data
+    meter_con_df = meter_con_df.dropna(axis=0, how='any', subset = ['Street Address', 
+                                                                    'Meter Type', 
+                                                                    'Start Date', 
+                                                                    'End Date', 
+                                                                    'Usage/Quantity', 
+                                                                    'Usage Units'])
+
+    # Set default value if non-critical fields are missing
+    meter_con_df['Custom Meter ID'] = meter_con_df.apply(lambda row: row['Meter Type'] + '_Meter' if np.isnan(row['Custom Meter ID']) else row['Custom Meter ID'], axis=1) # axis=1, apply to each row
+    meter_con_df['Custom ID'] = meter_con_df.apply(lambda row:'1' if np.isnan(row['Custom ID']) else row['Custom ID'], axis=1)
+    meter_con_df['Cost ($)'] = meter_con_df.apply(lambda row:'NA' if np.isnan(row['Cost ($)']) else row['Cost ($)'], axis=1)
 
     _log.info('start query')
     address = meter_con_df['Street Address'].values
@@ -43,8 +59,6 @@ def pm_to_json_single(excel, file_path):
     meter_con_df['Start Date'] = meter_con_df['Start Date'].map(lambda x: x + dt.timedelta(hours=12))
 
     meter_con_df['reading_kind'] = 'energy'
-
-    meter_con_df['Custom Meter ID'] = meter_con_df.apply(lambda row: row['Meter Type'] + '_Meter' if np.isnan(row['Custom Meter ID']) else row['Custom Meter ID'], axis=1)
 
     # renaming columns of df
     name_lookup = {u'Start Date': u'start',
