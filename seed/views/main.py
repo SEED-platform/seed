@@ -1246,8 +1246,7 @@ def get_column_mapping_suggestions(request):
         .get(organization_id=org_id, user=request.user)
     organization = membership.organization
 
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'),
-        import_record__super_organization_id=organization.pk)
+    import_file = ImportFile.objects.get(pk=body.get('import_file_id'), import_record__super_organization_id=organization.pk)
 
     # Make a dictionary of the column names and their respective types.
     # Build this dictionary from BEDES fields (the null organization columns,
@@ -1260,17 +1259,21 @@ def get_column_mapping_suggestions(request):
     # Note on exclude:
     # mappings get created to mappable types but we deal with them manually
     # so don't include them here
-    columns = list(Column.objects.select_related('unit') \
-        .filter(Q(mapped_mappings__super_organization_id=org_id) | Q(organization__isnull=True)) \
-        .exclude(column_name__in=field_names))
+    columns = list(
+        Column.objects.select_related('unit')
+        .filter(Q(mapped_mappings__super_organization_id=org_id) | Q(organization__isnull=True))
+        .exclude(column_name__in=field_names)
+    )
 
     # Query Schema-Column through table directly for all joins for these columns.
-    column_schemas = list(Schema.columns.through.objects \
-        .filter(column_id__in=[c.pk for c in columns]) \
-        .values('pk', 'column_id', 'schema_id'))
+    column_schemas = list(
+        Schema.columns.through.objects
+        .filter(column_id__in=[c.pk for c in columns])
+        .values('pk', 'column_id', 'schema_id')
+    )
 
     # Map of column_id to list of {'schema_id': id, 'pk': pk} joins.
-    column_schema_map  = {}
+    column_schema_map = {}
     for cs in column_schemas:
         obj = {'schema_id': cs['schema_id'], 'pk': cs['pk']}
         try:
