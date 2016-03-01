@@ -1597,7 +1597,7 @@ class Meter(models.Model):
 
 
 class TimeSeries(models.Model):
-    """For storing engergy use over time."""
+    """For storing energy use over time."""
     begin_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     reading = models.FloatField(null=True)

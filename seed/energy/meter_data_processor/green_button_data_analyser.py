@@ -66,10 +66,15 @@ def data_analyse(ts_data, name):
 
         # create or retrieve seed_meter_id
         if not building_id + '_' + custom_meter_id in cache:
-            res = Meter.objects.filter(custom_meter_id=custom_meter_id).select_related().filter(canonical_building=building_id)
+            res = Meter.objects.filter(custom_meter_id=custom_meter_id).select_related().filter(
+                canonical_building=building_id
+            )
             if not res:
                 # create new meter record
-                new_meter = Meter(name=(name + ' METER'), energy_type=ts_cell['energy_type_int'], energy_units=ts_cell['uom_int'], custom_meter_id=ts_cell['custom_meter_id'])
+                new_meter = Meter(name=(name + ' METER'),
+                                  energy_type=ts_cell['energy_type_int'],
+                                  energy_units=ts_cell['uom_int'],
+                                  custom_meter_id=ts_cell['custom_meter_id'])
                 new_meter.save()
                 new_meter.canonical_building.add(CanonicalBuilding.objects.get(id=building_id))
 
@@ -89,7 +94,10 @@ def data_analyse(ts_data, name):
         begin_ts = int(ts_cell['start'])
         interval = int(ts_cell['interval'])
 
-        new_ts = TimeSeries(begin_time=datetime.fromtimestamp(begin_ts), end_time=datetime.fromtimestamp(begin_ts + interval), reading=float(ts_cell['value']), meter_id=seed_meter_id)
+        new_ts = TimeSeries(begin_time=datetime.fromtimestamp(begin_ts),
+                            end_time=datetime.fromtimestamp(begin_ts + interval),
+                            reading=float(ts_cell['value']),
+                            meter_id=seed_meter_id)
         new_ts.save()
 
     _log.info('insert monthly data into postgresql finished')

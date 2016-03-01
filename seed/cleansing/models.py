@@ -267,6 +267,7 @@ class Rules(models.Model):
 
 
 class Cleansing(object):
+
     def __init__(self, organization, *args, **kwargs):
         """
         Initialize the Cleansing class.
