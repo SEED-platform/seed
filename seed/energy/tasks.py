@@ -42,9 +42,7 @@ def green_button_task_runner():
     # Tasks are distributed to all workers in Round-Robin style
     _log.debug("running green_button_task_runner")
     stats = current_app.control.inspect().stats()
-    print stats
     num_process = len(stats[stats.keys()[0]]['pool']['processes'])
-    print num_process
     offset = current_process().index
 
     record = GreenButtonBatchRequestsInfo.objects.filter(active='Y')

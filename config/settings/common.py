@@ -225,12 +225,12 @@ CELERY_TASK_RESULT_EXPIRES = 18000  # 5 hours
 CELERYBEAT_SCHEDULE = {
     'Run daily': {
         'task': 'seed.energy.tasks.aggregate_monthly_data',
-        'schedule': timedelta(seconds=2), # For Demo purpose, should be days=1 in product environment
+        'schedule': timedelta(seconds=300), # For Demo purpose, should be days=1 in product environment
         'args': ()
     },
     'Run monthly': {
         'task': 'seed.energy.tasks.green_button_task_runner',
-        'schedule': timedelta(seconds=5), # For Demo purpose, should be months=1 in product environment
+        'schedule': timedelta(seconds=120), # For Demo purpose, should be months=1 in product environment
         'args': ()
     },
 }

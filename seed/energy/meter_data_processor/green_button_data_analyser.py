@@ -3,7 +3,7 @@ from datetime import date, datetime
 from time import sleep
 
 from seed.energy.meter_data_processor import kairos_insert as tsdb
-from seed.energy.meter_data_processor import monthly_data_aggregator as aggregator
+from seed.energy.meter_data_processor.monthly_data_aggregator import aggr_sum_metric
 from seed.models import (
     Meter,
     CanonicalBuilding,
@@ -98,7 +98,9 @@ def data_analyse(ts_data, name):
     _log.info('insert ts data into KairosDB finished: ' + str(insert_flag))
 
     if insert_flag and immediate_aggregate:
+        # TODO: is there another way to check for the data to be inserted?
         sleep(5)  # wait for data inserted
         _log.info('Having back filling data, aggregate immediately')
-        aggregator.aggregatemonthlysum(ts_data[0]['canonical_id'])
+        # TODO: fix the time zone
+        aggr_sum_metric(ts_data)
         _log.info('Immediate aggregation finished')

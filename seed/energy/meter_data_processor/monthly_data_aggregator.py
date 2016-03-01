@@ -29,8 +29,8 @@ def aggr_sum_metric(data, localtzone):
     data = json.dumps(data)
 
     r = requests.post(url, data=data, headers=headers)
-    # length of output array. Should be 1 per group since it's monthly aggregation and we are querying only for one month
 
+    # length of output array. Should be 1 per group since it's monthly aggregation and we are querying only for one month
     if 'queries' not in r.json():
         return
 
