@@ -25,10 +25,9 @@ def get_api_schema(request):
         }
 
 
-    TODO: Should this require authentication?  Should it limit the return
-    to endpoints the user has authorization for?
+    .. todo:: Should this require authentication?  Should it limit the return to endpoints the user has authorization for?
 
-    TODO:  Format docstrings better.
+    .. todo:: Format docstrings better.
     """
     endpoints = get_api_endpoints()
 
