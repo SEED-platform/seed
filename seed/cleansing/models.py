@@ -267,6 +267,7 @@ class Rules(models.Model):
 
 
 class Cleansing(object):
+
     def __init__(self, organization, *args, **kwargs):
         """
         Initialize the Cleansing class.
@@ -617,7 +618,7 @@ class Cleansing(object):
             "sort_column": "gross_floor_area",
         },
         {
-            "title": "Energy Star Score",
+            "title": "Energy Score",
             "sort_column": "energy_score",
         },
         {

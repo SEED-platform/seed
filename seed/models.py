@@ -1554,7 +1554,7 @@ class NonCanonicalProjectBuildings(models.Model):
 
 class AttributeOption(models.Model):
     """Holds a single conflicting value for a BuildingSnapshot attribute."""
-    value = models.CharField(max_length=255)
+    value = models.TextField()
     value_source = models.IntegerField(choices=SEED_DATA_SOURCES)
     building_variant = models.ForeignKey(
         'BuildingAttributeVariant',
@@ -1597,7 +1597,7 @@ class Meter(models.Model):
 
 
 class TimeSeries(models.Model):
-    """For storing engergy use over time."""
+    """For storing energy use over time."""
     begin_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     reading = models.FloatField(null=True)

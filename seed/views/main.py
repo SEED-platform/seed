@@ -248,7 +248,7 @@ def export_buildings(request):
     if body.get('select_all_checkbox', False):
         selected_buildings = buildings_queryset
     else:
-        selected_buildings = selected_buildings.filter(
+        selected_buildings = buildings_queryset.filter(
             pk__in=selected_building_ids
         )
 
@@ -746,6 +746,7 @@ def search_building_snapshots(request):
     # doesn't parse them as extra_data
     db_columns = get_mappable_types()
     db_columns['children__isnull'] = ''
+    db_columns['children'] = ''
     db_columns['project__slug'] = ''
     db_columns['import_file_id'] = ''
 

@@ -187,7 +187,7 @@ class CleansingDataTestPM(TestCase):
     def test_cleanse(self):
         # Import the file and run mapping
 
-        # Year Ending,ENERGY STAR Score,Total GHG Emissions (MtCO2e),Weather Normalized Site EUI (kBtu/ft2),
+        # Year Ending,Energy Score,Total GHG Emissions (MtCO2e),Weather Normalized Site EUI (kBtu/ft2),
         # National Median Site EUI (kBtu/ft2),Source EUI (kBtu/ft2),Weather Normalized Source EUI (kBtu/ft2),
         # National Median Source EUI (kBtu/ft2),Parking - Gross Floor Area (ft2),Organization
         # Release Date
