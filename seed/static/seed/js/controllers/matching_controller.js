@@ -360,7 +360,7 @@ angular.module('BE.seed.controller.matching', [])
      *   in the matching list table, sets the table buildings from the building_payload
      */
     $scope.init = function() {
-        $scope.columns = building_services.create_column_array($scope.fields, $scope.default_columns);
+        $scope.columns = search_service.generate_columns($scope.fields, $scope.default_columns);
         update_start_end_paging();
         $scope.buildings = buildings_payload.buildings;
         $scope.number_matching_search = buildings_payload.number_matching_search;
