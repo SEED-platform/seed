@@ -9,7 +9,7 @@ API Testing for remote SEED installations.
 
 Instructions:
 - Download the three python modules: test_seed_host_api.py, seed_readingtools.py, test_modules.py
-as well as seed_API_test.ini and the folder seed-sample-data in a custom directory
+as well as seed_API_test.ini and the folder ../data in a custom directory
 
 - Fill out the different fields in seed_API_test.ini by replacing the <content> on each line (don't include the <>)
 
@@ -45,7 +45,7 @@ from test_modules import upload_match_sort, account, delete_set, search_and_proj
 
 # ---
 # Set up the request credentials
-defaultchoice = raw_input('Use "seed_API_test.ini" credentials? [Y]es or Press Any Key')
+defaultchoice = raw_input('Use "seed_API_test.ini" credentials? [Y]es or Press Any Key ')
 
 if defaultchoice.upper() == 'Y':
     with open('seed_API_test.txt', 'r') as f:
@@ -76,7 +76,7 @@ fileout.close()
 
 log = setup_logger(fileout_name)
 
-sample_dir = os.path.join("seed-sample-data")
+sample_dir = os.path.join("../data")
 
 raw_building_file = os.path.relpath(os.path.join(sample_dir, 'covered-buildings-sample.csv'))
 assert (os.path.isfile(raw_building_file)), 'Missing file '+raw_building_file
