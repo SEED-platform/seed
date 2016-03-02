@@ -11,7 +11,7 @@ def best_match(s, categories, top_n=5):
     """Return the top N best matches from your categories with the best match
     in the 0th position of the return list.
     Usage:
-            >>> best_match('ilinois', ['Michigan', 'Ohio', 'Illinois'], 2)
+            >>> best_match('illinois', ['Michigan', 'Ohio', 'Illinois'], 2)
             [('Illinois', 96), ('Michigan', 22)]
 
     :param s: str value to find best match

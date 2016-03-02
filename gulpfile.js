@@ -31,6 +31,7 @@ gulp.task('jshint', function () {
     .pipe(jshint())
     .pipe(jshint.reporter('jshint-stylish'));
 });
+
 gulp.task('jshint:fix', function () {
   return gulp.src(conf.jshintPattern, {
     base: '.'

@@ -35,6 +35,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
   'mapping_service',
   'matching_service',
   'building_services',
+  'spinner_utility',
   function (
     $scope,
     $uibModalInstance,
@@ -46,7 +47,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     $location,
     mapping_service,
     matching_service,
-    building_services
+    building_services,
+    spinner_utility
     ) {
     $scope.step_10_style = "info";
     $scope.step_10_title = "load more data";
@@ -118,7 +120,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     };
     $scope.view_my_buildings = function () {
         $uibModalInstance.close();
+        spinner_utility.show();
         $location.path('/buildings/');
+        spinner_utility.hide();
     };
     /**
      * cancel: dismissed the modal, routes to the dismiss function of the parent
