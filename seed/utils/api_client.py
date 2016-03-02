@@ -279,7 +279,7 @@ class APIClient(object):
         depending on where the SEED instance stores files.
 
         Args:
-            filepath: Full path to file on local filesystem.
+            filepath: Full path to file on local file system.
             import_record_id: ID of the dataset to associate file with.
             source_type: Usually one of 'Assessed Raw' or 'Portfolio Raw'
 
@@ -305,7 +305,7 @@ class APIClient(object):
         self, filepath, upload_details, import_record_id, source_type
     ):
         """
-        Implements uploading to SEED's filesystem. Used by
+        Implements uploading to SEED's file system. Used by
         upload_file if SEED in configured for local file storage.
 
         Args:
@@ -316,9 +316,11 @@ class APIClient(object):
             source_type: Type of data in file (Assessed Raw, Portfolio Raw)
 
         Returns:
-            {"import_file_id": 54,
-             "success": true,
-             "filename": "DataforSEED_dos15.csv"}
+            {
+                "import_file_id": 54,
+                "success": true,
+                "filename": "DataforSEED_dos15.csv"
+            }
         """
         filename = os.path.basename(filepath)
         upload_url = "%s%s" % (self.base_url, upload_details['upload_path'])

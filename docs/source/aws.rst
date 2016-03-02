@@ -3,14 +3,14 @@ AWS Setup
 
 Amazon Web Services (`AWS`_) provides the preferred hosting for SEED.
 
-**seed** is a `Django project`_ and Django's documentation
-is an excellent place to general understanding of this project's layout.
+**seed** is a `Django Project`_ and Django's documentation
+is an excellent place for general understanding of this project's layout.
 
-.. _Django project: https://www.djangoproject.com/
+.. _Django Project: https://www.djangoproject.com/
 
 .. _AWS: http://aws.amazon.com/
 
-Pre-requisites
+Prerequisites
 ^^^^^^^^^^^^^^
 
 Ubuntu server 13.10 or newer, with the following list of *aptitude packages*
@@ -31,17 +31,13 @@ or with a single command as ``su``
 
 .. note::
 
-    postgresql server is not included above, and it is assumed that the system
-    will use the AWS RDS postgresql service
+    PostgresSQL server is not included above, and it is assumed that the system
+    will use the AWS RDS PostgresSQL service
 
 .. note:: postgresql ``>=9.3`` is required to support `JSON Type`_
 
 
-
-
-
 .. _JSON Type: http://www.postgresql.org/docs/9.3/static/datatype-json.html
-
 
 
 A smaller list of packages to get going:
@@ -69,31 +65,29 @@ The following AWS services are used for **seed**:
 Python Dependencies
 ^^^^^^^^^^^^^^^^^^^
 
-clone the **seed** repository from **github**
+Clone the **seed** repository from **github**
 
 .. code-block:: console
 
     $ git clone git@github.com:SEED-platform/seed.git
 
-enter the repo and install the python dependencies from `requirements.txt`_
+enter the repo and install the python dependencies from `requirements`_
 
-.. _requirements.txt: https://github.com/SEED-platform/seed/blob/master/requirements.txt
+.. _requirements: https://github.com/SEED-platform/seed/blob/master/requirements/local.txt
 
 .. code-block:: console
 
     $ cd seed
-    $ sudo pip install -r requirements.txt
+    $ sudo pip install -r requirements/local.txt
 
 
 JavaScript Dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-``npm`` is required to install the JS dependencies. The ``bin/install_javascript_dependencies.sh``
-script will download all JavaScript dependencies and build them. ``bower`` and
-``grunt-cli`` will be installed globally by the
-``install_javascript_dependencies`` script.  The Ubuntu version ``13.10``
-requires a cusomt install of nodejs/npm, and an install scrpt (
-``bin/node-and-npm-in-30s.sh``) is provided to download a stable release and
+``npm`` is required to install the JS dependencies. The ``bin/install_javascript_dependencies.sh`` script will
+download all JavaScript dependencies and build them. ``bower`` and ``grunt-cli`` will be installed globally by
+the ``install_javascript_dependencies`` script.  The Ubuntu version ``13.10`` requires a custom install of
+nodejs/npm, and an install script (``bin/node-and-npm-in-30s.sh``) is provided to download a stable release and
 install ``npm`` assuming the prerequisites are met.
 
 .. code-block:: console
@@ -112,11 +106,10 @@ install ``npm`` assuming the prerequisites are met.
 Database Configuration
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Copy the ``local_untracked.py.dist`` file in the ``config/settings`` directory
-to ``config/settings/local_untracked.py``, and add a ``DATABASES`` configuration
-with your database username, password, host, and port. Your database configuration
-can point to an AWS RDS instance or a postgresql 9.3 database instance you have
-manually installed within your infrastructure.
+Copy the ``local_untracked.py.dist`` file in the ``config/settings`` directory to
+``config/settings/local_untracked.py``, and add a ``DATABASES`` configuration with your database username,
+password, host, and port. Your database configuration can point to an AWS RDS instance or a PostgreSQL 9.4 database
+instance you have manually installed within your infrastructure.
 
 .. code-block:: python
 

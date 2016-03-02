@@ -83,7 +83,7 @@ class UtilsTests(TestCase):
             c.canonical_snapshot = b
             b.save()
             c.save()
-        # make a couple extra buidlings
+        # make a couple extra buildings
         BuildingSnapshot.objects.create()
         BuildingSnapshot.objects.create()
         self.assertEqual(get_buildings_for_user_count(self.user), 5)

@@ -72,7 +72,7 @@ class TestBuildingSnapshot(TestCase):
         self.meter.building_snapshot.add(self.bs2)
 
     def _add_additional_fake_buildings(self):
-        """DRY up some test code below where many BSes are needed."""
+        """DRY up some test code below where many BuildingSnapshots are needed."""
         self.bs3 = util.make_fake_snapshot(
             self.import_file1, self.bs1_data, bs_type=seed_models.COMPOSITE_BS,
         )

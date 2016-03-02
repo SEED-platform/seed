@@ -105,7 +105,7 @@ HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 
 INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
-# apps to auto load namespaced urls for JS use (see seed.main.views.home)
+# apps to auto load name spaced URLs for JS use (see seed.main.views.home)
 SEED_URL_APPS = (
     'accounts',
     'ajaxuploader',

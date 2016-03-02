@@ -65,18 +65,21 @@ def search_buildings(q, fieldnames=None, queryset=None):
 
 def generate_paginated_results(queryset, number_per_page=25, page=1,
                                whitelist_orgs=None, below_threshold=False):
-    """returns a page of results as a list from the queryset for the given
-       fields
+    """
+    returns a page of results as a list from the queryset for the given fields
 
     Usage:
         generate_paginated_results(q, 1)
-    Out:
-    [{
-        'gross_floor_area': 1710,
-        'site_eui': 123,
-        'tax_lot_id': u'IMP9-test001',
-        'year_built': 2001
-    }]
+
+    Result:
+        [
+            {
+                'gross_floor_area': 1710,
+                'site_eui': 123,
+                'tax_lot_id': 'a-tax-lot-id',
+                'year_built': 2001
+            }...
+        ]
 
     :param queryset: optional queryset to filter from
     :param int number_per_page: optional number of results per page
@@ -151,9 +154,9 @@ def generate_paginated_results(queryset, number_per_page=25, page=1,
 def is_not_whitelist_building(parent_org, building, whitelist_orgs):
     """returns false if a building is part of the whitelist_orgs
 
-    :param parent_org: the umbrella parent Organization inst.
+    :param parent_org: the umbrella parent Organization instance.
     :param building: the BuildingSnapshot inst.
-    :param whitelist_orgs: queryset of Organization insts.
+    :param whitelist_orgs: queryset of Organization instances.
     :returns: bool
     """
     return parent_org and building.super_organization not in whitelist_orgs
@@ -168,7 +171,7 @@ def filter_other_params(queryset, other_params, db_columns):
 
     :param Django Queryset queryset: queryset to be filtered
     :param dict other_params: dictionary to be parsed and applied to filter.
-    :param dict db_columns: list of column names, extra_data blob outsite these
+    :param dict db_columns: list of column names, extra_data blob outside these
     :returns: Django Queryset:
     """
 
@@ -384,7 +387,7 @@ def build_json_params(order_by, sort_reverse):
     """returns db_columns, extra_data_sort, and updated order_by
 
     :param str order_by: field to order_by
-    :returns: tuple: db_columns: dict of known DB columns i.e. non-JSONfFeld,
+    :returns: tuple: db_columns: dict of known DB columns i.e. non-JsonField,
         extra_data_sort bool if order_by is in ``extra_data`` JsonField,
         order_by str if sort_reverse and DB column prepend a '-' for the django
         order_by

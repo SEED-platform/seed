@@ -172,7 +172,7 @@ def get_best_match(model_a, search_results):
     """Return highest confidence model_b match and its confidence number.
 
     :param model_a: model instance, the known model.
-    :param search_results: a queryset of `model_b` insts returned from `search`
+    :param search_results: a queryset of `model_b` instances returned from `search`
     :rtype tuple: (float, model_b_inst|None)
 
     """

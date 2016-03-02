@@ -2,8 +2,8 @@ General Linux Setup
 ===================
 
 While Amazon Web Services (`AWS`_) provides the preferred hosting for SEED,
-running on a bare-bones linux server follows a similar setup, replacing the
-AWS services with their linux package counterparts, namely: PostgreSQL and
+running on a bare-bones Linux server follows a similar setup, replacing the
+AWS services with their Linux package counterparts, namely: PostgreSQL and
 Redis.
 
 **seed** is a `Django project`_ and Django's documentation
@@ -75,12 +75,10 @@ enter the repo and install the python dependencies from `requirements.txt`_
 JavaScript Dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-``npm`` is required to install the JS dependencies. The ``bin/install_javascript_dependencies.sh``
-script will download all JavaScript dependencies and build them. ``bower`` and
-``grunt-cli`` will be installed globally by the
-``install_javascript_dependencies`` script.  The Ubuntu version ``14.04``
-requires a cusomt install of nodejs/npm, and an install scrpt (
-``bin/node-and-npm-in-30s.sh``) is provided to download a stable release and
+``npm`` is required to install the JS dependencies. The ``bin/install_javascript_dependencies.sh`` script will
+download all JavaScript dependencies and build them. ``bower`` and ``grunt-cli`` will be installed globally by
+the ``install_javascript_dependencies`` script.  The Ubuntu version ``14.04`` requires a custom install of
+nodejs/npm, and an install script (``bin/node-and-npm-in-30s.sh``) is provided to download a stable release and
 install ``npm`` assuming the prerequisites are met.
 
 .. code-block:: console
@@ -96,11 +94,10 @@ install ``npm`` assuming the prerequisites are met.
 Django Database Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Copy the ``local_untracked.py.dist`` file in the ``config/settings`` directory
-to ``config/settings/local_untracked.py``, and add a ``DATABASES`` configuration
-with your database username, password, host, and port. Your database configuration
-can point to an AWS RDS instance or a postgresql 9.3 database instance you have
-manually installed within your infrastructure.
+Copy the ``local_untracked.py.dist`` file in the ``config/settings`` directory to
+``config/settings/local_untracked.py``, and add a ``DATABASES`` configuration with your database username, password,
+host, and port. Your database configuration can point to an AWS RDS instance or a PostgreSQL 9.4 database instance
+you have manually installed within your infrastructure.
 
 .. code-block:: python
 
@@ -119,16 +116,14 @@ manually installed within your infrastructure.
 
 .. note::
 
-
-    other databases could be used such as MySQL, but are not supported
+    Other databases could be used such as MySQL, but are not supported
     due to the postgres-specific `JSON Type`_
 
-In in the above database configuration, ``seed`` is the database name, this
-is arbitrary and any valid name can be used as long as the database exists.
-Enter the database name, user, password you set above.
+In in the above database configuration, ``seed`` is the database name, this is arbitrary and any valid name can be
+used as long as the database exists. Enter the database name, user, password you set above.
 
-The database settings can be tested using the Django management command,
-``./manage.py dbshell`` to conect to the configured database.
+The database settings can be tested using the Django management command, ``./manage.py dbshell`` to connect to the
+configured database.
 
 create the database tables and migrations:
 
@@ -139,17 +134,14 @@ create the database tables and migrations:
 
 .. note::
 
-    running migrations can be shortened into a one-liner ``./manage.py syncdb
-    --migrate``
-
-
+    running migrations can be shortened into a one-liner ``./manage.py syncdb --migrate``
 
 Cache and Message Broker
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 The SEED project relies on `redis`_ for both cache and message brokering, and
 is available as an AWS `ElastiCache`_ service or with the ``redis-server``
-linux package. (``sudo apt-get install redis-server``)
+Linux package. (``sudo apt-get install redis-server``)
 
 ``local_untracked.py`` should be updated with the ``CACHES`` and ``BROKER_URL``
 settings.
@@ -229,12 +221,12 @@ options.
 Running a production web server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Our recommended web server is uwsgi sitting behind nginx.
-The python package ``uwsgi`` is needed for this, and should install to ``/usr/local/bin/uwsgi``
-Since AWS S3, is not being used here, we recommend using ``dj-static`` to load
-static files.
+Our recommended web server is uwsgi sitting behind nginx. The python package ``uwsgi`` is needed for this, and
+should install to ``/usr/local/bin/uwsgi`` Since AWS S3, is not being used here, we recommend using ``dj-static``
+to load static files.
 
 .. note::
+
     The use of the ``dev`` settings file is production ready, and should be
     used for non-AWS installs with ``DEBUG`` set to ``False`` for production use.
 
@@ -266,9 +258,9 @@ Start the web server:
     $ sudo /usr/local/bin/uwsgi --http :80 --module standalone_uwsgi --max-requests 5000 --pidfile /tmp/uwsgi.pid --single-interpreter --enable-threads --cheaper-initial 1 -p 4
 
 .. warning::
-    Note that uwsgi has port set to ``80``. In a production setting, a
-    dedicated web server such as Nginx would be receiving requests on port 80
-    and passing requests to uwsgi running on a different port, e.g 8000.
+
+    Note that uwsgi has port set to ``80``. In a production setting, a dedicated web server such as NGINX would be
+    receiving requests on port 80 and passing requests to uwsgi running on a different port, e.g 8000.
 
 
 
@@ -301,7 +293,7 @@ third party services are available and compatible including `gmail`_.
 
 .. _gmail: http://stackoverflow.com/questions/19264907/python-django-gmail-smtp-setup
 
-Django can likewsie send emails via python's smtplib with sendmail or postfix
+Django can likewise send emails via python's smtplib with sendmail or postfix
 installed. See their `docs`_ for more info.
 
 .. _docs: https://docs.djangoproject.com/en/1.6/topics/email/
@@ -315,7 +307,7 @@ local_untracked.py
 
 .. code-block:: python
 
-    # postgres DB config
+    # PostgreSQL DB config
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',

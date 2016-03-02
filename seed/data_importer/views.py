@@ -139,7 +139,6 @@ local_uploader.__doc__ = \
 Endpoint to upload data files to, if uploading to local file storage.
 Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
 
-
 :GET:
 
     The following parameters are expected to be in the query string:
@@ -157,8 +156,9 @@ Payload::
 
 Returns::
 
-    {'success': True,
-     'import_file_id': The ID of the newly-uploaded ImportFile
+    {
+        'success': True,
+        'import_file_id': The ID of the newly-uploaded ImportFile
     }
 
 """
@@ -175,15 +175,18 @@ def get_upload_details(request):
     Returns::
 
         If S3 mode:
+
         {
-         'upload_mode': 'S3',
-         'upload_complete': A url to notify that upload is complete,
-         'signature': The url to post file details to for auth to upload to S3.
+            'upload_mode': 'S3',
+            'upload_complete': A url to notify that upload is complete,
+            'signature': The url to post file details to for auth to upload to S3.
         }
 
-        If local filesystem mode:
-        {'upload_mode': 'filesystem',
-         'upload_path': The url to POST files to (see local_uploader)
+        If local file system mode:
+
+        {
+            'upload_mode': 'filesystem',
+            'upload_path': The url to POST files to (see local_uploader)
         }
 
     """
@@ -231,10 +234,8 @@ def sign_policy_document(request):
     Returns::
 
         {
-         "policy": A hash of the policy document. Using during upload to S3.
-         "signature": A signature of the policy document.  Also used during
-                     upload to S3.
-
+            "policy": A hash of the policy document. Using during upload to S3.
+            "signature": A signature of the policy document.  Also used during upload to S3.
         }
     """
     policy_document = json.loads(request.body)

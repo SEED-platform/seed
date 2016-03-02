@@ -412,16 +412,16 @@ def add_org(request):
     Payload::
 
         {
-         'organization_name': The name of the new org,
-         'user_id': the user id of the owner of the new org,
+            'organization_name': The name of the new org,
+            'user_id': the user id of the owner of the new org,
         }
 
     Returns::
 
         {
-        'status': 'success' or 'error',
-        'message': message, if any,
-        'organization_id': The ID of the new org, if created.
+            'status': 'success' or 'error',
+            'message': 'message, if any',
+            'organization_id': The ID of the new org, if created.
         }
 
     """
@@ -452,15 +452,15 @@ def add_user_to_organization(request):
     Payload::
 
         {
-         'organization_id': The ID of the organization,
-         'user_id': the user id of the owner of the new org,
+            'organization_id': The ID of the organization,
+            'user_id': the user id of the owner of the new org,
         }
 
     Returns::
 
         {
-        'status': 'success' or 'error',
-        'message': message, if any,
+            'status': 'success' or 'error',
+            'message': 'message, if any',
         }
 
 
@@ -500,11 +500,11 @@ def add_user(request):
     Returns::
 
         {
-         'status': 'success',
-         'message': email address of new user,
-         'org': name of the new org (or existing org),
-         'org_created': True if new org created,
-         'username': Username of new user
+            'status': 'success',
+            'message': email address of new user,
+            'org': name of the new org (or existing org),
+            'org_created': True if new org created,
+            'username': Username of new user
         }
 
 
@@ -1341,7 +1341,7 @@ def update_user(request):
 @ajax_request
 @login_required
 def set_password(request):
-    """sets/updates a user's password, follows the min requiremnent of
+    """sets/updates a user's password, follows the min requirement of
     django-passwords settings in config/settings/common.py
 
     :PUT: {

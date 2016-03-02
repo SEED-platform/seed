@@ -131,7 +131,7 @@ def get_timeseries(request):
 @login_required
 @has_perm('can_modify_data')
 def add_timeseries(request):
-    """Add timeseries data for a meter.
+    """Add time series data for a meter.
 
     Payload is expected to look like the following:
     {

@@ -522,7 +522,7 @@ class TestTasks(TestCase):
         self.assertEqual(latest_snapshot.confidence, None)
 
     def test_match_no_canonical_buildings(self):
-        """If no canonicals exist, create, but no new BSes."""
+        """If no canonicals exist, create, but no new BuildingSnapshots."""
         bs1_data = {
            'pm_property_id': 1243,
            'tax_lot_id': '435/422',
@@ -690,7 +690,7 @@ class TestTasks(TestCase):
         ).count(), 512)
 
     def test_delete_organization_buildings(self):
-        """tests the delete builings for an org"""
+        """tests the delete buildings for an organization"""
         # start with the normal use case
         bs1_data = {
             'pm_property_id': 123,

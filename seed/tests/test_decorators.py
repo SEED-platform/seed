@@ -54,7 +54,7 @@ class TestDecorators(TestCase):
     ## Tests for decorators themselves.
 
     def test_locking(self):
-        """Make sure we indicate we're locked iff we're inside the function."""
+        """Make sure we indicate we're locked if and only if we're inside the function."""
         key = decorators._get_lock_key('fake_func', self.pk)
         self.assertEqual(int(get_lock(key)), self.unlocked)
 

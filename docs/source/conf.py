@@ -38,6 +38,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.todo',
+    'sphinxcontrib.spelling',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -363,7 +364,7 @@ epub_exclude_files = ['search.html']
 #epub_use_index = True
 
 
-# # formatters for API autodocumentation
+# # formatters for API auto documentation
 # import django
 # django.setup()
 #

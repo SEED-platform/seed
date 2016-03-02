@@ -206,7 +206,7 @@ def obj_to_dict(obj):
     for f in obj._meta.fields:
         if isinstance(f, JsonField):
             e = getattr(obj, f.name)
-            # postgres < 9.3 support
+            # PostgreSQL < 9.3 support
             while isinstance(e, unicode):
                 e = json.loads(e)
             response[unicode(f.name)] = e
@@ -265,7 +265,7 @@ def get_or_create_canonical(b1, b2=None):
 
 
 def initialize_canonical_building(snapshot, user_pk):
-    """Called to create a Canonicalbuilding from a single snapshot.
+    """Called to create a CanonicalBuilding from a single snapshot.
 
     :param snapshot: BuildingSnapshot inst.
     :param user_pk: The user id of the user initiating the CanonicalBuilding
@@ -380,7 +380,7 @@ def unmatch_snapshot_tree(building_pk):
         merged data. Anything descended from the ``building_pk`` will
         be deleted. The intent is to completely separate ``building_pk``'s
         influence on the resultant canonical_snapshot. The user is saying
-        that these are separate entities afterall, yes?
+        that these are separate entities after all, yes?
 
     Basically, this function works by getting a merge order list of
     children from the perspective of ``building_pk`` and a list of parents
@@ -618,15 +618,14 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
 
 
 def get_column_mappings(organization):
-    """Returns dict of all the column mappings for an Org's given source type
+    """Returns dict of all the column mappings for an Organization's given source type
 
     :param organization: inst, Organization.
 
     :returns dict, list of dict:
 
-    Use this when actually performing mapping between datasources, but
-    only call it after all of the mappings have been saved to the
-    ``ColumnMapping`` table.
+    Use this when actually performing mapping between data sources, but only call it after all of the mappings
+    have been saved to the ``ColumnMapping`` table.
 
     """
     from seed.utils.mapping import _get_column_names
@@ -1078,7 +1077,7 @@ class CanonicalBuilding(models.Model):
 class BuildingSnapshot(TimeStampedModel):
     """The periodical composite of a building from disparate data sources.
 
-    Represents the best data between all the datasources for a given building,
+    Represents the best data between all the data sources for a given building,
     potentially merged together with other BuildingSnapshot instances'
     attribute values.
 
@@ -1593,7 +1592,7 @@ class Meter(models.Model):
 
 
 class TimeSeries(models.Model):
-    """For storing engergy use over time."""
+    """For storing energy use over time."""
     begin_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     reading = models.FloatField(null=True)

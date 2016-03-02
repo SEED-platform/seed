@@ -78,7 +78,7 @@ class SchemaGenerationTests(TestCase):
 
     def test_get_api_endpoints_utils(self):
         """
-        Test of function that traverses all urls looking for api endpoints.
+        Test of function that traverses all URLs looking for api endpoints.
         """
         res = get_api_endpoints()
         for url, fn in res.items():

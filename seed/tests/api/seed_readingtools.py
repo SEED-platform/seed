@@ -17,7 +17,7 @@ from calendar import timegm
 # Three-step upload process
 def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upload_datatype):
     """
-    Checks if the upload is through an AWS system or through filesystem.
+    Checks if the upload is through an AWS system or through file system.
     Proceeds with the appropriate upload method.
 
     - uploadFilepath: full path to file
@@ -109,7 +109,7 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
 
     def _upload_file_to_file_system(upload_details):
         """
-        Implements uploading to SEED's filesystem. Used by
+        Implements uploading to SEED's file system. Used by
         upload_file if SEED in configured for local file storage.
 
         Args:

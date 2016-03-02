@@ -1,4 +1,4 @@
-audit_logs package
+Audit Logs Package
 ==================
 
 Subpackages
