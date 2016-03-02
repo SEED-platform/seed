@@ -188,49 +188,6 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         return defer.promise;
     };
 
-    /*
-     * create_column_array: returns an array of columns used to set table
-     *   headers from an array of all possible columns and an array of 
-     *   keys 
-     * 
-     * @param {Array} all_columns an array of Objects with a default key of
-     *   `sort_column` to filter
-     * @param {Array} column_names an array of String names to filter the 
-     *   `all_columns` array 
-     * @param {String} key (optional) if provided will filter on `key`,
-     *   otherwise filters on `sort_column`
-     *
-     * Currently only used in matching controller. Very similar to
-     * search_service.generate_columns, could be combined. - nicholasserra
-     */
-    building_factory.create_column_array = function(all_columns, column_names, key) {
-        key = key || "sort_column";
-        var columns = all_columns.filter(function(f) {
-            return column_names.indexOf(f[key]) > -1;
-        });
-
-        // also apply the user sort order
-        columns.sort(function(a,b) {
-            // when viewing the list of projects, there is an extra "Status" column that is always first
-            if (a.sort_column === 'project_building_snapshots__status_label__name') {
-                return -1;
-            } else if (b.sort_column === 'project_building_snapshots__status_label__name') {
-                return 1;
-            }
-            // if no status, sort according to user's selected order
-            if (column_names.indexOf(a.sort_column) > -1 && column_names.indexOf(b.sort_column) > -1) {
-                return (column_names.indexOf(a.sort_column) - column_names.indexOf(b.sort_column));
-            } else if (column_names.indexOf(a.sort_column) > -1) {
-                return -1;
-            } else if (column_names.indexOf(b.sort_column) > -1) {
-                return 1;
-            } else { // preserve previous order
-                return (all_columns.indexOf(a) - all_columns.indexOf(b));
-            }
-        });
-        return columns;
-    };
-
     building_factory.get_PM_filter_by_counts = function(import_file_id) {
         var defer = $q.defer();
         $http({

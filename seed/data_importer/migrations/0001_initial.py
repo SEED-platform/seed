@@ -2,11 +2,15 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+from django.conf import settings
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('contenttypes', '0001_initial'),
+        ('orgs', '__first__'),
     ]
 
     operations = [
@@ -17,6 +21,7 @@ class Migration(migrations.Migration):
                 ('building_pk', models.CharField(max_length=40, null=True, blank=True)),
                 ('was_in_database', models.BooleanField(default=False)),
                 ('is_missing_from_import', models.BooleanField(default=False)),
+                ('building_model_content_type', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True)),
             ],
             options={
             },
@@ -102,6 +107,9 @@ class Migration(migrations.Migration):
                 ('import_completed_at', models.DateTimeField(null=True, blank=True)),
                 ('merge_completed_at', models.DateTimeField(null=True, blank=True)),
                 ('mcm_version', models.IntegerField(max_length=10, null=True, blank=True)),
+                ('last_modified_by', models.ForeignKey(related_name='modified_import_records', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('owner', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('super_organization', models.ForeignKey(related_name='import_records', blank=True, to='orgs.Organization', null=True)),
             ],
             options={
                 'ordering': ('-updated_at',),
@@ -143,7 +151,7 @@ class Migration(migrations.Migration):
             name='ValidationRule',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('passes', models.BooleanField()),
+                ('passes', models.BooleanField(default=False)),
             ],
             options={
             },
@@ -172,6 +180,24 @@ class Migration(migrations.Migration):
             model_name='validationoutlier',
             name='rule',
             field=models.ForeignKey(to='data_importer.ValidationRule'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='importfile',
+            name='import_record',
+            field=models.ForeignKey(to='data_importer.ImportRecord'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='datacoercionmapping',
+            name='table_column_mapping',
+            field=models.ForeignKey(to='data_importer.TableColumnMapping'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='buildingimportrecord',
+            name='import_record',
+            field=models.ForeignKey(to='data_importer.ImportRecord'),
             preserve_default=True,
         ),
     ]

@@ -1922,11 +1922,18 @@ select {
   }
 }
 
+.orange_button .btn-primary {
+  background-color: $orange;
+  border-color: darken($orange, 5%);
+
+  &:hover {
+    background-color: darken($orange, 5%);
+  }
+}
+
 .ui-sortable .ui-sortable-handle {
   cursor: move;
 }
-
-
 
 /* STYLES FOR REPORTS */
 

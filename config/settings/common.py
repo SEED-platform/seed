@@ -40,7 +40,7 @@ SECRET_KEY = os.environ.get(
     'ns=nb-w)#2ue-mtu!s&2krzfee1-t)^z7y8gyrp6mx^d*weifh'
 )
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -83,7 +83,6 @@ INSTALLED_APPS = (
 
     'compressor',
     'django_extensions',
-    'organizations',
     'raven.contrib.django.raven_compat',
     'tos',
     'rest_framework',
