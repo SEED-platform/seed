@@ -25,6 +25,7 @@ from django.db.models import Q
 from django.db.models.signals import post_save
 from django.utils.timesince import timesince
 from django.contrib.auth.models import User
+from django_extensions.db.models import TimeStampedModel
 
 from config.utils import de_camel_case
 from seed.data_importer.managers import NotDeletedManager
@@ -775,7 +776,7 @@ class ImportRecord(NotDeletableModel):
         return json.dumps(progresses)
 
 
-class ImportFile(NotDeletableModel):
+class ImportFile(NotDeletableModel, TimeStampedModel):
     import_record = models.ForeignKey(ImportRecord)
     file = models.FileField(
         upload_to="data_imports", max_length=500, blank=True, null=True
