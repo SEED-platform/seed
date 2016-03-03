@@ -31,6 +31,7 @@ MANAGERS = ADMINS
 WSGI_APPLICATION = 'config.wsgi.application'
 
 TIME_ZONE = 'America/Los_Angeles'
+USE_TZ = True
 LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
 USE_I18N = True
