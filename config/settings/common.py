@@ -87,8 +87,6 @@ INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
     'tos',
     'rest_framework',
-    
-    'django',
 )
 
 SEED_CORE_APPS = (
