@@ -116,13 +116,8 @@ class TestJsonManager(TestCase):
         # and we excluded things from the inequality. Only two remain.
         self.assertEqual(qs.count(), 2)
 
-    def test_order_by(self):
+    def test_order_by_returns_all_buildings(self):
         """Test that we're able to order by values of a json field."""
-        b = BuildingSnapshot.objects.create(source_type=3)
-        # This one should be skipped.
-        b.extra_data = {'ratio': None}
-        b.save()
-
         b = BuildingSnapshot.objects.create(source_type=3)
         b.extra_data = {'ratio': 0.12, 'counter': '10'}
         b.save()
@@ -135,10 +130,9 @@ class TestJsonManager(TestCase):
             'ratio', key_cast='float', order_by='ratio'
         ))
 
-        self.assertEqual(buildings[0].extra_data['ratio'], None)
-        self.assertEqual(buildings[1].extra_data['ratio'], 0.12)
-        self.assertEqual(buildings[2].extra_data['ratio'], 0.43)
-        self.assertEqual(buildings[3].extra_data['ratio'], 0.80)
+        self.assertEqual(buildings[0].extra_data['ratio'], 0.12)
+        self.assertEqual(buildings[1].extra_data['ratio'], 0.43)
+        self.assertEqual(buildings[2].extra_data['ratio'], 0.80)
 
         # Now test what happens when we sort in reverse order.
         buildings2 = list(BuildingSnapshot.objects.all().json_query(
@@ -148,15 +142,15 @@ class TestJsonManager(TestCase):
         self.assertEqual(buildings2[0].extra_data['ratio'], 0.80)
         self.assertEqual(buildings2[1].extra_data['ratio'], 0.43)
         self.assertEqual(buildings2[2].extra_data['ratio'], 0.12)
-        self.assertEqual(buildings2[3].extra_data['ratio'], None)
 
         # Now test alpha numeric sorting
         buildings3 = list(BuildingSnapshot.objects.all().json_query(
             'counter', order_by='counter'
         ))
 
-        self.assertEqual(buildings3[0].extra_data['counter'], '10')
-        self.assertEqual(buildings3[1].extra_data['counter'], '1001')
+        self.assertEqual(buildings3[0].extra_data.get('counter'), None)
+        self.assertEqual(buildings3[1].extra_data['counter'], '10')
+        self.assertEqual(buildings3[2].extra_data['counter'], '1001')
 
         # Now test reverse sort on alpha numeric sorting
         buildings4 = list(BuildingSnapshot.objects.all().json_query(
@@ -165,6 +159,7 @@ class TestJsonManager(TestCase):
 
         self.assertEqual(buildings4[0].extra_data['counter'], '1001')
         self.assertEqual(buildings4[1].extra_data['counter'], '10')
+        self.assertEqual(buildings4[2].extra_data.get('counter'), None)
 
     def test_case_insensitive(self):
         """Make sure that we do case insensitive comparisons."""
