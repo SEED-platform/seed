@@ -65,7 +65,7 @@ def process_green_button_batch_request(row_id, url, subscription_id, building_id
         url = url + settings.GREEN_BUTTON_BATCH_URL_SYNTAX + subscription_id + "&" + min_date_para + "=" + min_date + "&" + max_date_para + "=" + yesterday_timestamp
 
     _log.info('Fetching url ' + url)
-    
+
     ts_data = driver.get_gb_data(url, building_id)
 
     _log.info('data fetched')

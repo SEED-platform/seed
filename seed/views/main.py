@@ -2371,9 +2371,9 @@ def save_gb_request_info(request):
 
     loopback_flag = info['loopback']
 
-	# last_date is the last requested date of GreenButton XML data, next GreenButton request will start from the saved last_date and end at the preivous day of the date making the request
-	# If there is no need to backfill, the last_date is set to yesterday
-	# If backfill is needed, we hard coded a very first date as 3/1/2014 for now. Later we will backfill month by month till there is no data available and set the last_date to yesterday
+    # last_date is the last requested date of GreenButton XML data, next GreenButton request will start from the saved last_date and end at the preivous day of the date making the request
+    # If there is no need to backfill, the last_date is set to yesterday
+    # If backfill is needed, we hard coded a very first date as 3/1/2014 for now. Later we will backfill month by month till there is no data available and set the last_date to yesterday
     last_date = ''
     yesterday = date.today() - timedelta(1)
     if time_type == 'date':
