@@ -2,7 +2,7 @@ import logging
 from datetime import date, datetime
 from time import sleep
 
-import tasks as aggregator
+import tasks
 from seed.energy.meter_data_processor import kairos_insert as tsdb
 from seed.models import (
     Meter,
@@ -109,5 +109,5 @@ def data_analyse(ts_data, name):
         # TODO: is there another way to check for the data to be inserted?
         sleep(5)  # wait for data inserted
         _log.info('Having back filling data, aggregate immediately')
-        aggregator.aggregate_monthly_data(ts_data[0]['canonical_id'])
+        tasks.aggregate_monthly_data(ts_data[0]['canonical_id'])
         _log.info('Immediate aggregation finished')
