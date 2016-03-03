@@ -9,13 +9,13 @@ To request an API token, go to ``/app/#/profile/developer`` and click 'Get a New
 Every request must include an 'Authorization' http header made up of your username (email) and your API key,
 separated with a ':'.  For example, with curl::
 
-	curl -H Authorization:user@email_address.com:5edfd7f1f0696d4139118f8b95ab1f05d0dd418e https://seeddomain.com/app/api/get_api_schema/
-	
+  curl -H Authorization:user@email_address.com:5edfd7f1f0696d4139118f8b95ab1f05d0dd418e https://seeddomain.com/app/api/get_api_schema/
+  
 Or using the Python Requests library::
 
-	headers = {'authorization': 'user@email_address.com:5edfd7f1f0696d4139118f8b95ab1f05d0dd418e'}
-	result = requests.get('https://seeddomain.com/app/api/get_api_schema/', headers=headers)
-	print result.json()
+  headers = {'authorization': 'user@email_address.com:5edfd7f1f0696d4139118f8b95ab1f05d0dd418e'}
+  result = requests.get('https://seeddomain.com/app/api/get_api_schema/', headers=headers)
+  print result.json()
 
 If authentication fails, the response's status code will be 302, redirecting the user to ``/app/login``.
 
@@ -26,23 +26,23 @@ Payloads
 Many requests require a JSON-encoded payload and/or parameters in the query string of the url.  A frequent
 requirement is including the organization_id of the org you belong to.  E.g.::
 
-	curl -H Authorization:user@email_address.com:5edfd7f1f0696d4139118f8b95ab1f05d0dd418e \
-		https://seeddomain.com/app/accounts/get_organization?organization_id={your org id here}
+  curl -H Authorization:user@email_address.com:5edfd7f1f0696d4139118f8b95ab1f05d0dd418e \
+    https://seeddomain.com/app/accounts/get_organization?organization_id={your org id here}
 
 Or in a JSON payload::
 
-	curl -H Authorization:user@email_address.com:5edfd7f1f0696d4139118f8b95ab1f05d0dd418e \
-		-d '{"organization_id":6, "user_id": 12, "role": "viewer"}' \
-		https://seeddomain/app/accounts/update_role/
-		
+  curl -H Authorization:user@email_address.com:5edfd7f1f0696d4139118f8b95ab1f05d0dd418e \
+    -d '{"organization_id":6, "user_id": 12, "role": "viewer"}' \
+    https://seeddomain/app/accounts/update_role/
+    
 Using Python::
 
-	headers = {'authorization': 'user@email_address.com:5edfd7f1f0696d4139118f8b95ab1f05d0dd418e'}
-	params = json.dumps({'organization_id': 6, 'user_id': 12, 'role': 'viewer'})
-	result = requests.post('https://seeddomain.com/app/accounts/update_role/',
-	                       data=params,
-	                       headers=headers)
-	print result.json()	
+  headers = {'authorization': 'user@email_address.com:5edfd7f1f0696d4139118f8b95ab1f05d0dd418e'}
+  params = json.dumps({'organization_id': 6, 'user_id': 12, 'role': 'viewer'})
+  result = requests.post('https://seeddomain.com/app/accounts/update_role/',
+                         data=params,
+                         headers=headers)
+  print result.json()  
 
 
 Responses
