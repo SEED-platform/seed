@@ -13,6 +13,8 @@ python:
 
 addons:
   postgresql: '9.4'
+  # Sauce credentials in Travis env vars
+  sauce_connect: true
 
 services:
   - redis-server
@@ -41,7 +43,3 @@ script:
 
 after_script:
   - coveralls
-
-addons:
-  # Sauce credentials in Travis env vars
-  sauce_connect: true
