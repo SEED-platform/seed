@@ -22,23 +22,23 @@ def pm_to_json_single(excel, file_path):
     '''
 
     meter_con_df = pd.read_excel(excel, sheetname=0)
-    
+
     # Replace empty cell with NaN
     for c in meter_con_df.select_dtypes(include=["object"]).columns:
         meter_con_df[c] = meter_con_df[c].replace('', np.nan)
 
     # Remove rows missing critical data
-    meter_con_df = meter_con_df.dropna(axis=0, how='any', subset = ['Street Address', 
-                                                                    'Meter Type', 
-                                                                    'Start Date', 
-                                                                    'End Date', 
-                                                                    'Usage/Quantity', 
-                                                                    'Usage Units'])
+    meter_con_df = meter_con_df.dropna(axis=0, how='any', subset=['Street Address',
+                                                                  'Meter Type',
+                                                                  'Start Date',
+                                                                  'End Date',
+                                                                  'Usage/Quantity',
+                                                                  'Usage Units'])
 
     # Set default value if non-critical fields are missing
-    meter_con_df['Custom Meter ID'] = meter_con_df.apply(lambda row: row['Meter Type'] + '_Meter' if np.isnan(row['Custom Meter ID']) else row['Custom Meter ID'], axis=1) # axis=1, apply to each row
-    meter_con_df['Custom ID'] = meter_con_df.apply(lambda row:'1' if np.isnan(row['Custom ID']) else row['Custom ID'], axis=1)
-    meter_con_df['Cost ($)'] = meter_con_df.apply(lambda row:'NA' if np.isnan(row['Cost ($)']) else row['Cost ($)'], axis=1)
+    meter_con_df['Custom Meter ID'] = meter_con_df.apply(lambda row: row['Meter Type'] + '_Meter' if np.isnan(row['Custom Meter ID']) else row['Custom Meter ID'], axis=1)  # axis=1, apply to each row
+    meter_con_df['Custom ID'] = meter_con_df.apply(lambda row: '1' if np.isnan(row['Custom ID']) else row['Custom ID'], axis=1)
+    meter_con_df['Cost ($)'] = meter_con_df.apply(lambda row: 'NA' if np.isnan(row['Cost ($)']) else row['Cost ($)'], axis=1)
 
     _log.info('start query')
     address = meter_con_df['Street Address'].values

@@ -1,4 +1,3 @@
-from django.db.models import Q
 from seed.models import (
     GreenButtonBatchRequestsInfo,
 )
@@ -14,7 +13,6 @@ from django.core.cache import cache
 from seed.energy.meter_data_processor.monthly_data_aggregator import aggr_sum_metric
 from seed.energy.meter_data_processor import green_button_driver as driver
 import green_button_data_analyser as analyser
-from seed.energy.meter_data_processor import kairos_insert as db_insert
 
 _log = logging.getLogger(__name__)
 
@@ -64,18 +62,18 @@ def process_green_button_batch_request(row_id, url, subscription_id, building_id
 
         yesterday_timestamp = str(calendar.timegm(time.strptime(yesterday_str, '%m/%d/%Y')))
 
-        url = url + settings.GREEN_BUTTON_BATCH_URL_SYNTAX + subscription_id + "&" + min_date_para + "=" + min_date + "&" + max_date_para + "=" + str(yesterday)
+        url = url + settings.GREEN_BUTTON_BATCH_URL_SYNTAX + subscription_id + "&" + min_date_para + "=" + min_date + "&" + max_date_para + "=" + yesterday_timestamp
 
-    _log.info('Fetching url '+url)
-    print url
+    _log.info('Fetching url ' + url)
+    
     ts_data = driver.get_gb_data(url, building_id)
 
     _log.info('data fetched')
 
-    if ts_data!=None:
+    if ts_data is not None:
         analyser.data_analyse(ts_data, 'GreenButton')
 
-        _log.info('update db record: last_date=\''+today_str+'\' for id='+str(row_id))
+        _log.info('update db record: last_date=\'' + today_str + '\' for id=' + str(row_id))
         record = GreenButtonBatchRequestsInfo.objects.get(id=row_id)
         record.last_date = today_str
         record.save()
