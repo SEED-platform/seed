@@ -1102,6 +1102,288 @@ class SearchViewTests(TestCase):
         self.assertEqual(len(data['buildings']), 1)
         self.assertEqual(data['buildings'][0]['pk'], b2.pk)
 
+    def test_search_exclude_filter(self):
+        cb1 = CanonicalBuilding(active=True)
+        cb1.save()
+        b1 = SEEDFactory.building_snapshot(
+            canonical_building=cb1,
+            address_line_1="Include"
+        )
+        cb1.canonical_snapshot = b1
+        cb1.save()
+        b1.super_organization = self.org
+        b1.save()
+
+        cb2 = CanonicalBuilding(active=True)
+        cb2.save()
+        b2 = SEEDFactory.building_snapshot(
+            canonical_building=cb2,
+            address_line_1="Exclude"
+        )
+        cb2.canonical_snapshot = b2
+        cb2.save()
+        b2.super_organization = self.org
+        b2.save()
+
+        # Additional words
+        cb3 = CanonicalBuilding(active=True)
+        cb3.save()
+        b3 = SEEDFactory.building_snapshot(
+            canonical_building=cb3,
+            address_line_1="Include 2"
+        )
+        cb3.canonical_snapshot = b3
+        cb3.save()
+        b3.super_organization = self.org
+        b3.save()
+
+        url = reverse_lazy("seed:search_buildings")
+        post_data = {
+            'filter_params': {
+                'address_line_1': '!Exclude'
+            },
+            'number_per_page': 10,
+            'order_by': '',
+            'page': 1,
+            'q': '',
+            'sort_reverse': False,
+            'project_id': None,
+        }
+
+        # act
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        json_string = response.content
+        data = json.loads(json_string)
+
+        # assert
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['number_matching_search'], 2)
+        self.assertEqual(len(data['buildings']), 2)
+
+        addresses = []
+
+        addresses.append(data['buildings'][0]['address_line_1'])
+        addresses.append(data['buildings'][1]['address_line_1'])
+
+        self.assertIn('Include', addresses)
+        self.assertIn('Include 2', addresses)
+        self.assertNotIn('Exclude', addresses)
+
+    def test_search_extra_data_exclude_filter(self):
+        cb1 = CanonicalBuilding(active=True)
+        cb1.save()
+        b1 = SEEDFactory.building_snapshot(
+            canonical_building=cb1,
+            extra_data={'testing': 'Include'}
+        )
+        cb1.canonical_snapshot = b1
+        cb1.save()
+        b1.super_organization = self.org
+        b1.save()
+
+        cb2 = CanonicalBuilding(active=True)
+        cb2.save()
+        b2 = SEEDFactory.building_snapshot(
+            canonical_building=cb2,
+            extra_data={'testing': 'Exclude'}
+        )
+        cb2.canonical_snapshot = b2
+        cb2.save()
+        b2.super_organization = self.org
+        b2.save()
+
+        cb3 = CanonicalBuilding(active=True)
+        cb3.save()
+        b3 = SEEDFactory.building_snapshot(
+            canonical_building=cb3,
+            extra_data={'testing': 'Include 2'}
+        )
+        cb3.canonical_snapshot = b3
+        cb3.save()
+        b3.super_organization = self.org
+        b3.save()
+
+        url = reverse_lazy("seed:search_buildings")
+        post_data = {
+            'filter_params': {
+                'testing': '!Exclude'
+            },
+            'number_per_page': 10,
+            'order_by': '',
+            'page': 1,
+            'q': '',
+            'sort_reverse': False,
+            'project_id': None,
+        }
+
+        # act
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        json_string = response.content
+        data = json.loads(json_string)
+
+        # assert
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['number_matching_search'], 2)
+        self.assertEqual(len(data['buildings']), 2)
+
+        fields = []
+
+        fields.append(data['buildings'][0]['extra_data']['testing'])
+        fields.append(data['buildings'][1]['extra_data']['testing'])
+
+        self.assertIn('Include', fields)
+        self.assertIn('Include 2', fields)
+        self.assertNotIn('Exclude', fields)
+
+    def test_search_exact_exclude_filter(self):
+        cb1 = CanonicalBuilding(active=True)
+        cb1.save()
+        b1 = SEEDFactory.building_snapshot(
+            canonical_building=cb1,
+            address_line_1="Include"
+        )
+        cb1.canonical_snapshot = b1
+        cb1.save()
+        b1.super_organization = self.org
+        b1.save()
+
+        cb2 = CanonicalBuilding(active=True)
+        cb2.save()
+        b2 = SEEDFactory.building_snapshot(
+            canonical_building=cb2,
+            address_line_1="Exclude"
+        )
+        cb2.canonical_snapshot = b2
+        cb2.save()
+        b2.super_organization = self.org
+        b2.save()
+
+        # Additional words
+        cb3 = CanonicalBuilding(active=True)
+        cb3.save()
+        b3 = SEEDFactory.building_snapshot(
+            canonical_building=cb3,
+            address_line_1="exclude"
+        )
+        cb3.canonical_snapshot = b3
+        cb3.save()
+        b3.super_organization = self.org
+        b3.save()
+
+        url = reverse_lazy("seed:search_buildings")
+        post_data = {
+            'filter_params': {
+                'address_line_1': '!"Exclude"'
+            },
+            'number_per_page': 10,
+            'order_by': '',
+            'page': 1,
+            'q': '',
+            'sort_reverse': False,
+            'project_id': None,
+        }
+
+        # act
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        json_string = response.content
+        data = json.loads(json_string)
+
+        # assert
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['number_matching_search'], 2)
+        self.assertEqual(len(data['buildings']), 2)
+
+        addresses = []
+
+        addresses.append(data['buildings'][0]['address_line_1'])
+        addresses.append(data['buildings'][1]['address_line_1'])
+
+        self.assertIn('Include', addresses)
+        self.assertIn('exclude', addresses)
+        self.assertNotIn('Exclude', addresses)
+
+    def test_search_extra_data_exact_exclude_filter(self):
+        cb1 = CanonicalBuilding(active=True)
+        cb1.save()
+        b1 = SEEDFactory.building_snapshot(
+            canonical_building=cb1,
+            extra_data={'testing': 'Include'}
+        )
+        cb1.canonical_snapshot = b1
+        cb1.save()
+        b1.super_organization = self.org
+        b1.save()
+
+        cb2 = CanonicalBuilding(active=True)
+        cb2.save()
+        b2 = SEEDFactory.building_snapshot(
+            canonical_building=cb2,
+            extra_data={'testing': 'Exclude'}
+        )
+        cb2.canonical_snapshot = b2
+        cb2.save()
+        b2.super_organization = self.org
+        b2.save()
+
+        cb3 = CanonicalBuilding(active=True)
+        cb3.save()
+        b3 = SEEDFactory.building_snapshot(
+            canonical_building=cb3,
+            extra_data={'testing': 'exclude'}
+        )
+        cb3.canonical_snapshot = b3
+        cb3.save()
+        b3.super_organization = self.org
+        b3.save()
+
+        url = reverse_lazy("seed:search_buildings")
+        post_data = {
+            'filter_params': {
+                'testing': '!"Exclude"'
+            },
+            'number_per_page': 10,
+            'order_by': '',
+            'page': 1,
+            'q': '',
+            'sort_reverse': False,
+            'project_id': None,
+        }
+
+        # act
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        json_string = response.content
+        data = json.loads(json_string)
+
+        # assert
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['number_matching_search'], 2)
+        self.assertEqual(len(data['buildings']), 2)
+
+        fields = []
+
+        fields.append(data['buildings'][0]['extra_data']['testing'])
+        fields.append(data['buildings'][1]['extra_data']['testing'])
+
+        self.assertIn('Include', fields)
+        self.assertIn('exclude', fields)
+        self.assertNotIn('Exclude', fields)
+
 
 class BuildingDetailViewTests(TestCase):
     """
