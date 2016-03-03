@@ -40,7 +40,7 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         if not os.getenv('TRAVIS') == 'true':
             return webdriver.Firefox()
 
-        hub_url = "%s:%s@localhost:4445" % (os.getenv('SAUCELABS_USERNAME'), os.getenv('SAUCELABS_ACCESS_KEY'))
+        hub_url = "%s:%s@localhost:4445" % (os.getenv('SAUCE_USERNAME'), os.getenv('SAUCE_ACCESS_KEY'))
 
         capabilities = {
             'tunnel-identifier': os.environ.get('TRAVIS_JOB_NUMBER'),

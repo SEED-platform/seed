@@ -24,6 +24,7 @@ env:
   matrix:
     - TOX_ENV=py27-dj17
     - TOX_ENV=flake8
+    - TOX_ENV=functional
 
 install:
   - pip install --upgrade pip
@@ -39,3 +40,7 @@ script:
 
 after_script:
   - coveralls
+
+addons:
+  # Sauce credentials in Travis env vars
+  sauce_connect: true
