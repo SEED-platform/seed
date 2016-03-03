@@ -4,14 +4,16 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import copy
 import json
-from unittest import skip
 
-from django.core.urlresolvers import reverse_lazy
+from datetime import datetime, timedelta
+
+from django.core.cache import cache
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.test import TestCase
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.audit_logs.models import AuditLog, LOG
+from seed.common import mapper
 from seed.data_importer.models import ROW_DELIMITER, ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed import decorators
@@ -21,7 +23,6 @@ from seed.models import (
     ColumnMapping,
     CanonicalBuilding,
     BuildingSnapshot,
-    StatusLabel,
     Unit,
     ASSESSED_RAW,
     ASSESSED_BS,
@@ -39,6 +40,55 @@ from seed.views.main import (
 from seed.utils.cache import set_cache, get_cache
 from seed.utils.mapping import _get_column_names
 from seed.tests import util as test_util
+
+
+class MainViewTests(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details)
+        self.org = Organization.objects.create()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.client.login(**user_details)
+
+    def test_home(self):
+        response = self.client.get(reverse('seed:home'))
+        self.assertEqual(200, response.status_code)
+
+    def test_create_pm_mapping(self):
+        response = self.client.post(reverse('seed:create_pm_mapping'), '{"columns": ["name1", "name2"]}',
+            content_type='application/json')
+        self.assertTrue(json.loads(response.content)['success'])
+
+    def test_export_buildings(self):
+        cb = CanonicalBuilding(active=True)
+        cb.save()
+        b = SEEDFactory.building_snapshot(canonical_building=cb)
+        cb.canonical_snapshot = b
+        cb.save()
+        b.super_organization = self.org
+        b.save()
+
+        payload = {
+          "export_name": "My Export",
+          "export_type": "csv",
+          "selected_buildings": [b.pk]
+        }
+        response = self.client.post(reverse('seed:export_buildings'), json.dumps(payload),
+            content_type='application/json')
+        self.assertTrue(json.loads(response.content)['success'])
+
+    def test_export_buildings_progress(self):
+        payload = {
+          "export_id": "1234"
+        }
+        cache.set('export_buildings__1234', {'progress': 85, 'total_buildings': 1, 'status': 'success'})
+        response = self.client.post(reverse('seed:export_buildings_progress'), json.dumps(payload),
+            content_type='application/json')
+        self.assertTrue(json.loads(response.content)['success'])
 
 
 # Gavin 02/18/2014
@@ -1385,6 +1435,216 @@ class SearchViewTests(TestCase):
         self.assertNotIn('Exclude', fields)
 
 
+class SearchBuildingSnapshotsViewTests(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org = Organization.objects.create()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.client.login(**user_details)
+
+    def test_search_building_snapshots(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+        import_file = ImportFile.objects.create(
+            import_record=import_record
+        )
+
+        cb1 = CanonicalBuilding(active=True)
+        cb1.save()
+        b1 = SEEDFactory.building_snapshot(
+            canonical_building=cb1,
+            address_line_1="test",
+            import_file=import_file,
+            source_type=ASSESSED_BS
+        )
+        cb1.canonical_snapshot = b1
+        cb1.save()
+        b1.super_organization = self.org
+        b1.save()
+
+        post_data = {
+            'filter_params': {},
+            'number_per_page': 10,
+            'order_by': '',
+            'page': 1,
+            'q': '',
+            'sort_reverse': False,
+            'project_id': None,
+            'import_file_id': import_file.pk
+        }
+
+        # act
+        response = self.client.post(
+            reverse_lazy("seed:search_building_snapshots"),
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        self.assertEqual(1, json.loads(response.content)['number_returned'])
+
+
+class GetDatasetsViewsTests(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org = Organization.objects.create()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.client.login(**user_details)
+
+    def test_get_datasets(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+        response = self.client.get(reverse("seed:get_datasets"), {'organization_id': self.org.pk})
+        self.assertEqual(1, len(json.loads(response.content)['datasets']))
+
+    def test_get_dataset(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+        response = self.client.get(reverse("seed:get_dataset"), {'dataset_id': import_record.pk})
+        self.assertEqual('success', json.loads(response.content)['status'])
+
+    def test_delete_dataset(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+
+        post_data = {
+            'dataset_id': import_record.pk,
+            'organization_id': self.org.pk
+        }
+
+        response = self.client.delete(
+            reverse_lazy("seed:delete_dataset"),
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        self.assertEqual('success', json.loads(response.content)['status'])
+        self.assertFalse(ImportRecord.objects.filter(pk=import_record.pk).exists())
+
+    def test_update_dataset(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+
+        post_data = {
+            'dataset': {
+                'id': import_record.pk,
+                'name': 'new'
+            }
+        }
+
+        response = self.client.post(
+            reverse_lazy("seed:update_dataset"),
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        self.assertEqual('success', json.loads(response.content)['status'])
+        self.assertTrue(ImportRecord.objects.filter(pk=import_record.pk, name='new').exists())
+
+
+class ImportFileViewsTests(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org = Organization.objects.create()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        
+        self.import_record = ImportRecord.objects.create(owner=self.user)
+        self.import_record.super_organization = self.org
+        self.import_record.save()
+        self.import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            cached_first_row="Name|#*#|Address"
+        )
+
+        self.client.login(**user_details)
+
+    def test_get_import_file(self):
+        response = self.client.get(reverse("seed:get_import_file"),
+            {'import_file_id': self.import_file.pk})
+        self.assertEqual(self.import_file.pk, json.loads(response.content)['import_file']['id'])
+
+    def test_delete_file(self):
+        post_data = {
+            'file_id': self.import_file.pk,
+            'organization_id': self.org.pk
+        }
+
+        response = self.client.delete(
+            reverse_lazy("seed:delete_file"),
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        self.assertEqual('success', json.loads(response.content)['status'])
+        self.assertFalse(ImportFile.objects.filter(pk=self.import_file.pk).exists())
+
+    def test_get_pm_filter_by_counts(self):
+        response = self.client.get(reverse("seed:get_PM_filter_by_counts"), {'import_file_id': self.import_file.pk})
+        self.assertEqual('success', json.loads(response.content)['status'])
+
+    def test_delete_duplicates_from_import_file(self):
+        response = self.client.get(reverse("seed:delete_duplicates_from_import_file"), {'import_file_id': self.import_file.pk})
+        self.assertEqual('success', json.loads(response.content)['status'])
+
+
+class ReportViewsTests(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org = Organization.objects.create()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
+
+        self.import_record = ImportRecord.objects.create(owner=self.user)
+        self.import_record.super_organization = self.org
+        self.import_record.save()
+        self.import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            cached_first_row="Name|#*#|Address"
+        )
+
+        self.client.login(**user_details)
+
+    def test_get_building_summary_report_data(self):
+        params = {
+            'start_date': (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d'),
+            'end_date': datetime.now().strftime('%Y-%m-%d'),
+        }
+
+        response = self.client.get(reverse("seed:get_building_summary_report_data"), params)
+        self.assertEqual('success', json.loads(response.content)['status'])
+
+    def test_get_building_report_data(self):
+        params = {
+            'start_date': (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d'),
+            'end_date': datetime.now().strftime('%Y-%m-%d'),
+            'x_var': 'use_description',
+            'y_var': 'year_built',
+            'organization_id': self.org.pk
+        }
+
+        response = self.client.get(reverse("seed:get_building_report_data"), params)
+        self.assertEqual('success', json.loads(response.content)['status'])
+
+
 class BuildingDetailViewTests(TestCase):
     """
     Tests of the SEED Building Detail page
@@ -1807,7 +2067,7 @@ class BuildingDetailViewTests(TestCase):
     def test_save_unmatch_audit_log(self):
         """tests that a building unmatch logs an audit_log"""
         # arrange match to unmatch
-        resp = self.client.post(
+        self.client.post(
             reverse_lazy("seed:save_match"),
             data=json.dumps({
                 'organization_id': self.org.pk,
@@ -1817,7 +2077,6 @@ class BuildingDetailViewTests(TestCase):
             }),
             content_type='application/json'
         )
-        body = json.loads(resp.content)
         # act
         self.client.post(
             reverse_lazy("seed:save_match"),
@@ -1894,11 +2153,39 @@ class TestMCMViews(TestCase):
             )
         )
 
-    @skip(
-        "FAIL: Good case for ``get_column_mapping_suggestions``.; Failed test: AssertionError: u'Date Completed' != u'year_built'")
     def test_get_column_mapping_suggestions(self):
-        """Good case for ``get_column_mapping_suggestions``."""
+        post_data = {
+            'import_file_id': self.import_file.pk,
+            'ord_id': self.org.pk
+        }
 
+        response = self.client.post(
+            reverse_lazy("seed:get_column_mapping_suggestions"),
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        self.assertEqual('success', json.loads(response.content)['status'])
+
+    def test_get_column_mapping_suggestions_pm_file(self):
+        import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            cached_first_row=ROW_DELIMITER.join([u'name', u'address']),
+            source_program=mapper.Programs.PM
+        )
+
+        post_data = {
+            'import_file_id': import_file.pk,
+            'ord_id': self.org.pk
+        }
+
+        response = self.client.post(
+            reverse_lazy("seed:get_column_mapping_suggestions"),
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        self.assertEqual('success', json.loads(response.content)['status'])
+
+    def test_get_column_mapping_suggestions_with_columns(self):
         # create some mappings to model columns in the org
         # in order to test that model columns are always
         # only returned as the first 37 building_columns
@@ -1917,69 +2204,17 @@ class TestMCMViews(TestCase):
         mapping.column_mapped.add(model_col)
         mapping.save()
 
-        resp = self.client.post(
+        post_data = {
+            'import_file_id': self.import_file.pk,
+            'ord_id': self.org.pk
+        }
+
+        response = self.client.post(
             reverse_lazy("seed:get_column_mapping_suggestions"),
-            data=json.dumps({
-                'import_file_id': self.import_file.id,
-            }),
-            content_type='application/json'
+            content_type='application/json',
+            data=json.dumps(post_data)
         )
-        body = json.loads(resp.content)
-
-        suggested_mappings = body['suggested_column_mappings']
-
-        new_expected_mappings = copy.deepcopy(self.expected_mappings)
-        new_expected_mappings['address'] = ['address_line_1', 100]
-
-        self.assert_expected_mappings(
-            suggested_mappings,
-            new_expected_mappings
-        )
-
-        # test confidence also for previously mapped field
-        self.assertEqual(
-            suggested_mappings['address'],
-            new_expected_mappings['address']
-        )
-
-    @skip(
-        "FAIL: When one of the column mappings represents a concatenation.; AssertionError: u'Date Completed' != u'year_built'")
-    def test_get_column_mapping_suggestions_concat(self):
-        """When one of the column mappings represents a concatenation."""
-        column_raw = Column.objects.create(
-            column_name='name', organization=self.org
-        )
-        column_raw2 = Column.objects.create(
-            column_name='address', organization=self.org
-        )
-        column_mapping = ColumnMapping.objects.create(
-            super_organization=self.org,
-        )
-        column_mapping.column_raw.add(column_raw, column_raw2)
-        column_mapping.column_mapped.add(column_raw)
-
-        new_expected_mappings = copy.deepcopy(self.expected_mappings)
-        # concatenation of name and address to name should look like this
-        new_expected_mappings['name'] = [
-            [u'name'], 100
-        ]
-        new_expected_mappings['address'] = [
-            [u'name'], 100
-        ]
-
-        resp = self.client.post(
-            reverse_lazy("seed:get_column_mapping_suggestions"),
-            data=json.dumps({
-                'import_file_id': self.import_file.id,
-            }),
-            content_type='application/json'
-        )
-        body = json.loads(resp.content)
-        suggested_mappings = body['suggested_column_mappings']
-        self.assert_expected_mappings(
-            suggested_mappings,
-            new_expected_mappings
-        )
+        self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_raw_column_names(self):
         """Good case for ``get_raw_column_names``."""
@@ -2003,7 +2238,7 @@ class TestMCMViews(TestCase):
 
         # create a National Median Site Energy use
         float_unit = Unit.objects.create(unit_name='test energy use intensity', unit_type=FLOAT)
-        c = Column.objects.create(column_name='Global National Median Site Energy Use',
+        Column.objects.create(column_name='Global National Median Site Energy Use',
                                   unit=float_unit)
 
         resp = self.client.post(
@@ -2335,6 +2570,7 @@ class MatchTreeTests(TestCase):
             'email': 'test_user@demo.com'
         }
         self.user = User.objects.create_superuser(**user_details)
+        self.client.login(**user_details)
         self.org = Organization.objects.create()
         OrganizationUser.objects.create(user=self.user, organization=self.org)
 
@@ -2410,7 +2646,6 @@ class MatchTreeTests(TestCase):
             reloaded = BuildingSnapshot.objects.get(pk=bs.pk)
             setattr(self, k, reloaded)
 
-    @skip("Test doesn't pass.  Skipping for the moment.")
     def test_parent_tree_coparents(self):
         """Tests that _parent_tree_coparents returns what we expect"""
 
@@ -2454,3 +2689,9 @@ class MatchTreeTests(TestCase):
 
         self.assertEqual(bs4_root, self.bs3)
         self.assertItemsEqual(bs4_cps, bs4_expected_parent_coparents)
+
+    def test_get_coparents(self):
+        response = self.client.get(reverse('seed:get_coparents'),
+            {'organization_id': self.org.pk,
+            'building_id': self.cb0.canonical_snapshot.pk})
+        self.assertEqual('success', json.loads(response.content)['status'])

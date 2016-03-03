@@ -204,7 +204,7 @@ def export_buildings(request):
         {
           "export_name": "My Export",
           "export_type": "csv",
-          "selected_building": [1234,], (optional list of building ids)
+          "selected_buildings": [1234,], (optional list of building ids)
           "selected_fields": optional list of fields to export
           "select_all_checkbox": True // optional, defaults to False
         }
@@ -1722,6 +1722,87 @@ def get_dataset(request):
 @api_endpoint
 @ajax_request
 @login_required
+@has_perm('requires_member')
+def delete_dataset(request):
+    """
+    Deletes all files from a dataset and the dataset itself.
+
+    :DELETE: payload:
+
+    {
+        "dataset_id": 1,
+        "organization_id": 1
+    }
+
+    Returns::
+
+        {'status': 'success' or 'error',
+         'message': 'error message, if any'
+        }
+    """
+    body = json.loads(request.body)
+    dataset_id = body.get('dataset_id', '')
+    organization_id = body.get('organization_id')
+    # check if user has access to the dataset
+    d = ImportRecord.objects.filter(
+        super_organization_id=organization_id, pk=dataset_id
+    )
+    if not d.exists():
+        return {
+            'status': 'error',
+            'message': 'user does not have permission to delete dataset',
+        }
+    d = d[0]
+    d.delete()
+    return {
+        'status': 'success',
+    }
+
+
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('can_modify_data')
+def update_dataset(request):
+    """
+    Updates the name of a dataset.
+
+    Payload::
+
+        {'dataset':
+            {'id': The ID of the Import Record,
+             'name': The new name for the ImportRecord
+            }
+        }
+
+    Returns::
+
+        {'status': 'success' or 'error',
+         'message': 'error message, if any'
+        }
+    """
+    body = json.loads(request.body)
+    orgs = request.user.orgs.all()
+    # check if user has access to the dataset
+    d = ImportRecord.objects.filter(
+        super_organization__in=orgs, pk=body['dataset']['id']
+    )
+    if not d.exists():
+        return {
+            'status': 'error',
+            'message': 'user does not have permission to update dataset',
+        }
+    d = d[0]
+    d.name = body['dataset']['name']
+    d.save()
+    return {
+        'status': 'success',
+    }
+
+
+@api_endpoint
+@ajax_request
+@login_required
 def get_import_file(request):
     """
     Retrieves details about an ImportFile.
@@ -1834,82 +1915,6 @@ def delete_file(request):
         }
 
     import_file.delete()
-    return {
-        'status': 'success',
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_member')
-def delete_dataset(request):
-    """
-    Deletes all files from a dataset and the dataset itself.
-
-    :DELETE: Expects 'dataset_id' for an ImportRecord in the query string.
-
-    Returns::
-
-        {'status': 'success' or 'error',
-         'message': 'error message, if any'
-        }
-    """
-    body = json.loads(request.body)
-    dataset_id = body.get('dataset_id', '')
-    organization_id = body.get('organization_id')
-    # check if user has access to the dataset
-    d = ImportRecord.objects.filter(
-        super_organization_id=organization_id, pk=dataset_id
-    )
-    if not d.exists():
-        return {
-            'status': 'error',
-            'message': 'user does not have permission to delete dataset',
-        }
-    d = d[0]
-    d.delete()
-    return {
-        'status': 'success',
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def update_dataset(request):
-    """
-    Updates the name of a dataset.
-
-    Payload::
-
-        {'dataset':
-            {'id': The ID of the Import Record,
-             'name': The new name for the ImportRecord
-            }
-        }
-
-    Returns::
-
-        {'status': 'success' or 'error',
-         'message': 'error message, if any'
-        }
-    """
-    body = json.loads(request.body)
-    orgs = request.user.orgs.all()
-    # check if user has access to the dataset
-    d = ImportRecord.objects.filter(
-        super_organization__in=orgs, pk=body['dataset']['id']
-    )
-    if not d.exists():
-        return {
-            'status': 'error',
-            'message': 'user does not have permission to update dataset',
-        }
-    d = d[0]
-    d.name = body['dataset']['name']
-    d.save()
     return {
         'status': 'success',
     }

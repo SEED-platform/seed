@@ -10,17 +10,14 @@ import hashlib
 import math
 import tempfile
 from urllib import unquote
-try:
-    import simplejson as json
-except ImportError:
-    import json
+import json
 
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.core.exceptions import ObjectDoesNotExist
 from seed.utils.cache import set_cache_raw, set_cache_state, get_cache, get_cache_raw, get_cache_state, delete_cache
 from django.core.urlresolvers import reverse
-from django.db import models, IntegrityError
+from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
 from django.utils.timesince import timesince
@@ -369,52 +366,6 @@ class ImportRecord(NotDeletableModel):
     def num_buildings_imported_total(self):
         return self.buildingimportrecord_set.all().count()
 
-    def get_status(self):
-        # Live, no changes since the last import.
-        if self.is_imported_live and self.import_completed_at is not None and (self.updated_at - self.import_completed_at).total_seconds() < 5:
-            return STATUS_LIVE
-        # Merging
-        elif self.merge_analysis_active:
-            return STATUS_MERGING
-        # Ready to merge
-        elif self.premerge_analysis_done and not self.merge_analysis_active and self.percent_files_ready_to_merge == 100 and self.merge_completed_at is not None and (self.updated_at - self.merge_completed_at).total_seconds() < 10:
-            return STATUS_READY_TO_MERGE
-        # Premerging
-        elif self.premerge_analysis_active:
-            return STATUS_PRE_MERGING
-        # Ready to premerge
-        elif self.percent_files_ready_to_merge == 100:
-            return STATUS_READY_TO_PRE_MERGE
-        elif self.num_files > 0 and self.percent_files_mapped == 100:
-            # Fully mapped, cleaning
-            is_machine_cleaning = False
-            for f in self.files:
-                if f.coercion_mapping_active:
-                    is_machine_cleaning = True
-                    break
-            if is_machine_cleaning:
-                return STATUS_MACHINE_CLEANING
-            else:
-                return STATUS_CLEANING
-        # Mapping
-        elif self.num_files > 0:
-            is_machine_mapping = False
-            for f in self.files:
-                if f.mapping_active or not f.initial_mapping_done:
-                    is_machine_mapping = True
-                    break
-            if is_machine_mapping:
-                return STATUS_MACHINE_MAPPING
-            else:
-                return STATUS_MAPPING
-        elif self.matching_active:
-            return STATUS_MATCHING
-        else:
-            # Uploading
-            return STATUS_UPLOADING
-
-        return STATUS_UNKNOWN
-
     @property
     def status_percent(self):
         if self.status == STATUS_MACHINE_CLEANING:
@@ -550,103 +501,6 @@ class ImportRecord(NotDeletableModel):
         self.merge_analysis_active = True
         self.merge_analysis_queued = False
         self.save()
-
-    def validate_mappings_and_update_mapping_stats(self):
-        # print "validate_mappings_and_update_mapping_stats for %s: %s " % (self.MAPPING_ACTIVE_KEY, cache.get(self.MAPPING_ACTIVE_KEY, False))
-        if get_cache_state(self.MAPPING_ACTIVE_KEY, False):
-            # print "queued"
-            set_cache_state(self.MAPPING_QUEUED_KEY, True)
-        else:
-            # print "running"
-            set_cache_state(self.MAPPING_ACTIVE_KEY, True)
-            set_cache_state(self.MAPPING_QUEUED_KEY, False)
-
-            s = SchemaKnowingRobot(primary_app=self.app)
-
-            valid = True
-
-            # Make sure no TCMs point to the same dest model & field
-            all_tcms = {}
-            files = {}
-            for file_record in self.files:
-                f_pk = file_record.pk
-                file_attrs = {}
-                files["%s" % f_pk] = {}
-
-                f = ImportFile.objects.get(pk=f_pk)
-                if f.file:
-                    if not f.initial_mapping_done:
-                        file_attrs["initial_mapping_done"] = True
-                    if not f.file_size_in_bytes:
-                        file_attrs["file_size_in_bytes"] = f.file.size
-
-                file_attrs["mapping_active"] = True
-                file_attrs["has_source_id"] = False
-                file_attrs["mapping_error_messages"] = ""
-
-                file_attrs["num_mapping_errors"] = 0
-                file_attrs["has_source_id"] = f.has_source_id
-                ImportFile.objects.filter(pk=f_pk).update(**file_attrs)
-
-                for tcm in f.tablecolumnmappings:
-                    if not tcm.ignored and tcm.is_mapped:
-                        if not tcm.combined_model_and_field in all_tcms:
-                            all_tcms[tcm.combined_model_and_field] = []
-
-                        all_tcms[tcm.combined_model_and_field].append(tcm)
-
-                        if tcm.destination_field == s.primary_field:
-                            file_attrs["has_source_id"] = True
-
-                    if not tcm.is_mapped and not tcm.ignored:
-                        if "num_mapping_errors" not in file_attrs:
-                            file_attrs["num_mapping_errors"] = f.num_mapping_errors
-
-                        file_attrs["num_mapping_errors"] += 1
-
-                # Make sure all spreadsheets have a source facility ID.
-                if not file_attrs["has_source_id"]:
-                    file_attrs["num_mapping_errors"] += 1
-                    file_attrs["mapping_error_messages"] += "No columns are mapped to %s." % s.primary_field
-
-                files["%s" % f_pk] = file_attrs
-
-            for name, tcms in all_tcms.items():
-                if len(tcms) > 1:
-                    valid = False
-                    message = "More than one column is mapped to %s.\nThe following %s columns are mapped:" % (tcms[0].friendly_destination_model_and_field, len(tcms))
-                    for tcm in tcms:
-                        message += "\n - %s, column %s" % (tcm.import_file.filename_only, tcm.order)
-
-                    for tcm in tcms:
-                        tcm.error_message_text = message
-                        tcm.save()
-                        if "num_mapping_errors" not in files["%s" % tcm.import_file.pk]:
-                            files["%s" % tcm.import_file.pk]["num_mapping_errors"] = tcm.import_file.num_mapping_errors
-
-                        files["%s" % tcm.import_file.pk]["num_mapping_errors"] += 1
-                else:
-                    if len(tcms) > 0:
-                        tcm = tcms[0]
-                        tcm.error_message_text = ""
-                        tcm.save()
-
-            for k, f in files.items():
-                f["mapping_active"] = False
-                ImportFile.objects.filter(pk=int(k)).update(**f)
-
-            # queue_update_status_for_import_record(self.pk)
-
-            self.status = self.get_status()
-            self.save()
-
-            set_cache_state(self.MAPPING_ACTIVE_KEY, False)
-            if get_cache_state(self.MAPPING_QUEUED_KEY, False):
-                self.validate_mappings_and_update_mapping_stats()
-                pass
-
-            return valid
-            # print "done"
 
     @property
     def summary_analysis_active(self):
@@ -876,80 +730,6 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                     print_exc()
             yield cleaned_row
 
-    def analyze_file_and_create_mappings(self):
-        app = self.import_record.app
-        count = 0
-        if not self.cached_first_row:
-            self.cache_first_rows()
-            self.save()
-
-        if self.cached_first_row:
-            bot = ColumnMappingRobot(app=app)
-            for c in self.first_row_columns:
-                count += 1
-
-                try:
-                    current_tcms = self.tablecolumnmapping_set.filter(
-                        source_string=c,
-                        order=count,
-                        active=True,
-                    )
-                    bot.set_decision_context(file_name=self.file.name, column_header=c, column_number=count)
-                    most_likely_model, most_likely_field, ignored, confidence = bot.most_likely_model_and_field
-
-                    if current_tcms.count() == 1:
-                        current_tcm = current_tcms[0]
-                        # archive_tcm
-                        self.tablecolumnmapping_set.create(
-                            source_string=current_tcm.source_string,
-                            destination_model=current_tcm.destination_model,
-                            destination_field=current_tcm.destination_field,
-                            order=current_tcm.order,
-                            confidence=current_tcm.confidence,
-                            ignored=current_tcm.ignored,
-                            was_a_human_decision=current_tcm.was_a_human_decision,
-                            active=False,
-                        )
-                    else:
-                        if ignored is None:
-                            ignored = False
-                        current_tcm = self.tablecolumnmapping_set.create(
-                                                                            source_string=c,
-                                                                            order=count,
-                                                                            confidence=confidence,
-                                                                            ignored=ignored,
-                                                                            destination_model=most_likely_model,
-                                                                            destination_field=most_likely_field,
-                                                                        )
-                    current_tcm.active = True
-                    current_tcm.save()
-
-                except IntegrityError:
-                    from traceback import print_exc
-                    print_exc()
-                    pass
-        # print "finished analyze_file_and_create_mappings for %s" % self
-
-    # def update_mapping_summary_stats(self):
-    #     # WTF does this even do, given ImportRecord.validate_mappings_and_update_mapping_stats()?
-    #     # self.num_mapping_errors = self.num_failed_tablecolumnmappings
-    #     self.num_mapping_warnings = self.tablecolumnmappings_warnings.count()
-
-    #     self.num_validation_errors = 0
-    #     self.mapping_confidence = 1.0 - ((self.num_mapping_errors + self.num_mapping_warnings) / self.num_columns)
-    #     self.num_tasks_total = self.tablecolumnmappings.count()
-    #     self.num_tasks_complete = self.num_tasks_total - self.tablecolumnmappings_failed.count()
-    #     num_coercion_errors = 0
-    #     num_coercions_total = 0
-
-    #     for tcm in self.tablecolumnmappings:
-    #         self.num_tasks_total += tcm.datacoercions.count() + tcm.validationrule_set.count()
-    #         self.num_tasks_complete += tcm.datacoercion_errors.count() + tcm.validationrule_set.filter(passes=True).count()
-    #         num_coercions_total += tcm.datacoercions.count()
-    #         num_coercion_errors += tcm.datacoercion_errors.count()
-    #     self.num_coercions_total = num_coercions_total
-    #     self.num_coercion_errors = num_coercion_errors
-
     def cache_first_rows(self):
         self.file.seek(0)
 
@@ -989,10 +769,6 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def tablecolumnmappings(self):
         return self.tablecolumnmapping_set.all().filter(active=True).order_by("order",).distinct()
-
-    @property
-    def tablecolumnmappings_warnings(self):
-        return self.tablecolumnmappings.filter(confidence__lt=MINIMUM_MAPPING_CONFIDENCE).filter(ignored=False, active=True).distinct()
 
     @property
     def tablecolumnmappings_failed(self):
