@@ -2377,12 +2377,12 @@ def save_gb_request_info(request):
     if time_type == 'date':
         last_date = yesterday.strftime(date_pattern)
         if loopback_flag == 'Y':
-            very_first_date = datetime.strptime('1/1/2014', '%m/%d/%Y').date()
+            very_first_date = datetime.strptime('3/1/2014', '%m/%d/%Y').date()
             last_date = very_first_date.strftime(date_pattern)
     else:
         last_date = str(calendar.timegm(time.strptime(yesterday.strftime('%m/%d/%Y'), '%m/%d/%Y')))
         if loopback_flag == 'Y':
-            last_date = str(1388534400)
+            last_date = str(1393632000)
 
     record = GreenButtonBatchRequestsInfo.objects.filter(building_id=building_id)
     if not record:
