@@ -22,7 +22,7 @@ env:
     - DJANGO_SETTINGS_MODULE=config.settings.travis
     - DISPLAY=:99.0
   matrix:
-    - TOX_ENV=py27-dj17
+    - TOX_ENV=python-unit
     - TOX_ENV=flake8
     - TOX_ENV=functional
 
