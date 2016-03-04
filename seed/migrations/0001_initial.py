@@ -13,7 +13,7 @@ from django.conf import settings
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data_importer', '0002_auto_20150711_2103'),
+        ('data_importer', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('orgs', '__first__'),
     ]

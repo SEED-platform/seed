@@ -118,7 +118,7 @@ class TestTasks(TestCase):
         self.fake_extra_data = {
             u'City': u'EnergyTown',
             u'ENERGY STAR Score': u'',
-            u'State/Province': u'Ilinois', # typo on purpose? The entire pm file has this as well.
+            u'State/Province': u'Illinois',
             u'Site EUI (kBtu/ft2)': u'',
             u'Year Ending': u'',
             u'Weather Normalized Source EUI (kBtu/ft2)': u'',
@@ -792,7 +792,7 @@ class TestTasksXLS(TestTasks):
         self.fake_extra_data = {
             u'City': u'EnergyTown',
             u'ENERGY STAR Score': u'',
-            u'State/Province': u'Ilinois',
+            u'State/Province': u'Illinois',
             u'Site EUI (kBtu/ft2)': u'',
             u'Year Ending': u'',
             u'Weather Normalized Source EUI (kBtu/ft2)': u'',
@@ -864,7 +864,7 @@ class TestTasksXLSX(TestTasks):
         self.fake_extra_data = {
             u'City': u'EnergyTown',
             u'ENERGY STAR Score': u'',
-            u'State/Province': u'Ilinois',
+            u'State/Province': u'Illinois',
             u'Site EUI (kBtu/ft2)': u'',
             u'Year Ending': u'',
             u'Weather Normalized Source EUI (kBtu/ft2)': u'',

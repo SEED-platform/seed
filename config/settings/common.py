@@ -31,6 +31,7 @@ MANAGERS = ADMINS
 WSGI_APPLICATION = 'config.wsgi.application'
 
 TIME_ZONE = 'America/Los_Angeles'
+USE_TZ = True
 LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
 USE_I18N = True
@@ -40,7 +41,7 @@ SECRET_KEY = os.environ.get(
     'ns=nb-w)#2ue-mtu!s&2krzfee1-t)^z7y8gyrp6mx^d*weifh'
 )
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -83,7 +84,6 @@ INSTALLED_APPS = (
 
     'compressor',
     'django_extensions',
-    'organizations',
     'raven.contrib.django.raven_compat',
     'tos',
     'rest_framework',
@@ -221,6 +221,7 @@ CELERY_ACCEPT_CONTENT = ['seed_json']
 CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
 CELERY_TASK_RESULT_EXPIRES = 18000  # 5 hours
+CELERY_MESSAGE_COMPRESSION = 'gzip'
 
 CELERY_IMPORTS = ('seed.energy.meter_data_processor.tasks')
 CELERYBEAT_SCHEDULE = {

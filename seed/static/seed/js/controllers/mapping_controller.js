@@ -578,7 +578,7 @@ angular.module('BE.seed.controller.mapping', [])
                     return $scope.import_file.name;
                 },
                 'uploaded': function() {
-                    return $scope.import_file.dataset.finish_time;
+                    return $scope.import_file.created;
                 },
                 'importFileId': function() {
                   return $scope.import_file.id;

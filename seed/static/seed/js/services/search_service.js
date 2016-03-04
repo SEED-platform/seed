@@ -467,8 +467,10 @@ angular.module('BE.seed.service.search', [])
             }
         });
 
-        for (var i = 0; i < columns.length; i++) {
-            angular.extend(columns[i], column_prototype);
+        if (typeof column_prototype !== 'undefined') {
+            for (var i = 0; i < columns.length; i++) {
+                angular.extend(columns[i], column_prototype);
+            }
         }
         return columns;
     };

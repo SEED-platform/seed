@@ -5,6 +5,7 @@
 :author
 """
 
+import copy
 import json
 import requests
 import logging
@@ -33,6 +34,7 @@ from seed.tasks import (
 )
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed import models, tasks
 from seed.models import (
     get_column_mapping,
@@ -41,6 +43,7 @@ from seed.models import (
     Column,
     ColumnMapping,
     ProjectBuilding,
+    Schema,
     get_ancestors,
     unmatch_snapshot_tree as unmatch_snapshot,
     CanonicalBuilding,
@@ -51,7 +54,6 @@ from seed.models import (
     TimeSeries,
 )
 from seed.views.accounts import _get_js_role
-from seed.lib.superperms.orgs.models import Organization
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
     get_buildings_for_user_count
@@ -213,7 +215,7 @@ def export_buildings(request):
         {
           "export_name": "My Export",
           "export_type": "csv",
-          "selected_building": [1234,], (optional list of building ids)
+          "selected_buildings": [1234,], (optional list of building ids)
           "selected_fields": optional list of fields to export
           "select_all_checkbox": True // optional, defaults to False
         }
@@ -1244,42 +1246,74 @@ def get_column_mapping_suggestions(request):
              ]
         }
     """
-    body = json.loads(request.body)
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
-    org_id = body.get('org_id')
     result = {'status': 'success'}
+
+    body = json.loads(request.body)
+    org_id = body.get('org_id')
+
+    membership = OrganizationUser.objects.select_related('organization') \
+        .get(organization_id=org_id, user=request.user)
+    organization = membership.organization
+
+    import_file = ImportFile.objects.get(pk=body.get('import_file_id'), import_record__super_organization_id=organization.pk)
+
     # Make a dictionary of the column names and their respective types.
     # Build this dictionary from BEDES fields (the null organization columns,
     # and all of the column mappings that this organization has previously
     # saved.
-    field_mappings = get_mappable_types()
-    field_names = field_mappings.keys()
+    mappable_types = get_mappable_types()
+    field_names = mappable_types.keys()
     column_types = {}
-
-    # for c in Column.objects.filter(
-    #     Q(mapped_mappings__super_organization=org_id) |
-    #     Q(organization__isnull=True)
-    # ).exclude(
-    #     # mappings get created to mappable types
-    #     # but we deal with them manually so don't
-    #     # include them here
-    #     column_name__in=field_names
-    # ):
 
     # Note on exclude:
     # mappings get created to mappable types but we deal with them manually
     # so don't include them here
-    columns = Column.objects.select_related('unit').prefetch_related('schemas') \
-        .filter(Q(mapped_mappings__super_organization=org_id) | Q(organization__isnull=True)) \
+    columns = list(
+        Column.objects.select_related('unit')
+        .filter(Q(mapped_mappings__super_organization_id=org_id) | Q(organization__isnull=True))
         .exclude(column_name__in=field_names)
+    )
+
+    # Query Schema-Column through table directly for all joins for these columns.
+    column_schemas = list(
+        Schema.columns.through.objects
+        .filter(column_id__in=[c.pk for c in columns])
+        .values('pk', 'column_id', 'schema_id')
+    )
+
+    # Map of column_id to list of {'schema_id': id, 'pk': pk} joins.
+    column_schema_map = {}
+    for cs in column_schemas:
+        obj = {'schema_id': cs['schema_id'], 'pk': cs['pk']}
+        try:
+            column_schema_map[cs['column_id']].append(obj)
+        except KeyError:
+            column_schema_map[cs['column_id']] = [obj]
+
+    # Walk through column_schema_map and sort the lists
+    for k, v in column_schema_map.items():
+        if column_schema_map[k]:
+            column_schema_map[k] = sorted(column_schema_map[k], key=lambda k: k['pk'])
+
+    # Grab all schema_ids from Schema-Column join table results.
+    schema_ids = list(set([s['schema_id'] for s in column_schemas]))
+
+    # Look up schemas by ids.
+    schemas = list(Schema.objects.filter(pk__in=schema_ids).only('pk', 'name'))
+
+    # Map of schema_id to schema object
+    schema_map = {}
+    for schema in schemas:
+        schema_map[schema.pk] = schema
 
     for c in columns:
         if c.unit:
             unit = c.unit.get_unit_type_display()
         else:
             unit = 'string'
-        if c.schemas.first():
-            schema = c.schemas.first().name
+        if column_schema_map.get(c.pk):
+            schema_id = column_schema_map[c.pk][0]['schema_id']
+            schema = schema_map[schema_id].name
         else:
             schema = ''
         column_types[c.column_name] = {
@@ -1287,11 +1321,7 @@ def get_column_mapping_suggestions(request):
             'schema': schema,
         }
 
-    building_columns = sorted(column_types.keys())
-    db_columns = sorted(field_names)
-    building_columns = db_columns + building_columns
-
-    db_columns = get_mappable_types()
+    db_columns = copy.deepcopy(mappable_types)
     for k, v in db_columns.items():
         db_columns[k] = {
             'unit_type': v if v else 'string',
@@ -1324,7 +1354,7 @@ def get_column_mapping_suggestions(request):
             import_file.first_row_columns,
             column_types.keys(),
             previous_mapping=get_column_mapping,
-            map_args=[import_file.import_record.super_organization],
+            map_args=[organization],
             thresh=20  # percentage match we require
         )
         # replace None with empty string for column names
@@ -1333,7 +1363,7 @@ def get_column_mapping_suggestions(request):
             if dest is None:
                 suggested_mappings[m][0] = u''
     result['suggested_column_mappings'] = suggested_mappings
-    result['building_columns'] = building_columns
+    result['building_columns'] = sorted(column_types.keys()) + sorted(field_names)
     result['building_column_types'] = column_types
 
     return result
@@ -1731,6 +1761,87 @@ def get_dataset(request):
 @api_endpoint
 @ajax_request
 @login_required
+@has_perm('requires_member')
+def delete_dataset(request):
+    """
+    Deletes all files from a dataset and the dataset itself.
+
+    :DELETE: payload:
+
+    {
+        "dataset_id": 1,
+        "organization_id": 1
+    }
+
+    Returns::
+
+        {'status': 'success' or 'error',
+         'message': 'error message, if any'
+        }
+    """
+    body = json.loads(request.body)
+    dataset_id = body.get('dataset_id', '')
+    organization_id = body.get('organization_id')
+    # check if user has access to the dataset
+    d = ImportRecord.objects.filter(
+        super_organization_id=organization_id, pk=dataset_id
+    )
+    if not d.exists():
+        return {
+            'status': 'error',
+            'message': 'user does not have permission to delete dataset',
+        }
+    d = d[0]
+    d.delete()
+    return {
+        'status': 'success',
+    }
+
+
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('can_modify_data')
+def update_dataset(request):
+    """
+    Updates the name of a dataset.
+
+    Payload::
+
+        {'dataset':
+            {'id': The ID of the Import Record,
+             'name': The new name for the ImportRecord
+            }
+        }
+
+    Returns::
+
+        {'status': 'success' or 'error',
+         'message': 'error message, if any'
+        }
+    """
+    body = json.loads(request.body)
+    orgs = request.user.orgs.all()
+    # check if user has access to the dataset
+    d = ImportRecord.objects.filter(
+        super_organization__in=orgs, pk=body['dataset']['id']
+    )
+    if not d.exists():
+        return {
+            'status': 'error',
+            'message': 'user does not have permission to update dataset',
+        }
+    d = d[0]
+    d.name = body['dataset']['name']
+    d.save()
+    return {
+        'status': 'success',
+    }
+
+
+@api_endpoint
+@ajax_request
+@login_required
 def get_import_file(request):
     """
     Retrieves details about an ImportFile.
@@ -1843,82 +1954,6 @@ def delete_file(request):
         }
 
     import_file.delete()
-    return {
-        'status': 'success',
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_member')
-def delete_dataset(request):
-    """
-    Deletes all files from a dataset and the dataset itself.
-
-    :DELETE: Expects 'dataset_id' for an ImportRecord in the query string.
-
-    Returns::
-
-        {'status': 'success' or 'error',
-         'message': 'error message, if any'
-        }
-    """
-    body = json.loads(request.body)
-    dataset_id = body.get('dataset_id', '')
-    organization_id = body.get('organization_id')
-    # check if user has access to the dataset
-    d = ImportRecord.objects.filter(
-        super_organization_id=organization_id, pk=dataset_id
-    )
-    if not d.exists():
-        return {
-            'status': 'error',
-            'message': 'user does not have permission to delete dataset',
-        }
-    d = d[0]
-    d.delete()
-    return {
-        'status': 'success',
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def update_dataset(request):
-    """
-    Updates the name of a dataset.
-
-    Payload::
-
-        {'dataset':
-            {'id': The ID of the Import Record,
-             'name': The new name for the ImportRecord
-            }
-        }
-
-    Returns::
-
-        {'status': 'success' or 'error',
-         'message': 'error message, if any'
-        }
-    """
-    body = json.loads(request.body)
-    orgs = request.user.orgs.all()
-    # check if user has access to the dataset
-    d = ImportRecord.objects.filter(
-        super_organization__in=orgs, pk=body['dataset']['id']
-    )
-    if not d.exists():
-        return {
-            'status': 'error',
-            'message': 'user does not have permission to update dataset',
-        }
-    d = d[0]
-    d.name = body['dataset']['name']
-    d.save()
     return {
         'status': 'success',
     }
