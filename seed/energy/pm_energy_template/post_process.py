@@ -41,9 +41,6 @@ def post_process(file_path):
                 else:
                     data['uom_int'] = '72'  # default Wh
 
-                if not data['custom_id']:
-                    data['custom_id'] = '1'  # default custom id is 1
-
                 for k, v in data.iteritems():
                     data[k] = re.sub('[^\w|\.|]', '_', str(v))
 

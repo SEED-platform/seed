@@ -79,9 +79,10 @@ CELERY_QUEUES = (
 )
 
 # KairosDB Settings
+TSDB_SERVER_URL = 'http://127.0.0.1:8013'
 TSDB = {
-    'insert_url': 'http://127.0.0.1:8013/api/v1/datapoints',
-    'query_url': 'http://127.0.0.1:8013/api/v1/datapoints/query',
+    'insert_url': TSDB_SERVER_URL+'/api/v1/datapoints',
+    'query_url': TSDB_SERVER_URL+'/api/v1/datapoints/query',
     'measurement': 'your-time-series-db-name'
 }
 LOCAL_TIMEZONE = 'your-local-timezone'  #e.g. America/New_York'

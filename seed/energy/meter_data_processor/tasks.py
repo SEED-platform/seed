@@ -1,17 +1,18 @@
+from seed.models import (
+    GreenButtonBatchRequestsInfo,
+)
+
 import logging
 import time
+import calendar
 from datetime import date, timedelta, datetime
 
-# from billiard import current_process # was used in green_button_task_runner
-# from celery import current_app # was used in green_button_task_runner
-from celery import shared_task, current_app
-from multiprocessing import current_process
+from celery import shared_task
 from django.conf import settings
 from django.core.cache import cache
 from seed.energy.meter_data_processor.monthly_data_aggregator import aggr_sum_metric
-from seed.energy.meter_data_processor.green_button_driver import get_gb_data
-from seed.energy.meter_data_processor.green_button_data_analyser import data_analyse
-from seed.models import GreenButtonBatchRequestsInfo
+from seed.energy.meter_data_processor import green_button_driver as driver
+import green_button_data_analyser as analyser
 
 _log = logging.getLogger(__name__)
 
@@ -37,76 +38,74 @@ def increment_day(date_str):
 
 
 @shared_task
+def process_green_button_batch_request(row_id, url, subscription_id, building_id, time_type, date_pattern, min_date_para, min_date, max_date_para):
+    today_date = date.today()
+    today_str = today_date.strftime('%m/%d/%Y')
+
+    yesterday = date.today() - timedelta(1)
+    yesterday_str = yesterday.strftime('%m/%d/%Y')
+
+    if time_type == 'date':
+        last_datetime = datetime.strptime(min_date, date_pattern)
+        last_date = last_datetime.date()
+
+        if last_date > yesterday:
+            _log.info('Green Button last date is beyond yesterday')
+            return
+
+        url = url + settings.GREEN_BUTTON_BATCH_URL_SYNTAX + subscription_id + "&" + min_date_para + "=" + min_date + "&" + max_date_para + "=" + yesterday_str
+    elif time_type == 'timestamp':
+        last_date = long(min_date)
+        if last_date > yesterday:
+            _log.info('Green Button last date is beyond yesterday')
+            return
+
+        yesterday_timestamp = str(calendar.timegm(time.strptime(yesterday_str, '%m/%d/%Y')))
+
+        url = url + settings.GREEN_BUTTON_BATCH_URL_SYNTAX + subscription_id + "&" + min_date_para + "=" + min_date + "&" + max_date_para + "=" + yesterday_timestamp
+
+    _log.info('Fetching url ' + url)
+
+    ts_data = driver.get_gb_data(url, building_id)
+
+    _log.info('data fetched')
+
+    if ts_data is not None:
+        analyser.data_analyse(ts_data, 'GreenButton')
+
+        _log.info('update db record: last_date=\'' + today_str + '\' for id=' + str(row_id))
+        record = GreenButtonBatchRequestsInfo.objects.get(id=row_id)
+        record.last_date = today_str
+        record.save()
+
+
+@shared_task
 def green_button_task_runner():
-    # Get total number of processes and current process index, to set offset
-    # Tasks are distributed to all workers in Round-Robin style
-    _log.debug("running green_button_task_runner")
-    stats = current_app.control.inspect().stats()
-    num_process = len(stats[stats.keys()[0]]['pool']['processes'])
-    offset = current_process().index
+    lock_id = 'green_button_batch_request_scheduler_lock'
+    if not cache.add(lock_id, 'true', None):
+        _log.info('last green_button_task_runner is not finished')
+        print 'last green_button_task_runner is not finished'
+        return
 
     record = GreenButtonBatchRequestsInfo.objects.filter(active='Y')
     if record:
-        _log.debug("Requesting Green Button Data for Record: %s", record)
-        today_date = date.today()
-        today_str = today_date.strftime('%m/%d/%Y')
-
-        yesterday = date.today() - timedelta(1)
-        yesterday_str = yesterday.strftime('%m/%d/%Y')
-
-        row_index = 0
         for gb_info in record:
-            row_index = row_index + 1
-            if row_index - 1 < offset:
-                continue
-            else:
-                offset = offset + num_process
-
             last_date_str = gb_info.last_date
             row_id = gb_info.id
             url = gb_info.url
             subscription_id = gb_info.subscription_id
-            last_ts = gb_info.last_ts
             min_date_parameter = gb_info.min_date_parameter
             max_date_parameter = gb_info.max_date_parameter
             building_id = gb_info.building_id
 
             time_type = gb_info.time_type
-            if time_type == 'date':
-                date_pattern = gb_info.date_pattern
+            date_pattern = gb_info.date_pattern
 
-                last_datetime = datetime.strptime(last_date_str, date_pattern)
-                last_date = last_datetime.date()
-
-                if last_date > yesterday:
-                    _log.info('Green Button last date is beyond yesterday')
-                    continue
-
-                url = url + settings.GREEN_BUTTON_BATCH_URL_SYNTAX + subscription_id + "&" + min_date_parameter + "=" + last_date_str + "&" + max_date_parameter + "=" + yesterday_str
-            elif time_type == 'timestamp':
-                last_date = long(last_date_str)
-                if last_date > yesterday:
-                    _log.info('Green Button last date is beyond yesterday')
-                    continue
-                yesterday_timestamp = str(calendar.timegm(time.strptime(yesterday_str, '%m/%d/%Y')))
-                url = url + settings.GREEN_BUTTON_BATCH_URL_SYNTAX + subscription_id + "&" + min_date_parameter + "=" + last_date_str + "&" + max_date_parameter + "=" + str(
-                    yesterday)
-
-            _log.info('Fetching url ' + url)
-
-            ts_data = get_gb_data(url, building_id)
-
-            _log.info('data fetched')
-
-            if ts_data is not None:
-                data_analyse(ts_data, 'GreenButton')
-
-            _log.info('update db record: last_date=\'' + today_str + '\' for id=' + str(row_id))
-            record = GreenButtonBatchRequestsInfo.objects.get(id=row_id)
-            record.last_date = today_str
-            record.save()
+            process_green_button_batch_request.delay(row_id, url, subscription_id, building_id, time_type, date_pattern, min_date_parameter, last_date_str, max_date_parameter)
     else:
         _log.info('No GreenButton record info found')
+
+    cache.delete(lock_id)
 
 
 @shared_task
@@ -138,17 +137,14 @@ def aggregate_monthly_data(building_id=-1):
     else:
         lastmonth = today.replace(month=(today.month - 1))
 
-    # first day of last month
-    # firstDayOfLastMonth = lastmonth.replace(day=1).replace(hour=0).replace(minute=0).replace(second=0).replace(
-    #    microsecond=0)  # Not used
-
     # last day of the month
     if lastmonth.month in monthlist:
         lastDayOfLastMonth = lastmonth.replace(day=31)
-    elif (lastmonth.month == 2) and (lastmonth.year % 4 != 0):
-        lastDayOfLastMonth = lastmonth.replace(day=28)
-    elif (lastmonth.month == 2) and (lastmonth.year % 4 == 0):
-        lastDayOfLastMonth = lastmonth.replace(day=29)
+    elif lastmonth.month == 2:
+        if calendar.isleap(lastmonth.year):
+            lastDayOfLastMonth = lastmonth.replace(day=29)
+        else:
+            lastDayOfLastMonth = lastmonth.replace(day=28)
     else:
         lastDayOfLastMonth = lastmonth.replace(day=30)
     lastDayOfLastMonth = lastDayOfLastMonth.replace(hour=23).replace(minute=59).replace(second=59).replace(

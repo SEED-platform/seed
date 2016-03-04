@@ -2,8 +2,8 @@ import logging
 from datetime import date, datetime
 from time import sleep
 
+import tasks
 from seed.energy.meter_data_processor import kairos_insert as tsdb
-from seed.energy.meter_data_processor.monthly_data_aggregator import aggr_sum_metric
 from seed.models import (
     Meter,
     CanonicalBuilding,
@@ -53,7 +53,7 @@ def data_analyse(ts_data, name):
             ts_cell['insert_date'] = today_str
 
             ts_dateObj = get_month_from_ts(ts_cell['start'])
-            if ts_dateObj['month'] != today_month and ts_dateObj['year'] != today_year:
+            if ts_dateObj['month'] != today_month or ts_dateObj['year'] != today_year:
                 # has back filling
                 immediate_aggregate = True
 
@@ -109,6 +109,5 @@ def data_analyse(ts_data, name):
         # TODO: is there another way to check for the data to be inserted?
         sleep(5)  # wait for data inserted
         _log.info('Having back filling data, aggregate immediately')
-        # TODO: fix the time zone
-        aggr_sum_metric(ts_data)
+        tasks.aggregate_monthly_data(ts_data[0]['canonical_id'])
         _log.info('Immediate aggregation finished')
