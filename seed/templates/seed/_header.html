@@ -27,7 +27,7 @@
 		      <button type="button" class="btn btn-default dropdown-toggle" uib-dropdown-toggle ng-disabled="disabled">
 		        {$ menu.user.organization.name $} <span class="caret"></span>
 		      </button>
-		      <ul class="uib-dropdown-menu" role="menu">
+		      <ul uib-dropdown-menu class="uib-dropdown-menu" role="menu">
 		        <li ng-repeat="org in menu.user.organizations">
 		        	<a href ng-click="set_user_org(org)">{$ org.name $} <i class="fa fa-check" ng-show="org.id == menu.user.organization.id"></i></a>
 		        </li>
