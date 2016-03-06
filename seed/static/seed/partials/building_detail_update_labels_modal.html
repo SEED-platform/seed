@@ -38,7 +38,7 @@
                                     data-toggle="dropdown">{$ new_label.color $} 
                                 <span class="caret"></span>
                             </button>
-                            <ul class="uib-dropdown-menu pull-right" role="menu">
+                            <ul uib-dropdown-menu class="uib-dropdown-menu pull-right" role="menu">
                                 <li ng-repeat="label in available_colors" 
                                     ng-click="new_label.label = label.label; new_label.color = label.color">
                                     <a>
