@@ -2156,7 +2156,7 @@ class TestMCMViews(TestCase):
     def test_get_column_mapping_suggestions(self):
         post_data = {
             'import_file_id': self.import_file.pk,
-            'ord_id': self.org.pk
+            'org_id': self.org.pk
         }
 
         response = self.client.post(
@@ -2175,7 +2175,7 @@ class TestMCMViews(TestCase):
 
         post_data = {
             'import_file_id': import_file.pk,
-            'ord_id': self.org.pk
+            'org_id': self.org.pk
         }
 
         response = self.client.post(
@@ -2206,7 +2206,7 @@ class TestMCMViews(TestCase):
 
         post_data = {
             'import_file_id': self.import_file.pk,
-            'ord_id': self.org.pk
+            'org_id': self.org.pk
         }
 
         response = self.client.post(
