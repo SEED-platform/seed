@@ -1,5 +1,5 @@
-Sample API Client
-=================
+API Client
+==========
 
 .. automodule:: seed.utils.api_client
     :members:

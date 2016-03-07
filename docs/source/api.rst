@@ -1,8 +1,14 @@
-API Usage
-=====================
+===
+API
+===
+
+A python-based API client is included in seed.utils.api_client and documented here:
+
+api_client
+
 
 Authentication
-==============
+--------------
 Authentication is handled via an authorization token set in an http header.
 To request an API token, go to ``/app/#/profile/developer`` and click 'Get a New API Key'.
 
@@ -21,7 +27,7 @@ If authentication fails, the response's status code will be 302, redirecting the
 
 
 Payloads
-========
+--------
 
 Many requests require a JSON-encoded payload and/or parameters in the query string of the url.  A frequent
 requirement is including the organization_id of the org you belong to.  E.g.::
@@ -46,7 +52,7 @@ Using Python::
 
 
 Responses
-=========
+---------
 
 Responses from all requests will be JSON-encoded objects, as specified in each endpoint's documentation.
 In the case of an error, most endpoints will return this instead of the expected payload (or an HTTP status code)::
@@ -56,28 +62,23 @@ In the case of an error, most endpoints will return this instead of the expected
         'message': 'explanation of the error here'
     }
  
-Sample Client
-=============
-
-A python-based API client is included in seed.utils.api_client and documented here: 
-:doc:`api_client`
 
 
-API-related endpoints
+API-related Endpoints
 ---------------------
 
 .. automodule:: seed.views.api
     :members:
     :undoc-members:
 
-Account management endpoints
+Account Management Endpoints
 ----------------------------
 
 .. automodule:: seed.views.accounts
     :members:
     :undoc-members:
 
-File upload endpoints
+File Upload Endpoints
 ---------------------
 
 These endpoints behave drastically differently depending on whether the system is configured to upload files to S3 or
@@ -87,7 +88,7 @@ to a local file system.
     :members: handle_s3_upload_complete, local_uploader, get_upload_details, sign_policy_document
 
 
-SEED (building and project) endpoints
+SEED (Building and Project) Endpoints
 -------------------------------------
 
 .. automodule:: seed.views.main

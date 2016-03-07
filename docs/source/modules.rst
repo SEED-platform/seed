@@ -2,14 +2,7 @@
 =
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 20
+   :glob:
 
-   config
-   data_importer
-   landing
-   manage
-   seed
-   terrain
-   test_helpers
-   urls
-   wsgi
+   modules/*

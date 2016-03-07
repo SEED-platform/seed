@@ -1,4 +1,4 @@
-Install Guide
+Installation Guide
 =============
 
 SEED is intended to be installed on Linux instances in the cloud(AWS), and on
