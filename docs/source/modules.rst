@@ -1,8 +1,9 @@
-.
-=
+=======
+Modules
+=======
 
 .. toctree::
-   :maxdepth: 20
-   :glob:
+    :maxdepth: 2
+    :glob:
 
-   modules/*
+    modules/*

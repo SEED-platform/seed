@@ -1,3 +1,4 @@
+=========
 AWS Setup
 =========
 
@@ -14,7 +15,7 @@ Prerequisites
 ^^^^^^^^^^^^^^
 
 Ubuntu server 13.10 or newer, with the following list of *aptitude packages*
-installed. :download:`prerequisites.txt <prerequisites.txt>`
+installed.
 
 Copy the *prerequisites.txt* files to the server and install the dependencies:
 

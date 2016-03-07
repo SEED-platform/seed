@@ -121,12 +121,12 @@ def _get_default_org(user):
 def home(request):
     """the main view for the app
         Sets in the context for the django template:
-            app_urls: a json object of all the URLs that is loaded in the JS
-                      global namespace
-            username: the request user's username (first and last name)
-            AWS_UPLOAD_BUCKET_NAME: S3 direct upload bucket
-            AWS_CLIENT_ACCESS_KEY: S3 direct upload client key
-            FILE_UPLOAD_DESTINATION:  'S3' or 'filesystem'
+
+        * **app_urls**: a json object of all the URLs that is loaded in the JS global namespace
+        * **username**: the request user's username (first and last name)
+        * **AWS_UPLOAD_BUCKET_NAME**: S3 direct upload bucket
+        * **AWS_CLIENT_ACCESS_KEY**: S3 direct upload client key
+        * **FILE_UPLOAD_DESTINATION**: 'S3' or 'filesystem'
     """
     username = request.user.first_name + " " + request.user.last_name
     if 's3boto' in settings.DEFAULT_FILE_STORAGE.lower():
@@ -473,9 +473,8 @@ def get_building(request):
     fields will be masked to only those shared within the parent org's
     structure.
 
-    :GET: Expects building_id and organization_id in query string.
-    building_id should be the `caninical_building` ID for the building, not the
-    BuildingSnapshot id.
+    :GET: Expects building_id and organization_id in query string. building_id should be the `caninical_building` ID  \
+    for the building, not the BuildingSnapshot id.
 
     Returns::
 
@@ -1208,8 +1207,8 @@ def delete_duplicates_from_import_file(request):
     Returns::
 
         {
-            'status': 'success',
-            'deleted': Number of duplicates deleted
+            "status": "success",
+            "deleted": "Number of duplicates deleted"
         }
     """
     import_file_id = request.GET.get('import_file_id', '')
@@ -1803,7 +1802,9 @@ def delete_dataset(request):
     """
     Deletes all files from a dataset and the dataset itself.
 
-    :DELETE: Payload::
+    :DELETE: Expects organization id and dataset id.
+
+    Payload::
 
         {
             "dataset_id": 1,
@@ -1964,9 +1965,10 @@ def delete_file(request):
     Deletes an ImportFile from a dataset.
 
     Payload::
+
         {
-            "file_id": ImportFile id,
-            "organization_id": current user organization id
+            "file_id": "ImportFile id",
+            "organization_id": "current user organization id as integer"
         }
 
     Returns::
@@ -2167,21 +2169,23 @@ def update_building(request):
 
     :PUT:
 
+    Payload::
+
         {
-            'organization_id': organization id,
-            'building':
+            "organization_id": "organization id as integer",
+            "building":
                 {
-                    'canonical_building': The canonical building ID
-                    'fieldname': 'value'... The rest of the fields in the BuildingSnapshot; see get_columns()
-                                            endpoint for complete list.
+                    "canonical_building": "canonical building ID as integer"
+                    "fieldname": "value",
+                    "...": "Remaining fields in the BuildingSnapshot; see get_columns() endpoint for complete list."
                 }
         }
 
     Returns::
 
         {
-            'status': 'success',
-            'child_id': The ID of the newly-created BuildingSnapshot
+            "status": "success",
+            "child_id": "The ID of the newly-created BuildingSnapshot"
         }
     """
     body = json.loads(request.body)
@@ -2230,13 +2234,13 @@ def delete_buildings(request):
     """
     Deletes all BuildingSnapshots the user has selected.
 
-    Does not delete selected_buildings where the user is not a member or owner
-    of the organization the selected building belongs. Since search shows
-    buildings across all the orgs a user belongs, it's possible for a building
+    Does not delete selected_buildings where the user is not a member or owner of the organization the selected
+    building belongs. Since search shows buildings across all the orgs a user belongs, it's possible for a building
     to belong to an org outside of `org_id`.
 
-    :DELETE: Expects 'org_id' for the organization, and the search payload
-    similar to add_buildings/create_project
+    :DELETE: Expects 'org_id' for the organization, and the search payload  similar to add_buildings/create_project
+
+    Payload::
 
         {
             'organization_id': 2,
@@ -2307,31 +2311,29 @@ def get_building_summary_report_data(request):
     It expects as parameters
 
     :GET:
-    * start_date:       The starting date for the data series with the format  `YYYY-MM-DD`
-    * end_date:         The starting date for the data series with the format  `YYYY-MM-DD`
+
+    :param start_date: The starting date for the data series with the format  `YYYY-MM-DD`
+    :param end_date: The starting date for the data series with the format  `YYYY-MM-DD`
 
     Returns::
-    The returned JSON document that has the following structure.
-    ```
-            {
-                "status": "success",
-                "summary_data":
-                {
-                    "num_buildings": number of buildings returned from query,
-                    "avg_eui": average EUI for returned buildings,
-                    "avg_energy_score": average energy score for returned buildings
-                }
-            }
-    ```
 
+        {
+            "status": "success",
+            "summary_data":
+            {
+                "num_buildings": "number of buildings returned from query",
+                "avg_eui": "average EUI for returned buildings",
+                "avg_energy_score": "average energy score for returned buildings"
+            }
+        }
 
     Units for return values are as follows:
 
-    ```
-    | property              | units      |
-    |-----------------------|------------|
-    | avg_eui               | kBtu-ft2   |
-    ```
+    +-----------+---------------+
+    | property  | units         |
+    +===========+===============+
+    | avg_eui   | kBtu/ft2/yr   |
+    +-----------+---------------+
 
     ---
 
@@ -2410,16 +2412,19 @@ def get_building_summary_report_data(request):
 def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     """ This method returns data used to generate graphing reports. It expects as parameters
 
-        * from_date:       The starting date for the data series.  Date object
-        * end_date:        The starting date for the data series with the format. Date object
-        * x_var:           The variable name to be assigned to the "x" value in the returned data series
-        * y_var:           The variable name to be assigned to the "y" value in the returned data series
-        * orgs:            The organizations to be used when querying data.
+        :GET:
+
+        :param from_date: The starting date for the data series.  Date object.
+        :param end_date: The starting date for the data series with the format. Date object.
+        :param x_var: The variable name to be assigned to the "x" value in the returned data series.
+        :param y_var: The variable name to be assigned to the "y" value in the returned data series.
+        :param orgs: The organizations to be used when querying data.
 
         The x and y variables should be column names in the BuildingSnapshot table.  In theory they could
         be in the extra_data too and this works but is currently disabled.
 
         Returns::
+
         bldg_counts:  dict that looks like {year_ending : {"buildings_with_data": set(canonical ids), "buildings": set(canonical ids)}  # NOQA
                         This is a collection of all year_ending dates and ids
                         the canonical buildings that have data for that year
@@ -2604,11 +2609,12 @@ def get_building_report_data(request):
     """ This method returns a set of x,y building data for graphing. It expects as parameters
 
         :GET:
-        * start_date:       The starting date for the data series with the format  `YYYY-MM-DD`
-        * end_date:         The starting date for the data series with the format  `YYYY-MM-DD`
-        * x_var:            The variable name to be assigned to the "x" value in the returned data series  # NOQA
-        * y_var:            The variable name to be assigned to the "y" value in the returned data series  # NOQA
-        * organization_id:  The organization to be used when querying data.
+
+        :param start_date: The starting date for the data series with the format  `YYYY-MM-DD`
+        :param end_date: The starting date for the data series with the format  `YYYY-MM-DD`
+        :param x_var: The variable name to be assigned to the "x" value in the returned data series  # NOQA
+        :param y_var: The variable name to be assigned to the "y" value in the returned data series  # NOQA
+        :param organization_id: The organization to be used when querying data.
 
         The x_var values should be from the following set of variable names:
 
@@ -2634,8 +2640,7 @@ def get_building_report_data(request):
         buildings in this group have data."
 
         Returns::
-        The returned JSON document that has the following structure.
-        ```
+
             {
                 "status": "success",
                 "chart_data": [
@@ -2658,10 +2663,8 @@ def get_building_report_data(request):
                 "num_buildings": total number of buildings in query results,
                 "num_buildings_w_data": total number of buildings with valid data in the query results  # NOQA
             }
-        ```
 
         ---
-
 
         parameters:
             - name: x_var
@@ -2716,8 +2719,6 @@ def get_building_report_data(request):
               message: Not authenticated
             - code: 403
               message: Insufficient rights to call this procedure
-
-
         """
     from dateutil.parser import parse
 
@@ -2808,11 +2809,12 @@ def get_aggregated_building_report_data(request):
     """ This method returns a set of aggregated building data for graphing. It expects as parameters
 
         :GET:
-        * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`  # NOQA
-        * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`  # NOQA
-        * x_var:            The variable name to be assigned to the "x" value in the returned data series  # NOQA
-        * y_var:            The variable name to be assigned to the "y" value in the returned data series  # NOQA
-        * organization_id:  The organization to be used when querying data.
+
+        :param start_date: The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
+        :param end_date: The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
+        :param x_var: The variable name to be assigned to the "x" value in the returned data series
+        :param y_var: The variable name to be assigned to the "y" value in the returned data series
+        :param organization_id: The organization to be used when querying data.
 
         The x_var values should be from the following set of variable names:
 
@@ -2839,8 +2841,7 @@ def get_aggregated_building_report_data(request):
 
 
         Returns::
-        The returned JSON document that has the following structure.
-        ```
+
             {
                 "status": "success",
                 "chart_data": [
@@ -2867,10 +2868,8 @@ def get_aggregated_building_report_data(request):
                 "num_buildings": total number of buildings in query results,
                 "num_buildings_w_data": total number of buildings with valid data in query results
             }
-        ```
 
         ---
-
 
         parameters:
             - name: x_var

@@ -63,7 +63,6 @@ In the case of an error, most endpoints will return this instead of the expected
     }
  
 
-
 API-related Endpoints
 ---------------------
 
@@ -82,9 +81,9 @@ File Upload Endpoints
 ---------------------
 
 These endpoints behave drastically differently depending on whether the system is configured to upload files to S3 or
-to a local file system.
+to the local file system.
 
-.. automodule:: data_importer.views
+.. automodule:: seed.data_importer.views
     :members: handle_s3_upload_complete, local_uploader, get_upload_details, sign_policy_document
 
 

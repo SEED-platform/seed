@@ -6,22 +6,10 @@ Subpackages
 
 .. toctree::
 
-    data_importer.migrations
     data_importer.tests
 
 Submodules
 ----------
-
-data_importer.managers module
------------------------------
-
-.. automodule:: data_importer.managers
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-data_importer.models module
----------------------------
 
 .. automodule:: data_importer.models
     :members:

@@ -19,34 +19,10 @@ config.settings.common module
     :undoc-members:
     :show-inheritance:
 
-config.settings.compress module
--------------------------------
-
-.. automodule:: config.settings.compress
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 config.settings.dev module
 --------------------------
 
 .. automodule:: config.settings.dev
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-config.settings.local_untracked module
---------------------------------------
-
-.. automodule:: config.settings.local_untracked
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-config.settings.local_untracked_docker module
----------------------------------------------
-
-.. automodule:: config.settings.local_untracked_docker
     :members:
     :undoc-members:
     :show-inheritance:

@@ -13,7 +13,7 @@ is an excellent place to general understanding of this project's layout.
 
 .. _AWS: http://aws.amazon.com/
 
-Pre-requisites
+Prerequisites
 ^^^^^^^^^^^^^^
 
 Ubuntu server 14.04 or newer

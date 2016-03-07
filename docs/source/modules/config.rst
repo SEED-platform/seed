@@ -36,14 +36,6 @@ config.tests module
     :undoc-members:
     :show-inheritance:
 
-config.urls module
-------------------
-
-.. automodule:: config.urls
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 config.utils module
 -------------------
 

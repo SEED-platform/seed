@@ -14,13 +14,10 @@ Getting Started:
    install
    api
    data_model
-   How mapping works <mapping>
+   mapping
+   modules
    license
    help
-   manage
-   Modules <modules>
-
-
 
 Updating this documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

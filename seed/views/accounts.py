@@ -335,8 +335,8 @@ def remove_user_from_org(request):
     Returns::
 
         {
-         'status': 'success' or 'error',
-         'message': 'error message, if any'
+            'status': 'success' or 'error',
+            'message': 'error message, if any'
         }
 
     """
@@ -569,10 +569,11 @@ def get_users(request):
 
     Returns::
 
-        {'users': [
-            'email': Email address of user,
-            'user_id': ID of user
-          ] ...
+        {
+            'users': [
+                'email': 'Email address of user',
+                'user_id': 'ID of user'
+            ] ...
         }
     """
     users = []
@@ -600,8 +601,10 @@ def update_role(request):
 
     Returns::
 
-        {'status': 'success or error',
-         'message': 'error message, if any'}
+        {
+            'status': 'success or error',
+            'message': 'error message, if any'
+        }
     """
     body = json.loads(request.body)
     role = _get_role_from_js(body['role'])
@@ -1035,37 +1038,37 @@ def search_public_fields(request):
     Payload::
 
         {
-         'q': a string to search on (optional),
-         'show_shared_buildings': True to include buildings from other
-             orgs in this user's org tree,
-         'order_by': which field to order by (e.g. pm_property_id),
-         'import_file_id': ID of an import to limit search to,
-         'filter_params': { a hash of Django-like filter parameters to limit
-             query.  See seed.search.filter_other_params.  If 'project__slug'
-             is included and set to a project's slug, buildings will include
-             associated labels for that project.
-           }
-         'page': Which page of results to retrieve (default: 1),
-         'number_per_page': Number of buildings to retrieve per page
-                            (default: 10),
+             'q': a string to search on (optional),
+             'show_shared_buildings': True to include buildings from other
+                 orgs in this user's org tree,
+             'order_by': which field to order by (e.g. pm_property_id),
+             'import_file_id': ID of an import to limit search to,
+             'filter_params': { a hash of Django-like filter parameters to limit
+                 query.  See seed.search.filter_other_params.  If 'project__slug'
+                 is included and set to a project's slug, buildings will include
+                 associated labels for that project.
+               }
+             'page': Which page of results to retrieve (default: 1),
+             'number_per_page': Number of buildings to retrieve per page
+                                (default: 10),
         }
 
     Returns::
 
         {
-         'status': 'success',
-         'buildings': [
-          { all fields for buildings the request user has access to;
-            e.g.:
-           'canonical_building': the CanonicalBuilding ID of the building,
-           'pm_property_id': ID of building (from Portfolio Manager),
-           'address_line_1': First line of building's address,
-           'property_name': Building's name, if any
-            ...
-           }...
-          ]
-         'number_matching_search': Total number of buildings matching search,
-         'number_returned': Number of buildings returned for this page
+             'status': 'success',
+             'buildings': [
+              { all fields for buildings the request user has access to;
+                e.g.:
+               'canonical_building': the CanonicalBuilding ID of the building,
+               'pm_property_id': ID of building (from Portfolio Manager),
+               'address_line_1': First line of building's address,
+               'property_name': Building's name, if any
+                ...
+               }...
+              ]
+             'number_matching_search': Total number of buildings matching search,
+             'number_returned': Number of buildings returned for this page
         }
     """
     from seed.views.main import _search_buildings
@@ -1093,9 +1096,9 @@ def create_sub_org(request):
     Returns::
 
         {
-         'status': 'success' or 'error',
-         'message': Error message, if any,
-         'organization_id': ID of newly-created org
+            'status': 'success' or 'error',
+            'message': Error message, if any,
+            'organization_id': ID of newly-created org
         }
 
     """
@@ -1146,11 +1149,12 @@ def is_authorized(request):
     """checks the auth for a given action, if user is the owner of the parent
     org then True is returned for each action
 
-    json payload:
-    {
-        'organization_id': 2,
-        'actions': ['can_invite_member', 'can_remove_member']
-    }
+    Payload::
+
+        {
+            'organization_id': 2,
+            'actions': ['can_invite_member', 'can_remove_member']
+        }
 
     :param actions: from the json payload, a list of actions to check
     :returns: a dict of with keys equal to the actions, and values as bool
@@ -1341,14 +1345,17 @@ def update_user(request):
 @ajax_request
 @login_required
 def set_password(request):
-    """sets/updates a user's password, follows the min requirement of
+    """
+    sets/updates a user's password, follows the min requirement of
     django-passwords settings in config/settings/common.py
 
-    :PUT: {
+    Payload::
+
+        {
             'current_password': current_password,
             'password_1': password_1,
             'password_2': password_2
-    }
+        }
 
     Returns::
 

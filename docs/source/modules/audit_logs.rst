@@ -6,7 +6,7 @@ Subpackages
 
 .. toctree::
 
-    audit_logs.migrations
+    seed.audit_logs.migrations
 
 Submodules
 ----------
@@ -14,7 +14,7 @@ Submodules
 audit_logs.models module
 ------------------------
 
-.. automodule:: audit_logs.models
+.. automodule:: seed.audit_logs.models
     :members:
     :undoc-members:
     :show-inheritance:
@@ -22,7 +22,7 @@ audit_logs.models module
 audit_logs.tests module
 -----------------------
 
-.. automodule:: audit_logs.tests
+.. automodule:: seed.audit_logs.tests
     :members:
     :undoc-members:
     :show-inheritance:
@@ -30,7 +30,7 @@ audit_logs.tests module
 audit_logs.urls module
 ----------------------
 
-.. automodule:: audit_logs.urls
+.. automodule:: seed.audit_logs.urls
     :members:
     :undoc-members:
     :show-inheritance:
@@ -38,7 +38,7 @@ audit_logs.urls module
 audit_logs.views module
 -----------------------
 
-.. automodule:: audit_logs.views
+.. automodule:: seed.audit_logs.views
     :members:
     :undoc-members:
     :show-inheritance:
@@ -47,7 +47,7 @@ audit_logs.views module
 Module contents
 ---------------
 
-.. automodule:: audit_logs
+.. automodule:: seed.audit_logs
     :members:
     :undoc-members:
     :show-inheritance:
