@@ -1362,8 +1362,17 @@ def get_column_mapping_suggestions(request):
             dest, conf = suggested_mappings[m]
             if dest is None:
                 suggested_mappings[m][0] = u''
+
+    # Only db columns on BuildingSnapshot
+    building_columns = set(sorted(field_names))
+
+    # Only columns from Column table. Notice we're removing any db columns
+    # from this list. TODO nicholasserra this should probably happen above.
+    extra_data_columns = set(sorted(column_types.keys())) - building_columns
+
     result['suggested_column_mappings'] = suggested_mappings
-    result['building_columns'] = sorted(column_types.keys()) + sorted(field_names)
+    result['building_columns'] = list(building_columns)
+    result['extra_data_columns'] = list(extra_data_columns)
     result['building_column_types'] = column_types
 
     return result
