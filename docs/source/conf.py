@@ -423,10 +423,27 @@ epub_exclude_files = ['search.html']
 #     return (None, return_annotation)
 #
 #
-# def setup(app):
-#     """
-#     Called by sphinx to hook up event handlers.
-#     """
-#     app.connect("autodoc-skip-member", skip_non_api_methods)
-#     app.connect("autodoc-process-docstring", format_api_docstring)
-#     app.connect("autodoc-process-signature", format_api_signature)
+
+
+def process_remove_copyright_author(app, what, name, obj, options, docstringlines):
+    """
+    Clean up the docstrings and remove any of the copyright and author strings in the headers
+    """
+
+    if len(docstringlines) <= 1:
+        return
+
+    first_line = docstringlines[0]
+    if first_line.startswith(':copyright') and 'University of California' in first_line:
+        # Remove the copyright and the author lines from the files
+        docstringlines.pop(0)
+        docstringlines.pop(0)
+
+def setup(app):
+    """
+    Called by sphinx to hook up event handlers.
+    """
+    # app.connect("autodoc-skip-member", skip_non_api_methods)
+    # app.connect("autodoc-process-docstring", format_api_docstring)
+    # app.connect("autodoc-process-signature", format_api_signature)
+    app.connect("autodoc-process-docstring", process_remove_copyright_author)

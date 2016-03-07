@@ -14,7 +14,7 @@ Getting Started:
    install
    api
    data_model
-   models/models
+   modules/models
    How mapping works <mapping>
    license
    help
