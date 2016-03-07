@@ -6,9 +6,7 @@
 angular.module('BE.seed.service.cleansing', []).factory('cleansing_service', [
   '$http',
   '$q',
-  '$timeout',
-  'user_service',
-  function ($http, $q, $timeout, user_service) {
+  function ($http, $q) {
     var cleansing_factory = {};
 
     /*

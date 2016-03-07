@@ -43,18 +43,16 @@ angular.module('BE.seed.controller.mapping', [])
     cleansing_service
 ) {
 
-    $scope.typeahead_columns = suggested_mappings_payload.building_columns;
-    var original_columns = angular.copy($scope.typeahead_columns);
+    var db_field_columns   = suggested_mappings_payload.building_columns;
+    var extra_data_columns = suggested_mappings_payload.extra_data_columns;
+    var original_columns = angular.copy(db_field_columns.concat(extra_data_columns));
 
-    // the first 37 columns are the SEED (potentially non-BEDES)
-    // fields stored as columns in the DB model and not as
-    // extra_data JSON
-    var num_model_columns = 37;
-    for (var i = 0;
-         (i < $scope.typeahead_columns.length) && (i < num_model_columns);
-         i++) {
-        $scope.typeahead_columns[i] = $filter('titleCase')($scope.typeahead_columns[i]);
+    // Readability for db columns.
+    for (var i = 0; i < db_field_columns.length; i++) {
+        db_field_columns[i] = $filter('titleCase')(db_field_columns[i]);
     }
+
+    $scope.typeahead_columns = db_field_columns.concat(extra_data_columns);
 
     // remove dupes
     function uniquify(params){
@@ -282,7 +280,7 @@ angular.module('BE.seed.controller.mapping', [])
     var update_raw_columns = function() {
       var raw_columns_prototype = {
         building_columns: [''].concat(
-            suggested_mappings_payload.building_columns
+            original_columns
         ),
         suggestion: '',
         user_suggestion: false,
@@ -448,14 +446,14 @@ angular.module('BE.seed.controller.mapping', [])
      * reverse titleCase mappings which were titleCase in the suggestion input
      */
     var get_untitle_cased_mappings = function () {
-        var mappings = $scope.get_mappings().map(function (m) {        	
-            var mapping = m[0];            
+        var mappings = $scope.get_mappings().map(function (m) {
+            var mapping = m[0];
             mapping = angular.lowercase(mapping).replace(/ /g, '_');
-            if (~original_columns.indexOf(mapping)) {            	
+            if (~original_columns.indexOf(mapping)) {
                 m[0] = mapping;
             }
             return m;
-        });        
+        });
         return mappings;
     };
 
@@ -555,7 +553,6 @@ angular.module('BE.seed.controller.mapping', [])
     $scope.disable_mapping_button = function() {
       if(angular.element('.disable-mapping-btn').length > 0) {
         angular.element('.mapping-button').prop('disabled', true);
-        console.log('here');
       }
       else {
         angular.element('.mapping-button').prop('disabled', false);
@@ -578,7 +575,7 @@ angular.module('BE.seed.controller.mapping', [])
                     return $scope.import_file.name;
                 },
                 'uploaded': function() {
-                    return $scope.import_file.dataset.finish_time;
+                    return $scope.import_file.created;
                 },
                 'importFileId': function() {
                   return $scope.import_file.id;

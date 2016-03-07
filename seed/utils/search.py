@@ -62,6 +62,20 @@ def is_case_insensitive_match(q):
     return False
 
 
+def is_exclude_filter(q):
+    # Starts with an exclamation point, no quotes
+    if is_string_query(q):
+        return re.match(r"""!([\w_ ]+)""", q)
+    return False
+
+
+def is_exact_exclude_filter(q):
+    # Starts with an exclamation point, has matching quotes
+    if is_string_query(q):
+        return re.match(r"""^!(["'])(.+)\1$""", q)
+    return False
+
+
 NUMERIC_EXPRESSION_REGEX = re.compile((
     r'('                                     # open expression grp
     r'(?P<operator>==|=|>|>=|<|<=|<>|!|!=)'  # operator
