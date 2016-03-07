@@ -233,7 +233,7 @@ angular.module('BE.seed.controller.mapping', [])
         tcm.user_suggestion = true;
         if (typeof(tcm.suggestion) !== "undefined" && tcm.suggestion !== '') {
             var type;
-            if (~original_columns.indexOf(angular.lowercase(tcm.suggestion).replace(/ /g, '_'))) {
+            if (original_columns.indexOf(angular.lowercase(tcm.suggestion).replace(/ /g, '_'))>=0) {
                 type = $scope.building_column_types[angular.lowercase(tcm.suggestion).replace(/ /g, '_')];
             } else {
                 type = $scope.building_column_types[tcm.suggestion];
@@ -449,7 +449,7 @@ angular.module('BE.seed.controller.mapping', [])
         var mappings = $scope.get_mappings().map(function (m) {
             var mapping = m[0];
             mapping = angular.lowercase(mapping).replace(/ /g, '_');
-            if (~original_columns.indexOf(mapping)) {
+            if (original_columns.indexOf(mapping)>=0) {
                 m[0] = mapping;
             }
             return m;

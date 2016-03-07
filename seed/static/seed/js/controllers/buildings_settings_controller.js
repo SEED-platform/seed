@@ -79,7 +79,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
             return f.sort_column;
         });
         $scope.fields = $scope.fields.map(function (f) {
-            if (~fields.indexOf(f.sort_column)) {
+            if (fields.indexOf(f.sort_column)>=0) {
                 f.checked = $scope.controls.select_all;
             }
             return f;
