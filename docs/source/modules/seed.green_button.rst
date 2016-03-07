@@ -1,5 +1,5 @@
-seed.green_button package
-=========================
+Green Button Package
+====================
 
 Subpackages
 -----------

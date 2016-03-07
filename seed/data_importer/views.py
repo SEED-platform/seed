@@ -52,8 +52,9 @@ def handle_s3_upload_complete(request):
 
     Returns::
 
-        {'success': True,
-         'import_file_id': The ID of the newly-created ImportFile object.
+        {
+            'success': True,
+            'import_file_id': The ID of the newly-created ImportFile object.
         }
     """
     if 'S3' not in settings.DEFAULT_FILE_STORAGE:

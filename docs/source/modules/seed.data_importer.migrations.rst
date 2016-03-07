@@ -1,5 +1,5 @@
-seed.data_importer.migrations package
-=====================================
+Data Importer Migrations Package
+================================
 
 Submodules
 ----------

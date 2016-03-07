@@ -1,5 +1,5 @@
-seed.green_button.tests package
-===============================
+Green Button Tests Package
+==========================
 
 Submodules
 ----------

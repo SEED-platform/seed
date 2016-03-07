@@ -1,5 +1,5 @@
-seed package
-============
+SEED Root Package
+=================
 
 Subpackages
 -----------
@@ -21,14 +21,6 @@ seed.decorators module
 ----------------------
 
 .. automodule:: seed.decorators
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-seed.exporter module
---------------------
-
-.. automodule:: seed.exporter
     :members:
     :undoc-members:
     :show-inheritance:

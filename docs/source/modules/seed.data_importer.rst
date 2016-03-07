@@ -1,5 +1,5 @@
-seed.data_importer package
-==========================
+Data Importer Package
+=====================
 
 Subpackages
 -----------

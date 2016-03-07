@@ -39,7 +39,7 @@ extensions = [
     # 'sphinx.ext.ifconfig',
     'sphinx.ext.todo',
     'sphinxcontrib.spelling',
-    'sphinx.ext.inheritance_diagram',
+    # 'sphinx.ext.inheritance_diagram',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -100,7 +100,7 @@ exclude_patterns = []
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
-#show_authors = False
+show_authors = True
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -180,7 +180,7 @@ html_static_path = ['_static']
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-html_show_sourcelink = True
+html_show_sourcelink = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 html_show_sphinx = False
@@ -211,7 +211,7 @@ html_show_copyright = True
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'SEEDPlatformdoc'
+htmlhelp_basename = 'SEED-Platform-documentation'
 
 # -- Options for LaTeX output ---------------------------------------------
 

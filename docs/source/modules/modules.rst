@@ -8,7 +8,5 @@ seed
    manage
    seed
    setup
-   standalone_uwsgi
-   terrain
    tos
    tos_i18n
