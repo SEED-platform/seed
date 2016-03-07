@@ -2,7 +2,7 @@ Help
 ====
 
 For SEED-Platform Users
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Please visit our User Support website for tutorials and documentation to help you learn how to use SEED-Platform.
 
@@ -16,7 +16,7 @@ For direct help on a specific problem, please email: SEED-Support@lists.lbl.gov
 
 
 For SEED-Platform Developers
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The Open Source code is available on the Github organization SEED-Platform:
 
