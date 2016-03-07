@@ -9,15 +9,20 @@ Standard Energy Efficiency Data (SEED) Platform
 Getting Started:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 20
 
-   install
+   installation <install>
    api
    data_model
    modules/models
    How mapping works <mapping>
    license
    help
+   manage
+
+   :glob:
+
+   modules/*
 
 
 

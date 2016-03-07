@@ -67,15 +67,15 @@ API-related endpoints
 ---------------------
 
 .. automodule:: seed.views.api
-:members:
-        :undoc-members:
+    :members:
+    :undoc-members:
 
 Account management endpoints
 ----------------------------
 
 .. automodule:: seed.views.accounts
-:members:
-        :undoc-members:
+    :members:
+    :undoc-members:
 
 File upload endpoints
 ---------------------
@@ -84,12 +84,12 @@ These endpoints behave drastically differently depending on whether the system i
 to a local file system.
 
 .. automodule:: data_importer.views
-:members: handle_s3_upload_complete, local_uploader, get_upload_details, sign_policy_document
+    :members: handle_s3_upload_complete, local_uploader, get_upload_details, sign_policy_document
 
 
 SEED (building and project) endpoints
 -------------------------------------
 
 .. automodule:: seed.views.main
-:members:
-        :undoc-members:
+    :members:
+    :undoc-members:
