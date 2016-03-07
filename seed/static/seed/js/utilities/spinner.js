@@ -14,8 +14,19 @@ angular.module('BE.seed.utility.spinner', []).factory('spinner_utility', [
     var _spinner;
 
     spinner_utility.show = function(params, target) {
+
+      var refresh = !!(params || target);
       var target = target || $('.display')[0];
-      _spinner = new Spinner(params).spin(target);
+
+      if (!_spinner) {
+          _spinner = new Spinner(params).spin(target);
+      } else if (_spinner && refresh) {
+          _spinner.stop()
+          _spinner = new Spinner(params).spin(target)
+      } else {
+          _spinner.spin(target)
+      }
+
       $('.page')[0].style.opacity = 0.4;
     };
 
