@@ -43,6 +43,7 @@ from seed.tests import util as test_util
 
 
 class MainViewTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -60,7 +61,7 @@ class MainViewTests(TestCase):
 
     def test_create_pm_mapping(self):
         response = self.client.post(reverse('seed:create_pm_mapping'), '{"columns": ["name1", "name2"]}',
-            content_type='application/json')
+                                    content_type='application/json')
         self.assertTrue(json.loads(response.content)['success'])
 
     def test_export_buildings(self):
@@ -73,21 +74,21 @@ class MainViewTests(TestCase):
         b.save()
 
         payload = {
-          "export_name": "My Export",
-          "export_type": "csv",
-          "selected_buildings": [b.pk]
+            "export_name": "My Export",
+            "export_type": "csv",
+            "selected_buildings": [b.pk]
         }
         response = self.client.post(reverse('seed:export_buildings'), json.dumps(payload),
-            content_type='application/json')
+                                    content_type='application/json')
         self.assertTrue(json.loads(response.content)['success'])
 
     def test_export_buildings_progress(self):
         payload = {
-          "export_id": "1234"
+            "export_id": "1234"
         }
         cache.set('export_buildings__1234', {'progress': 85, 'total_buildings': 1, 'status': 'success'})
         response = self.client.post(reverse('seed:export_buildings_progress'), json.dumps(payload),
-            content_type='application/json')
+                                    content_type='application/json')
         self.assertTrue(json.loads(response.content)['success'])
 
 
@@ -143,10 +144,10 @@ class DataImporterViewTests(TestCase):
 
         expected = [
             dict(zip(expected_raw_columns, row)) for row in expected_raw_rows
-            ]
+        ]
         expected_saved_format = '\n'.join([
-                                              ROW_DELIMITER.join(row) for row in expected_raw_rows
-                                              ])
+            ROW_DELIMITER.join(row) for row in expected_raw_rows
+        ])
         import_file = ImportFile.objects.create(
             import_record=import_record,
             cached_first_row=ROW_DELIMITER.join(expected_raw_columns),
@@ -1438,6 +1439,7 @@ class SearchViewTests(TestCase):
 
 
 class SearchBuildingSnapshotsViewTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1491,6 +1493,7 @@ class SearchBuildingSnapshotsViewTests(TestCase):
 
 
 class GetDatasetsViewsTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1556,6 +1559,7 @@ class GetDatasetsViewsTests(TestCase):
 
 
 class ImportFileViewsTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1565,7 +1569,7 @@ class ImportFileViewsTests(TestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org = Organization.objects.create()
         OrganizationUser.objects.create(user=self.user, organization=self.org)
-        
+
         self.import_record = ImportRecord.objects.create(owner=self.user)
         self.import_record.super_organization = self.org
         self.import_record.save()
@@ -1578,7 +1582,7 @@ class ImportFileViewsTests(TestCase):
 
     def test_get_import_file(self):
         response = self.client.get(reverse("seed:get_import_file"),
-            {'import_file_id': self.import_file.pk})
+                                   {'import_file_id': self.import_file.pk})
         self.assertEqual(self.import_file.pk, json.loads(response.content)['import_file']['id'])
 
     def test_delete_file(self):
@@ -1605,6 +1609,7 @@ class ImportFileViewsTests(TestCase):
 
 
 class ReportViewsTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -2211,11 +2216,14 @@ class TestMCMViews(TestCase):
             'ord_id': self.org.pk
         }
 
+        print post_data
+
         response = self.client.post(
             reverse_lazy("seed:get_column_mapping_suggestions"),
             content_type='application/json',
             data=json.dumps(post_data)
         )
+        print response
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_raw_column_names(self):
@@ -2241,7 +2249,7 @@ class TestMCMViews(TestCase):
         # create a National Median Site Energy use
         float_unit = Unit.objects.create(unit_name='test energy use intensity', unit_type=FLOAT)
         Column.objects.create(column_name='Global National Median Site Energy Use',
-                                  unit=float_unit)
+                              unit=float_unit)
 
         resp = self.client.post(
             reverse_lazy("seed:save_column_mappings"),
@@ -2694,6 +2702,6 @@ class MatchTreeTests(TestCase):
 
     def test_get_coparents(self):
         response = self.client.get(reverse('seed:get_coparents'),
-            {'organization_id': self.org.pk,
-            'building_id': self.cb0.canonical_snapshot.pk})
+                                   {'organization_id': self.org.pk,
+                                    'building_id': self.cb0.canonical_snapshot.pk})
         self.assertEqual('success', json.loads(response.content)['status'])

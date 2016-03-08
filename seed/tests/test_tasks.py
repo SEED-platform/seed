@@ -35,6 +35,7 @@ from seed.tests import util
 
 logger = logging.getLogger(__name__)
 
+
 class TestCleaner(TestCase):
     """Tests that our logic for constructing cleaners works."""
 
@@ -63,7 +64,6 @@ class TestCleaner(TestCase):
         )
         mapping.column_raw.add(raw)
         mapping.column_mapped.add(mapped)
-
 
     def test_build_cleaner(self):
         cleaner = tasks._build_cleaner(self.org)
@@ -162,9 +162,7 @@ class TestTasks(TestCase):
 
     def test_cached_first_row_order(self):
         """Tests to make sure the first row is saved in the correct order.  It should be the order of the headers in the original file."""
-        with patch.object(
-            ImportFile, 'cache_first_rows', return_value=None
-        ) as mock_method:
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
             tasks._save_raw_data(
                 self.import_file.pk,
                 'fake_cache_key',
@@ -178,9 +176,7 @@ class TestTasks(TestCase):
 
     def test_save_raw_data(self):
         """Save information in extra_data, set other attrs."""
-        with patch.object(
-            ImportFile, 'cache_first_rows', return_value=None
-        ) as mock_method:
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
             tasks._save_raw_data(
                 self.import_file.pk,
                 'fake_cache_key',
@@ -300,7 +296,7 @@ class TestTasks(TestCase):
 
         self.assertTrue(tasks.is_same_snapshot(s1, s1), "Matching a snapshot to itself should return True")
 
-        #Making a different snapshot, now Garfield complex rather than Greenfield complex
+        # Making a different snapshot, now Garfield complex rather than Greenfield complex
         bs_data_2 = {
             'pm_property_id': 1243,
             'tax_lot_id': '435/422',
@@ -319,8 +315,6 @@ class TestTasks(TestCase):
 
         self.assertFalse(tasks.is_same_snapshot(s1, s2), "Matching a snapshot to a different snapshot should return False")
 
-
-
     def test_match_buildings(self):
         """Good case for testing our matching system."""
         bs_data = {
@@ -334,8 +328,8 @@ class TestTasks(TestCase):
             'postal_code': 8999,
         }
 
-        #Since the change to not match duplicates there needs to be a second record that isn't exactly the same
-        #to run this test.  In this case address_line_2 now has a value of 'A' rather than ''
+        # Since the change to not match duplicates there needs to be a second record that isn't exactly the same
+        # to run this test.  In this case address_line_2 now has a value of 'A' rather than ''
         bs_data_2 = {
             'pm_property_id': 1243,
             'tax_lot_id': '435/422',
@@ -382,7 +376,6 @@ class TestTasks(TestCase):
             'System matched building ID.'
         )
 
-
     def test_match_duplicate_buildings(self):
         """
         Test for behavior when trying to match duplicate building data
@@ -404,7 +397,7 @@ class TestTasks(TestCase):
         )
 
         # Setup mapped PM snapshot.
-        snapshot = util.make_fake_snapshot(
+        util.make_fake_snapshot(
             import_file, bs_data, PORTFOLIO_BS, is_canon=True,
             org=self.fake_org
         )
@@ -416,7 +409,7 @@ class TestTasks(TestCase):
             mapping_done=True
         )
 
-        new_snapshot = util.make_fake_snapshot(
+        util.make_fake_snapshot(
             new_import_file, bs_data, PORTFOLIO_BS, org=self.fake_org
         )
 
@@ -424,7 +417,6 @@ class TestTasks(TestCase):
         tasks.match_buildings(new_import_file.pk, self.fake_user.pk)
 
         self.assertEqual(len(BuildingSnapshot.objects.all()), 2)
-
 
     def test_handle_id_matches_duplicate_data(self):
         """
@@ -442,10 +434,11 @@ class TestTasks(TestCase):
         }
 
         # Setup mapped AS snapshot.
-        snapshot = util.make_fake_snapshot(
+        util.make_fake_snapshot(
             self.import_file, bs_data, ASSESSED_BS, is_canon=True,
             org=self.fake_org
         )
+
         # Different file, but same ImportRecord.
         # Setup mapped PM snapshot.
         # Should be an identical match.
@@ -465,32 +458,31 @@ class TestTasks(TestCase):
             duplicate_import_file, bs_data, PORTFOLIO_BS, org=self.fake_org
         )
 
-        self.assertRaises(tasks.DuplicateDataError, tasks.handle_id_matches, new_snapshot, duplicate_import_file, self.fake_user.pk)
-
-
+        self.assertRaises(tasks.DuplicateDataError, tasks.handle_id_matches, new_snapshot, duplicate_import_file,
+                          self.fake_user.pk)
 
     def test_match_no_matches(self):
         """When a canonical exists, but doesn't match, we create a new one."""
         bs1_data = {
-           'pm_property_id': 1243,
-           'tax_lot_id': '435/422',
-           'property_name': 'Greenfield Complex',
-           'custom_id_1': 1243,
-           'address_line_1': '555 Database LN.',
-           'address_line_2': '',
-           'city': 'Gotham City',
-           'postal_code': 8999,
+            'pm_property_id': 1243,
+            'tax_lot_id': '435/422',
+            'property_name': 'Greenfield Complex',
+            'custom_id_1': 1243,
+            'address_line_1': '555 Database LN.',
+            'address_line_2': '',
+            'city': 'Gotham City',
+            'postal_code': 8999,
         }
 
         bs2_data = {
-           'pm_property_id': 9999,
-           'tax_lot_id': '1231',
-           'property_name': 'A Place',
-           'custom_id_1': 0000111000,
-           'address_line_1': '44444 Hmmm Ave.',
-           'address_line_2': 'Apt 4',
-           'city': 'Gotham City',
-           'postal_code': 8999,
+            'pm_property_id': 9999,
+            'tax_lot_id': '1231',
+            'property_name': 'A Place',
+            'custom_id_1': 0o000111000,
+            'address_line_1': '44444 Hmmm Ave.',
+            'address_line_2': 'Apt 4',
+            'city': 'Gotham City',
+            'postal_code': 8999,
         }
 
         snapshot = util.make_fake_snapshot(
@@ -524,14 +516,14 @@ class TestTasks(TestCase):
     def test_match_no_canonical_buildings(self):
         """If no canonicals exist, create, but no new BuildingSnapshots."""
         bs1_data = {
-           'pm_property_id': 1243,
-           'tax_lot_id': '435/422',
-           'property_name': 'Greenfield Complex',
-           'custom_id_1': 1243,
-           'address_line_1': '555 Database LN.',
-           'address_line_2': '',
-           'city': 'Gotham City',
-           'postal_code': 8999,
+            'pm_property_id': 1243,
+            'tax_lot_id': '435/422',
+            'property_name': 'Greenfield Complex',
+            'custom_id_1': 1243,
+            'address_line_1': '555 Database LN.',
+            'address_line_2': '',
+            'city': 'Gotham City',
+            'postal_code': 8999,
         }
 
         # Note: no Canonical Building is created for this snapshot.
@@ -555,14 +547,14 @@ class TestTasks(TestCase):
     def test_no_unmatched_buildings(self):
         """Make sure we shortcut out if there isn't unmatched data."""
         bs1_data = {
-           'pm_property_id': 1243,
-           'tax_lot_id': '435/422',
-           'property_name': 'Greenfield Complex',
-           'custom_id_1': 1243,
-           'address_line_1': '555 Database LN.',
-           'address_line_2': '',
-           'city': 'Gotham City',
-           'postal_code': 8999,
+            'pm_property_id': 1243,
+            'tax_lot_id': '435/422',
+            'property_name': 'Greenfield Complex',
+            'custom_id_1': 1243,
+            'address_line_1': '555 Database LN.',
+            'address_line_2': '',
+            'city': 'Gotham City',
+            'postal_code': 8999,
         }
 
         self.import_file.mapping_done = True
@@ -580,22 +572,22 @@ class TestTasks(TestCase):
     def test_separates_system_and_possible_match_types(self):
         """We save possible matches separately."""
         bs1_data = {
-           'pm_property_id': 123,
-           'tax_lot_id': '435/422',
-           'property_name': 'Greenfield Complex',
-           'custom_id_1': 1243,
-           'address_line_1': '555 NorthWest Databaseer Lane.',
-           'address_line_2': '',
-           'city': 'Gotham City',
-           'postal_code': 8999,
+            'pm_property_id': 123,
+            'tax_lot_id': '435/422',
+            'property_name': 'Greenfield Complex',
+            'custom_id_1': 1243,
+            'address_line_1': '555 NorthWest Databaseer Lane.',
+            'address_line_2': '',
+            'city': 'Gotham City',
+            'postal_code': 8999,
         }
         # This building will have a lot less data to identify it.
         bs2_data = {
-           'pm_property_id': 1243,
-           'custom_id_1': 1243,
-           'address_line_1': '555 Database LN.',
-           'city': 'Gotham City',
-           'postal_code': 8999,
+            'pm_property_id': 1243,
+            'custom_id_1': 1243,
+            'address_line_1': '555 Database LN.',
+            'city': 'Gotham City',
+            'postal_code': 8999,
         }
         new_import_file = ImportFile.objects.create(
             import_record=self.import_record,
@@ -627,31 +619,31 @@ class TestTasks(TestCase):
             BuildingSnapshot instances.
         """
         bs_data = {
-           'pm_property_id': 1243,
-           'tax_lot_id': '435/422',
-           'property_name': 'Greenfield Complex',
-           'custom_id_1': 1243,
-           'address_line_1': '555 Database LN.',
-           'address_line_2': '',
-           'city': 'Gotham City',
-           'postal_code': 8999,
+            'pm_property_id': 1243,
+            'tax_lot_id': '435/422',
+            'property_name': 'Greenfield Complex',
+            'custom_id_1': 1243,
+            'address_line_1': '555 Database LN.',
+            'address_line_2': '',
+            'city': 'Gotham City',
+            'postal_code': 8999,
         }
 
-        #Since we changed to not match duplicate data make a second record that matches with something slighty changed
-        #In this case appended a 'A' to the end of address_line_1
+        # Since we changed to not match duplicate data make a second record that matches with something slighty changed
+        # In this case appended a 'A' to the end of address_line_1
         bs_data_2 = {
-           'pm_property_id': 1243,
-           'tax_lot_id': '435/422',
-           'property_name': 'Greenfield Complex',
-           'custom_id_1': 1243,
-           'address_line_1': '555 Database LN. A',
-           'address_line_2': '',
-           'city': 'Gotham City',
-           'postal_code': 8999,
+            'pm_property_id': 1243,
+            'tax_lot_id': '435/422',
+            'property_name': 'Greenfield Complex',
+            'custom_id_1': 1243,
+            'address_line_1': '555 Database LN. A',
+            'address_line_2': '',
+            'city': 'Gotham City',
+            'postal_code': 8999,
         }
 
         # Setup mapped AS snapshot.
-        snapshot = util.make_fake_snapshot(
+        util.make_fake_snapshot(
             self.import_file, bs_data, ASSESSED_BS, is_canon=True,
             org=self.fake_org
         )
@@ -664,7 +656,7 @@ class TestTasks(TestCase):
             mapping_done=True
         )
 
-        new_snapshot = util.make_fake_snapshot(
+        util.make_fake_snapshot(
             new_import_file, bs_data_2, PORTFOLIO_BS, org=self.fake_org
         )
 

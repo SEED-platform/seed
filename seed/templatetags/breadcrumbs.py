@@ -110,7 +110,7 @@ def breadcrumb_url(parser, token):
     """
 
     bits = token.split_contents()
-    if len(bits)==2:
+    if len(bits) == 2:
         return breadcrumb(parser, token)
 
     # Extract our extra title parameter
@@ -148,6 +148,7 @@ def breadcrumb_url_root(parser, token):
 
 
 class BreadcrumbNode(Node):
+
     def __init__(self, vars, render_func=create_crumb):
         """
         First var is title, second var is url context variable
@@ -185,6 +186,7 @@ class BreadcrumbNode(Node):
 
 
 class UrlBreadcrumbNode(Node):
+
     def __init__(self, title, url_node, render_func=create_crumb):
         self.title = Variable(title)
         self.url_node = url_node

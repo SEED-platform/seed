@@ -15,6 +15,8 @@ import time
 from calendar import timegm
 
 # Three-step upload process
+
+
 def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upload_datatype):
     """
     Checks if the upload is through an AWS system or through file system.
@@ -144,6 +146,7 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
         raise RuntimeError("Upload mode unknown: %s" %
                            upload_details['upload_mode'])
 
+
 def check_status(resultOut, partmsg, log, PIIDflag=None):
     """Checks the status of the API endpoint and makes the appropriate print outs."""
     if resultOut.status_code in [200, 403, 401]:
@@ -153,12 +156,12 @@ def check_status(resultOut, partmsg, log, PIIDflag=None):
             try:
                 if 'status' in resultOut.json().keys() and resultOut.json()['status'] == 'error':
                     msg = resultOut.json()['message']
-                    log.error(partmsg+'...not passed')
+                    log.error(partmsg + '...not passed')
                     log.debug(msg)
                     raise RuntimeError
-                elif 'success' in resultOut.json().keys() and resultOut.json()['success'] == False:
+                elif 'success' in resultOut.json().keys() and not resultOut.json()['success']:
                     msg = resultOut.json()
-                    log.error(partmsg+'...not passed')
+                    log.error(partmsg + '...not passed')
                     log.debug(msg)
                     raise RuntimeError
                 else:
@@ -173,39 +176,41 @@ def check_status(resultOut, partmsg, log, PIIDflag=None):
                     else:
                         msg = pprint.pformat(resultOut.json(), indent=2, width=70)
             except:
-                log.error(partmsg,'...not passed')
+                log.error(partmsg, '...not passed')
                 log.debug('Unknown error during request results recovery')
                 raise RuntimeError
 
-        log.info(partmsg+'...passed')
+        log.info(partmsg + '...passed')
         log.debug(msg)
     else:
         msg = resultOut.reason
-        log.error(partmsg+'...not passed')
+        log.error(partmsg + '...not passed')
         log.debug(msg)
         raise RuntimeError
 
     return
 
+
 def check_progress(mainURL, Header, progress_key):
     """Delays the sequence until progress is at 100 percent."""
     time.sleep(5)
-    progressResult = requests.get(mainURL+'/app/progress/',
-                       headers = Header,
-                       data = json.dumps({'progress_key':progress_key}))
+    progressResult = requests.get(mainURL + '/app/progress/',
+                                  headers=Header,
+                                  data=json.dumps({'progress_key': progress_key}))
 
     if progressResult.json()['progress'] == 100:
         return (progressResult)
     else:
         progressResult = check_progress(mainURL, Header, progress_key)
 
+
 def read_map_file(mapfilePath):
     """Read in the mapping file"""
 
-    assert (os.path.isfile(mapfilePath)),"Cannot find file:\t"+mapfilePath
+    assert (os.path.isfile(mapfilePath)), "Cannot find file:\t" + mapfilePath
 
-    mapReader = csv.reader(open(mapfilePath,'r'))
-    mapReader.next()    #Skip the header
+    mapReader = csv.reader(open(mapfilePath, 'r'))
+    mapReader.next()  # Skip the header
 
     # Open the mapping file and fill list
     maplist = list()
@@ -214,6 +219,7 @@ def read_map_file(mapfilePath):
         maplist.append(rowitem)
 
     return maplist
+
 
 def setup_logger(filename):
     """Set-up the logger object"""

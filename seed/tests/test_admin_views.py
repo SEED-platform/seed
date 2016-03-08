@@ -21,6 +21,7 @@ User = get_user_model()
 
 
 class AdminViewsTest(TestCase):
+
     def setUp(self):
         admin_user_details = {'username': 'admin@testserver',
                               'email': 'admin@testserver',

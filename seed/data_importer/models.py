@@ -593,8 +593,7 @@ class ImportRecord(NotDeletableModel):
     @property
     def worksheet_progress_json(self):
         progresses = []
-        some_file_has_mapping_active = get_cache_state(self.MAPPING_ACTIVE_KEY, False) == False
-        # some_file_has_mapping_active = False
+        some_file_has_mapping_active = not get_cache_state(self.MAPPING_ACTIVE_KEY, False)
         try:
             for f in self.files:
                 progresses.append({
@@ -1000,7 +999,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def export_ready(self):
         return get_cache_state(self.EXPORT_READY_CACHE_KEY,
-                               True) and self.export_file != None and self.export_file != ""
+                               True) and self.export_file is not None and self.export_file != ""
 
     @property
     def export_generation_pct_complete(self):
@@ -1150,7 +1149,7 @@ class TableColumnMapping(models.Model):
     @property
     def is_mapped(self):
         return self.ignored or (
-            self.destination_field != None and self.destination_model != None and self.destination_field != "" and self.destination_model != "")
+            self.destination_field is not None and self.destination_model is not None and self.destination_field != "" and self.destination_model != "")
 
 
 class DataCoercionMapping(models.Model):
@@ -1176,7 +1175,7 @@ class DataCoercionMapping(models.Model):
             field.to_python(self.destination_value)
             if hasattr(field, "choices") and field.choices != []:
                 assert self.destination_value in [f[0] for f in field.choices] or \
-                       "%s" % self.destination_value in [f[0] for f in field.choices]
+                    "%s" % self.destination_value in [f[0] for f in field.choices]
             self.valid_destination_value = True
         except:
             self.valid_destination_value = False

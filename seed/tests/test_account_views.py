@@ -456,11 +456,11 @@ class AccountsViewTests(TestCase):
                 content_type='application/json'
             )
         except InsufficientPermission:
-            #Todo:  currently superperms just raises an exception, rather
-            #than returning an HttpResponse.  Update this when that changes.
+            # Todo:  currently superperms just raises an exception, rather
+            # than returning an HttpResponse.  Update this when that changes.
             pass
 
-        #ensure we didn't just become owner
+        # ensure we didn't just become owner
         self.assertFalse(self.org.is_owner(self.user))
 
     def test_bad_save_request(self):
@@ -468,7 +468,7 @@ class AccountsViewTests(TestCase):
         A malformed request should return error-containing json.
         """
         url = reverse_lazy('accounts:save_org_settings')
-        #lacks 'organization' key
+        # lacks 'organization' key
         post_data = {'organization_id': self.org.id}
 
         res = self.client.put(
@@ -477,7 +477,7 @@ class AccountsViewTests(TestCase):
             content_type='application/json'
         )
         response = json.loads(res.content)
-        #don't really care what the message is
+        # don't really care what the message is
         self.assertEqual(response['status'], 'error')
 
     def test_query_threshold(self):
@@ -495,7 +495,7 @@ class AccountsViewTests(TestCase):
             data=json.dumps(post_data),
             content_type='application/json'
         )
-        #reload org
+        # reload org
         org = Organization.objects.get(pk=self.org.pk)
         self.assertEqual(org.query_threshold, 27)
 
@@ -505,8 +505,8 @@ class AccountsViewTests(TestCase):
         response = json.loads(res.content)
         self.assertEqual(response,
                          {"status": "success",
-                         "shared_fields": [],
-                         "public_fields": []})
+                          "shared_fields": [],
+                          "public_fields": []})
 
     def test_get_shared_fields(self):
         field1 = self.org.exportable_fields.create(

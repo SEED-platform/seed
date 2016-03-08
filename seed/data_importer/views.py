@@ -26,6 +26,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 _log = logging.getLogger(__name__)
 
+
 @api_endpoint
 @ajax_request
 @login_required
@@ -65,15 +66,15 @@ def handle_s3_upload_complete(request):
     try:
         record = ImportRecord.objects.get(pk=import_record_pk)
     except ImportRecord.DoesNotExist:
-        #TODO: Remove the file from S3?
+        # TODO: Remove the file from S3?
         return {'success': False,
                 'message': "Import Record %s not found" % import_record_pk}
 
     filename = request.REQUEST['key']
     source_type = request.REQUEST['source_type']
     # Add Program & Version fields (empty string if not given)
-    kw_fields = {field:request.REQUEST.get(field, '')
-        for field in ['source_program', 'source_program_version']}
+    kw_fields = {field: request.REQUEST.get(field, '')
+                 for field in ['source_program', 'source_program_version']}
 
     f = ImportFile.objects.create(import_record=record,
                                   file=filename,
@@ -107,7 +108,7 @@ class DataImportBackend(LocalUploadBackend):
         try:
             record = ImportRecord.objects.get(pk=import_record_pk)
         except ImportRecord.DoesNotExist:
-            #clean up the uploaded file
+            # clean up the uploaded file
             os.unlink(self.path)
             return {'success': False,
                     'message': "Import Record %s not found" % import_record_pk}
@@ -128,15 +129,15 @@ class DataImportBackend(LocalUploadBackend):
 
         return {'success': True, "import_file_id": f.pk}
 
-#this actually creates the django view for handling local file uploads.
-#thus the use of decorators as functions instead of decorators.
+# this actually creates the django view for handling local file uploads.
+# thus the use of decorators as functions instead of decorators.
 local_uploader = AjaxFileUploader(backend=DataImportBackend)
 local_uploader = login_required(local_uploader)
 local_uploader = api_endpoint(local_uploader)
 
-#API documentation and method name fix
+# API documentation and method name fix
 local_uploader.__doc__ = \
-"""
+    """
 Endpoint to upload data files to, if uploading to local file storage.
 Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
 

@@ -15,10 +15,13 @@ from selenium.common.exceptions import NoSuchAttributeException, StaleElementRef
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.landing.models import SEEDUser as User
 
+
 class ElementNotVisibleException(Exception):
     pass
 
+
 class LogIn(StaticLiveServerTestCase):
+
     @classmethod
     def setUpClass(self):
         super(LogIn, self).setUpClass()
@@ -36,7 +39,7 @@ class LogIn(StaticLiveServerTestCase):
 
         # Generate User and Selenium Resources
         user_details = {
-            'username': 'test_user@demo.com', # the username needs to be in the form of an email.
+            'username': 'test_user@demo.com',  # the username needs to be in the form of an email.
             'password': 'test_pass',
             'email': 'test_user@demo.com',
             'first_name': 'testsAre',
@@ -71,7 +74,7 @@ class LogIn(StaticLiveServerTestCase):
                              **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
-        #time.sleep(10)
+        # time.sleep(10)
         self.assertEqual(r['status'], 'success')
         data_set_id = r['id']
 
@@ -151,11 +154,11 @@ class LogIn(StaticLiveServerTestCase):
 
         # Navigate through Data Saving/Matching
         self.selenium.find_element_by_id('map-data-button').click()
-        self.wait_for_visibility('verify-mapping-table',30)
+        self.wait_for_visibility('verify-mapping-table', 30)
         self.selenium.find_element_by_id('save-mapping').click()
         self.wait_for_visibility('confirm-mapping')
         self.selenium.find_element_by_id('confirm-mapping').click()
-        self.wait_for_visibility('view-buildings',120)
+        self.wait_for_visibility('view-buildings', 120)
         self.selenium.find_element_by_id('view-buildings').click()
         self.wait_for_visibility('verify-mapping-table')
         self.selenium.find_element_by_id('list-settings').click()
@@ -243,11 +246,11 @@ class LogIn(StaticLiveServerTestCase):
             self.selenium.find_element_by_css_selector("#duplicate-row-input-%s > #duplicate-row-input-box-%s" % (i, i)).send_keys(mapping_dict[dict_key])
 
         self.selenium.find_element_by_id('map-data-button').click()
-        self.wait_for_visibility('verify-mapping-table',15)
+        self.wait_for_visibility('verify-mapping-table', 15)
         self.selenium.find_element_by_id('save-mapping').click()
         self.wait_for_visibility('confirm-mapping')
         self.selenium.find_element_by_id('confirm-mapping').click()
-        self.wait_for_visibility('review-mapping',60)
+        self.wait_for_visibility('review-mapping', 60)
         self.selenium.find_element_by_id('review-mapping').click()
         self.wait_for_visibility('sidebar-profile')
         self.selenium.find_element_by_id('sidebar-profile').click()
@@ -272,8 +275,6 @@ class LogIn(StaticLiveServerTestCase):
         self.selenium.find_element_by_id('sidebar-about').click()
         self.wait_for_visibility('text-block')
 
-
-
     def get_org_id(self, dict, username):
         '''Return the org id from the passed dictionary and username'''
         id = None
@@ -290,7 +291,7 @@ class LogIn(StaticLiveServerTestCase):
         :param timeout_seconds: time to wait for angularjs to render the selector id
         :return: returns control to the script, or throws ElementNotVisibleException
         '''
-        retries = timeout_seconds*2
+        retries = timeout_seconds * 2
         while retries:
             try:
                 element = self.selenium.find_element_by_id(selector)
@@ -310,4 +311,3 @@ class LogIn(StaticLiveServerTestCase):
         raise ElementNotVisibleException(
             "Element %s not visible despite waiting for %s seconds" % (selector, timeout_seconds)
         )
-

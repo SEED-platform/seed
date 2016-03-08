@@ -11,9 +11,9 @@ Unit tests for map.py
 import json
 from StringIO import StringIO
 
-from seed.tests import util
 from django.test import TestCase
 from seed.common import mapper
+
 
 class TestMapping(TestCase):
     """Test mapping methods."""
@@ -22,16 +22,17 @@ class TestMapping(TestCase):
         return self._jsonfile()
 
     def _jsonfile(self):
-        d = {"Key1": "value1",
-         "key2": "value2",
-         "has spaces": "value3",
-         "has_underscores": "value4",
-         "has  multi spaces": "value5",
-         "has___multi  underscores": "value6",
-         "normal ft2": "value7",
-         "caret ft2": "value8",
-         "super ft2": "value9"
-         }
+        d = {
+            "Key1": "value1",
+            "key2": "value2",
+            "has spaces": "value3",
+            "has_underscores": "value4",
+            "has  multi spaces": "value5",
+            "has___multi  underscores": "value6",
+            "normal ft2": "value7",
+            "caret ft2": "value8",
+            "super ft2": "value9"
+        }
         for key in d:
             d[key] = [d[key], {mapper.Mapping.META_BEDES: True,
                                mapper.Mapping.META_TYPE: 'string'}]
@@ -73,14 +74,14 @@ class TestMapping(TestCase):
 
     def test_mapping_conf(self):
         conf = mapper.MappingConfiguration()
-        pm_mapping = conf.pm((1,0))
+        pm_mapping = conf.pm((1, 0))
         self.assertIsInstance(pm_mapping, mapper.Mapping)
 
     def test_mapping_pm_to_SEED(self):
         expected = {"Address 1": "Address Line 1",
                     "Property ID": "PM Property ID",
                     "Portfolio Manager Property ID": "PM Property ID",
-                    "some_other_field_not_in_the_designated_PM_mapping" : None}
+                    "some_other_field_not_in_the_designated_PM_mapping": None}
         pm = mapper.get_pm_mapping("1.0", expected.keys())
         for src, tgt in expected.items():
             if tgt:
@@ -93,7 +94,7 @@ class TestMapping(TestCase):
         expected = {"Address 1": "Address Line 1",
                     "Property ID": "PM Property ID",
                     "Portfolio Manager Property ID": "PM Property ID",
-                    "some_other_field_not_in_the_designated_PM_mapping" : None}
+                    "some_other_field_not_in_the_designated_PM_mapping": None}
         pm = mapper.get_pm_mapping("1.0", expected.keys(), True)
         for src, tgt in expected.items():
             if tgt:

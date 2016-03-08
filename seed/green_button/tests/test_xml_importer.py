@@ -8,20 +8,19 @@
 import copy
 from os import path
 
-from seed.audit_logs.models import AuditLog
+import xmltodict
+from django.core.files import File
 from django.test import TestCase
-from seed.green_button import xml_importer
+
+import seed.models
+from seed.audit_logs.models import AuditLog
 from seed.data_importer.models import ImportRecord, ImportFile
+from seed.green_button import xml_importer
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     BuildingSnapshot, TimeSeries
 )
-import seed.models
-import xmltodict
-from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from django.core.files import File
-
-
 
 # sample data corresponds to the data that should be extracted by
 # xml_importer.building_data when called with the file
@@ -69,11 +68,7 @@ class GreenButtonXMLParsingTests(TestCase):
 
     def setUp(self):
         self.sample_xml_file = File(
-            open(
-
-                path.join(
-                    path.dirname(__file__), 'data', 'sample_gb_gas.xml')
-            )
+            open(path.join(path.dirname(__file__), 'data', 'sample_gb_gas.xml'))
         )
 
         self.sample_xml = self.sample_xml_file.read()
@@ -256,39 +251,39 @@ class GreenButtonXMLParsingTests(TestCase):
         """
         xml_data = xmltodict.parse(self.sample_xml)
 
-        expected_meter_data = {
-            'currency': '840',
-            'power_of_ten_multiplier': '-3',
-            'uom': '169'
-        }
+        # expected_meter_data = {
+        #     'currency': '840',
+        #     'power_of_ten_multiplier': '-3',
+        #     'uom': '169'
+        # }
 
-        reading_expected = [
-            {
-                'cost': '190923',
-                'value': '2083',
-                'start_time': '1357027200',
-                'duration': '86400'
-            },
-            {
-                'cost': '190923',
-                'value': '2083',
-                'start_time': '1357113600',
-                'duration': '86400'
-            }
-        ]
+        # reading_expected = [
+        #     {
+        #         'cost': '190923',
+        #         'value': '2083',
+        #         'start_time': '1357027200',
+        #         'duration': '86400'
+        #     },
+        #     {
+        #         'cost': '190923',
+        #         'value': '2083',
+        #         'start_time': '1357113600',
+        #         'duration': '86400'
+        #     }
+        # ]
 
-        expected_block_data = {
-            'start_time': '1357027200',
-            'duration': '31622400',
-            'readings': reading_expected
-        }
+        # expected_block_data = {
+        #     'start_time': '1357027200',
+        #     'duration': '31622400',
+        #     'readings': reading_expected
+        # }
 
-        expected = {
-            'address': '635 ELM ST EL CERRITO CA 94530-3120',
-            'service_category': '1',
-            'meter': expected_meter_data,
-            'interval': expected_block_data
-        }
+        # expected = {
+        #     'address': '635 ELM ST EL CERRITO CA 94530-3120',
+        #     'service_category': '1',
+        #     'meter': expected_meter_data,
+        #     'interval': expected_block_data
+        # }
 
         data = xml_importer.building_data(xml_data)
         self.assertEqual(data, sample_building_data)
@@ -344,7 +339,7 @@ class GreenButtonXMLImportTests(TestCase):
         bs = BuildingSnapshot.objects.get(
             address_line_1=sample_building_data['address']
         )
-        cb = bs.canonical_building
+        # cb = bs.canonical_building
         meters = bs.meters.all()
         self.assertEqual(len(meters), 1)
 
@@ -356,14 +351,14 @@ class GreenButtonXMLImportTests(TestCase):
         """
         Test of xml_importer.create_models.
         """
-        xml_data = xmltodict.parse(self.sample_xml)
-        b_data = xml_importer.building_data(xml_data)
+        # xml_data = xmltodict.parse(self.sample_xml)
+        # b_data = xml_importer.building_data(xml_data)
 
         # no audit logs should exist yet, testing this way because it
         # is hard to assert what the content_object of an AuditLog is
         logs = AuditLog.objects.all()
         self.assertEqual(logs.count(), 0)
-        cb = xml_importer.create_models(b_data, self.import_file)
+        # cb = xml_importer.create_models(b_data, self.import_file)
         logs = AuditLog.objects.all()
         self.assert_models_created()
         self.assertEqual(logs.count(), 1)

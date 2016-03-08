@@ -16,6 +16,7 @@ from seed.utils.search import (
 
 # Metaclass to create individual test methods per test case.
 class TestCaseFactory(type):
+
     def __new__(cls, name, bases, attrs):
         cases = attrs['cases']
         method_maker = attrs['method_maker']

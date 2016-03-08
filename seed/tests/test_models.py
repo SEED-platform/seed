@@ -391,7 +391,6 @@ class TestBuildingSnapshot(TestCase):
             project=project
         )
 
-
         fake_building_pk = fake_building.pk
         fake_building = seed_models.BuildingSnapshot.objects.filter(pk=fake_building_pk).first()
 
@@ -514,7 +513,7 @@ class TestBuildingSnapshot(TestCase):
         canon = seed_models.CanonicalBuilding.objects.get(pk=canon.pk)
         canon2 = seed_models.CanonicalBuilding.objects.get(pk=canon2.pk)
         bs1 = seed_models.BuildingSnapshot.objects.get(pk=self.bs1.pk)
-        bs2 = seed_models.BuildingSnapshot.objects.get(pk=self.bs2.pk)
+        # bs2 = seed_models.BuildingSnapshot.objects.get(pk=self.bs2.pk)
 
         self.assertEqual(canon.canonical_snapshot, bs1)
         self.assertEqual(bs1.children.count(), 0)
@@ -639,6 +638,7 @@ class TestCanonicalBuilding(TestCase):
             'pk: %s - snapshot: %s - active: False' % (c.pk, b.pk),
             str(c)
         )
+
 
 class TestColumnMapping(TestCase):
     """Test ColumnMapping utility methods."""

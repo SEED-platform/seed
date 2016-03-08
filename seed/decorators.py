@@ -99,6 +99,7 @@ def ajax_request(func):
                 break
         else:
             format_type = 'application/json'
+
         response = func(request, *args, **kwargs)
 
         # determine the status code if the object is a dictionary
