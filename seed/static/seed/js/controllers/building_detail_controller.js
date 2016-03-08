@@ -74,47 +74,51 @@ angular.module('BE.seed.controller.building_detail', ['ngToast'])
     // scope models ends
 
     // add ts data object to $scope
-    if(building_finer_energy_payload['status'] === 'success'){
-        $scope.finer_ts_data_meta = [];
-        $scope.finer_ts_data_readings = [];
-        $scope.finer_ts_data_interval = '0';
-
-        if(building_finer_energy_payload['reading'].length>0){
-            $scope.finer_ts_data_readings = building_finer_energy_payload['reading'];
-
+    if(building_finer_energy_payload !== undefined){
+        if(building_finer_energy_payload['status'] === 'success'){
             $scope.finer_ts_data_meta = [];
-            $scope.finer_ts_data_meta.push({'key':'Energy Type', 'value':building_finer_energy_payload['tags']['energy_type'][0]});
-            $scope.finer_ts_data_meta.push({'key':'Tens Multiplier', 'value':building_finer_energy_payload['tags']['tens'][0]});
-            $scope.finer_ts_data_meta.push({'key':'Unit', 'value':building_finer_energy_payload['tags']['uom'][0]});
+            $scope.finer_ts_data_readings = [];
+            $scope.finer_ts_data_interval = '0';
 
-            $scope.finer_ts_data_interval = building_finer_energy_payload['tags']['interval'][0];
+            if(building_finer_energy_payload['reading'].length>0){
+                $scope.finer_ts_data_readings = building_finer_energy_payload['reading'];
+
+                $scope.finer_ts_data_meta = [];
+                $scope.finer_ts_data_meta.push({'key':'Energy Type', 'value':building_finer_energy_payload['tags']['energy_type'][0]});
+                $scope.finer_ts_data_meta.push({'key':'Tens Multiplier', 'value':building_finer_energy_payload['tags']['tens'][0]});
+                $scope.finer_ts_data_meta.push({'key':'Unit', 'value':building_finer_energy_payload['tags']['uom'][0]});
+
+                $scope.finer_ts_data_interval = building_finer_energy_payload['tags']['interval'][0];
+            }
+
+            $scope.finer_ts_data_flag = true;
+        }else {
+            $scope.finer_ts_data_flag = true;
+            $scope.finer_ts_data_readings = [];
+            $scope.finer_ts_data_meta = [];
+            $scope.finer_ts_data_error = building_finer_ts_data_payload['status'];
         }
-
-        $scope.finer_ts_data_flag = true;
-    }else {
-        $scope.finer_ts_data_flag = true;
-        $scope.finer_ts_data_readings = [];
-        $scope.finer_ts_data_meta = [];
-        $scope.finer_ts_data_error = building_finer_ts_data_payload['status'];
     }
 
-    if(building_monthly_payload['status'] === 'success'){
-        $scope.monthly_data_readings = [];
+    if(building_monthly_payload['status'] !== undefined){
+        if(building_monthly_payload['status'] === 'success'){
+            $scope.monthly_data_readings = [];
 
-        if(building_monthly_payload['reading'].length>0){
-            $scope.monthly_data_readings = building_monthly_payload['reading'];
+            if(building_monthly_payload['reading'].length>0){
+                $scope.monthly_data_readings = building_monthly_payload['reading'];
+            }
+
+            $scope.monthly_data_flag = true;
+        }else {
+            $scope.monthly_data_flag = true;
+            $scope.monthly_data_readings = [];
+            $scope.monthly_data_error = building_monthly_payload['status'];
         }
-
-        $scope.monthly_data_flag = true;
-    }else {
-        $scope.monthly_data_flag = true;
-        $scope.monthly_data_readings = [];
-        $scope.monthly_data_error = building_monthly_payload['status'];
     }
     // add ts data object to $scope ends
 
     // parse gb_req_info
-    if(gb_req_info['status'] === 'found'){
+    if(gb_req_info !== undefined && gb_req_info['status'] === 'found'){
         $scope.gb_req_flag = 'Y';
         $scope.gb_req_url = gb_req_info['url'];
         $scope.gb_req_subscription_id = gb_req_info['subscription_id'];
