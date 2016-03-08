@@ -1,5 +1,5 @@
-seed.test_helpers.factory package
-=================================
+Test Helper Factor Package
+==========================
 
 Subpackages
 -----------
@@ -11,19 +11,10 @@ Subpackages
 Submodules
 ----------
 
-seed.test_helpers.factory.helpers module
-----------------------------------------
+Helpers
+-------
 
 .. automodule:: seed.test_helpers.factory.helpers
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: seed.test_helpers.factory
     :members:
     :undoc-members:
     :show-inheritance:

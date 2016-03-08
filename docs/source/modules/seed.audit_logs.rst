@@ -1,53 +1,37 @@
-seed.audit_logs package
+Audit Logs Package
 =======================
-
-Subpackages
------------
-
-.. toctree::
-
-    seed.audit_logs.migrations
 
 Submodules
 ----------
 
-seed.audit_logs.models module
------------------------------
+Models
+------
 
 .. automodule:: seed.audit_logs.models
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.audit_logs.tests module
-----------------------------
+Tests
+-----
 
 .. automodule:: seed.audit_logs.tests
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.audit_logs.urls module
----------------------------
+URLs
+----
 
 .. automodule:: seed.audit_logs.urls
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.audit_logs.views module
-----------------------------
+Views
+-----
 
 .. automodule:: seed.audit_logs.views
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: seed.audit_logs
     :members:
     :undoc-members:
     :show-inheritance:

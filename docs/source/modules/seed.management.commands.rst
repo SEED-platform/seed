@@ -1,11 +1,11 @@
-seed.management.commands package
-================================
+Management Packages
+===================
 
 Submodules
 ----------
 
-seed.management.commands.set_s3_expires_headers_for_angularjs_partials module
------------------------------------------------------------------------------
+S3
+--
 
 .. automodule:: seed.management.commands.set_s3_expires_headers_for_angularjs_partials
     :members:

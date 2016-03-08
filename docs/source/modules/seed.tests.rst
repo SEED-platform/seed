@@ -1,78 +1,76 @@
-seed.tests package
-==================
+Tests Package
+=============
 
 Submodules
 ----------
 
-seed.tests.test_admin_views module
-----------------------------------
+.. toctree::
+    :maxdepth: 2
+
+    seed.tests.functional
+    seed.test_helpers
+
+Admin Views
+-----------
 
 .. automodule:: seed.tests.test_admin_views
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.tests.test_decorators module
----------------------------------
+Decorators
+----------
 
 .. automodule:: seed.tests.test_decorators
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.tests.test_exporters module
---------------------------------
+Exporters
+---------
 
 .. automodule:: seed.tests.test_exporters
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.tests.test_models module
------------------------------
+Models
+------
 
 .. automodule:: seed.tests.test_models
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.tests.test_tasks module
-----------------------------
+Tasks
+-----
 
 .. automodule:: seed.tests.test_tasks
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.tests.test_views module
-----------------------------
+Views
+-----
 
 .. automodule:: seed.tests.test_views
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.tests.tests module
------------------------
+Tests
+-----
 
 .. automodule:: seed.tests.tests
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.tests.util module
-----------------------
+Utils
+-----
 
 .. automodule:: seed.tests.util
     :members:
     :undoc-members:
     :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: seed.tests
-    :members:
-    :undoc-members:
-    :show-inheritance:

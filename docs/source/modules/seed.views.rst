@@ -1,10 +1,10 @@
-seed.views package
-==================
+Views Package
+=============
 
 Submodules
 ----------
 
-seed.views.accounts module
+Accounts
 --------------------------
 
 .. automodule:: seed.views.accounts
@@ -13,8 +13,8 @@ seed.views.accounts module
     :show-inheritance:
     :noindex:
 
-seed.views.api module
----------------------
+APIs
+----
 
 .. automodule:: seed.views.api
     :members:
@@ -22,8 +22,8 @@ seed.views.api module
     :show-inheritance:
     :noindex:
 
-seed.views.main module
-----------------------
+Main
+----
 
 .. automodule:: seed.views.main
     :members:
@@ -31,16 +31,16 @@ seed.views.main module
     :show-inheritance:
     :noindex:
 
-seed.views.meters module
-------------------------
+Meters
+------
 
 .. automodule:: seed.views.meters
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.views.projects module
---------------------------
+Projects
+--------
 
 .. automodule:: seed.views.projects
     :members:

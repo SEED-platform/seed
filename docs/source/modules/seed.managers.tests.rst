@@ -1,11 +1,11 @@
-seed.managers.tests package
-===========================
+Manager Tests Package
+=====================
 
 Submodules
 ----------
 
-seed.managers.tests.test_json_manager module
---------------------------------------------
+Test JSON Manager
+-----------------
 
 .. automodule:: seed.managers.tests.test_json_manager
     :members:

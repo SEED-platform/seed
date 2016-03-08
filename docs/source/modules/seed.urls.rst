@@ -1,46 +1,37 @@
-seed.urls package
-=================
+URLs Package
+============
 
 Submodules
 ----------
 
-seed.urls.accounts module
--------------------------
+Accounts
+--------
 
 .. automodule:: seed.urls.accounts
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.urls.api module
---------------------
+APIs
+----
 
 .. automodule:: seed.urls.api
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.urls.main module
----------------------
+Main
+----
 
 .. automodule:: seed.urls.main
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.urls.projects module
--------------------------
+Projects
+--------
 
 .. automodule:: seed.urls.projects
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: seed.urls
     :members:
     :undoc-members:
     :show-inheritance:

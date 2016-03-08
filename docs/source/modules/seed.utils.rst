@@ -1,79 +1,61 @@
-seed.utils package
+Utilities Ppackage
 ==================
 
 Submodules
 ----------
 
-seed.utils.api module
----------------------
+APIs
+----
 
 .. automodule:: seed.utils.api
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.utils.api_client module
-----------------------------
-
-.. automodule:: seed.utils.api_client
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :noindex:
-
-seed.utils.buildings module
----------------------------
+Buildings
+---------
 
 .. automodule:: seed.utils.buildings
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.utils.constants module
----------------------------
+Constants
+---------
 
 .. automodule:: seed.utils.constants
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.utils.mapping module
--------------------------
+Mappings
+--------
 
 .. automodule:: seed.utils.mapping
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.utils.organizations module
--------------------------------
+Organizations
+-------------
 
 .. automodule:: seed.utils.organizations
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.utils.projects module
---------------------------
+Projects
+--------
 
 .. automodule:: seed.utils.projects
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.utils.time module
-----------------------
+Time
+----
 
 .. automodule:: seed.utils.time
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: seed.utils
     :members:
     :undoc-members:
     :show-inheritance:

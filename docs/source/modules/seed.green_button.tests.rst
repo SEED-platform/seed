@@ -4,7 +4,7 @@ Green Button Tests Package
 Submodules
 ----------
 
-seed.green_button.tests.test_xml_importer module
+XML Importer Tests
 ------------------------------------------------
 
 .. automodule:: seed.green_button.tests.test_xml_importer

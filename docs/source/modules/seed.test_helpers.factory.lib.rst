@@ -1,22 +1,13 @@
-seed.test_helpers.factory.lib package
-=====================================
+Test Helper Factory Lib Package
+===============================
 
 Submodules
 ----------
 
-seed.test_helpers.factory.lib.chomsky module
---------------------------------------------
+Chomsky
+-------
 
 .. automodule:: seed.test_helpers.factory.lib.chomsky
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: seed.test_helpers.factory.lib
     :members:
     :undoc-members:
     :show-inheritance:

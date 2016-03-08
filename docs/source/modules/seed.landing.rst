@@ -1,52 +1,50 @@
-seed.landing package
-====================
+Landing Package
+===============
 
 Subpackages
 -----------
 
 .. toctree::
 
-    seed.landing.features
     seed.landing.management
-    seed.landing.migrations
 
 Submodules
 ----------
 
-seed.landing.forms module
--------------------------
+Forms
+-----
 
 .. automodule:: seed.landing.forms
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.landing.models module
---------------------------
+Models
+------
 
 .. automodule:: seed.landing.models
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.landing.tests module
--------------------------
+Tests
+-----
 
 .. automodule:: seed.landing.tests
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.landing.urls module
-------------------------
+URLs
+----
 
 .. automodule:: seed.landing.urls
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.landing.views module
--------------------------
+Views
+-----
 
 .. automodule:: seed.landing.views
     :members:

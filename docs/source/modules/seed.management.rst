@@ -1,5 +1,5 @@
-seed.management package
-=======================
+Management Package
+==================
 
 Subpackages
 -----------

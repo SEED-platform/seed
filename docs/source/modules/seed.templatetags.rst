@@ -1,22 +1,13 @@
-seed.templatetags package
+Templatetags Package
 =========================
 
 Submodules
 ----------
 
-seed.templatetags.breadcrumbs module
-------------------------------------
+Breadcrumbs
+-----------
 
 .. automodule:: seed.templatetags.breadcrumbs
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: seed.templatetags
     :members:
     :undoc-members:
     :show-inheritance:

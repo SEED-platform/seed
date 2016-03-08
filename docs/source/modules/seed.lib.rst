@@ -1,11 +1,11 @@
-seed.lib package
+Library Packages
 ================
 
 Submodules
 ----------
 
-seed.lib.exporter module
-------------------------
+Exporter Module
+---------------
 
 .. automodule:: seed.lib.exporter
     :members:

@@ -1,27 +1,27 @@
-seed.common package
-===================
+Common Package
+==============
 
 Submodules
 ----------
 
-seed.common.mapper module
--------------------------
+Mapper
+------
 
 .. automodule:: seed.common.mapper
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.common.util module
------------------------
+Util
+----
 
 .. automodule:: seed.common.util
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.common.views module
-------------------------
+Views
+-----
 
 .. automodule:: seed.common.views
     :members:
@@ -29,10 +29,3 @@ seed.common.views module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: seed.common
-    :members:
-    :undoc-members:
-    :show-inheritance:

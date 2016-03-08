@@ -1,18 +1,11 @@
-seed.public package
-===================
-
-Subpackages
------------
-
-.. toctree::
-
-    seed.public.migrations
+Public Package
+==============
 
 Submodules
 ----------
 
-seed.public.models module
--------------------------
+Models
+------
 
 .. automodule:: seed.public.models
     :members:

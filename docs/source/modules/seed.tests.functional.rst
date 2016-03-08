@@ -1,30 +1,21 @@
-seed.tests.functional package
-=============================
+Tests (Functional) Package
+==========================
 
 Submodules
 ----------
 
-seed.tests.functional.test_api module
--------------------------------------
+Test API
+--------
 
 .. automodule:: seed.tests.functional.test_api
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.tests.functional.test_firefox module
------------------------------------------
+Test Firefox
+------------
 
 .. automodule:: seed.tests.functional.test_firefox
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: seed.tests.functional
     :members:
     :undoc-members:
     :show-inheritance:

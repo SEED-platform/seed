@@ -1,61 +1,45 @@
-seed.cleansing package
-======================
-
-Subpackages
------------
-
-.. toctree::
-
-    seed.cleansing.migrations
+Cleansing Package
+=================
 
 Submodules
 ----------
 
-seed.cleansing.models module
-----------------------------
+Models
+------
 
 .. automodule:: seed.cleansing.models
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.cleansing.tasks module
----------------------------
+Tasks
+-----
 
 .. automodule:: seed.cleansing.tasks
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.cleansing.tests module
----------------------------
+Tests
+-----
 
 .. automodule:: seed.cleansing.tests
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.cleansing.urls module
---------------------------
+URLs
+----
 
 .. automodule:: seed.cleansing.urls
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.cleansing.views module
----------------------------
+Views
+-----
 
 .. automodule:: seed.cleansing.views
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: seed.cleansing
     :members:
     :undoc-members:
     :show-inheritance:

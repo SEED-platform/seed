@@ -1,50 +1,43 @@
 Data Importer Package
 =====================
 
-Subpackages
------------
-
-.. toctree::
-
-    seed.data_importer.migrations
-
 Submodules
 ----------
 
-seed.data_importer.managers module
-----------------------------------
+Managers
+--------
 
 .. automodule:: seed.data_importer.managers
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.data_importer.models module
---------------------------------
+Models
+------
 
 .. automodule:: seed.data_importer.models
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.data_importer.urls module
-------------------------------
+URLs
+----
 
 .. automodule:: seed.data_importer.urls
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.data_importer.utils module
--------------------------------
+Utils
+-----
 
 .. automodule:: seed.data_importer.utils
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.data_importer.views module
--------------------------------
+Views
+-----
 
 .. automodule:: seed.data_importer.views
     :members:

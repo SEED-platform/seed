@@ -1,11 +1,11 @@
-seed.landing.management.commands package
-========================================
+Landing Management Package
+==========================
 
 Submodules
 ----------
 
-seed.landing.management.commands.update_eula module
----------------------------------------------------
+Update EULA
+-----------
 
 .. automodule:: seed.landing.management.commands.update_eula
     :members:

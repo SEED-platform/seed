@@ -1,10 +1,10 @@
-seed.features package
-=====================
+Features Package
+================
 
 Submodules
 ----------
 
-seed.features.steps module
+Steps
 --------------------------
 
 .. automodule:: seed.features.steps

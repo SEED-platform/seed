@@ -1,19 +1,19 @@
-seed.serializers package
-========================
+Serializers Package
+===================
 
 Submodules
 ----------
 
-seed.serializers.celery module
-------------------------------
+Serializers
+-----------
 
 .. automodule:: seed.serializers.celery
     :members:
     :undoc-members:
     :show-inheritance:
 
-seed.serializers.labels module
-------------------------------
+Labels
+------
 
 .. automodule:: seed.serializers.labels
     :members:

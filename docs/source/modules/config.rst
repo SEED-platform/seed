@@ -1,70 +1,54 @@
-config package
-==============
-
-Subpackages
------------
-
-.. toctree::
-
-    config.management
-    config.settings
+Configuration
+=============
 
 Submodules
 ----------
 
-config.storage module
----------------------
+Storage
+-------
 
 .. automodule:: config.storage
     :members:
     :undoc-members:
     :show-inheritance:
 
-config.template_context module
-------------------------------
+Template Context
+----------------
 
 .. automodule:: config.template_context
     :members:
     :undoc-members:
     :show-inheritance:
 
-config.tests module
--------------------
+Tests
+-----
 
 .. automodule:: config.tests
     :members:
     :undoc-members:
     :show-inheritance:
 
-config.utils module
--------------------
+Utils
+-----
 
 .. automodule:: config.utils
     :members:
     :undoc-members:
     :show-inheritance:
 
-config.views module
--------------------
+Views
+-----
 
 .. automodule:: config.views
     :members:
     :undoc-members:
     :show-inheritance:
 
-config.wsgi module
-------------------
+WSGI
+----
 
 .. automodule:: config.wsgi
     :members:
     :undoc-members:
     :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: config
-    :members:
-    :undoc-members:
-    :show-inheritance:

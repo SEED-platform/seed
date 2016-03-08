@@ -1,11 +1,11 @@
-seed.data package
-=================
+Data Package
+============
 
 Submodules
 ----------
 
-seed.data.bedes module
-----------------------
+BEDES
+-----
 
 .. automodule:: seed.data.bedes
     :members:

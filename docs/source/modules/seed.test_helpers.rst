@@ -1,5 +1,5 @@
-seed.test_helpers package
-=========================
+Test Helpers Package
+====================
 
 Subpackages
 -----------

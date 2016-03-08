@@ -1,5 +1,5 @@
-seed.managers package
-=====================
+Managers Package
+================
 
 Subpackages
 -----------
@@ -11,8 +11,8 @@ Subpackages
 Submodules
 ----------
 
-seed.managers.json module
--------------------------
+JSON
+----
 
 .. automodule:: seed.managers.json
     :members:
