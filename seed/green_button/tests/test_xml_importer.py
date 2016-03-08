@@ -351,14 +351,14 @@ class GreenButtonXMLImportTests(TestCase):
         """
         Test of xml_importer.create_models.
         """
-        # xml_data = xmltodict.parse(self.sample_xml)
-        # b_data = xml_importer.building_data(xml_data)
+        xml_data = xmltodict.parse(self.sample_xml)
+        b_data = xml_importer.building_data(xml_data)
 
         # no audit logs should exist yet, testing this way because it
         # is hard to assert what the content_object of an AuditLog is
         logs = AuditLog.objects.all()
         self.assertEqual(logs.count(), 0)
-        # cb = xml_importer.create_models(b_data, self.import_file)
+        xml_importer.create_models(b_data, self.import_file)
         logs = AuditLog.objects.all()
         self.assert_models_created()
         self.assertEqual(logs.count(), 1)
