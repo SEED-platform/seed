@@ -305,7 +305,7 @@ def filter_other_params(queryset, other_params, db_columns):
 def parse_body(request):
     """parses the request body for search params, q, etc
 
-    :params request: django wsgi request object
+    :param request: django wsgi request object
     :return: dict
 
     Example::
