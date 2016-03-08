@@ -40,7 +40,7 @@ def handle_s3_upload_complete(request):
     :GET: Expects the following in the query string:
 
         key: The full path to the file, within the S3 bucket.
-            E.g. data_importer/bldgs.csv
+            E.g. data_importer/buildings.csv
 
         source_type: The source of the file.
             E.g. 'Assessed Raw' or 'Portfolio Raw'
@@ -210,7 +210,7 @@ def get_upload_details(request):
 @login_required
 def sign_policy_document(request):
     """
-    Sign and return the policy doucument for a simple upload.
+    Sign and return the policy document for a simple upload.
     http://aws.amazon.com/articles/1434/#signyours3postform
 
     Payload::

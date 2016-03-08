@@ -27,7 +27,7 @@ def energy_type(service_category):
     service category.
 
     :param service_category: int that is a green button service_category \
-    (string args will be converted to ints)
+    (string args will be converted to integers)
     :returns: int in seed.models.ENERGY_TYPES
     """
 
@@ -55,7 +55,7 @@ def energy_units(uom):
 
     :param uom: int that is the green button uom number corresponding to the \
     energy units supported by the green button schema (string args will be \
-    converted to ints)
+    converted to integers)
     :returns: int in seed.models.ENERGY_UNITS
     """
     uom = int(uom)
@@ -152,7 +152,7 @@ def meter_data(raw_meter_meta):
     :params raw_meter_meta: dictionary of the contents of the meter \
     specification entry node in a Green Button XML file
     :returns: dictionary containing information about a meter with keys \
-    'currency', 'power_of_ten_multiplier', amd 'uom'
+    'currency', 'power_of_ten_multiplier', and 'uom'
     """
     params_data = raw_meter_meta['content']['ReadingType']
 
@@ -208,6 +208,7 @@ def building_data(xml_data):
     on the contents of a Green Button XML file
     :rtype dict
     :returns: dictionary
+
 
     * building information for a Green Button XML file \
     * information describing the meter used for collection \

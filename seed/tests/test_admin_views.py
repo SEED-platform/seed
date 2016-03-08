@@ -155,7 +155,7 @@ class AdminViewsTest(TestCase):
     def test_signup_process(self):
         """
         Simulates the entire new user signup process, from initial
-        account creation by an admin to recieving the signup email
+        account creation by an admin to receiving the signup email
         to confirming the account and setting a password.
         """
         data = {'first_name': 'New',

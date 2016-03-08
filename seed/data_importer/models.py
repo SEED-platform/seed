@@ -1126,7 +1126,7 @@ class TableColumnMapping(models.Model):
 
     @property
     def destination_django_field(self):
-        """comented out by AKL, not needed for SEED and removes dependency on
+        """commented out by AKL, not needed for SEED and removes dependency on
            libs.
         """
         # return find_field_named(self.destination_field, self.destination_model, get_class=True)

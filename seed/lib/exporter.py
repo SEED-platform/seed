@@ -88,7 +88,7 @@ def get_field_name_from_model(field, model):
 
 def get_field_value_from_instance(field, obj):
     """
-    Does some deep deiving to find the right value given a string like
+    Does some deep diving to find the right value given a string like
     "building_snapshot__state"
     """
     par = obj

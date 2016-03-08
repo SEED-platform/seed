@@ -15,7 +15,7 @@ class ManagementTests(TestCase):
     "tests config django management commands"
 
     def test_create_default_user(self):
-        """tests the creat_default_user mgmt command"""
+        """tests the create_default_user management command"""
         # check default case
         call_command('create_default_user')
         self.assertTrue(User.objects.filter(

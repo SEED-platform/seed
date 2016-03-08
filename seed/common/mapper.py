@@ -67,7 +67,7 @@ class MappingConfiguration(object):
         """Get Portfolio Manager mapping for given version.
 
         Args:
-          version (tuple): A list of ints/strings (major, minor, ..)
+          version (tuple): A list of integers/strings (major, minor, ..)
         Raises:
           ValueError, if no mapping is found
         """
