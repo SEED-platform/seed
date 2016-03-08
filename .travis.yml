@@ -13,17 +13,21 @@ python:
 
 addons:
   postgresql: '9.4'
+  # Sauce credentials in Travis env vars
+  sauce_connect: true
 
 services:
   - redis-server
+  - postgresql
 
 env:
   global:
     - DJANGO_SETTINGS_MODULE=config.settings.travis
     - DISPLAY=:99.0
   matrix:
-    - TOX_ENV=py27-dj17
+    - TOX_ENV=python
     - TOX_ENV=flake8
+    - TOX_ENV=functional
 
 install:
   - pip install --upgrade pip
