@@ -1,5 +1,5 @@
-Utilities Ppackage
-==================
+Utilities Package
+=================
 
 Submodules
 ----------
