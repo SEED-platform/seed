@@ -19,6 +19,7 @@ seed.utils.api_client module
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 
 seed.utils.buildings module
 ---------------------------

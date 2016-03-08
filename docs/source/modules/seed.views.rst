@@ -11,6 +11,7 @@ seed.views.accounts module
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 
 seed.views.api module
 ---------------------
@@ -19,6 +20,7 @@ seed.views.api module
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 
 seed.views.main module
 ----------------------
@@ -27,6 +29,7 @@ seed.views.main module
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 
 seed.views.meters module
 ------------------------

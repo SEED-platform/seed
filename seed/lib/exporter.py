@@ -28,6 +28,9 @@ def batch_qs(qs, batch_size=1000):
     queryset.
 
     Usage:
+
+    .. code-block::python
+
         # Make sure to order your querset
         article_qs = Article.objects.order_by('id')
         for start, end, total, qs in batch_qs(article_qs):
@@ -199,7 +202,6 @@ class Exporter:
 
         This method should not be here. It seems that is should be on the building snapshot model. Not moved yet
         because I am unsure if the qs argument is more than one data type (i.e. BuildingSnapshot and/or ?)
-
         """
         fields = qs.model._meta.get_all_field_names()
         for field in fields:

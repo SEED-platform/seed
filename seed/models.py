@@ -134,16 +134,19 @@ ENERGY_UNITS = (
 def get_ancestors(building):
     """gets all the non-raw, non-composite ancestors of a building
 
-       Recursive function to traverse the tree upward.
-       source_type {
-           2: ASSESSED_BS,
-           3: PORTFOLIO_BS,
-           4: COMPOSITE_BS,
-           6: GREEN_BUTTON_BS
-       }
+    Recursive function to traverse the tree upward.
 
-       :param building: BuildingSnapshot inst.
-       :returns: list of BuildingSnapshot inst., ancestors of building
+    :param building: BuildingSnapshot inst.
+    :returns: list of BuildingSnapshot inst., ancestors of building
+
+    .. code-block:: python
+
+           source_type {
+               2: ASSESSED_BS,
+               3: PORTFOLIO_BS,
+               4: COMPOSITE_BS,
+               6: GREEN_BUTTON_BS
+           }
     """
     ancestors = []
     parents = building.parents.filter(source_type__in=[2, 3, 4, 6])
@@ -157,7 +160,6 @@ def find_unmatched_buildings(import_file):
     """Get unmatched building snapshots' id info from an import file.
 
     :param import_file: ImportFile inst.
-
     :rtype: list of tuples, field values specified in BS_VALUES_LIST.
 
     NB: This does not return a queryset!
@@ -621,8 +623,7 @@ def get_column_mappings(organization):
     """Returns dict of all the column mappings for an Organization's given source type
 
     :param organization: inst, Organization.
-
-    :returns dict, list of dict:
+    :returns: dict, list of dict.
 
     Use this when actually performing mapping between data sources, but only call it after all of the mappings
     have been saved to the ``ColumnMapping`` table.

@@ -26,7 +26,7 @@ def energy_type(service_category):
     Returns the seed model energy type corresponding to the green button
     service category.
 
-    :param service_category: int that is a green button service_category
+    :param service_category: int that is a green button service_category \
     (string args will be converted to ints)
     :returns: int in seed.models.ENERGY_TYPES
     """
@@ -53,8 +53,8 @@ def energy_units(uom):
     """
     Returns the seed model energy unit corresponding to the green button uom.
 
-    :param uom: int that is the green button uom number corresponding to the
-    energy units supported by the green button schema (string args will be
+    :param uom: int that is the green button uom number corresponding to the \
+    energy units supported by the green button schema (string args will be \
     converted to ints)
     :returns: int in seed.models.ENERGY_UNITS
     """
@@ -120,9 +120,9 @@ def interval_data(reading_xml_data):
     xmltodict.parse when called on a Green Button XML file. Returns a
     flat dictionary containing the interval data.
 
-    :params reading_xml_data: dictionary of IntervalReading XML node
+    :params reading_xml_data: dictionary of IntervalReading XML node \
     content in format specified by the xmltodict library.
-    :returns: dictionary representing a time series reading with keys
+    :returns: dictionary representing a time series reading with keys \
     'cost', 'value', 'start_time', and 'duration'.
     """
     cost = reading_xml_data.get('cost')
@@ -149,9 +149,9 @@ def meter_data(raw_meter_meta):
     that was used to record time series data for that file. Returns a
     flat dictionary containing the meter meta data.
 
-    :params raw_meter_meta: dictionary of the contents of the meter
+    :params raw_meter_meta: dictionary of the contents of the meter \
     specification entry node in a Green Button XML file
-    :returns: dictionary containing information about a meter with keys
+    :returns: dictionary containing information about a meter with keys \
     'currency', 'power_of_ten_multiplier', amd 'uom'
     """
     params_data = raw_meter_meta['content']['ReadingType']
@@ -181,9 +181,9 @@ def interval_block_data(ib_xml_data):
     start_time of the time series collection, the duration of the collection,
     and a list of readings containing the time series data from a meter.
 
-    :params ib_xml_data: dictionary of the contents of an IntervalBlock
+    :params ib_xml_data: dictionary of the contents of an IntervalBlock \
     from a Green Button XML file
-    :returns: dictionary containing meta data about an entire collection
+    :returns: dictionary containing meta data about an entire collection \
     period and a list of the specific meter readings
     """
     interval = ib_xml_data['interval']
@@ -204,12 +204,14 @@ def building_data(xml_data):
     """
     Extracts information about a building from a Green Button XML file.
 
-    :params xml_data: dictionary returned by xmltodict.parse when called
+    :params xml_data: dictionary returned by xmltodict.parse when called \
     on the contents of a Green Button XML file
-    :returns: dictionary containing:
-      - building information for a Green Button XML file
-      - information describing the meter used for collection
-      - list of time series meter reading data
+    :rtype dict
+    :returns: dictionary
+
+    * building information for a Green Button XML file \
+    * information describing the meter used for collection \
+    * list of time series meter reading data \
     """
     entries = xml_data['feed']['entry']
     info_entry = next(entry for entry in entries)
@@ -243,9 +245,9 @@ def create_models(data, import_file):
     Create a BuildingSnapshot, a CanonicalBuilding, and a Meter. Then, create
     TimeSeries models for each meter reading in data.
 
-    :params data: dictionary of building data from a Green Button XML file
+    :params data: dictionary of building data from a Green Button XML file \
     in the form returned by xml_importer.building_data
-    :params import_file: ImportFile referencing the original xml file; needed
+    :params import_file: ImportFile referencing the original xml file; needed \
     for linking to BuildingSnapshot and for determining super_organization
     :returns: the created CanonicalBuilding
     """
@@ -332,7 +334,7 @@ def import_xml(import_file):
     building and time series information from the file and constructs
     required database models.
 
-    :params import_file: a seed.models.ImportFile instance representing a
+    :params import_file: a seed.models.ImportFile instance representing a \
     Green Button XML file that has been previously uploaded
     :returns: the created CanonicalBuilding Inst.
     """

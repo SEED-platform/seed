@@ -44,7 +44,7 @@ def get_meters(request):
 
 
 def _convert_energy_data(name, mapping):
-    """Converts human name to interger for DB.
+    """Converts human name to integer for DB.
 
     :parm name: str, the unit or type name from JS.
     :param mapping: tuple of tuples used for Django Meter choices.
@@ -64,14 +64,15 @@ def _convert_energy_data(name, mapping):
 def add_meter_to_building(request):
     """Will add a building to an existing meter.
 
-    Payload is expected to look like the following:
-    {
-        'organization_id': 435,
-        'building_id': 342,
-        'meter_name': 'Unit 34.',
-        'energy_type': 'Electricity',
-        'energy_units': 'kWh'
-    }
+    Payload::
+
+        {
+            'organization_id': 435,
+            'building_id': 342,
+            'meter_name': 'Unit 34.',
+            'energy_type': 'Electricity',
+            'energy_units': 'kWh'
+        }
     """
     body = json.loads(request.body)
     building_id = body.get('building_id', '')
@@ -133,18 +134,19 @@ def get_timeseries(request):
 def add_timeseries(request):
     """Add time series data for a meter.
 
-    Payload is expected to look like the following:
-    {
-        'organization_id': 435,
-        'meter_id': 34,
-        'timeseries': [
-            {
-                'begin_time': 2342342232,
-                'end_time': 23423433433,
-                'cost': 232.23,
-            }...
-        ]
-    }
+    Payload::
+
+        {
+            'organization_id': 435,
+            'meter_id': 34,
+            'timeseries': [
+                {
+                    'begin_time': 2342342232,
+                    'end_time': 23423433433,
+                    'cost': 232.23,
+                }...
+            ]
+        }
     """
     body = json.loads(request.body)
     meter_id = body.get('meter_id', '')

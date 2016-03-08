@@ -424,24 +424,25 @@ def update_project(request):
 @login_required
 def get_adding_buildings_to_project_status_percentage(request):
     """
-    Returns percentage complete of background task for
-    adding building to project.
+    Returns percentage complete of background task for adding building to project.
 
     Payload::
 
-        {'project_loading_cache_key': Job identifier from
-            add_buildings_to_project.
+        {
+            'project_loading_cache_key': Job identifier from add_buildings_to_project.
         }
 
     Returns::
-        {'status': 'success',
-         'progress_object': {
-             'status': job status,
-             'progress': percent job done (out of 100),
-             'progress_key': progress_key for job,
-             'numerator': number buildings added,
-             'denominator': total number of building to add
-         }
+
+        {
+            'status': 'success',
+                'progress_object': {
+                    'status': job status,
+                    'progress': percent job done (out of 100),
+                    'progress_key': progress_key for job,
+                    'numerator': number buildings added,
+                    'denominator': total number of building to add
+            }
         }
 
     """
@@ -476,8 +477,8 @@ def get_projects_count(request):
     Returns::
 
         {
-         'status': 'success',
-         'projects_count': count of projects
+            'status': 'success',
+            'projects_count': count of projects
         }
 
     """
@@ -500,19 +501,19 @@ def update_project_building(request):
     Payload::
 
         {
-         'project_slug': identifier of project,
-         'building_id': ID of building,
-         'label': {
-                  'id': Identifier of label to apply.
-                  }
+            'project_slug': identifier of project,
+            'building_id': ID of building,
+            'label': {
+                'id': Identifier of label to apply.
+            }
         }
 
     Returns::
 
         {
-         'status': 'success',
-         'approved_date': Timestamp of change (now),
-         'approver': Email address of user making change.
+            'status': 'success',
+            'approved_date': Timestamp of change (now),
+            'approver': Email address of user making change.
         }
 
     """
@@ -542,7 +543,7 @@ def move_buildings(request):
     Payload::
 
         {
-         "buildings": [
+            "buildings": [
                 "00010811",
                 "00010809"
             ],
@@ -561,7 +562,7 @@ def move_buildings(request):
 
     Returns::
 
-        {'status': 'success'}
+        { 'status': 'success' }
 
     """
     body = json.loads(request.body)

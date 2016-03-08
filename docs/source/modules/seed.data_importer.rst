@@ -50,6 +50,7 @@ seed.data_importer.views module
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 
 
 Module contents
