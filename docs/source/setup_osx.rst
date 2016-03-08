@@ -278,7 +278,6 @@ a helper package called `bower`.
 
 Start the Server
 ----------------
-## Run the development server
 
 You should put the following statement in ~/.bashrc or add it to the
 virtualenv post-activation script (e.g., in
