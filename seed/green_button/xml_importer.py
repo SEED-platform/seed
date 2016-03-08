@@ -181,10 +181,10 @@ def interval_block_data(ib_xml_data):
     start_time of the time series collection, the duration of the collection,
     and a list of readings containing the time series data from a meter.
 
-    :params ib_xml_data: dictionary of the contents of an IntervalBlock \
-    from a Green Button XML file
-    :returns: dictionary containing meta data about an entire collection \
-    period and a list of the specific meter readings
+    :params ib_xml_data: dictionary of the contents of an IntervalBlock
+        from a Green Button XML file
+    :returns: dictionary containing meta data about an entire collection
+        period and a list of the specific meter readings
     """
     interval = ib_xml_data['interval']
 
@@ -204,15 +204,13 @@ def building_data(xml_data):
     """
     Extracts information about a building from a Green Button XML file.
 
-    :params xml_data: dictionary returned by xmltodict.parse when called \
-    on the contents of a Green Button XML file
-    :rtype dict
+    :params xml_data: dictionary returned by xmltodict.parse when called
+        on the contents of a Green Button XML file
     :returns: dictionary
 
-
-    * building information for a Green Button XML file \
-    * information describing the meter used for collection \
-    * list of time series meter reading data \
+    * building information for a Green Button XML file
+    * information describing the meter used for collection
+    * list of time series meter reading data
     """
     entries = xml_data['feed']['entry']
     info_entry = next(entry for entry in entries)
@@ -246,10 +244,10 @@ def create_models(data, import_file):
     Create a BuildingSnapshot, a CanonicalBuilding, and a Meter. Then, create
     TimeSeries models for each meter reading in data.
 
-    :params data: dictionary of building data from a Green Button XML file \
-    in the form returned by xml_importer.building_data
-    :params import_file: ImportFile referencing the original xml file; needed \
-    for linking to BuildingSnapshot and for determining super_organization
+    :params data: dictionary of building data from a Green Button XML file
+        in the form returned by xml_importer.building_data
+    :params import_file: ImportFile referencing the original xml file; needed
+        for linking to BuildingSnapshot and for determining super_organization
     :returns: the created CanonicalBuilding
     """
     # cache data on import_file; this is a proof of concept and we

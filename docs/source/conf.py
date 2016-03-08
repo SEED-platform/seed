@@ -12,8 +12,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
+import sys
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -115,7 +115,6 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
 
-
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -149,7 +148,7 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+#html_static_path = ['_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -367,64 +366,64 @@ epub_exclude_files = ['search.html']
 
 
 # # formatters for API auto documentation
-# import django
-# django.setup()
-#
-# from seed.utils.api import get_api_endpoints
-# api_endpoints = get_api_endpoints()
-#
-# endpoints_by_function = {fn.func_name: url
-#                          for url, fn in api_endpoints.items()}
-#
-#
-# def skip_non_api_methods(app, what, name, obj, skip, options):
-#     """
-#     Callback function for sphinx, to skip functions in modules linked
-#     from api.rst that don't have is_api_endpoint set.
-#     """
-#     if app.env.docname != 'api':  # only apply this to api.rst
-#         return skip
-#     # if is_api_endpoint is True, don't skip (i.e. return False)
-#     is_api_endpoint = getattr(obj, 'is_api_endpoint', False)
-#     if is_api_endpoint:
-#         return False  # don't skip api endpoints
-#     return True  # skip everything else
-#
-#
-# def format_api_docstring(app, what, name, obj, options, lines):
-#     """
-#     Replaces sphinx's default docstring formatting for API endpoints.
-#
-#     Note that sphinx expects lines to be modified in-place.
-#     """
-#     if app.env.docname != 'api':
-#         return  # do nothing
-#
-#     is_api_endpoint = getattr(obj, 'is_api_endpoint', False)
-#     if not is_api_endpoint:
-#         while lines:
-#             lines.pop()  # modify lines in-place
-#         return
-#
-#     name = name.split('.')[-1]
-#
-#     if name in endpoints_by_function:
-#         url_line = ":URI: %s" % endpoints_by_function[name]
-#         lines.insert(0, url_line)
-#
-#
-# def format_api_signature(
-#         app, what, name, obj, options, signature, return_annotation
-#     ):
-#     """
-#     Clean up signatures for api endpoints.
-#     """
-#     if app.env.docname != 'api':
-#         return (signature, return_annotation)
-#
-#     return (None, return_annotation)
-#
-#
+import django
+
+django.setup()
+
+from seed.utils.api import get_api_endpoints
+
+api_endpoints = get_api_endpoints()
+endpoints_by_function = {fn.func_name: url for url, fn in api_endpoints.items()}
+
+
+def skip_non_api_methods(app, what, name, obj, skip, options):
+    """
+    Callback function for sphinx, to skip functions in modules linked
+    from api.rst that don't have is_api_endpoint set.
+    """
+    if app.env.docname != 'api':  # only apply this to api.rst
+        return skip
+
+    # if is_api_endpoint is True, don't skip (i.e. return False)
+    is_api_endpoint = getattr(obj, 'is_api_endpoint', False)
+    if is_api_endpoint:
+        return False  # don't skip api endpoints
+
+    return True  # skip everything else
+
+
+def format_api_docstring(app, what, name, obj, options, lines):
+    """
+    Add in the URI for the API end points into the documentation under the
+    header.
+
+    .. Note:: that sphinx expects lines to be modified in-place.
+    """
+    if app.env.docname != 'api':
+        return  # do nothing
+
+    is_api_endpoint = getattr(obj, 'is_api_endpoint', False)
+    if not is_api_endpoint:
+        while lines:
+            lines.pop()  # modify lines in-place
+        return
+
+    name = name.split('.')[-1]
+
+    if name in endpoints_by_function:
+        url_line = "**URI:** %s" % endpoints_by_function[name]
+        lines.insert(0, '')
+        lines.insert(0, url_line)
+
+
+def format_api_signature(app, what, name, obj, options, signature, return_annotation):
+    """
+    Clean up signatures for api endpoints.
+    """
+    if app.env.docname != 'api':
+        return (signature, return_annotation)
+
+    return (None, return_annotation)
 
 
 def process_remove_copyright_author(app, what, name, obj, options, docstringlines):
@@ -441,11 +440,12 @@ def process_remove_copyright_author(app, what, name, obj, options, docstringline
         docstringlines.pop(0)
         docstringlines.pop(0)
 
+
 def setup(app):
     """
     Called by sphinx to hook up event handlers.
     """
-    # app.connect("autodoc-skip-member", skip_non_api_methods)
-    # app.connect("autodoc-process-docstring", format_api_docstring)
-    # app.connect("autodoc-process-signature", format_api_signature)
+    app.connect("autodoc-skip-member", skip_non_api_methods)
+    app.connect("autodoc-process-docstring", format_api_docstring)
+    app.connect("autodoc-process-signature", format_api_signature)
     app.connect("autodoc-process-docstring", process_remove_copyright_author)

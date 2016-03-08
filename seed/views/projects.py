@@ -55,27 +55,27 @@ def get_projects(request):
 
     Returns::
 
-        {'status': 'success',
-         'projects': [
-            {
-             'name': project's name,
-             'slug': project's identifier,
-             'status': 'active',
-             'number_of_buildings': Count of buildings associated with project
-             'last_modified': Timestamp when project last changed
-             'last_modified_by': {
-                'first_name': first name of user that made last change,
-                'last_name': last name,
-                'email': email address,
-                },
-             'is_compliance': True if project is a compliance project,
-             'compliance_type': Description of compliance type,
-             'deadline_date': Timestamp of when compliance is due,
-             'end_date': Timestamp of end of project
-            }
-            ...
-          ]
-    }
+        {
+            'status': 'success',
+            'projects': [
+                {
+                    'name': project's name,
+                    'slug': project's identifier,
+                    'status': 'active',
+                    'number_of_buildings': Count of buildings associated with project
+                    'last_modified': Timestamp when project last changed
+                    'last_modified_by': {
+                        'first_name': first name of user that made last change,
+                        'last_name': last name,
+                        'email': email address,
+                    },
+                    'is_compliance': True if project is a compliance project,
+                    'compliance_type': Description of compliance type,
+                    'deadline_date': Timestamp of when compliance is due,
+                    'end_date': Timestamp of end of project
+                }...
+            ]
+        }
     """
     organization_id = request.GET.get('organization_id', '')
     projects = []
