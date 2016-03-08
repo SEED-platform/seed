@@ -11,11 +11,13 @@ Getting Started:
 .. toctree::
    :maxdepth: 2
 
-   install
+   getting_started
+   deployment
    api
    data_model
    mapping
    modules
+   developer_resources
    license
    help
 
