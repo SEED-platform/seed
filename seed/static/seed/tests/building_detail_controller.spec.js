@@ -5,11 +5,19 @@ describe("controller: building_detail_controller", function(){
     // globals set up and used in each test scenario
     var mockService, scope, controller, ngFilter, delete_called;
     var building_detail_ctrl, building_detail_ctrl_scope, modalInstance;
-    var mock_building_services, mock_project_service;
-    var mock_building;
+    var mock_building_services, mock_project_service, mock_building, mock_default_columns;
+
 
     beforeEach(function() {
         module('BE.seed');
+    });
+
+    beforeEach(function(){
+        module(function($provide){
+            $provide.service('default_columns', function() {
+                return { columns: [] };
+            });
+        });
     });
 
     // inject AngularJS dependencies for the controller
@@ -22,6 +30,7 @@ describe("controller: building_detail_controller", function(){
           $q,
           building_services,
           project_service,
+          default_columns,
           $filter) {
             controller = $controller;
             scope = $rootScope;
@@ -29,6 +38,7 @@ describe("controller: building_detail_controller", function(){
             building_detail_ctrl_scope = $rootScope.$new();
             modal_state = "";
             delete_called = false;
+            mock_default_columns = default_columns;
 
             // mock the building_services factory methods used in the controller
             // and return their promises
