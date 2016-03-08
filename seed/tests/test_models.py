@@ -32,7 +32,7 @@ class TestBuildingSnapshot(TestCase):
         'pm_property_id': 9999,
         'tax_lot_id': '1231',
         'property_name': 'A Place',
-        'custom_id_1': 0000111000,
+        'custom_id_1': 0o000111000,
         'address_line_1': '44444 Hmmm Ave.',
         'address_line_2': 'Apt 4',
         'city': 'Gotham City',

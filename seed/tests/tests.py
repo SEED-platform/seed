@@ -14,6 +14,7 @@ from seed.utils.organizations import create_organization
 
 
 class ProjectTestCase(TestCase):
+
     def test_basic_project_creation(self):
         user = User.objects.create(username='test', first_name='t', last_name='est')
         org, user_role, _user_created = create_organization(
@@ -38,6 +39,7 @@ class ProjectTestCase(TestCase):
 
 
 class ComplianceTestCase(TestCase):
+
     def test_basic_compliance_creation(self):
         p = Project(name='test project')
         p.save()
@@ -56,6 +58,7 @@ class ComplianceTestCase(TestCase):
 
 
 class UtilsTests(TestCase):
+
     def setUp(self):
         self.user = User.objects.create(
             username='test',
