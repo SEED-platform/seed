@@ -16,7 +16,7 @@ benefits of energy efficiency, to implement programs, and to target investment
 activity.
 
 The SEED application is written in Python/Django, with AngularJS, Bootstrap,
-and other javascript libraries used for the front-end. The back-end database
+and other JavaScript libraries used for the front-end. The back-end database
 is required to be PostgreSQL.
 
 The SEED web application provides both a browser-based interface for users to
