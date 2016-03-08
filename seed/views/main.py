@@ -39,7 +39,6 @@ from seed.models import (
     Column,
     ColumnMapping,
     ProjectBuilding,
-    Schema,
     get_ancestors,
     unmatch_snapshot_tree as unmatch_snapshot,
     CanonicalBuilding,
@@ -1265,51 +1264,14 @@ def get_column_mapping_suggestions(request):
         .exclude(column_name__in=field_names)
     )
 
-    # Query Schema-Column through table directly for all joins for these columns.
-    column_schemas = list(
-        Schema.columns.through.objects
-        .filter(column_id__in=[c.pk for c in columns])
-        .values('pk', 'column_id', 'schema_id')
-    )
-
-    # Map of column_id to list of {'schema_id': id, 'pk': pk} joins.
-    column_schema_map = {}
-    for cs in column_schemas:
-        obj = {'schema_id': cs['schema_id'], 'pk': cs['pk']}
-        try:
-            column_schema_map[cs['column_id']].append(obj)
-        except KeyError:
-            column_schema_map[cs['column_id']] = [obj]
-
-    # Walk through column_schema_map and sort the lists
-    for k, v in column_schema_map.items():
-        if column_schema_map[k]:
-            column_schema_map[k] = sorted(column_schema_map[k], key=lambda k: k['pk'])
-
-    # Grab all schema_ids from Schema-Column join table results.
-    schema_ids = list(set([s['schema_id'] for s in column_schemas]))
-
-    # Look up schemas by ids.
-    schemas = list(Schema.objects.filter(pk__in=schema_ids).only('pk', 'name'))
-
-    # Map of schema_id to schema object
-    schema_map = {}
-    for schema in schemas:
-        schema_map[schema.pk] = schema
-
     for c in columns:
         if c.unit:
             unit = c.unit.get_unit_type_display()
         else:
             unit = 'string'
-        if column_schema_map.get(c.pk):
-            schema_id = column_schema_map[c.pk][0]['schema_id']
-            schema = schema_map[schema_id].name
-        else:
-            schema = ''
         column_types[c.column_name] = {
             'unit_type': unit.lower(),
-            'schema': schema,
+            'schema': '',
         }
 
     db_columns = copy.deepcopy(mappable_types)
