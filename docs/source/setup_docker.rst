@@ -16,7 +16,7 @@ Installation on Docker
 Install Docker Toolbox
 ----------------------
 
-Install Docker Toolbox, Docker-Toolbox_ which installs several applications
+Install Docker-Toolbox_, which installs several applications
 including Docker, Docker Machine, and Docker Compose. It is possible to
 install these individually as well.
 
