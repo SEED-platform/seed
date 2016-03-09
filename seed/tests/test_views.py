@@ -184,6 +184,11 @@ class DefaultColumnsViewTests(TestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org = Organization.objects.create()
         OrganizationUser.objects.create(user=self.user, organization=self.org)
+
+        Column.objects.create(column_name='test')
+        Column.objects.create(column_name='extra_data_test',
+            is_extra_data=True)
+
         self.client.login(**user_details)
 
     def test_get_default_columns_with_set_columns(self):
@@ -1621,6 +1626,9 @@ class ReportViewsTests(TestCase):
             cached_first_row="Name|#*#|Address"
         )
 
+        BuildingSnapshot.objects.create(super_organization=self.org,
+            import_file=self.import_file)
+
         self.client.login(**user_details)
 
     def test_get_building_summary_report_data(self):
@@ -1642,6 +1650,18 @@ class ReportViewsTests(TestCase):
         }
 
         response = self.client.get(reverse("seed:get_building_report_data"), params)
+        self.assertEqual('success', json.loads(response.content)['status'])
+
+    def test_get_aggregated_building_report_data(self):
+        params = {
+            'start_date': (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d'),
+            'end_date': datetime.now().strftime('%Y-%m-%d'),
+            'x_var': 'energy_score',
+            'y_var': 'year_built',
+            'organization_id': self.org.pk
+        }
+
+        response = self.client.get(reverse("seed:get_aggregated_building_report_data"), params)
         self.assertEqual('success', json.loads(response.content)['status'])
 
 
