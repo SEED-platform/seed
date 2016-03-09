@@ -2404,14 +2404,14 @@ def save_gb_request_info(request):
     info = json.loads(request.body)
 
     building_id = info['building_id']
-    url = info['url']
-    subscription_id = info['subscription_id']
+    url = str(info['url']).strip()
+    subscription_id = str(info['subscription_id']).strip()
 
-    min_date_parameter = info['min_date_parameter']
-    max_date_parameter = info['max_date_parameter']
+    min_date_parameter = str(info['min_date_parameter']).strip()
+    max_date_parameter = str(info['max_date_parameter']).strip()
     active = info['active']
-    time_type = info['time_type']
-    date_pattern = info['date_pattern']
+    time_type = str(info['time_type']).strip()
+    date_pattern = str(info['date_pattern']).strip()
 
     loopback_flag = info['loopback']
 

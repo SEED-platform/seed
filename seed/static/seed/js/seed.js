@@ -371,25 +371,13 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     return building_services.get_building(building_id);
                 }],
                 'building_finer_energy_payload': ['building_services', '$route', function(building_services, $route){
-                    console.log($route.current.params);
-                    var building_id = $route.current.params.building_id;
-                    var finer_ts_data = building_services.get_finer_timeseries_data(building_id);
-
-                    return finer_ts_data;
+                    return undefined;
                 }],
                 'building_monthly_payload': ['building_services', '$route', function(building_services, $route){
-                    //TODO meter_building_snapshot model is not exist
-                    var building_id = $route.current.params.building_id;
-                    var monthly_data = building_services.get_monthly_data(building_id);
-
-                    return monthly_data;
-                    //return '';
+                    return undefined
                 }],
                 'gb_req_info': ['building_services', '$route', function(building_services, $route){
-                    var building_id = $route.current.params.building_id;
-                    var gb_req_info = building_services.get_gb_request_info(building_id);
-
-                    return gb_req_info;
+                    return undefined
                 }],
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);
@@ -416,25 +404,13 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     return building_services.get_columns(false);
                 }],
                 'building_finer_energy_payload': ['building_services', '$route', function(building_services, $route){
-                    console.log($route.current.params);
-                    var building_id = $route.current.params.building_id;
-                    var finer_ts_data = building_services.get_finer_timeseries_data(building_id);
-
-                    return finer_ts_data;
+                    return undefined
                 }],
                 'building_monthly_payload': ['building_services', '$route', function(building_services, $route){
-                    //TODO meter_building_snapshot model is not exist
-                    var building_id = $route.current.params.building_id;
-                    var monthly_data = building_services.get_monthly_data(building_id);
-
-                    return monthly_data;
-                    //return '';
+                    return undefined
                 }],
                 'gb_req_info': ['building_services', '$route', function(building_services, $route){
-                    var building_id = $route.current.params.building_id;
-                    var gb_req_info = building_services.get_gb_request_info(building_id);
-
-                    return gb_req_info;
+                    return undefined
                 }],
                 'audit_payload': function(){
                     return {'audit_logs': {}};
@@ -454,32 +430,14 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     var building_id = $route.current.params.building_id;
                     return building_services.get_building(building_id);
                 }],
-                // create payload for finer TS data
                 'building_finer_energy_payload': ['building_services', '$route', function(building_services, $route){
-                    console.log($route.current.params);
-                    var building_id = $route.current.params.building_id;
-                    var finer_ts_data = building_services.get_finer_timeseries_data(building_id);
-
-                    return finer_ts_data;
+                    return undefined
                 }],
-                // create payload for finer TS data ends
-
-                // create payload for monthly data
                 'building_monthly_payload': ['building_services', '$route', function(building_services, $route){
-                    //TODO meter_building_snapshot model is not exist
-                    var building_id = $route.current.params.building_id;
-                    var monthly_data = building_services.get_monthly_data(building_id);
-
-                    return monthly_data;
+                    return undefined
                 }],
-                // create payload for monthly data ends
-
-                // try to load gb previous request info
                 'gb_req_info': ['building_services', '$route', function(building_services, $route){
-                    var building_id = $route.current.params.building_id;
-                    var gb_req_info = building_services.get_gb_request_info(building_id);
-
-                    return gb_req_info;
+                    return undefined
                 }],
                 // try to load gb previous request info ends
                 'all_columns': ['building_services', function(building_services) {
@@ -547,25 +505,13 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     return building_services.get_building(building_id);
                 }],
                 'building_finer_energy_payload': ['building_services', '$route', function(building_services, $route){
-                    console.log($route.current.params);
-                    var building_id = $route.current.params.building_id;
-                    var finer_ts_data = building_services.get_finer_timeseries_data(building_id);
-
-                    return finer_ts_data;
+                    return undefined
                 }],
                 'building_monthly_payload': ['building_services', '$route', function(building_services, $route){
-                    //TODO meter_building_snapshot model is not exist
-                    var building_id = $route.current.params.building_id;
-                    var monthly_data = building_services.get_monthly_data(building_id);
-
-                    return monthly_data;
-                    //return '';
+                    return undefined
                 }],
                 'gb_req_info': ['building_services', '$route', function(building_services, $route){
-                    var building_id = $route.current.params.building_id;
-                    var gb_req_info = building_services.get_gb_request_info(building_id);
-
-                    return gb_req_info;
+                    return undefined
                 }],
                 'all_columns': ['building_services', function(building_services) {
                     return building_services.get_columns(false);

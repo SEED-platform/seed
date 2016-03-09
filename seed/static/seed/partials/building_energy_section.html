@@ -170,13 +170,13 @@
                            <td colspan="3">There are no monthly timeseries data for this building</td>
                        </tr>
                        <tr ng-show="monthly_data_flag && monthly_data_readings.length>0">
-                           <td>Start Time Stamp</td><td><b>End Time Stamp</b></td><td><b>Reading</b></td><td><b>Cost</b></td>
+                           <td>Start Time Stamp</td><td><b>End Time Stamp</b></td><td><b>Reading</b></td><td><b>Energy Type</b></td>
                        </tr>
                        <tr ng-repeat="f in monthly_data_readings">
                            <td style="font-weight:normal">{$ f.begin_time $}</td>
                            <td>{$ f.end_time $}</td>
                            <td>{$ f.reading $}</td>
-                           <td>{$ f.cost $}</td>
+                           <td>{$ f.energy_type $}</td>
                        </tr>
                    </tbody>
                </table>
