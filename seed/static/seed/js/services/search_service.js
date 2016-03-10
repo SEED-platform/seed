@@ -107,6 +107,13 @@ angular.module('BE.seed.service.search', [])
                 saas.number_per_page = saas.number_per_page_options_model = saas.showing.end =
                 JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
             }
+            
+            // current_page
+            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
+                saas.current_page = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
+                saas.update_start_end_paging();
+                saas.update_buttons();
+            }
         }
     };
 
@@ -281,6 +288,9 @@ angular.module('BE.seed.service.search', [])
         if (this.current_page > this.num_pages) {
             this.current_page = this.num_pages;
         }
+        if (typeof(Storage) !== "undefined") {
+            sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
+        }
         this.search_buildings();
     };
 
@@ -292,6 +302,9 @@ angular.module('BE.seed.service.search', [])
         this.current_page -= 1;
         if (this.current_page < 1) {
             this.current_page = 1;
+        }
+        if (typeof(Storage) !== "undefined") {
+            sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
         }
         this.search_buildings();
     };
