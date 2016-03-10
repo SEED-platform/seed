@@ -594,24 +594,24 @@ class AccountsViewTests(TestCase):
 
     def test_get_cleansing_rules_matching(self):
         Rules.objects.create(org=self.org, category=CATEGORY_MISSING_MATCHING_FIELD,
-            field='address_line_1', severity=0)
+                             field='address_line_1', severity=0)
         response = self.client.get(reverse_lazy('accounts:get_cleansing_rules'), {'organization_id': self.org.pk})
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_cleansing_rules_values(self):
         Rules.objects.create(org=self.org, category=CATEGORY_MISSING_VALUES,
-            field='address_line_1', severity=0)
+                             field='address_line_1', severity=0)
         response = self.client.get(reverse_lazy('accounts:get_cleansing_rules'), {'organization_id': self.org.pk})
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_cleansing_rules_range(self):
         Rules.objects.create(org=self.org, category=CATEGORY_IN_RANGE_CHECKING,
-            field='address_line_1', severity=0)
+                             field='address_line_1', severity=0)
         response = self.client.get(reverse_lazy('accounts:get_cleansing_rules'), {'organization_id': self.org.pk})
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_save_cleansing_rules(self):
-        payload =  {
+        payload = {
             'organization_id': self.org.pk,
             'cleansing_rules': {
                 'missing_matching_field': [
@@ -944,7 +944,7 @@ class AccountsViewTests(TestCase):
                 'email': self.user.email
             }
         }
-        
+
         resp = self.client.post(
             reverse_lazy("accounts:create_sub_org"),
             data=json.dumps(payload),

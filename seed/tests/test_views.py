@@ -188,7 +188,7 @@ class DefaultColumnsViewTests(TestCase):
 
         Column.objects.create(column_name='test')
         Column.objects.create(column_name='extra_data_test',
-            is_extra_data=True)
+                              is_extra_data=True)
 
         self.client.login(**user_details)
 
@@ -1634,7 +1634,7 @@ class ReportViewsTests(TestCase):
         )
 
         BuildingSnapshot.objects.create(super_organization=self.org,
-            import_file=self.import_file)
+                                        import_file=self.import_file)
 
         self.client.login(**user_details)
 
