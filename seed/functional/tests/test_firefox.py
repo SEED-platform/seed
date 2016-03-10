@@ -24,8 +24,10 @@ class LoginTests(LoggedOutFunctionalTestCase):
 class SmokeTests(LoggedInFunctionalTestCase):
     def test_dataset_list(self):
         """Make sure dataset list works."""
-        import_record = ImportRecord.objects.create(owner=self.user,
-            super_organization=self.org)
+        import_record = ImportRecord.objects.create(
+            owner=self.user,
+            super_organization=self.org
+        )
         ImportFile.objects.create(
             import_record=import_record
         )
@@ -42,8 +44,10 @@ class SmokeTests(LoggedInFunctionalTestCase):
         Make sure you can click dataset name on dataset list page and load
         dataset.
         """
-        import_record = ImportRecord.objects.create(owner=self.user,
-            super_organization=self.org)
+        import_record = ImportRecord.objects.create(
+            owner=self.user,
+            super_organization=self.org
+        )
         ImportFile.objects.create(
             import_record=import_record
         )
@@ -63,8 +67,10 @@ class SmokeTests(LoggedInFunctionalTestCase):
         Make sure you can click mapping button on dataset page and mapping
         loads.
         """
-        import_record = ImportRecord.objects.create(owner=self.user,
-            super_organization=self.org)
+        import_record = ImportRecord.objects.create(
+            owner=self.user,
+            super_organization=self.org
+        )
         ImportFile.objects.create(
             import_record=import_record,
             cached_first_row=ROW_DELIMITER.join(
@@ -92,16 +98,20 @@ class SmokeTests(LoggedInFunctionalTestCase):
         Make sure you can click from the menu to the building list page and it
         loads.
         """
-        import_record = ImportRecord.objects.create(owner=self.user,
-            super_organization=self.org)
+        import_record = ImportRecord.objects.create(
+            owner=self.user,
+            super_organization=self.org
+        )
         import_file = ImportFile.objects.create(
             import_record=import_record
         )
 
         canonical_building = CanonicalBuilding.objects.create()
-        building = BuildingSnapshot.objects.create(super_organization=self.org,
+        building = BuildingSnapshot.objects.create(
+            super_organization=self.org,
             import_file=import_file, canonical_building=canonical_building,
-            address_line_1='address')
+            address_line_1='address'
+        )
         canonical_building.canonical_snapshot = building
         canonical_building.save()
 
@@ -115,16 +125,20 @@ class SmokeTests(LoggedInFunctionalTestCase):
 
     def test_building_list_tab_settings(self):
         """Make sure building list settings tab loads."""
-        import_record = ImportRecord.objects.create(owner=self.user,
-            super_organization=self.org)
+        import_record = ImportRecord.objects.create(
+            owner=self.user,
+            super_organization=self.org
+        )
         import_file = ImportFile.objects.create(
             import_record=import_record
         )
 
         canonical_building = CanonicalBuilding.objects.create()
-        building = BuildingSnapshot.objects.create(super_organization=self.org,
+        building = BuildingSnapshot.objects.create(
+            super_organization=self.org,
             import_file=import_file, canonical_building=canonical_building,
-            address_line_1='address')
+            address_line_1='address'
+        )
         canonical_building.canonical_snapshot = building
         canonical_building.save()
 
@@ -133,16 +147,20 @@ class SmokeTests(LoggedInFunctionalTestCase):
 
     def test_building_list_tab_reports(self):
         """Make sure building list reports tab loads."""
-        import_record = ImportRecord.objects.create(owner=self.user,
-            super_organization=self.org)
+        import_record = ImportRecord.objects.create(
+            owner=self.user,
+            super_organization=self.org
+        )
         import_file = ImportFile.objects.create(
             import_record=import_record
         )
 
         canonical_building = CanonicalBuilding.objects.create()
-        building = BuildingSnapshot.objects.create(super_organization=self.org,
+        building = BuildingSnapshot.objects.create(
+            super_organization=self.org,
             import_file=import_file, canonical_building=canonical_building,
-            address_line_1='address')
+            address_line_1='address'
+        )
         canonical_building.canonical_snapshot = building
         canonical_building.save()
 
@@ -151,16 +169,20 @@ class SmokeTests(LoggedInFunctionalTestCase):
 
     def test_building_list_tab_labels(self):
         """Make sure building list labels tab loads."""
-        import_record = ImportRecord.objects.create(owner=self.user,
-            super_organization=self.org)
+        import_record = ImportRecord.objects.create(
+            owner=self.user,
+            super_organization=self.org
+        )
         import_file = ImportFile.objects.create(
             import_record=import_record
         )
 
         canonical_building = CanonicalBuilding.objects.create()
-        building = BuildingSnapshot.objects.create(super_organization=self.org,
+        building = BuildingSnapshot.objects.create(
+            super_organization=self.org,
             import_file=import_file, canonical_building=canonical_building,
-            address_line_1='address')
+            address_line_1='address'
+        )
         canonical_building.canonical_snapshot = building
         canonical_building.save()
 
@@ -173,16 +195,20 @@ class SmokeTests(LoggedInFunctionalTestCase):
 
     def test_building_detail(self):
         """Make sure building detail page loads."""
-        import_record = ImportRecord.objects.create(owner=self.user,
-            super_organization=self.org)
+        import_record = ImportRecord.objects.create(
+            owner=self.user,
+            super_organization=self.org
+        )
         import_file = ImportFile.objects.create(
             import_record=import_record
         )
 
         canonical_building = CanonicalBuilding.objects.create()
-        building = BuildingSnapshot.objects.create(super_organization=self.org,
+        building = BuildingSnapshot.objects.create(
+            super_organization=self.org,
             import_file=import_file, canonical_building=canonical_building,
-            address_line_1='address')
+            address_line_1='address'
+        )
         canonical_building.canonical_snapshot = building
         canonical_building.save()
 
@@ -197,16 +223,20 @@ class SmokeTests(LoggedInFunctionalTestCase):
 
     def test_building_detail_tab_projects(self):
         """Make sure building detail projects tab shows project."""
-        import_record = ImportRecord.objects.create(owner=self.user,
-            super_organization=self.org)
+        import_record = ImportRecord.objects.create(
+            owner=self.user,
+            super_organization=self.org
+        )
         import_file = ImportFile.objects.create(
             import_record=import_record
         )
 
         canonical_building = CanonicalBuilding.objects.create()
-        building = BuildingSnapshot.objects.create(super_organization=self.org,
+        building = BuildingSnapshot.objects.create(
+            super_organization=self.org,
             import_file=import_file, canonical_building=canonical_building,
-            address_line_1='address')
+            address_line_1='address'
+        )
         canonical_building.canonical_snapshot = building
         canonical_building.save()
 

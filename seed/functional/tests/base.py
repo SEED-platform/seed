@@ -49,8 +49,10 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         }
         capabilities.update(cls.capabilities)
 
-        driver = webdriver.Remote(desired_capabilities=capabilities,
-            command_executor="http://%s/wd/hub" % hub_url)
+        driver = webdriver.Remote(
+            desired_capabilities=capabilities,
+            command_executor="http://%s/wd/hub" % hub_url
+        )
         return driver
 
     @classmethod
@@ -63,7 +65,7 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
 
         # Generate User and Selenium Resources
         user_details = {
-            'username': 'test@example.com', # the username needs to be in the form of an email.
+            'username': 'test@example.com',  # the username needs to be in the form of an email.
             'password': 'password',
             'email': 'test@example.com',
             'first_name': 'Jane',
