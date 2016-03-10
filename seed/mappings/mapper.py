@@ -63,9 +63,11 @@ def merge_extra_data(b1, b2, default=None):
     :param b1: BuildingSnapshot inst.
     :param b2: BuildingSnapshot inst.
     :param default: BuildingSnapshot inst.
-
     :returns tuple of dict:
-        first dict contains values, second the source pks.
+
+    .. code-block::python
+
+        # first dict contains values, second the source pks.
         ({'data': 'value'}, {'data': 23},)
 
     """
@@ -95,9 +97,7 @@ def merge_extra_data(b1, b2, default=None):
     return extra_data, extra_data_sources
 
 
-def merge_building(
-    snapshot, b1, b2, can_attrs, conf, default=None, match_type=None
-):
+def merge_building(snapshot, b1, b2, can_attrs, conf, default=None, match_type=None):
     """Set attributes on our Canonical model, saving differences.
 
     :param snapshot: BuildingSnapshot model inst.
@@ -105,7 +105,8 @@ def merge_building(
     :param b2: BuildingSnapshot model inst. Right parent.
     :param can_attrs: dict of dicts, {'attr_name': {'dataset1': 'value'...}}.
     :param default: (optional), which dataset's value to default to.
-    :rtype BuildingSnapshot inst(``snapshot``), updated.
+    :rtype default: BuildingSnapshot
+    :return: inst(``snapshot``), updated.
 
     """
     default = default or b1
@@ -172,9 +173,15 @@ def get_building_attrs(data_set_buildings):
     """Returns a dictionary of attributes from each data_set_building.
 
     :param buildings: list, group of BS instances to merge.
-    :rtype BuildingSnapshot dict: possible attributes keyed on attr name.
-        Ex:
-        {'property_name': {building_inst1: 'value', building_inst2: 'value2'}}
+    :return: BuildingSnapshot dict: possible attributes keyed on attr name.
+
+    .. code-block::python
+
+        {
+            'property_name': {
+                building_inst1: 'value', building_inst2: 'value2'
+            }
+        }
 
     """
     can_attrs = defaultdict(dict)

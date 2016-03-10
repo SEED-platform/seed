@@ -25,6 +25,7 @@ from seed.factory import SEEDFactory
 
 
 class TestAddBuildingsToProjectTask(TestCase):
+
     def get_filter_params(self, project):
         return {
             "project_slug": project.slug,

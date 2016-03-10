@@ -52,18 +52,18 @@ def transfer_buildings(source_project_slug, target_project_slug, buildings,
                        select_all, search_params, user, copy_flag=False):
     """copies or moves buildings from one project to another
 
-       :param source_project_slug: str, a slug to get a Project inst.
-       :param target_project_slug: str, a slug to get a Project inst.
-       :param buildings: list, list of source_facility_id as str to get
-       BuildingSnapshot inst.
-       :param select_all: bool, if the select all checkbox was
-       checked. i.e. should we transfer all buildings in a project or just the
-       buildings in the list
-       :search_params: dict, params needed to generate a queryset of buildings,
-       with keys (q, other_params, project_slug)
-       :user: User inst., django user instance needed for select all queryset
-       and to update the projects' "last changed" and "last changed by"
-       :copy_flag: bool, True - copy buildings, False - move buildings
+    :param source_project_slug: str, a slug to get a Project inst.
+    :param target_project_slug: str, a slug to get a Project inst.
+    :param buildings: list, list of source_facility_id as str to get \
+    BuildingSnapshot inst.
+    :param select_all: bool, if the select all checkbox was \
+    checked. i.e. should we transfer all buildings in a project or just the \
+    buildings in the list
+    :search_params: dict, params needed to generate a queryset of buildings, \
+    with keys (q, other_params, project_slug)
+    :user: User inst., django user instance needed for select all queryset \
+    and to update the projects' "last changed" and "last changed by"
+    :copy_flag: bool, True - copy buildings, False - move buildings
 
     """
     target_project = Project.objects.get(slug=target_project_slug)
@@ -87,16 +87,16 @@ def copy_buildings(source_project, target_project, buildings,
                    select_all, search_params, user):
     """copies buildings from source project to target project
 
-       :param source_project_slug: str, a slug to get a Project inst.
-       :param target_project_slug: str, a slug to get a Project inst.
-       :param buildings: list, list of source_facility_id as str to get
-       BuildingSnapshot inst.
-       :param select_all: bool, if the select all checkbox was
-       checked. i.e. should we transfer all buildings in a project or just the
-       buildings in the list
-       :search_params: dict, params needed to generate a queryset of buildings,
-       with keys (q, other_params, project_slug)
-       :user: User inst., django user instance needed for select all queryset
+    :param source_project_slug: str, a slug to get a Project inst.
+    :param target_project_slug: str, a slug to get a Project inst.
+    :param buildings: list, list of source_facility_id as str to get \
+    BuildingSnapshot inst.
+    :param select_all: bool, if the select all checkbox was checked. i.e. \
+    should we transfer all buildings in a project or just the buildings in \
+    the list
+    :search_params: dict, params needed to generate a queryset of buildings, \
+    with keys (q, other_params, project_slug)
+    :user: User inst., django user instance needed for select all queryset
 
     """
     delete_matching_buildings(
@@ -120,16 +120,15 @@ def move_buildings(source_project, target_project, buildings,
                    select_all, search_params, user):
     """moves buildings from source project to target project
 
-       :param source_project_slug: str, a slug to get a Project inst.
-       :param target_project_slug: str, a slug to get a Project inst.
-       :param buildings: list, list of source_facility_id as str to get
-       BuildingSnapshot inst.
-       :param select_all: bool, if the select all checkbox was
-       checked. i.e. should we transfer all buildings in a project or just the
-       buildings in the list
-       :search_params: dict, params needed to generate a queryset of buildings,
-       with keys (q, other_params, project_slug)
-       :user: User inst., django user instance needed for select all queryset
+    :param source_project_slug: str, a slug to get a Project inst.
+    :param target_project_slug: str, a slug to get a Project inst.
+    :param buildings: list, list of source_facility_id as str to get \
+    BuildingSnapshot inst.
+    :param select_all: bool, if the select all checkbox was checked. i.e. should \
+    we transfer all buildings in a project or just the buildings in the list
+    :search_params: dict, params needed to generate a queryset of buildings, \
+    with keys (q, other_params, project_slug)
+    :user: User inst., django user instance needed for select all queryset
 
     """
     delete_matching_buildings(
@@ -147,15 +146,15 @@ def delete_matching_buildings(project, buildings,
                               select_all, search_params, user):
     """deletes buildings in a project that match search search params
 
-       :param project_slug: str, a slug to get a Project inst.
-       :param buildings: list, list of source_facility_id as str to get
-       BuildingSnapshot inst.
-       :param select_all: bool, if the select all checkbox was
-       checked. i.e. should we transfer all buildings in a project or just the
-       buildings in the list
-       :search_params: dict, params needed to generate a queryset of buildings,
-       with keys (q, other_params, project_slug)
-       :user: User inst., django user instance needed for select all queryset
+    :param project_slug: str, a slug to get a Project inst.
+    :param buildings: list, list of source_facility_id as str to get \
+    BuildingSnapshot inst.
+    :param select_all: bool, if the select all checkbox was \
+    checked. i.e. should we transfer all buildings in a project or just the \
+    buildings in the list
+    :search_params: dict, params needed to generate a queryset of buildings, \
+    with keys (q, other_params, project_slug)
+    :user: User inst., django user instance needed for select all queryset
 
     """
     if select_all:
@@ -176,18 +175,18 @@ def get_transfer_buildings(source_project, target_project, buildings,
                            select_all, search_params, user):
     """generates move or copy buildings queryset
 
-       :param source_project_slug: str, a slug to get a Project inst.
-       :param target_project_slug: str, a slug to get a Project inst.
-       :param buildings: list, list of source_facility_id as str to get
-       BuildingSnapshot inst.
-       :param select_all: bool, if the select all checkbox was
-       checked. i.e. should we transfer all buildings in a project or just the
-       buildings in the list
-       :search_params: dict, params needed to generate a queryset of buildings,
-       with keys (q, other_params, project_slug)
-       :user: User inst., django user instance needed for select all queryset
+    :param source_project_slug: str, a slug to get a Project inst.
+    :param target_project_slug: str, a slug to get a Project inst.
+    :param buildings: list, list of source_facility_id as str to get \
+    BuildingSnapshot inst.
+    :param select_all: bool, if the select all checkbox was \
+    checked. i.e. should we transfer all buildings in a project or just the \
+    buildings in the list
+    :search_params: dict, params needed to generate a queryset of buildings, \
+    with keys (q, other_params, project_slug)
+    :user: User inst., django user instance needed for select all queryset
 
-       :rtype Queryset: a django queryset of buildings to move or copy
+    :rtype Queryset: a django queryset of buildings to move or copy
 
     """
     if select_all:

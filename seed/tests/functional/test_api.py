@@ -14,6 +14,7 @@ from seed.landing.models import SEEDUser as User
 
 
 class TestApi(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',  # the username needs to be in the form of an email.
@@ -387,4 +388,3 @@ class TestApi(TestCase):
         r = self.client.post('/app/get_column_mapping_suggestions/', json.dumps(payload),
                              content_type='application/json', follow=True, **self.headers)
         print r
-

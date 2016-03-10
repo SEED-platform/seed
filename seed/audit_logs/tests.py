@@ -25,6 +25,7 @@ from seed.audit_logs.models import AuditLog, LOG, NOTE
 
 
 class AuditLogModelTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -168,6 +169,7 @@ class AuditLogModelTests(TestCase):
 
 
 class AuditLogViewTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -236,7 +238,7 @@ class AuditLogViewTests(TestCase):
                 u'audit_type': 'Note',
                 u'content_type': 'canonicalbuilding',
                 u'created': data['audit_logs'][0]['created'],
-                u'id':  data['audit_logs'][0]['id'],
+                u'id': data['audit_logs'][0]['id'],
                 u'model': u'audit_logs.auditlog',
                 u'modified': data['audit_logs'][0]['modified'],
                 u'object_id': data['audit_logs'][0]['object_id'],
@@ -261,7 +263,7 @@ class AuditLogViewTests(TestCase):
                 u'audit_type': 'Log',
                 u'content_type': 'canonicalbuilding',
                 u'created': data['audit_logs'][1]['created'],
-                u'id':  data['audit_logs'][1]['id'],
+                u'id': data['audit_logs'][1]['id'],
                 u'model': u'audit_logs.auditlog',
                 u'modified': data['audit_logs'][1]['modified'],
                 u'object_id': data['audit_logs'][1]['object_id'],

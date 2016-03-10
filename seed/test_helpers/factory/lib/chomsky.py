@@ -4,6 +4,7 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+
 # Chomsky random text generator, version 1.1, Raymond Hettinger, 2005/09/13
 # PSF License
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/440546

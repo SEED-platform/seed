@@ -5,7 +5,6 @@
 :author
 """
 import json
-
 from functools import wraps
 
 from django.core.serializers.json import DjangoJSONEncoder
@@ -76,21 +75,21 @@ def lock_and_track(fn, *args, **kwargs):
 
 def ajax_request(func):
     """
-    * Copied from django-annoying, with a small modification. Now we also check
-    * for 'status' or 'success' keys and return correct status codes
+    * Copied from django-annoying, with a small modification. Now we also check for 'status' or 'success' keys and \
+    return correct status codes
 
     If view returned serializable dict, returns response in a format requested
     by HTTP_ACCEPT header. Defaults to JSON if none requested or match.
 
     Currently supports JSON or YAML (if installed), but can easily be extended.
 
-    example:
+    Example::
 
         @ajax_request
         def my_view(request):
             news = News.objects.all()
             news_titles = [entry.title for entry in news]
-            return {'news_titles': news_titles}
+            return { 'news_titles': news_titles }
     """
     @wraps(func)
     def wrapper(request, *args, **kwargs):
@@ -100,6 +99,7 @@ def ajax_request(func):
                 break
         else:
             format_type = 'application/json'
+
         response = func(request, *args, **kwargs)
 
         # determine the status code if the object is a dictionary
@@ -119,14 +119,15 @@ def ajax_request(func):
 
 def DecoratorMixin(decorator):
     """
-    Converts a decorator written for a function view into a mixin for a
-    class-based view.
-    ::
+    Converts a decorator written for a function view into a mixin for a class-based view.
+
+    Example::
+
         LoginRequiredMixin = DecoratorMixin(login_required)
         class MyView(LoginRequiredMixin):
             pass
-        class SomeView(DecoratorMixin(some_decorator),
-                       DecoratorMixin(something_else)):
+
+        class SomeView(DecoratorMixin(some_decorator), DecoratorMixin(something_else)):
             pass
     """
 

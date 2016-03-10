@@ -165,7 +165,7 @@ class TestMeterViews(TestCase):
         self.assertEqual(len(resp['timeseries']), 5)
 
     def test_add_timeseries(self):
-        """Adding timeseries works."""
+        """Adding time series works."""
         meter = Meter.objects.create(
             name='test', energy_type=ELECTRICITY, energy_units=KILOWATT_HOURS
         )

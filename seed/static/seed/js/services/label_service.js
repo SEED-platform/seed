@@ -183,7 +183,7 @@ angular.module('BE.seed.service.label',
     }
 
 
-    /* FUNCTIONS FOR LABELS WITHIN BUIDINGS  */
+    /* FUNCTIONS FOR LABELS WITHIN BUILDINGS  */
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
     /*  

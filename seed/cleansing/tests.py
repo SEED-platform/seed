@@ -26,6 +26,7 @@ from seed.models import (
 
 
 class CleansingDataTestCoveredBuilding(TestCase):
+
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -154,6 +155,7 @@ class CleansingDataTestCoveredBuilding(TestCase):
 
 
 class CleansingDataTestPM(TestCase):
+
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -252,6 +254,7 @@ class CleansingDataTestPM(TestCase):
 
 
 class CleansingDataSample(TestCase):
+
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -345,6 +348,7 @@ class CleansingDataSample(TestCase):
 
 
 class CleansingViewTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',

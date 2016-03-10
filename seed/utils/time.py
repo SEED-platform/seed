@@ -25,7 +25,7 @@ def convert_to_js_timestamp(timestamp):
 
 def parse_datetime(maybe_datetime):
     """
-    Process a datetime value that may be None, timestamp, stftime.
+    Process a datetime value that may be None, timestamp, strftime.
     """
     if isinstance(maybe_datetime, (int, float)):
         return datetime.datetime.fromtimestamp(maybe_datetime / 1000)

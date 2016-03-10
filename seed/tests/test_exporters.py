@@ -66,9 +66,9 @@ class TestExporters(TestCase):
                 qs_val = qs[i]
                 for component in components:
                     qs_val = getattr(qs_val, component)
-                    if qs_val == None:
+                    if qs_val is None:
                         break
-                if isinstance(qs_val, Manager) or qs_val == None:
+                if isinstance(qs_val, Manager) or qs_val is None:
                     qs_val = u''
                 else:
                     qs_val = unicode(qs_val)
@@ -109,9 +109,9 @@ class TestExporters(TestCase):
                         qs_val = getattr(qs_val, component)
                     except AttributeError:
                         qs_val = qs_val.extra_data.get(component)
-                    if qs_val == None:
+                    if qs_val is None:
                         break
-                if isinstance(qs_val, Manager) or qs_val == None:
+                if isinstance(qs_val, Manager) or qs_val is None:
                     qs_val = u''
                 else:
                     qs_val = unicode(qs_val)
@@ -145,9 +145,9 @@ class TestExporters(TestCase):
                 qs_val = qs[i]
                 for component in components:
                     qs_val = getattr(qs_val, component)
-                    if qs_val == None:
+                    if qs_val is None:
                         break
-                if isinstance(qs_val, Manager) or qs_val == None:
+                if isinstance(qs_val, Manager) or qs_val is None:
                     qs_val = u''
                 else:
                     qs_val = unicode(qs_val)

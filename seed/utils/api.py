@@ -16,8 +16,8 @@ def get_api_endpoints():
     Examines all views and returns those with is_api_endpoint set
     to true (done by the @api_endpoint decorator).
 
-    TODO: this isn't particularly expensive now, but if the number of urls
-    grows a lot, it may be worth caching this somewhere.
+    ..:todo: this isn't particularly expensive now, but if the number of URLs grows a lot, it may be worth caching
+    this somewhere.
     """
     urlconf = import_module(settings.ROOT_URLCONF)
     urllist = urlconf.urlpatterns
@@ -57,7 +57,7 @@ def clean_api_regex(url):
 
 def get_all_urls(urllist, prefix=''):
     """
-    Recursive generator that traverses entire tree of urls, starting with
+    Recursive generator that traverses entire tree of URLs, starting with
     urllist, yielding a tuple of (url_pattern, view_function) for each
     one.
     """

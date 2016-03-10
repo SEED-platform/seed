@@ -141,7 +141,7 @@ urlpatterns = patterns(
         name='export_buildings_download'
     ),
 
-    # test urls
+    # test URLs
     url(r'^angular_js_tests/$', 'angular_js_tests', name='angular_js_tests'),
 
     # org

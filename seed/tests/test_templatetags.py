@@ -14,6 +14,7 @@ class AppUrlsTest(TestCase):
     """
     Tests of the app_urls templatetag
     """
+
     def test_app_urls_namespaced_urls(self):
         rendered = Template(
             '{% load app_urls %}'

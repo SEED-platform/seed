@@ -107,6 +107,7 @@ class TestLabelSerializer(TestCase):
 
 
 class TestUpdateBuildingLabelsSerializer(TestCase):
+
     def test_initialization_requires_organization_as_argument(self):
         with self.assertRaises(KeyError):
             UpdateBuildingLabelsSerializer(
