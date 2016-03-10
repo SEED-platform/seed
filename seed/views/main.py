@@ -2247,11 +2247,70 @@ def parse_energy_template(request):
 @ajax_request
 @login_required
 def retrieve_finer_timeseries_data(request):
-    building_id = request.GET.get('building_id')
-    # organization_id = request.GET.get('organization_id') # unused
+    res = {}
+    res['reading'] = []
 
+    building_id = request.GET.get('building_id')
+
+    # query last timestamp
     query_body = {}
-    query_body['start_absolute'] = 1230768000000  # Jan 01, 2009. An early enough time stamp
+    query_body['start_absolute'] = 1  # special timestamp for meta data
+    query_body['end_absolute'] = 1
+    query_body['metrics'] = []
+
+    metric = {}
+    metric['tags'] = {}
+    metric['tags']['canonical_id'] = str(building_id)
+    metric['tags']['meta_type'] = 'energy_last_timestamp'
+    metric['name'] = str(settings.TSDB['measurement'])
+
+    aggregator = {}
+    aggregator['name'] = 'avg'
+    aggregator_sampling = {}
+    aggregator_sampling['value'] = 1
+    aggregator_sampling['unit'] = 'minutes'
+    aggregator['sampling'] = aggregator_sampling
+    aggregators = []
+    aggregators.append(aggregator)
+    metric['aggregators'] = aggregators
+
+    metric['limit'] = 1
+
+    query_body['metrics'].append(metric)
+
+    query_str = json.dumps(query_body)
+
+    headers = {'content-type': 'application/json'}
+
+    response = requests.post(settings.TSDB['query_url'], data=query_str, headers=headers)
+
+    last_timestamp = 0
+    if response.status_code == 200:
+        json_data = response.json()
+
+        values = json_data['queries'][0]['results'][0]['values']
+        if not values:
+            _log.info('Building with id '+str(building_id)+' has no last timestamp in KairosDB')
+
+            res['status'] = 'success'
+            return res
+
+        last_timestamp = int(json_data['queries'][0]['results'][0]['values'][0][1])
+    else:
+        json_data = json.loads(response.text)
+        error_msg = json_data['errors'][0]
+
+        res['status'] = 'error'
+        res['error_code'] = response.status_code
+        res['error_msg'] = error_msg
+        return res
+
+    two_week = 2*7*24*60*60*1000
+
+    # query last two weeks' finer timeseries data since recorded last timestamp for a shorter response time
+    query_body = {}
+    query_body['start_absolute'] = last_timestamp - two_week
+    query_body['end_absolute'] = last_timestamp
     query_body['metrics'] = []
 
     metric = {}
@@ -2278,18 +2337,13 @@ def retrieve_finer_timeseries_data(request):
 
     response = requests.post(settings.TSDB['query_url'], data=query_str, headers=headers)
 
-    res = {}
-    res['reading'] = []
-    # TODO: tags is not defined -- fix this
-    # res['tags'] = tags
-
     if response.status_code == 200:
         json_data = json.loads(response.text)
 
         readings = json_data['queries'][0]['results'][0]['values']
         res['tags'] = json_data['queries'][0]['results'][0]['tags']
 
-        # only return a sample of 10
+        # only return a sample of 10 records
         count = 0
         for ts_data in readings:
             ts_json = {}
