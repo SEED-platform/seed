@@ -5,7 +5,7 @@
 :author
 """
 #
-## Utilities for testing SEED modules.
+# Utilities for testing SEED modules.
 ###
 
 import json

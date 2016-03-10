@@ -12,11 +12,13 @@ import datetime
 from django.core.exceptions import ValidationError
 from django.core.cache import cache
 
+
 def get_core_pk_column(table_column_mappings, primary_field):
-	for tcm in table_column_mappings:
-		if tcm.destination_field == primary_field:
-			return tcm.order - 1
-	raise ValidationError("This file doesn't appear to contain a column mapping to %s" % primary_field)
+    for tcm in table_column_mappings:
+        if tcm.destination_field == primary_field:
+            return tcm.order - 1
+    raise ValidationError("This file doesn't appear to contain a column mapping to %s" % primary_field)
+
 
 def acquire_lock(name, expiration=None):
     """
@@ -28,11 +30,13 @@ def acquire_lock(name, expiration=None):
     """
     return cache.add(name, datetime.datetime.now(), expiration)
 
+
 def release_lock(name):
     """
     Frees a lock.
     """
     return cache.delete(name)
+
 
 def get_lock_time(name):
     """
@@ -40,27 +44,27 @@ def get_lock_time(name):
     """
     return cache.get(name)
 
+
 def chunk_iterable(iter, chunk_size):
     """
-    Breaks an iterable (e.g. list) into smaller iterables,
-    returning a generator of said iterables.
+    Breaks an iterable (e.g. list) into smaller chunks,
+    returning a generator of the chunk.
     """
     assert hasattr(iter, "__iter__"), "iter is not an iterable"
     for i in xrange(0, len(iter), chunk_size):
         yield iter[i:i + chunk_size]
 
 
-
 class CoercionRobot(object):
 
-	def __init__(self):
-		self.values_hash = {}
+    def __init__(self):
+        self.values_hash = {}
 
-	def lookup_hash(self, uncoerced_value, destination_model, destination_field):
-		key = self.make_key(uncoerced_value, destination_model, destination_field)
-		if key in self.values_hash:
-			return self.values_hash[key]
-		return None
+    def lookup_hash(self, uncoerced_value, destination_model, destination_field):
+        key = self.make_key(uncoerced_value, destination_model, destination_field)
+        if key in self.values_hash:
+            return self.values_hash[key]
+        return None
 
-	def make_key(self, value, model, field):
-		return "%s|%s|%s" % (value, model,field)
+    def make_key(self, value, model, field):
+        return "%s|%s|%s" % (value, model, field)

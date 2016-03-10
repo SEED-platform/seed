@@ -10,7 +10,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
   function ($http, $q, generated_urls) {
 
     var organization_factory = { total_organizations_for_user: 0 };
-    // until we switch to replacing ``urls`` everywhere with generated urls
+    // until we switch to replacing ``urls`` everywhere with generated URLs
     var urls = generated_urls;
 
     organization_factory.get_organizations = function() {

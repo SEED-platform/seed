@@ -211,18 +211,6 @@ angular.module('BE.seed.controller.mapping', [])
         return false;
     };
 
-    /**
-     * determines if a suggestion is BEDES or not
-     */
-    $scope.is_suggestion_BEDES = function (suggestion) {
-        var un_title_cased =  angular.lowercase(suggestion).replace(/ /g, '_');
-        var types = $scope.building_column_types;
-        if ((typeof types[suggestion] !== "undefined" && types[suggestion].schema === "BEDES") || (typeof types[un_title_cased] !== "undefined" && types[un_title_cased].schema === "BEDES")){
-            return true;
-        }
-        return false;
-    };
-
     /*
      * Validates example data related to a raw column using a validator service.
      *
