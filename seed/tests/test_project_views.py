@@ -389,7 +389,7 @@ class ProjectsViewTests(TestCase):
         building = BuildingSnapshot.objects.create(super_organization=self.org)
 
         project = Project.objects.create(name='test', super_organization=self.org,
-            owner=self.user)
+                                         owner=self.user)
 
         ProjectBuilding.objects.create(building_snapshot=building, project=project)
 
@@ -417,7 +417,7 @@ class ProjectsViewTests(TestCase):
             }
         )
         self.assertFalse(ProjectBuilding.objects.filter(building_snapshot=building,
-            project=project).exists())
+                                                        project=project).exists())
 
     def test_remove_buildings_from_project_select_all(self):
         """tests remove_buildings_from_project"""
@@ -427,7 +427,7 @@ class ProjectsViewTests(TestCase):
         building.save()
 
         project = Project.objects.create(name='test', super_organization=self.org,
-            owner=self.user)
+                                         owner=self.user)
 
         ProjectBuilding.objects.create(building_snapshot=building, project=project)
 
@@ -455,13 +455,13 @@ class ProjectsViewTests(TestCase):
             }
         )
         self.assertFalse(ProjectBuilding.objects.filter(building_snapshot=building,
-            project=project).exists())
+                                                        project=project).exists())
 
     def test_remove_buildings_from_project_viewer(self):
         building = BuildingSnapshot.objects.create(super_organization=self.org)
 
         project = Project.objects.create(name='test', super_organization=self.org,
-            owner=self.user)
+                                         owner=self.user)
 
         ProjectBuilding.objects.create(building_snapshot=building, project=project)
 
@@ -584,9 +584,9 @@ class ProjectsViewTests(TestCase):
         building = BuildingSnapshot.objects.create(super_organization=self.org)
 
         project = Project.objects.create(name='from', super_organization=self.org,
-            owner=self.user)
+                                         owner=self.user)
         project_to = Project.objects.create(name='to', super_organization=self.org,
-            owner=self.user)
+                                            owner=self.user)
 
         ProjectBuilding.objects.create(building_snapshot=building, project=project)
 
@@ -614,15 +614,15 @@ class ProjectsViewTests(TestCase):
         )
         self.assertEqual('success', json.loads(resp.content)['status'])
         self.assertTrue(ProjectBuilding.objects.filter(building_snapshot=building,
-            project=project_to).exists())
+                                                       project=project_to).exists())
 
     def test_move_buildings_move(self):
         building = BuildingSnapshot.objects.create(super_organization=self.org)
 
         project = Project.objects.create(name='from', super_organization=self.org,
-            owner=self.user)
+                                         owner=self.user)
         project_to = Project.objects.create(name='to', super_organization=self.org,
-            owner=self.user)
+                                            owner=self.user)
 
         ProjectBuilding.objects.create(building_snapshot=building, project=project)
 
@@ -650,6 +650,6 @@ class ProjectsViewTests(TestCase):
         )
         self.assertEqual('success', json.loads(resp.content)['status'])
         self.assertFalse(ProjectBuilding.objects.filter(building_snapshot=building,
-            project=project).exists())
+                                                        project=project).exists())
         self.assertTrue(ProjectBuilding.objects.filter(building_snapshot=building,
-            project=project_to).exists())
+                                                       project=project_to).exists())
