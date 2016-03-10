@@ -1018,23 +1018,6 @@ class ColumnMapping(models.Model):
         )
 
 
-class Schema(models.Model):
-    """Groups ColumnMappings together for identification later."""
-    name = models.CharField(max_length=50, unique=True, db_index=True)
-    organization = models.ForeignKey(
-        SuperOrganization,
-        related_name='schemas',
-        null=True,
-        blank=True,
-    )
-    columns = models.ManyToManyField(Column, related_name='schemas')
-
-    def __unicode__(self):
-        return u'{0}: {1}'.format(
-            self.pk, self.name
-        )
-
-
 class CanonicalManager(models.Manager):
     """Manager to add useful model filtering methods"""
 
