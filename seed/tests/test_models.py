@@ -32,7 +32,7 @@ class TestBuildingSnapshot(TestCase):
         'pm_property_id': 9999,
         'tax_lot_id': '1231',
         'property_name': 'A Place',
-        'custom_id_1': 0000111000,
+        'custom_id_1': 0o000111000,
         'address_line_1': '44444 Hmmm Ave.',
         'address_line_2': 'Apt 4',
         'city': 'Gotham City',
@@ -72,7 +72,7 @@ class TestBuildingSnapshot(TestCase):
         self.meter.building_snapshot.add(self.bs2)
 
     def _add_additional_fake_buildings(self):
-        """DRY up some test code below where many BSes are needed."""
+        """DRY up some test code below where many BuildingSnapshots are needed."""
         self.bs3 = util.make_fake_snapshot(
             self.import_file1, self.bs1_data, bs_type=seed_models.COMPOSITE_BS,
         )
@@ -391,7 +391,6 @@ class TestBuildingSnapshot(TestCase):
             project=project
         )
 
-
         fake_building_pk = fake_building.pk
         fake_building = seed_models.BuildingSnapshot.objects.filter(pk=fake_building_pk).first()
 
@@ -514,7 +513,7 @@ class TestBuildingSnapshot(TestCase):
         canon = seed_models.CanonicalBuilding.objects.get(pk=canon.pk)
         canon2 = seed_models.CanonicalBuilding.objects.get(pk=canon2.pk)
         bs1 = seed_models.BuildingSnapshot.objects.get(pk=self.bs1.pk)
-        bs2 = seed_models.BuildingSnapshot.objects.get(pk=self.bs2.pk)
+        # bs2 = seed_models.BuildingSnapshot.objects.get(pk=self.bs2.pk)
 
         self.assertEqual(canon.canonical_snapshot, bs1)
         self.assertEqual(bs1.children.count(), 0)
@@ -639,6 +638,7 @@ class TestCanonicalBuilding(TestCase):
             'pk: %s - snapshot: %s - active: False' % (c.pk, b.pk),
             str(c)
         )
+
 
 class TestColumnMapping(TestCase):
     """Test ColumnMapping utility methods."""

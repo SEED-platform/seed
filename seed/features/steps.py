@@ -6,7 +6,7 @@
 """
 
 # TODO: Convert these to selenium tests
-from salad.steps.everything import *
+from salad.steps.everything import ImportRecord, world, django_url, time, Project
 from lettuce import step
 from django.core.urlresolvers import reverse
 

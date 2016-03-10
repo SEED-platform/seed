@@ -10,9 +10,10 @@ import time
 
 from django.core.urlresolvers import reverse_lazy, reverse
 from django.test import TestCase
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from seed.landing.models import SEEDUser as User
+
 from seed.factory import SEEDFactory
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import CanonicalBuilding
 from seed.utils.api import get_api_endpoints
 
@@ -78,7 +79,7 @@ class SchemaGenerationTests(TestCase):
 
     def test_get_api_endpoints_utils(self):
         """
-        Test of function that traverses all urls looking for api endpoints.
+        Test of function that traverses all URLs looking for api endpoints.
         """
         res = get_api_endpoints()
         for url, fn in res.items():
@@ -96,7 +97,7 @@ class SchemaGenerationTests(TestCase):
         self.assertEqual(res.status_code, 200)
         endpoints = json.loads(res.content)
 
-        #the url we just hit should be in here
+        # the url we just hit should be in here
         self.assertTrue(url in endpoints)
         endpoint = endpoints[url]
         self.assertEqual(endpoint['name'], 'get_api_schema')

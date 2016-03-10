@@ -9,6 +9,7 @@ from django.test import TestCase
 from seed import decorators
 from seed.utils.cache import make_key, get_cache, get_lock, increment_cache, clear_cache
 
+
 class TestException(Exception):
     pass
 
@@ -23,7 +24,7 @@ class TestDecorators(TestCase):
     def setUp(self):
         clear_cache()
 
-    ## Tests for decorators utility functions
+    # Tests for decorators utility functions
 
     def test_get_prog_key(self):
         """We format our cache key properly."""
@@ -51,10 +52,10 @@ class TestDecorators(TestCase):
         expected = 100.0
         self.assertEqual(float(get_cache(test_key)['progress']), expected)
 
-    ## Tests for decorators themselves.
+    # Tests for decorators themselves.
 
     def test_locking(self):
-        """Make sure we indicate we're locked iff we're inside the function."""
+        """Make sure we indicate we're locked if and only if we're inside the function."""
         key = decorators._get_lock_key('fake_func', self.pk)
         self.assertEqual(int(get_lock(key)), self.unlocked)
 
@@ -92,4 +93,3 @@ class TestDecorators(TestCase):
         fake_func(self.pk)
 
         self.assertEqual(float(get_cache(key, 0.0)['progress']), expected)
-

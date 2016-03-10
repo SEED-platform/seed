@@ -102,9 +102,7 @@
                             </td>
                             <td ng-class="{'danger': tcm.is_duplicate == true, 'disable-mapping-btn': tcm.is_duplicate == true}" id="duplicate-row-input-{$ $index $}">
                                 <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" ng-keyup="disable_mapping_button()" ng-blur="disable_mapping_button()" typeahead-on-select='change(tcm)' id="duplicate-row-input-box-{$ $index $}"/>
-                            <!--td class="is_aligned_center">
-                                <i class="fa fa-check-circle green" ng-show="is_suggestion_BEDES(tcm.suggestion)"></i>
-                            </td-->
+                            </td>
                             <td class="check is_aligned_center">
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="!tcm.is_duplicate">{$ tcm.validity $}</label>
