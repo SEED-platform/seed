@@ -329,7 +329,7 @@ def remove_buildings_from_project(request):
         {
          'project':
              {
-              'project_slug': Identifier of project to remove buildings from,
+              'slug': Identifier of project to remove buildings from,
               'selected_buildings': A list of building IDs to remove
              }
         }
