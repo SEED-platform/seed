@@ -25,7 +25,7 @@ install these individually as well.
 * Install Docker-Compose_
 
 Create Docker-Machine Image
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------
 
 The command below will create a 100GB volume for development. This is a very large volume and can be adjusted. Make sure to create a volume greater than 30GB.
 
@@ -35,7 +35,7 @@ The command below will create a 100GB volume for development. This is a very lar
 
 
 Start Docker-Machine Image
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------
 
 .. code-block:: bash
 
@@ -44,7 +44,7 @@ Start Docker-Machine Image
 
 
 Run Docker Compose
-^^^^^^^^^^^^^^^^^^
+------------------
 
 .. code-block:: bash
 
@@ -59,7 +59,7 @@ Run Docker Compose
 **Note that you may need to build the containers a couple times for everything to converge**
 
 Create User
-^^^^^^^^^^^
+-----------
 
 .. code-block:: bash
 
@@ -67,7 +67,7 @@ Create User
 
 
 Login
-^^^^^
+-----
 
 Get the Docker IP address (`docker-machine ip dev`) and point your browser
 at [http://`ip-address`:8000](http://`ip-address`:8000) and log in with the
