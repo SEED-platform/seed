@@ -236,9 +236,14 @@ def insert(gb_data):
 
         total_num = len(gb_data)
 
+        max_retry = 2
         while ret_flag and (not is_insert_finish(min_ts, max_ts, checker, total_num)):
             # Some time only partial data is inserted into KairosDB, redo the insert
             ret_flag = batch_insert_kairosdb(meta_list, ts_list)
+            max_retry = max_retry - 1
+            if max_retry == 0:
+                break
+
             sleep(5)
 
     if not ret_flag:

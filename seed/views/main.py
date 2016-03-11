@@ -2290,7 +2290,7 @@ def retrieve_finer_timeseries_data(request):
 
         values = json_data['queries'][0]['results'][0]['values']
         if not values:
-            _log.info('Building with id '+str(building_id)+' has no last timestamp in KairosDB')
+            _log.info('Building with id ' + str(building_id) + ' has no last timestamp in KairosDB')
 
             res['status'] = 'success'
             return res
@@ -2305,7 +2305,7 @@ def retrieve_finer_timeseries_data(request):
         res['error_msg'] = error_msg
         return res
 
-    two_week = 2*7*24*60*60*1000
+    two_week = 2 * 7 * 24 * 60 * 60 * 1000
 
     # query last two weeks' finer timeseries data since recorded last timestamp for a shorter response time
     query_body = {}
