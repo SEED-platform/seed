@@ -213,7 +213,6 @@ angular.module('BE.seed.controller.building_list', [])
      */
     var get_columns = function() {
         $scope.assessor_fields = all_columns.fields;
-        $scope.search.init_storage($location.$$path);
         $scope.columns = $scope.search.generate_columns(
             all_columns.fields,
             default_columns.columns,
@@ -515,6 +514,7 @@ angular.module('BE.seed.controller.building_list', [])
             }
         });
 
+        $scope.search.init_storage($location.$$path);
         get_columns();
         get_labels();
         init_matching_dropdown();
