@@ -51,10 +51,11 @@ def is_insert_finish(start_ts, end_ts, insert_checker, count):
 
     q_count = resp.json()['queries'][0]['sample_size']
 
-    if int(q_count)>=count:
+    if int(q_count) >= count:
         return True
 
     return False
+
 
 def batch_insert_kairosdb(meta_data, ts_data):
     wrap = []
@@ -148,7 +149,7 @@ def update_timestamp_record(timestamps, is_last_timestamp):
             bld_id = tags['canonical_id'][0]
             ts = int(entry['values'][0][0])
 
-            if (is_last_timestamp and ts >= timestamps[bld_id]) or (not is_last_timestamp and ts<=timestamps[bld_id]):
+            if (is_last_timestamp and ts >= timestamps[bld_id]) or (not is_last_timestamp and ts <= timestamps[bld_id]):
                 # existing timestamp is later than uploaded last timestamp, or earlier than uploaded first timestamp
                 # delete this entry in dictionary
                 timestamps.pop(bld_id, None)
@@ -209,11 +210,11 @@ def insert(gb_data):
         bld_id = ts_cell['canonical_id']
 
         # get start timestamp in milliseconds
-        finer_ts_start = int(ts_cell['start'])*1000
-        if (not bld_id in last_timestamp) or (finer_ts_start > last_timestamp[bld_id]):
+        finer_ts_start = int(ts_cell['start']) * 1000
+        if (bld_id not in last_timestamp) or (finer_ts_start > last_timestamp[bld_id]):
             last_timestamp[bld_id] = finer_ts_start
 
-        if (not bld_id in first_timestamp) or (finer_ts_start < first_timestamp[bld_id]):
+        if (bld_id not in first_timestamp) or (finer_ts_start < first_timestamp[bld_id]):
             first_timestamp[bld_id] = finer_ts_start
 
         del ts_cell['start']
