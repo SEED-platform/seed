@@ -18,11 +18,8 @@ Install Docker Toolbox
 
 Install Docker-Toolbox_, which installs several applications
 including Docker, Docker Machine, and Docker Compose. It is possible to
-install these individually as well.
-
-* Install Docker_
-* Install Docker-Machine_
-* Install Docker-Compose_
+install these individually as well by installing Docker_, Docker-Machine_,
+and Docker-Compose_.
 
 Create Docker-Machine Image
 ---------------------------
