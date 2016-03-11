@@ -28,7 +28,7 @@ def energy_type(service_category):
     service category.
 
     :param service_category: int that is a green button service_category
-    (string args will be converted to ints)
+        (string args will be converted to integers)
     :returns: int in seed.models.ENERGY_TYPES
     """
 
@@ -55,8 +55,8 @@ def energy_units(uom):
     Returns the seed model energy unit corresponding to the green button uom.
 
     :param uom: int that is the green button uom number corresponding to the
-    energy units supported by the green button schema (string args will be
-    converted to ints)
+        energy units supported by the green button schema (string args will be
+        converted to integers)
     :returns: int in seed.models.ENERGY_UNITS
     """
     uom = int(uom)
@@ -96,7 +96,7 @@ def as_collection(val):
     Iterable, and returns a list containing that value if it is not an
     Iterable or if it is a string. Returns None when val is None.
 
-    :params val: any value
+    :param val: any value
     :returns: list containing val or val if it is Iterable and not a string.
     """
     is_atomic = (
@@ -116,15 +116,15 @@ def as_collection(val):
 def interval_data(reading_xml_data):
     """
     Takes a dictionary representing the contents of an IntervalReading
-    xml node and pulls out data for a single timeseries reading. The
+    XML node and pulls out data for a single time series reading. The
     dictionary will be a sub-dictionary of the dictionary returned by
-    xmltodict.parse when called on a green button xml file. Returns a
+    xmltodict.parse when called on a Green Button XML file. Returns a
     flat dictionary containing the interval data.
 
-    :params reading_xml_data: dictionary of IntervalReading xml node
-    content in format specified by the xmltodict library.
+    :param reading_xml_data: dictionary of IntervalReading XML node
+        content in format specified by the xmltodict library.
     :returns: dictionary representing a time series reading with keys
-    'cost', 'value', 'start_time', and 'duration'.
+        'cost', 'value', 'start_time', and 'duration'.
     """
     cost = reading_xml_data.get('cost')
     value = reading_xml_data['value']
@@ -146,14 +146,14 @@ def interval_data(reading_xml_data):
 def meter_data(raw_meter_meta):
     """
     Takes a dictionary representing the contents of the entry node in
-    a green button xml file that specifies the meta data about the meter
+    a Green Button XML file that specifies the meta data about the meter
     that was used to record time series data for that file. Returns a
     flat dictionary containing the meter meta data.
 
-    :params raw_meter_meta: dictionary of the contents of the meter
-    specification entry node in a green button xml file
+    :param raw_meter_meta: dictionary of the contents of the meter
+        specification entry node in a Green Button XML file
     :returns: dictionary containing information about a meter with keys
-    'currency', 'power_of_ten_multiplier', amd 'uom'
+        'currency', 'power_of_ten_multiplier', and 'uom'
     """
     params_data = raw_meter_meta['content']['ReadingType']
 
@@ -178,14 +178,14 @@ def meter_data(raw_meter_meta):
 def interval_block_data(ib_xml_data):
     """
     Takes a dictionary containing the contents of an IntervalBlock node
-    from a green button xml file and returns a dictionary containing the
-    start_time of the timeseries collection, the duration of the collection,
+    from a Green Button XML file and returns a dictionary containing the
+    start_time of the time series collection, the duration of the collection,
     and a list of readings containing the time series data from a meter.
 
-    :params ib_xml_data: dictionary of the contents of an IntervalBlock
-    from a green button xml file
+    :param ib_xml_data: dictionary of the contents of an IntervalBlock
+        from a Green Button XML file
     :returns: dictionary containing meta data about an entire collection
-    period and a list of the specific meter readings
+        period and a list of the specific meter readings
     """
     interval = ib_xml_data['interval']
 
@@ -203,14 +203,15 @@ def interval_block_data(ib_xml_data):
 
 def building_data(xml_data):
     """
-    Extracts information about a building from a Green Button xml file.
+    Extracts information about a building from a Green Button XML file.
 
-    :params xml_data: dictionary returned by xmltodict.parse when called
-    on the contents of a green button xml file
-    :returns: dictionary containing:
-      - building information for a green button xml file
-      - information describing the meter used for collection
-      - list of time series meter reading data
+    :param xml_data: dictionary returned by xmltodict.parse when called
+        on the contents of a Green Button XML file
+    :returns: dictionary
+
+    * building information for a Green Button XML file
+    * information describing the meter used for collection
+    * list of time series meter reading data
     """
     entries = xml_data['feed']['entry']
     info_entry = next(entry for entry in entries)
@@ -244,10 +245,10 @@ def create_models(data, import_file):
     Create a BuildingSnapshot, a CanonicalBuilding, and a Meter. Then, create
     TimeSeries models for each meter reading in data.
 
-    :params data: dictionary of building data from a green button xml file
-    in the form returned by xml_importer.building_data
-    :params import_file: ImportFile referencing the original xml file; needed
-    for linking to BuildingSnapshot and for determining super_organization
+    :param data: dictionary of building data from a Green Button XML file
+        in the form returned by xml_importer.building_data
+    :param import_file: ImportFile referencing the original xml file; needed
+        for linking to BuildingSnapshot and for determining super_organization
     :returns: the created CanonicalBuilding
     """
     # cache data on import_file; this is a proof of concept and we
@@ -304,7 +305,7 @@ def create_models(data, import_file):
     meter.building_snapshot.add(raw_bs)
     meter.save()
 
-    # now timeseries data for the meter
+    # now time series data for the meter
     for reading in data['interval']['readings']:
         start_time = int(reading['start_time'])
         duration = int(reading['duration'])
@@ -329,12 +330,12 @@ def create_models(data, import_file):
 
 def import_xml(import_file):
     """
-    Given an import_file referencing a raw green button xml file, extracts
-    building and timeseries information from the file and constructs
+    Given an import_file referencing a raw Green Button XML file, extracts
+    building and time series information from the file and constructs
     required database models.
 
-    :params import_file: a seed.models.ImportFile instance representing a
-    green button xml file that has been previously uploaded
+    :param import_file: a seed.models.ImportFile instance representing a
+        Green Button XML file that has been previously uploaded
     :returns: the created CanonicalBuilding Inst.
     """
     xml_file = import_file.local_file

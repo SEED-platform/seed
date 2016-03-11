@@ -32,3 +32,6 @@ omit =
     *settings*
     *config*
     *test_helpers*
+    *virtualenv*
+    *tos*
+    *tos_i18n* # TOS package is clone of pip package, needs removed when updated.

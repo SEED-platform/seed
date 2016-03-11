@@ -9,6 +9,7 @@ from seed.models import BuildingSnapshot
 
 
 class TestBuildingSnapshot(TestCase):
+
     def setUp(self):
         self.bs = BuildingSnapshot()
 
@@ -160,5 +161,3 @@ class TestBuildingSnapshot(TestCase):
         self.bs.building_certification = '-' * 260
         self.bs.save()
         self.assertEqual(len(self.bs.building_certification), 255)
-
-

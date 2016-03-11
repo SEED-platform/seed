@@ -6,8 +6,12 @@
 """
 from django.db import models
 from logging import getLogger
+
+from django.utils.timezone import get_current_timezone, make_aware, make_naive
+
 from seed.lib.superperms.orgs.models import Organization
 from seed.utils.cache import set_cache_raw, get_cache_raw
+import pytz
 from datetime import (
     date,
     datetime,
@@ -437,11 +441,21 @@ class Cleansing(object):
                     rule_max = str(int(rule_max))
 
                 if isinstance(value, datetime):
-                    rule_min = datetime.strptime(rule_min, '%Y%m%d')
-                    rule_max = datetime.strptime(rule_max, '%Y%m%d')
+                    value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
+                    rule_min = make_aware(datetime.strptime(rule_min, '%Y%m%d'), pytz.UTC)
+                    rule_max = make_aware(datetime.strptime(rule_max, '%Y%m%d'), pytz.UTC)
+
+                    formatted_value = str(make_naive(value, pytz.UTC))
+                    formatted_rule_min = str(make_naive(rule_min, pytz.UTC))
+                    formatted_rule_max = str(make_naive(rule_max, pytz.UTC))
                 elif isinstance(value, date):
                     rule_min = datetime.strptime(rule_min, '%Y%m%d').date()
                     rule_max = datetime.strptime(rule_max, '%Y%m%d').date()
+
+                if not isinstance(value, datetime):
+                    formatted_value = str(value)
+                    formatted_rule_min = str(rule_min)
+                    formatted_rule_max = str(rule_max)
 
                 if rule_min is not None and value < rule_min:
                     self.results[datum.id]['cleansing_results'].append({
@@ -449,7 +463,7 @@ class Cleansing(object):
                         'formatted_field': formatted_field,
                         'value': value,
                         'message': formatted_field + ' out of range',
-                        'detailed_message': formatted_field + ' [' + str(value) + '] < ' + str(rule_min),
+                        'detailed_message': formatted_field + ' [' + formatted_value + '] < ' + formatted_rule_min,
                         'severity': dict(SEVERITY)[rule.severity]
                     })
 
@@ -459,7 +473,7 @@ class Cleansing(object):
                         'formatted_field': formatted_field,
                         'value': value,
                         'message': formatted_field + ' out of range',
-                        'detailed_message': formatted_field + ' [' + str(value) + '] > ' + str(rule_max),
+                        'detailed_message': formatted_field + ' [' + formatted_value + '] > ' + formatted_rule_max,
                         'severity': dict(SEVERITY)[rule.severity]
                     })
 

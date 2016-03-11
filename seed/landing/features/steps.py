@@ -7,7 +7,7 @@
 
 # TODO: Convert these to selenium tests
 
-from salad.steps.everything import *
+from salad.steps.everything import world, django_url
 from lettuce import step
 from django.core.urlresolvers import reverse
 from seed.landing.models import SEEDUser as User
@@ -70,4 +70,3 @@ def given_i_am_logged_in(step):
     world.browser.visit(django_url(reverse("landing:logout")))
     world.browser.visit(django_url(reverse("landing:landing_page")))
     when_i_log_into_the_system(step)
-

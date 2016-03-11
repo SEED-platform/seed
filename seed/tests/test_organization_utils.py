@@ -16,6 +16,7 @@ from seed.models import (
 
 
 class TestOrganizationCreation(TestCase):
+
     def test_organization_creation_creates_default_labels(self):
         """Make sure last organization user is change to owner."""
         user = User.objects.create(email='test-user@example.com')

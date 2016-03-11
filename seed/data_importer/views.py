@@ -26,6 +26,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 _log = logging.getLogger(__name__)
 
+
 @api_endpoint
 @ajax_request
 @login_required
@@ -40,7 +41,7 @@ def handle_s3_upload_complete(request):
     :GET: Expects the following in the query string:
 
         key: The full path to the file, within the S3 bucket.
-            E.g. data_importer/bldgs.csv
+            E.g. data_importer/buildings.csv
 
         source_type: The source of the file.
             E.g. 'Assessed Raw' or 'Portfolio Raw'
@@ -52,8 +53,9 @@ def handle_s3_upload_complete(request):
 
     Returns::
 
-        {'success': True,
-         'import_file_id': The ID of the newly-created ImportFile object.
+        {
+            'success': True,
+            'import_file_id': The ID of the newly-created ImportFile object.
         }
     """
     if 'S3' not in settings.DEFAULT_FILE_STORAGE:
@@ -64,15 +66,15 @@ def handle_s3_upload_complete(request):
     try:
         record = ImportRecord.objects.get(pk=import_record_pk)
     except ImportRecord.DoesNotExist:
-        #TODO: Remove the file from S3?
+        # TODO: Remove the file from S3?
         return {'success': False,
                 'message': "Import Record %s not found" % import_record_pk}
 
     filename = request.REQUEST['key']
     source_type = request.REQUEST['source_type']
     # Add Program & Version fields (empty string if not given)
-    kw_fields = {field:request.REQUEST.get(field, '')
-        for field in ['source_program', 'source_program_version']}
+    kw_fields = {field: request.REQUEST.get(field, '')
+                 for field in ['source_program', 'source_program_version']}
 
     f = ImportFile.objects.create(import_record=record,
                                   file=filename,
@@ -106,7 +108,7 @@ class DataImportBackend(LocalUploadBackend):
         try:
             record = ImportRecord.objects.get(pk=import_record_pk)
         except ImportRecord.DoesNotExist:
-            #clean up the uploaded file
+            # clean up the uploaded file
             os.unlink(self.path)
             return {'success': False,
                     'message': "Import Record %s not found" % import_record_pk}
@@ -127,18 +129,17 @@ class DataImportBackend(LocalUploadBackend):
 
         return {'success': True, "import_file_id": f.pk}
 
-#this actually creates the django view for handling local file uploads.
-#thus the use of decorators as functions instead of decorators.
+# this actually creates the django view for handling local file uploads.
+# thus the use of decorators as functions instead of decorators.
 local_uploader = AjaxFileUploader(backend=DataImportBackend)
 local_uploader = login_required(local_uploader)
 local_uploader = api_endpoint(local_uploader)
 
-#API documentation and method name fix
+# API documentation and method name fix
 local_uploader.__doc__ = \
-"""
+    """
 Endpoint to upload data files to, if uploading to local file storage.
 Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
-
 
 :GET:
 
@@ -157,8 +158,9 @@ Payload::
 
 Returns::
 
-    {'success': True,
-     'import_file_id': The ID of the newly-uploaded ImportFile
+    {
+        'success': True,
+        'import_file_id': The ID of the newly-uploaded ImportFile
     }
 
 """
@@ -175,15 +177,18 @@ def get_upload_details(request):
     Returns::
 
         If S3 mode:
+
         {
-         'upload_mode': 'S3',
-         'upload_complete': A url to notify that upload is complete,
-         'signature': The url to post file details to for auth to upload to S3.
+            'upload_mode': 'S3',
+            'upload_complete': A url to notify that upload is complete,
+            'signature': The url to post file details to for auth to upload to S3.
         }
 
-        If local filesystem mode:
-        {'upload_mode': 'filesystem',
-         'upload_path': The url to POST files to (see local_uploader)
+        If local file system mode:
+
+        {
+            'upload_mode': 'filesystem',
+            'upload_path': The url to POST files to (see local_uploader)
         }
 
     """
@@ -206,7 +211,7 @@ def get_upload_details(request):
 @login_required
 def sign_policy_document(request):
     """
-    Sign and return the policy doucument for a simple upload.
+    Sign and return the policy document for a simple upload.
     http://aws.amazon.com/articles/1434/#signyours3postform
 
     Payload::
@@ -231,10 +236,8 @@ def sign_policy_document(request):
     Returns::
 
         {
-         "policy": A hash of the policy document. Using during upload to S3.
-         "signature": A signature of the policy document.  Also used during
-                     upload to S3.
-
+            "policy": A hash of the policy document. Using during upload to S3.
+            "signature": A signature of the policy document.  Also used during upload to S3.
         }
     """
     policy_document = json.loads(request.body)

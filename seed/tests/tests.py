@@ -5,15 +5,16 @@
 :author
 """
 
-from seed.landing.models import SEEDUser as User
 from django.test import TestCase
 
+from seed.landing.models import SEEDUser as User
 from seed.models import Project, Compliance, BuildingSnapshot, CanonicalBuilding
-from seed.utils.organizations import create_organization
 from seed.utils.buildings import get_buildings_for_user_count
+from seed.utils.organizations import create_organization
 
 
 class ProjectTestCase(TestCase):
+
     def test_basic_project_creation(self):
         user = User.objects.create(username='test', first_name='t', last_name='est')
         org, user_role, _user_created = create_organization(
@@ -38,6 +39,7 @@ class ProjectTestCase(TestCase):
 
 
 class ComplianceTestCase(TestCase):
+
     def test_basic_compliance_creation(self):
         p = Project(name='test project')
         p.save()
@@ -56,6 +58,7 @@ class ComplianceTestCase(TestCase):
 
 
 class UtilsTests(TestCase):
+
     def setUp(self):
         self.user = User.objects.create(
             username='test',
@@ -83,7 +86,7 @@ class UtilsTests(TestCase):
             c.canonical_snapshot = b
             b.save()
             c.save()
-        # make a couple extra buidlings
+        # make a couple extra buildings
         BuildingSnapshot.objects.create()
         BuildingSnapshot.objects.create()
         self.assertEqual(get_buildings_for_user_count(self.user), 5)

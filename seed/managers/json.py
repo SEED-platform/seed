@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 
-Query JSON data from Postgres JsonFields.
+Query JSON data from PostgreSQL JsonFields.
 
 ::
 
@@ -145,7 +145,7 @@ class JsonQuerySet(QuerySet):
 
         # Perhaps in Django 1.7 and its custom field definitions,
         # this will be easily doable.
-        if not cond or not excludes:
+        if not order_by and (not cond or not excludes):
             # Restrict the number of rows we materialize
             qs = qs.filter(**{'{0}__contains'.format(field): key})
 

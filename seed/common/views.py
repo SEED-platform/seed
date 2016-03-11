@@ -45,16 +45,20 @@ def missing_request_keys(keys, body):
 def typeof_request_values(types, body):
     """Check for type of request values.
 
-    Pre:
-        All keys in types are present in body.
-    Args:
-        types (dict): key to type map, where `type` is a function
-            used to test the type conversion. It should take one argument,
-            the value, and raise a ValueError if it is invalid.
-        body (dict): body of request
-    Returns:
+    All keys in types are present in body.
+
+    :param types: key to type map, where `type` is a function used to test the \
+    type conversion. It should take one argument, the value, and raise a \
+    ValueError if it is invalid.
+    :type types: dict
+    :param body: body of request
+    :type body: dict
+    :return: JSON
+
+    Example::
+
         None if all OK, JSON error response (using `api_error()`)
-       if one or more is of the wrong type.
+        if one or more is of the wrong type.
     """
     bad = []
     for k in types:

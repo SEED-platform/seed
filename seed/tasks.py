@@ -756,8 +756,8 @@ def cache_first_rows(import_file, parser):
 @lock_and_track
 def _save_raw_green_button_data(file_pk, *args, **kwargs):
     """
-    Pulls identifying information out of the xml data, find_or_creates
-    a building_snapshot for the data, parses and stores the timeseries
+    Pulls identifying information out of the XML data, find_or_creates
+    a building_snapshot for the data, parses and stores the time series
     meter data and associates it with the building snapshot.
     """
 
@@ -893,7 +893,7 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
     :param can_rev_idx: dict, reverse index from match -> canonical PK.
     :param user_pk: user ID, used for AuditLog logging
     :unmatched_list: list of dicts, the result of a values_list query for
-        unmatched BSes.
+        unmatched BuildingSnapshots.
 
     """
     match_string, confidence = results[0]  # We always care about closest match

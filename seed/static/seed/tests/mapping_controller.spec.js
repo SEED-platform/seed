@@ -412,18 +412,4 @@ describe("controller: mapping_controller", function(){
             'three_active': false
         });
     });
-
-    it("should show BEDES fields with a checkbox", function() {
-        // arrange
-        create_mapping_controller();
-
-        // act
-        mapping_ctrl_scope.$digest();
-
-        // assert
-        expect(mapping_ctrl_scope.is_suggestion_BEDES('gross_floor_area')).toBe(true);
-        expect(mapping_ctrl_scope.is_suggestion_BEDES('Gross Floor Area')).toBe(true);
-        expect(mapping_ctrl_scope.is_suggestion_BEDES('My New non-BEDES field')).toBe(false);
-    });
-
 });
