@@ -1,6 +1,12 @@
 Cleansing Package
 =================
 
+Inheritance
+-----------
+
+.. inheritance-diagram:: seed.cleansing.models
+   :parts: 2
+
 Submodules
 ----------
 

@@ -13,6 +13,14 @@ Subpackages
     seed.test_helpers
     seed.tests
 
+
+Inheritance
+-----------
+
+.. inheritance-diagram:: seed.models
+   :parts: 2
+
+
 Submodules
 ----------
 

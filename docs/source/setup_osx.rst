@@ -48,6 +48,7 @@ should have the following dependencies already installed:
 
 * git (`port install git` or `brew install git`)
 * Mercurial (`port install hg` or `brew install mercurial`)
+* graphviz (`brew install graphviz`)
 * virtualenv_ and virtualenvwrapper_ (Recommended)
 
     .. note::
