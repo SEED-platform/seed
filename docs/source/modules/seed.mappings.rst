@@ -1,5 +1,5 @@
-seed.mappings package
-=====================
+Mapping Package
+===============
 
 Submodules
 ----------
