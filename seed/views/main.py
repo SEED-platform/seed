@@ -2287,6 +2287,7 @@ def parse_pm_energy_file(request):
 
     green_button_data_analyser.data_analyse(json_data, 'PM')
 
+    _log.info(import_file)
     res = {}
     res['status'] = 'success'
     return res

@@ -101,4 +101,4 @@ def insert_into_postgres(localtzone, gb_bldg_canonical_id, gb_mtr_id, gb_energy_
                 'Skipping for ' + str(mtr_id) + ' ts ' + datetime.datetime.fromtimestamp(gb_timestamp / 1000).strftime(
                     '%Y-%m-%d'))
     else:
-        _log.info('Insertion Loop ended')
+        _log.info('Insertion Loop ended for building id %s', gb_bldg_canonical_id)

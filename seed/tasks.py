@@ -791,6 +791,8 @@ def _save_raw_data(file_pk, *args, **kwargs):
     logger.debug("Current cache state")
     current_cache = get_cache(prog_key)
     logger.debug(current_cache)
+
+    # why are we sleeping here?
     time.sleep(2)
     result = current_cache
 
