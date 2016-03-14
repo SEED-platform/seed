@@ -292,6 +292,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     var sortReverse = false;
                     var params = {};
                     var numberPerPage = 10;
+                    var pageNumber = 1;
 
                     // Check session storage for order, sort, and filter values.
                     if (typeof(Storage) !== "undefined") {
@@ -309,10 +310,13 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
                             numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
                         }
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
+                            pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
+                        }
                     }
 
                     // params: (query, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id)
-                    return building_services.search_buildings(q, numberPerPage, 1, orderBy, sortReverse, params, null);
+                    return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null);
                 }],
                 'default_columns': ['user_service', function(user_service){
                     return user_service.get_default_columns();

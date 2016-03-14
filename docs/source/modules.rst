@@ -16,6 +16,7 @@ Modules
     modules/seed.green_button
     modules/seed.landing
     modules/seed.lib
+    modules/seed.mappings
     modules/seed.managers
     modules/seed.public
     modules/seed

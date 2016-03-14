@@ -97,6 +97,7 @@ SEED_CORE_APPS = (
     'seed.lib.superperms.orgs',
     'seed.audit_logs',
     'seed.cleansing',
+    'seed.functional',
     'seed.energy',
 )
 
