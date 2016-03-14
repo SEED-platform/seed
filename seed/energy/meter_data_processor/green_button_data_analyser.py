@@ -1,6 +1,5 @@
 import logging
 from datetime import date, datetime
-from time import sleep
 
 import tasks
 from seed.energy.meter_data_processor import kairos_insert as tsdb
@@ -34,6 +33,7 @@ def data_analyse(ts_data, name):
 
     for ts_cell in ts_data:
         if name == 'Energy Template' or name == 'PM':
+            # convert from nanoseconds to seconds
             ts_cell['start'] = int(ts_cell['start']) / 1000000000
             ts_cell['interval'] = int(ts_cell['interval']) / 1000000000
 
@@ -49,6 +49,9 @@ def data_analyse(ts_data, name):
             ts_cell['custom_meter_id'] = custom_meter_id
 
         interval = int(ts_cell['interval'])
+        building_id = str(ts_cell['canonical_id'])
+        custom_meter_id = str(ts_cell['custom_meter_id'])
+
         if interval < interval_threshold:
             ts_cell['insert_date'] = today_str
 
@@ -60,9 +63,6 @@ def data_analyse(ts_data, name):
             finer_ts.append(ts_cell)
         else:
             monthly_ts.append(ts_cell)
-
-        building_id = str(ts_cell['canonical_id'])
-        custom_meter_id = str(ts_cell['custom_meter_id'])
 
         # create or retrieve seed_meter_id
         if not building_id + '_' + custom_meter_id in cache:
@@ -106,8 +106,6 @@ def data_analyse(ts_data, name):
     _log.info('insert ts data into KairosDB finished: ' + str(insert_flag))
 
     if insert_flag and immediate_aggregate:
-        # TODO: is there another way to check for the data to be inserted?
-        sleep(5)  # wait for data inserted
         _log.info('Having back filling data, aggregate immediately')
         tasks.aggregate_monthly_data(ts_data[0]['canonical_id'])
         _log.info('Immediate aggregation finished')
