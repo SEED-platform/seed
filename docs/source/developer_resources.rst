@@ -1,6 +1,41 @@
 Developer Resources
 ===================
 
+General Notes
+------------
+
+Flake Settings
+^^^^^^^^^^^^^^
+
+Flake is used to statically verify code syntax. If the developer is running
+flake from the command line, they should ignore the following checks in order
+to emulate the same checks as the CI machine.
+
++------+--------------------------------------------------+
+| Code | Description                                      |
++======+==================================================+
+| E402 | module level import not at top of file           |
++------+--------------------------------------------------+
+| E501 | line too long (82 characters) or max-line = 100  |
++------+--------------------------------------------------+
+| E731 | do not assign a lambda expression, use a def     |
++------+--------------------------------------------------+
+| W503 | line break occurred before a binary operator     |
++------+--------------------------------------------------+
+
+To run flake locally, call either
+
+.. code-block::console
+
+    tox -e flake8
+
+    .. note::
+
+        tox will soon be removed from the development process. Instructions
+        will be updated.
+
+
+
 Django Notes
 ------------
 

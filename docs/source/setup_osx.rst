@@ -119,7 +119,7 @@ default use password `seedpass` when prompted
     psql -c 'ALTER USER seeduser CREATEROLE;'
 
 Now exit any root environments, becoming just yourself (even though it's not
-that easy being green..), for the remainder of these instructions.
+that easy being green), for the remainder of these instructions.
 
 Python Packages
 ---------------
@@ -228,7 +228,7 @@ up the database tables
 .. code-block:: bash
 
     export DJANGO_SETTINGS_MODULE=config.settings.dev
-    ./manage.py syncdb --migrate
+    ./manage.py migrate
 
 Django Admin User
 -----------------
