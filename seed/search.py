@@ -65,29 +65,34 @@ def search_buildings(q, fieldnames=None, queryset=None):
 
 def generate_paginated_results(queryset, number_per_page=25, page=1,
                                whitelist_orgs=None, below_threshold=False):
-    """returns a page of results as a list from the queryset for the given
-       fields
-
-    Usage:
-        generate_paginated_results(q, 1)
-    Out:
-    [{
-        'gross_floor_area': 1710,
-        'site_eui': 123,
-        'tax_lot_id': u'IMP9-test001',
-        'year_built': 2001
-    }]
+    """
+    Return a page of results as a list from the queryset for the given fields
 
     :param queryset: optional queryset to filter from
     :param int number_per_page: optional number of results per page
     :param int page: optional page of results to get
-    :param whitelist_orgs: a queryset returning the organizations in which all
-        building fields can be returned, otherwise only the parent
-        organization's ``exportable_fields`` should be returned. The
+    :param whitelist_orgs: a queryset returning the organizations in which all \
+        building fields can be returned, otherwise only the parent \
+        organization's ``exportable_fields`` should be returned. The \
         ``whitelist_orgs`` are the orgs the request user belongs.
-    :param below_threshold: True if less than the parent org's query threshold
-        is greater than the number of queryset results. If True, only return
+    :param below_threshold: True if less than the parent org's query threshold \
+        is greater than the number of queryset results. If True, only return \
         buildings within whitelist_orgs.
+
+    Usage::
+
+        generate_paginated_results(q, 1)
+
+    Returns::
+
+        [
+            {
+                'gross_floor_area': 1710,
+                'site_eui': 123,
+                'tax_lot_id': 'a-tax-lot-id',
+                'year_built': 2001
+            }
+        ]
     """
     parent_org = None
     if whitelist_orgs:
@@ -151,24 +156,22 @@ def generate_paginated_results(queryset, number_per_page=25, page=1,
 def is_not_whitelist_building(parent_org, building, whitelist_orgs):
     """returns false if a building is part of the whitelist_orgs
 
-    :param parent_org: the umbrella parent Organization inst.
+    :param parent_org: the umbrella parent Organization instance.
     :param building: the BuildingSnapshot inst.
-    :param whitelist_orgs: queryset of Organization insts.
+    :param whitelist_orgs: queryset of Organization instances.
     :returns: bool
     """
     return parent_org and building.super_organization not in whitelist_orgs
 
 
 def filter_other_params(queryset, other_params, db_columns):
-    """applies a dictionary filter to the query set. Does some domain specific
-    parsing,
-       mostly to remove extra query params and deal with ranges.
-       Ranges should be passed in as '<field name>__lte' or '<field name>__gte'
-           e.g. other_params = {'gross_floor_area__lte': 50000}
+    """applies a dictionary filter to the query set. Does some domain specific parsing, mostly to remove extra
+    query params and deal with ranges. Ranges should be passed in as '<field name>__lte' or '<field name>__gte'
+    e.g. other_params = {'gross_floor_area__lte': 50000}
 
     :param Django Queryset queryset: queryset to be filtered
     :param dict other_params: dictionary to be parsed and applied to filter.
-    :param dict db_columns: list of column names, extra_data blob outsite these
+    :param dict db_columns: list of column names, extra_data blob outside these
     :returns: Django Queryset:
     """
 
@@ -183,6 +186,8 @@ def filter_other_params(queryset, other_params, db_columns):
             case_insensitive_match = search_utils.is_case_insensitive_match(v)
             is_numeric_expression = search_utils.is_numeric_expression(v)
             is_string_expression = search_utils.is_string_expression(v)
+            exclude_filter = search_utils.is_exclude_filter(v)
+            exact_exclude_filter = search_utils.is_exact_exclude_filter(v)
 
             if exact_match:
                 query_filters &= Q(**{"%s__exact" % k: exact_match.group(2)})
@@ -202,6 +207,10 @@ def filter_other_params(queryset, other_params, db_columns):
             elif is_string_expression:
                 parts = search_utils.STRING_EXPRESSION_REGEX.findall(v)
                 query_filters &= search_utils.parse_expression(k, parts)
+            elif exclude_filter:
+                query_filters &= ~Q(**{"%s__icontains" % k: exclude_filter.group(1)})
+            elif exact_exclude_filter:
+                query_filters &= ~Q(**{"%s__exact" % k: exact_exclude_filter.group(2)})
             elif ('__lt' in k or
                   '__lte' in k or
                   '__gt' in k or
@@ -232,6 +241,8 @@ def filter_other_params(queryset, other_params, db_columns):
             empty_match = search_utils.is_empty_match(v)
             not_empty_match = search_utils.is_not_empty_match(v)
             case_insensitive_match = search_utils.is_case_insensitive_match(v)
+            exclude_filter = search_utils.is_exclude_filter(v)
+            exact_exclude_filter = search_utils.is_exact_exclude_filter(v)
 
             if empty_match:
                 # Filter for records that DO NOT contain this field OR
@@ -246,6 +257,18 @@ def filter_other_params(queryset, other_params, db_columns):
                 # value is not empty.
                 queryset = queryset.filter(
                     Q(**{'extra_data__at_%s__isnull' % k: False}) & ~Q(**{'extra_data__at_%s' % k: ''})
+                )
+                continue
+            elif exclude_filter:
+                # Exclude this value
+                queryset = queryset.filter(
+                    ~Q(**{'extra_data__at_%s__icontains' % k: exclude_filter.group(1)})
+                )
+                continue
+            elif exact_exclude_filter:
+                # Exclude this exact value
+                queryset = queryset.filter(
+                    ~Q(**{'extra_data__at_%s__exact' % k: exact_exclude_filter.group(2)})
                 )
                 continue
 
@@ -282,18 +305,22 @@ def filter_other_params(queryset, other_params, db_columns):
 def parse_body(request):
     """parses the request body for search params, q, etc
 
-    :params request: django wsgi request object
-    :returns: dict {
-        'exclude': dict, exclude dict for django queryset
-        'order_by': str, query order_by, defaults to 'tax_lot_id'
-        'sort_reverse': bool, True if ASC, False if DSC
-        'page': int, pagination page
-        'number_per_page': int, number per pagination page
-        'show_shared_buildings': bool, whether to search across all user's orgs
-        'q': str, global search param
-        'other_search_params': dict, filter params
-        'project_id': str, project id if exists in body
-    }
+    :param request: django wsgi request object
+    :return: dict
+
+    Example::
+
+        {
+            'exclude': dict, exclude dict for django queryset
+            'order_by': str, query order_by, defaults to 'tax_lot_id'
+            'sort_reverse': bool, True if ASC, False if DSC
+            'page': int, pagination page
+            'number_per_page': int, number per pagination page
+            'show_shared_buildings': bool, whether to search across all user's orgs
+            'q': str, global search param
+            'other_search_params': dict, filter params
+            'project_id': str, project id if exists in body
+        }
     """
     try:
         body = json.loads(request.body)
@@ -310,23 +337,26 @@ def parse_body(request):
 def process_search_params(params, user, is_api_request=False):
     """
     Given a python representation of a search query, process it into the
-    internal format that is used for searching, filtering, sorting, and
-    pagination.
+    internal format that is used for searching, filtering, sorting, and pagination.
 
     :param params: a python object representing the search query
     :param user: the user this search is for
     :param is_api_request: bool, boolean whether this search is being done as an api request.
-    :returns: dict {
-        'exclude': dict, exclude dict for django queryset
-        'order_by': str, query order_by, defaults to 'tax_lot_id'
-        'sort_reverse': bool, True if ASC, False if DSC
-        'page': int, pagination page
-        'number_per_page': int, number per pagination page
-        'show_shared_buildings': bool, whether to search across all user's orgs
-        'q': str, global search param
-        'other_search_params': dict, filter params
-        'project_id': str, project id if exists in body
-    }
+    :returns: dict
+
+    Example::
+
+        {
+            'exclude': dict, exclude dict for django queryset
+            'order_by': str, query order_by, defaults to 'tax_lot_id'
+            'sort_reverse': bool, True if ASC, False if DSC
+            'page': int, pagination page
+            'number_per_page': int, number per pagination page
+            'show_shared_buildings': bool, whether to search across all user's orgs
+            'q': str, global search param
+            'other_search_params': dict, filter params
+            'project_id': str, project id if exists in body
+        }
     """
     q = params.get('q', '')
     other_search_params = params.get('filter_params', {})
@@ -384,7 +414,7 @@ def build_json_params(order_by, sort_reverse):
     """returns db_columns, extra_data_sort, and updated order_by
 
     :param str order_by: field to order_by
-    :returns: tuple: db_columns: dict of known DB columns i.e. non-JSONfFeld,
+    :returns: tuple: db_columns: dict of known DB columns i.e. non-JsonField,
         extra_data_sort bool if order_by is in ``extra_data`` JsonField,
         order_by str if sort_reverse and DB column prepend a '-' for the django
         order_by
@@ -413,10 +443,10 @@ def get_orgs_w_public_fields():
 
 
 def search_public_buildings(request, orgs):
-    """returns a queryset or list of buildings matching the search params and
-        count
+    """returns a queryset or list of buildings matching the search params and count
+
     :param request: wsgi request (Django) for parsing params
-    :orgs: list of Organization instances to search within
+    :param orgs: list of Organization instances to search within
     :returns: tuple (search_results_list, result count)
     """
     params = parse_body(request)

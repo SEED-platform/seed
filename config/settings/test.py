@@ -61,6 +61,7 @@ NOSE_PLUGINS = [
 ]
 NOSE_ARGS = [
     '--exclude-dir=seed/common',
+    '--exclude-dir=seed/functional',
     '--nocapture',
     '--nologcapture'
 ]

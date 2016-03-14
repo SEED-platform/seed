@@ -8,6 +8,9 @@ import json
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
+
+from seed.cleansing.models import Rules, CATEGORY_MISSING_MATCHING_FIELD, \
+    CATEGORY_MISSING_VALUES, CATEGORY_IN_RANGE_CHECKING
 from seed.landing.models import SEEDUser as User
 from seed.views.main import _get_default_org
 from seed.views.accounts import _dict_org, _get_js_role, _get_role_from_js
@@ -456,11 +459,11 @@ class AccountsViewTests(TestCase):
                 content_type='application/json'
             )
         except InsufficientPermission:
-            #Todo:  currently superperms just raises an exception, rather
-            #than returning an HttpResponse.  Update this when that changes.
+            # Todo:  currently superperms just raises an exception, rather
+            # than returning an HttpResponse.  Update this when that changes.
             pass
 
-        #ensure we didn't just become owner
+        # ensure we didn't just become owner
         self.assertFalse(self.org.is_owner(self.user))
 
     def test_bad_save_request(self):
@@ -468,7 +471,7 @@ class AccountsViewTests(TestCase):
         A malformed request should return error-containing json.
         """
         url = reverse_lazy('accounts:save_org_settings')
-        #lacks 'organization' key
+        # lacks 'organization' key
         post_data = {'organization_id': self.org.id}
 
         res = self.client.put(
@@ -477,7 +480,7 @@ class AccountsViewTests(TestCase):
             content_type='application/json'
         )
         response = json.loads(res.content)
-        #don't really care what the message is
+        # don't really care what the message is
         self.assertEqual(response['status'], 'error')
 
     def test_query_threshold(self):
@@ -495,7 +498,7 @@ class AccountsViewTests(TestCase):
             data=json.dumps(post_data),
             content_type='application/json'
         )
-        #reload org
+        # reload org
         org = Organization.objects.get(pk=self.org.pk)
         self.assertEqual(org.query_threshold, 27)
 
@@ -505,8 +508,8 @@ class AccountsViewTests(TestCase):
         response = json.loads(res.content)
         self.assertEqual(response,
                          {"status": "success",
-                         "shared_fields": [],
-                         "public_fields": []})
+                          "shared_fields": [],
+                          "public_fields": []})
 
     def test_get_shared_fields(self):
         field1 = self.org.exportable_fields.create(
@@ -588,6 +591,61 @@ class AccountsViewTests(TestCase):
         self.assertTrue('tax_lot_id' in fields)
         self.assertTrue('pm_property_id' in fields)
         self.assertEqual(len(fields), 2)
+
+    def test_get_cleansing_rules_matching(self):
+        Rules.objects.create(org=self.org, category=CATEGORY_MISSING_MATCHING_FIELD,
+                             field='address_line_1', severity=0)
+        response = self.client.get(reverse_lazy('accounts:get_cleansing_rules'), {'organization_id': self.org.pk})
+        self.assertEqual('success', json.loads(response.content)['status'])
+
+    def test_get_cleansing_rules_values(self):
+        Rules.objects.create(org=self.org, category=CATEGORY_MISSING_VALUES,
+                             field='address_line_1', severity=0)
+        response = self.client.get(reverse_lazy('accounts:get_cleansing_rules'), {'organization_id': self.org.pk})
+        self.assertEqual('success', json.loads(response.content)['status'])
+
+    def test_get_cleansing_rules_range(self):
+        Rules.objects.create(org=self.org, category=CATEGORY_IN_RANGE_CHECKING,
+                             field='address_line_1', severity=0)
+        response = self.client.get(reverse_lazy('accounts:get_cleansing_rules'), {'organization_id': self.org.pk})
+        self.assertEqual('success', json.loads(response.content)['status'])
+
+    def test_save_cleansing_rules(self):
+        payload = {
+            'organization_id': self.org.pk,
+            'cleansing_rules': {
+                'missing_matching_field': [
+                    {
+                        'field': 'address_line_1',
+                        'severity': 'error'
+                    }
+                ],
+                'missing_values': [
+                    {
+                        'field': 'address_line_1',
+                        'severity': 'error'
+                    }
+                ],
+                'in_range_checking': [
+                    {
+                        'field': 'conditioned_floor_area',
+                        'enabled': True,
+                        'type': 'number',
+                        'min': None,
+                        'max': 7000000,
+                        'severity': 'error',
+                        'units': 'square feet'
+                    },
+                ]
+            }
+        }
+
+        resp = self.client.post(
+            reverse_lazy("accounts:save_cleansing_rules"),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+        self.assertEqual('success', json.loads(resp.content)['status'])
 
     def test_update_user(self):
         """test for update_user"""
@@ -877,6 +935,23 @@ class AccountsViewTests(TestCase):
                 'status': 'error',
                 'message': 'Based on a common sequence of characters',
             })
+
+    def test_create_sub_org(self):
+        payload = {
+            'parent_org_id': self.org.pk,
+            'sub_org': {
+                'name': 'test',
+                'email': self.user.email
+            }
+        }
+
+        resp = self.client.post(
+            reverse_lazy("accounts:create_sub_org"),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+        self.assertEqual('success', json.loads(resp.content)['status'])
+        self.assertTrue(Organization.objects.filter(name='test').exists())
 
 
 class AuthViewTests(TestCase):

@@ -13,6 +13,7 @@ from seed.landing.models import SEEDUser as User
 
 
 class UserLoginTest(TestCase):
+
     def setUp(self):
         self.user_details = {
             'username': 'test_user@demo.com',

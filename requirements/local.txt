@@ -5,13 +5,18 @@ flake8==2.5.2
 Werkzeug==0.10.4
 tox==2.3.1
 
+# For documentation & spelling
+python-Levenshtein
+sphinxcontrib-spelling
+pyenchant
+
 # Debug toolbar
 django-debug-toolbar==1.3.2
 django-nose==1.4.1
 coverage==3.7.1
 nose==1.3.7
 nose-exclude==0.3.0
-selenium==2.46.1
+selenium==2.52.0
 pytest
 pytest-django
 unittest2

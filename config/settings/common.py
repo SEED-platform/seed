@@ -31,6 +31,7 @@ MANAGERS = ADMINS
 WSGI_APPLICATION = 'config.wsgi.application'
 
 TIME_ZONE = 'America/Los_Angeles'
+USE_TZ = True
 LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
 USE_I18N = True
@@ -96,6 +97,7 @@ SEED_CORE_APPS = (
     'seed.lib.superperms.orgs',
     'seed.audit_logs',
     'seed.cleansing',
+    'seed.functional'
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
@@ -104,7 +106,7 @@ HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 
 INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
-# apps to auto load namespaced urls for JS use (see seed.main.views.home)
+# apps to auto load name spaced URLs for JS use (see seed.main.views.home)
 SEED_URL_APPS = (
     'accounts',
     'ajaxuploader',
@@ -219,6 +221,7 @@ CELERY_ACCEPT_CONTENT = ['seed_json']
 CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
 CELERY_TASK_RESULT_EXPIRES = 18000  # 5 hours
+CELERY_MESSAGE_COMPRESSION = 'gzip'
 
 BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 

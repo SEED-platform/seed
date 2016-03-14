@@ -36,7 +36,7 @@ except ImportError:
 
 #     def test_login(self):
 #         """ Make sure we didn't break the authentication system
-#             This assumes that login urls are named 'login'
+#             This assumes that login URLs are named 'login'
 #         """
 
 #         self.assertTrue(has_user_agreed_latest_tos(self.user1))

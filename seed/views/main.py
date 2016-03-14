@@ -5,31 +5,34 @@
 :author
 """
 
+import copy
+import datetime
 import json
 import logging
-import datetime
 import os
 import uuid
+from collections import defaultdict
 
+from dateutil.parser import parse
+from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ImproperlyConfigured
-from django.conf import settings
 from django.core.files.storage import DefaultStorage
 from django.db.models import Q
+from django.http import HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
-from seed.lib.mcm import mapper
-from seed.audit_logs.models import AuditLog
-from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
-from seed.tasks import (
-    map_data,
-    remap_data,
-    match_buildings,
-    save_raw_data as task_save_raw,
-)
-from seed.decorators import ajax_request
-from seed.lib.superperms.orgs.decorators import has_perm
+
 from seed import models, tasks
+from seed.audit_logs.models import AuditLog
+from seed.common import mapper as simple_mapper
+from seed.common import views as vutil
+from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
+from seed.decorators import ajax_request
+from seed.lib.exporter import Exporter
+from seed.lib.mcm import mapper
+from seed.lib.superperms.orgs.decorators import has_perm
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     get_column_mapping,
     save_snapshot_match,
@@ -44,28 +47,26 @@ from seed.models import (
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
 )
-from seed.views.accounts import _get_js_role
-from seed.lib.superperms.orgs.models import Organization
+from seed.tasks import (
+    map_data,
+    remap_data,
+    match_buildings,
+    save_raw_data as task_save_raw,
+)
+from seed.utils.api import api_endpoint
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
     get_buildings_for_user_count
 )
-from seed.utils.api import api_endpoint
+from seed.utils.cache import get_cache, set_cache
 from seed.utils.generic import median, round_down_hundred_thousand
+from seed.utils.mapping import get_mappable_types, get_mappable_columns
 from seed.utils.projects import (
     get_projects,
 )
 from seed.utils.time import convert_to_js_timestamp
-from seed.utils.mapping import get_mappable_types, get_mappable_columns
-from seed.utils.cache import get_cache, set_cache
+from seed.views.accounts import _get_js_role
 from .. import search
-from seed.lib.exporter import Exporter
-from seed.common import mapper as simple_mapper
-from seed.common import views as vutil
-from django.http import HttpResponseBadRequest
-
-from dateutil.parser import parse
-from collections import defaultdict
 
 DEFAULT_CUSTOM_COLUMNS = [
     'project_id',
@@ -119,12 +120,12 @@ def _get_default_org(user):
 def home(request):
     """the main view for the app
         Sets in the context for the django template:
-            app_urls: a json object of all the urls that is loaded in the JS
-                      global namespace
-            username: the request user's username (first and last name)
-            AWS_UPLOAD_BUCKET_NAME: S3 direct upload bucket
-            AWS_CLIENT_ACCESS_KEY: S3 direct upload client key
-            FILE_UPLOAD_DESTINATION:  'S3' or 'filesystem'
+
+        * **app_urls**: a json object of all the URLs that is loaded in the JS global namespace
+        * **username**: the request user's username (first and last name)
+        * **AWS_UPLOAD_BUCKET_NAME**: S3 direct upload bucket
+        * **AWS_CLIENT_ACCESS_KEY**: S3 direct upload client key
+        * **FILE_UPLOAD_DESTINATION**: 'S3' or 'filesystem'
     """
     username = request.user.first_name + " " + request.user.last_name
     if 's3boto' in settings.DEFAULT_FILE_STORAGE.lower():
@@ -164,10 +165,28 @@ def create_pm_mapping(request):
         {
             success: true,
             mapping: [
-                ["name1", "mapped1", {bedes: true|false, numeric: true|false}],
-                ["name2", "mapped2", {bedes: true|false, numeric: true|false}],
+                [
+                    "name1",
+                    "mapped1", {
+                        bedes: true|false,
+                        numeric: true|false
+                    }
+                ],
+                [
+                    "name2",
+                    "mapped2", {
+                        bedes: true|false,
+                        numeric: true|false
+                    }
+                ],
                 ...
-                ["nameN", "mappedN", {bedes: true|false, numeric: true|false}]
+                [
+                    "nameN",
+                    "mappedN", {
+                        bedes: true|false,
+                        numeric: true|false
+                    }
+                ]
             ]
         }
         -- OR --
@@ -202,11 +221,11 @@ def export_buildings(request):
     Payload::
 
         {
-          "export_name": "My Export",
-          "export_type": "csv",
-          "selected_building": [1234,], (optional list of building ids)
-          "selected_fields": optional list of fields to export
-          "select_all_checkbox": True // optional, defaults to False
+            "export_name": "My Export",
+            "export_type": "csv",
+            "selected_buildings": [1234,], (optional list of building ids)
+            "selected_fields": optional list of fields to export
+            "select_all_checkbox": True // optional, defaults to False
         }
 
     Returns::
@@ -313,14 +332,17 @@ def export_buildings_progress(request):
 
     Payload::
 
-        {"export_id": export_id from export_buildings }
+        {
+            "export_id": export_id from export_buildings
+        }
 
     Returns::
 
-        {'success': True,
-         'status': 'success or error',
-         'message': 'error message, if any',
-         'buildings_processed': number of buildings exported
+        {
+            'success': True,
+            'status': 'success or error',
+            'message': 'error message, if any',
+            'buildings_processed': number of buildings exported
         }
     """
     body = json.loads(request.body)
@@ -434,7 +456,7 @@ def export_buildings_download(request):
 @ajax_request
 @login_required
 def get_total_number_of_buildings_for_user(request):
-    """gets a count of all buildings in the user's organaztions"""
+    """gets a count of all buildings in the user's organizations"""
     buildings_count = get_buildings_for_user_count(request.user)
 
     return {'status': 'success', 'buildings_count': buildings_count}
@@ -450,9 +472,8 @@ def get_building(request):
     fields will be masked to only those shared within the parent org's
     structure.
 
-    :GET: Expects building_id and organization_id in query string.
-    building_id should be the `caninical_building` ID for the building, not the
-    BuildingSnapshot id.
+    :GET: Expects building_id and organization_id in query string. building_id should be the `caninical_building` ID  \
+    for the building, not the BuildingSnapshot id.
 
     Returns::
 
@@ -563,8 +584,9 @@ def get_datasets_count(request):
 
     Returns::
 
-        {'status': 'success',
-         'datasets_count': Number of datasets belonging to this org.
+        {
+            'status': 'success',
+            'datasets_count': Number of datasets belonging to this org.
         }
 
     """
@@ -606,37 +628,35 @@ def search_buildings(request):
     Payload::
 
         {
-         'q': a string to search on (optional),
-         'show_shared_buildings': True to include buildings from other
-             orgs in this user's org tree,
-         'order_by': which field to order by (e.g. pm_property_id),
-         'import_file_id': ID of an import to limit search to,
-         'filter_params': { a hash of Django-like filter parameters to limit
-             query.  See seed.search.filter_other_params.  If 'project__slug'
-             is included and set to a project's slug, buildings will include
-             associated labels for that project.
-           }
-         'page': Which page of results to retrieve (default: 1),
-         'number_per_page': Number of buildings to retrieve per page
-                            (default: 10),
+            'q': a string to search on (optional),
+            'show_shared_buildings': True to include buildings from other orgs in this user's org tree,
+            'order_by': which field to order by (e.g. pm_property_id),
+            'import_file_id': ID of an import to limit search to,
+            'filter_params': {
+                a hash of Django-like filter parameters to limit query.  See seed.search.filter_other_params.
+                If 'project__slug' is included and set to a project's slug, buildings will include associated labels
+                for that project.
+            }
+            'page': Which page of results to retrieve (default: 1),
+            'number_per_page': Number of buildings to retrieve per page (default: 10),
         }
 
     Returns::
 
         {
-         'status': 'success',
-         'buildings': [
-          { all fields for buildings the request user has access to;
-            e.g.:
-           'canonical_building': the CanonicalBuilding ID of the building,
-           'pm_property_id': ID of building (from Portfolio Manager),
-           'address_line_1': First line of building's address,
-           'property_name': Building's name, if any
-            ...
-           }...
-          ]
-         'number_matching_search': Total number of buildings matching search,
-         'number_returned': Number of buildings returned for this page
+            'status': 'success',
+            'buildings': [
+                {
+                    all fields for buildings the request user has access to, e.g.:
+                        'canonical_building': the CanonicalBuilding ID of the building,
+                        'pm_property_id': ID of building (from Portfolio Manager),
+                        'address_line_1': First line of building's address,
+                        'property_name': Building's name, if any
+                    ...
+                }...
+            ]
+            'number_matching_search': Total number of buildings matching search,
+            'number_returned': Number of buildings returned for this page
         }
     """
     params = search.parse_body(request)
@@ -681,30 +701,29 @@ def search_building_snapshots(request):
     Payload::
 
         {
-         'q': a string to search on (optional),
-         'order_by': which field to order by (e.g. pm_property_id),
-         'import_file_id': ID of an import to limit search to,
-         'filter_params': { a hash of Django-like filter parameters to limit
-             query.  See seed.search.filter_other_params.
-           }
-         'page': Which page of results to retrieve (default: 1),
-         'number_per_page': Number of buildings to retrieve per page
-                            (default: 10),
+            'q': a string to search on (optional),
+            'order_by': which field to order by (e.g. pm_property_id),
+            'import_file_id': ID of an import to limit search to,
+            'filter_params': {
+                a hash of Django-like filter parameters to limit query.  See seed.search.filter_other_params.
+            }
+            'page': Which page of results to retrieve (default: 1),
+            'number_per_page': Number of buildings to retrieve per page (default: 10),
         }
 
     Returns::
 
         {
-         'status': 'success',
-         'buildings': [
-          {
-           'pm_property_id': ID of building (from Portfolio Manager),
-           'address_line_1': First line of building's address,
-           'property_name': Building's name, if any
-           }...
-          ]
-         'number_matching_search': Total number of buildings matching search,
-         'number_returned': Number of buildings returned for this page
+            'status': 'success',
+            'buildings': [
+                {
+                    'pm_property_id': ID of building (from Portfolio Manager),
+                    'address_line_1': First line of building's address,
+                    'property_name': Building's name, if any
+                }...
+            ]
+            'number_matching_search': Total number of buildings matching search,
+            'number_returned': Number of buildings returned for this page
         }
     """
     body = json.loads(request.body)
@@ -765,7 +784,9 @@ def get_default_columns(request):
     """Get default columns for building list view.
 
     front end is expecting a JSON object with an array of field names
-        i.e.
+
+    Returns::
+
         {
             "columns": ["project_id", "name", "gross_floor_area"]
         }
@@ -775,7 +796,7 @@ def get_default_columns(request):
     if columns == '{}' or isinstance(columns, dict):
         columns = DEFAULT_CUSTOM_COLUMNS
     if isinstance(columns, unicode):
-        # postgres 9.1 stores JsonField as unicode
+        # PostgreSQL 9.1 stores JsonField as unicode
         columns = json.loads(columns)
 
     return {
@@ -789,7 +810,9 @@ def get_default_building_detail_columns(request):
     """Get default columns for building detail view.
 
     front end is expecting a JSON object with an array of field names
-        i.e.
+
+    Returns::
+
         {
             "columns": ["project_id", "name", "gross_floor_area"]
         }
@@ -800,7 +823,7 @@ def get_default_building_detail_columns(request):
         # Return empty result, telling the FE to show all.
         columns = []
     if isinstance(columns, unicode):
-        # postgres 9.1 stores JsonField as unicode
+        # PostgreSQL 9.1 stores JsonField as unicode
         columns = json.loads(columns)
 
     return {
@@ -861,11 +884,11 @@ def save_match(request):
     Payload::
 
         {
-         'organization_id': current user organization id,
-         'source_building_id': ID of first BuildingSnapshot,
-         'target_building_id': ID of second BuildingSnapshot,
-         'create_match': True to create match, False to remove it,
-         'organization_id': ID of user's organization
+            'organization_id': current user organization id,
+            'source_building_id': ID of first BuildingSnapshot,
+            'target_building_id': ID of second BuildingSnapshot,
+            'create_match': True to create match, False to remove it,
+            'organization_id': ID of user's organization
         }
 
     Returns::
@@ -1138,9 +1161,10 @@ def get_PM_filter_by_counts(request):
 
     Returns::
 
-        {'status': 'success',
-         'matched': Number of BuildingSnapshot objects that have matches,
-         'unmatched': Number of BuildingSnapshot objects with no matches.
+        {
+            'status': 'success',
+            'matched': Number of BuildingSnapshot objects that have matches,
+            'unmatched': Number of BuildingSnapshot objects with no matches.
         }
     """
     import_file_id = request.GET.get('import_file_id', '')
@@ -1181,8 +1205,9 @@ def delete_duplicates_from_import_file(request):
 
     Returns::
 
-        {'status': 'success',
-         'deleted': Number of duplicates deleted
+        {
+            "status": "success",
+            "deleted": "Number of duplicates deleted"
         }
     """
     import_file_id = request.GET.get('import_file_id', '')
@@ -1218,71 +1243,64 @@ def get_column_mapping_suggestions(request):
 
     Payload::
 
-        {'import_file_id': The ID of the ImportRecord to examine,
-         'org_id': The ID of the user's organization}
+        {
+            'import_file_id': The ID of the ImportRecord to examine,
+            'org_id': The ID of the user's organization
+        }
 
     Returns::
 
-        {'status': 'success',
-         'suggested_column_mappings':
-               {
+        {
+            'status': 'success',
+            'suggested_column_mappings': {
                 column header from file: [ (destination_column, score) ...]
                 ...
-               }
-         'building_columns': [ a list of all possible columns ],
-         'building_column_types': [a list of column types corresponding to
-                                   building_columns],
-             ]
+            },
+            'building_columns': [ a list of all possible columns ],
+            'building_column_types': [a list of column types corresponding to building_columns],
         }
+
+    ..todo: The response of this method may not be correct. verify.
     """
-    body = json.loads(request.body)
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
-    org_id = body.get('org_id')
     result = {'status': 'success'}
+
+    body = json.loads(request.body)
+    org_id = body.get('org_id')
+
+    membership = OrganizationUser.objects.select_related('organization') \
+        .get(organization_id=org_id, user=request.user)
+    organization = membership.organization
+
+    import_file = ImportFile.objects.get(pk=body.get('import_file_id'), import_record__super_organization_id=organization.pk)
+
     # Make a dictionary of the column names and their respective types.
     # Build this dictionary from BEDES fields (the null organization columns,
     # and all of the column mappings that this organization has previously
     # saved.
-    field_mappings = get_mappable_types()
-    field_names = field_mappings.keys()
+    mappable_types = get_mappable_types()
+    field_names = mappable_types.keys()
     column_types = {}
-
-    # for c in Column.objects.filter(
-    #     Q(mapped_mappings__super_organization=org_id) |
-    #     Q(organization__isnull=True)
-    # ).exclude(
-    #     # mappings get created to mappable types
-    #     # but we deal with them manually so don't
-    #     # include them here
-    #     column_name__in=field_names
-    # ):
 
     # Note on exclude:
     # mappings get created to mappable types but we deal with them manually
     # so don't include them here
-    columns = Column.objects.select_related('unit').prefetch_related('schemas') \
-        .filter(Q(mapped_mappings__super_organization=org_id) | Q(organization__isnull=True)) \
+    columns = list(
+        Column.objects.select_related('unit')
+        .filter(Q(mapped_mappings__super_organization_id=org_id) | Q(organization__isnull=True))
         .exclude(column_name__in=field_names)
+    )
 
     for c in columns:
         if c.unit:
             unit = c.unit.get_unit_type_display()
         else:
             unit = 'string'
-        if c.schemas.first():
-            schema = c.schemas.first().name
-        else:
-            schema = ''
         column_types[c.column_name] = {
             'unit_type': unit.lower(),
-            'schema': schema,
+            'schema': '',
         }
 
-    building_columns = sorted(column_types.keys())
-    db_columns = sorted(field_names)
-    building_columns = db_columns + building_columns
-
-    db_columns = get_mappable_types()
+    db_columns = copy.deepcopy(mappable_types)
     for k, v in db_columns.items():
         db_columns[k] = {
             'unit_type': v if v else 'string',
@@ -1315,7 +1333,7 @@ def get_column_mapping_suggestions(request):
             import_file.first_row_columns,
             column_types.keys(),
             previous_mapping=get_column_mapping,
-            map_args=[import_file.import_record.super_organization],
+            map_args=[organization],
             thresh=20  # percentage match we require
         )
         # replace None with empty string for column names
@@ -1323,8 +1341,17 @@ def get_column_mapping_suggestions(request):
             dest, conf = suggested_mappings[m]
             if dest is None:
                 suggested_mappings[m][0] = u''
+
+    # Only db columns on BuildingSnapshot
+    building_columns = set(sorted(field_names))
+
+    # Only columns from Column table. Notice we're removing any db columns
+    # from this list. TODO nicholasserra this should probably happen above.
+    extra_data_columns = set(sorted(column_types.keys())) - building_columns
+
     result['suggested_column_mappings'] = suggested_mappings
-    result['building_columns'] = building_columns
+    result['building_columns'] = list(building_columns)
+    result['extra_data_columns'] = list(extra_data_columns)
     result['building_column_types'] = column_types
 
     return result
@@ -1339,14 +1366,17 @@ def get_raw_column_names(request):
 
     Payload::
 
-        {'import_file_id': The ID of the ImportFile}
+        {
+            'import_file_id': The ID of the ImportFile
+        }
 
     Returns::
 
-        {'status': 'success',
-         'raw_columns': [
-             list of strings of the header row of the ImportFile
-             ]
+        {
+            'status': 'success',
+            'raw_columns': [
+                list of strings of the header row of the ImportFile
+            ]
         }
     """
     body = json.loads(request.body)
@@ -1367,17 +1397,20 @@ def get_first_five_rows(request):
 
     Payload::
 
-        {'import_file_id': The ID of the ImportFile}
+        {
+            'import_file_id': The ID of the ImportFile
+        }
 
     Returns::
 
-        {'status': 'success',
-         'first_five_rows': [
-            [list of strings of header row],
-            [list of strings of first data row],
-            ...
-            [list of strings of fourth data row]
-         ]
+        {
+            'status': 'success',
+            'first_five_rows': [
+                [list of strings of header row],
+                [list of strings of first data row],
+                ...
+                [list of strings of fifth data row]
+            ]
         }
     """
     body = json.loads(request.body)
@@ -1545,15 +1578,16 @@ def create_dataset(request):
     Payload::
 
         {
-         "name": Name of new dataset, e.g. "2013 city compliance dataset"
-         "organization_id": ID of the org this dataset belongs to
+            "name": Name of new dataset, e.g. "2013 city compliance dataset"
+            "organization_id": ID of the org this dataset belongs to
         }
 
     Returns::
 
-        {'status': 'success',
-         'id': The ID of the newly-created ImportRecord,
-         'name': The name of the newly-created ImportRecord
+        {
+            'status': 'success',
+            'id': The ID of the newly-created ImportRecord,
+            'name': The name of the newly-created ImportRecord
         }
     """
     body = json.loads(request.body)
@@ -1603,26 +1637,28 @@ def get_datasets(request):
 
     Returns::
 
-        {'status': 'success',
-         'datasets':  [
-             {'name': Name of ImportRecord,
-              'number_of_buildings': Total number of buildings in
-                                     all ImportFiles,
-              'id': ID of ImportRecord,
-              'updated_at': Timestamp of when ImportRecord was last modified,
-              'last_modified_by': Email address of user making last change,
-              'importfiles': [
-                  {'name': Name of associated ImportFile, e.g. 'buildings.csv',
-                   'number_of_buildings': Count of buildings in this file,
-                   'number_of_mappings': Number of mapped headers to fields,
-                   'number_of_cleanings': Number of fields cleaned,
-                   'source_type': Type of file (see source_types),
-                   'id': ID of ImportFile (needed for most operations)
-                  }
-                 ],
-                 ...
-               },
-               ...
+        {
+            'status': 'success',
+            'datasets':  [
+                {
+                    'name': Name of ImportRecord,
+                    'number_of_buildings': Total number of buildings in all ImportFiles,
+                    'id': ID of ImportRecord,
+                    'updated_at': Timestamp of when ImportRecord was last modified,
+                    'last_modified_by': Email address of user making last change,
+                    'importfiles': [
+                        {
+                            'name': Name of associated ImportFile, e.g. 'buildings.csv',
+                            'number_of_buildings': Count of buildings in this file,
+                            'number_of_mappings': Number of mapped headers to fields,
+                            'number_of_cleanings': Number of fields cleaned,
+                            'source_type': Type of file (see source_types),
+                            'id': ID of ImportFile (needed for most operations)
+                        }
+                    ],
+                    ...
+                },
+                ...
             ]
         }
     """
@@ -1660,26 +1696,27 @@ def get_dataset(request):
 
     Returns::
 
-        {'status': 'success',
-         'dataset':
-             {'name': Name of ImportRecord,
-              'number_of_buildings': Total number of buildings in
-                                     all ImportFiles for this dataset,
-              'id': ID of ImportRecord,
-              'updated_at': Timestamp of when ImportRecord was last modified,
-              'last_modified_by': Email address of user making last change,
-              'importfiles': [
-                  {'name': Name of associated ImportFile, e.g. 'buildings.csv',
-                   'number_of_buildings': Count of buildings in this file,
-                   'number_of_mappings': Number of mapped headers to fields,
-                   'number_of_cleanings': Number of fields cleaned,
-                   'source_type': Type of file (see source_types),
-                   'id': ID of ImportFile (needed for most operations)
-                  }
+        {
+            'status': 'success',
+            'dataset': {
+                'name': Name of ImportRecord,
+                'number_of_buildings': Total number of buildings in all ImportFiles for this dataset,
+                'id': ID of ImportRecord,
+                'updated_at': Timestamp of when ImportRecord was last modified,
+                'last_modified_by': Email address of user making last change,
+                'importfiles': [
+                    {
+                       'name': Name of associated ImportFile, e.g. 'buildings.csv',
+                       'number_of_buildings': Count of buildings in this file,
+                       'number_of_mappings': Number of mapped headers to fields,
+                       'number_of_cleanings': Number of fields cleaned,
+                       'source_type': Type of file (see source_types),
+                       'id': ID of ImportFile (needed for most operations)
+                    }
                  ],
                  ...
-               },
-               ...
+            },
+                ...
         }
     """
     from seed.models import obj_to_dict
@@ -1722,6 +1759,92 @@ def get_dataset(request):
 @api_endpoint
 @ajax_request
 @login_required
+@has_perm('requires_member')
+def delete_dataset(request):
+    """
+    Deletes all files from a dataset and the dataset itself.
+
+    :DELETE: Expects organization id and dataset id.
+
+    Payload::
+
+        {
+            "dataset_id": 1,
+            "organization_id": 1
+        }
+
+    Returns::
+
+        {
+            'status': 'success' or 'error',
+            'message': 'error message, if any'
+        }
+    """
+    body = json.loads(request.body)
+    dataset_id = body.get('dataset_id', '')
+    organization_id = body.get('organization_id')
+    # check if user has access to the dataset
+    d = ImportRecord.objects.filter(
+        super_organization_id=organization_id, pk=dataset_id
+    )
+    if not d.exists():
+        return {
+            'status': 'error',
+            'message': 'user does not have permission to delete dataset',
+        }
+    d = d[0]
+    d.delete()
+    return {
+        'status': 'success',
+    }
+
+
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('can_modify_data')
+def update_dataset(request):
+    """
+    Updates the name of a dataset.
+
+    Payload::
+
+        {
+            'dataset': {
+                'id': The ID of the Import Record,
+                'name': The new name for the ImportRecord
+            }
+        }
+
+    Returns::
+
+        {
+            'status': 'success' or 'error',
+            'message': 'error message, if any'
+        }
+    """
+    body = json.loads(request.body)
+    orgs = request.user.orgs.all()
+    # check if user has access to the dataset
+    d = ImportRecord.objects.filter(
+        super_organization__in=orgs, pk=body['dataset']['id']
+    )
+    if not d.exists():
+        return {
+            'status': 'error',
+            'message': 'user does not have permission to update dataset',
+        }
+    d = d[0]
+    d.name = body['dataset']['name']
+    d.save()
+    return {
+        'status': 'success',
+    }
+
+
+@api_endpoint
+@ajax_request
+@login_required
 def get_import_file(request):
     """
     Retrieves details about an ImportFile.
@@ -1730,27 +1853,28 @@ def get_import_file(request):
 
     Returns::
 
-        {'status': 'success',
-         'import_file': {
-            "name": Name of the uploaded file,
-            "number_of_buildings": number of buildings in the file,
-            "number_of_mappings": number of mapped columns,
-            "number_of_cleanings": number of cleaned fields,
-            "source_type": type of data in file, e.g. 'Assessed Raw'
-            "number_of_matchings": Number of matched buildings in file,
-            "id": ImportFile ID,
-            'dataset': {
-                'name': Name of ImportRecord file belongs to,
-                'id': ID of ImportRecord file belongs to,
-                'importfiles': [  # All ImportFiles in this ImportRecord, with
-                    # requested ImportFile first:
-                    {'name': Name of file,
-                     'id': ID of ImportFile
-                    }
-                    ...
-                ]
+        {
+            'status': 'success',
+            'import_file': {
+                "name": Name of the uploaded file,
+                "number_of_buildings": number of buildings in the file,
+                "number_of_mappings": number of mapped columns,
+                "number_of_cleanings": number of cleaned fields,
+                "source_type": type of data in file, e.g. 'Assessed Raw'
+                "number_of_matchings": Number of matched buildings in file,
+                "id": ImportFile ID,
+                'dataset': {
+                    'name': Name of ImportRecord file belongs to,
+                    'id': ID of ImportRecord file belongs to,
+                    'importfiles': [  # All ImportFiles in this ImportRecord, with
+                        # requested ImportFile first:
+                        {'name': Name of file,
+                         'id': ID of ImportFile
+                        }
+                        ...
+                    ]
+                }
             }
-          }
         }
     """
     from seed.models import obj_to_dict
@@ -1803,15 +1927,17 @@ def delete_file(request):
     Deletes an ImportFile from a dataset.
 
     Payload::
-    {
-        "file_id": ImportFile id,
-        "organization_id": current user organization id
-    }
+
+        {
+            "file_id": "ImportFile id",
+            "organization_id": "current user organization id as integer"
+        }
 
     Returns::
 
-        {'status': 'success' or 'error',
-         'message': 'error message, if any'
+        {
+            'status': 'success' or 'error',
+            'message': 'error message, if any'
         }
     """
     if request.method != 'DELETE':
@@ -1842,82 +1968,6 @@ def delete_file(request):
 @api_endpoint
 @ajax_request
 @login_required
-@has_perm('requires_member')
-def delete_dataset(request):
-    """
-    Deletes all files from a dataset and the dataset itself.
-
-    :DELETE: Expects 'dataset_id' for an ImportRecord in the query string.
-
-    Returns::
-
-        {'status': 'success' or 'error',
-         'message': 'error message, if any'
-        }
-    """
-    body = json.loads(request.body)
-    dataset_id = body.get('dataset_id', '')
-    organization_id = body.get('organization_id')
-    # check if user has access to the dataset
-    d = ImportRecord.objects.filter(
-        super_organization_id=organization_id, pk=dataset_id
-    )
-    if not d.exists():
-        return {
-            'status': 'error',
-            'message': 'user does not have permission to delete dataset',
-        }
-    d = d[0]
-    d.delete()
-    return {
-        'status': 'success',
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def update_dataset(request):
-    """
-    Updates the name of a dataset.
-
-    Payload::
-
-        {'dataset':
-            {'id': The ID of the Import Record,
-             'name': The new name for the ImportRecord
-            }
-        }
-
-    Returns::
-
-        {'status': 'success' or 'error',
-         'message': 'error message, if any'
-        }
-    """
-    body = json.loads(request.body)
-    orgs = request.user.orgs.all()
-    # check if user has access to the dataset
-    d = ImportRecord.objects.filter(
-        super_organization__in=orgs, pk=body['dataset']['id']
-    )
-    if not d.exists():
-        return {
-            'status': 'error',
-            'message': 'user does not have permission to update dataset',
-        }
-    d = d[0]
-    d.name = body['dataset']['name']
-    d.save()
-    return {
-        'status': 'success',
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
 @has_perm('can_modify_data')
 def save_raw_data(request):
     """
@@ -1926,7 +1976,9 @@ def save_raw_data(request):
 
     Payload::
 
-        { 'file_id': The ID of the ImportFile to be saved }
+        {
+            'file_id': The ID of the ImportFile to be saved
+        }
 
     Returns::
 
@@ -1954,12 +2006,15 @@ def start_mapping(request):
 
     Payload::
 
-        {'file_id': The ID of the ImportFile to be mapped}
+        {
+            'file_id': The ID of the ImportFile to be mapped
+        }
 
     Returns::
 
-        {'status': 'success' or 'error',
-         'progress_key': ID of background job, for retrieving job progress
+        {
+            'status': 'success' or 'error',
+            'progress_key': ID of background job, for retrieving job progress
         }
     """
     body = json.loads(request.body)
@@ -1983,12 +2038,15 @@ def remap_buildings(request):
 
     Payload::
 
-        {'file_id': The ID of the ImportFile to be remapped}
+        {
+            'file_id': The ID of the ImportFile to be remapped
+        }
 
     Returns::
 
-        {'status': 'success' or 'error',
-         'progress_key': ID of background job, for retrieving job progress
+        {
+            'status': 'success' or 'error',
+            'progress_key': ID of background job, for retrieving job progress
         }
     """
     body = json.loads(request.body)
@@ -2010,12 +2068,15 @@ def start_system_matching(request):
 
     Payload::
 
-        {'file_id': The ID of the ImportFile to be matched}
+        {
+            'file_id': The ID of the ImportFile to be matched
+        }
 
     Returns::
 
-        {'status': 'success' or 'error',
-         'progress_key': ID of background job, for retrieving job progress
+        {
+            'status': 'success' or 'error',
+            'progress_key': ID of background job, for retrieving job progress
         }
     """
     body = json.loads(request.body)
@@ -2035,12 +2096,15 @@ def progress(request):
 
     Payload::
 
-        {'progress_key': The progress key from starting a background task}
+        {
+            'progress_key': The progress key from starting a background task
+        }
 
     Returns::
 
-        {'progress_key': The same progress key,
-         'progress': Percent completion
+        {
+            'progress_key': The same progress key,
+            'progress': Percent completion
         }
     """
 
@@ -2067,21 +2131,23 @@ def update_building(request):
 
     :PUT:
 
+    Payload::
+
         {
-        'organization_id': organization id,
-        'building':
-            {
-            'canonical_building': The canonical building ID
-            'fieldname': 'value'... The rest of the fields in the
-                BuildingSnapshot; see get_columns() endpoint for complete
-                list.
-            }
+            "organization_id": "organization id as integer",
+            "building":
+                {
+                    "canonical_building": "canonical building ID as integer"
+                    "fieldname": "value",
+                    "...": "Remaining fields in the BuildingSnapshot; see get_columns() endpoint for complete list."
+                }
         }
 
     Returns::
 
-        {'status': 'success',
-         'child_id': The ID of the newly-created BuildingSnapshot
+        {
+            "status": "success",
+            "child_id": "The ID of the newly-created BuildingSnapshot"
         }
     """
     body = json.loads(request.body)
@@ -2113,8 +2179,9 @@ def delete_organization_buildings(request):
 
     Returns::
 
-        {'status': 'success' or 'error',
-         'progress_key': ID of background job, for retrieving job progress
+        {
+            'status': 'success' or 'error',
+            'progress_key': ID of background job, for retrieving job progress
         }
     """
     org_id = request.GET.get('org_id', '')
@@ -2129,13 +2196,13 @@ def delete_buildings(request):
     """
     Deletes all BuildingSnapshots the user has selected.
 
-    Does not delete selected_buildings where the user is not a member or owner
-    of the organization the selected building belongs. Since search shows
-    buildings across all the orgs a user belongs, it's possible for a building
+    Does not delete selected_buildings where the user is not a member or owner of the organization the selected
+    building belongs. Since search shows buildings across all the orgs a user belongs, it's possible for a building
     to belong to an org outside of `org_id`.
 
-    :DELETE: Expects 'org_id' for the organization, and the search payload
-    similar to add_buildings/create_project
+    :DELETE: Expects 'org_id' for the organization, and the search payload  similar to add_buildings/create_project
+
+    Payload::
 
         {
             'organization_id': 2,
@@ -2148,7 +2215,9 @@ def delete_buildings(request):
 
     Returns::
 
-        {'status': 'success' or 'error'}
+        {
+            'status': 'success' or 'error'
+        }
     """
     # get all orgs the user is in where the user is a member or owner
     body = json.loads(request.body)
@@ -2199,36 +2268,34 @@ def delete_buildings(request):
 @has_perm('requires_member')
 def get_building_summary_report_data(request):
     """
-    This method returns basic, high-level data about a set of buildings, fitered by organization ID.
+    This method returns basic, high-level data about a set of buildings, filtered by organization ID.
 
     It expects as parameters
 
     :GET:
-    * start_date:       The starting date for the data series with the format  `YYYY-MM-DD`
-    * end_date:         The starting date for the data series with the format  `YYYY-MM-DD`
+
+    :param start_date: The starting date for the data series with the format  `YYYY-MM-DD`
+    :param end_date: The starting date for the data series with the format  `YYYY-MM-DD`
 
     Returns::
-    The returned JSON document that has the following structure.
-    ```
-            {
-                "status": "success",
-                "summary_data":
-                {
-                    "num_buildings": number of buildings returned from query,
-                    "avg_eui": average EUI for returned buildings,
-                    "avg_energy_score": average energy score for returned buildings
-                }
-            }
-    ```
 
+        {
+            "status": "success",
+            "summary_data":
+            {
+                "num_buildings": "number of buildings returned from query",
+                "avg_eui": "average EUI for returned buildings",
+                "avg_energy_score": "average energy score for returned buildings"
+            }
+        }
 
     Units for return values are as follows:
 
-    ```
-    | property              | units      |
-    |-----------------------|------------|
-    | avg_eui               | kBtu-ft2   |
-    ```
+    +-----------+---------------+
+    | property  | units         |
+    +===========+===============+
+    | avg_eui   | kBtu/ft2/yr   |
+    +-----------+---------------+
 
     ---
 
@@ -2258,7 +2325,7 @@ def get_building_summary_report_data(request):
             type: object
 
 
-    responseMessages:
+    status codes:
         - code: 400
           message: Bad request, only GET method is available
         - code: 401
@@ -2307,41 +2374,43 @@ def get_building_summary_report_data(request):
 def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
     """ This method returns data used to generate graphing reports. It expects as parameters
 
-        * from_date:       The starting date for the data series.  Date object
-        * end_date:         The starting date for the data series with the format. Date object
-        * x_var:            The variable name to be assigned to the "x" value in the returned data series
-        * y_var:            The variable name to be assigned to the "y" value in the returned data series
-        * orgs:  The organizations to be used when querying data.
+        :GET:
+
+        :param from_date: The starting date for the data series.  Date object.
+        :param end_date: The starting date for the data series with the format. Date object.
+        :param x_var: The variable name to be assigned to the "x" value in the returned data series.
+        :param y_var: The variable name to be assigned to the "y" value in the returned data series.
+        :param orgs: The organizations to be used when querying data.
 
         The x and y variables should be column names in the BuildingSnapshot table.  In theory they could
         be in the extra_data too and this works but is currently disabled.
 
         Returns::
-        bldg_counts:  dict that looks like {year_ending : {"buidings_with_data": set(canonical ids), "buidings": set(canonical ids)}  # NOQA
-                        This is a collection of all year_ending dates and ids
-                        the canonical buildings that have data for that year
-                        and those that have files with that year_ending but no
-                        valid data point
-                        E.G.
-                        "bldg_counts"     (pending)
+
+            bldg_counts:  dict that looks like {year_ending : {"buildings_with_data": set(canonical ids), "buildings": set(canonical ids)}
+                            This is a collection of all year_ending dates and ids
+                            the canonical buildings that have data for that year
+                            and those that have files with that year_ending but no
+                            valid data point
+                            E.G.
+                            "bldg_counts"     (pending)
+                                __len__    int: 8
+                                2000-12-31 (140037191378512)    dict: {'buildings_w_data': set([35897, 35898]), 'buildings': set([35897, 35898])}
+                                2001-12-31 (140037292480784)    dict: {'buildings_w_data': set([35897, 35898]), 'buildings': set([35897, 35898])}
+            data:   dict that looks like {canonical_id : { year_ending : {'x': x_value, 'y': y_value', 'release_date': release_date, 'building_snapshot_id': building_snapshot_id}}}
+                    This is the actual data for the building.  The top level key is
+                    the canonical_id then the next level is the year_ending and
+                    under that is the actual data.  NOTE:  If the year has files
+                    for a building but no valid data there will be an entry for
+                    that year but the x and y values will be None.
+
+                    E.G.
+                    "data"     (pending)
+                        __len__    int: 2
+                        35897 (28780560)    defaultdict: defaultdict(<type 'dict'>, {datetime.date(2001, 12, 31): {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}, datetime.date(2004, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2004, 12, 31, 0, 0), 'building_snapshot_id': 35866}, datetime.date(2003, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2003, 12, 31, 0, 0), 'building_snapshot_id': 35860}, datetime.date(2009, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2009, 12, 31, 0, 0), 'building_snapshot_id': 35884}, datetime.date(2007, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2007, 12, 31, 0, 0), 'building_snapshot_id': 35878}, datetime.date(2000, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}, datetime.date(2010, 12, 31): {'y': 111.0, 'x': 21.0, 'release_date': datetime.datetime(2011, 12, 31, 0, 0...  # NOQA
                             __len__    int: 8
-                            2000-12-31 (140037191378512)    dict: {'buildings_w_data': set([35897, 35898]), 'buildings': set([35897, 35898])}
-                            2001-12-31 (140037292480784)    dict: {'buildings_w_data': set([35897, 35898]), 'buildings': set([35897, 35898])}
-
-        data:    dict that looks like {canonical_id : { year_ending : {'x': x_value, 'y': y_value', 'release_date': release_date, 'building_snapshot_id': building_snapshot_id}}}  # NOQA
-                This is the actual data for the building.  The top level key is
-                the canonical_id then the next level is the year_ending and
-                under that is the actual data.  NOTE:  If the year has files
-                for a building but no valid data there will be an entry for
-                that year but the x and y values will be None.
-
-                E.G.
-                "data"     (pending)
-                    __len__    int: 2
-                    35897 (28780560)    defaultdict: defaultdict(<type 'dict'>, {datetime.date(2001, 12, 31): {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}, datetime.date(2004, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2004, 12, 31, 0, 0), 'building_snapshot_id': 35866}, datetime.date(2003, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2003, 12, 31, 0, 0), 'building_snapshot_id': 35860}, datetime.date(2009, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2009, 12, 31, 0, 0), 'building_snapshot_id': 35884}, datetime.date(2007, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2007, 12, 31, 0, 0), 'building_snapshot_id': 35878}, datetime.date(2000, 12, 31): {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}, datetime.date(2010, 12, 31): {'y': 111.0, 'x': 21.0, 'release_date': datetime.datetime(2011, 12, 31, 0, 0...  # NOQA
-                        __len__    int: 8
-                        2000-12-31 (140037191378512)    dict: {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}  # NOQA
-                        2001-12-31 (140037292480784)    dict: {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}  # NOQA
+                            2000-12-31 (140037191378512)    dict: {'y': 400000.0, 'x': 28.2, 'release_date': datetime.datetime(2000, 12, 31, 0, 0), 'building_snapshot_id': 35850}  # NOQA
+                            2001-12-31 (140037292480784)    dict: {'y': 95.0, 'x': 88.0, 'release_date': datetime.datetime(2001, 12, 31, 0, 0), 'building_snapshot_id': 35854}  # NOQA
 
         """
 
@@ -2501,11 +2570,12 @@ def get_building_report_data(request):
     """ This method returns a set of x,y building data for graphing. It expects as parameters
 
         :GET:
-        * start_date:       The starting date for the data series with the format  `YYYY-MM-DD`
-        * end_date:         The starting date for the data series with the format  `YYYY-MM-DD`
-        * x_var:            The variable name to be assigned to the "x" value in the returned data series  # NOQA
-        * y_var:            The variable name to be assigned to the "y" value in the returned data series  # NOQA
-        * organization_id:  The organization to be used when querying data.
+
+        :param start_date: The starting date for the data series with the format  `YYYY-MM-DD`
+        :param end_date: The starting date for the data series with the format  `YYYY-MM-DD`
+        :param x_var: The variable name to be assigned to the "x" value in the returned data series  # NOQA
+        :param y_var: The variable name to be assigned to the "y" value in the returned data series  # NOQA
+        :param organization_id: The organization to be used when querying data.
 
         The x_var values should be from the following set of variable names:
 
@@ -2531,8 +2601,7 @@ def get_building_report_data(request):
         buildings in this group have data."
 
         Returns::
-        The returned JSON document that has the following structure.
-        ```
+
             {
                 "status": "success",
                 "chart_data": [
@@ -2555,10 +2624,8 @@ def get_building_report_data(request):
                 "num_buildings": total number of buildings in query results,
                 "num_buildings_w_data": total number of buildings with valid data in the query results  # NOQA
             }
-        ```
 
         ---
-
 
         parameters:
             - name: x_var
@@ -2606,15 +2673,13 @@ def get_building_report_data(request):
                 required: true
                 type: string
 
-        responseMessages:
+        status codes:
             - code: 400
               message: Bad request, only GET method is available
             - code: 401
               message: Not authenticated
             - code: 403
               message: Insufficient rights to call this procedure
-
-
         """
     from dateutil.parser import parse
 
@@ -2705,11 +2770,12 @@ def get_aggregated_building_report_data(request):
     """ This method returns a set of aggregated building data for graphing. It expects as parameters
 
         :GET:
-        * start_date:       The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`  # NOQA
-        * end_date:         The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`  # NOQA
-        * x_var:            The variable name to be assigned to the "x" value in the returned data series  # NOQA
-        * y_var:            The variable name to be assigned to the "y" value in the returned data series  # NOQA
-        * organization_id:  The organization to be used when querying data.
+
+        :param start_date: The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
+        :param end_date: The starting date for the data series with the format  `YYYY-MM-DDThh:mm:ss+hhmm`
+        :param x_var: The variable name to be assigned to the "x" value in the returned data series
+        :param y_var: The variable name to be assigned to the "y" value in the returned data series
+        :param organization_id: The organization to be used when querying data.
 
         The x_var values should be from the following set of variable names:
 
@@ -2736,8 +2802,7 @@ def get_aggregated_building_report_data(request):
 
 
         Returns::
-        The returned JSON document that has the following structure.
-        ```
+
             {
                 "status": "success",
                 "chart_data": [
@@ -2764,10 +2829,8 @@ def get_aggregated_building_report_data(request):
                 "num_buildings": total number of buildings in query results,
                 "num_buildings_w_data": total number of buildings with valid data in query results
             }
-        ```
 
         ---
-
 
         parameters:
             - name: x_var
@@ -2813,7 +2876,7 @@ def get_aggregated_building_report_data(request):
                 required: true
                 type: string
 
-        responseMessages:
+        status code:
             - code: 400
               message: Bad request, only GET method is available
             - code: 401

@@ -17,7 +17,7 @@ from seed.lib.superperms.orgs.models import (
     Organization
 )
 from seed.tests.util import FakeRequest
-from seed.models import Project
+from seed.models import BuildingSnapshot, CanonicalBuilding, Project, ProjectBuilding
 from seed.data_importer.models import ImportRecord
 
 
@@ -386,18 +386,24 @@ class ProjectsViewTests(TestCase):
 
     def test_remove_buildings_from_project(self):
         """tests remove_buildings_from_project"""
-        self._create_project(name='proj_remove', via_http=True)
+        building = BuildingSnapshot.objects.create(super_organization=self.org)
+
+        project = Project.objects.create(name='test', super_organization=self.org,
+                                         owner=self.user)
+
+        ProjectBuilding.objects.create(building_snapshot=building, project=project)
+
         self._set_role_level(ROLE_MEMBER)
-        project = {
-            'name': 'proj_remove',
-            'project_slug': 'proj_remove',
-            'slug': 'proj_remove',
+        project_payload = {
+            'name': project.name,
+            'slug': project.slug,
+            'selected_buildings': [building.pk]
         }
         # test standard case
         resp = self.client.post(
             reverse_lazy("projects:remove_buildings_from_project"),
             data=json.dumps(
-                {'organization_id': self.org.id, 'project': project}
+                {'organization_id': self.org.id, 'project': project_payload}
             ),
             content_type='application/json',
         )
@@ -406,16 +412,70 @@ class ProjectsViewTests(TestCase):
             {
                 'status': 'success',
                 'project_removing_cache_key': (
-                    'SEED_PROJECT_REMOVING_BUILDINGS_PERCENTAGE_proj_remove'
+                    'SEED_PROJECT_REMOVING_BUILDINGS_PERCENTAGE_test'
                 )
             }
         )
-        # test case where user is viewer
-        self._set_role_level(ROLE_VIEWER)
+        self.assertFalse(ProjectBuilding.objects.filter(building_snapshot=building,
+                                                        project=project).exists())
+
+    def test_remove_buildings_from_project_select_all(self):
+        """tests remove_buildings_from_project"""
+        building = BuildingSnapshot.objects.create(super_organization=self.org)
+        canonical_building = CanonicalBuilding.objects.create(canonical_snapshot=building)
+        building.canonical_building = canonical_building
+        building.save()
+
+        project = Project.objects.create(name='test', super_organization=self.org,
+                                         owner=self.user)
+
+        ProjectBuilding.objects.create(building_snapshot=building, project=project)
+
+        self._set_role_level(ROLE_MEMBER)
+        project_payload = {
+            'name': project.name,
+            'slug': project.slug,
+            'select_all_checkbox': True
+        }
+        # test standard case
         resp = self.client.post(
             reverse_lazy("projects:remove_buildings_from_project"),
             data=json.dumps(
-                {'organization_id': self.org.id, 'project': project}
+                {'organization_id': self.org.id, 'project': project_payload}
+            ),
+            content_type='application/json',
+        )
+        self.assertDictEqual(
+            json.loads(resp.content),
+            {
+                'status': 'success',
+                'project_removing_cache_key': (
+                    'SEED_PROJECT_REMOVING_BUILDINGS_PERCENTAGE_test'
+                )
+            }
+        )
+        self.assertFalse(ProjectBuilding.objects.filter(building_snapshot=building,
+                                                        project=project).exists())
+
+    def test_remove_buildings_from_project_viewer(self):
+        building = BuildingSnapshot.objects.create(super_organization=self.org)
+
+        project = Project.objects.create(name='test', super_organization=self.org,
+                                         owner=self.user)
+
+        ProjectBuilding.objects.create(building_snapshot=building, project=project)
+
+        # test case where user is viewer
+        self._set_role_level(ROLE_VIEWER)
+        project_payload = {
+            'name': project.name,
+            'slug': project.slug,
+            'selected_buildings': [building.pk]
+        }
+        resp = self.client.post(
+            reverse_lazy("projects:remove_buildings_from_project"),
+            data=json.dumps(
+                {'organization_id': self.org.id, 'project': project_payload}
             ),
             content_type='application/json',
         )
@@ -519,3 +579,77 @@ class ProjectsViewTests(TestCase):
                 'message': 'Organization does not exist'
             }
         )
+
+    def test_move_buildings_copy(self):
+        building = BuildingSnapshot.objects.create(super_organization=self.org)
+
+        project = Project.objects.create(name='from', super_organization=self.org,
+                                         owner=self.user)
+        project_to = Project.objects.create(name='to', super_organization=self.org,
+                                            owner=self.user)
+
+        ProjectBuilding.objects.create(building_snapshot=building, project=project)
+
+        payload = {
+            "buildings": [
+                building.pk
+            ],
+            "copy": True,
+            "search_params": {
+                "filter_params": {
+                    "project__slug": "from"
+                },
+                "project_slug": 'from',
+                "q": ""
+            },
+            "select_all_checkbox": False,
+            "source_project_slug": "from",
+            "target_project_slug": "to"
+        }
+
+        resp = self.client.post(
+            reverse_lazy("projects:move_buildings"),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+        self.assertEqual('success', json.loads(resp.content)['status'])
+        self.assertTrue(ProjectBuilding.objects.filter(building_snapshot=building,
+                                                       project=project_to).exists())
+
+    def test_move_buildings_move(self):
+        building = BuildingSnapshot.objects.create(super_organization=self.org)
+
+        project = Project.objects.create(name='from', super_organization=self.org,
+                                         owner=self.user)
+        project_to = Project.objects.create(name='to', super_organization=self.org,
+                                            owner=self.user)
+
+        ProjectBuilding.objects.create(building_snapshot=building, project=project)
+
+        payload = {
+            "buildings": [
+                building.pk
+            ],
+            "copy": False,
+            "search_params": {
+                "filter_params": {
+                    "project__slug": "from"
+                },
+                "project_slug": 'from',
+                "q": ""
+            },
+            "select_all_checkbox": False,
+            "source_project_slug": "from",
+            "target_project_slug": "to"
+        }
+
+        resp = self.client.post(
+            reverse_lazy("projects:move_buildings"),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+        self.assertEqual('success', json.loads(resp.content)['status'])
+        self.assertFalse(ProjectBuilding.objects.filter(building_snapshot=building,
+                                                        project=project).exists())
+        self.assertTrue(ProjectBuilding.objects.filter(building_snapshot=building,
+                                                       project=project_to).exists())

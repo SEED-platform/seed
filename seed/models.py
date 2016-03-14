@@ -134,16 +134,19 @@ ENERGY_UNITS = (
 def get_ancestors(building):
     """gets all the non-raw, non-composite ancestors of a building
 
-       Recursive function to traverse the tree upward.
-       source_type {
-           2: ASSESSED_BS,
-           3: PORTFOLIO_BS,
-           4: COMPOSITE_BS,
-           6: GREEN_BUTTON_BS
-       }
+    Recursive function to traverse the tree upward.
 
-       :param building: BuildingSnapshot inst.
-       :returns: list of BuildingSnapshot inst., ancestors of building
+    :param building: BuildingSnapshot inst.
+    :returns: list of BuildingSnapshot inst., ancestors of building
+
+    .. code-block:: python
+
+           source_type {
+               2: ASSESSED_BS,
+               3: PORTFOLIO_BS,
+               4: COMPOSITE_BS,
+               6: GREEN_BUTTON_BS
+           }
     """
     ancestors = []
     parents = building.parents.filter(source_type__in=[2, 3, 4, 6])
@@ -157,7 +160,6 @@ def find_unmatched_buildings(import_file):
     """Get unmatched building snapshots' id info from an import file.
 
     :param import_file: ImportFile inst.
-
     :rtype: list of tuples, field values specified in BS_VALUES_LIST.
 
     NB: This does not return a queryset!
@@ -206,7 +208,7 @@ def obj_to_dict(obj):
     for f in obj._meta.fields:
         if isinstance(f, JsonField):
             e = getattr(obj, f.name)
-            # postgres < 9.3 support
+            # PostgreSQL < 9.3 support
             while isinstance(e, unicode):
                 e = json.loads(e)
             response[unicode(f.name)] = e
@@ -265,7 +267,7 @@ def get_or_create_canonical(b1, b2=None):
 
 
 def initialize_canonical_building(snapshot, user_pk):
-    """Called to create a Canonicalbuilding from a single snapshot.
+    """Called to create a CanonicalBuilding from a single snapshot.
 
     :param snapshot: BuildingSnapshot inst.
     :param user_pk: The user id of the user initiating the CanonicalBuilding
@@ -380,7 +382,7 @@ def unmatch_snapshot_tree(building_pk):
         merged data. Anything descended from the ``building_pk`` will
         be deleted. The intent is to completely separate ``building_pk``'s
         influence on the resultant canonical_snapshot. The user is saying
-        that these are separate entities afterall, yes?
+        that these are separate entities after all, yes?
 
     Basically, this function works by getting a merge order list of
     children from the perspective of ``building_pk`` and a list of parents
@@ -620,15 +622,13 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
 
 
 def get_column_mappings(organization):
-    """Returns dict of all the column mappings for an Org's given source type
+    """Returns dict of all the column mappings for an Organization's given source type
 
     :param organization: inst, Organization.
+    :returns: dict, list of dict.
 
-    :returns dict, list of dict:
-
-    Use this when actually performing mapping between datasources, but
-    only call it after all of the mappings have been saved to the
-    ``ColumnMapping`` table.
+    Use this when actually performing mapping between data sources, but only call it after all of the mappings
+    have been saved to the ``ColumnMapping`` table.
 
     """
     from seed.utils.mapping import _get_column_names
@@ -1018,23 +1018,6 @@ class ColumnMapping(models.Model):
         )
 
 
-class Schema(models.Model):
-    """Groups ColumnMappings together for identification later."""
-    name = models.CharField(max_length=50, unique=True, db_index=True)
-    organization = models.ForeignKey(
-        SuperOrganization,
-        related_name='schemas',
-        null=True,
-        blank=True,
-    )
-    columns = models.ManyToManyField(Column, related_name='schemas')
-
-    def __unicode__(self):
-        return u'{0}: {1}'.format(
-            self.pk, self.name
-        )
-
-
 class CanonicalManager(models.Manager):
     """Manager to add useful model filtering methods"""
 
@@ -1078,7 +1061,7 @@ class CanonicalBuilding(models.Model):
 class BuildingSnapshot(TimeStampedModel):
     """The periodical composite of a building from disparate data sources.
 
-    Represents the best data between all the datasources for a given building,
+    Represents the best data between all the data sources for a given building,
     potentially merged together with other BuildingSnapshot instances'
     attribute values.
 
@@ -1592,7 +1575,7 @@ class Meter(models.Model):
 
 
 class TimeSeries(models.Model):
-    """For storing engergy use over time."""
+    """For storing energy use over time."""
     begin_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     reading = models.FloatField(null=True)

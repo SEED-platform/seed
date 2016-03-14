@@ -3,39 +3,34 @@
 """
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
-"""
-import logging
-from operator import ior, iand
 
-from fuzzywuzzy import fuzz
-from django.db.models import Q
-from seed.mappings import reconcile_mappings
-
-logger = logging.getLogger(__name__)
-
-
-"""
-Module seeks to provide a general way to tie together information about
-a single entity from two datasources using sparse data.
-
+Module seeks to provide a general way to tie together information about a single entity from two data sources
+using sparse data.
 
 Sample usage:
 
     A task or a view that wants to find a correlated building from another
     data set would execute the following set of calls:
 
-    model_a is an instance of a model that I have (probably just recently
-        loaded).
+    model_a is an instance of a model that I have (probably just recently loaded).
     model_b_qs is the dataset type we're trying to find matches in.
 
-    ```
-    possible_matches = search(model_a, model_b_qs)
-    best_match = get_best_match(model_a, possible_matches)
-    best_match
-    >>> (0.89, AssessedBuildingInst)
-    ```
-
+    .. code-block::python
+        possible_matches = search(model_a, model_b_qs)
+        best_match = get_best_match(model_a, possible_matches)
+        best_match
+        >>> (0.89, AssessedBuildingInst)
 """
+
+import logging
+from operator import ior, iand
+
+from django.db.models import Q
+from fuzzywuzzy import fuzz
+
+from seed.mappings import reconcile_mappings
+
+logger = logging.getLogger(__name__)
 
 
 def build_q(model_a, a_attr, model_b_class, b_attr, a_value=None):
@@ -62,11 +57,10 @@ def build_q_filter(q_set, model_a, a_attr, model_b_class, b_attr, op, trans):
     :param a_attr: str, the name of an attribute we're querying from.
     :param model_b_class: class, model class we're querying to.
     :param b_attr: str, model attribute we're querying to (on model_b_class).
-    :param op: callable, takes two parameters. This callable should be an
-        ``operator`` module function, e.g. operator.ior, or operator.iand.
-    :param trans: callable or None. If callable, we apply this callable to
-    our `a_attr` for circumstances in which we need to break up its value
-    into sub values for more accurate querying (e.g. address data.).
+    :param op: callable, takes two parameters. This callable should be an ``operator`` module function, e.g. \
+    operator.ior, or operator.iand.
+    :param trans: callable or None. If callable, we apply this callable to our `a_attr` for circumstances in which \
+    we need to break up its value into sub values for more accurate querying (e.g. address data.).
 
     """
     if trans:
@@ -172,7 +166,7 @@ def get_best_match(model_a, search_results):
     """Return highest confidence model_b match and its confidence number.
 
     :param model_a: model instance, the known model.
-    :param search_results: a queryset of `model_b` insts returned from `search`
+    :param search_results: a queryset of `model_b` instances returned from `search`
     :rtype tuple: (float, model_b_inst|None)
 
     """

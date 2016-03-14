@@ -53,7 +53,7 @@ parents and children
 BuildingSnapshots also have linkage to other BuildingSnapshots in order to
 keep track of their *parents* and *children*. This is represented in the
 Django model as a many-to-many relation from BuildingSnapshot to BuildingSnapshot.
-It is represented in the Postres database as an additional seed_buildingsnapshot_children
+It is represented in the PostgreSQL database as an additional seed_buildingsnapshot_children
 table.
 
 
@@ -211,7 +211,7 @@ And a corresponding extra_data_sources that looks like
 :Property Floor Area: 73700
 
   
-All of the fields that look like _souce_id are also populated
+All of the fields that look like _source_id are also populated
 with 73700 E.G. owner_postal_code_source_id.
 
 The other fields of interest are the super_organization field which
@@ -229,7 +229,7 @@ with the "Save Mappings" button.  This second record has the following fields po
 - modified
 - pm_property_id
 - year_ending
-- gross_floow_area
+- gross_floor_area
 - address_line_1
 - release_date
 - source_type (this is 2 instead of 0 as with the other record) 
@@ -336,7 +336,7 @@ value.  To extend the above table
 +-------+--------+--------+-------------+------------------------+
 
 **NOTE:**  The BuildingSnapshot records made from the raw input file have all the 
-_source_id fields populated with that record's ID.  The non-canonocal BuildingSnapshot 
+_source_id fields populated with that record's ID.  The non-canonical BuildingSnapshot
 records created from the mapped data have none set.  The canonical BuildingSnapshot
 records that are the result of merging two records have only the _source_id fields
 set where the record itself has data.  E.G. in the above address_line_1 is set to 

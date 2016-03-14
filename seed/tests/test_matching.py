@@ -17,6 +17,7 @@ def make_method(message, expected):
 
 # Metaclass to create individual test methods per test case.
 class NormalizeAddressTester(type):
+
     def __new__(cls, name, bases, attrs):
         cases = attrs.get('cases', [])
 

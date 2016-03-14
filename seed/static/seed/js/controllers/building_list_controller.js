@@ -213,7 +213,6 @@ angular.module('BE.seed.controller.building_list', [])
      */
     var get_columns = function() {
         $scope.assessor_fields = all_columns.fields;
-        $scope.search.init_storage($location.$$path);
         $scope.columns = $scope.search.generate_columns(
             all_columns.fields,
             default_columns.columns,
@@ -485,7 +484,7 @@ angular.module('BE.seed.controller.building_list', [])
         $scope.search.query = $scope.search.filter_params.q || "";
         $scope.search.update_results(search_payload);
 
-        // intitialize tooltips
+        // initialize tooltips
         $('[data-toggle="popover"]').popover();
 
         if (typeof $scope.user.project_id !== "undefined") {
@@ -515,6 +514,7 @@ angular.module('BE.seed.controller.building_list', [])
             }
         });
 
+        $scope.search.init_storage($location.$$path);
         get_columns();
         get_labels();
         init_matching_dropdown();
