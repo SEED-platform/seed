@@ -307,6 +307,9 @@ Open your browser and navigate to http://127.0.0.1:8000
 Login with the user/password you created before, e.g., `admin@my.org` and
 `badpass`.
 
-Note that these steps have been combined into a script called `start-seed.sh`.
-The script will also try to not start Celery or Redis if they already seem
-to be running.
+.. note::
+
+    these steps have been combined into a script called `start-seed.sh`.
+    The script will also try to not start Celery or Redis if they already seem
+    to be running.
+    
