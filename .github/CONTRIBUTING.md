@@ -1,4 +1,5 @@
-== General Information ==
+General Information
+===================
 
 You can contribute to the SEED-platform project in many ways: by using the
 software, reporting issues, contributing documentation, or contributing
@@ -34,7 +35,9 @@ this process:
 * Code contribution must be a significant feature addition or bug fix, and be accepted into the Master (stable) branch of SEED-Platform, in order to be officially recognized as a SEED-Platform Affiliate.
 
 
-== Coding Standards ==
+Coding Standards
+----------------
+
 For the portions of the app in python/django, follow the
 [Django Coding Guidelines](https://docs.djangoproject.com/en/dev/internals/contributing/writing-code/coding-style/).
 
