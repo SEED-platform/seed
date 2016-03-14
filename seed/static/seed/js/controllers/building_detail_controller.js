@@ -100,7 +100,8 @@ angular.module('BE.seed.controller.building_detail', ['ngToast'])
         }
     }
 
-    if(building_monthly_payload['status'] !== undefined){
+    if(building_monthly_payload !== undefined &&
+        building_monthly_payload['status'] !== undefined){
         if(building_monthly_payload['status'] === 'success'){
             $scope.monthly_data_readings = [];
 
