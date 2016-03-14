@@ -23,16 +23,16 @@ to emulate the same checks as the CI machine.
 | W503 | line break occurred before a binary operator     |
 +------+--------------------------------------------------+
 
-To run flake locally, call either
+To run flake locally call:
 
 .. code-block::console
 
     tox -e flake8
 
-    .. note::
+.. note::
 
-        tox will soon be removed from the development process. Instructions
-        will be updated.
+   tox will soon be removed from the development process. Instructions
+   will be updated.
 
 
 
