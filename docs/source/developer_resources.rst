@@ -25,15 +25,14 @@ to emulate the same checks as the CI machine.
 
 To run flake locally call:
 
-.. code-block::console
+.. code-block:: console
 
     tox -e flake8
 
 .. note::
 
-   tox will soon be removed from the development process. Instructions
-   will be updated.
-
+    tox will soon be removed from the development process. Instructions
+    will be updated.
 
 
 Django Notes
