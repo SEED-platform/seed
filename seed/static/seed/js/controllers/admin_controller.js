@@ -192,7 +192,8 @@ angular.module('BE.seed.controller.admin', [])
                 1.0,  // progress multiplier
                 function(data){  //success fn
                   org.remove_message = "success";
-                  window.location.reload();
+                  get_organizations();
+                  $scope.$emit('organization_deleted');
                 }, function(data){  //failure fn
                   // Do nothing
                 },
