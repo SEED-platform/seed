@@ -62,7 +62,8 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         Organization,
         blank=True,
         null=True,
-        related_name='default_users'
+        related_name='default_users',
+        on_delete=models.SET_NULL
     )
     api_key = models.CharField(
         _('api key'),
