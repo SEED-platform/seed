@@ -1466,13 +1466,15 @@ def delete_organization(org_pk, deleting_cache_key, chunk_size=100, *args, **kwa
     set_cache(deleting_cache_key, result['status'], result)
 
     if CanonicalBuilding.objects.filter(
-        canonical_snapshot__super_organization=org_pk).exists():
+            canonical_snapshot__super_organization=org_pk).exists():
+
         _delete_canonical_buildings.delay(org_pk)
 
     if BuildingSnapshot.objects.filter(super_organization=org_pk).exists():
-        ids = list(BuildingSnapshot.objects.filter(super_organization=org_pk)
-            .values_list('id', flat=True))
-        
+        ids = list(
+            BuildingSnapshot.objects.filter(super_organization=org_pk).values_list('id', flat=True)
+        )
+
         step = float(chunk_size) / len(ids)
         tasks = []
         for del_ids in batch(ids, chunk_size):
@@ -1521,8 +1523,9 @@ def delete_organization_buildings(org_pk, deleting_cache_key, chunk_size=100, *a
 
     _delete_canonical_buildings.delay(org_pk)
 
-    ids = list(BuildingSnapshot.objects.filter(super_organization=org_pk)
-        .values_list('id', flat=True))
+    ids = list(
+        BuildingSnapshot.objects.filter(super_organization=org_pk).values_list('id', flat=True)
+    )
 
     step = float(chunk_size) / len(ids)
     tasks = []

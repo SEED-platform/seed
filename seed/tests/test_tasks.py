@@ -735,8 +735,7 @@ class TestTasks(TestCase):
             super_organization=self.fake_org
         ).count(), 0)
 
-        tasks.delete_organization_buildings(self.fake_org.pk,
-            'fake-progress-key')
+        tasks.delete_organization_buildings(self.fake_org.pk, 'fake-progress-key')
 
         self.assertEqual(BuildingSnapshot.objects.filter(
             super_organization=self.fake_org
@@ -760,8 +759,7 @@ class TestTasks(TestCase):
         self.assertTrue(ImportRecord.objects.filter(pk=self.import_record.pk).exists())
         self.assertTrue(ImportFile.objects.filter(pk=self.import_file.pk).exists())
 
-        tasks.delete_organization(self.fake_org.pk,
-            'fake-progress-key')
+        tasks.delete_organization(self.fake_org.pk, 'fake-progress-key')
 
         self.assertFalse(Organization.objects.filter(pk=self.fake_org.pk).exists())
         self.assertFalse(ImportRecord.objects.filter(pk=self.import_record.pk).exists())
