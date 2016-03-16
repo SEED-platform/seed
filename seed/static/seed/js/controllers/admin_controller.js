@@ -149,9 +149,9 @@ angular.module('BE.seed.controller.admin', [])
     };
 
     $scope.confirm_org_delete = function (org) {
-        var yes = confirm("Are you sure you want to PERMANENTLY delete the entire '" + org.name + " organization?");
+        var yes = confirm("Are you sure you want to PERMANENTLY delete the entire '" + org.name + "' organization?");
         if (yes) {
-            var again = confirm("Deleting an organization is permanent. Confirm again to delete '" + org.name);
+            var again = confirm("Deleting an organization is permanent. Confirm again to delete '" + org.name + "'");
             if (again) {
                 $scope.delete_org(org);
             }
