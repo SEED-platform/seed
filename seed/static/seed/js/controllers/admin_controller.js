@@ -191,11 +191,16 @@ angular.module('BE.seed.controller.admin', [])
                 0, //starting prog bar percentage
                 1.0,  // progress multiplier
                 function(data){  //success fn
-                  org.remove_message = "success";
-                  get_organizations();
-                  $scope.$emit('organization_deleted');
+                    org.remove_message = "success";
+                    if (parseInt(org.id) === parseInt(user_service.get_organization().id)) {
+                        // Reload page if deleting current org.
+                        window.location.reload();
+                    } else {
+                        get_organizations();
+                        $scope.$emit('organization_deleted');
+                    }
                 }, function(data){  //failure fn
-                  // Do nothing
+                    // Do nothing
                 },
                 org  // progress bar obj
             );
