@@ -1490,14 +1490,6 @@ def delete_organization(org_pk, deleting_cache_key, chunk_size=100, *args, **kwa
 @shared_task
 @lock_and_track
 def _delete_organization_related_data(chain, org_pk, prog_key):
-    # Use raw_objects here because objects can't access records where deleted=True.
-    ImportFile.raw_objects.filter(import_record__super_organization_id=org_pk).delete()
-    ImportRecord.raw_objects.filter(super_organization_id=org_pk).delete()
-
-    # Cascade delete org and all related objects.
-    # Cascade will take care of deleting:
-    # AuditLog, Column, ColumnMapping, CustomBuildingHeaders,
-    # Project, StatusLabel
     Organization.objects.get(pk=org_pk).delete()
 
     result = {
