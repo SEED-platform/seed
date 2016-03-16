@@ -1456,62 +1456,83 @@ def remap_data(import_file_pk):
 
 @shared_task
 @lock_and_track
-def delete_organization_buildings(org_pk, *args, **kwargs):
-    """Deletes all BuildingSnapshot instances within an organization
-
-    :param org_pk: int, str, the organization pk
-    :returns: Dict. with keys ``status`` and ``progress_key``
-    """
-    _delete_organization_buildings.delay(org_pk, *args, **kwargs)
-    deleting_cache_key = get_prog_key(
-        'delete_organization_buildings',
-        org_pk
-    )
-    return {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': deleting_cache_key
-    }
-
-
-@shared_task
-@lock_and_track
-def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
-    """Deletes all BuildingSnapshot instances within an organization
-
-    :param org_pk: int, str, the organization pk
-    """
-    qs = BuildingSnapshot.objects.filter(super_organization=org_pk)
-    ids = list(qs.values_list('id', flat=True))
-
-    deleting_cache_key = get_prog_key(
-        'delete_organization_buildings',
-        org_pk
-    )
-    if not ids:
-        result = {
-            'status': 'success',
-            'progress': 100,
-            'progress_key': deleting_cache_key
-        }
-        set_cache(deleting_cache_key, result['status'], result)
-        return result
-
-    # delete the canonical buildings
-    can_ids = CanonicalBuilding.objects.filter(
-        canonical_snapshot__super_organization=org_pk
-    ).values_list('id', flat=True)
-    can_ids = list(can_ids)
-    _delete_canonical_buildings.delay(can_ids)
-
-    step = float(chunk_size) / len(ids)
-
+def delete_organization(org_pk, deleting_cache_key, chunk_size=100, *args, **kwargs):
     result = {
         'status': 'success',
         'progress': 0,
         'progress_key': deleting_cache_key
     }
+
     set_cache(deleting_cache_key, result['status'], result)
+
+    if CanonicalBuilding.objects.filter(
+        canonical_snapshot__super_organization=org_pk).exists():
+        _delete_canonical_buildings.delay(org_pk)
+
+    if BuildingSnapshot.objects.filter(super_organization=org_pk).exists():
+        ids = list(BuildingSnapshot.objects.filter(super_organization=org_pk)
+            .values_list('id', flat=True))
+        
+        step = float(chunk_size) / len(ids)
+        tasks = []
+        for del_ids in batch(ids, chunk_size):
+            # we could also use .s instead of .subtask and not wrap the *args
+            tasks.append(
+                _delete_organization_buildings_chunk.subtask(
+                        (del_ids, deleting_cache_key, step, org_pk)
+                )
+            )
+        chord(tasks, interval=15)(_delete_organization_related_data.subtask([org_pk, deleting_cache_key]))
+    else:
+        _delete_organization_related_data(None, org_pk, deleting_cache_key)
+
+
+@shared_task
+@lock_and_track
+def _delete_organization_related_data(chain, org_pk, prog_key):
+    # Use raw_objects here because objects can't access records where deleted=True.
+    ImportFile.raw_objects.filter(import_record__super_organization_id=org_pk).delete()
+    ImportRecord.raw_objects.filter(super_organization_id=org_pk).delete()
+
+    # Cascade delete org and all related objects.
+    # Cascade will take care of deleting:
+    # AuditLog, Column, ColumnMapping, CustomBuildingHeaders,
+    # Project, StatusLabel
+    Organization.objects.get(pk=org_pk).delete()
+
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
+    set_cache(prog_key, result['status'], result)
+
+
+@shared_task
+@lock_and_track
+def delete_organization_buildings(org_pk, deleting_cache_key, chunk_size=100, *args, **kwargs):
+    """Deletes all BuildingSnapshot instances within an organization."""
+    result = {
+        'status': 'success',
+        'progress_key': deleting_cache_key
+    }
+
+    if not BuildingSnapshot.objects.filter(super_organization=org_pk).exists():
+        result['progress'] = 100
+    else:
+        result['progress'] = 0
+
+    set_cache(deleting_cache_key, result['status'], result)
+
+    if result['progress'] == 100:
+        return
+
+    _delete_canonical_buildings.delay(org_pk)
+
+    ids = list(BuildingSnapshot.objects.filter(super_organization=org_pk)
+        .values_list('id', flat=True))
+
+    step = float(chunk_size) / len(ids)
     tasks = []
     for del_ids in batch(ids, chunk_size):
         # we could also use .s instead of .subtask and not wrap the *args
@@ -1520,7 +1541,17 @@ def _delete_organization_buildings(org_pk, chunk_size=100, *args, **kwargs):
                     (del_ids, deleting_cache_key, step, org_pk)
             )
         )
-    chord(tasks, interval=15)(finish_delete.subtask([org_pk]))
+    chord(tasks, interval=15)(_finish_delete.subtask([org_pk, deleting_cache_key]))
+
+
+@shared_task
+def _finish_delete(results, org_pk, prog_key):
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
+    set_cache(prog_key, result['status'], result)
 
 
 @shared_task
@@ -1533,24 +1564,16 @@ def _delete_organization_buildings_chunk(del_ids, prog_key, increment,
 
 
 @shared_task
-def finish_delete(results, org_pk):
-    prog_key = get_prog_key('delete_organization_buildings', org_pk)
-    result = {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key
-    }
-    set_cache(prog_key, result['status'], result)
-
-
-@shared_task
-def _delete_canonical_buildings(ids, chunk_size=300):
+def _delete_canonical_buildings(org_pk, chunk_size=300):
     """deletes CanonicalBuildings
 
-    :param ids: list of ids to delete from CanonicalBuilding
+    :param org_id: organization id
     :param chunk_size: number of CanonicalBuilding instances to delete per
     iteration
     """
+    ids = list(CanonicalBuilding.objects.filter(
+        canonical_snapshot__super_organization=org_pk
+    ).values_list('id', flat=True))
     for del_ids in batch(ids, chunk_size):
         CanonicalBuilding.objects.filter(pk__in=del_ids).delete()
 
