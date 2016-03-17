@@ -176,3 +176,21 @@ Install Cassandra
         ps ax | grep kairosdb
 
 
+
+    .. code-block:: console
+
+
+Example Green Button Configuration
+----------------------------------
+
+For testing purposes, and example Green Button stream is available. Enter
+the information below into one of the building's energy sub tab.
+
+    .. code-block:: console
+
+        Base URL: https://epo.schneider-electric.com/PEPCO
+        Subcription ID: C8C25FC1C944B813A5CB790
+        Min Parameter: Published_Min
+        Max Parameter: Published_Max
+        Time Type: date
+        Date Pattern: month/day/year
