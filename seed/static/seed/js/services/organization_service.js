@@ -285,5 +285,22 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         return defer.promise;
     };
 
+    organization_factory.delete_organization = function(org_id) {
+        var defer = $q.defer();
+        $http({
+            method: 'DELETE',
+            'url': window.BE.urls.delete_organization,
+            'params': {
+                'org_id': org_id
+            }
+        }).success(function(data, status, headers, config) {
+            defer.resolve(data);
+        }).error(function(data, status, headers, config) {
+            defer.reject(data, status);
+
+        });
+        return defer.promise;
+    };
+
     return organization_factory;
 }]);

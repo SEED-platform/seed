@@ -196,4 +196,11 @@ urlpatterns = patterns(
         'delete_buildings',
         name='delete_buildings'
     ),
+
+    # delete org
+    url(
+        r'^delete_organization/$',
+        'delete_organization',
+        name='delete_organization'
+    ),
 )

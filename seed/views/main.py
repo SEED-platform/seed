@@ -31,7 +31,7 @@ from seed.audit_logs.models import AuditLog
 from seed.common import mapper as simple_mapper
 from seed.common import views as vutil
 from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
-from seed.decorators import ajax_request
+from seed.decorators import ajax_request, get_prog_key
 from seed.energy.meter_data_processor import green_button_data_analyser
 from seed.energy.meter_data_processor.tasks import process_green_button_batch_request
 from seed.energy.pm_energy_template import pm_energy_processor, energy_template_process
@@ -2193,7 +2193,46 @@ def delete_organization_buildings(request):
         }
     """
     org_id = request.GET.get('org_id', '')
-    return tasks.delete_organization_buildings(org_id)
+    deleting_cache_key = get_prog_key(
+        'delete_organization_buildings',
+        org_id
+    )
+    tasks.delete_organization_buildings.delay(org_id, deleting_cache_key)
+    return {
+        'status': 'success',
+        'progress': 0,
+        'progress_key': deleting_cache_key
+    }
+
+
+@api_endpoint
+@ajax_request
+@login_required
+@permission_required('seed.can_access_admin')
+def delete_organization(request):
+    """
+    Starts a background task to delete an organization and all related data.
+
+    :GET: Expects 'org_id' for the organization.
+
+    Returns::
+
+        {
+            'status': 'success' or 'error',
+            'progress_key': ID of background job, for retrieving job progress
+        }
+    """
+    org_id = request.GET.get('org_id', '')
+    deleting_cache_key = get_prog_key(
+        'delete_organization_buildings',
+        org_id
+    )
+    tasks.delete_organization.delay(org_id, deleting_cache_key)
+    return {
+        'status': 'success',
+        'progress': 0,
+        'progress_key': deleting_cache_key
+    }
 
 
 @api_endpoint

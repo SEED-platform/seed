@@ -119,7 +119,7 @@ default use password `seedpass` when prompted
     psql -c 'ALTER USER seeduser CREATEROLE;'
 
 Now exit any root environments, becoming just yourself (even though it's not
-that easy being green..), for the remainder of these instructions.
+that easy being green), for the remainder of these instructions.
 
 Python Packages
 ---------------
@@ -228,7 +228,7 @@ up the database tables
 .. code-block:: bash
 
     export DJANGO_SETTINGS_MODULE=config.settings.dev
-    ./manage.py syncdb --migrate
+    ./manage.py migrate
 
 Django Admin User
 -----------------
@@ -307,6 +307,9 @@ Open your browser and navigate to http://127.0.0.1:8000
 Login with the user/password you created before, e.g., `admin@my.org` and
 `badpass`.
 
-Note that these steps have been combined into a script called `start-seed.sh`.
-The script will also try to not start Celery or Redis if they already seem
-to be running.
+.. note::
+
+    these steps have been combined into a script called `start-seed.sh`.
+    The script will also try to not start Celery or Redis if they already seem
+    to be running.
+    
