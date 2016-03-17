@@ -174,21 +174,21 @@ urlpatterns = patterns(
     ),
     # monthly data ends
 
-    # save gb request info
+    # save green button request info
     url(
         r'^save_gb_request_info/$',
         'save_gb_request_info',
         name='save_gb_request_info'
     ),
-    # save gb request info ends
+    # save green button  request info ends
 
-    # get gb request info
+    # get green button  request info
     url(
         r'^get_gb_request_info/$',
         'get_gb_request_info',
         name='get_gb_request_info'
     ),
-    # get gb request info ends
+    # get green button  request info ends
 
     # delete
     url(

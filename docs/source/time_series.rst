@@ -60,7 +60,7 @@ Add TS database configuration to config/settings/local_untracked.py
 
 
 .. note::
-    Kairos use port 8013 as default
+    KairosDB use port 8013 as default
 
 Database Updates
 ^^^^^^^^^^^^^^^^
@@ -78,10 +78,10 @@ KairosDB
 Prerequisites
 ^^^^^^^^^^^^^
 
-Prerequisites for Kairos:
+Prerequisites for KairosDB:
 
 * Java 1.6 or later
-* Database: We are using Cassandra as datastore
+* Database: We are using Cassandra as data store
 
 
 Install Cassandra

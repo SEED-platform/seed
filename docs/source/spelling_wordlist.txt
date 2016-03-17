@@ -21,6 +21,9 @@ buildingsnapshot
 BuildingSnapshot
 BuildingSnapshots
 canonicalbuilding
+cassandra
+Cassandra
+CassandraModule
 cb
 checkbox
 Chomsky
@@ -34,6 +37,7 @@ csv
 dataset
 datasource
 datasources
+datastore
 datestrings
 datetime
 dest
@@ -56,9 +60,11 @@ filesystem
 fineuploader
 firefox
 fn
+gb
 gcc
 getitem
 Github
+graphviz
 gte
 queryset
 Gzip
@@ -74,6 +80,7 @@ js
 jshint
 json
 JsonField
+kairosdb
 kBtu
 kwargs
 Landgraf
