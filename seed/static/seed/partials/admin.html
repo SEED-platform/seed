@@ -169,7 +169,6 @@
                                     <th>User Count</th>
                                     <th>Building Count</th>
                                     <th></th>
-
                                 </tr>
                             </thead>
                             <tbody>
@@ -179,7 +178,8 @@
                                     <td><strong>{$ o.num_buildings | number:0 $}</strong></td>
                                     <td>
                                         <div style="width: 150px;">
-                                            <button class="btn btn-danger" ng-click="confirm_delete(o)" ng-hide="o.progress > -1 || o.total_buildings_count == 0">Remove Buildings</button>
+                                            <button class="btn btn-default" ng-click="confirm_buildings_delete(o)" ng-hide="o.progress > -1 || o.total_buildings_count == 0">Remove Buildings</button>
+                                            <button class="btn btn-danger" style="margin-left:20px;" ng-click="confirm_org_delete(o)" ng-hide="o.progress > -1"><i class="fa fa-exclamation-triangle"></i> Delete Organization</button>
                                             <uib-progressbar class="progress-striped active" value="o.progress" type="danger" ng-show="o.progress > -1">{$ o.remove_message $}</uib-progressbar>
                                         </div>
                                     </td>

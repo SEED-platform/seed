@@ -141,10 +141,20 @@ angular.module('BE.seed.controller.admin', [])
      * confirm_delete: checks with the user before kicking off the delete task
      * for an org's buildings.
      */
-    $scope.confirm_delete = function (org) {
+    $scope.confirm_buildings_delete = function (org) {
         var yes = confirm("Are you sure you want to PERMANENTLY delete '" + org.name + "'s buildings?");
         if (yes) {
             $scope.delete_org_buildings(org);
+        }
+    };
+
+    $scope.confirm_org_delete = function (org) {
+        var yes = confirm("Are you sure you want to PERMANENTLY delete the entire '" + org.name + "' organization?");
+        if (yes) {
+            var again = confirm("Deleting an organization is permanent. Confirm again to delete '" + org.name + "'");
+            if (again) {
+                $scope.delete_org(org);
+            }
         }
     };
 
@@ -165,6 +175,32 @@ angular.module('BE.seed.controller.admin', [])
                   get_organizations();
                 }, function(data){  //failure fn
                   // Do nothing
+                },
+                org  // progress bar obj
+            );
+        });
+    };
+
+    $scope.delete_org = function (org) {
+        org.progress = 0;
+        organization_service.delete_organization(org.org_id)
+        .then(function(data) {
+            // resolve promise
+            uploader_service.check_progress_loop(
+                data.progress_key,  // key
+                0, //starting prog bar percentage
+                1.0,  // progress multiplier
+                function(data){  //success fn
+                    org.remove_message = "success";
+                    if (parseInt(org.id) === parseInt(user_service.get_organization().id)) {
+                        // Reload page if deleting current org.
+                        window.location.reload();
+                    } else {
+                        get_organizations();
+                        $scope.$emit('organization_deleted');
+                    }
+                }, function(data){  //failure fn
+                    // Do nothing
                 },
                 org  // progress bar obj
             );

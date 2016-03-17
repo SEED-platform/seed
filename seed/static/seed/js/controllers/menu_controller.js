@@ -89,6 +89,9 @@ angular.module('BE.seed.controller.menu', [])
     $scope.$on('finished_saving', function(event, data) {
         $scope.saving_indicator = false;
     });
+    $scope.$on('organization_deleted', function(event, data) {
+        init();
+    });
 
     $scope.input_search = function() {
         if ($location.absUrl().indexOf("#") === -1) {
