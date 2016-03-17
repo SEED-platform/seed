@@ -36,6 +36,7 @@ developed by Building Energy.
    data_model
    mapping
    modules
+   time_series
    developer_resources
    license
    help
