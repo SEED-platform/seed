@@ -1,5 +1,4 @@
 # read a folder containing excel files downloaded from EnergyStar PM
-import glob
 import logging
 
 import pandas as pd
@@ -22,8 +21,8 @@ def process_one_file(filename, file_path):
  
     df_energy = spread_sheet.parse(sheetname=5, skiprows=3, header=2, parse_cols=[0, 1, 2, 4, 6, 7, 9, 10, 11])
     df_energy.insert(0, 'Street Address',
-                     df_energy['Portfolio Manager ID'].map(lambda x:
-                                                           address_dict[x]))
+                     df_energy['Portfolio Manager ID'].map(lambda x:address_dict[x]))
+
     df_energy.info()
     df_energy.rename(columns={'Portfolio Manager ID': 'Custom ID',
                               'Portfolio Manager Meter ID': 'Custom Meter ID'},

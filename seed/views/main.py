@@ -2278,7 +2278,7 @@ def parse_pm_energy_file(request):
 
     import_file = ImportFile.objects.get(pk=file_id)
     file_path = str(import_file.file)
-    
+
     file_path = default_storage.open(file_path, 'r')
     _log.info(file_path)
 
@@ -2469,7 +2469,7 @@ def retrieve_monthly_data(request):
                     monthly['begin_time'] = data.begin_time
                     monthly['end_time'] = data.end_time
                     monthly['reading'] = data.reading
-                    if meter_info.energy_type==0:
+                    if meter_info.energy_type == 0:
                         monthly['energy_type'] = 'Electricity'
                     else:
                         monthly['energy_type'] = 'Natural Gas'
