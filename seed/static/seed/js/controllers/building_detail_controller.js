@@ -306,8 +306,18 @@ angular.module('BE.seed.controller.building_detail', [])
         });
 
         if (check_defaults) {
+            // Sort by user defined order.
             data_columns.sort(function(a,b) {
                 if ($scope.default_columns.indexOf(a.key) < $scope.default_columns.indexOf(b.key)) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            });
+        } else {
+            // Sort alphabetically. 
+            data_columns.sort(function(a,b) {
+                if (a.key.toLowerCase() < b.key.toLowerCase()) {
                     return -1;
                 } else {
                     return 1;
