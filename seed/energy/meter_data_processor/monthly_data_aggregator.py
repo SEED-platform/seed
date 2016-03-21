@@ -26,7 +26,6 @@ def aggr_sum_metric(data, localtzone):
 
     url = settings.TSDB['query_url']
 
-    print data
     data = json.dumps(data)
 
     r = requests.post(url, data=data, headers=headers)
