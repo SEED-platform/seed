@@ -46,6 +46,9 @@ def is_insert_finish(start_ts, end_ts, insert_checker, count):
 
     data = json.dumps(query_body)
 
+    print data
+    print "\r\n\r\n"
+
     headers = {'content-type': 'application/json'}
     resp = requests.post(tsdb_info['query_url'], data=data, headers=headers)
 

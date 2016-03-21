@@ -31,11 +31,12 @@ def data_analyse(ts_data, name):
     today_year = int(today_date.year)
     immediate_aggregate = False
 
+    print ts_data
     for ts_cell in ts_data:
         if name == 'Energy Template' or name == 'PM':
-            # convert from nanoseconds to seconds
-            ts_cell['start'] = int(ts_cell['start']) / 1000000000
-            ts_cell['interval'] = int(ts_cell['interval']) / 1000000000
+            # convert to seconds
+            ts_cell['start'] = int(ts_cell['start']) / 1000
+            ts_cell['interval'] = int(ts_cell['interval']) / 1000
 
         try:
             ts_cell['canonical_id'] = str(int(float(ts_cell['canonical_id'])))

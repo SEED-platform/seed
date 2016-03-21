@@ -20,7 +20,7 @@ from dateutil.parser import parse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ImproperlyConfigured
-from django.core.files.storage import DefaultStorage
+from django.core.files.storage import DefaultStorage, default_storage
 from django.db.models import Q
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render_to_response
@@ -2278,16 +2278,24 @@ def parse_pm_energy_file(request):
 
     import_file = ImportFile.objects.get(pk=file_id)
     file_path = str(import_file.file)
+    print default_storage.exists(file_path)
+    file_path = default_storage.open(file_path, 'r')
     _log.info(file_path)
 
-    pm_energy_processor.parse_pm_energy_file(file_path)
+    excel_data_frame = pm_energy_processor.parse_pm_energy_file(file_path)
+    '''
     processed_file_path = file_path[0:-5] + '_processed.xlsx'
+    '''
 
+    '''
     json_data = energy_template_process.parse_energy_template(processed_file_path)
+    '''
+
+    json_data = energy_template_process.parse_energy_template(excel_data_frame)
 
     green_button_data_analyser.data_analyse(json_data, 'PM')
 
-    _log.info(import_file)
+    file_path.close()
     res = {}
     res['status'] = 'success'
     return res
@@ -2301,12 +2309,15 @@ def parse_energy_template(request):
 
     import_file = ImportFile.objects.get(pk=file_id)
     file_path = str(import_file.file)
+    print default_storage.exists(file_path)
+    file_path = default_storage.open(file_path, 'r')
     _log.info(file_path)
 
-    json_data = energy_template_process.parse_energy_template(file_path)
+    json_data = energy_template_process.parse_energy_template_file(file_path)
 
     green_button_data_analyser.data_analyse(json_data, 'Energy Template')
 
+    file_path.close()
     res = {}
     res['status'] = 'success'
     return res
@@ -2465,6 +2476,10 @@ def retrieve_monthly_data(request):
                     monthly['begin_time'] = data.begin_time
                     monthly['end_time'] = data.end_time
                     monthly['reading'] = data.reading
+                    if meter_info.energy_type==0:
+                        monthly['energy_type'] = 'Electricity'
+                    else:
+                        monthly['energy_type'] = 'Natural Gas'
                     monthly['cost'] = data.cost
                     res['reading'].append(monthly)
 
