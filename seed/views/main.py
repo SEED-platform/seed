@@ -2278,18 +2278,11 @@ def parse_pm_energy_file(request):
 
     import_file = ImportFile.objects.get(pk=file_id)
     file_path = str(import_file.file)
-    print default_storage.exists(file_path)
+    
     file_path = default_storage.open(file_path, 'r')
     _log.info(file_path)
 
     excel_data_frame = pm_energy_processor.parse_pm_energy_file(file_path)
-    '''
-    processed_file_path = file_path[0:-5] + '_processed.xlsx'
-    '''
-
-    '''
-    json_data = energy_template_process.parse_energy_template(processed_file_path)
-    '''
 
     json_data = energy_template_process.parse_energy_template(excel_data_frame)
 
@@ -2309,8 +2302,8 @@ def parse_energy_template(request):
 
     import_file = ImportFile.objects.get(pk=file_id)
     file_path = str(import_file.file)
-    print default_storage.exists(file_path)
     file_path = default_storage.open(file_path, 'r')
+
     _log.info(file_path)
 
     json_data = energy_template_process.parse_energy_template_file(file_path)
