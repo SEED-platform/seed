@@ -31,7 +31,6 @@ def data_analyse(ts_data, name):
     today_year = int(today_date.year)
     immediate_aggregate = False
 
-    print ts_data
     for ts_cell in ts_data:
         if name == 'Energy Template' or name == 'PM':
             # convert to seconds

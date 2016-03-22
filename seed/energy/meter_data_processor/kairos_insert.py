@@ -9,7 +9,7 @@ from time import sleep
 from django.conf import settings
 
 _log = logging.getLogger(__name__)
-
+KairosDB_Batch_Insert_Size = 1000
 
 def is_insert_finish(start_ts, end_ts, insert_checker, count):
     tsdb_info = settings.TSDB
@@ -61,6 +61,8 @@ def batch_insert_kairosdb(meta_data, ts_data):
     wrap = []
     db_data = settings.TSDB
 
+    total_len = len(meta_data)
+    counter = 0
     for ts, meta in zip(ts_data, meta_data):
         insert_data = {}
         insert_data['name'] = db_data['measurement']
@@ -70,15 +72,26 @@ def batch_insert_kairosdb(meta_data, ts_data):
         insert_data['tags'] = meta
 
         wrap.append(insert_data)
+        if len(wrap) == KairosDB_Batch_Insert_Size:
+            json_insert_data = json.dumps(wrap)
+            r = requests.post(db_data['insert_url'], data=json_insert_data)
+            if r.status_code != 204:
+                _log.error('Insert Into KairosDB Error ' + str(r.status_code))
+                _log.info('Error Message: ' + r.text)
+                return False
 
-    json_insert_data = json.dumps(wrap)
+            counter += KairosDB_Batch_Insert_Size
+            _log.info('KairosDB_Inserted, ' + str(counter) + '/' + str(total_len))
+            wrap = []
 
-    r = requests.post(db_data['insert_url'], data=json_insert_data)
+    if len(wrap) > 0:
+        json_insert_data = json.dumps(wrap)
+        r = requests.post(db_data['insert_url'], data=json_insert_data)
+        if r.status_code != 204:
+            _log.error('Insert Into KairosDB Error ' + str(r.status_code))
+            _log.info('Error Message: ' + r.text)
+            return False
 
-    if r.status_code != 204:
-        _log.error('Insert Into KairosDB Error ' + str(r.status_code))
-        _log.info('Error Message: ' + r.text)
-        return False
     return True
 
 
