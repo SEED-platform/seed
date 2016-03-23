@@ -50,8 +50,8 @@ def pm_to_json_single(meter_con_df, file_path):
     # Calculate time interval of days
     meter_con_df['interval'] = meter_con_df['End Date'] - meter_con_df['Start Date']
 
-    meter_con_df['End Date'] = meter_con_df['End Date'].map(lambda x: (x + dt.timedelta(hours = 12) / 1000000000))
-    meter_con_df['Start Date'] = meter_con_df['Start Date'].map(lambda x: (x + dt.timedelta(hours = 12) / 1000000000))
+    meter_con_df['End Date'] = meter_con_df['End Date'].map(lambda x: (x + dt.timedelta(hours=12) / 1000000000))
+    meter_con_df['Start Date'] = meter_con_df['Start Date'].map(lambda x: (x + dt.timedelta(hours=12) / 1000000000))
 
     meter_con_df['reading_kind'] = 'energy'
 

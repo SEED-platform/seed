@@ -11,6 +11,7 @@ from django.conf import settings
 _log = logging.getLogger(__name__)
 KairosDB_Batch_Insert_Size = 1000
 
+
 def is_insert_finish(start_ts, end_ts, insert_checker, count):
     tsdb_info = settings.TSDB
 
