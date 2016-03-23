@@ -87,7 +87,8 @@ angular.module('BE.seed.services', [
     'BE.seed.service.user',
     'mappingValidatorService',
     'BE.seed.service.search',
-    'BE.seed.service.simple_modal'
+    'BE.seed.service.simple_modal',
+    'BE.seed.service.httpParamSerializerSeed'
     ]);
 angular.module('BE.seed.utilities', [
     'BE.seed.utility.spinner'
