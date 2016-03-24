@@ -2457,6 +2457,7 @@ def retrieve_monthly_data(request):
         record = CanonicalBuilding.objects.get(id=building_id)
 
         meter_ids = record.meters.all()
+
         for meter_info in meter_ids:
             meter_id = meter_info.id
             record = TimeSeries.objects.filter(meter_id=meter_id)
