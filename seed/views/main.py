@@ -2396,7 +2396,7 @@ def retrieve_finer_timeseries_data(request):
             res['msg'] = parsed['res']
             return res
         end_time = int(end_time) * 1000
-    # read time periods ends 
+    # read time periods ends
 
     # query very last and first timestamp
     first_timestamp = None
@@ -2470,10 +2470,10 @@ def retrieve_finer_timeseries_data(request):
         return res
 
     if not start_time and not end_time:
-       # query last two weeks' finer timeseries data since recorded last timestamp for a shorter response time if no time period given
-       two_weeks = 2 * 7 * 24 * 60 * 60 * 1000
-       query_start = last_timestamp - two_weeks
-       query_end = last_timestamp
+        # query last two weeks' finer timeseries data since recorded last timestamp for a shorter response time if no time period given
+        two_weeks = 2 * 7 * 24 * 60 * 60 * 1000
+        query_start = last_timestamp - two_weeks
+        query_end = last_timestamp
     elif not start_time:
         query_start = first_timestamp
         query_end = end_time
@@ -2554,7 +2554,7 @@ def parse_year_month(year_month):
 
         try:
             dt_obj = datetime(year=int(year), month=int(month), day=1, hour=1)
-            
+
             res['res'] = 'success'
             res['dt_obj'] = dt_obj
         except ValueError:
@@ -2580,7 +2580,7 @@ def retrieve_monthly_data(request):
         record = CanonicalBuilding.objects.get(id=building_id)
 
         meter_ids = record.meters.all()
-        
+
         # read time periods if there are provided
         start_time = request.GET.get('start_year_month', None)  # inclusive
         end_time = request.GET.get('end_year_month', None)      # inclusive
@@ -2621,7 +2621,7 @@ def retrieve_monthly_data(request):
                 _log.error('No monthly data found! for meter_id ' + str(meter_id))
             else:
                 # record = TimeSeries.objects.filter(meter_id=meter_id)
-                
+
                 for data in record.iterator():
                     monthly = {}
                     monthly['begin_time'] = data.begin_time
