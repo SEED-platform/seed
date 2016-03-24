@@ -6,6 +6,7 @@
 """
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import pre_delete
 from django.contrib.auth.models import User
 
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
@@ -182,3 +183,14 @@ class Organization(models.Model):
 
     def __unicode__(self):
         return u'Organization: {0}({1})'.format(self.name, self.pk)
+
+
+def organization_pre_delete(sender, instance, **kwargs):
+    from seed.data_importer.models import ImportFile, ImportRecord
+
+    # Use raw_objects here because objects can't access records where deleted=True.
+    ImportFile.raw_objects.filter(import_record__super_organization_id=instance.pk).delete()
+    ImportRecord.raw_objects.filter(super_organization_id=instance.pk).delete()
+
+
+pre_delete.connect(organization_pre_delete, sender=Organization)
