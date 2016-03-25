@@ -7,18 +7,37 @@
 from __future__ import absolute_import
 
 import os
-from celery import Celery
+
+import celery
+import raven
+
 from django.conf import settings
+from raven.contrib.celery import register_signal, register_logger_signal
+
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.main')
 
-app = Celery('seed')
 
-# Using a string here means the worker will not have to
-# pickle the object when using Windows.
+class Celery(celery.Celery):
+
+    def on_configure(self):
+        try:
+            client = raven.Client(settings.RAVEN_CONFIG['dsn'])
+
+            # register a custom filter to filter out duplicate logs
+            register_logger_signal(client)
+
+            # hook into the Celery error handler
+            register_signal(client)
+        except AttributeError:
+            pass
+
+
+app = Celery('seed')
 app.config_from_object('django.conf:settings')
 app.autodiscover_tasks(lambda: settings.SEED_CORE_APPS)
+
 
 if __name__ == '__main__':
     app.start()
