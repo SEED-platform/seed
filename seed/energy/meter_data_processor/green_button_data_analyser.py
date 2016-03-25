@@ -98,8 +98,8 @@ def data_analyse(ts_data, name):
         end_time = datetime.fromtimestamp(begin_ts + interval)
         reading = float(ts_cell['value'])
 
-        db_record = TimeSeries.objects.filter(meter_id=seed_meter_id)..filter(begin_time=begin_time)
-        if not exist:
+        db_record = TimeSeries.objects.filter(meter_id=seed_meter_id, begin_time=begin_time)
+        if not db_record:
             db_record = TimeSeries(begin_time=begin_time,
                                    end_time=end_time,
                                    reading=reading,
