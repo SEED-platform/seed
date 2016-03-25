@@ -16,8 +16,8 @@ interval_threshold = 60 * 60 * 24 * 20  # 20 days seconds
 
 
 def get_month_from_ts(ts):
-    dateObj = datetime.fromtimestamp(long(ts))
-    return {'year': int(dateObj.year), 'month': int(dateObj.month)}
+    date_obj = datetime.fromtimestamp(long(ts))
+    return {'year': int(date_obj.year), 'month': int(date_obj.month)}
 
 
 def data_analyse(ts_data, name):
@@ -94,11 +94,21 @@ def data_analyse(ts_data, name):
         begin_ts = int(ts_cell['start'])
         interval = int(ts_cell['interval'])
 
-        new_ts = TimeSeries(begin_time=datetime.fromtimestamp(begin_ts),
-                            end_time=datetime.fromtimestamp(begin_ts + interval),
-                            reading=float(ts_cell['value']),
-                            meter_id=seed_meter_id)
-        new_ts.save()
+        begin_time = datetime.fromtimestamp(begin_ts)
+        end_time = datetime.fromtimestamp(begin_ts + interval)
+        reading = float(ts_cell['value'])
+
+        db_record = TimeSeries.objects.filter(meter_id=seed_meter_id)..filter(begin_time=begin_time)
+        if not exist:
+            db_record = TimeSeries(begin_time=begin_time,
+                                   end_time=end_time,
+                                   reading=reading,
+                                   meter_id=seed_meter_id)
+        else:
+            db_record = db_record[0]
+            db_record.reading = reading
+
+        db_record.save()
 
     _log.info('insert monthly data into postgresql finished')
 
