@@ -19,6 +19,7 @@ angular.module('BE.seed.vendor_dependencies', [
     'ui-notification'
     ]);
 angular.module('BE.seed.controllers', [
+    'BE.seed.controller.about',
     'BE.seed.controller.accounts',
     'BE.seed.controller.admin',
     'BE.seed.controller.building_detail',
@@ -79,6 +80,7 @@ angular.module('BE.seed.services', [
     'BE.seed.service.dataset',
     'BE.seed.service.export',
     'BE.seed.service.label',
+    'BE.seed.service.main',
     'BE.seed.service.mapping',
     'BE.seed.service.matching',
     'BE.seed.service.organization',
@@ -213,7 +215,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             controller: 'building_list_controller',
             templateUrl: static_url + 'seed/partials/project_detail.html',
             resolve: {
-                'search_payload': ['building_services', '$route', function(building_services, $route){
+                search_payload: ['building_services', '$route', function(building_services, $route){
                     var params = angular.copy($route.current.params);
                     var project_slug = params.project_id;
                     delete(params.project_id);
@@ -604,7 +606,13 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             templateUrl: static_url + 'seed/partials/feedback.html'
         })
         .when('/about', {
-            templateUrl: static_url + 'seed/partials/about.html'
+            controller: 'about_controller',
+            templateUrl: static_url + 'seed/partials/about.html',
+            resolve: {
+                'version_payload': ['main_service', function (main_service) {
+                    return main_service.version();
+                }]
+            }
         })
         .when('/accounts', {
             controller: 'accounts_controller',

@@ -180,12 +180,12 @@ angular.module('BE.seed.controller.building_list', [])
                 //dialog was closed with 'Done' button.
                 get_labels();
                 refresh_search();
-            }, 
+            },
             function (message) {
-               //dialog was 'dismissed,' which means it was cancelled...so nothing to do. 
+               //dialog was 'dismissed,' which means it was cancelled...so nothing to do.
             }
         );
-   
+
     };
 
     /**

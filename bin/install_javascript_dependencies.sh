@@ -1,36 +1,22 @@
 #!/usr/bin/env bash
-# installs bower dependencies
+# installs npm and bower dependencies
 # assumes npm is installed
 
-echo "installing node dependencies..."
-npm install -g bower gulp gulp-load-plugins es6-promise gulp-jshint jshint-stylish gulp-fixmyjs gulp-sourcemaps gulp-sass gulp-autoprefixer gulp-csso
-echo ""
-echo ""
-echo ""
-echo "starting bower install"
-bower install --config.interactive
+echo -e "Installing global dependencies..."
+sudo npm install -g bower grunt-cli gulp-cli
+echo -e "\n\n\nInstalling npm dependencies..."
+npm install
+echo -e "\n\n\nInstalling bower dependencies"
+bower install --config.interactive=false
 
 if [ ! -f seed/static/vendors/bower_components/fine-uploader/_build/s3.fineuploader.js ];
 then
-    echo ""
-    echo ""
-    echo ""
-    echo "installing fineuploader dependencies"
+    echo -e "\n\n\nInstalling fineuploader dependencies"
     cd seed/static/vendors/bower_components/fine-uploader/
     npm install
-    echo ""
-    echo ""
-    echo ""
-    echo ""
-    echo "installing grunt-cli..."
-    npm install -g grunt-cli
-    echo ""
-    echo ""
-    echo ""
-    echo ""
-    echo "building fineuploader"
+    echo "\n\n\nBuilding fineuploader"
     grunt build
     cd ../../../../../
 else
-    echo "fineuploader already installed"
+    echo -e "\n\n\nFineuploader already installed"
 fi
