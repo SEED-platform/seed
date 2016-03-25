@@ -15,16 +15,15 @@
   },
   "devDependencies": {
     "bower": "^1.7.7",
-    "es6-promise": "^3.1.2",
+    "eslint-plugin-angular": "^1.0.0",
+    "eslint-plugin-lodash": "^1.4.2",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^3.1.0",
     "gulp-csso": "^1.1.0",
     "gulp-eslint": "^2.0.0",
-    "gulp-fixmyjs": "^1.0.2",
-    "gulp-jshint": "^2.0.0",
     "gulp-load-plugins": "^1.2.0",
     "gulp-sass": "^2.2.0",
     "gulp-sourcemaps": "^1.6.0",
-    "jshint-stylish": "^2.1.0"
+    "gulp-util": "^3.0.7"
   }
 }

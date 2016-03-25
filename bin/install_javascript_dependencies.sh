@@ -3,7 +3,15 @@
 # assumes npm is installed
 
 echo -e "Installing global dependencies..."
-sudo npm install -g bower grunt-cli gulp-cli
+if ! npm list -g bower; then
+    sudo npm install -g bower
+fi
+if ! npm list -g grunt-cli; then
+    sudo npm install -g grunt-cli
+fi
+if ! npm list -g gulp-cli; then
+    sudo npm install -g gulp-cli
+fi
 echo -e "\n\n\nInstalling npm dependencies..."
 npm install
 echo -e "\n\n\nInstalling bower dependencies"
