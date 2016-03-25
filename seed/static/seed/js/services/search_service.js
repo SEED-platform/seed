@@ -123,7 +123,7 @@ angular.module('BE.seed.service.search', [])
             sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingFilterParams', {});
         }
         saas.filter_search();
-    }
+    };
 
     /**
      * sanitize_params: removes filter params with null or undefined values

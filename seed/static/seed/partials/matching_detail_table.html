@@ -40,7 +40,7 @@
                     </tr>
                     <!-- matched building -->
                     <tr class="success" ng-repeat="b in detail.match_tree | filter:filter_current_building">
-                        <td class="is_aligned_center" >
+                        <td class="is_aligned_center">
                             <input type="checkbox" ng-model="b.matches_current" ng-change="detail.toggle_match(b)">
                         </td>
                         <td ng-repeat="c in columns">

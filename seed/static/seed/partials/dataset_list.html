@@ -5,7 +5,9 @@
 
         </div>
         <div class="page_title">
-            <h1><i class="fa fa-sitemap"></i> {$ datasets.length | number:0 $} Data Sets</h1>
+            <h1><i class="fa fa-sitemap"></i>
+                <ng-pluralize count="datasets.length | number:0" when="{'one': '1 Data Set','other': '{} Data Sets'}"></ng-pluralize>
+            </h1>
         </div>
         <div class="right page_action_container">
             <a href="#/data" data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" ng-show="menu.user.organization.user_role !== 'viewer'">Create new data set</a>

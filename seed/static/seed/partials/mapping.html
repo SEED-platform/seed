@@ -110,7 +110,7 @@
                             <td>
                                 <strong id="duplicate-header-{$ $index $}">{$tcm.name$}</strong>
                             </td>
-                            <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning', 'success': set_td_class(tcm, cell_value) == 'success'}" >
+                            <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning', 'success': set_td_class(tcm, cell_value) == 'success'}">
                                 {$ cell_value $}
                             </td>
                         </tr>
@@ -136,7 +136,7 @@
                         </tr>
                     </thead>
                     <tbody id="mapped-table">
-                        <tr ng-repeat="tcm in valids" ng-class="{'ignored_row': !tcm.mapped_row}" >
+                        <tr ng-repeat="tcm in valids" ng-class="{'ignored_row': !tcm.mapped_row}">
                             <td class="check is_aligned_center">
                                 <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
                             </td>
@@ -176,7 +176,7 @@
                 <div class="btn-group" style="margin-left:20px;">
                     <button type="button" 
                             class="btn btn-primary btn-sm"
-                            ng-click="do_update_filters()"  >
+                            ng-click="do_update_filters()">
                         Update Filters
                     </button>
                 </div>   

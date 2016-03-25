@@ -15,7 +15,7 @@ angular.module('stripImportPrefix', []).filter('stripImportPrefix', [
     *      display the ids. 
     *
     * Usage: building.id = "IMP12-007"
-    *        HTML: <span> {{ building.id | stripImportPrefix }} </span>
+    *        HTML: <span> {$ building.id | stripImportPrefix $} </span>
     *         compiles to: <span> 007 </span>
     *        JS  : stripImportPrefix(building.id)
     *         returns: "007"

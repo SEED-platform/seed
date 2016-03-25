@@ -99,8 +99,11 @@ angular.module('BE.seed.controller.building_detail_update_labels_modal_ctrl', []
 
         label_service.update_building_labels(addLabelIDs, removeLabelIDs, [building.pk], false, {}).then(
             function(data){
-                var msg = data.num_buildings_updated.toString() + " buildings updated.";
-                notification.primary(msg);
+                if (data.num_buildings_updated === 1) {
+                    notification.primary(data.num_buildings_updated + " building updated.");
+                } else {
+                    notification.primary(data.num_buildings_updated + " buildings updated.");
+                }
                 $uibModalInstance.close();
             },
             function(data, status) {
