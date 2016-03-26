@@ -94,7 +94,7 @@ angular.module('BE.seed.controller.menu', [])
     });
 
     $scope.input_search = function() {
-        if ($location.absUrl().indexOf('#') === -1) {
+        if (!_.includes($location.absUrl(), '#')) {
             // not on SEED angularjs route managed page
             $window.location.href = urls.seed_home + '#/buildings?q=' + $scope.search_input;
         } else {
@@ -108,23 +108,23 @@ angular.module('BE.seed.controller.menu', [])
             return true;
         } else if (menu_item !== '/' && _.startsWith($location.path(), menu_item)) {
             return true;
-        } else if (menu_item === '/seed/data' && $location.absUrl().indexOf('#') === -1) {
-            if ($location.absUrl().indexOf(menu_item) !== -1) {
+        } else if (menu_item === '/seed/data' && !_.includes($location.absUrl(), '#')) {
+            if (_.includes($location.absUrl(), menu_item)) {
                 return true;
             }
-            if ($location.absUrl().indexOf('worksheet') !== -1) {
+            if (_.includes($location.absUrl(), 'worksheet')) {
                 return true;
             }
-            if ($location.absUrl().indexOf('mapping') !== -1) {
+            if (_.includes($location.absUrl(), 'mapping')) {
                 return true;
             }
-            if ($location.absUrl().indexOf('cleaning') !== -1) {
+            if (_.includes($location.absUrl(), 'cleaning')) {
                 return true;
             }
-            if ($location.absUrl().indexOf('merge') !== -1) {
+            if (_.includes($location.absUrl(), 'merge')) {
                 return true;
             }
-            if ($location.absUrl().indexOf('import') !== -1) {
+            if (_.includes($location.absUrl(), 'import')) {
                 return true;
             }
             return false;

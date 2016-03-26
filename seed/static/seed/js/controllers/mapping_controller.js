@@ -59,7 +59,7 @@ angular.module('BE.seed.controller.mapping', [])
         var result = [];
         for(i=0; i<params.length;i++) {
             var current = params[i];
-            if(result.indexOf(current) === -1) {
+            if(!_.includes(result, current)) {
                 result.push(current);
             }
         }
@@ -77,7 +77,7 @@ angular.module('BE.seed.controller.mapping', [])
     angular.forEach($scope.suggested_mappings, function (v, k) {
         // only title case fields like address_line_1 which have had their
         // typeahead suggestions title cased
-        if ($scope.typeahead_columns.indexOf(v[0]) === -1) {
+        if (!_.includes($scope.typeahead_columns, v[0])) {
             v[0] = $filter('titleCase')(v[0]);
         }
     });
@@ -218,7 +218,7 @@ angular.module('BE.seed.controller.mapping', [])
         tcm.user_suggestion = true;
         if (!_.isUndefined(tcm.suggestion) && !_.isEmpty(tcm.suggestion)) {
             var type;
-            if (original_columns.indexOf(angular.lowercase(tcm.suggestion).replace(/ /g, '_'))>=0) {
+            if (_.includes(original_columns, angular.lowercase(tcm.suggestion).replace(/ /g, '_'))) {
                 type = $scope.building_column_types[angular.lowercase(tcm.suggestion).replace(/ /g, '_')];
             } else {
                 type = $scope.building_column_types[tcm.suggestion];
@@ -434,7 +434,7 @@ angular.module('BE.seed.controller.mapping', [])
         var mappings = $scope.get_mappings().map(function (m) {
             var mapping = m[0];
             mapping = angular.lowercase(mapping).replace(/ /g, '_');
-            if (original_columns.indexOf(mapping)>=0) {
+            if (_.includes(original_columns, mapping)) {
                 m[0] = mapping;
             }
             return m;

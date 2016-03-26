@@ -37,7 +37,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
     $scope.fields = all_columns.fields;
     // re-check the user's selected columns
     $scope.fields = $scope.fields.map(function(c){
-      c.checked = (default_columns.columns.indexOf(c.sort_column) > -1);
+      c.checked = _.includes(default_columns.columns, c.sort_column);
       return c;
     });
     // also put the selected columns in the saved order, in case they were reordered
@@ -71,7 +71,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
     });
 
     /**
-     * updates all the fields checkboxs to match the ``select_all`` checkbox
+     * updates all the fields checkboxes to match the ``select_all`` checkbox
      */
     $scope.select_all_clicked = function () {
         var fields = $filter('filter')($scope.fields, $scope.filter_params);
@@ -79,7 +79,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
             return f.sort_column;
         });
         $scope.fields = $scope.fields.map(function (f) {
-            if (fields.indexOf(f.sort_column)>=0) {
+            if (_.includes(fields, f.sort_column)) {
                 f.checked = $scope.controls.select_all;
             }
             return f;

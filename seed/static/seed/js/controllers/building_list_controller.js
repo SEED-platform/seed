@@ -143,7 +143,7 @@ angular.module('BE.seed.controller.building_list', [])
                 return true;
             } else {
                 // Only include element if it's name contains the query string.
-                return lbl.name.indexOf(query) > -1;
+                return _.includes(lbl.name, query);
             }
         });
     };

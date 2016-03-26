@@ -161,11 +161,9 @@ angular.module('BE.seed.controller.building_detail', [])
             'duplicate',
             'co_parent'
         ];
-        var no_invalid_key = known_invalid_keys.indexOf(key) === -1;
+        var no_invalid_key = !_.includes(known_invalid_keys, key);
 
-        return (key.indexOf('_source') === -1 &&
-                key.indexOf('extra_data') === -1 && key.indexOf('$$') === -1 &&
-                no_invalid_key);
+        return (!_.includes(key, '_source') && !_.includes(key, 'extra_data') && !_.includes(key, '$$') && no_invalid_key);
     };
 
     /**
@@ -278,7 +276,7 @@ angular.module('BE.seed.controller.building_detail', [])
         angular.forEach(buildings, function(b){
             angular.forEach(b.extra_data, function (val, key){
                 // Duplicate check and check if default_columns is used and if field in columns
-                if (key_list.indexOf(key) === -1 && (!check_defaults || (check_defaults && $scope.default_columns.indexOf(key) > -1))) {
+                if (!_.includes(key_list, key) && (!check_defaults || (check_defaults && _.includes($scope.default_columns, key)))) {
                     key_list.push(key);
                     data_columns.push({
                         key: key,
@@ -291,8 +289,8 @@ angular.module('BE.seed.controller.building_detail', [])
         // handle building properties
         angular.forEach($scope.building, function ( val, key ) {
             // Duplicate check and check if default_columns is used and if field in columns
-            if ( $scope.is_valid_key(key) && !_.isUndefined(val) && key_list.indexOf(key) === -1 &&
-                (!check_defaults || (check_defaults && $scope.default_columns.indexOf(key) > -1))) {
+            if ( $scope.is_valid_key(key) && !_.isUndefined(val) && !_.includes(key_list, key) &&
+                (!check_defaults || (check_defaults && _.includes($scope.default_columns, key)))) {
                 key_list.push(key);
                 data_columns.push({
                     key: key,
@@ -414,7 +412,7 @@ angular.module('BE.seed.controller.building_detail', [])
         // find all the floor area fields for the building
         $scope.floor_area_fields = [];
         angular.forEach($scope.building, function(value, key) {
-            if (angular.lowercase(key).indexOf('area')>=0 && angular.lowercase(key).indexOf('_source')===-1) {
+            if (_.includes(angular.lowercase(key), 'area') && !_.includes(angular.lowercase(key), '_source')) {
                 $scope.floor_area_fields.push({
                     title: key,
                     sort_column: key
@@ -422,7 +420,7 @@ angular.module('BE.seed.controller.building_detail', [])
             }
         });
         angular.forEach($scope.building.extra_data, function(value, key) {
-            if (angular.lowercase(key).indexOf('area')>=0) {
+            if (_.includes(angular.lowercase(key), 'area')) {
                 $scope.floor_area_fields.push({
                     title: key,
                     sort_column: key,

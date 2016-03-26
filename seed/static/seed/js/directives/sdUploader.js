@@ -39,7 +39,7 @@ var makeS3Uploader = function(scope, element, attrs, filename) {
      */
     showMessage: function(message){
         var invalid_extension = 'invalid extension. Valid extension(s):';
-        if (message.indexOf(invalid_extension) > -1) {
+        if (_.includes(message, invalid_extension)) {
             scope.eventfunc({message: 'invalid_extension'});
         } else {
             window.alert(message);
@@ -191,7 +191,7 @@ var makeFileSystemUploader = function(scope, element, attrs, filename) {
          */
         showMessage: function(message){
             var invalid_extension = 'invalid extension. Valid extension(s):';
-            if (message.indexOf(invalid_extension) > -1) {
+            if (_.includes(message, invalid_extension)) {
                 scope.eventfunc({message: 'invalid_extension'});
             } else {
                 window.alert(message);

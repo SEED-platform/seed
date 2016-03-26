@@ -69,7 +69,7 @@ angular.module('BE.seed.service.simple_modal', [])
         function showModal(customModalOptions, customModalDefaults) {
 
             if (customModalOptions && customModalOptions.type !== null){
-                if (validModalTypes.indexOf(customModalOptions.type) === -1 ){
+                if (!_.includes(validModalTypes, customModalOptions.type)){
                     throw 'Invalid modal type';
                 }
             }

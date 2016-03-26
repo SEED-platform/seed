@@ -335,7 +335,7 @@ angular.module('BE.seed.service.search', [])
     search_service.add_remove_to_list = function(building) {
         if (((building.checked && !this.select_all_checkbox) ||
             (!building.checked && this.select_all_checkbox)) &&
-            this.selected_buildings.indexOf(building.id) === -1) {
+            !_.includes(this.selected_buildings, building.id)) {
             this.selected_buildings.push(building.id);
         } else {
             // remove from list
@@ -370,7 +370,7 @@ angular.module('BE.seed.service.search', [])
      */
     search_service.load_state_from_selected_buildings = function() {
         for (var i = 0; i < this.buildings.length; i++) {
-            if (this.selected_buildings.indexOf(this.buildings[i].id) > -1) {
+            if (_.includes(this.selected_buildings, this.buildings[i].id)) {
                 this.buildings[i].checked = !this.select_all_checkbox;
             }
         }
@@ -458,7 +458,7 @@ angular.module('BE.seed.service.search', [])
       column_prototype) {
         var columns = [];
         columns = all_columns.filter(function(c) {
-            return column_headers.indexOf(c.sort_column) > -1 || c.checked;
+            return _.includes(column_headers, c.sort_column) || c.checked;
         });
         // also apply the user sort order
         columns.sort(function(a, b) {
@@ -469,11 +469,11 @@ angular.module('BE.seed.service.search', [])
                 return 1;
             }
             // if no status, sort according to user's selected order
-            if (column_headers.indexOf(a.sort_column) > -1 && column_headers.indexOf(b.sort_column) > -1) {
+            if (_.includes(column_headers, a.sort_column) && _.includes(column_headers, b.sort_column)) {
                 return (column_headers.indexOf(a.sort_column) - column_headers.indexOf(b.sort_column));
-            } else if (column_headers.indexOf(a.sort_column) > -1) {
+            } else if (_.includes(column_headers, a.sort_column)) {
                 return -1;
-            } else if (column_headers.indexOf(b.sort_column) > -1) {
+            } else if (_.includes(column_headers, b.sort_column)) {
                 return 1;
             } else { // preserve previous order
                 return (all_columns.indexOf(a) - all_columns.indexOf(b));
