@@ -414,7 +414,7 @@ angular.module('BE.seed.controller.building_detail', [])
         // find all the floor area fields for the building
         $scope.floor_area_fields = [];
         angular.forEach($scope.building, function(value, key) {
-            if (~angular.lowercase(key).indexOf('area') && !~angular.lowercase(key).indexOf('_source')) {
+            if (angular.lowercase(key).indexOf('area')>=0 && angular.lowercase(key).indexOf('_source')===-1) {
                 $scope.floor_area_fields.push({
                     title: key,
                     sort_column: key
@@ -422,7 +422,7 @@ angular.module('BE.seed.controller.building_detail', [])
             }
         });
         angular.forEach($scope.building.extra_data, function(value, key) {
-            if (~angular.lowercase(key).indexOf('area')) {
+            if (angular.lowercase(key).indexOf('area')>=0) {
                 $scope.floor_area_fields.push({
                     title: key,
                     sort_column: key,

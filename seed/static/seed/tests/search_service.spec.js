@@ -3,21 +3,32 @@
  */
 // create dummy angularJS app to attach filter(s)
 var searchTestApp = angular.module(
-    'searchTestApp', ['BE.seed.service.search']
+    'searchTestApp', ['BE.seed.service.search', 'BE.seed.utilities']
 );
 
 describe('The search_service service', function() {
     var saas, httpBackend, test_url;
+    var mock_spinner_utility;
 
     beforeEach(function () {
         module('searchTestApp');
-        inject(function (search_service, $httpBackend) {
+        inject(function (search_service, $httpBackend, $q, spinner_utility) {
             saas = search_service;
             httpBackend = $httpBackend;
             httpBackend.when('POST', test_url).respond('ok');
-        });
+            mock_spinner_utility = spinner_utility;
 
+            spyOn(mock_spinner_utility, 'show')
+                .andCallFake(function(){
+                    //do nothing
+                });
+            spyOn(mock_spinner_utility, 'hide')
+                .andCallFake(function(){
+                    //do nothing
+                });
+        });
     });
+
 
     /**
      * sanitize_params tests
