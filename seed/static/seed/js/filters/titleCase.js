@@ -11,11 +11,11 @@ angular.module('titleCase', []).filter('titleCase', [
   function($filter) {
 
     return function(input) {
-        if (typeof input === 'undefined' || input === null) {
+        if (_.isNil(input)) {
             return input;
         }
         input = input.toString();
-        input = input.replace(/_/g, " ");
+        input = input.replace(/_/g, ' ');
         input = input.replace(/(?:^|\s)\S/g, function(a) {
             return angular.uppercase(a);
         });

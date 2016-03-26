@@ -13,8 +13,8 @@ angular.module('BE.seed.service.export', []).factory('export_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': window.BE.urls.export_buildings,
-            'data': buildings_payload
+            url: window.BE.urls.export_buildings,
+            data: buildings_payload
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -26,8 +26,8 @@ angular.module('BE.seed.service.export', []).factory('export_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': window.BE.urls.export_buildings_progress,
-            'data': {'export_id': export_id}
+            url: window.BE.urls.export_buildings_progress,
+            data: {export_id: export_id}
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -39,8 +39,8 @@ angular.module('BE.seed.service.export', []).factory('export_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': window.BE.urls.export_buildings_download,
-            'data': {'export_id': export_id}
+            url: window.BE.urls.export_buildings_download,
+            data: {export_id: export_id}
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {

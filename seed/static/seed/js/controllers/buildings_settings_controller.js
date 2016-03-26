@@ -41,7 +41,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
       return c;
     });
     // also put the selected columns in the saved order, in case they were reordered
-    $scope.fields.sort(function(a,b) {
+    $scope.fields.sort(function(a, b) {
         if (a.checked && b.checked) {
             return default_columns.columns.indexOf(a.sort_column) - default_columns.columns.indexOf(b.sort_column);
         } else if (!a.checked && !b.checked) {
@@ -135,7 +135,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
         columns = columns.map(function(field) {
             return field.sort_column;
         });
-        $scope.fields.sort(function(a,b) {
+        $scope.fields.sort(function(a, b) {
           if (a.checked && b.checked) {
               return (columns.indexOf(a.sort_column) - columns.indexOf(b.sort_column));
           } else if (!a.checked && !b.checked) {

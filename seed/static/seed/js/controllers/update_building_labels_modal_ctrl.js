@@ -28,11 +28,11 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
     if (search.selected_buildings && search.selected_buildings.length > 0){
         $scope.number_matching_search = search.selected_buildings.length;
     } else {
-        $scope.number_matching_search = "";
+        $scope.number_matching_search = '';
     }
-    
+
     //An array of all available labels in the system.
-    //These label objects should have the is_applied property set so 
+    //These label objects should have the is_applied property set so
     //the modal can show the Remove button if necessary. (Populated
     //during init function below.)
     $scope.labels = [];
@@ -44,8 +44,8 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
     $scope.available_colors = label_service.get_available_colors();
 
     /* Initialize the label props for a 'new' label */
-    $scope.initialize_new_label = function() {   
-       $scope.new_label = {color:"gray", label:"default", name:""};
+    $scope.initialize_new_label = function() {
+       $scope.new_label = {color:'gray', label:'default', name:''};
     };
 
     /* Create a new label based on user input */
@@ -56,14 +56,14 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
         }
         label_service.create_label($scope.new_label).then(
             function(data){
-                
+
                 //promise completed successfully
                 var createdLabel = data;
 
                 //Assume that user wants to apply a label they just created
                 //in this modal...
                 createdLabel.is_checked_add = true;
-                
+
                 $scope.newLabelForm.$setPristine();
                 $scope.labels.unshift(createdLabel);
                 $scope.initialize_new_label();
@@ -98,16 +98,12 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
     $scope.done = function () {
 
         var addLabelIDs = _.chain($scope.labels)
-            .filter(function(lbl) {
-                return lbl.is_checked_add;
-            })
-            .pluck("id")
+            .filter('is_checked_add')
+            .pluck('id')
             .value();
         var removeLabelIDs = _.chain($scope.labels)
-            .filter(function(lbl) {
-                return lbl.is_checked_remove;
-            })
-            .pluck("id")
+            .filter('is_checked_remove')
+            .pluck('id')
             .value();
 
         // Parameters used to limit the loaded building list.
@@ -116,18 +112,18 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
         $uibModalInstance.close();
 
         label_service.update_building_labels(addLabelIDs, removeLabelIDs, selected_buildings, select_all_checkbox, search_params).then(
-            function(data){  
-                var msg = data.num_buildings_updated.toString() + " buildings updated.";
+            function(data){
+                var msg = data.num_buildings_updated.toString() + ' buildings updated.';
                 notification.primary(msg);
             },
             function(data, status) {
                // Rejected promise, error occurred.
                // TODO: Make this nicer...just doing alert for development
                alert('Error updating building labels: ' + status);
-            }    
+            }
         );
 
-        
+
     };
 
     /* User has cancelled dialog */
@@ -138,7 +134,7 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
 
 
     /* init: Gets the list of labels. Sets up new label object. */
-    var init = function() {    
+    var init = function() {
         $scope.initialize_new_label();
         //get labels with 'is_applied' property by passing in current search state
         $scope.loading = true;
@@ -147,7 +143,7 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
              $scope.labels = data.results;
              $scope.loading = false;
         });
-    }; 
+    };
 
     init();
 

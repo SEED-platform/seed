@@ -66,11 +66,7 @@ angular.module('BE.seed.controller.building_detail', [])
      *   or a project.
      */
     $scope.is_project = function() {
-        if (typeof $scope.user.project_slug === "undefined") {
-            return false;
-        } else {
-            return true;
-        }
+        return !_.isUndefined($scope.user.project_slug);
     };
 
     /**
@@ -104,7 +100,7 @@ angular.module('BE.seed.controller.building_detail', [])
      */
     $scope.set_building_attribute = function (parent, field_name, extra_data) {
         var f = field_name.key || field_name;
-        if (typeof extra_data !== "undefined" && extra_data){
+        if (extra_data){
             $scope.building.extra_data[f] = parent.extra_data[f];
             $scope.building.extra_data_sources[f] = parent.id;
         } else {
@@ -285,8 +281,8 @@ angular.module('BE.seed.controller.building_detail', [])
                 if (key_list.indexOf(key) === -1 && (!check_defaults || (check_defaults && $scope.default_columns.indexOf(key) > -1))) {
                     key_list.push(key);
                     data_columns.push({
-                        "key": key,
-                        "type": "extra_data"
+                        key: key,
+                        type: 'extra_data'
                     });
                 }
             });
@@ -295,19 +291,19 @@ angular.module('BE.seed.controller.building_detail', [])
         // handle building properties
         angular.forEach($scope.building, function ( val, key ) {
             // Duplicate check and check if default_columns is used and if field in columns
-            if ( $scope.is_valid_key(key) && typeof val !== "undefined" && key_list.indexOf(key) === -1 && 
+            if ( $scope.is_valid_key(key) && !_.isUndefined(val) && key_list.indexOf(key) === -1 &&
                 (!check_defaults || (check_defaults && $scope.default_columns.indexOf(key) > -1))) {
                 key_list.push(key);
                 data_columns.push({
-                    "key": key,
-                    "type": "fixed_column"
+                    key: key,
+                    type: 'fixed_column'
                 });
             }
         });
 
         if (check_defaults) {
             // Sort by user defined order.
-            data_columns.sort(function(a,b) {
+            data_columns.sort(function(a, b) {
                 if ($scope.default_columns.indexOf(a.key) < $scope.default_columns.indexOf(b.key)) {
                     return -1;
                 } else {
@@ -315,8 +311,8 @@ angular.module('BE.seed.controller.building_detail', [])
                 }
             });
         } else {
-            // Sort alphabetically. 
-            data_columns.sort(function(a,b) {
+            // Sort alphabetically.
+            data_columns.sort(function(a, b) {
                 if (a.key.toLowerCase() < b.key.toLowerCase()) {
                     return -1;
                 } else {
@@ -347,7 +343,7 @@ angular.module('BE.seed.controller.building_detail', [])
 
         modalInstance.result.then(
             function (note) {
-                if (typeof existing_note !== 'undefined') {
+                if (!_.isUndefined(existing_note)) {
                     angular.extend(existing_note, note);
                 } else {
                     $scope.audit_logs.unshift(note);
@@ -370,7 +366,7 @@ angular.module('BE.seed.controller.building_detail', [])
      * returns a number
      */
     $scope.get_number = function ( num ) {
-        if ( !angular.isNumber(num) && num !== null && typeof num !== "undefined") {
+        if ( !angular.isNumber(num) && !_.isNil(num)) {
 
             return +num.replace(/,/g, '');
         }
@@ -396,7 +392,7 @@ angular.module('BE.seed.controller.building_detail', [])
                 });
             },
             function (message) {
-               //dialog was 'dismissed,' which means it was cancelled...so nothing to do. 
+               //dialog was 'dismissed,' which means it was cancelled...so nothing to do.
             }
         );
     };
@@ -404,7 +400,7 @@ angular.module('BE.seed.controller.building_detail', [])
     /**
      * init: sets default state of building detail page, gets the breadcrumb
      *   project if exists, sets the field arrays for each section, performs
-     *   some date string manipulation for better display rendering, 
+     *   some date string manipulation for better display rendering,
      *   and gets all the extra_data fields
      *
      */

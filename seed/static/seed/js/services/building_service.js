@@ -21,7 +21,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': window.BE.urls.get_total_number_of_buildings_for_user_url
+            url: window.BE.urls.get_total_number_of_buildings_for_user_url
         }).success(function(data, status, headers, config) {
             building_factory.total_number_of_buildings_for_user = data.buildings_count;
             defer.resolve(data);
@@ -36,15 +36,15 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': window.BE.urls.get_building_url,
-            'params': {
-                'building_id': building_id,
-                'organization_id': user_service.get_organization().id
+            url: window.BE.urls.get_building_url,
+            params: {
+                building_id: building_id,
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             for (var i = 0; i < data.projects.length; i++) {
                 var building = data.projects[i].building;
-                if (typeof building.label !== "undefined") {
+                if (!_.isUndefined(building.label)) {
                     building.label.label = label_helper_service.lookup_label(building.label.color);
                 }
             }
@@ -59,18 +59,18 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         spinner_utility.show();
         var defer = $q.defer();
         $http({
-            'method': 'POST',
-            'data': {
-                'q': query_string,
-                'number_per_page': number_per_page,
-                'page': page_number,
-                'order_by': order_by,
-                'sort_reverse': sort_reverse,
-                'filter_params': filter_params,
-                'project_id': project_id,
-                'project_slug': project_slug
+            method: 'POST',
+            data: {
+                q: query_string,
+                number_per_page: number_per_page,
+                page: page_number,
+                order_by: order_by,
+                sort_reverse: sort_reverse,
+                filter_params: filter_params,
+                project_id: project_id,
+                project_slug: project_slug
             },
-            'url': urls.search_buildings
+            url: urls.search_buildings
         }).success(function(data, status, headers, config){
             spinner_utility.hide();
             defer.resolve(data);
@@ -84,19 +84,19 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         spinner_utility.show();
         var defer = $q.defer();
         $http({
-            'method': 'POST',
-            'data': {
-                'q': query_string,
-                'number_per_page': number_per_page,
-                'page': page_number,
-                'order_by': order_by,
-                'sort_reverse': sort_reverse,
-                'filter_params': filter_params,
-                'project_id': project_id,
-                'import_file_id': import_file_id,
-                'project_slug': project_slug
+            method: 'POST',
+            data: {
+                q: query_string,
+                number_per_page: number_per_page,
+                page: page_number,
+                order_by: order_by,
+                sort_reverse: sort_reverse,
+                filter_params: filter_params,
+                project_id: project_id,
+                import_file_id: import_file_id,
+                project_slug: project_slug
             },
-            'url': urls.search_building_snapshots
+            url: urls.search_building_snapshots
         }).success(function(data, status, headers, config){
             spinner_utility.hide();
             defer.resolve(data);
@@ -110,17 +110,17 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         spinner_utility.show({top: '75%'}, $('.section_content')[0]);
         var defer = $q.defer();
         $http({
-            'method': 'POST',
-            'data': {
-                'q': query_string,
-                'number_per_page': number_per_page,
-                'page': page_number,
-                'order_by': order_by,
-                'sort_reverse': sort_reverse,
-                'filter_params': filter_params,
-                'import_file_id': import_file_id
+            method: 'POST',
+            data: {
+                q: query_string,
+                number_per_page: number_per_page,
+                page: page_number,
+                order_by: order_by,
+                sort_reverse: sort_reverse,
+                filter_params: filter_params,
+                import_file_id: import_file_id
             },
-            'url': urls.search_building_snapshots
+            url: urls.search_building_snapshots
         }).success(function(data, status, headers, config){
             spinner_utility.hide();
             defer.resolve(data);
@@ -133,14 +133,14 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
     building_factory.save_match = function(source_building_id, target_building_id, create_match) {
         var defer = $q.defer();
         $http({
-            'method': 'POST',
-            'data': {
-                'source_building_id': source_building_id,
-                'target_building_id': target_building_id,
-                'create_match': create_match,
-                'organization_id': user_service.get_organization().id
+            method: 'POST',
+            data: {
+                source_building_id: source_building_id,
+                target_building_id: target_building_id,
+                create_match: create_match,
+                organization_id: user_service.get_organization().id
             },
-            'url': urls.save_match
+            url: urls.save_match
         }).success(function(data, status, headers, config){
             defer.resolve(data);
         }).error(function(data, status, headers, config){
@@ -152,12 +152,12 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
     building_factory.update_building = function(building, organization_id) {
         var defer = $q.defer();
         $http({
-            'method': 'PUT',
-            'data': {
-                'building': building,
-                'organization_id': organization_id
+            method: 'PUT',
+            data: {
+                building: building,
+                organization_id: organization_id
             },
-            'url': urls.update_building
+            url: urls.update_building
         }).success(function(data, status, headers, config){
             defer.resolve(data);
         }).error(function(data, status, headers, config){
@@ -170,15 +170,15 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
 
     building_factory.get_columns = function(is_project, project_slug, all_fields) {
         var defer = $q.defer();
-        all_fields = all_fields || "";
+        all_fields = all_fields || '';
         $http({
             method: 'GET',
-            'url': window.BE.urls.get_columns_url,
-            'params': {
-                'is_project': is_project,
-                'project_slug': project_slug,
-                'all_fields': all_fields,
-                'organization_id': user_service.get_organization().id
+            url: window.BE.urls.get_columns_url,
+            params: {
+                is_project: is_project,
+                project_slug: project_slug,
+                all_fields: all_fields,
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -192,9 +192,9 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': window.BE.urls.get_PM_filter_by_counts_url,
-            'params': {
-                'import_file_id': import_file_id
+            url: window.BE.urls.get_PM_filter_by_counts_url,
+            params: {
+                import_file_id: import_file_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -203,14 +203,14 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         });
         return defer.promise;
     };
-    
+
     building_factory.delete_duplicates_from_import_file = function(import_file_id) {
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': window.BE.urls.delete_duplicates_from_import_file_url,
-            'params': {
-                'import_file_id': import_file_id
+            url: window.BE.urls.delete_duplicates_from_import_file_url,
+            params: {
+                import_file_id: import_file_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -228,10 +228,10 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         var defer = $q.defer();
         $http({
             method: 'DELETE',
-            'url': generated_urls.seed.delete_buildings,
-            'data': {
-                'organization_id': user_service.get_organization().id,
-                'search_payload': search_payload
+            url: generated_urls.seed.delete_buildings,
+            data: {
+                organization_id: user_service.get_organization().id,
+                search_payload: search_payload
             }
         }).success(function(data, status, headers, config) {
             spinner_utility.hide();
@@ -249,9 +249,9 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         MED = 0.75;
         HIGH = 1.0;
         return {
-            'low': LOW,
-            'medium': MED,
-            'high': HIGH
+            low: LOW,
+            medium: MED,
+            high: HIGH
         };
     };
 
@@ -260,14 +260,14 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         var conf_range = this.get_confidence_ranges();
 
         if (confidence < conf_range.low) {
-            return "low";
+            return 'low';
         } else if (confidence >= conf_range.low && confidence < conf_range.medium) {
-            return "med";
+            return 'med';
         } else if (confidence >= conf_range.medium <= conf_range.high) {
-            return "high";
+            return 'high';
         }
         else {
-            return "";
+            return '';
         }
     };
 

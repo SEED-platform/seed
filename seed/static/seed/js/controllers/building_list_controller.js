@@ -59,13 +59,13 @@ angular.module('BE.seed.controller.building_list', [])
     $scope.urls = urls;
     $scope.assessor_fields = [];
     $scope.create_project_error = false;
-    $scope.create_project_error_message = "";
+    $scope.create_project_error_message = '';
     $scope.selected_existing_project = null;
 
     // Matching dropdown values
-    var SHOW_ALL = "Show All";
-    var SHOW_MATCHED = "Show Matched";
-    var SHOW_UNMATCHED = "Show Unmatched";
+    var SHOW_ALL = 'Show All';
+    var SHOW_MATCHED = 'Show Matched';
+    var SHOW_UNMATCHED = 'Show Unmatched';
 
     /**
     * SEARCH CODE
@@ -124,7 +124,7 @@ angular.module('BE.seed.controller.building_list', [])
                 $scope.search.filter_params.parents__isnull = true;   //does not have parents therefore is unmatched
                 break;
             default:
-                $log.error("#matching_controller: unexpected filter value: ", optionValue);
+                $log.error('#matching_controller: unexpected filter value: ', optionValue);
                 return;
         }
         $scope.do_update_buildings_filters();
@@ -148,10 +148,10 @@ angular.module('BE.seed.controller.building_list', [])
         });
     };
 
-    $scope.$watchCollection("selected_labels", function() {
+    $scope.$watchCollection('selected_labels', function() {
         // Only submit the `id` of the label to the API.
         if($scope.selected_labels.length > 0) {
-            $scope.search.filter_params.canonical_building__labels = _.pluck($scope.selected_labels, "id");
+            $scope.search.filter_params.canonical_building__labels = _.pluck($scope.selected_labels, 'id');
         } else {
             delete $scope.search.filter_params.canonical_building__labels;
         }
@@ -272,7 +272,7 @@ angular.module('BE.seed.controller.building_list', [])
     };
     $scope.nothing_selected_cursor = function() {
         if ($scope.nothing_selected()) {
-            return {'cursor': "not-allowed"};
+            return {cursor: 'not-allowed'};
         } else {
             return {};
         }
@@ -312,7 +312,7 @@ angular.module('BE.seed.controller.building_list', [])
         var stop = $timeout(function(){
             project_service.add_buildings_status(cache_key).then(function(data) {
                 // resolve promise
-                if (typeof data.progress_object !== "undefined" && data.progress_object !== null && typeof data.progress_object.progress !== "undefined") {
+                if (!_.isNil(data.progress_object) && !_.isUndefined(data.progress_object.progress)) {
                     $scope.progress_percentage = data.progress_object.progress;
                     $scope.progress_numerator = data.progress_object.numerator;
                     $scope.progress_denominator = data.progress_object.denominator;
@@ -335,7 +335,7 @@ angular.module('BE.seed.controller.building_list', [])
         angular.element('#newProjectModal').modal('hide');
 
 
-        if (typeof project_slug === "undefined") {
+        if (_.isUndefined(project_slug)) {
             $location.path('/projects/' + $scope.project.project_slug);
         } else {
             $location.path('/projects/' + project_slug);
@@ -373,9 +373,9 @@ angular.module('BE.seed.controller.building_list', [])
     };
     var transfer_buildings = function(project_slug, copy) {
         var search_params = {
-            'q': $scope.query,
-            'filter_params': $scope.search.filter_params,
-            'project_slug': $scope.project.id || null
+            q: $scope.query,
+            filter_params: $scope.search.filter_params,
+            project_slug: $scope.project.id || null
         };
 
         project_service.move_buildings($scope.user.project_id, project_slug, $scope.search.selected_buildings, $scope.search.select_all_checkbox, search_params, copy).then(function(data) {
@@ -389,7 +389,7 @@ angular.module('BE.seed.controller.building_list', [])
     };
     $scope.set_initial_project_state = function() {
         $scope.create_project_error = false;
-        $scope.create_project_error_message = "";
+        $scope.create_project_error_message = '';
         $scope.create_project_state = 'create';
         $scope.project.compliance_type = null;
         $scope.project.name = null;
@@ -481,13 +481,13 @@ angular.module('BE.seed.controller.building_list', [])
     var init = function() {
         // get search params from window location and populate the input filters
         $scope.search.filter_params = $location.search();
-        $scope.search.query = $scope.search.filter_params.q || "";
+        $scope.search.query = $scope.search.filter_params.q || '';
         $scope.search.update_results(search_payload);
 
         // initialize tooltips
         $('[data-toggle="popover"]').popover();
 
-        if (typeof $scope.user.project_id !== "undefined") {
+        if (!_.isUndefined($scope.user.project_id)) {
             $scope.is_project = true;
             $scope.search.filter_params.project__slug = $scope.user.project_id;
             project_service.get_project($scope.user.project_id).then(function(data) {
@@ -504,7 +504,7 @@ angular.module('BE.seed.controller.building_list', [])
         project_service.get_projects().then(function(data) {
              // resolve promise
             $scope.projects = data.projects;
-            if (typeof $scope.user.project_id !== "undefined") {
+            if (!_.isUndefined($scope.user.project_id)) {
                 for (var i = 0; i < $scope.projects.length; i++) {
                     if ($scope.projects[i].slug === $scope.user.project_id) {
                         $scope.projects.splice(i, 1);

@@ -11,11 +11,11 @@ angular.module('district', []).filter('district', [
   function($filter) {
 
     return function(input) {
-        if (typeof input === 'undefined' || input === null) {
+        if (_.isNil(input)) {
             return input;
         }
         if (angular.uppercase(input) === 'DISTRICT'){
-            return "County/District/Ward/Borough";
+            return 'County/District/Ward/Borough';
         }
         return input;
     };

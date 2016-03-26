@@ -35,7 +35,7 @@ angular.module('BE.seed.controller.organization_settings', [])
     $scope.controls = {
         select_all: false
     };
-    
+
     $scope.$watch('filter_params.title', function(){
         if (!$scope.filter_params.title) {
             $scope.controls.select_all = false;

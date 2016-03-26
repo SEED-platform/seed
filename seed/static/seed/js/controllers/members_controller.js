@@ -23,7 +23,7 @@ angular.module('BE.seed.controller.members', [])
       urls
     ) {
     $scope.roles = [
-      "member", "owner", "viewer"
+      'member', 'owner', 'viewer'
     ];
     $scope.users = users_payload.users;
     $scope.org = organization_payload.organization;
@@ -32,7 +32,7 @@ angular.module('BE.seed.controller.members', [])
     $scope.user_profile = user_profile_payload.user;
 
     $scope.is_last_owner = (_.chain($scope.users)
-        .filter(function(u) { return u.role === "owner"; })
+        .filter(['role', 'owner'])
         .size()
         .value() === 1);
 
@@ -46,7 +46,7 @@ angular.module('BE.seed.controller.members', [])
         organization_service.remove_user(user.user_id, $scope.org.id)
         .then(function (data) {
             // resolve promise
-            organization_service.get_organization_users({'org_id': $scope.org.id})
+            organization_service.get_organization_users({org_id: $scope.org.id})
             .then(function (data) {
                 $scope.users = data.users;
                 init();
@@ -71,7 +71,7 @@ angular.module('BE.seed.controller.members', [])
         // reject promise
         $scope.$emit('app_error', data);
       });
-      
+
     };
 
     /**
@@ -90,7 +90,7 @@ angular.module('BE.seed.controller.members', [])
         modalInstance.result.then(
             // modal close()/submit() function
             function () {
-                organization_service.get_organization_users({'org_id': $scope.org.id})
+                organization_service.get_organization_users({org_id: $scope.org.id})
                 .then(function (data) {
                     $scope.users = data.users;
                     init();
@@ -112,9 +112,9 @@ angular.module('BE.seed.controller.members', [])
      */
     var init = function () {
       $scope.user = $scope.users.map(function (u) {
-        u.first_name = u.first_name || "";
-        u.last_name = u.last_name || "";
-        u.name = "" + u.first_name + " " + u.last_name;
+        u.first_name = u.first_name || '';
+        u.last_name = u.last_name || '';
+        u.name = '' + u.first_name + ' ' + u.last_name;
         return u;
       });
     };

@@ -68,12 +68,12 @@ angular.module('BE.seed.controller.concat_modal', [])
     };
 
     /*
-     * Creates a new TCM in $scope amoung the ``raw_columns``
+     * Creates a new TCM in $scope among the ``raw_columns``
      * Disables the concatenees from viewing.
      */
     $scope.save_concat = function() {
         $scope.concatenate_columns();
-        if (typeof($scope.target_tcm) !== undefined) {
+        if (!_.isUndefined($scope.target_tcm)) {
             $scope.raw_columns.push($scope.target_tcm);
         }
         $uibModalInstance.close();

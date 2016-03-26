@@ -19,7 +19,7 @@ angular.module('BE.seed.controller.building_detail_update_labels_modal_ctrl', []
     $scope.loading = false;
 
     //An array of all available labels in the system.
-    //These label objects should have the is_applied property set so 
+    //These label objects should have the is_applied property set so
     //the modal can show the Remove button if necessary. (Populated
     //during init function below.)
     $scope.labels = [];
@@ -32,7 +32,7 @@ angular.module('BE.seed.controller.building_detail_update_labels_modal_ctrl', []
 
     /* Initialize the label props for a 'new' label */
     $scope.initialize_new_label = function() {
-       $scope.new_label = {color:"gray", label:"default", name:""};
+       $scope.new_label = {color:'gray', label:'default', name:''};
     };
 
     /* Create a new label based on user input */
@@ -85,24 +85,20 @@ angular.module('BE.seed.controller.building_detail_update_labels_modal_ctrl', []
     $scope.done = function () {
 
         var addLabelIDs = _.chain($scope.labels)
-            .filter(function(lbl) {
-                return lbl.is_checked_add;
-            })
-            .pluck("id")
+            .filter('is_checked_add')
+            .pluck('id')
             .value();
         var removeLabelIDs = _.chain($scope.labels)
-            .filter(function(lbl) {
-                return lbl.is_checked_remove;
-            })
-            .pluck("id")
+            .filter('is_checked_remove')
+            .pluck('id')
             .value();
 
         label_service.update_building_labels(addLabelIDs, removeLabelIDs, [building.pk], false, {}).then(
             function(data){
                 if (data.num_buildings_updated === 1) {
-                    notification.primary(data.num_buildings_updated + " building updated.");
+                    notification.primary(data.num_buildings_updated + ' building updated.');
                 } else {
-                    notification.primary(data.num_buildings_updated + " buildings updated.");
+                    notification.primary(data.num_buildings_updated + ' buildings updated.');
                 }
                 $uibModalInstance.close();
             },

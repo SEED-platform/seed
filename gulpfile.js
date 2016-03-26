@@ -21,7 +21,7 @@ var conf = {
 
 var eslint = function (fix) {
   fix = !!fix;
-  return gulp.src(conf.jsPattern)
+  return gulp.src(conf.jsPattern, {base: '.'})
     .pipe($.eslint({fix: fix}))
     .pipe($.eslint.format())
     .pipe(fix ? gulp.dest('.') : $.util.noop());

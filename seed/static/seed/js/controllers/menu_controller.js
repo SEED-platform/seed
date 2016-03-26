@@ -48,31 +48,31 @@ angular.module('BE.seed.controller.menu', [])
     $scope.buildings_count = 0;
     $scope.datasets_count = 0;
     $scope.projects_count = 0;
-    $scope.search_input = "";
+    $scope.search_input = '';
     $scope.organizations_count = 0;
     $scope.menu = {};
     $scope.menu.project = {};
-    $scope.menu.create_project_state = "create";
+    $scope.menu.create_project_state = 'create';
     $scope.menu.create_project_error = false;
-    $scope.menu.create_project_error_message = "";
+    $scope.menu.create_project_error_message = '';
     $scope.saving_indicator = false;
     $scope.menu.loading = false;
     $scope.menu.route_load_error = false;
     $scope.menu.user = {};
     $scope.is_initial_state = $scope.expanded_controller === $scope.collapsed_controller;
 
-    $scope.$on("$routeChangeError", function(event, current, previous, rejection) {
-	   $scope.menu.loading = false;
+    $scope.$on('$routeChangeError', function(event, current, previous, rejection) {
+        $scope.menu.loading = false;
         $scope.menu.route_load_error = true;
-        if (rejection === "not authorized" || rejection === "Your page could not be located!") {
+        if (rejection === 'not authorized' || rejection === 'Your page could not be located!') {
             $scope.menu.error_message = rejection;
         }
     });
-    $scope.$on("$routeChangeStart", function($event, next, current) {
-        $scope.menu.loading = next.controller === "mapping_controller";
+    $scope.$on('$routeChangeStart', function($event, next, current) {
+        $scope.menu.loading = next.controller === 'mapping_controller';
     });
-    $scope.$on("$routeChangeSuccess", function() {
-	$scope.menu.loading = false;
+    $scope.$on('$routeChangeSuccess', function() {
+        $scope.menu.loading = false;
         $scope.menu.route_load_error = false;
     });
     $scope.$on('app_error', function(event, data){
@@ -84,7 +84,7 @@ angular.module('BE.seed.controller.menu', [])
     });
     $scope.$on('show_saving', function(event, data) {
         $scope.saving_indicator = true;
-        start_saving_indicator(". . .   ", "");
+        start_saving_indicator('. . .   ', '');
     });
     $scope.$on('finished_saving', function(event, data) {
         $scope.saving_indicator = false;
@@ -94,9 +94,9 @@ angular.module('BE.seed.controller.menu', [])
     });
 
     $scope.input_search = function() {
-        if ($location.absUrl().indexOf("#") === -1) {
+        if ($location.absUrl().indexOf('#') === -1) {
             // not on SEED angularjs route managed page
-            $window.location.href = urls.seed_home + "#/buildings?q=" + $scope.search_input;
+            $window.location.href = urls.seed_home + '#/buildings?q=' + $scope.search_input;
         } else {
             $location.path('/buildings').search('q=' + $scope.search_input);
         }
@@ -106,7 +106,7 @@ angular.module('BE.seed.controller.menu', [])
     $scope.is_active = function(menu_item) {
         if (menu_item === $location.path()) {
             return true;
-        } else if (menu_item !== "/" && $location.path().indexOf(menu_item) === 0) {
+        } else if (menu_item !== '/' && _.startsWith($location.path(), menu_item)) {
             return true;
         } else if (menu_item === '/seed/data' && $location.absUrl().indexOf('#') === -1) {
             if ($location.absUrl().indexOf(menu_item) !== -1) {
@@ -139,26 +139,22 @@ angular.module('BE.seed.controller.menu', [])
     };
 
     $scope.reset_search_field = function() {
-        $scope.search_input = "";
+        $scope.search_input = '';
     };
 
     //Sets initial expanded/collapse state of sidebar menu
     function init_menu(){
         //Default to false but use cookie value if one has been set
-        var isNavExpanded = $cookies.seed_nav_is_expanded === "true";
+        var isNavExpanded = $cookies.seed_nav_is_expanded === 'true';
         $scope.expanded_controller = isNavExpanded;
         $scope.collapsed_controller = !isNavExpanded;
         $scope.narrow_controller = isNavExpanded;
-        $scope.wide_controller = !isNavExpanded; 
+        $scope.wide_controller = !isNavExpanded;
     }
 
     // returns true if menu toggle has never been clicked, i.e. first run, else returns false
     $scope.menu_toggle_has_never_been_clicked = function () {
-        if ($scope.expanded_controller === $scope.collapsed_controller) {
-            return true;
-        } else {
-            return false;
-        }
+        return $scope.expanded_controller === $scope.collapsed_controller;
     };
 
     $scope.is_initial_state = function() {
@@ -171,14 +167,14 @@ angular.module('BE.seed.controller.menu', [])
         $scope.expanded_controller = !$scope.expanded_controller;
         $scope.collapsed_controller = !$scope.collapsed_controller;
         $scope.narrow_controller = !$scope.narrow_controller;
-        $scope.wide_controller = !$scope.wide_controller;   
+        $scope.wide_controller = !$scope.wide_controller;
         try{
             //TODO : refactor to put() when we move to Angular 1.3 or greater
-            $cookies.seed_nav_is_expanded = $scope.expanded_controller.toString(); 
+            $cookies.seed_nav_is_expanded = $scope.expanded_controller.toString();
         }
         catch(err){
             //it's ok if the cookie can't be written, so just report in the log and move along.
-            $log.error("Couldn't write cookie for nav state. Error: ", err);
+            $log.error('Couldn\'t write cookie for nav state. Error: ', err);
         }
     };
 
@@ -208,8 +204,8 @@ angular.module('BE.seed.controller.menu', [])
     };
 
     /**
-     * open_data_upload_modal: opens the data upload modal, passes in the 
-     *  data_upload_modal_ctrl controller. 
+     * open_data_upload_modal: opens the data upload modal, passes in the
+     *  data_upload_modal_ctrl controller.
      */
     $scope.open_data_upload_modal = function() {
         var dataModalInstance = $uibModal.open({
@@ -246,7 +242,7 @@ angular.module('BE.seed.controller.menu', [])
      *  TODO(Aleck): break out into a directive or service and make functional
      *               where the element is a param, as is the bool, and timing
      *
-     *  e.g. start_saving_indicator(". . .  ", "") will update the DOM element with 
+     *  e.g. start_saving_indicator(". . .  ", "") will update the DOM element with
      *       class=saving_progress as follows:
      *       After 250ms: "."
      *       After 250ms: ". "
@@ -257,19 +253,19 @@ angular.module('BE.seed.controller.menu', [])
      *       After 250ms: ""
      *       After 250ms: "."
      *       After 250ms: ". "
-     *  
+     *
      *  @params {string} full_text: indicator text to iterate and loop through
      *  @params {string} partial: the substring of the full_text displayed
      *  @local {bool} $scope.saving_indicator true to continue
      */
     var start_saving_indicator = function(full_text, partial) {
         var delay_ms = 250;
-        angular.element(".saving_progress").html(partial);
+        angular.element('.saving_progress').html(partial);
         if (!$scope.saving_indicator) {
             return;
         }
         if (full_text === partial){
-            start_saving_indicator(full_text, "");
+            start_saving_indicator(full_text, '');
         } else {
             $timeout(function(){
                 start_saving_indicator(full_text, full_text.substring(0, partial.length + 1));
@@ -288,40 +284,40 @@ angular.module('BE.seed.controller.menu', [])
         init();
     };
 
-    //DMcQ: Set up watch statements to keep nav updated with latest buildings_count, datasets_count, etc. 
+    //DMcQ: Set up watch statements to keep nav updated with latest buildings_count, datasets_count, etc.
     //      This isn't the best solution but most expedient. This approach should be refactored later by
     //      a proper strategy of binding views straight to model properties.
     //      See my comments here: https://github.com/SEED-platform/seed/issues/44
-    
+
     //watch projects
-    $scope.$watch(  function () { return project_service.total_number_projects_for_user; }, 
+    $scope.$watch( function () { return project_service.total_number_projects_for_user; },
                     function (data) {
                         $scope.projects_count = data;
-                    }, 
+                    },
                     true
                 );
 
     //watch buildings
-    $scope.$watch(  function () { return building_services.total_number_of_buildings_for_user; }, 
+    $scope.$watch( function () { return building_services.total_number_of_buildings_for_user; },
                     function (data) {
                         $scope.buildings_count = data;
-                    }, 
+                    },
                     true
                 );
-    
+
     //watch datasets
-    $scope.$watch(  function () { return dataset_service.total_datasets_for_user; }, 
+    $scope.$watch( function () { return dataset_service.total_datasets_for_user; },
                     function (data) {
                         $scope.datasets_count = data;
-                    }, 
+                    },
                     true
-                );        
+                );
 
     //watch organizations
-    $scope.$watch(  function () { return organization_service.total_organizations_for_user; }, 
+    $scope.$watch( function () { return organization_service.total_organizations_for_user; },
                     function (data) {
-                        $scope.organizations_count = data; 
-                    }, 
+                        $scope.organizations_count = data;
+                    },
                     true
                 );
 

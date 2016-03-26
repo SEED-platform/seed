@@ -42,7 +42,7 @@ angular.module('BE.seed.service.httpParamSerializerSeed', []).factory('httpParam
         if (value === null || angular.isUndefined(value)) return;
         if (angular.isArray(value)) {
           angular.forEach(value, function(v) {
-            parts.push(encodeUriQuerySeed(key)  + '=' + encodeUriQuerySeed(serializeValue(v)));
+            parts.push(encodeUriQuerySeed(key) + '=' + encodeUriQuerySeed(serializeValue(v)));
           });
         } else {
           parts.push(encodeUriQuerySeed(key) + '=' + encodeUriQuerySeed(serializeValue(value)));

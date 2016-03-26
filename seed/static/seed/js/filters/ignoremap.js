@@ -7,8 +7,8 @@ angular.module('ignoremap', []).filter('ignoremap', [
   function($filter) {
 
     return function(input) {
-        if (typeof input === 'undefined' || input === null || input === "") {
-            return "------ Ignore Row ------";
+        if (_.isNil(input) || _.isEmpty(input)) {
+            return '------ Ignore Row ------';
         }
         return input;
     };

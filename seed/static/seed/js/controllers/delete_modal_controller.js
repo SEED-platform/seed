@@ -30,7 +30,7 @@ angular.module('BE.seed.controller.delete_modal', [])
           }
         ).then(
           function(){
-            //update building count. 
+            //update building count.
             building_services.get_total_number_of_buildings_for_user().then(
               function (data){
                 //we don't need to do anything with the data as it's bound to relevant UI

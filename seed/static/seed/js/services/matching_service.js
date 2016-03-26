@@ -55,10 +55,10 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': window.BE.urls.start_system_matching,
-            'data': {
-                'file_id': import_file_id,
-                'organization_id': user_service.get_organization().id
+            url: window.BE.urls.start_system_matching,
+            data: {
+                file_id: import_file_id,
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -83,10 +83,10 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
     matching_factory.get_match_tree = function( building_id ) {
         return api_request({
             method: 'GET',
-            'url': generated_urls.seed.get_coparents,
-            'params': {
-                'organization_id': user_service.get_organization().id,
-                'building_id': building_id
+            url: generated_urls.seed.get_coparents,
+            params: {
+                organization_id: user_service.get_organization().id,
+                building_id: building_id
             }
         }, function (defer) {
           return function (data, status, headers, config) {

@@ -55,7 +55,7 @@ angular.module('BE.seed.controller.cleansing', [])
       title: 'Error Message'
     }];
     var columns = _.pluck(fields, 'sort_column');
-    _.each(fields, function(field) {
+    _.forEach(fields, function(field) {
       field.checked = false;
       field.class = 'is_aligned_right';
       field.field_type = null;
@@ -73,7 +73,7 @@ angular.module('BE.seed.controller.cleansing', [])
     // Override storage, search, and filter functions
     $scope.search.init_storage = function (prefix) {
       // Check session storage for order and sort values.
-      if (typeof(Storage) !== "undefined") {
+      if (!_.isUndefined(Storage)) {
         $scope.search.prefix = prefix;
 
         // order_by & sort_column
@@ -108,7 +108,7 @@ angular.module('BE.seed.controller.cleansing', [])
           $scope.search.sort_column = this.sort_column;
         }
 
-        if (typeof(Storage) !== "undefined") {
+        if (!_.isUndefined(Storage)) {
           sessionStorage.setItem($scope.search.prefix + ':' + 'seedBuildingOrderBy', $scope.search.sort_column);
           sessionStorage.setItem($scope.search.prefix + ':' + 'seedBuildingSortReverse', $scope.search.sort_reverse);
         }
@@ -120,28 +120,28 @@ angular.module('BE.seed.controller.cleansing', [])
     $scope.search.column_prototype.sorted_class = function () {
       if ($scope.search.sort_column === this.sort_column) {
         if ($scope.search.sort_reverse) {
-          return "sorted sort_asc";
+          return 'sorted sort_asc';
         } else {
-          return "sorted sort_desc";
+          return 'sorted sort_desc';
         }
       } else {
-        return "";
+        return '';
       }
     };
     $scope.search.filter_search = function () {
       $scope.search.sanitize_params();
-      _.each($scope.cleansingResults, function (result) {
+      _.forEach($scope.cleansingResults, function (result) {
         if (!result.visible) result.visible = true;
-        _.each(result.cleansing_results, function(row) {
+        _.forEach(result.cleansing_results, function(row) {
           if (!row.visible) row.visible = true;
         });
       });
-      _.each(this.filter_params, function(value, column) {
+      _.forEach(this.filter_params, function(value, column) {
         value = value.toLowerCase();
-        _.each($scope.cleansingResults, function (result) {
+        _.forEach($scope.cleansingResults, function (result) {
           if (result.visible) {
             if (_.contains(['formatted_field', 'detailed_message'], column)) {
-              _.each(result.cleansing_results, function(row) {
+              _.forEach(result.cleansing_results, function(row) {
                 if (!_.contains(row[column].toLowerCase(), value)) row.visible = false;
               });
             } else {
@@ -150,7 +150,7 @@ angular.module('BE.seed.controller.cleansing', [])
           }
         });
       });
-      if (typeof(Storage) !== "undefined") {
+      if (!_.isUndefined(Storage)) {
         sessionStorage.setItem(this.prefix + ':' + 'seedBuildingFilterParams', JSON.stringify(this.filter_params));
       }
     };

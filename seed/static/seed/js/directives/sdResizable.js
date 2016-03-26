@@ -6,7 +6,7 @@
     'use strict';
 
     angular
-        .module('sdResizable',[])
+        .module('sdResizable', [])
         .directive('sdResizable', resizable);
 
     /**

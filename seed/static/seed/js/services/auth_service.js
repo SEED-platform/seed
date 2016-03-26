@@ -21,8 +21,8 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
      *    .then(function(data) {
      *      auth = data.auth; // auth === {'can_invite_member': true, 'can_remove_member': true}
      *  });
-     * 
-     * @param  {organization_id}  id of ogranization
+     *
+     * @param  {organization_id}  id of organization
      * @param  {array}  actions is an array of actions
      * @return {promise} then a an object with keys as the actions, and bool
      * values
@@ -31,10 +31,10 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': urls.accounts.is_authorized,
-            'data': {
-                'actions': actions,
-                'organization_id': organization_id
+            url: urls.accounts.is_authorized,
+            data: {
+                actions: actions,
+                organization_id: organization_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -45,14 +45,14 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
     };
 
     /**
-     * gets all availble actions
+     * gets all available actions
      * @return {promise} then an array of actions
      */
     auth_factory.get_actions = function(user) {
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': urls.accounts.get_actions
+            url: urls.accounts.get_actions
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {

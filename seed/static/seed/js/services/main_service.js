@@ -13,7 +13,7 @@ angular.module('BE.seed.service.main', []).factory('main_service', [
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': window.BE.urls.version
+            url: window.BE.urls.version
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {

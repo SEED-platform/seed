@@ -1,7 +1,7 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
-describe("controller: create_organization_modal_ctrl", function(){
+describe('controller: create_organization_modal_ctrl', function(){
     // globals set up and used in each test scenario
     var mock_organization_service, scope, controller, modal_state;
     var ctrl, ctrl_scope, modalInstance, timeout;
@@ -14,14 +14,14 @@ describe("controller: create_organization_modal_ctrl", function(){
         ctrl = $controller;
         scope = $rootScope;
         ctrl_scope = $rootScope.$new();
-        modal_state = "";
+        modal_state = '';
         timeout = $timeout;
 
         mock_organization_service = organization_service;
-        spyOn(mock_organization_service, "create_sub_org")
+        spyOn(mock_organization_service, 'create_sub_org')
             .andCallFake(function(org, sub_org){
                 // return $q.reject for error scenario
-                return $q.when({"status": "success"});
+                return $q.when({status: 'success'});
             }
         );
     }));
@@ -32,10 +32,10 @@ describe("controller: create_organization_modal_ctrl", function(){
             $scope: ctrl_scope,
             $uibModalInstance: {
                 close: function() {
-                    modal_state = "close";
+                    modal_state = 'close';
                 },
                 dismiss: function() {
-                    modal_state = "dismiss";
+                    modal_state = 'dismiss';
                 }
             },
             organization: {organization_id: 1}
@@ -46,15 +46,15 @@ describe("controller: create_organization_modal_ctrl", function(){
      * Test scenarios
      */
 
-    it("should call the organization service to add a new sub_org",
+    it('should call the organization service to add a new sub_org',
         function() {
         // arrange
         create_organization_modal_ctrl();
 
         // act
         ctrl_scope.$digest();
-        ctrl_scope.sub_org.name = "my shiny new org";
-        ctrl_scope.sub_org.email = "jb.smooth@be.com";
+        ctrl_scope.sub_org.name = 'my shiny new org';
+        ctrl_scope.sub_org.email = 'jb.smooth@be.com';
         ctrl_scope.submit_form(true);
 
         // assertions
@@ -64,10 +64,10 @@ describe("controller: create_organization_modal_ctrl", function(){
                     organization_id: 1
                 },
                 {
-                    name: "my shiny new org",
-                    email: "jb.smooth@be.com"
+                    name: 'my shiny new org',
+                    email: 'jb.smooth@be.com'
                 }
             );
     });
-    
+
 });

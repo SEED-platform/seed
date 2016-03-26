@@ -17,7 +17,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': urls.accounts.get_organizations
+            url: urls.accounts.get_organizations
         }).success(function(data, status, headers, config) {
             organization_factory.total_organizations_for_user = (data.organizations !== undefined ) ? data.organizations.length : 0;
             defer.resolve(data);
@@ -32,8 +32,8 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': urls.accounts.add_org,
-            'data': {'user_id': org.email.user_id, 'organization_name': org.name}
+            url: urls.accounts.add_org,
+            data: {user_id: org.email.user_id, organization_name: org.name}
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -46,8 +46,8 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': urls.accounts.get_organizations_users,
-            'data': {'organization_id': org.org_id}
+            url: urls.accounts.get_organizations_users,
+            data: {organization_id: org.org_id}
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -60,8 +60,8 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': urls.accounts.add_user_to_organization,
-            'data': {'organization_id': org_user.organization.org_id, 'user_id': org_user.user.user_id}
+            url: urls.accounts.add_user_to_organization,
+            data: {organization_id: org_user.organization.org_id, user_id: org_user.user.user_id}
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -74,8 +74,8 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': urls.accounts.remove_user_from_org,
-            'data': {'organization_id': org_id, 'user_id':user_id}
+            url: urls.accounts.remove_user_from_org,
+            data: {organization_id: org_id, user_id:user_id}
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -88,8 +88,8 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': urls.accounts.get_organization,
-            'params': {'organization_id': org_id}
+            url: urls.accounts.get_organization,
+            params: {organization_id: org_id}
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -109,11 +109,11 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            'url': urls.accounts.update_role,
-            'data': {
-                'organization_id': org_id,
-                'user_id': user_id,
-                'role': role
+            url: urls.accounts.update_role,
+            data: {
+                organization_id: org_id,
+                user_id: user_id,
+                role: role
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -132,10 +132,10 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         org.organization_id = org.id;
         $http({
             method: 'PUT',
-            'url': urls.accounts.save_org_settings,
-            'data': {
-                'organization_id': org.id,
-                'organization': org
+            url: urls.accounts.save_org_settings,
+            data: {
+                organization_id: org.id,
+                organization: org
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -153,9 +153,9 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': urls.accounts.get_shared_fields,
-            'params': {
-                'organization_id': org_id
+            url: urls.accounts.get_shared_fields,
+            params: {
+                organization_id: org_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -173,9 +173,9 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': urls.accounts.get_query_threshold,
-            'params': {
-                'organization_id': org_id
+            url: urls.accounts.get_query_threshold,
+            params: {
+                organization_id: org_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -193,9 +193,9 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': urls.accounts.get_cleansing_rules,
-            'params': {
-                'organization_id': org_id
+            url: urls.accounts.get_cleansing_rules,
+            params: {
+                organization_id: org_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -213,9 +213,9 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': urls.accounts.reset_cleansing_rules,
-            'params': {
-                'organization_id': org_id
+            url: urls.accounts.reset_cleansing_rules,
+            params: {
+                organization_id: org_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -234,10 +234,10 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            'url': urls.accounts.save_cleansing_rules,
-            'data': {
-                'organization_id': org_id,
-                'cleansing_rules': cleansing_rules
+            url: urls.accounts.save_cleansing_rules,
+            data: {
+                organization_id: org_id,
+                cleansing_rules: cleansing_rules
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -255,10 +255,10 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': urls.accounts.create_sub_org,
-            'data': {
-                'parent_org_id': parent_org.id,
-                'sub_org': sub_org
+            url: urls.accounts.create_sub_org,
+            data: {
+                parent_org_id: parent_org.id,
+                sub_org: sub_org
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -272,9 +272,9 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'DELETE',
-            'url': window.BE.urls.delete_organization_buildings,
-            'params': {
-                'org_id': org_id
+            url: window.BE.urls.delete_organization_buildings,
+            params: {
+                org_id: org_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -289,9 +289,9 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'DELETE',
-            'url': window.BE.urls.delete_organization,
-            'params': {
-                'org_id': org_id
+            url: window.BE.urls.delete_organization,
+            params: {
+                org_id: org_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);

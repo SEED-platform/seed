@@ -13,12 +13,12 @@ angular.module('sdLabel', []).directive('sdLabel', function () {
             scope.name = attrs.name;
             var lookup_label = function(color) {
                 var lookup_colors = {
-                    'red': 'danger',
-                    'gray': 'default',
-                    'grey': 'default',
-                    'orange': 'warning',
-                    'green': 'success',
-                    'blue': 'primary',
+                    red: 'danger',
+                    gray: 'default',
+                    grey: 'default',
+                    orange: 'warning',
+                    green: 'success',
+                    blue: 'primary',
                     'light blue': 'info'
                 };
                 try {

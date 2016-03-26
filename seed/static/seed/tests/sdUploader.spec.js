@@ -8,7 +8,7 @@
 // create dummy angularJS app to attach filter(s)
 var mySDUploaderDirectiveApp = angular.module('mySDUploaderDirectiveApp', ['sdUploader']);
 
-describe("The sdUploader directive", function() {
+describe('The sdUploader directive', function() {
     var g_message, g_file, g_progress;
     var $compile;
     var $rootScope;
@@ -33,13 +33,13 @@ describe("The sdUploader directive", function() {
     it('Creates the fineuploader element', function() {
         // arrange
         var element = $compile(uploader_html)($rootScope);
-        
+
         // act
         $rootScope.$digest();
 
         // assert
-        expect(element.html()).toContain("qq-uploader");
-        expect(element.html()).toContain("qq-upload-button");
+        expect(element.html()).toContain('qq-uploader');
+        expect(element.html()).toContain('qq-upload-button');
     });
 
     it('Contains the buttontext specified', function() {
@@ -50,13 +50,13 @@ describe("The sdUploader directive", function() {
         $rootScope.$digest();
 
         // assert
-        expect(element.html()).toContain("Upload your building list .csv file");
+        expect(element.html()).toContain('Upload your building list .csv file');
     });
 
     it('Only allows one file to be uploaded at a time', function() {
         // arrange
         var element = $compile(uploader_html)($rootScope);
-        var func = sdUploaderFineUploader($rootScope, element, "", "test_file.csv");
+        var func = sdUploaderFineUploader($rootScope, element, '', 'test_file.csv');
 
         // act
         $rootScope.$digest();
@@ -68,31 +68,31 @@ describe("The sdUploader directive", function() {
     it('Uses the callback function for invalid file types', function() {
         // arrange
         var element = $compile(uploader_html)($rootScope);
-        var func = sdUploaderFineUploader($rootScope, element, "", "test_file.jpeg");
+        var func = sdUploaderFineUploader($rootScope, element, '', 'test_file.jpeg');
 
         // act
         $rootScope.$digest();
-        func._options.showMessage("there was an invalid extension. Valid extension(s): .csv");
+        func._options.showMessage('there was an invalid extension. Valid extension(s): .csv');
 
 
         // assert
-        expect(g_message).toBe("invalid_extension");
+        expect(g_message).toBe('invalid_extension');
     });
 
     it('Uses the callback function to share its state: upload started',
         function() {
         // arrange
         var element = $compile(uploader_html)($rootScope);
-        var func = sdUploaderFineUploader($rootScope, element, "", "test_file.csv");
+        var func = sdUploaderFineUploader($rootScope, element, '', 'test_file.csv');
         var filename = 'test_file.csv';
-        
+
         // act
         $rootScope.$digest();
         func._options.callbacks.onSubmitted(1, filename);
 
 
         // assert
-        expect(g_message).toBe("upload_submitted");
+        expect(g_message).toBe('upload_submitted');
         expect(g_file.filename).toBe(filename);
     });
 
@@ -100,18 +100,18 @@ describe("The sdUploader directive", function() {
         function() {
         // arrange
         var element = $compile(uploader_html)($rootScope);
-        var func = sdUploaderFineUploader($rootScope, element, "", "test_file.csv");
+        var func = sdUploaderFineUploader($rootScope, element, '', 'test_file.csv');
         var filename = 'test_file.csv';
         var loaded = 10;
         var total = 100;
-        
+
         // act
         $rootScope.$digest();
         func._options.callbacks.onProgress(1, filename, loaded, total);
 
 
         // assert
-        expect(g_message).toBe("upload_in_progress");
+        expect(g_message).toBe('upload_in_progress');
         expect(g_file.filename).toBe(filename);
         expect(g_progress.loaded).toBe(loaded);
         expect(g_progress.total).toBe(total);
@@ -121,17 +121,17 @@ describe("The sdUploader directive", function() {
         function() {
         // arrange
         var element = $compile(uploader_html)($rootScope);
-        var func = sdUploaderFineUploader($rootScope, element, "", "test_file.csv");
+        var func = sdUploaderFineUploader($rootScope, element, '', 'test_file.csv');
         var filename = 'test_file.csv';
 
-        
+
         // act
         $rootScope.$digest();
         func._options.callbacks.onComplete(1, filename, {success: true});
 
 
-        // assert        
-        expect(g_message).toBe("upload_complete");
+        // assert
+        expect(g_message).toBe('upload_complete');
         expect(g_file.filename).toBe(filename);
     });
 

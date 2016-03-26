@@ -39,9 +39,9 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            'url': urls.accounts.set_default_organization,
-            'data': {
-                'organization': org
+            url: urls.accounts.set_default_organization,
+            data: {
+                organization: org
             }
         }).success(function(data) {
             defer.resolve(data);
@@ -65,21 +65,21 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
     user_factory.add = function(user) {
         var defer = $q.defer();
 
-        var new_user_details = {'first_name': user.first_name, 
-                                'last_name': user.last_name, 
-                                'email': user.email,
-                                'org_name': user.org_name,
-                                'role': user.role
+        var new_user_details = {first_name: user.first_name,
+                                last_name: user.last_name,
+                                email: user.email,
+                                org_name: user.org_name,
+                                role: user.role
                                };
 
-        if (typeof user.organization !== "undefined") {
+        if (!_.isUndefined(user.organization)) {
             new_user_details.organization_id = user.organization.org_id;
         }
 
         $http({
             method: 'POST',
-            'url': urls.accounts.add_user,
-            'data': new_user_details
+            url: urls.accounts.add_user,
+            data: new_user_details
         }).success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {
@@ -92,7 +92,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': urls.seed.get_default_columns
+            url: urls.seed.get_default_columns
         }).success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {
@@ -105,7 +105,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': urls.seed.get_default_building_detail_columns
+            url: urls.seed.get_default_building_detail_columns
         }).success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {
@@ -118,7 +118,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': urls.accounts.get_shared_buildings
+            url: urls.accounts.get_shared_buildings
         }).success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {
@@ -135,7 +135,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': urls.accounts.get_user_profile
+            url: urls.accounts.get_user_profile
         }).success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {
@@ -152,7 +152,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': urls.accounts.generate_api_key
+            url: urls.accounts.generate_api_key
         }).success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {
@@ -165,8 +165,8 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': urls.seed.set_default_columns,
-            'data': {'columns': columns, 'show_shared_buildings': show_shared_buildings}
+            url: urls.seed.set_default_columns,
+            data: {columns: columns, show_shared_buildings: show_shared_buildings}
         }).success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {
@@ -179,8 +179,8 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': urls.seed.set_default_building_detail_columns,
-            'data': {'columns': columns}
+            url: urls.seed.set_default_building_detail_columns,
+            data: {columns: columns}
         }).success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {
@@ -191,14 +191,14 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
 
     /**
      * updates the user's PR
-     * @param  {obj} user 
+     * @param  {obj} user
      */
     user_factory.update_user = function(user) {
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            'url': urls.accounts.update_user,
-            'data': {user: user}
+            url: urls.accounts.update_user,
+            data: {user: user}
         }).success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {
@@ -209,19 +209,19 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
 
     /**
      * sets the user's password
-     * @param {string} current_password 
-     * @param {string} password_1       
-     * @param {string} password_2       
+     * @param {string} current_password
+     * @param {string} password_1
+     * @param {string} password_2
      */
     user_factory.set_password = function(current_password, password_1, password_2) {
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            'url': urls.accounts.set_password,
-            'data': {
-                'current_password': current_password,
-                'password_1': password_1,
-                'password_2': password_2
+            url: urls.accounts.set_password,
+            data: {
+                current_password: current_password,
+                password_1: password_1,
+                password_2: password_2
             }
         }).success(function(data) {
             defer.resolve(data);

@@ -1,12 +1,12 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
-describe("controller: dataset_detail_controller", function(){
+describe('controller: dataset_detail_controller', function(){
     // globals set up and used in each test scenario
     var mockService, scope, controller, ngFilter, delete_called;
     var dataset_detail_ctrl, dataset_detail_ctrl_scope, modalInstance, labels;
 
-    
+
 
     // make the seed app available for each test
     // 'config.seed' is created in TestFilters.html
@@ -21,42 +21,42 @@ describe("controller: dataset_detail_controller", function(){
             scope = $rootScope;
             ngFilter = $filter;
             dataset_detail_ctrl_scope = $rootScope.$new();
-            modal_state = "";
+            modal_state = '';
             delete_called = false;
 
             // mock the dataset_service factory methods used in the controller
             // and return their promises
             mock_dataset_service = dataset_service;
-            spyOn(mock_dataset_service, "get_dataset")
+            spyOn(mock_dataset_service, 'get_dataset')
                 .andCallFake(function(dataset_id){
                     // return $q.reject for error scenario
                     var fake_importfiles = [
                         {
-                            name: "DC_CoveredBuildings_50k.csv",
+                            name: 'DC_CoveredBuildings_50k.csv',
                             number_of_buildings: 511,
                             number_of_mappings: 511,
                             number_of_cleanings: 1349,
-                            source_type: "Assessed Raw",
+                            source_type: 'Assessed Raw',
                             number_of_matchings: 403
                         },
                         {
-                            name: "DC_ESPM_Report.csv",
+                            name: 'DC_ESPM_Report.csv',
                             number_of_buildings: 511,
                             number_of_matchings: 403,
-                            source_type: "Portfolio Raw"
+                            source_type: 'Portfolio Raw'
                         }
                     ];
                     var fake_dataset = {
-                        name: "DC 2013 data",
+                        name: 'DC 2013 data',
                         last_modified: (new Date()).getTime(),
-                        last_modified_by: "john.s@buildingenergy.com",
+                        last_modified_by: 'john.s@buildingenergy.com',
                         number_of_buildings: 89,
                         id: 1,
                         importfiles: fake_importfiles
                     };
                     var fake_payload = {
-                        "status": "success",
-                        "dataset": fake_dataset
+                        status: 'success',
+                        dataset: fake_dataset
                     };
                     if (delete_called) {
                         fake_payload.dataset.importfiles.pop();
@@ -66,13 +66,13 @@ describe("controller: dataset_detail_controller", function(){
                 }
             );
 
-            spyOn(mock_dataset_service, "delete_file")
+            spyOn(mock_dataset_service, 'delete_file')
                 .andCallFake(function(import_file){
                     delete_called = true;
-                    console.log({d: "delete_called"});
+                    console.log({d: 'delete_called'});
                     return $q.when(
                         {
-                            "status": "success"
+                            status: 'success'
                         }
                     );
                 }
@@ -84,31 +84,31 @@ describe("controller: dataset_detail_controller", function(){
     function create_dataset_detail_controller(){
         var fake_importfiles = [
             {
-                name: "DC_CoveredBuildings_50k.csv",
+                name: 'DC_CoveredBuildings_50k.csv',
                 number_of_buildings: 511,
                 number_of_mappings: 511,
                 number_of_cleanings: 1349,
-                source_type: "Assessed Raw",
+                source_type: 'Assessed Raw',
                 number_of_matchings: 403
             },
             {
-                name: "DC_ESPM_Report.csv",
+                name: 'DC_ESPM_Report.csv',
                 number_of_buildings: 511,
                 number_of_matchings: 403,
-                source_type: "Portfolio Raw"
+                source_type: 'Portfolio Raw'
             }
         ];
         var fake_dataset = {
-            name: "DC 2013 data",
+            name: 'DC 2013 data',
             last_modified: (new Date()).getTime(),
-            last_modified_by: "john.s@buildingenergy.com",
+            last_modified_by: 'john.s@buildingenergy.com',
             number_of_buildings: 89,
             id: 1,
             importfiles: fake_importfiles
         };
         var fake_payload = {
-            "status": "success",
-            "dataset": fake_dataset
+            status: 'success',
+            dataset: fake_dataset
         };
         dataset_detail_ctrl = controller('dataset_detail_controller', {
             $scope: dataset_detail_ctrl_scope,
@@ -120,7 +120,7 @@ describe("controller: dataset_detail_controller", function(){
      * Test scenarios
      */
 
-    it("should have an data set payload with import files", function() {
+    it('should have an data set payload with import files', function() {
         // arrange
         create_dataset_detail_controller();
 
@@ -131,7 +131,7 @@ describe("controller: dataset_detail_controller", function(){
         expect(dataset_detail_ctrl_scope.dataset.importfiles.length).toBe(2);
     });
 
-    it("should show an alert when the delete icon is clicked", function() {
+    it('should show an alert when the delete icon is clicked', function() {
         // arrange
         create_dataset_detail_controller();
 
@@ -144,5 +144,5 @@ describe("controller: dataset_detail_controller", function(){
         // assertions
         expect(dataset_detail_ctrl_scope.dataset.importfiles.length).toBe(1);
     });
-   
+
 });

@@ -44,23 +44,23 @@ angular.module('BE.seed.service.search', [])
      * variables
      */
     var search_service = {
-        url: "",
+        url: '',
         buildings: [],
         alert: false,
-        error_message: "",
+        error_message: '',
         number_matching_search: 0,
         selected_buildings: [],
         columns: [],
         labels: [],
-        sort_column: "tax_lot_id",
+        sort_column: 'tax_lot_id',
         select_all_checkbox: false,
         current_page: 1,
         number_per_page: 10,
-        order_by: "",
+        order_by: '',
         sort_reverse: false,
         is_loading: false,
         num_pages: 0,
-        query: "",
+        query: '',
         number_per_page_options: [10, 25, 50, 100],
         number_per_page_options_model: 10,
         filter_params: {},
@@ -71,8 +71,8 @@ angular.module('BE.seed.service.search', [])
     search_service.next_page_disabled = (
         search_service.number_matching_search <= 10);
     search_service.showing = {
-        'start': 1,
-        'end': (search_service.number_matching_search > 10) ? 10 :
+        start: 1,
+        end: (search_service.number_matching_search > 10) ? 10 :
             search_service.number_matching_search
     };
     var saas; // set to the local instance of the extended search_service this
@@ -83,7 +83,7 @@ angular.module('BE.seed.service.search', [])
 
     search_service.init_storage = function (prefix) {
         // Check session storage for order and sort values.
-        if (typeof(Storage) !== "undefined") {
+        if (!_.isUndefined(Storage)) {
             saas.prefix = prefix;
 
             // order_by & sort_column
@@ -107,7 +107,7 @@ angular.module('BE.seed.service.search', [])
                 saas.number_per_page = saas.number_per_page_options_model = saas.showing.end =
                 JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
             }
-            
+
             // current_page
             if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
                 saas.current_page = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
@@ -119,7 +119,7 @@ angular.module('BE.seed.service.search', [])
 
     search_service.clear_filters = function() {
         saas.filter_params = {};
-        if (typeof(Storage) !== "undefined") {
+        if (!_.isUndefined(Storage)) {
             sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingFilterParams', {});
         }
         saas.filter_search();
@@ -153,12 +153,12 @@ angular.module('BE.seed.service.search', [])
     search_service.construct_search_query = function(query) {
         this.sanitize_params();
         return {
-            'q': query || this.query,
-            'number_per_page': this.number_per_page,
-            'page': this.current_page,
-            'order_by': this.order_by,
-            'sort_reverse': this.sort_reverse,
-            'filter_params': this.filter_params
+            q: query || this.query,
+            number_per_page: this.number_per_page,
+            page: this.current_page,
+            order_by: this.order_by,
+            sort_reverse: this.sort_reverse,
+            filter_params: this.filter_params
         };
     };
 
@@ -177,15 +177,15 @@ angular.module('BE.seed.service.search', [])
         var data = this.construct_search_query(query);
         spinner_utility.show();
         $http({
-            'method': 'POST',
-            'data': data,
-            'url': that.url
+            method: 'POST',
+            data: data,
+            url: that.url
         }).success(function(data, status, headers, config){
             spinner_utility.hide();
             that.update_results(data);
             defer.resolve(data);
         }).error(function(data, status, headers, config){
-            that.error_message = "error: " + status + " " + data;
+            that.error_message = 'error: ' + status + ' ' + data;
             that.alert = true;
             defer.reject(data, status);
         });
@@ -204,7 +204,7 @@ angular.module('BE.seed.service.search', [])
         this.buildings = data.buildings || [];
         this.number_matching_search = data.number_matching_search || 0;
         this.alert = false;
-        this.error_message = "";
+        this.error_message = '';
         this.num_pages = Math.ceil(
             this.number_matching_search / this.number_per_page
         );
@@ -221,11 +221,11 @@ angular.module('BE.seed.service.search', [])
     search_service.filter_search = function() {
         this.current_page = 1;
         this.search_buildings();
-        if (typeof(Storage) !== "undefined") {
+        if (!_.isUndefined(Storage)) {
             sessionStorage.setItem(this.prefix + ':' + 'seedBuildingFilterParams', JSON.stringify(this.filter_params));
         }
     };
-   
+
 
 
     /**
@@ -242,7 +242,7 @@ angular.module('BE.seed.service.search', [])
         this.number_per_page = this.number_per_page_options_model;
         this.current_page = 1;
         this.search_buildings();
-        if (typeof(Storage) !== "undefined") {
+        if (!_.isUndefined(Storage)) {
             sessionStorage.setItem(this.prefix + ':' + 'seedBuildingNumberPerPage', JSON.stringify(this.number_per_page));
         }
     };
@@ -288,7 +288,7 @@ angular.module('BE.seed.service.search', [])
         if (this.current_page > this.num_pages) {
             this.current_page = this.num_pages;
         }
-        if (typeof(Storage) !== "undefined") {
+        if (!_.isUndefined(Storage)) {
             sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
         }
         this.search_buildings();
@@ -303,7 +303,7 @@ angular.module('BE.seed.service.search', [])
         if (this.current_page < 1) {
             this.current_page = 1;
         }
-        if (typeof(Storage) !== "undefined") {
+        if (!_.isUndefined(Storage)) {
             sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
         }
         this.search_buildings();
@@ -380,7 +380,7 @@ angular.module('BE.seed.service.search', [])
      */
 
      /** deselect_all_buildings: Force a deselection of all buildings
-     * 
+     *
      */
     search_service.deselect_all_buildings = function() {
       var len = this.buildings.length;
@@ -411,7 +411,7 @@ angular.module('BE.seed.service.search', [])
                 }
             }
 
-            if (typeof(Storage) !== "undefined") {
+            if (!_.isUndefined(Storage)) {
                 sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingOrderBy', saas.sort_column);
                 sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingSortReverse', saas.sort_reverse);
             }
@@ -435,16 +435,16 @@ angular.module('BE.seed.service.search', [])
         sorted_class: function() {
             if (saas.sort_column === this.sort_column) {
                 if (saas.sort_reverse) {
-                    return "sorted sort_asc";
+                    return 'sorted sort_asc';
                 } else {
-                    return "sorted sort_desc";
+                    return 'sorted sort_desc';
                 }
             } else {
-                return "";
+                return '';
             }
         },
         is_label: function() {
-            return this.sort_column === "project_building_snapshots__status_label__name";
+            return this.sort_column === 'project_building_snapshots__status_label__name';
         }
     };
 
@@ -461,7 +461,7 @@ angular.module('BE.seed.service.search', [])
             return column_headers.indexOf(c.sort_column) > -1 || c.checked;
         });
         // also apply the user sort order
-        columns.sort(function(a,b) {
+        columns.sort(function(a, b) {
             // when viewing the list of projects, there is an extra "Status" column that is always first
             if (a.sort_column === 'project_building_snapshots__status_label__name') {
                 return -1;
@@ -480,7 +480,7 @@ angular.module('BE.seed.service.search', [])
             }
         });
 
-        if (typeof column_prototype !== 'undefined') {
+        if (!_.isUndefined(column_prototype)) {
             for (var i = 0; i < columns.length; i++) {
                 angular.extend(columns[i], column_prototype);
             }

@@ -4,51 +4,51 @@ BEHome.handlers = BEHome.handlers || {};
 BEHome.util = BEHome.util || {};
 
 BEHome.actions.vertically_center_page = function() {
-    var top_and_bottom_margin = $(window).height() - $(".page").height();
+    var top_and_bottom_margin = $(window).height() - $('.page').height();
     top_and_bottom_margin = (top_and_bottom_margin > 0) ? top_and_bottom_margin / 2 : 0;
-    $(".page").css({"margin-top": top_and_bottom_margin});
+    $('.page').css({'margin-top': top_and_bottom_margin});
 };
 
 BEHome.actions.hide_choose_your_path = function() {
-    $(".choose_your_path").hide();
+    $('.choose_your_path').hide();
 };
 BEHome.actions.show_choose_your_path = function() {
-    $(".choose_your_path").show();
+    $('.choose_your_path').show();
 };
 BEHome.actions.hide_all_forms = function() {
-    $("#prefinery_iframe_inline").hide();
-    $(".enter_invite_code_form").hide();
-    $(".current_account_link").hide();
+    $('#prefinery_iframe_inline').hide();
+    $('.enter_invite_code_form').hide();
+    $('.current_account_link').hide();
 };
 
 
 BEHome.actions.show_request_form = function() {
     BEHome.actions.hide_choose_your_path();
     BEHome.actions.hide_all_forms();
-    $("#prefinery_iframe_inline").show();
+    $('#prefinery_iframe_inline').show();
 };
 BEHome.actions.show_signup_form = function() {
     BEHome.actions.hide_choose_your_path();
     BEHome.actions.hide_all_forms();
-    $(".enter_invite_code_form").show();
+    $('.enter_invite_code_form').show();
 };
 BEHome.actions.show_login_form = function() {
     BEHome.actions.hide_choose_your_path();
     BEHome.actions.hide_all_forms();
-    $(".current_account_link").show();
+    $('.current_account_link').show();
 };
 BEHome.actions.check_unsupported_browser = function() {
-    var version=parseInt($.browser.version,10);
+    var version=parseInt($.browser.version, 10);
     if(($.browser.msie&&version<9)||($.browser.mozila&&version<3)||($.browser.webkit&&version<200)) {
         BEHome.actions.show_unsupported_browser_message();
         BEHome.actions.hide_login_form();
     }
 };
 BEHome.actions.show_unsupported_browser_message = function() {
-    $(".browser_unsupported").show();
+    $('.browser_unsupported').show();
 };
 BEHome.actions.hide_login_form = function() {
-    $(".form_title").hide();
+    $('.form_title').hide();
 };
 
 
@@ -73,11 +73,11 @@ BEHome.handlers.handle_cancel_button = function () {
 
 BEHome.util.bind_all_handlers = function() {
     $(window).resize(BEHome.actions.vertically_center_page);
-    $(".btn_landing_landing.invite").on("click", BEHome.handlers.handle_signup_choice_button);
-    $(".btn_landing_landing.request").on("click", BEHome.handlers.handle_request_invite_button);
-    $(".btn_landing_landing.login").on("click", BEHome.handlers.handle_login_button);
-    $(".already_signed_up").on("click", BEHome.handlers.handle_login_button);
-    $(".cancel_btn").on("click", BEHome.handlers.handle_cancel_button);
+    $('.btn_landing_landing.invite').on('click', BEHome.handlers.handle_signup_choice_button);
+    $('.btn_landing_landing.request').on('click', BEHome.handlers.handle_request_invite_button);
+    $('.btn_landing_landing.login').on('click', BEHome.handlers.handle_login_button);
+    $('.already_signed_up').on('click', BEHome.handlers.handle_login_button);
+    $('.cancel_btn').on('click', BEHome.handlers.handle_cancel_button);
 };
 
 $(function(){

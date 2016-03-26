@@ -22,7 +22,7 @@ angular.module('BE.seed.controller.project', [])
     });
 
     $scope.delete_project = function(project) {
-        if (confirm("Are you sure you want to PERMANENTLY delete the '" + project.name + "'' project?")) {
+        if (confirm('Are you sure you want to PERMANENTLY delete the \'' + project.name + '\'\' project?')) {
             project_service.delete_project(project.slug).then(function (data) {
                 // resolve promise
                 // get new list of projects
