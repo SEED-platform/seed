@@ -2599,7 +2599,7 @@ def retrieve_monthly_data(request):
         # read time periods if there are provided
         start_time = request.GET.get('start_year_month', None)  # inclusive
         end_time = request.GET.get('end_year_month', None)      # inclusive
-        
+
         if start_time:
             parsed = parse_year_month(start_time)
             if parsed['res'] == 'success':
@@ -2632,7 +2632,6 @@ def retrieve_monthly_data(request):
                 record = record.filter(begin_time__gte=start_time)
             if record and end_time:
                 record = record.filter(end_time__lte=end_time)
-
 
             if not record:
                 _log.error('No monthly data found! for meter_id ' + str(meter_id))
