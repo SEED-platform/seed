@@ -2381,6 +2381,8 @@ def retrieve_finer_timeseries_data(request):
     '''
     start_time = request.GET.get('start_timestamp', None)
     end_time = request.GET.get('end_timestamp', None)
+    energy_type = request.GET.get('energy_type', None)
+
     if start_time:
         parsed = valid_timestamp(start_time)
         if parsed['res'] != 'success':
@@ -2492,6 +2494,13 @@ def retrieve_finer_timeseries_data(request):
     metric = {}
     metric['tags'] = {}
     metric['tags']['canonical_id'] = str(building_id)
+
+    if energy_type:
+        if energy_type == 'electricity':
+            metric['tags']['energy_type_int'] = '0'
+        elif energy_type == 'gas':
+            metric['tags']['energy_type_int'] = '1'
+
     metric['name'] = str(settings.TSDB['measurement'])
 
     aggregator = {}
@@ -2580,10 +2589,17 @@ def retrieve_monthly_data(request):
         record = CanonicalBuilding.objects.get(id=building_id)
 
         meter_ids = record.meters.all()
+        energy_type = request.GET.get('energy_type', None)
+        if energy_type:
+            if energy_type == 'electricity':
+                meter_ids = meter_ids.filter(energy_type=0)
+            elif energy_type == 'gas':
+                meter_ids = meter_ids.filter(energy_type=1)
 
         # read time periods if there are provided
         start_time = request.GET.get('start_year_month', None)  # inclusive
         end_time = request.GET.get('end_year_month', None)      # inclusive
+        
         if start_time:
             parsed = parse_year_month(start_time)
             if parsed['res'] == 'success':
@@ -2616,6 +2632,7 @@ def retrieve_monthly_data(request):
                 record = record.filter(begin_time__gte=start_time)
             if record and end_time:
                 record = record.filter(end_time__lte=end_time)
+
 
             if not record:
                 _log.error('No monthly data found! for meter_id ' + str(meter_id))
