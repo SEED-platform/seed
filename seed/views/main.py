@@ -2356,13 +2356,25 @@ def parse_energy_template(request):
     return res
 
 
-def valid_timestamp(timestamp):
+def valid_timestamp(start, end):
+    '''
+    Cast start and end into integer, and convert unit from seconds into milliseconds
+    '''
+
     res = {}
-    match_obj = re.match(r'\d+', timestamp)
-    if not match_obj:
-        res['res'] = 'Invalid timestamp, expecting seconds since epoch, e.g. 1458707400'
-    else:
-        res['res'] = 'success'
+    res['start'] = None
+    res['end'] = None
+    res['is_valid'] = True
+
+    try:
+        if start:
+            res['start'] = int(start) * 1000
+        if end:
+            res['end'] = int(end) * 1000
+    except ValueError:
+        res['is_valid'] = False
+        res['msg'] = 'Invalid timestamp, expecting integer seconds since epoch, e.g. 1458707400'
+
     return res
 
 
@@ -2383,21 +2395,14 @@ def retrieve_finer_timeseries_data(request):
     end_time = request.GET.get('end_timestamp', None)
     energy_type = request.GET.get('energy_type', None)
 
-    if start_time:
-        parsed = valid_timestamp(start_time)
-        if parsed['res'] != 'success':
-            res['status'] = 'Error'
-            res['msg'] = parsed['res']
-            return res
-        start_time = int(start_time) * 1000
-
-    if end_time:
-        parsed = valid_timestamp(end_time)
-        if parsed['res'] != 'success':
-            res['status'] = 'Error'
-            res['msg'] = parsed['res']
-            return res
-        end_time = int(end_time) * 1000
+    valid_res = valid_timestamp(start_time, end_time)
+    if valid_res['is_valid']:
+        start_time = valid_res['start']
+        end_time = valid_res['end']
+    else:
+        res['status'] = 'Error'
+        res['msg'] = valid_res['msg']
+        return res
     # read time periods ends
 
     # query very last and first timestamp
@@ -2537,6 +2542,8 @@ def retrieve_finer_timeseries_data(request):
             res['reading'].append(ts_json)
 
             count = count + 1
+
+            # At most 10 finer timeseries data samples are returned to show the data are there. It could be too long if display them all on the web page
             if not start_time and not end_time and count == 10:
                 break
 
