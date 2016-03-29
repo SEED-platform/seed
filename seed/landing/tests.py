@@ -22,7 +22,7 @@ class UserLoginTest(TestCase):
         }
         self.user = User.objects.create_user(**self.user_details)
         self.login_url = reverse('landing:login')
-        self.tos_url = reverse('tos_check_tos')
+        self.tos_url = reverse('tos:tos_check_tos')
 
     def test_simple_login(self):
         """

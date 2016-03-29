@@ -223,10 +223,6 @@ CELERY_RESULT_SERIALIZER = 'seed_json'
 CELERY_TASK_RESULT_EXPIRES = 18000  # 5 hours
 CELERY_MESSAGE_COMPRESSION = 'gzip'
 
-SOUTH_TESTS_MIGRATE = False
-SOUTH_MIGRATION_MODULES = {
-}
-
 BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 
 LOG_FILE = join(SITE_ROOT, '../logs/py.log/')
