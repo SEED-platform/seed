@@ -350,6 +350,7 @@ def get_cache_increment_value(chunk):
     denom = len(chunk) or 1
     return 1.0 / denom * 100
 
+
 @shared_task
 def finish_import_record(import_record_pk):
     """Set all statuses to Done, etc."""
