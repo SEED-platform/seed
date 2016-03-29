@@ -74,7 +74,7 @@ def batch_insert_kairosdb(meta_data, ts_data):
 
         wrap.append(insert_data)
 
-    batches = [wrap[i : i + batch_insert_size] for i in xrange(0, total_len, batch_insert_size)]
+    batches = [wrap[i:i + batch_insert_size] for i in xrange(0, total_len, batch_insert_size)]
     for batch in batches:
         json_insert_data = json.dumps(batch)
         r = requests.post(db_data['insert_url'], data=json_insert_data)
