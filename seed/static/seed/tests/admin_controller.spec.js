@@ -54,15 +54,13 @@ describe('controller: seed_admin_controller', function(){
         .toHaveBeenCalledWith(44);
     });
 
-    it('should raise an confirm window when the delete buildings button is' +
-    ' clicked', function() {
+    it('should raise an confirm window when the delete buildings button is clicked', function() {
         // arrange
         var oldConfirm = confirm;
         confirm = jasmine.createSpy();
 
-
         // act
-        this.scope.confirm_delete({org_id: 44, name: 'my new org'});
+        this.scope.confirm_buildings_delete({org_id: 44, name: 'my new org'});
 
         // assertions
         expect(confirm).toHaveBeenCalledWith(
