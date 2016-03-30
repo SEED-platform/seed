@@ -37,7 +37,7 @@ before_script:
   - psql -c "create database seeddb;" -U postgres
 
 script:
-  - tox -e $TOX_ENV
+  - travis_wait tox -e $TOX_ENV
 
 after_script:
   - coveralls
