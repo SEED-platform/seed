@@ -663,6 +663,7 @@ def map_data(file_pk, *args, **kwargs):
 def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
     """Save the raw data to the database."""
     import_file = ImportFile.objects.get(pk=file_pk)
+
     # Save our "column headers" and sample rows for F/E.
     source_type = get_source_type(import_file)
     for c in chunk:
@@ -809,6 +810,16 @@ def _save_raw_data(file_pk, *args, **kwargs):
 
         if import_file.source_type == "Green Button Raw":
             return _save_raw_green_button_data(file_pk, *args, **kwargs)
+        if import_file.source_type == 'Energy Template Raw' or import_file.source_type == 'PM energy Raw':
+            # skip chrod
+            import_file.save()
+            res = {
+                'status': 'success',
+                'progress': 100,
+                'progress_key': prog_key
+            }
+            set_cache(prog_key, res['status'], res)
+            return res
 
         parser = reader.MCMParser(import_file.local_file)
         cache_first_rows(import_file, parser)
@@ -837,7 +848,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
             logger.debug('Skipped chord')
             finish_raw_save.s(file_pk)
 
-        logger.debug('Finished raw save tasks')
+        logger.debug('Finished raw save tasks ' + str(import_file.file))
         result = get_cache(prog_key)
     except StopIteration:
         result['status'] = 'error'

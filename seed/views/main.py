@@ -16,11 +16,12 @@ from collections import defaultdict
 from datetime import date, timedelta, datetime
 
 import requests
+import re
 from dateutil.parser import parse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ImproperlyConfigured
-from django.core.files.storage import DefaultStorage
+from django.core.files.storage import DefaultStorage, default_storage
 from django.db.models import Q
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render_to_response
@@ -2317,16 +2318,17 @@ def parse_pm_energy_file(request):
 
     import_file = ImportFile.objects.get(pk=file_id)
     file_path = str(import_file.file)
+
+    file_path = default_storage.open(file_path, 'r')
     _log.info(file_path)
 
-    pm_energy_processor.parse_pm_energy_file(file_path)
-    processed_file_path = file_path[0:-5] + '_processed.xlsx'
+    excel_data_frame = pm_energy_processor.parse_pm_energy_file(file_path)
 
-    json_data = energy_template_process.parse_energy_template(processed_file_path)
+    json_data = energy_template_process.parse_energy_template(excel_data_frame)
 
     green_button_data_analyser.data_analyse(json_data, 'PM')
 
-    _log.info(import_file)
+    file_path.close()
     res = {}
     res['status'] = 'success'
     return res
@@ -2340,14 +2342,39 @@ def parse_energy_template(request):
 
     import_file = ImportFile.objects.get(pk=file_id)
     file_path = str(import_file.file)
+    file_path = default_storage.open(file_path, 'r')
+
     _log.info(file_path)
 
-    json_data = energy_template_process.parse_energy_template(file_path)
+    json_data = energy_template_process.parse_energy_template_file(file_path)
 
     green_button_data_analyser.data_analyse(json_data, 'Energy Template')
 
+    file_path.close()
     res = {}
     res['status'] = 'success'
+    return res
+
+
+def valid_timestamp(start, end):
+    '''
+    Cast start and end into integer, and convert unit from seconds into milliseconds
+    '''
+
+    res = {}
+    res['start'] = None
+    res['end'] = None
+    res['is_valid'] = True
+
+    try:
+        if start:
+            res['start'] = int(start) * 1000
+        if end:
+            res['end'] = int(end) * 1000
+    except ValueError:
+        res['is_valid'] = False
+        res['msg'] = 'Invalid timestamp, expecting integer seconds since epoch, e.g. 1458707400'
+
     return res
 
 
@@ -2360,17 +2387,47 @@ def retrieve_finer_timeseries_data(request):
 
     building_id = request.GET.get('building_id')
 
-    # query last timestamp
+    # try read time periods
+    '''
+    start_time and end_time should be in seconds units since epoch
+    '''
+    start_time = request.GET.get('start_timestamp', None)
+    end_time = request.GET.get('end_timestamp', None)
+    energy_type = request.GET.get('energy_type', None)
+
+    valid_res = valid_timestamp(start_time, end_time)
+    if valid_res['is_valid']:
+        start_time = valid_res['start']
+        end_time = valid_res['end']
+    else:
+        res['status'] = 'Error'
+        res['msg'] = valid_res['msg']
+        return res
+    # read time periods ends
+
+    # query very last and first timestamp
+    first_timestamp = None
+    last_timestamp = None
+
     query_body = {}
     query_body['start_absolute'] = 1  # special timestamp for meta data
-    query_body['end_absolute'] = 1
+    query_body['end_absolute'] = 2
     query_body['metrics'] = []
 
     metric = {}
     metric['tags'] = {}
     metric['tags']['canonical_id'] = str(building_id)
-    metric['tags']['meta_type'] = 'energy_last_timestamp'
+    metric['tags']['meta_type'] = []
+    metric['tags']['meta_type'].append('energy_last_timestamp')
+    metric['tags']['meta_type'].append('energy_first_timestamp')
     metric['name'] = str(settings.TSDB['measurement'])
+
+    group = {}
+    group['name'] = 'tag'
+    group['tags'] = []
+    group['tags'].append('meta_type')
+    metric['group_by'] = []
+    metric['group_by'].append(group)
 
     aggregator = {}
     aggregator['name'] = 'avg'
@@ -2396,14 +2453,20 @@ def retrieve_finer_timeseries_data(request):
     if response.status_code == 200:
         json_data = response.json()
 
-        values = json_data['queries'][0]['results'][0]['values']
-        if not values:
-            _log.info('Building with id ' + str(building_id) + ' has no last timestamp in KairosDB')
+        values = json_data['queries'][0]['results']
+        for result in values:
+            res_values = result['values']
+            res_tags = result['tags']
+            if res_values and res_tags:
+                if res_tags['meta_type'][0] == 'energy_first_timestamp':
+                    first_timestamp = int(res_values[0][1])
+                elif res_tags['meta_type'][0] == 'energy_last_timestamp':
+                    last_timestamp = int(res_values[0][1])
 
+        if not first_timestamp and not last_timestamp:
             res['status'] = 'success'
+            res['msg'] = 'No last timestamp or first timestamp found'
             return res
-
-        last_timestamp = int(json_data['queries'][0]['results'][0]['values'][0][1])
     else:
         json_data = json.loads(response.text)
         error_msg = json_data['errors'][0]
@@ -2413,17 +2476,36 @@ def retrieve_finer_timeseries_data(request):
         res['error_msg'] = error_msg
         return res
 
-    two_week = 2 * 7 * 24 * 60 * 60 * 1000
+    if not start_time and not end_time:
+        # query last two weeks' finer timeseries data since recorded last timestamp for a shorter response time if no time period given
+        two_weeks = 2 * 7 * 24 * 60 * 60 * 1000
+        query_start = last_timestamp - two_weeks
+        query_end = last_timestamp
+    elif not start_time:
+        query_start = first_timestamp
+        query_end = end_time
+    elif not end_time:
+        query_start = start_time
+        query_end = last_timestamp
+    else:
+        query_start = start_time
+        query_end = end_time
 
-    # query last two weeks' finer timeseries data since recorded last timestamp for a shorter response time
     query_body = {}
-    query_body['start_absolute'] = last_timestamp - two_week
-    query_body['end_absolute'] = last_timestamp
+    query_body['start_absolute'] = query_start
+    query_body['end_absolute'] = query_end
     query_body['metrics'] = []
 
     metric = {}
     metric['tags'] = {}
     metric['tags']['canonical_id'] = str(building_id)
+
+    if energy_type:
+        if energy_type == 'electricity':
+            metric['tags']['energy_type_int'] = '0'
+        elif energy_type == 'gas':
+            metric['tags']['energy_type_int'] = '1'
+
     metric['name'] = str(settings.TSDB['measurement'])
 
     aggregator = {}
@@ -2460,7 +2542,9 @@ def retrieve_finer_timeseries_data(request):
             res['reading'].append(ts_json)
 
             count = count + 1
-            if count == 10:
+
+            # At most 10 finer timeseries data samples are returned to show the data are there. It could be too long if display them all on the web page
+            if not start_time and not end_time and count == 10:
                 break
 
         res['status'] = 'success'
@@ -2471,6 +2555,26 @@ def retrieve_finer_timeseries_data(request):
         res['status'] = 'error'
         res['error_code'] = response.status_code
         res['error_msg'] = error_msg
+
+    return res
+
+
+def parse_year_month(year_month):
+    res = {}
+    match_obj = re.match(r'^(\d{4}).(\d{2})$', year_month)
+    if not match_obj:
+        res['res'] = 'Invalid year month format, expecting year month, e.g. 2000-12, 2000/12 etc'
+    else:
+        year = match_obj.group(1)
+        month = match_obj.group(2)
+
+        try:
+            dt_obj = datetime(year=int(year), month=int(month), day=1, hour=1)
+
+            res['res'] = 'success'
+            res['dt_obj'] = dt_obj
+        except ValueError:
+            res['res'] = 'Invalid year month value, expecting valid year month numbers'
 
     return res
 
@@ -2492,18 +2596,64 @@ def retrieve_monthly_data(request):
         record = CanonicalBuilding.objects.get(id=building_id)
 
         meter_ids = record.meters.all()
+        energy_type = request.GET.get('energy_type', None)
+        if energy_type:
+            if energy_type == 'electricity':
+                meter_ids = meter_ids.filter(energy_type=0)
+            elif energy_type == 'gas':
+                meter_ids = meter_ids.filter(energy_type=1)
+
+        # read time periods if there are provided
+        start_time = request.GET.get('start_year_month', None)  # inclusive
+        end_time = request.GET.get('end_year_month', None)      # inclusive
+
+        if start_time:
+            parsed = parse_year_month(start_time)
+            if parsed['res'] == 'success':
+                dt_obj = parsed['dt_obj']
+                dt_obj -= timedelta(days=15)
+                start_time = str(dt_obj.year) + '-' + str(dt_obj.month) + '-' + str(dt_obj.day)
+            else:
+                res['status'] = 'Error'
+                res['msg'] = parsed['res']
+                return res
+
+        if end_time:
+            parsed = parse_year_month(end_time)
+            if parsed['res'] == 'success':
+                dt_obj = parsed['dt_obj']
+                dt_obj += timedelta(days=31)
+                end_time = str(dt_obj.year) + '-' + str(dt_obj.month) + '-' + str(dt_obj.day)
+            else:
+                res['status'] = 'Error'
+                res['msg'] = parsed['res']
+                return res
+        # read time periods ends
+
         for meter_info in meter_ids:
             meter_id = meter_info.id
             record = TimeSeries.objects.filter(meter_id=meter_id)
+
+            # apply time periods if they are given
+            if record and start_time:
+                record = record.filter(begin_time__gte=start_time)
+            if record and end_time:
+                record = record.filter(end_time__lte=end_time)
+
             if not record:
                 _log.error('No monthly data found! for meter_id ' + str(meter_id))
             else:
-                record = TimeSeries.objects.filter(meter_id=meter_id)
+                # record = TimeSeries.objects.filter(meter_id=meter_id)
+
                 for data in record.iterator():
                     monthly = {}
                     monthly['begin_time'] = data.begin_time
                     monthly['end_time'] = data.end_time
                     monthly['reading'] = data.reading
+                    if meter_info.energy_type == 0:
+                        monthly['energy_type'] = 'Electricity'
+                    else:
+                        monthly['energy_type'] = 'Natural Gas'
                     monthly['cost'] = data.cost
                     res['reading'].append(monthly)
 

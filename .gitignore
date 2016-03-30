@@ -48,4 +48,3 @@ dump.rdb
 log
 *.log
 .tox
-_*
