@@ -9,7 +9,7 @@
 
 <h2>Accept Terms of Service?</h2>
 
-<form method="post" action="{% url "tos_check_tos" %}">
+<form method="post" action="{% url "tos:tos_check_tos" %}">
     {% csrf_token %}
     {% if next %}
         <input type="hidden" name="next" value="{{next}}">
