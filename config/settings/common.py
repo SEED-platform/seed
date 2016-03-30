@@ -238,10 +238,6 @@ CELERYBEAT_SCHEDULE = {
     },
 }
 
-SOUTH_TESTS_MIGRATE = False
-SOUTH_MIGRATION_MODULES = {
-}
-
 BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 
 LOG_FILE = join(SITE_ROOT, '../logs/py.log/')
