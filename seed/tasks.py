@@ -346,18 +346,9 @@ def remove_buildings(project_slug, project_dict, user_pk):
 # New MCM tasks for importing ESPM data.
 #
 
-def add_cache_increment_parameter(tasks):
-    """This adds the cache increment value to the signature to each subtask."""
-    # TODO: This is a really weird way to handle this, it adds the argument
-    # after the methods have been added to the tasks list
-    denom = len(tasks) or 1
-    increment = 1.0 / denom * 100
-    # This is kind of terrible. Once we know how much progress each task
-    # yields, we must pass that value into the Signature for the sub tasks.
-    for _task in tasks:
-        _task.args = _task.args + (increment,)
-
-    return tasks
+def get_cache_increment_value(chunk):
+    denom = len(chunk) or 1
+    return 1.0 / denom * 100
 
 
 @shared_task
@@ -478,7 +469,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     :param raw_ids: (optional kwarg), the list of ids in chunk order.
 
     """
-
     import_file = ImportFile.objects.get(pk=file_pk)
     save_type = PORTFOLIO_BS
     if source_type == ASSESSED_RAW:
@@ -578,14 +568,10 @@ def _map_data(file_pk, *args, **kwargs):
         source_type=source_type,
     ).only('id').iterator()
 
-    tasks = []
-    for chunk in batch(qs, 100):
-        ids = [obj.id for obj in chunk]
-        tasks.append(map_row_chunk.s(ids, file_pk, source_type, prog_key))
+    id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
+    increment = get_cache_increment_value(id_chunks)
+    tasks = [map_row_chunk.s(ids, file_pk, source_type, prog_key, increment) for ids in id_chunks]
 
-    # need to rework how the progress keys are implemented here, but at least
-    # the method gets called above for cleansing
-    tasks = add_cache_increment_parameter(tasks)
     if tasks:
         # specify the chord as an immutable with .si
         chord(tasks, interval=15)(finish_mapping.si(file_pk))
@@ -629,14 +615,11 @@ def _cleanse_data(file_pk):
     Cleansing.initialize_cache(file_pk)
 
     prog_key = get_prog_key('cleanse_data', file_pk)
-    tasks = []
-    for chunk in batch(qs, 100):
-        ids = [obj.id for obj in chunk]
-        tasks.append(cleanse_data_chunk.s(ids, file_pk))  # note that increment will be added to end
 
-    # need to rework how the progress keys are implemented here, but at least
-    # the method gets called above for cleansing
-    tasks = add_cache_increment_parameter(tasks)
+    id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
+    increment = get_cache_increment_value(id_chunks)
+    tasks = [cleanse_data_chunk.s(ids, file_pk, increment) for ids in id_chunks]
+
     if tasks:
         # specify the chord as an immutable with .si
         chord(tasks, interval=15)(finish_cleansing.si(file_pk))
@@ -819,20 +802,17 @@ def _save_raw_data(file_pk, *args, **kwargs):
         import_file.num_rows = 0
         import_file.num_columns = parser.num_columns()
 
-        # Why are we setting the num_rows to the number of chunks?
-        tasks = []
-        for chunk in batch(rows, 100):
-            import_file.num_rows += len(chunk)
-            logger.debug('Appending task')
-            tasks.append(_save_raw_data_chunk.s(chunk, file_pk, prog_key))
+        chunks = []
+        for batch_chunk in batch(rows, 100):
+            import_file.num_rows += len(batch_chunk)
+            chunks.append(batch_chunk)
+        increment = get_cache_increment_value(chunks)
+        tasks = [_save_raw_data_chunk.s(chunk, file_pk, prog_key, increment) for chunk in chunks]
 
         logger.debug('Appended all tasks')
         import_file.save()
         logger.debug('Saved import_file')
 
-        # need to rework how the progress keys are implemented here
-        tasks = add_cache_increment_parameter(tasks)
-        logger.debug('Added caching increment')
         if tasks:
             logger.debug('Adding chord to queue')
             chord(tasks, interval=15)(finish_raw_save.si(file_pk))
