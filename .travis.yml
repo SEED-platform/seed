@@ -5,6 +5,8 @@ cache:
     - node_modules
     - seed/static/vendors/bower_components
     - $HOME/.pip-cache/
+    - $HOME/.nvm
+    - .tox
 
 language: python
 
