@@ -10,7 +10,7 @@
   ],
   "dependencies": {
     "angular": "~1.4.7",
-    "angular-bootstrap": "~0.14.3",
+    "angular-bootstrap": "~1.2.1",
     "angular-cookies": "~1.4.7",
     "angular-mocks": "~1.4.7",
     "angular-route": "~1.4.7",

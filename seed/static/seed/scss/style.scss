@@ -515,6 +515,8 @@ a:not([href]) {
         padding: 11px 20px 7px;
         float: left;
         text-align: center;
+        overflow: auto;
+        text-overflow: ellipsis;
 
         h1 {
           display: inline;
@@ -1017,6 +1019,14 @@ a:not([href]) {
           text-shadow: 0 1px 0 white;
           border-bottom: 1px solid darken($gray_lighter, 10%);
           border-right: 1px solid darken($gray_lighter, 10%);
+
+          &.ellipsis {
+             max-width: 80px;
+             text-overflow: ellipsis;
+             /* Required for text-overflow to do anything */
+             white-space: nowrap;
+             overflow: hidden;
+           }
 
           &.sorted {
             position: relative;
