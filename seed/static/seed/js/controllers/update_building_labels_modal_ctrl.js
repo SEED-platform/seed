@@ -99,11 +99,11 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
 
         var addLabelIDs = _.chain($scope.labels)
             .filter('is_checked_add')
-            .pluck('id')
+            .map('id')
             .value();
         var removeLabelIDs = _.chain($scope.labels)
             .filter('is_checked_remove')
-            .pluck('id')
+            .map('id')
             .value();
 
         // Parameters used to limit the loaded building list.

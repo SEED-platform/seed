@@ -151,7 +151,7 @@ angular.module('BE.seed.controller.building_list', [])
     $scope.$watchCollection('selected_labels', function() {
         // Only submit the `id` of the label to the API.
         if($scope.selected_labels.length > 0) {
-            $scope.search.filter_params.canonical_building__labels = _.pluck($scope.selected_labels, 'id');
+            $scope.search.filter_params.canonical_building__labels = _.map($scope.selected_labels, 'id');
         } else {
             delete $scope.search.filter_params.canonical_building__labels;
         }

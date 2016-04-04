@@ -54,7 +54,7 @@ angular.module('BE.seed.controller.cleansing', [])
       sortable: false,
       title: 'Error Message'
     }];
-    var columns = _.pluck(fields, 'sort_column');
+    var columns = _.map(fields, 'sort_column');
     _.forEach(fields, function(field) {
       field.checked = false;
       field.class = 'is_aligned_right';

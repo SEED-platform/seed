@@ -86,11 +86,11 @@ angular.module('BE.seed.controller.building_detail_update_labels_modal_ctrl', []
 
         var addLabelIDs = _.chain($scope.labels)
             .filter('is_checked_add')
-            .pluck('id')
+            .map('id')
             .value();
         var removeLabelIDs = _.chain($scope.labels)
             .filter('is_checked_remove')
-            .pluck('id')
+            .map('id')
             .value();
 
         label_service.update_building_labels(addLabelIDs, removeLabelIDs, [building.pk], false, {}).then(
