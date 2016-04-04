@@ -297,33 +297,6 @@ class DefaultColumnsViewTests(TestCase):
             }
         )
 
-        # This isn't returning all_fields when run from the testing framework. Can't figure out why exactly,
-        # but it appears that the data aren't being loaded into the test db.
-        # data = json.loads(response.content)
-        # self.assertEqual(data['fields'][0], {
-        #     u'checked': False,
-        #     u'class': u'is_aligned_right',
-        #     u'field_type': u'assessor',
-        #     u'link': False,
-        #     u'sort_column': u'AC Adjusted',
-        #     u'sortable': True,
-        #     u'static': False,
-        #     u'is_extra_data': True,
-        #     u'title': u'AC Adjusted',
-        #     u'type': u'string',
-        # })
-
-    def test_get_columns_project(self):
-        """check that status labels are included for projects"""
-        url = reverse_lazy("seed:get_columns")
-        response = self.client.get(
-            url,
-            {'is_project': 'true', 'organization_id': self.org.id}
-        )
-        json_string = response.content
-        data = json.loads(json_string)
-        self.assertEqual(data['fields'][0]['title'], 'Status')
-
     def tearDown(self):
         self.user.delete()
 
@@ -2236,14 +2209,11 @@ class TestMCMViews(TestCase):
             'org_id': self.org.pk
         }
 
-        print post_data
-
         response = self.client.post(
             reverse_lazy("seed:get_column_mapping_suggestions"),
             content_type='application/json',
             data=json.dumps(post_data)
         )
-        print response
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_raw_column_names(self):
