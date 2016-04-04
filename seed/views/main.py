@@ -55,6 +55,7 @@ from seed.models import (
     GREEN_BUTTON_BS,
     GreenButtonBatchRequestsInfo,
     TimeSeries,
+    Meter,
 )
 from seed.tasks import (
     map_data,
@@ -2296,14 +2297,60 @@ def delete_buildings(request):
     tasks.log_deleted_buildings.delay(
         tuple(selected_buildings.values_list('id', flat=True)), request.user.pk
     )
+
     # this step might have to move into a task
-    CanonicalBuilding.objects.filter(
-        # This is a stop-gap solution for a bug in django-pgjson
-        # https://github.com/djangonauts/django-pgjson/issues/35
-        # - once a release has been made with this fixed the 'tuple'
-        # casting can be removed.
-        buildingsnapshot__in=tuple(selected_buildings)
-    ).update(active=False)
+    # This is a stop-gap solution for a bug in django-pgjson
+    # https://github.com/djangonauts/django-pgjson/issues/35
+    # - once a release has been made with this fixed the 'tuple'
+    # casting can be removed.
+    canonical_buildings = CanonicalBuilding.objects.filter(buildingsnapshot__in=tuple(selected_buildings))
+    canonical_ids = canonical_buildings.values_list('pk', flat=True)
+
+    for canonical_id in canonical_ids:
+        canonical_bld = CanonicalBuilding.objects.get(id=canonical_id)
+        meter_ids = canonical_bld.meters.all()
+
+        # delete data in timeseries table
+        TimeSeries.objects.filter(meter_id__in=meter_ids).delete()
+
+        # delete meters in meter table
+        Meter.objects.filter(id__in=meter_ids).delete()
+
+        # delete KairosDB data
+        get_start_end = get_finer_timeseries_data_start_end_timestamp(canonical_id, True)
+        if get_start_end['status'] == 'success' and get_start_end['is_found']:
+            first_timestamp = get_start_end['start']
+            last_timestamp = get_start_end['end']
+
+            query_body = {}
+            query_body['start_absolute'] = first_timestamp
+            query_body['end_absolute'] = last_timestamp
+            query_body['metrics'] = []
+
+            metric = {}
+            metric['tags'] = {}
+            metric['tags']['canonical_id'] = str(canonical_id)
+            metric['name'] = str(settings.TSDB['measurement'])
+
+            query_body['metrics'].append(metric)
+
+            query_str = json.dumps(query_body)
+
+            headers = {'content-type': 'application/json'}
+
+            response = requests.post(settings.TSDB['delete_url'], data=query_str, headers=headers)
+
+            if response.status_code == 204:
+                _log.info('Delete ' + str(canonical_id) + ' ts data success')
+            else:
+                _log.error("Delete " + str(canonical_id) + " ts data error")
+                _log.error(response.status_code)
+                _log.error(response.text)
+        else:
+            _log.info("Delete " + str(canonical_id) + " ts data skipped")
+
+    canonical_buildings.update(active=False)
+
     return {'status': 'success'}
 
 
@@ -2378,36 +2425,10 @@ def valid_timestamp(start, end):
     return res
 
 
-@api_endpoint
-@ajax_request
-@login_required
-def retrieve_finer_timeseries_data(request):
+def get_finer_timeseries_data_start_end_timestamp(building_id, is_remove=False):
+    building_id = str(building_id)
+
     res = {}
-    res['reading'] = []
-
-    building_id = request.GET.get('building_id')
-
-    # try read time periods
-    '''
-    start_time and end_time should be in seconds units since epoch
-    '''
-    start_time = request.GET.get('start_timestamp', None)
-    end_time = request.GET.get('end_timestamp', None)
-    energy_type = request.GET.get('energy_type', None)
-
-    valid_res = valid_timestamp(start_time, end_time)
-    if valid_res['is_valid']:
-        start_time = valid_res['start']
-        end_time = valid_res['end']
-    else:
-        res['status'] = 'Error'
-        res['msg'] = valid_res['msg']
-        return res
-    # read time periods ends
-
-    # query very last and first timestamp
-    first_timestamp = None
-    last_timestamp = None
 
     query_body = {}
     query_body['start_absolute'] = 1  # special timestamp for meta data
@@ -2416,7 +2437,7 @@ def retrieve_finer_timeseries_data(request):
 
     metric = {}
     metric['tags'] = {}
-    metric['tags']['canonical_id'] = str(building_id)
+    metric['tags']['canonical_id'] = building_id
     metric['tags']['meta_type'] = []
     metric['tags']['meta_type'].append('energy_last_timestamp')
     metric['tags']['meta_type'].append('energy_first_timestamp')
@@ -2449,8 +2470,12 @@ def retrieve_finer_timeseries_data(request):
 
     response = requests.post(settings.TSDB['query_url'], data=query_str, headers=headers)
 
-    last_timestamp = 0
     if response.status_code == 200:
+        res['status'] = 'success'
+        res['is_found'] = True
+        res['start'] = None
+        res['end'] = None
+
         json_data = response.json()
 
         values = json_data['queries'][0]['results']
@@ -2459,22 +2484,72 @@ def retrieve_finer_timeseries_data(request):
             res_tags = result['tags']
             if res_values and res_tags:
                 if res_tags['meta_type'][0] == 'energy_first_timestamp':
-                    first_timestamp = int(res_values[0][1])
+                    res['start'] = int(res_values[0][1])
                 elif res_tags['meta_type'][0] == 'energy_last_timestamp':
-                    last_timestamp = int(res_values[0][1])
+                    res['end'] = int(res_values[0][1])
 
-        if not first_timestamp and not last_timestamp:
+        if not res['start'] or not res['end']:
             res['status'] = 'success'
+            res['is_found'] = False
             res['msg'] = 'No last timestamp or first timestamp found'
-            return res
+
+        if is_remove:
+            response = requests.post(settings.TSDB['delete_url'], data=query_str, headers=headers)
+            if response.status_code == 204:
+                _log.info('Delete canonical building ' + building_id + ' meta data success')
+            else:
+                _log.error('Delete canonical building ' + building_id + ' meta data failed')
+                _log.error(response.status_code)
+                _log.error(response.text)
     else:
         json_data = json.loads(response.text)
         error_msg = json_data['errors'][0]
 
         res['status'] = 'error'
-        res['error_code'] = response.status_code
-        res['error_msg'] = error_msg
+        res['code'] = response.status_code
+        res['msg'] = error_msg
+
+    return res
+
+
+@api_endpoint
+@ajax_request
+@login_required
+def retrieve_finer_timeseries_data(request):
+    res = {}
+    res['reading'] = []
+
+    building_id = request.GET.get('building_id')
+
+    # try read time periods
+    '''
+    start_time and end_time should be in seconds units since epoch
+    '''
+    start_time = request.GET.get('start_timestamp', None)
+    end_time = request.GET.get('end_timestamp', None)
+    energy_type = request.GET.get('energy_type', None)
+
+    valid_res = valid_timestamp(start_time, end_time)
+    if valid_res['is_valid']:
+        start_time = valid_res['start']
+        end_time = valid_res['end']
+    else:
+        res['status'] = 'Error'
+        res['msg'] = valid_res['msg']
         return res
+    # read time periods ends
+
+    # query very last and first timestamp
+    first_timestamp = None
+    last_timestamp = None
+
+    get_start_end = get_finer_timeseries_data_start_end_timestamp(building_id)
+    if get_start_end['status'] == 'success' and get_start_end['is_found']:
+        first_timestamp = get_start_end['start']
+        last_timestamp = get_start_end['end']
+    else:
+        get_start_end['reading'] = []
+        return get_start_end
 
     if not start_time and not end_time:
         # query last two weeks' finer timeseries data since recorded last timestamp for a shorter response time if no time period given
