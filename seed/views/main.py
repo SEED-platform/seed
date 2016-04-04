@@ -865,11 +865,9 @@ def get_columns(request):
     :GET: Expects organization_id in the query string.
     """
     organization_id = request.GET.get('organization_id', '')
-    is_project = request.GET.get('is_project', '')
     all_fields = request.GET.get('all_fields', '')
-    is_project = True if is_project.lower() == 'true' else False
     all_fields = True if all_fields.lower() == 'true' else False
-    return utils_get_columns(is_project, organization_id, all_fields)
+    return utils_get_columns(organization_id, all_fields)
 
 
 @api_endpoint

@@ -820,7 +820,7 @@ def get_shared_fields(request):
     result = {'status': 'success',
               'shared_fields': [],
               'public_fields': []}
-    columns = utils_get_columns(False, org_id, True)['fields']
+    columns = utils_get_columns(org_id, True)['fields']
     columns = {
         field['sort_column']: field for field in columns
     }
