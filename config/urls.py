@@ -44,12 +44,14 @@ urlpatterns = patterns(
 
     url(r'^ajax-uploader/', include(ajaxuploader.urls, namespace='ajaxuploader', app_name='ajaxuploader')),
 
-    url(r'^eula/', include('tos.urls', app_name='tos')),
+    url(r'^eula/', include('tos.urls', namespace='tos', app_name='tos')),
 
     # i18n setlang # TODO: remove i18n support per Nick Serra?
     url(r'^i18n/', include('django.conf.urls.i18n')),
 
     url(r'^robots.txt', 'config.views.robots_txt', name='robots_txt'),
+
+    url(r'^app/app_api/', include('seed.urls.app_api', namespace='app_api', app_name='app_api')),
 
 )
 

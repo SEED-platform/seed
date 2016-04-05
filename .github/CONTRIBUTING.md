@@ -50,3 +50,6 @@ Crockford's [guide](http://javascript.crockford.com/code.html).
 
 Note: do not use tabs for indentation in non-Python files; the unit of
 indentation should be 4 spaces.
+
+Documentation is spell checked. If there is a new word that is not in a
+typical dictionary, then add the word to the spelling_wordlist.txt

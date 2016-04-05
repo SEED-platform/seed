@@ -60,7 +60,7 @@ except ImportError:
 
 #         response = self.client.post(self.login_url, dict(username='user2', password='user2pass'))
 #         self.assertContains(response, "first edition of the terms of service")
-#         url = reverse('tos_check_tos')
+#         url = reverse('tos:tos_check_tos')
 #         response = self.client.post(url, {'accept': 'reject'})
 
 #         self.assertFalse(has_user_agreed_latest_tos(self.user2))
@@ -72,7 +72,7 @@ except ImportError:
 #         response = self.client.post(self.login_url, dict(username='user2', password='user2pass'))
 #         self.assertContains(response, "first edition of the terms of service")
 #         self.assertFalse(has_user_agreed_latest_tos(self.user2))
-#         url = reverse('tos_check_tos')
+#         url = reverse('tos:tos_check_tos')
 #         response = self.client.post(url, {'accept': 'accept'})
 
 #         self.assertTrue(has_user_agreed_latest_tos(self.user2))
@@ -90,7 +90,7 @@ except ImportError:
 #         response = self.client.post(self.login_url, dict(username='user1', password='user1pass'))
 #         self.assertContains(response, "second edition of the terms of service")
 #         self.assertFalse(has_user_agreed_latest_tos(self.user2))
-#         url = reverse('tos_check_tos')
+#         url = reverse('tos:tos_check_tos')
 #         response = self.client.post(url, {'accept': 'accept'})
 
 #         self.assertTrue(has_user_agreed_latest_tos(self.user1))

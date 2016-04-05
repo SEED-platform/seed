@@ -22,6 +22,7 @@ angular.module('BE.seed.controller.building_detail', ['ngToast'])
   // include ts data payload
   'building_finer_energy_payload',
   'building_monthly_payload',
+  'ngToast',
   // include ts data payload ends
 
   // include previous gb request info
@@ -37,7 +38,7 @@ angular.module('BE.seed.controller.building_detail', ['ngToast'])
   'label_helper_service',
   'default_columns',
   function($scope, $routeParams, $uibModal, $log, building_services, project_service, building_payload,
-           building_finer_energy_payload, building_monthly_payload, gb_req_info, all_columns,
+           building_finer_energy_payload, building_monthly_payload, ngToast, gb_req_info, all_columns,
            audit_payload, urls, $filter, $location, audit_service, label_helper_service, default_columns) {
     $scope.user = {};
     $scope.user.building_id = $routeParams.building_id;
@@ -489,8 +490,18 @@ angular.module('BE.seed.controller.building_detail', ['ngToast'])
         });
 
         if (check_defaults) {
+            // Sort by user defined order.
             data_columns.sort(function(a,b) {
                 if ($scope.default_columns.indexOf(a.key) < $scope.default_columns.indexOf(b.key)) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            });
+        } else {
+            // Sort alphabetically. 
+            data_columns.sort(function(a,b) {
+                if (a.key.toLowerCase() < b.key.toLowerCase()) {
                     return -1;
                 } else {
                     return 1;
