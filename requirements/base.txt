@@ -8,7 +8,6 @@ whitenoise==2.0
 
 
 # Forms
-django-analytical==0.17.1
 django-angular==0.7.2
 django_compressor==1.5
 # django-compressor==1.3

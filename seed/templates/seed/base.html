@@ -1,10 +1,8 @@
-{% load compress analytical %}
+{% load compress %}
 <!DOCTYPE html>
 <html>
     <!-- :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved. -->
     <head>
-    {% analytical_head_top %}
-
         <title>{% block title %}SEED Platform&#0153;{% endblock title %}</title>
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
@@ -120,16 +118,13 @@
             {% include "seed/_scripts.html" %}
 
         {% endblock js%}
-    {% analytical_head_bottom %}
     </head>
 
     {% block body %}
     <body>
-    {% analytical_body_top %}
         <div class="app" data-ng-app="BE.seed">
         {% block content %}{% endblock %}
         </div>
-    {% analytical_body_bottom %}
     </body>
 </html>
 {% endblock %}
