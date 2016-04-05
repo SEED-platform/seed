@@ -168,15 +168,13 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
 
 
 
-    building_factory.get_columns = function(is_project, project_slug, all_fields) {
+    building_factory.get_columns = function(all_fields) {
         var defer = $q.defer();
         all_fields = all_fields || "";
         $http({
             method: 'GET',
             'url': window.BE.urls.get_columns_url,
             'params': {
-                'is_project': is_project,
-                'project_slug': project_slug,
                 'all_fields': all_fields,
                 'organization_id': user_service.get_organization().id
             }

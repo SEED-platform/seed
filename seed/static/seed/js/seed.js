@@ -87,7 +87,8 @@ angular.module('BE.seed.services', [
     'BE.seed.service.user',
     'mappingValidatorService',
     'BE.seed.service.search',
-    'BE.seed.service.simple_modal'
+    'BE.seed.service.simple_modal',
+    'BE.seed.service.httpParamSerializerSeed'
     ]);
 angular.module('BE.seed.utilities', [
     'BE.seed.utility.spinner'
@@ -227,7 +228,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 'all_columns': ['building_services', '$route', function(building_services, $route) {
                     var params = angular.copy($route.current.params);
                     var project_slug = params.project_id;
-                    return building_services.get_columns(true, project_slug);
+                    return building_services.get_columns();
                 }],
                 'project_payload': ['$route', 'project_service', function($route, project_service) {
                     var params = angular.copy($route.current.params);
@@ -241,7 +242,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             controller: 'buildings_settings_controller',
             resolve: {
                 'all_columns': ['building_services', function(building_services) {
-                    return building_services.get_columns(false);
+                    return building_services.get_columns();
                 }],
                 'default_columns': ['user_service', function(user_service){
                     return user_service.get_default_columns();
@@ -270,7 +271,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     return building_services.get_building(building_id);
                 }],
                 'all_columns': ['building_services', function(building_services) {
-                    return building_services.get_columns(false);
+                    return building_services.get_columns();
                 }],
                 'audit_payload': function(){
                     return {'audit_logs': {}};
@@ -322,7 +323,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     return user_service.get_default_columns();
                 }],
                 'all_columns': ['building_services', function(building_services) {
-                    return building_services.get_columns(false);
+                    return building_services.get_columns();
                 }],
                 'project_payload': function() {
                     return {
@@ -336,7 +337,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             controller: 'buildings_settings_controller',
             resolve: {
                 'all_columns': ['building_services', function(building_services) {
-                    return building_services.get_columns(false);
+                    return building_services.get_columns();
                 }],
                 'default_columns': ['user_service', function(user_service){
                     return user_service.get_default_columns();
@@ -384,7 +385,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     return undefined
                 }],
                 'all_columns': ['building_services', function(building_services) {
-                    return building_services.get_columns(false);
+                    return building_services.get_columns();
                 }],
                 'audit_payload': function(){
                     return {'audit_logs': {}};
@@ -405,7 +406,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     return building_services.get_building(building_id);
                 }],
                 'all_columns': ['building_services', function(building_services) {
-                    return building_services.get_columns(false);
+                    return building_services.get_columns();
                 }],
                 'building_finer_energy_payload': ['building_services', '$route', function(building_services, $route){
                     return undefined
@@ -445,7 +446,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 }],
                 // try to load gb previous request info ends
                 'all_columns': ['building_services', function(building_services) {
-                    return building_services.get_columns(false);
+                    return building_services.get_columns();
                 }],
                 'audit_payload': ['audit_service', '$route', function(audit_service, $route){
                     var building_id = $route.current.params.building_id;
@@ -467,7 +468,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     return building_services.get_building(building_id);
                 }],
                 'all_columns': ['building_services', function(building_services) {
-                    return building_services.get_columns(false);
+                    return building_services.get_columns();
                 }],
                 'building_finer_energy_payload': ['building_services', '$route', function(building_services, $route){
                     console.log($route.current.params);
@@ -518,7 +519,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     return undefined
                 }],
                 'all_columns': ['building_services', function(building_services) {
-                    return building_services.get_columns(false);
+                    return building_services.get_columns();
                 }],
                 'default_columns': ['user_service', function(user_service){
                     return user_service.get_default_building_detail_columns();
@@ -561,7 +562,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     );
                 }],
                 'all_columns': ['building_services', function(building_services) {
-                    return building_services.get_columns(false);
+                    return building_services.get_columns();
                 }],
                 'auth_payload': ['auth_service', '$q', 'user_service', function(auth_service, $q, user_service) {
                     var organization_id = user_service.get_organization().id;
@@ -595,7 +596,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     return user_service.get_default_columns();
                 }],
                 'all_columns': ['building_services', function(building_services) {
-                    return building_services.get_columns(false);
+                    return building_services.get_columns();
                 }],
                 'auth_payload': ['auth_service', '$q', 'user_service', function(auth_service, $q, user_service) {
                     var organization_id = user_service.get_organization().id;
@@ -677,7 +678,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             templateUrl: static_url + 'seed/partials/settings.html',
             resolve: {
                 'all_columns': ['building_services', function(building_services) {
-                    return building_services.get_columns(false, '', true);
+                    return building_services.get_columns(true);
                 }],
                 'organization_payload': ['organization_service', '$route', function(organization_service, $route) {
                     var organization_id = $route.current.params.organization_id;
@@ -711,7 +712,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             templateUrl: static_url + 'seed/partials/sharing.html',
             resolve: {
                 'all_columns': ['building_services', function(building_services) {
-                    return building_services.get_columns(false);
+                    return building_services.get_columns();
                 }],
                 'organization_payload': ['organization_service', '$route', function(organization_service, $route) {
                     var organization_id = $route.current.params.organization_id;
@@ -745,7 +746,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             templateUrl: static_url + 'seed/partials/cleansing_admin.html',
             resolve: {
                 'all_columns': ['building_services', function(building_services) {
-                    return building_services.get_columns(false);
+                    return building_services.get_columns();
                 }],
                 'organization_payload': ['organization_service', '$route', function(organization_service, $route) {
                     var organization_id = $route.current.params.organization_id;
