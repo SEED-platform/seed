@@ -1570,7 +1570,7 @@ class Meter(models.Model):
     building_snapshot = models.ManyToManyField(
         BuildingSnapshot, related_name='meters', blank=True
     )
-    
+ 
     canonical_building = models.ManyToManyField(
         CanonicalBuilding, related_name='meters', null=True, blank=True
     )
