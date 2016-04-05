@@ -49,6 +49,7 @@ csvkit==0.6.1
 dbf==0.95.004
 dj-database-url==0.2.1
 djorm-ext-core==0.7
+-e git+https://github.com/revsys/django-tos.git@f05bd86ee8491d80384f4a12fa829a10ea68e321#egg=django_tos-master
 django-pgjson==0.3.1
 django-storages==1.4
 fuzzywuzzy>=0.3.1
