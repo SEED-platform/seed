@@ -109,6 +109,21 @@ DOMAIN_URLCONFS = {}
 DOMAIN_URLCONFS['default'] = 'config.urls'
 
 
+# When running in dev mode, then run the celery beat more frequently
+CELERY_IMPORTS = ('seed.energy.meter_data_processor.tasks')
+CELERYBEAT_SCHEDULE = {
+    'Run monthly': {
+        'task': 'seed.energy.meter_data_processor.tasks.aggregate_monthly_data',
+        'schedule': timedelta(minutes=5),
+        'args': ()
+    },
+    'Run daily': {
+        'task': 'seed.energy.meter_data_processor.tasks.green_button_task_runner',
+        'schedule': timedelta(minutes=1),
+        'args': ()
+    },
+}
+
 # use imp module to find the local_untracked file rather than a hard-coded path
 # TODO: There seems to be a bunch of loading of other files in these settings. First this loads the common, then this, then anything in the untracked file
 try:

@@ -10,7 +10,7 @@ from os.path import abspath, join, dirname
 
 from kombu import Exchange, Queue
 from kombu.serialization import register
-
+from datetime import timedelta
 from seed.serializers.celery import CeleryDatetimeSerializer
 
 
@@ -97,7 +97,8 @@ SEED_CORE_APPS = (
     'seed.lib.superperms.orgs',
     'seed.audit_logs',
     'seed.cleansing',
-    'seed.functional'
+    'seed.functional',
+    'seed.energy',
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
@@ -222,6 +223,20 @@ CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
 CELERY_TASK_RESULT_EXPIRES = 18000  # 5 hours
 CELERY_MESSAGE_COMPRESSION = 'gzip'
+
+CELERY_IMPORTS = ('seed.energy.meter_data_processor.tasks')
+CELERYBEAT_SCHEDULE = {
+    'Run monthly': {
+        'task': 'seed.energy.meter_data_processor.tasks.aggregate_monthly_data',
+        'schedule': timedelta(weeks=4),
+        'args': ()
+    },
+    'Run daily': {
+        'task': 'seed.energy.meter_data_processor.tasks.green_button_task_runner',
+        'schedule': timedelta(days=1),
+        'args': ()
+    },
+}
 
 BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 

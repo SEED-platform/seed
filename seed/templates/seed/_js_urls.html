@@ -61,5 +61,24 @@
 
         // org
         window.BE.urls.delete_organization_buildings = '{% url "seed:delete_organization_buildings" %}';
-        window.BE.urls.delete_organization = '{% url "seed:delete_organization" %}';
+	window.BE.urls.delete_organization = '{% url "seed:delete_organization" %}';
+		
+        // timeseries data
+        window.BE.urls.retrieve_finer_timeseries_data = '{% url "seed:retrieve_finer_timeseries_data" %}';
+        // timeseries data ends
+
+        // monthly data
+        window.BE.urls.retrieve_monthly_data = '{% url "seed:retrieve_monthly_data" %}';
+        // monthly data ends
+
+        // save green button request info
+        window.BE.urls.save_gb_request_info = '{% url "seed:save_gb_request_info" %}';
+        // save green button  request info ends
+
+        // get green button  request info
+        window.BE.urls.get_gb_request_info = '{% url "seed:get_gb_request_info" %}';
+        // get green button  request info ends
+		
+		window.BE.urls.parse_pm_energy_file = '{% url "seed:parse_pm_energy_file" %}';
+        window.BE.urls.parse_energy_template = '{% url "seed:parse_energy_template" %}';
     </script>

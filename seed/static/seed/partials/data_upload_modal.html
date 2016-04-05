@@ -11,6 +11,8 @@
     <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|titleCase $}</h4>
     <h4 class="modal-title" ng-switch-when="11">Confirm Save Mappings?</h4>
     <h4 class="modal-title" ng-switch-when="12">Error Processing Data</h4>
+    <h4 class="modal-title" ng-switch-when="20">Parse PM energy data file successful</h4>
+    <h4 class="modal-title" ng-switch-when="21">Parse energy template file successful</h4>
 </div>
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
     <!-- Step 1 -->
@@ -38,6 +40,11 @@
                     <div class="col-lg-6" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload a Spreadsheet" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                     <div class="col-lg-6" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Upload Portfolio Manager Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                     <div class="col-lg-6 green_button" sd-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Green Button Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                    <div class="col-lg-6" sd-uploader sourcetype="PM energy Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Portfolio Manager Energy Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                    <div class="col-lg-6" style="padding-top: 10px;padding-bottom: 10px;">
+                        <button ng-click="open_PM_energy_template()" class="btn button btn-primary col-lg-12" type="button" ng-hide="uploader.in_progress"><strong>Download Energy Data Template</strong></button>
+                    </div>
+                    <div class="col-lg-6 orange_button" sd-uploader sourcetype="Energy Template Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Energy Data Template" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                 </div>
                 <div class="progress_bar_container" ng-show="uploader.in_progress">
                     <div class="progress_bar_copy_top">Uploading <strong>{$ dataset.filename $}</strong></div>
@@ -220,6 +227,16 @@
     <div ng-switch-when="11">
         <div class="row text-center">
             <button type="button" id="confirm-mapping" class="btn btn-primary col-sm-6 col-lg-6 col-md-6 center-block" ng-click="goto_step(7); find_matches();">Confirm mappings &amp; start matching</button>
+        </div>
+    </div>
+	<div ng-switch-when="20">
+        <div class="row text-center">
+            <button type="button" class="btn btn-default col-sm-6 col-lg-6 col-md-6 center-block" ng-click="view_my_buildings()">View my buildings</button>
+        </div>
+    </div>
+    <div ng-switch-when="21">
+        <div class="row text-center">
+            <button type="button" class="btn btn-default col-sm-6 col-lg-6 col-md-6 center-block" ng-click="view_my_buildings()">View my buildings</button>
         </div>
     </div>
     <div class="row text-center">

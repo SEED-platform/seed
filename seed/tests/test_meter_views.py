@@ -51,6 +51,8 @@ class TestMeterViews(TestCase):
         )
         meter.building_snapshot.add(bs)
 
+        # NL Added custom_meter_id and canonical building.
+        # TODO: Why is canonical building an array?
         expected = {
             'status': 'success',
             'building_id': bs.pk,
@@ -62,7 +64,9 @@ class TestMeterViews(TestCase):
                     'energy_type': ELECTRICITY,
                     'pk': meter.pk,
                     'model': 'seed.meter',
-                    'id': meter.pk
+                    'id': meter.pk,
+                    'custom_meter_id': '',
+                    'canonical_building': [],
                 }
             ]
         }

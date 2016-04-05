@@ -1570,8 +1570,13 @@ class Meter(models.Model):
     building_snapshot = models.ManyToManyField(
         BuildingSnapshot, related_name='meters', blank=True
     )
+
+    canonical_building = models.ManyToManyField(
+        CanonicalBuilding, related_name='meters', null=True, blank=True
+    )
     energy_type = models.IntegerField(choices=ENERGY_TYPES)
     energy_units = models.IntegerField(choices=ENERGY_UNITS)
+    custom_meter_id = models.CharField(max_length=100, blank=True)
 
 
 class TimeSeries(models.Model):
@@ -1583,3 +1588,19 @@ class TimeSeries(models.Model):
     meter = models.ForeignKey(
         Meter, related_name='timeseries_data', null=True, blank=True
     )
+
+
+class GreenButtonBatchRequestsInfo(models.Model):
+    last_ts = models.BigIntegerField(null=True)
+    url = models.CharField(max_length=500)
+    last_date = models.CharField(max_length=50)
+    min_date_parameter = models.CharField(max_length=20)
+    max_date_parameter = models.CharField(max_length=20)
+    building_id = models.CharField(max_length=100)
+    active = models.CharField(max_length=10)
+    time_type = models.CharField(max_length=50)
+    date_pattern = models.CharField(max_length=100)
+    subscription_id = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.url + ', ' + str(self.building_id)

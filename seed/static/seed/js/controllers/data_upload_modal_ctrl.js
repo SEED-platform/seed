@@ -176,7 +176,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             // Assessed Data
             if (current_step === 2) {
                 var is_green_button = (file.source_type === "Green Button Raw");
-                save_raw_assessed_data(file.file_id, is_green_button);
+                var is_pm_energy_template = (file.source_type === "PM energy Raw");
+                var is_energy_template = (file.source_type === "Energy Template Raw");
+                save_raw_assessed_data(file.file_id, is_green_button, is_pm_energy_template, is_energy_template);
             }
             // Portfolio Data
             if (current_step === 4) {
@@ -270,7 +272,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
      *
      * @param {string} file_id: the id of the import file
      */
-    var save_raw_assessed_data = function (file_id, is_green_button) {
+    var save_raw_assessed_data = function (file_id, is_green_button, 
+	                                       is_pm_energy_template,
+                                           is_energy_template) {
         $scope.uploader.status_message = "saving data";
         $scope.uploader.progress = 45;
         uploader_service.save_raw_data(file_id)
@@ -281,6 +285,29 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 
                 if (is_green_button) {
                     $scope.step.number = 8;
+                }else if(is_pm_energy_template){
+                    $scope.step.number = 20;
+                    
+                    uploader_service.parse_pm_energy_file(file_id)
+                        .then(function (data){
+                            // resolve promise
+                        }, function (data, status){
+                            // reject promise
+                        }).catch(function (data) {
+                            console.log( String(data) );
+                        });
+
+                }else if(is_energy_template){
+                    $scope.step.number = 21;
+
+                    uploader_service.parse_energy_template(file_id)
+                        .then(function (data){
+                            // resolve promise
+                        }, function (data, status){
+                            // reject promise
+                        }).catch(function (data) {
+                            console.log( String(data) );
+                        });
                 } else {
                     $scope.step.number = 3;
                 }
@@ -356,6 +383,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         });
     };
 
+    $scope.open_PM_energy_template = function(){
+        window.open("../../../../static/template.xlsx", "_blank");
+    };
+	
     /**
      * init: ran upon the controller load
      */

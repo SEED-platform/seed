@@ -5,39 +5,50 @@
 :author
 """
 from __future__ import absolute_import
+
 import calendar
 import datetime
-import time
+import operator
 import re
 import string
+import time
 import traceback
-import operator
 from _csv import Error
-from django.core.mail import send_mail
+from functools import reduce
+
+import usaddress
+from celery import chord, shared_task
+from celery.utils.log import get_task_logger
 from django.conf import settings
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.template import loader
+from django.core.mail import send_mail
+from django.core.urlresolvers import reverse_lazy
 from django.db.models import Q
 from django.db.models.loading import get_model
-from django.core.urlresolvers import reverse_lazy
-from celery import chord
-from celery import shared_task
-from celery.utils.log import get_task_logger
-from seed.decorators import get_prog_key
-import usaddress
+from django.template import loader
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from streetaddress import StreetAddressFormatter
+
 from seed import search
 from seed.audit_logs.models import AuditLog
+from seed.cleansing.models import Cleansing
+from seed.cleansing.tasks import (
+    finish_cleansing,
+    cleanse_data_chunk,
+)
+from seed.data_importer.models import (
+    ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
+)
+from seed.decorators import get_prog_key
+from seed.decorators import lock_and_track
+from seed.green_button import xml_importer
 from seed.landing.models import SEEDUser as User
+from seed.lib.exporter import Exporter
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.data.ESPM import espm as espm_schema
 from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.utils import batch
-from streetaddress import StreetAddressFormatter
-from seed.data_importer.models import (
-    ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
-)
-from seed.green_button import xml_importer
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     ASSESSED_RAW,
     PORTFOLIO_RAW,
@@ -62,19 +73,10 @@ from seed.models import (
     ProjectBuilding,
     BuildingSnapshot,
 )
-from seed.decorators import lock_and_track
 from seed.utils import time as time_utils
 from seed.utils.buildings import get_source_type, get_search_query
 from seed.utils.cache import set_cache, increment_cache, get_cache
 from seed.utils.mapping import get_mappable_columns
-from seed.lib.superperms.orgs.models import Organization
-from seed.lib.exporter import Exporter
-from seed.cleansing.models import Cleansing
-from seed.cleansing.tasks import (
-    finish_cleansing,
-    cleanse_data_chunk,
-)
-from functools import reduce
 
 logger = get_task_logger(__name__)
 
@@ -644,6 +646,7 @@ def map_data(file_pk, *args, **kwargs):
 def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
     """Save the raw data to the database."""
     import_file = ImportFile.objects.get(pk=file_pk)
+
     # Save our "column headers" and sample rows for F/E.
     source_type = get_source_type(import_file)
     for c in chunk:
@@ -750,25 +753,18 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
     res = xml_importer.import_xml(import_file)
 
     prog_key = get_prog_key('save_raw_data', file_pk)
-    result = {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key
-    }
-    set_cache(prog_key, result['status'], result)
-
     if res:
         return {
             'status': 'success',
             'progress': 100,
             'progress_key': prog_key
         }
-
-    return {
-        'status': 'error',
-        'message': 'data failed to import',
-        'progress_key': prog_key
-    }
+    else:
+        return {
+            'status': 'error',
+            'progress': 100,
+            'progress_key': prog_key
+        }
 
 
 @shared_task
@@ -779,6 +775,8 @@ def _save_raw_data(file_pk, *args, **kwargs):
     logger.debug("Current cache state")
     current_cache = get_cache(prog_key)
     logger.debug(current_cache)
+
+    # why are we sleeping here?
     time.sleep(2)
     result = current_cache
 
@@ -795,6 +793,16 @@ def _save_raw_data(file_pk, *args, **kwargs):
 
         if import_file.source_type == "Green Button Raw":
             return _save_raw_green_button_data(file_pk, *args, **kwargs)
+        if import_file.source_type == 'Energy Template Raw' or import_file.source_type == 'PM energy Raw':
+            # skip chrod
+            import_file.save()
+            res = {
+                'status': 'success',
+                'progress': 100,
+                'progress_key': prog_key
+            }
+            set_cache(prog_key, res['status'], res)
+            return res
 
         parser = reader.MCMParser(import_file.local_file)
         cache_first_rows(import_file, parser)
@@ -820,7 +828,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
             logger.debug('Skipped chord')
             finish_raw_save.s(file_pk)
 
-        logger.debug('Finished raw save tasks')
+        logger.debug('Finished raw save tasks ' + str(import_file.file))
         result = get_cache(prog_key)
     except StopIteration:
         result['status'] = 'error'

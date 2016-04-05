@@ -1,3 +1,7 @@
+<script type="text/javascript">
+    var scope = angular.element(document.getElementById('finer_ts_chart')).scope();
+</script>
+<toast></toast>
 <div class="page_header_container" ng-cloak>
     <div class="page_header">
         <div class="left page_action_container">
@@ -33,7 +37,7 @@
             </div>
         </div>
     </div>
-    <div class="section_content_container">
+    <!--div class="section_content_container">
         <div class="section_content">
             <div class="table_list_container">
                <table class="table table-striped table_highlight_first">
@@ -53,5 +57,164 @@
                </table>
            </div>
         </div>
+    </div-->
+	<div class="section_content_container">
+        <div class="section_content">
+            <div class="table_list_container">
+               <table class="table table-striped table_highlight_first">
+                   <thead>
+                       <tr>
+                           <th style="width:100%" colspan="2">GreenButton Connect My Data</th>
+                       </tr>
+                   </thead>
+                   <tbody>
+                       <tr>
+                           <td style="width:15%">
+                               Base URL (no trailing '/')
+                           </td>
+                           <td>
+                               <input type="text" id="gb_url" name="gb_url" style="width:100%" value="{$ gb_req_url $}"/>
+                           </td>
+                       </tr>
+                       <tr>
+                           <td style="width:15%">
+                               Subscription ID
+                           </td>
+                           <td>
+                               <input type="text" id="gb_subscription_id" name="gb_subscription_id" style="width:100%" value="{$ gb_req_subscription_id $}"/>
+                           </td>
+                       </tr>
+                       <tr>
+                           <td>
+                               Start Time Parameter
+                           </td>
+                           <td>
+                               <input type="text" id="min_para" name="min_para" style="width:100%" value="{$ gb_req_min_date_para $}" />
+                           </td>
+                       </tr>
+                       <tr>
+                           <td>
+                               End Time Parameter
+                           </td>
+                           <td>
+                               <input type="text" id="max_para" name="max_para" style="width:100%" value="{$ gb_req_max_date_para $}" />
+                           </td>
+                       </tr>
+                       <tr>
+                           <td>
+                               Time Type
+                           </td>
+                           <td>
+                               <input type="radio" id="time_type_date" name="time_type" value="date" ng-model="time_type" ng-change="time_type_change(time_type)" checked="time_type==='date'"/>Date
+                               <span style="display:inline-block;width:10px;"></span>
+                               <input type="radio" id="time_type_timestamp" name="time_type" value="timestamp" ng-model="time_type" ng-change="time_type_change(time_type)" checked="time_type==='timestamp'" />Timestamp
+                           </td>
+                       </tr>
+                       <tr id="gb_req_info_date_pattern" ng-show="time_type==='date'">
+                           <td>
+                               Date Time Pattern
+                           </td>
+                           <td>
+                               <select id="date_pattern" name="date_pattern" style="width:100%" data-ng-model="gb_req_date_pattern">
+                                   <option value=""></option>
+                                   <option value="%m/%d/%Y">1/31/2000</option>
+                                   <option value="%m-%d-%Y">1-31-2000</option>
+                                   <option value="%d/%m/%Y">31/1/2000</option>
+                                   <option value="%d-%m-%Y">31-1-2000</option>
+                                   <option value="%Y/%m/%d">2000/1/31</option>
+                                   <option value="%Y-%m-%d">2000-1-31</option>
+                               </select>
+                           </td>
+                       </tr>
+                       <tr>
+                           <td>
+                               Active?
+                           </td>
+                           <td>
+                               <input type="radio" id="active_yes" name="active" value="Y" ng-model="active" ng-change="active_change(active)" checked="active==='Y'"/>Yes
+                               <span style="display:inline-block;width:16px;"></span>
+                               <input type="radio" id="active_no" name="active" value="N" ng-model="active" ng-change="active_change(active)" checked="active==='N'" />No
+                           </td>
+                       </tr>
+                       <tr ng-show="gb_req_flag==='N'">
+                           <td>
+                               Legacy Data Available?
+                           </td>
+                           <td>
+                               <input type="radio" id="loopback_yes" name="loopback" value="Y" ng-model="loopback" ng-change="loopback_change(loopback)" ng-disabled="gb_req_flag==='Y'"/>Backfill
+                               <span style="display:inline-block;width:16px;"></span>
+                               <input type="radio" id="loopback_no" name="loopback" value="N" ng-model="loopback" ng-change="loopback_change(loopback)" ng-disabled="gb_req_flag==='Y'" />No
+                           </td>
+                       </tr>
+                       <tr>
+                           <td colspan="2">
+                               <button type="button" class="btn btn-sm btn-primary" ng-click="save_gb_request_info()">Save GreenButton Request Information</button>
+                           </td>
+                       </tr>
+                   </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content">
+            <div class="table_list_container">
+               <table class="table table-striped table_highlight_first">
+                   <thead>
+                       <tr>
+                           <th colspan="4">Monthly Timeseries Data Sample</th>
+                       </tr>
+                   </thead>
+                   <tbody>
+                       <tr ng-show="monthly_data_flag && monthly_data_readings.length==0">
+                           <td colspan="3">There are no monthly timeseries data for this building</td>
+                       </tr>
+                       <tr ng-show="monthly_data_flag && monthly_data_readings.length>0">
+                           <td>Start Time Stamp</td><td><b>End Time Stamp</b></td><td><b>Reading</b></td><td><b>Energy Type</b></td>
+                       </tr>
+                       <tr ng-repeat="f in monthly_data_readings">
+                           <td style="font-weight:normal">{$ f.begin_time $}</td>
+                           <td>{$ f.end_time $}</td>
+                           <td>{$ f.reading $}</td>
+                           <td>{$ f.energy_type $}</td>
+                       </tr>
+                   </tbody>
+               </table>
+           </div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content">
+            <div class="table_list_container">
+               <table class="table table-striped table_highlight_first">
+                   <thead>
+                       <tr>
+                           <th colspan="3">Finer Timeseries Data</th>
+                       </tr>
+                   </thead>
+                   <tbody>
+                       <tr ng-show="finer_ts_data_flag && finer_ts_data_readings.length==0">
+                           <td colspan="3">There are no finer timeseries data for this building</td>
+                       </tr>
+                       <tr ng-show="finer_ts_data_flag && finer_ts_data_readings.length>0">
+                           <td>Time stamp</td><td><b>Reading</b></td><td><b>Interval</b></td>
+                       </tr>
+                       <tr ng-repeat="f in finer_ts_data_readings">
+                           <td style="font-weight:normal">{$ f.timestamp $}</td>
+                           <td>{$ f.value $}</td>
+                           <td>{$ finer_ts_data_interval $}</td>
+                       </tr>
+                       <tr><td colspan="3"></td></tr>
+                       <tr ng-show="finer_ts_data_flag && finer_ts_data_meta.length>0">
+                           <td>Attribute</td><td colspan="2"><b>Value</b></td>
+                       </tr>
+                       <tr ng-repeat="f in finer_ts_data_meta">
+                           <td style="font-weight:normal">{$ f.key $}</td>
+                           <td colspan="2">{$ f.value $}</td>
+                       </tr>
+                   </tbody>
+               </table>
+            </div>
+	    </div>
     </div>
 </div>
