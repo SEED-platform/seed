@@ -62,7 +62,7 @@ def handle_s3_upload_complete(request):
         return {'success': False,
                 'message': "Direct-to-S3 uploads not enabled"}
 
-    import_record_pk = request.REQUEST['import_record']
+    import_record_pk = request.POST['import_record']
     try:
         record = ImportRecord.objects.get(pk=import_record_pk)
     except ImportRecord.DoesNotExist:
@@ -70,10 +70,10 @@ def handle_s3_upload_complete(request):
         return {'success': False,
                 'message': "Import Record %s not found" % import_record_pk}
 
-    filename = request.REQUEST['key']
-    source_type = request.REQUEST['source_type']
+    filename = request.POST['key']
+    source_type = request.POST['source_type']
     # Add Program & Version fields (empty string if not given)
-    kw_fields = {field: request.REQUEST.get(field, '')
+    kw_fields = {field: request.POST.get(field, '')
                  for field in ['source_program', 'source_program_version']}
 
     f = ImportFile.objects.create(import_record=record,
@@ -104,7 +104,7 @@ class DataImportBackend(LocalUploadBackend):
             request, filename, *args, **kwargs
         )
 
-        import_record_pk = request.REQUEST['import_record']
+        import_record_pk = request.GET['import_record']
         try:
             record = ImportRecord.objects.get(pk=import_record_pk)
         except ImportRecord.DoesNotExist:
@@ -113,10 +113,10 @@ class DataImportBackend(LocalUploadBackend):
             return {'success': False,
                     'message': "Import Record %s not found" % import_record_pk}
 
-        source_type = request.REQUEST['source_type']
+        source_type = request.GET['source_type']
 
         # Add Program & Version fields (empty string if not given)
-        kw_fields = {field: request.REQUEST.get(field, '')
+        kw_fields = {field: request.GET.get(field, '')
                      for field in ['source_program', 'source_program_version']}
 
         f = ImportFile.objects.create(import_record=record,

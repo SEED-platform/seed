@@ -41,7 +41,7 @@ def login_view(request):
         Check user has accepted ToS, if any.
     """
     if request.method == "POST":
-        redirect_to = request.REQUEST.get('next', False)
+        redirect_to = request.POST.get('next', request.GET.get('next', False))
         if not redirect_to:
             redirect_to = reverse('seed:home')
 
