@@ -17,6 +17,8 @@ addons:
   postgresql: '9.4'
   # Sauce credentials in Travis env vars
   sauce_connect: true
+  apt_packages:
+    - enchant
 
 services:
   - redis-server
@@ -30,6 +32,7 @@ env:
     - TOX_ENV=python
     - TOX_ENV=flake8
     - TOX_ENV=functional
+    - TOX_ENV=spelling
 
 install:
   - pip install --upgrade pip

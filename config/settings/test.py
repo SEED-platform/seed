@@ -66,6 +66,7 @@ NOSE_ARGS = [
     '--nologcapture'
 ]
 
+
 class DisableMigrations(object):
     def __contains__(self, item):
         return True
