@@ -8,7 +8,7 @@
 # django imports
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db import models
@@ -73,7 +73,7 @@ class AuditLog(TimeStampedModel):
     # Generic Foreign Key next three fields
     content_type = models.ForeignKey(ContentType, null=True, blank=True)
     object_id = models.PositiveIntegerField(null=True)
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey('content_type', 'object_id')
     audit_type = models.IntegerField(default=LOG, choices=AUDIT_CHOICES)
     action = models.CharField(
         max_length=128,
