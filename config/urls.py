@@ -51,6 +51,8 @@ urlpatterns = patterns(
 
     url(r'^robots.txt', 'config.views.robots_txt', name='robots_txt'),
 
+    url(r'^app/app_api/', include('seed.urls.app_api', namespace='app_api', app_name='app_api')),
+
 )
 
 if settings.DEBUG:
