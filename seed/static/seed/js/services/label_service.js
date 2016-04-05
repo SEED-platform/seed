@@ -77,7 +77,6 @@ angular.module('BE.seed.service.label',
             method: 'GET',
             url: window.BE.urls.label_list,
             params: searchArgs,
-            paramSerializer: 'httpParamSerializerSeed'
         }).success(function(data, status, headers, config) {
             
             if (_.isEmpty(data.results)) {
