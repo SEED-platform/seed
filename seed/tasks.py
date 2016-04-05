@@ -13,13 +13,13 @@ import string
 import traceback
 import operator
 from _csv import Error
+from django.apps import apps
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.template import loader
 from django.db.models import Q
-from django.db.models.loading import get_model
 from django.core.urlresolvers import reverse_lazy
 from celery import chord
 from celery import shared_task
@@ -94,7 +94,7 @@ PUNCT_REGEX = re.compile('[{0}]'.format(
 def export_buildings(export_id, export_name, export_type,
                      building_ids, export_model='seed.BuildingSnapshot',
                      selected_fields=None):
-    model = get_model(*export_model.split("."))
+    model = apps.get_model(*export_model.split("."))
 
     selected_buildings = model.objects.filter(pk__in=building_ids)
 
