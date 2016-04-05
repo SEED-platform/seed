@@ -57,7 +57,7 @@ def overview_portfolio(request):
     for bld_type in blds:
         ret['building_type'].append(bld_type['building_type'])
         ret['building_number'].append(bld_type['building_number'])
-        ret['gross_floor_area'].append(bld_type['gross_floor_area']/1000)
+        ret['gross_floor_area'].append(bld_type['gross_floor_area'] / 1000)
 
     res['status'] = 'success'
     res['data'] = ret
