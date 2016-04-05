@@ -196,7 +196,7 @@ def insert(gb_data):
         return True
 
     if not kairosdb_detector.detect():
-        _log.info('KairosDB no found, insert finer timeseries data cancelled'
+        _log.info('KairosDB no found, insert finer timeseries data cancelled')
         return False
 
     ret_flag = True

@@ -36,7 +36,7 @@ from seed.decorators import ajax_request, get_prog_key
 from seed.energy.meter_data_processor import green_button_data_analyser
 from seed.energy.meter_data_processor.tasks import process_green_button_batch_request
 from seed.energy.pm_energy_template import pm_energy_processor, energy_template_process
-from seed.energy.tsdb.kariosdb import kairosdb_detector
+from seed.energy.tsdb.kairosdb import kairosdb_detector
 from seed.lib.exporter import Exporter
 from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm
@@ -2435,8 +2435,6 @@ def get_finer_timeseries_data_start_end_timestamp(building_id, is_remove=False):
         return res
 
     building_id = str(building_id)
-
-    res = {}
 
     query_body = {}
     query_body['start_absolute'] = 1  # special timestamp for meta data
