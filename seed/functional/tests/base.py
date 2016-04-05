@@ -22,7 +22,7 @@ from seed.landing.models import SEEDUser
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 
 import logging
-_log = loggint.getLogger(__name__) 
+_log = logging.getLogger(__name__) 
 
 
 class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
