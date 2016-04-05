@@ -36,6 +36,7 @@ from seed.decorators import ajax_request, get_prog_key
 from seed.energy.meter_data_processor import green_button_data_analyser
 from seed.energy.meter_data_processor.tasks import process_green_button_batch_request
 from seed.energy.pm_energy_template import pm_energy_processor, energy_template_process
+from seed.energy.tsdb.kariosdb import kairosdb_detector
 from seed.lib.exporter import Exporter
 from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm
@@ -2424,6 +2425,15 @@ def valid_timestamp(start, end):
 
 
 def get_finer_timeseries_data_start_end_timestamp(building_id, is_remove=False):
+    res = {}
+    res['start'] = None
+    res['end'] = None
+
+    if not kairosdb_detector.detect():
+        res['status'] = 'fail'
+        res['msg'] = 'No KairosDB found'
+        return res
+
     building_id = str(building_id)
 
     res = {}
@@ -2471,8 +2481,6 @@ def get_finer_timeseries_data_start_end_timestamp(building_id, is_remove=False):
     if response.status_code == 200:
         res['status'] = 'success'
         res['is_found'] = True
-        res['start'] = None
-        res['end'] = None
 
         json_data = response.json()
 
@@ -2516,6 +2524,11 @@ def get_finer_timeseries_data_start_end_timestamp(building_id, is_remove=False):
 def retrieve_finer_timeseries_data(request):
     res = {}
     res['reading'] = []
+
+    if not kairosdb_detector.detect():
+        res['status'] = 'success'
+        res['msg'] = 'No KairosDB found'
+        return res
 
     building_id = request.GET.get('building_id')
 

@@ -2,7 +2,7 @@ import logging
 from datetime import date, datetime
 
 import tasks
-from seed.energy.tsdb.kairosdb import kairos_insert as tsdb
+from seed.energy.tsdb.kairosdb import kairosdb_insert as tsdb
 from seed.models import (
     Meter,
     CanonicalBuilding,

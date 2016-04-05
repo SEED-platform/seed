@@ -7,6 +7,7 @@ import random
 from time import sleep
 
 from django.conf import settings
+from seed.energy.tsdb.kairosdb import kairosdb_detector
 
 _log = logging.getLogger(__name__)
 
@@ -193,6 +194,10 @@ def update_timestamp_record(timestamps, is_last_timestamp):
 def insert(gb_data):
     if not gb_data:
         return True
+
+    if not kairosdb_detector.detect():
+        _log.info('KairosDB no found, insert finer timeseries data cancelled'
+        return False
 
     ret_flag = True
 
