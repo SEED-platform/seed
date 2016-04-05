@@ -103,7 +103,7 @@ class ImportRecord(NotDeletableModel):
     status = models.IntegerField(default=0, choices=IMPORT_STATII)
     import_completed_at = models.DateTimeField(blank=True, null=True)
     merge_completed_at = models.DateTimeField(blank=True, null=True)
-    mcm_version = models.IntegerField(max_length=10, blank=True, null=True)
+    mcm_version = models.IntegerField(blank=True, null=True)
     super_organization = models.ForeignKey(
         SuperOrganization, blank=True, null=True, related_name='import_records'
     )

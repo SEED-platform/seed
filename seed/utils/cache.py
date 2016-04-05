@@ -4,8 +4,6 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import math
-
 from django.core.cache import cache as django_cache
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 
@@ -98,7 +96,7 @@ def get_lock(lock_key, default=0):
 
 def increment_cache(key, increment):
     """Increment cache by value increment, never exceed 100."""
-    increment = math.ceil(increment)
+    increment = round(increment, 2)
     value = get_cache(key)
     value = float(value['progress'])
     if value + increment >= 100.0:

@@ -534,6 +534,8 @@ def update_building(old_snapshot, updated_values, user, *args, **kwargs):
         initial_data=sources  # Copy parent's source attributes.
     )
 
+    new_snapshot.save()
+
     diff_sources = _get_diff_sources(mappable, old_snapshot)
     for diff in diff_sources:
         setattr(new_snapshot, '{0}_source'.format(diff), new_snapshot)
@@ -706,7 +708,7 @@ class Project(TimeStampedModel):
         _('status'), choices=STATUS_CHOICES, default=ACTIVE_STATUS
     )
     building_snapshots = models.ManyToManyField(
-        'BuildingSnapshot', through="ProjectBuilding", blank=True, null=True
+        'BuildingSnapshot', through="ProjectBuilding", blank=True
     )
 
     @property
@@ -905,7 +907,7 @@ class Enum(models.Model):
     """Defines a set of enumerated types for a column."""
     enum_name = models.CharField(max_length=255, db_index=True)
     enum_values = models.ManyToManyField(
-        EnumValue, null=True, blank=True, related_name='values'
+        EnumValue, blank=True, related_name='values'
     )
 
     def __unicode__(self):
@@ -958,13 +960,11 @@ class ColumnMapping(models.Model):
         'Column',
         related_name='raw_mappings',
         blank=True,
-        null=True,
     )
     column_mapped = models.ManyToManyField(
         'Column',
         related_name='mapped_mappings',
         blank=True,
-        null=True,
     )
 
     def is_direct(self):
@@ -1172,7 +1172,7 @@ class BuildingSnapshot(TimeStampedModel):
         'BuildingSnapshot', related_name='+', null=True, blank=True
     )
 
-    building_count = models.IntegerField(max_length=3, null=True, blank=True)
+    building_count = models.IntegerField(null=True, blank=True)
     building_count_source = models.ForeignKey(
         'BuildingSnapshot', related_name='+', null=True, blank=True
     )
@@ -1300,7 +1300,6 @@ class BuildingSnapshot(TimeStampedModel):
 
     children = models.ManyToManyField(
         'BuildingSnapshot',
-        null=True,
         blank=True,
         symmetrical=False,
         related_name='parents',
@@ -1569,13 +1568,14 @@ class Meter(models.Model):
     """Meter specific attributes."""
     name = models.CharField(max_length=100)
     building_snapshot = models.ManyToManyField(
-        BuildingSnapshot, related_name='meters', null=True, blank=True
+        BuildingSnapshot, related_name='meters', blank=True
     )
+
     canonical_building = models.ManyToManyField(
         CanonicalBuilding, related_name='meters', null=True, blank=True
     )
-    energy_type = models.IntegerField(max_length=3, choices=ENERGY_TYPES)
-    energy_units = models.IntegerField(max_length=3, choices=ENERGY_UNITS)
+    energy_type = models.IntegerField(choices=ENERGY_TYPES)
+    energy_units = models.IntegerField(choices=ENERGY_UNITS)
     custom_meter_id = models.CharField(max_length=100, blank=True)
 
 
