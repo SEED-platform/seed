@@ -120,6 +120,7 @@ py
 qqfile
 qs
 Redis
+Runtime
 repo
 rtype
 seeddb
@@ -142,6 +143,7 @@ Todo
 ToS
 travis
 Ubuntu
+uncomment
 unicode
 unmatch
 unmatching
