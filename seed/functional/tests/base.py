@@ -21,6 +21,9 @@ from django.test.client import Client
 from seed.landing.models import SEEDUser
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 
+import logging
+_log = loggint.getLogger(__name__) 
+
 
 class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
     capabilities = {
@@ -41,7 +44,8 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
             return webdriver.Firefox()
 
         hub_url = "%s:%s@localhost:4445" % (os.getenv('SAUCE_USERNAME'), os.getenv('SAUCE_ACCESS_KEY'))
-
+        print hub_url
+        _log.error(hub_url)
         capabilities = {
             'tunnel-identifier': os.environ.get('TRAVIS_JOB_NUMBER'),
             'build': os.environ.get('TRAVIS_BUILD_NUMBER'),
