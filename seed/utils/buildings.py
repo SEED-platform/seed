@@ -46,7 +46,7 @@ def get_buildings_for_user_count(user):
     building_snapshots = BuildingSnapshot.objects.filter(
         super_organization__in=user.orgs.all(),
         canonicalbuilding__active=True,
-    ).distinct('pk')
+    ).order_by('pk').distinct('pk')
 
     return building_snapshots.count()
 
@@ -89,7 +89,7 @@ def get_search_query(user, params):
     return buildings_queryset
 
 
-def get_columns(is_project, org_id, all_fields=False):
+def get_columns(org_id, all_fields=False):
     """
     Get default columns, to be overridden in future
 
@@ -178,18 +178,6 @@ def get_columns(is_project, org_id, all_fields=False):
         cols.append(d)
 
     cols.sort(key=lambda x: x['title'])
-    if is_project:
-        cols.insert(0, {
-            "title": "Status",
-            "sort_column": "project_building_snapshots__status_label__name",
-            "class": "",
-            "title_class": "",
-            "type": "string",
-            "field_type": "assessor",
-            "sortable": True,
-            "checked": True,
-            "static": True
-        })
     columns = {
         'fields': cols,
     }

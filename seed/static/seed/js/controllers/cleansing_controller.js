@@ -91,12 +91,6 @@ angular.module('BE.seed.controller.cleansing', [])
         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
           $scope.search.filter_params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
         }
-
-        // number_per_page
-        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
-          $scope.search.number_per_page = $scope.search.number_per_page_options_model = $scope.search.showing.end =
-            JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
-        }
       }
     };
     $scope.search.column_prototype.toggle_sort = function () {
