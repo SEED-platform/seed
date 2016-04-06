@@ -10,6 +10,7 @@ import json
 from django import template
 from django.conf import settings
 from django.utils import six
+from django.utils.safestring import mark_safe
 from django.core.urlresolvers import (
     get_resolver, get_urlconf, get_script_prefix, get_ns_resolver, iri_to_uri,
     NoReverseMatch
@@ -86,4 +87,4 @@ def namespaced_urls():
     apps = settings.SEED_URL_APPS
     app_urls = dict((app, urls_by_namespace(app)) for app in apps)
     app_urls = json.dumps(app_urls)
-    return app_urls
+    return mark_safe(app_urls)
