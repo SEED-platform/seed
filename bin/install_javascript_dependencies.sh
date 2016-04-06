@@ -2,18 +2,21 @@
 # installs npm dependencies, bower dependencies, and builds fine-uploader
 # assumes npm is installed
 
-echo "Installing npm dependencies..."
+echo "Installing npm dependencies"
 npm install
 echo -e "\n\n\nInstalling bower dependencies"
-npm run bower install --config.interactive=false
+$(npm bin)/bower install --config.interactive=false
 
 if [ ! -f seed/static/vendors/bower_components/fine-uploader/_build/s3.fineuploader.js ];
 then
+    grunt=$(npm bin)/grunt
+    cd seed/static/vendors/bower_components/fine-uploader/
     echo -e "\n\n\nBuilding fineuploader"
     # Fix uglification error
-    sed -ie 's/compress: true/compress: \{\}/g' seed/static/vendors/bower_components/fine-uploader/Gruntfile.coffee
-    grunt=$(npm bin)/grunt
-    (cd seed/static/vendors/bower_components/fine-uploader/ && npm install && $grunt build)
+    sed -i -e 's/compress: true/compress: \{\}/g' Gruntfile.coffee
+    npm install
+    $grunt build
+    cd ../../../../../
 else
-    echo -e "\n\n\nFineuploader already installed"
+    echo -e "\n\n\nFineuploader already built"
 fi
