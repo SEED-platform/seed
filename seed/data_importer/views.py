@@ -104,7 +104,7 @@ class DataImportBackend(LocalUploadBackend):
             request, filename, *args, **kwargs
         )
 
-        import_record_pk = request.GET['import_record']
+        import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
         try:
             record = ImportRecord.objects.get(pk=import_record_pk)
         except ImportRecord.DoesNotExist:
@@ -113,10 +113,10 @@ class DataImportBackend(LocalUploadBackend):
             return {'success': False,
                     'message': "Import Record %s not found" % import_record_pk}
 
-        source_type = request.GET['source_type']
+        source_type = request.POST.get('source_type', request.GET.get('source_type'))
 
         # Add Program & Version fields (empty string if not given)
-        kw_fields = {field: request.GET.get(field, '')
+        kw_fields = {field: request.POST.get(field, request.GET.get(field, ''))
                      for field in ['source_program', 'source_program_version']}
 
         f = ImportFile.objects.create(import_record=record,
