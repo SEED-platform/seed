@@ -10,8 +10,10 @@ import json
 from django import template
 from django.conf import settings
 from django.utils import six
-from django.core.urlresolvers import (get_resolver, get_urlconf, get_script_prefix,
-    get_ns_resolver, iri_to_uri, NoReverseMatch)
+from django.core.urlresolvers import (
+    get_resolver, get_urlconf, get_script_prefix, get_ns_resolver, iri_to_uri,
+    NoReverseMatch
+)
 
 
 def urls_by_namespace(namespace, urlconf=None, args=None, kwargs=None, prefix=None, current_app=None):
@@ -59,8 +61,7 @@ def urls_by_namespace(namespace, urlconf=None, args=None, kwargs=None, prefix=No
             ns_pattern = ns_pattern + extra
         except KeyError as key:
             if resolved_path:
-                raise NoReverseMatch("%s is not a registered namespace inside '%s'" %
-                    (key, ':'.join(resolved_path)))
+                raise NoReverseMatch("%s is not a registered namespace inside '%s'" % (key, ':'.join(resolved_path)))
             else:
                 raise NoReverseMatch("%s is not a registered namespace" % key)
     resolver = get_ns_resolver(ns_pattern, resolver)
@@ -69,6 +70,7 @@ def urls_by_namespace(namespace, urlconf=None, args=None, kwargs=None, prefix=No
 
 
 register = template.Library()
+
 
 @register.simple_tag
 def namespaced_urls():
