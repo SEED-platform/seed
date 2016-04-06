@@ -75,7 +75,7 @@ def get_field_name_from_model(field, model):
 
         # Reverse descriptors also have some special ways to get to the model
         elif isinstance(par, ForwardManyToOneDescriptor):
-            par = par.field.related_field.model
+            par = par.field.target_field.model
 
     # Use unicode to force this to something the XLS writer can handle properly
     try:
