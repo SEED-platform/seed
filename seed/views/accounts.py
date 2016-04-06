@@ -297,8 +297,10 @@ def get_organizations_users(request):
           ]
         }
 
-    TODO(ALECK/GAVIN): check permissions that request.user is owner or admin
-    and get more info about the users.
+    .. todo::
+
+        check permissions that request.user is owner or admin
+        and get more info about the users.
     """
     body = json.loads(request.body)
     org = Organization.objects.get(pk=body['organization_id'])
@@ -820,7 +822,7 @@ def get_shared_fields(request):
     result = {'status': 'success',
               'shared_fields': [],
               'public_fields': []}
-    columns = utils_get_columns(False, org_id, True)['fields']
+    columns = utils_get_columns(org_id, True)['fields']
     columns = {
         field['sort_column']: field for field in columns
     }
