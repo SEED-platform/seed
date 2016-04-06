@@ -62,28 +62,28 @@ clone the **seed** repository from **github**
 
     $ git clone git@github.com:SEED-platform/seed.git
 
-enter the repo and install the python dependencies from `requirements.txt`_
+enter the repo and install the python dependencies from `requirements`_
 
-.. _requirements.txt: https://github.com/SEED-platform/seed/blob/master/requirements.txt
+.. _requirements: https://github.com/SEED-platform/seed/blob/master/requirements/local.txt
 
 .. code-block:: console
 
     $ cd seed
-    $ sudo pip install -r requirements.txt
+    $ sudo pip install -r requirements/local.txt
 
 
 JavaScript Dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 ``npm`` is required to install the JS dependencies. The ``bin/install_javascript_dependencies.sh`` script will
-download all JavaScript dependencies and build them. ``bower`` and ``grunt-cli`` will be installed globally by
-the ``install_javascript_dependencies`` script.  The Ubuntu version ``14.04`` requires a custom install of
-nodejs/npm, and an install script (``bin/node-and-npm-in-30s.sh``) is provided to download a stable release and
-install ``npm`` assuming the prerequisites are met.
+download all JavaScript dependencies and build them. ``bower`` and ``gulp`` should be installed globally for
+convenience.
 
 .. code-block:: console
 
-    $ . bin/node-and-npm-in-30s.sh
+    $ curl -sL https://deb.nodesource.com/setup_5.x | sudo -E bash -
+    $ sudo apt-get install -y nodejs
+    $ sudo npm install -g bower gulp
 
 
 .. code-block:: console

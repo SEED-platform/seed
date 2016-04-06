@@ -86,21 +86,19 @@ JavaScript Dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 ``npm`` is required to install the JS dependencies. The ``bin/install_javascript_dependencies.sh`` script will
-download all JavaScript dependencies and build them. ``bower`` and ``grunt-cli`` will be installed globally by
-the ``install_javascript_dependencies`` script.  The Ubuntu version ``13.10`` requires a custom install of
-nodejs/npm, and an install script (``bin/node-and-npm-in-30s.sh``) is provided to download a stable release and
-install ``npm`` assuming the prerequisites are met.
+download all JavaScript dependencies and build them.  ``bower`` and ``gulp`` should be installed globally for
+convenience.
 
 .. code-block:: console
 
     $ sudo apt-get install build-essential
     $ sudo apt-get install libssl-dev
     $ sudo apt-get install curl
-    $ . bin/node-and-npm-in-30s.sh
 
 
 .. code-block:: console
 
+    $ sudo npm install -g bower gulp
     $ bin/install_javascript_dependencies.sh
 
 
