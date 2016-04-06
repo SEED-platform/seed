@@ -134,12 +134,12 @@ angular.module('BE.seed.controller.cleansing', [])
         value = value.toLowerCase();
         _.forEach($scope.cleansingResults, function (result) {
           if (result.visible) {
-            if (_.contains(['formatted_field', 'detailed_message'], column)) {
+            if (_.includes(['formatted_field', 'detailed_message'], column)) {
               _.forEach(result.cleansing_results, function(row) {
-                if (!_.contains(row[column].toLowerCase(), value)) row.visible = false;
+                if (!_.includes(row[column].toLowerCase(), value)) row.visible = false;
               });
             } else {
-              if (_.isNull(result[column]) || !_.contains(result[column].toLowerCase(), value)) result.visible = false;
+              if (_.isNull(result[column]) || !_.includes(result[column].toLowerCase(), value)) result.visible = false;
             }
           }
         });
