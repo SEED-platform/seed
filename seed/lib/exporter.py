@@ -14,9 +14,9 @@ from django.conf import settings
 from django.db.models.fields import FieldDoesNotExist
 from django.core.files.storage import DefaultStorage
 from django.db.models import Manager
-from django.db.models.fields.related import (
-    ForeignRelatedObjectsDescriptor,
-    ReverseSingleRelatedObjectDescriptor
+from django.db.models.fields.related_descriptors import (
+    ForwardManyToOneDescriptor,
+    ReverseManyToOneDescriptor,
 )
 
 
@@ -63,7 +63,7 @@ def get_field_name_from_model(field, model):
         # If the component resolves to a Manager or Descriptor,
         # we have to get to the model differently than a standard field
         if isinstance(par, (Manager,
-                            ForeignRelatedObjectsDescriptor)):
+                            ReverseManyToOneDescriptor)):
             par = par.related.model
 
         # Special case for status_label in project exports, where we want
@@ -74,8 +74,8 @@ def get_field_name_from_model(field, model):
             par = par.field.model
 
         # Reverse descriptors also have some special ways to get to the model
-        elif isinstance(par, ReverseSingleRelatedObjectDescriptor):
-            par = par.field.related_field.model
+        elif isinstance(par, ForwardManyToOneDescriptor):
+            par = par.field.target_field.model
 
     # Use unicode to force this to something the XLS writer can handle properly
     try:

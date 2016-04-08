@@ -79,7 +79,6 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.admin',
 
-    'analytical',
     'ajaxuploader',
 
     'compressor',

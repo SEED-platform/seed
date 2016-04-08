@@ -10,7 +10,7 @@ from django.contrib import auth
 from django.contrib.auth import authenticate, login
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.forms.util import ErrorList
+from django.forms.utils import ErrorList
 from django.forms.forms import NON_FIELD_ERRORS
 from django.http import HttpResponseRedirect
 from django.template.context import RequestContext
@@ -41,7 +41,7 @@ def login_view(request):
         Check user has accepted ToS, if any.
     """
     if request.method == "POST":
-        redirect_to = request.REQUEST.get('next', False)
+        redirect_to = request.POST.get('next', request.GET.get('next', False))
         if not redirect_to:
             redirect_to = reverse('seed:home')
 

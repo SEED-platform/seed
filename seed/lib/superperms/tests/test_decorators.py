@@ -6,7 +6,7 @@
 """
 import json
 
-from django.utils.unittest import TestCase
+from django.test import TestCase
 from django.http import HttpResponse, HttpResponseForbidden
 from seed.lib.superperms.orgs.models import (
     ROLE_VIEWER,

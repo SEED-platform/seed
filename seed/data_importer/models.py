@@ -13,7 +13,7 @@ import tempfile
 from urllib import unquote
 
 from django.contrib.auth.models import User
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
@@ -1215,7 +1215,7 @@ class BuildingImportRecord(models.Model):
     import_record = models.ForeignKey(ImportRecord)
     building_model_content_type = models.ForeignKey(ContentType, blank=True, null=True)
     building_pk = models.CharField(max_length=SOURCE_FACILITY_ID_MAX_LEN, blank=True, null=True)
-    building_record = generic.GenericForeignKey('building_model_content_type', 'building_pk')
+    building_record = GenericForeignKey('building_model_content_type', 'building_pk')
     was_in_database = models.BooleanField(default=False)
     is_missing_from_import = models.BooleanField(default=False)
 

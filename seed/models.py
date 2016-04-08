@@ -10,7 +10,7 @@ import json
 import unicodedata
 
 from django.db import models
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericRelation
 from django.core import serializers
 from django.utils.translation import ugettext_lazy as _
 from autoslug import AutoSlugField
@@ -1039,7 +1039,7 @@ class CanonicalBuilding(models.Model):
     )
     active = models.BooleanField(default=True)
     # Django API: relation to AuditLogs GFK, e.g. canon.audit_logs.all()
-    audit_logs = generic.GenericRelation(AuditLog)
+    audit_logs = GenericRelation(AuditLog)
 
     objects = CanonicalManager()
     raw_objects = models.Manager()
