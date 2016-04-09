@@ -8,7 +8,7 @@
 // create dummy angularJS app to attach filter(s)
 var mySDLabelDirectiveApp = angular.module('mySDLabelDirectiveApp', ['sdLabel']);
 
-describe("The sdLabel directive", function() {
+describe('The sdLabel directive', function() {
     var $compile;
     var $rootScope;
     beforeEach(module('mySDLabelDirectiveApp'));
@@ -28,7 +28,7 @@ describe("The sdLabel directive", function() {
         // Check that the compiled element contains the templated content
         expect(element.hasClass('label-primary')).toBe(true);
         expect(element.hasClass('label')).toBe(true);
-        expect(element.html()).toContain("compliant");
+        expect(element.html()).toContain('compliant');
     });
 
         // 'red': 'danger',

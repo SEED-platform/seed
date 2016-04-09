@@ -18,7 +18,7 @@ angular.module('BE.seed.controller.developer', [])
     $scope.auth = auth_payload.auth;
     $scope.user = user_profile_payload.user;
     $scope.new_key_generated = false;
-    $scope.username = user_profile_payload.user.first_name + " " + 
+    $scope.username = user_profile_payload.user.first_name + ' ' +
         user_profile_payload.user.last_name;
 
     /**

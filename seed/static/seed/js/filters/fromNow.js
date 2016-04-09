@@ -8,8 +8,9 @@
  */
 angular.module('fromNow', []).filter('fromNow', function() {
     return function(dateString) {
-        if (angular.isNumber(dateString)){
-            return moment(dateString).fromNow();
+        if (_.isNumber(dateString) || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/.test(dateString)) {
+            var m = moment(dateString);
+            if (m.isValid()) return m.fromNow();
         }
         return 'a few seconds ago';
     };

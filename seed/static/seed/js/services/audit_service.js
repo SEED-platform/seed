@@ -20,10 +20,10 @@ angular.module('BE.seed.service.audit', []).factory('audit_service', [
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': generated_urls.audit_logs.get_building_logs,
-            'params': {
-                'organization_id': user_service.get_organization().id,
-                'building_id': building_id
+            url: generated_urls.audit_logs.get_building_logs,
+            params: {
+                organization_id: user_service.get_organization().id,
+                building_id: building_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -45,11 +45,11 @@ angular.module('BE.seed.service.audit', []).factory('audit_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': generated_urls.audit_logs.create_note,
-            'data': {
-                'organization_id': user_service.get_organization().id,
-                'building_id': building_id,
-                'action_note': action_note
+            url: generated_urls.audit_logs.create_note,
+            data: {
+                organization_id: user_service.get_organization().id,
+                building_id: building_id,
+                action_note: action_note
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -70,11 +70,11 @@ angular.module('BE.seed.service.audit', []).factory('audit_service', [
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            'url': generated_urls.audit_logs.update_note,
-            'data': {
-                'organization_id': user_service.get_organization().id,
-                'action_note': action_note,
-                'audit_log_id': audit_log_id
+            url: generated_urls.audit_logs.update_note,
+            data: {
+                organization_id: user_service.get_organization().id,
+                action_note: action_note,
+                audit_log_id: audit_log_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);

@@ -1,17 +1,11 @@
+/*global require*/
 'use strict';
 
 var gulp = require('gulp');
-var gutil = require('gulp-util');
-var jshint = require('gulp-jshint');
-var fixmyjs = require("gulp-fixmyjs");
-var sourcemaps = require('gulp-sourcemaps');
-var sass = require('gulp-sass');
-var autoprefixer = require('gulp-autoprefixer');
-var csso = require('gulp-csso');
-require('es6-promise').polyfill();
+var $ = require('gulp-load-plugins')();
 
 var conf = {
-  jshintPattern: ['./seed/landing/static/**/*.js', './seed/static/seed/**/*.js'],
+  jsPattern: ['./seed/landing/static/**/*.js', './seed/static/seed/**/*.js'],
   sassPattern: ['./seed/landing/static/landing/scss/**/*.scss', './seed/static/seed/scss/**/*.scss'],
   autoprefixerOptions: {
     browsers: ['last 3 versions', 'ie >= 8'],
@@ -19,34 +13,36 @@ var conf = {
   },
   errorHandler: function (title) {
     return function (err) {
-      gutil.log(gutil.colors.red('[' + title + ']'), err.toString());
+      $.util.log($.util.colors.red('[' + title + ']'), err.toString());
       if (this && this.hasOwnProperty('emit')) this.emit('end');
     };
   }
 };
 
-// Run jshint
-gulp.task('jshint', function () {
-  return gulp.src(conf.jshintPattern)
-    .pipe(jshint())
-    .pipe(jshint.reporter('jshint-stylish'));
+var eslint = function (fix) {
+  fix = !!fix;
+  return gulp.src(conf.jsPattern, {base: '.'})
+    .pipe($.eslint({fix: fix}))
+    .pipe($.eslint.format())
+    .pipe(fix ? gulp.dest('.') : $.util.noop());
+};
+
+gulp.task('lint', function () {
+  return eslint();
 });
 
-gulp.task('jshint:fix', function () {
-  return gulp.src(conf.jshintPattern, {
-    base: '.'
-  }).pipe(fixmyjs())
-    .pipe(gulp.dest('.'));
+gulp.task('lint:fix', function () {
+  return eslint(true);
 });
 
 // Compile SCSS
 gulp.task('sass', function () {
   return gulp.src(conf.sassPattern)
-    .pipe(sourcemaps.init())
-    .pipe(sass({noCache: true})).on('error', conf.errorHandler('Sass'))
-    .pipe(autoprefixer(conf.autoprefixerOptions)).on('error', conf.errorHandler('Autoprefixer'))
-    .pipe(csso())
-    .pipe(sourcemaps.write('.'))
+    .pipe($.sourcemaps.init())
+    .pipe($.sass({noCache: true})).on('error', conf.errorHandler('Sass'))
+    .pipe($.autoprefixer(conf.autoprefixerOptions)).on('error', conf.errorHandler('Autoprefixer'))
+    .pipe($.csso())
+    .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('./seed/static/seed/css'));
 });
 

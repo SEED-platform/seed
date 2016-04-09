@@ -10,7 +10,7 @@ angular.module('BE.seed.service.project', [])
   'user_service',
   'generated_urls',
   function ($http, $q, user_service, generated_urls) {
-    
+
     var project_factory = { total_number_projects_for_user:0 };
     var urls = generated_urls;
 
@@ -18,10 +18,10 @@ angular.module('BE.seed.service.project', [])
 
         var defer = $q.defer();
         $http({
-            'method': 'GET',
-            'url': urls.projects.get_projects,
-            'params': {
-                'organization_id': user_service.get_organization().id
+            method: 'GET',
+            url: urls.projects.get_projects,
+            params: {
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             project_factory.total_number_projects_for_user = (data.projects !== undefined ) ? data.projects.length : 0;
@@ -35,11 +35,11 @@ angular.module('BE.seed.service.project', [])
 
         var defer = $q.defer();
         $http({
-            'method': 'GET',
-            'url': urls.projects.get_project,
-            'params': {
-                'project_slug': project_slug,
-                'organization_id': user_service.get_organization().id
+            method: 'GET',
+            url: urls.projects.get_project,
+            params: {
+                project_slug: project_slug,
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -52,11 +52,11 @@ angular.module('BE.seed.service.project', [])
     project_factory.create_project = function(project) {
         var defer = $q.defer();
         $http({
-            'method': 'POST',
-            'url': urls.projects.create_project,
-            'data': {
-                'project': project,
-                'organization_id': user_service.get_organization().id
+            method: 'POST',
+            url: urls.projects.create_project,
+            data: {
+                project: project,
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -69,11 +69,11 @@ angular.module('BE.seed.service.project', [])
     project_factory.update_project_name = function(project) {
         var defer = $q.defer();
         $http({
-            'method': 'POST',
-            'url': urls.projects.update_project,
-            'data': {
-                'project': project,
-                'organization_id': user_service.get_organization().id
+            method: 'POST',
+            url: urls.projects.update_project,
+            data: {
+                project: project,
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -86,11 +86,11 @@ angular.module('BE.seed.service.project', [])
     project_factory.add_buildings = function(project) {
         var defer = $q.defer();
         $http({
-            'method': 'POST',
-            'url': urls.projects.add_buildings_to_project,
-            'data': {
-                'project': project,
-                'organization_id': user_service.get_organization().id
+            method: 'POST',
+            url: urls.projects.add_buildings_to_project,
+            data: {
+                project: project,
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -103,11 +103,11 @@ angular.module('BE.seed.service.project', [])
     project_factory.remove_buildings = function(project) {
         var defer = $q.defer();
         $http({
-            'method': 'POST',
-            'url': urls.projects.remove_buildings_from_project,
-            'data': {
-                'project': project,
-                'organization_id': user_service.get_organization().id
+            method: 'POST',
+            url: urls.projects.remove_buildings_from_project,
+            data: {
+                project: project,
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -120,9 +120,9 @@ angular.module('BE.seed.service.project', [])
     project_factory.add_buildings_status = function(project_loading_cache_key) {
         var defer = $q.defer();
         $http({
-            'method': 'POST',
-            'url': urls.projects.get_adding_buildings_to_project_status_percentage,
-            'data': {'project_loading_cache_key': project_loading_cache_key}
+            method: 'POST',
+            url: urls.projects.get_adding_buildings_to_project_status_percentage,
+            data: {project_loading_cache_key: project_loading_cache_key}
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -134,11 +134,11 @@ angular.module('BE.seed.service.project', [])
     project_factory.delete_project = function(project_slug) {
         var defer = $q.defer();
         $http({
-            'method': 'DELETE',
-            'url': urls.projects.delete_project,
-            'data': {
-                'project_slug': project_slug,
-                'organization_id': user_service.get_organization().id
+            method: 'DELETE',
+            url: urls.projects.delete_project,
+            data: {
+                project_slug: project_slug,
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -152,10 +152,10 @@ angular.module('BE.seed.service.project', [])
 
         var defer = $q.defer();
         $http({
-            'method': 'GET',
-            'url': urls.seed.get_datasets_count,
-            'params': {
-                'organization_id': user_service.get_organization().id
+            method: 'GET',
+            url: urls.seed.get_datasets_count,
+            params: {
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -169,10 +169,10 @@ angular.module('BE.seed.service.project', [])
 
         var defer = $q.defer();
         $http({
-            'method': 'GET',
-            'url': urls.projects.get_projects_count,
-            'params': {
-                'organization_id': user_service.get_organization().id
+            method: 'GET',
+            url: urls.projects.get_projects_count,
+            params: {
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -189,14 +189,14 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': urls.projects.move_buildings,
-            'data': {
-                'source_project_slug': source_project_slug,
-                'target_project_slug': target_project_slug,
-                'buildings': buildings,
-                'select_all_checkbox': select_all_checkbox,
-                'search_params': search_params,
-                'copy': copy
+            url: urls.projects.move_buildings,
+            data: {
+                source_project_slug: source_project_slug,
+                target_project_slug: target_project_slug,
+                buildings: buildings,
+                select_all_checkbox: select_all_checkbox,
+                search_params: search_params,
+                copy: copy
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);

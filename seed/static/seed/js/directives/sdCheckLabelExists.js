@@ -6,7 +6,7 @@ angular.module('sdCheckLabelExists', []).directive('sdCheckLabelExists', functio
   return {
     require: 'ngModel',
     scope: {
-      existingLabels: "=sdCheckLabelExists"
+      existingLabels: '=sdCheckLabelExists'
     },
     link: function(scope, elm, attrs, ctrl) {
 
@@ -26,7 +26,7 @@ angular.module('sdCheckLabelExists', []).directive('sdCheckLabelExists', functio
         }
 
         return true;
-        
+
       };
     }
   };

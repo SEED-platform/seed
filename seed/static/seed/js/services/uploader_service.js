@@ -16,7 +16,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': window.BE.urls.get_AWS_creds
+            url: window.BE.urls.get_AWS_creds
         }).success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {
@@ -44,10 +44,10 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            'url': window.BE.urls.create_dataset,
-            'data': {
-                'name': dataset_name,
-                'organization_id': user_service.get_organization().id
+            url: window.BE.urls.create_dataset,
+            data: {
+                name: dataset_name,
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status) {
             defer.resolve(data);
@@ -68,9 +68,9 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
         $http({
             method: 'POST',
             url: window.BE.urls.save_raw_data,
-            'data': {
-              'file_id': file_id,
-              'organization_id': user_service.get_organization().id
+            data: {
+              file_id: file_id,
+              organization_id: user_service.get_organization().id
             }
         }).success(function(data, status) {
             defer.resolve(data);
@@ -89,9 +89,9 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
         $http({
             method: 'POST',
             url: window.BE.urls.progress,
-            'data': {'progress_key': progress_key}
+            data: {progress_key: progress_key}
         }).success(function(data, status) {
-            if (data.status === "error"){
+            if (data.status === 'error'){
                 defer.reject(data, status);
             } else {
                 defer.resolve(data);
@@ -113,13 +113,8 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      *   is set with the progress
      */
     uploader_factory.check_progress_loop = function(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj, debug) {
-        debug = true;
-        if (typeof debug === 'undefined') {
-            debug = false;
-        }
+        debug = !_.isUndefined(debug);
         uploader_factory.check_progress(progress_key).then(function (data){
-            if (debug) {
-            }
             var stop = $timeout(function(){
                 progress_bar_obj.progress = (data.progress * multiplier) + offset;
                 if (data.progress < 100) {

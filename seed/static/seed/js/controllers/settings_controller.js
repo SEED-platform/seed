@@ -35,7 +35,7 @@ angular.module('BE.seed.controller.organization_settings', [])
     $scope.controls = {
         select_all: false
     };
-    
+
     $scope.$watch('filter_params.title', function(){
         if (!$scope.filter_params.title) {
             $scope.controls.select_all = false;
@@ -65,14 +65,14 @@ angular.module('BE.seed.controller.organization_settings', [])
         });
         if (type === 'internal') {
             $scope.fields = $scope.fields.map(function (f) {
-                if (~fields.indexOf(f.sort_column)) {
+                if (_.includes(fields, f.sort_column)) {
                     f.checked = $scope.controls.select_all;
                 }
                 return f;
             });
         } else if (type === 'public') {
             $scope.fields = $scope.fields.map(function (f) {
-                if (~fields.indexOf(f.sort_column)) {
+                if (_.includes(fields, f.sort_column)) {
                     f.public_checked = $scope.controls.public_select_all;
                 }
                 return f;
@@ -111,10 +111,10 @@ angular.module('BE.seed.controller.organization_settings', [])
             return f.sort_column;
         });
         $scope.fields = $scope.fields.map(function (f) {
-            if (sort_columns.indexOf(f.sort_column) !== -1) {
+            if (_.includes(sort_columns, f.sort_column)) {
                 f.checked = true;
             }
-            if (public_columns.indexOf(f.sort_column) !== -1) {
+            if (_.includes(public_columns, f.sort_column)) {
                 f.public_checked = true;
             }
             return f;

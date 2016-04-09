@@ -15,7 +15,7 @@ angular.module('BE.seed.controller.dataset_detail', [])
     $log.info('dataset_payload:', dataset_payload);
 
     $scope.confirm_delete = function (file) {
-        var yes = confirm("Are you sure you want to PERMANENTLY delete '" + file.name + "'?");
+        var yes = confirm('Are you sure you want to PERMANENTLY delete \'' + file.name + '\'?');
         if (yes) {
             $scope.delete_file(file);
         }

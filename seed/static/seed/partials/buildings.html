@@ -4,7 +4,9 @@
            
         </div>
         <div class="page_title">
-            <h1><i class="fa fa-building-o"></i> {$ search.number_matching_search | number:0 $} Buildings</h1>
+            <h1><i class="fa fa-building-o"></i>
+                <ng-pluralize count="search.number_matching_search | number:0" when="{'one': '1 Building','other': '{} Buildings'}"></ng-pluralize>
+            </h1>
         </div>
         <div class="right page_action_container page_action_btn">
             
@@ -34,7 +36,7 @@
                         ng-disabled="nothing_selected()">
                     Building Actions <span class="caret"></span>
                 </button>
-                <ul class="uib-dropdown-menu" role="menu" >
+                <ul class="uib-dropdown-menu" role="menu">
                     <li ng-hide="menu.user.organization.user_role === 'viewer'">
                         <a  data-toggle="modal" 
                             data-target="#newProjectModal" 
@@ -65,9 +67,9 @@
             </select>
 
         </div>
-        <div class="form-group" >
-            <label for="tagsInput">Filter by label:</label>  
-            <div class="btn-group"   >
+        <div class="form-group">
+            <label for="tagsInput">Filter by label:</label>
+            <div class="btn-group">
                 <tags-input id="tagsInput"
                             ng-model="selected_labels"
                             placeholder="Add a label"
@@ -207,7 +209,7 @@
 <div class="modal fade" id="existingProjectModal" tabindex="-1" role="dialog" aria-labelledby="existingProjectModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header" >
+      <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title" id="existingProjectModalLabel" ng-show="create_project_state == 'create'">Select an Existing Project</h4>
         <h4 class="modal-title" id="newProjectModalLabel" ng-show="create_project_state == 'adding'"><i class="fa fa-spinner fa-spin"></i> Adding buildings to project '{$ project.name $}'</h4>

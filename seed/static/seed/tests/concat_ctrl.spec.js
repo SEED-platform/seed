@@ -1,4 +1,4 @@
-describe("controller: concat_modal_ctrl", function(){
+describe('controller: concat_modal_ctrl', function(){
     // globals set up and used in each test scenario
     var scope, controller, modal_state;
     var edit_ctrl, concat_modal_ctrl_scope, modalInstance, labels;
@@ -21,7 +21,7 @@ describe("controller: concat_modal_ctrl", function(){
             scope = $rootScope;
             concat_modal_ctrl_scope = $rootScope.$new();
             concat_modal_ctrl_scope.concat_columns = [];
-            modal_state = "";
+            modal_state = '';
         }
     ));
 
@@ -72,10 +72,10 @@ describe("controller: concat_modal_ctrl", function(){
             $scope: concat_modal_ctrl_scope,
             $uibModalInstance: {
                 close: function() {
-                    modal_state = "close";
+                    modal_state = 'close';
                 },
                 dismiss: function() {
-                    modal_state = "dismiss";
+                    modal_state = 'dismiss';
                 }
             },
             building_column_types: mock_building_column_types,
@@ -87,7 +87,7 @@ describe("controller: concat_modal_ctrl", function(){
      * Test scenarios
      */
 
-    it("should close the modal when the close funtion is called", function() {
+    it('should close the modal when the close funtion is called', function() {
         // arrange
         create_concat_modal_controller();
 
@@ -96,10 +96,10 @@ describe("controller: concat_modal_ctrl", function(){
         concat_modal_ctrl_scope.$digest();
 
         // assertions
-        expect(modal_state).toBe("close");
+        expect(modal_state).toBe('close');
     });
 
-    it("should mangle scope appropriately during concatenation", function() {
+    it('should mangle scope appropriately during concatenation', function() {
         // arrange
         create_concat_modal_controller();
 
@@ -125,7 +125,7 @@ describe("controller: concat_modal_ctrl", function(){
         ).toEqual(true);
     });
 
-    it("should modify the raw_data of our modified TCM correctly", function() {
+    it('should modify the raw_data of our modified TCM correctly', function() {
         // arrange
         create_concat_modal_controller();
 

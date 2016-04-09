@@ -1,7 +1,7 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
-describe("controller: delete_modal_controller", function(){
+describe('controller: delete_modal_controller', function(){
     // globals set up and used in each test scenario
     var mock_building_services, scope, controller, modal_state;
     var ctrl, ctrl_scope, modalInstance, timeout;
@@ -14,21 +14,21 @@ describe("controller: delete_modal_controller", function(){
         ctrl = $controller;
         scope = $rootScope;
         ctrl_scope = $rootScope.$new();
-        modal_state = "";
+        modal_state = '';
         timeout = $timeout;
 
         // mock the export_service factory methods used in the controller
         // and return their promises
         mock_building_services = building_services;
-        spyOn(mock_building_services, "delete_buildings")
+        spyOn(mock_building_services, 'delete_buildings')
             .andCallFake(function(){
                 // return $q.reject for error scenario
-                return $q.when({"status": "success"});
+                return $q.when({status: 'success'});
             }
         );
-        spyOn(mock_building_services, "get_total_number_of_buildings_for_user")
+        spyOn(mock_building_services, 'get_total_number_of_buildings_for_user')
             .andCallFake(function(){
-                return $q.when({"status":"success"});
+                return $q.when({status:'success'});
             });
     }));
 
@@ -38,17 +38,17 @@ describe("controller: delete_modal_controller", function(){
             $scope: ctrl_scope,
             $uibModalInstance: {
                 close: function() {
-                    modal_state = "close";
+                    modal_state = 'close';
                 },
                 dismiss: function() {
-                    modal_state = "dismiss";
+                    modal_state = 'dismiss';
                 }
             },
-            search: { 
-                selected_buildings: [1,2],
+            search: {
+                selected_buildings: [1, 2],
                 filter_params: {},
                 select_all_checkbox: false,
-                order_by: "",
+                order_by: '',
                 sort_reverse: false,
                 number_matching_search: 1000
             }
@@ -59,7 +59,7 @@ describe("controller: delete_modal_controller", function(){
      * Test scenarios
      */
 
-    it("should start at the delete page", function() {
+    it('should start at the delete page', function() {
         // arrange
         create_delete_modal_controller();
 
@@ -67,9 +67,9 @@ describe("controller: delete_modal_controller", function(){
         ctrl_scope.$digest();
 
         // assertions
-        expect(ctrl_scope.delete_state).toEqual("delete"); 
+        expect(ctrl_scope.delete_state).toEqual('delete');
     });
-    it("should save the search paramaters",
+    it('should save the search paramaters',
         function() {
         // arrange
         create_delete_modal_controller();
@@ -79,13 +79,13 @@ describe("controller: delete_modal_controller", function(){
 
         // assertions
         var b = ctrl_scope.delete_payload;
-        expect(b.selected_buildings).toEqual([1,2]);
+        expect(b.selected_buildings).toEqual([1, 2]);
         expect(b.filter_params).toEqual({});
-        expect(b.order_by).toEqual("");
+        expect(b.order_by).toEqual('');
         expect(b.sort_reverse).toEqual(false);
         expect(b.select_all_checkbox).toEqual(false);
     });
-    it("should delete when the delete button is clicked",
+    it('should delete when the delete button is clicked',
         function() {
         // arrange
         create_delete_modal_controller();
@@ -95,10 +95,10 @@ describe("controller: delete_modal_controller", function(){
         ctrl_scope.delete_buildings();
 
         // assertions
-        expect(ctrl_scope.delete_state).toEqual("prepare");
+        expect(ctrl_scope.delete_state).toEqual('prepare');
         expect(mock_building_services.delete_buildings).toHaveBeenCalled();
     });
-    it("should show the success page when the delete is finished",
+    it('should show the success page when the delete is finished',
         function() {
         // arrange
         create_delete_modal_controller();
@@ -111,9 +111,9 @@ describe("controller: delete_modal_controller", function(){
         // assertions
         expect(mock_building_services.delete_buildings).toHaveBeenCalled();
         expect(mock_building_services.get_total_number_of_buildings_for_user).toHaveBeenCalled();
-        expect(ctrl_scope.delete_state).toEqual("success");
+        expect(ctrl_scope.delete_state).toEqual('success');
     });
-    it("should show the number of buildings to be deleted",
+    it('should show the number of buildings to be deleted',
         function() {
         // arrange
         create_delete_modal_controller();
@@ -125,7 +125,7 @@ describe("controller: delete_modal_controller", function(){
         // assertions
         expect(number_to_delete).toEqual(2);
     });
-    it("should close the modal when the close funtion is called", function() {
+    it('should close the modal when the close funtion is called', function() {
         // arrange
         create_delete_modal_controller();
 
@@ -134,10 +134,10 @@ describe("controller: delete_modal_controller", function(){
         ctrl_scope.$digest();
 
         // assertions
-        expect(modal_state).toBe("close");
+        expect(modal_state).toBe('close');
     });
 
-    it("should cancel the modal when the cancel funtion is called", function() {
+    it('should cancel the modal when the cancel funtion is called', function() {
         // arrange
         create_delete_modal_controller();
 
@@ -146,8 +146,8 @@ describe("controller: delete_modal_controller", function(){
         ctrl_scope.$digest();
 
         // assertions
-        expect(modal_state).toBe("dismiss");
+        expect(modal_state).toBe('dismiss');
     });
 
-  
+
 });

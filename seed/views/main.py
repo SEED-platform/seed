@@ -10,6 +10,7 @@ import datetime
 import json
 import logging
 import os
+import subprocess
 import uuid
 from collections import defaultdict
 
@@ -146,6 +147,24 @@ def home(request):
         'seed/index.html',
         locals(), context_instance=RequestContext(request),
     )
+
+
+@api_endpoint
+@ajax_request
+def version(request):
+    """
+    Returns the SEED version and current git sha
+    """
+    manifest_path = os.path.dirname(os.path.realpath(__file__)) + '/../../package.json'
+    with open(manifest_path) as package_json:
+        manifest = json.load(package_json)
+
+    sha = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).strip()
+
+    return {
+        'version': manifest['version'],
+        'sha': sha
+    }
 
 
 @api_endpoint
@@ -472,7 +491,7 @@ def get_building(request):
     fields will be masked to only those shared within the parent org's
     structure.
 
-    :GET: Expects building_id and organization_id in query string. building_id should be the `caninical_building` ID  \
+    :GET: Expects building_id and organization_id in query string. building_id should be the `canonical_building` ID  \
     for the building, not the BuildingSnapshot id.
 
     Returns::

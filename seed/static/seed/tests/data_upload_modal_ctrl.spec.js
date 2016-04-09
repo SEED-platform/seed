@@ -1,7 +1,7 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
-describe("controller: data_upload_modal_ctrl", function(){
+describe('controller: data_upload_modal_ctrl', function(){
     // globals set up and used in each test scenario
     var mock_uploader_service, scope, controller, modal_state;
     var edit_ctrl, data_upload_ctrl_scope, modalInstance, labels;
@@ -10,14 +10,14 @@ describe("controller: data_upload_modal_ctrl", function(){
     var global_dataset = {};
     var return_labels = [
         {
-            "name": 'compliant',
-            "color": 'green',
-            "id": 1
+            name: 'compliant',
+            color: 'green',
+            id: 1
         },
         {
-            "name": "new label",
-            "color": "blue",
-            "id": 2
+            name: 'new label',
+            color: 'blue',
+            id: 2
         }
     ];
 
@@ -33,103 +33,103 @@ describe("controller: data_upload_modal_ctrl", function(){
             controller = $controller;
             scope = $rootScope;
             data_upload_ctrl_scope = $rootScope.$new();
-            modal_state = "";
+            modal_state = '';
 
             // mock the uploader_service factory methods used in the controller
             // and return their promises
             mock_uploader_service = uploader_service;
             mock_mapping_service = mapping_service;
             mock_matching_service = matching_service;
-            spyOn(mock_uploader_service, "get_AWS_creds")
+            spyOn(mock_uploader_service, 'get_AWS_creds')
                 .andCallFake(function(){
                     // return $q.reject for error scenario
                     return $q.when(
                         {
-                            "status": "success",
-                            "AWS_CLIENT_ACCESS_KEY": "123",
-                            "AWS_UPLOAD_BUCKET_NAME": "test-bucket"
+                            status: 'success',
+                            AWS_CLIENT_ACCESS_KEY: '123',
+                            AWS_UPLOAD_BUCKET_NAME: 'test-bucket'
                         }
                     );
                 }
             );
-            spyOn(mock_uploader_service, "check_progress")
+            spyOn(mock_uploader_service, 'check_progress')
                 .andCallFake(function(){
                     // return $q.reject for error scenario
                     return $q.when(
                         {
-                            "status": "success",
-                            "progress": "25.0"
+                            status: 'success',
+                            progress: '25.0'
                         }
                     );
                 }
             );
-            spyOn(mock_uploader_service, "create_dataset")
+            spyOn(mock_uploader_service, 'create_dataset')
                 .andCallFake(function(dataset_name){
                     // return $q.reject for error scenario
                     if (dataset_name !== 'fail'){
                         return $q.when(
                             {
-                                "status": "success",
-                                "id": 3,
-                                "name": dataset_name
+                                status: 'success',
+                                id: 3,
+                                name: dataset_name
 
                             }
                         );
                     } else {
                         return $q.reject(
                             {
-                                "status": "error",
-                                "message": "name already in use"
+                                status: 'error',
+                                message: 'name already in use'
                             }
                         );
                     }
                 }
             );
-            spyOn(mock_uploader_service, "save_raw_data")
+            spyOn(mock_uploader_service, 'save_raw_data')
                 .andCallFake(function(dataset_name){
                     // return $q.reject for error scenario
                     if (dataset_name !== 'fail'){
                         return $q.when(
                             {
-                                "status": "success",
-                                "file_id": 3
+                                status: 'success',
+                                file_id: 3
                             }
                         );
                     } else {
                         return $q.reject(
                             {
-                                "status": "error"
+                                status: 'error'
                             }
                         );
                     }
                 }
             );
-            spyOn(mock_mapping_service, "start_mapping")
+            spyOn(mock_mapping_service, 'start_mapping')
                 .andCallFake(function(dataset_name){
                     // return $q.reject for error scenario
                     if (dataset_name !== 'fail'){
                         return $q.when(
                             {
-                                "status": "success",
-                                "file_id": 3
+                                status: 'success',
+                                file_id: 3
                             }
                         );
                     } else {
                         return $q.reject(
                             {
-                                "status": "error"
+                                status: 'error'
                             }
                         );
                     }
                 }
             );
-            spyOn(mock_matching_service, "start_system_matching")
+            spyOn(mock_matching_service, 'start_system_matching')
             .andCallFake(function(file_id){
                 // return $q.reject for error scenario
                 return $q.when(
                     {
-                        "status": "success",
-                        "file_id": 3
+                        status: 'success',
+                        file_id: 3
                     }
                 );
             });
@@ -143,10 +143,10 @@ describe("controller: data_upload_modal_ctrl", function(){
             $scope: data_upload_ctrl_scope,
             $uibModalInstance: {
                 close: function() {
-                    modal_state = "close";
+                    modal_state = 'close';
                 },
                 dismiss: function() {
-                    modal_state = "dismiss";
+                    modal_state = 'dismiss';
                 }
             },
             step: global_step,
@@ -158,7 +158,7 @@ describe("controller: data_upload_modal_ctrl", function(){
      * Test scenarios
      */
 
-    it("should close the modal when the close function is called", function() {
+    it('should close the modal when the close function is called', function() {
         // arrange
         create_data_upload_modal_controller();
 
@@ -167,10 +167,10 @@ describe("controller: data_upload_modal_ctrl", function(){
         data_upload_ctrl_scope.$digest();
 
         // assertions
-        expect(modal_state).toBe("close");
+        expect(modal_state).toBe('close');
     });
 
-    it("should cancel the modal when the cancel function is called", function() {
+    it('should cancel the modal when the cancel function is called', function() {
         // arrange
         create_data_upload_modal_controller();
 
@@ -179,10 +179,10 @@ describe("controller: data_upload_modal_ctrl", function(){
         data_upload_ctrl_scope.$digest();
 
         // assertions
-        expect(modal_state).toBe("dismiss");
+        expect(modal_state).toBe('dismiss');
     });
 
-    it("should start at the step provided", function() {
+    it('should start at the step provided', function() {
         // arrange
         create_data_upload_modal_controller();
 
@@ -203,7 +203,7 @@ describe("controller: data_upload_modal_ctrl", function(){
         expect(data_upload_ctrl_scope.step.number).toBe(2);
     });
 
-    it("should goto different steps", function() {
+    it('should goto different steps', function() {
         // arrange
         create_data_upload_modal_controller();
 
@@ -217,7 +217,7 @@ describe("controller: data_upload_modal_ctrl", function(){
         expect(data_upload_ctrl_scope.step.number).toBe(step);
     });
 
-    it("disables the 'Name it' button if no text is entered", function() {
+    it('disables the \'Name it\' button if no text is entered', function() {
         // arrange
         create_data_upload_modal_controller();
 
@@ -227,7 +227,7 @@ describe("controller: data_upload_modal_ctrl", function(){
         // assertions
         expect(data_upload_ctrl_scope.dataset.disabled()).toBe(true);
     });
-    it("disables the 'Name it' button if no text is entered, then cleared",
+    it('disables the \'Name it\' button if no text is entered, then cleared',
         function() {
         // arrange
         create_data_upload_modal_controller();
@@ -239,47 +239,47 @@ describe("controller: data_upload_modal_ctrl", function(){
         // assertions
         expect(data_upload_ctrl_scope.dataset.disabled()).toBe(true);
     });
-    it("enables the 'Name it' button if text is entered", function() {
+    it('enables the \'Name it\' button if text is entered', function() {
         // arrange
         create_data_upload_modal_controller();
 
         // act
-        data_upload_ctrl_scope.dataset.name = "my dataset name";
+        data_upload_ctrl_scope.dataset.name = 'my dataset name';
         data_upload_ctrl_scope.$digest();
 
         // assertions
         expect(data_upload_ctrl_scope.dataset.disabled()).toBe(false);
     });
-    it("should show an alert if the dataset name is already in use",
+    it('should show an alert if the dataset name is already in use',
         function() {
         // arrange
         create_data_upload_modal_controller();
 
         // act
-        data_upload_ctrl_scope.create_dataset("fail");
+        data_upload_ctrl_scope.create_dataset('fail');
         data_upload_ctrl_scope.$digest();
 
         // assertions
         expect(data_upload_ctrl_scope.dataset.alert).toBe(true);
     });
-    it("should not show an alert if the dataset name is not already in use",
+    it('should not show an alert if the dataset name is not already in use',
         function() {
         // arrange
         create_data_upload_modal_controller();
 
         // act
-        data_upload_ctrl_scope.create_dataset("my shiny new dataset");
+        data_upload_ctrl_scope.create_dataset('my shiny new dataset');
         data_upload_ctrl_scope.$digest();
 
         // assertions
         expect(data_upload_ctrl_scope.dataset.alert).toBe(false);
     });
-    it("after creating a dataset, stores the dataset id", function() {
+    it('after creating a dataset, stores the dataset id', function() {
         // arrange
         create_data_upload_modal_controller();
 
         // act
-        var ds_name = "my shiny new dataset";
+        var ds_name = 'my shiny new dataset';
         data_upload_ctrl_scope.create_dataset(ds_name);
         data_upload_ctrl_scope.$digest();
 
@@ -287,14 +287,14 @@ describe("controller: data_upload_modal_ctrl", function(){
         expect(data_upload_ctrl_scope.dataset.id).toBe(3);
         expect(data_upload_ctrl_scope.dataset.name).toBe(ds_name);
     });
-    it("after uploading a file, stores the file id", function() {
+    it('after uploading a file, stores the file id', function() {
         // arrange
         create_data_upload_modal_controller();
 
         // act
         var message, filename;
-        message = "upload_complete";
-        filename = "file1.csv";
+        message = 'upload_complete';
+        filename = 'file1.csv';
 
         // act
         data_upload_ctrl_scope.uploaderfunc(message, {
@@ -306,26 +306,26 @@ describe("controller: data_upload_modal_ctrl", function(){
         // assertions
         expect(data_upload_ctrl_scope.dataset.import_file_id).toBe(20140313);
     });
-    it("should show an invalid extension alert if a file with an invalid" +
-        "extension is loaded", function() {
+    it('should show an invalid extension alert if a file with an invalid' +
+        'extension is loaded', function() {
         // arrange
         create_data_upload_modal_controller();
 
         // act
-        data_upload_ctrl_scope.uploaderfunc("invalid_extension");
+        data_upload_ctrl_scope.uploaderfunc('invalid_extension');
         data_upload_ctrl_scope.$digest();
 
         // assertions
         expect(data_upload_ctrl_scope.uploader.invalid_extension_alert)
             .toBe(true);
     });
-    it("should hide the upload button after the user selects a file",
+    it('should hide the upload button after the user selects a file',
         function() {
         // arrange
         create_data_upload_modal_controller();
         var message, filename;
-        message = "upload_submitted";
-        filename = "file1.csv";
+        message = 'upload_submitted';
+        filename = 'file1.csv';
 
         // act
         data_upload_ctrl_scope.uploaderfunc(message, {filename: filename});
@@ -335,13 +335,13 @@ describe("controller: data_upload_modal_ctrl", function(){
         expect(data_upload_ctrl_scope.dataset.filename).toBe(filename);
         expect(data_upload_ctrl_scope.uploader.in_progress).toBe(true);
     });
-    it("should show the progressbar during upload",
+    it('should show the progressbar during upload',
         function() {
         // arrange
         create_data_upload_modal_controller();
         var message, filename, progress;
-        message = "upload_in_progress";
-        filename = "file1.csv";
+        message = 'upload_in_progress';
+        filename = 'file1.csv';
         progress = {
             loaded: 10,
             total: 100
@@ -355,13 +355,13 @@ describe("controller: data_upload_modal_ctrl", function(){
         expect(data_upload_ctrl_scope.uploader.in_progress).toBe(true);
         expect(data_upload_ctrl_scope.uploader.progress).toBe(2.5);
     });
-    it("should start saving the energy data when the file has been uploaded",
+    it('should start saving the energy data when the file has been uploaded',
         function() {
         // arrange
         create_data_upload_modal_controller();
         var message, filename;
-        message = "upload_complete";
-        filename = "file1.csv";
+        message = 'upload_complete';
+        filename = 'file1.csv';
         data_upload_ctrl_scope.step.number = 4;
 
         // act
@@ -370,10 +370,10 @@ describe("controller: data_upload_modal_ctrl", function(){
 
         // assertions
         expect(data_upload_ctrl_scope.uploader.status_message)
-            .toBe("saving energy data");
+            .toBe('saving energy data');
     });
 
-    it("should take an dataset payload", function() {
+    it('should take an dataset payload', function() {
         // arrange
         create_data_upload_modal_controller();
 
@@ -381,17 +381,17 @@ describe("controller: data_upload_modal_ctrl", function(){
         data_upload_ctrl_scope.$digest();
 
         // assertions
-        expect(data_upload_ctrl_scope.dataset.name).toBe("");
-        expect(data_upload_ctrl_scope.dataset.filename).toBe("");
+        expect(data_upload_ctrl_scope.dataset.name).toBe('');
+        expect(data_upload_ctrl_scope.dataset.filename).toBe('');
         expect(data_upload_ctrl_scope.dataset.id).toBe(0);
     });
 
-    it("should extend a custom dataset payload", function() {
+    it('should extend a custom dataset payload', function() {
         // arrange
         global_dataset = {
             id: 100,
-            filename: "seed_data.csv",
-            name: "Compliance Project"
+            filename: 'seed_data.csv',
+            name: 'Compliance Project'
         };
         create_data_upload_modal_controller();
 
@@ -399,8 +399,8 @@ describe("controller: data_upload_modal_ctrl", function(){
         data_upload_ctrl_scope.$digest();
 
         // assertions
-        expect(data_upload_ctrl_scope.dataset.name).toBe("Compliance Project");
-        expect(data_upload_ctrl_scope.dataset.filename).toBe("seed_data.csv");
+        expect(data_upload_ctrl_scope.dataset.name).toBe('Compliance Project');
+        expect(data_upload_ctrl_scope.dataset.filename).toBe('seed_data.csv');
         expect(data_upload_ctrl_scope.dataset.id).toBe(100);
         expect(data_upload_ctrl_scope.dataset.alert).toBe(false);
 

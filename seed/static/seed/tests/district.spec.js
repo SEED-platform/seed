@@ -4,7 +4,7 @@
 // create dummy angularJS app to attach filter(s)
 var myDistrictApp = angular.module('myDistrictApp', ['district']);
 
-describe("The district filter", function() {
+describe('The district filter', function() {
     beforeEach(module('myDistrictApp'));
     it('replaces `district` with `County/District/Ward/Borough`',
         inject(function(districtFilter) {

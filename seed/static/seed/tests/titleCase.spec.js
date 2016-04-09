@@ -4,7 +4,7 @@
 // create dummy angularJS app to attach filter(s)
 var myTitleCaseApp = angular.module('myTitleCaseApp', ['titleCase']);
 
-describe("The TitleCase filter", function() {
+describe('The TitleCase filter', function() {
     beforeEach(module('myTitleCaseApp'));
     it('Strips out ``_`` characters from strings and capitalizes the rest',
         inject(function(titleCaseFilter) {

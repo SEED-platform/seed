@@ -5,7 +5,7 @@
 /**
  * data_upload_modal_ctrl: the AngularJS controller for the data upload modal.
  *
- * The numbers corresponding to ``step.number`` are reflected in 
+ * The numbers corresponding to ``step.number`` are reflected in
  * modal title changes like so:
  *
  * ng-switch-when="1" == Create a New Data Set.
@@ -50,8 +50,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     building_services,
     spinner_utility
     ) {
-    $scope.step_10_style = "info";
-    $scope.step_10_title = "load more data";
+    $scope.step_10_style = 'info';
+    $scope.step_10_title = 'load more data';
     $scope.step = {
         number: step
     };
@@ -59,30 +59,27 @@ angular.module('BE.seed.controller.data_upload_modal', [])
      * dataset: holds the state of the data set
      * name: string - the data set name
      * disabled: return bool - when true: disables the `Create Data Set` button
-     * alert: bool - when true: shows the bootstrap alert `the file name is 
+     * alert: bool - when true: shows the bootstrap alert `the file name is
      *  already in use`
-     * id: int - set with `create_dataset` resolve promise, is the id of the 
+     * id: int - set with `create_dataset` resolve promise, is the id of the
      *  newly created data set
      * file: the file being upload file.filename is the file's name
      */
     $scope.dataset = {
-        name: "",
+        name: '',
         disabled: function() {
-            var name = $scope.dataset.name || "";
-            if (name.length === 0) {
-                return true;
-            }
-            return false;
+            var name = $scope.dataset.name || '';
+            return name.length === 0;
         },
         alert: false,
         id: 0,
-        filename: "",
+        filename: '',
         import_file_id: 0
     };
     /**
-     * uploader: hold the state of the upload. 
+     * uploader: hold the state of the upload.
      * invalid_extension_alert: bool - hides or shows the bootstrap alert
-     * in_progress: bool - when true: shows the progress bar and hides the 
+     * in_progress: bool - when true: shows the progress bar and hides the
      *  upload button. when false: hides the progress bar and shows the upload
      *  button.
      * progress: int or float - the progress bar value, i.e. percentage complete
@@ -93,13 +90,13 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         in_progress: false,
         progress: 0,
         complete: false,
-        status_message: ""
+        status_message: ''
     };
 
     /**
      * goto_step: changes the step of the modal, i.e. name dataset -> upload ...
      * step: int - used with the `ng-switch` in the DOM to change state
-     * step_text: 
+     * step_text:
      */
     $scope.goto_step = function (step) {
         $scope.step.number = step;
@@ -143,48 +140,48 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 $scope.goto_step(2);
                 $scope.dataset.id = data.id;
                 $scope.dataset.name = data.name;
-                $scope.uploader.status_message = "uploading file";
+                $scope.uploader.status_message = 'uploading file';
             },
             function(status, error) {
                 // reject promise
-                var message = status.message || "";
-                if (message === "name already in use"){
+                var message = status.message || '';
+                if (message === 'name already in use'){
                     $scope.dataset.alert = true;
                 }
             }
         );
     };
     /**
-     * uploaderfunc: the callback function passed to sdUploader. Depending on 
-     *  the `event_message` from sdUploader, it will change the state of the 
+     * uploaderfunc: the callback function passed to sdUploader. Depending on
+     *  the `event_message` from sdUploader, it will change the state of the
      *  modal, show the `invalid_extension` alert, and update the progress bar.
      */
     $scope.uploaderfunc = function(event_message, file, progress) {
-        if (event_message === "invalid_extension") {
+        if (event_message === 'invalid_extension') {
             $scope.uploader.invalid_extension_alert = true;
         }
-        if (event_message === "upload_submitted") {
+        if (event_message === 'upload_submitted') {
             $scope.dataset.filename = file.filename;
             $scope.uploader.in_progress = true;
-            $scope.uploader.status_message = "uploading file";
+            $scope.uploader.status_message = 'uploading file';
         }
-        if (event_message === "upload_complete") {
+        if (event_message === 'upload_complete') {
             var current_step = $scope.step.number;
-          
-            $scope.uploader.status_message = "upload complete";
+
+            $scope.uploader.status_message = 'upload complete';
             $scope.dataset.import_file_id = file.file_id;
             // Assessed Data
             if (current_step === 2) {
-                var is_green_button = (file.source_type === "Green Button Raw");
+                var is_green_button = (file.source_type === 'Green Button Raw');
                 save_raw_assessed_data(file.file_id, is_green_button);
             }
             // Portfolio Data
             if (current_step === 4) {
                 save_map_match_PM_data(file.file_id);
             }
-            
+
         }
-        if (event_message === "upload_in_progress") {
+        if (event_message === 'upload_in_progress') {
             $scope.uploader.in_progress = true;
             $scope.uploader.progress = 25.0 * progress.loaded / progress.total;
         }
@@ -202,7 +199,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
      * @param {string} file_id: the id of the import file
      */
     var save_map_match_PM_data = function (file_id) {
-        $scope.uploader.status_message = "saving energy data";
+        $scope.uploader.status_message = 'saving energy data';
         $scope.uploader.progress = 25;
         uploader_service.save_raw_data(file_id)
         .then(function(data) {
@@ -220,7 +217,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
      */
     var monitor_save_raw_data = function(progress_key, file_id) {
         uploader_service.check_progress_loop(progress_key, 25, 0.25, function(data){
-            $scope.uploader.status_message = "auto-mapping energy data";
+            $scope.uploader.status_message = 'auto-mapping energy data';
             mapping_service.start_mapping(file_id).then(function (dataa){
                 monitor_mapping(dataa.progress_key, file_id);
             });
@@ -238,7 +235,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
      */
     var monitor_mapping = function(progress_key, file_id) {
         uploader_service.check_progress_loop(progress_key, 50, 0.25, function(data){
-            $scope.uploader.status_message = "auto-matching energy data";
+            $scope.uploader.status_message = 'auto-matching energy data';
             matching_service.start_system_matching(file_id).then(function (dataa){
                 monitor_matching(dataa.progress_key, file_id);
             });
@@ -255,7 +252,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
      * @param {string} file_id: id of file
      */
     var monitor_matching = function(progress_key, file_id) {
-        uploader_service.check_progress_loop(progress_key, 75, 0.25, function(data){                
+        uploader_service.check_progress_loop(progress_key, 75, 0.25, function(data){
             $scope.uploader.complete = true;
             $scope.uploader.in_progress = false;
             $scope.uploader.progress = 1;
@@ -271,14 +268,14 @@ angular.module('BE.seed.controller.data_upload_modal', [])
      * @param {string} file_id: the id of the import file
      */
     var save_raw_assessed_data = function (file_id, is_green_button) {
-        $scope.uploader.status_message = "saving data";
+        $scope.uploader.status_message = 'saving data';
         $scope.uploader.progress = 45;
         uploader_service.save_raw_data(file_id)
         .then(function(data){
             uploader_service.check_progress_loop(data.progress_key, 45, 0.55, function(data){
-                $scope.uploader.status_message = "saving complete";
+                $scope.uploader.status_message = 'saving complete';
                 $scope.uploader.progress = 100;
-                
+
                 if (is_green_button) {
                     $scope.step.number = 8;
                 } else {
@@ -302,12 +299,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         matching_service.start_system_matching(
             import_file_id
         ).then(function (data){
-            if (data.status === "error" || data.status === "warning") {
+            if (data.status === 'error' || data.status === 'warning') {
                 $scope.uploader.complete = true;
                 $scope.uploader.in_progress = false;
                 $scope.uploader.progress = 0;
                 $scope.step.number = 10;
-                $scope.step_10_style = "danger";
+                $scope.step_10_style = 'danger';
                 $scope.step_10_error_message = data.message;
                 $scope.step_10_title = data.message;
             } else {
@@ -315,36 +312,36 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                     data.progress_key,
                     0,
                     1.0,
-                    function (data){                    
+                    function (data){
                         building_services.get_PM_filter_by_counts($scope.dataset.import_file_id)
                         .then(function (data){
                             // resolve promise
                             $scope.matched_buildings = data.matched;
                             $scope.unmatched_buildings = data.unmatched;
-                            $scope.duplicate_buildings = data.duplicates;                            
+                            $scope.duplicate_buildings = data.duplicates;
                             $scope.uploader.complete = true;
                             $scope.uploader.in_progress = false;
                             $scope.uploader.progress = 0;
                             if($scope.duplicate_buildings > 0)
                             {
-                            	//alert("Duplicate buildings found, trying to delete");
-                            	building_services.delete_duplicates_from_import_file($scope.dataset.import_file_id).then(function (data){
-                            		if ($scope.matched_buildings > 0) {
-		                                $scope.step.number = 8;
-		                            } else {
-		                                $scope.step.number = 10;
-		                                building_services.get_total_number_of_buildings_for_user();
-		                            }		
-                        		});
+                                //alert("Duplicate buildings found, trying to delete");
+                                building_services.delete_duplicates_from_import_file($scope.dataset.import_file_id).then(function (data){
+                                    if ($scope.matched_buildings > 0) {
+                                        $scope.step.number = 8;
+                                    } else {
+                                        $scope.step.number = 10;
+                                        building_services.get_total_number_of_buildings_for_user();
+                                    }
+                                });
                             }
                             else
                             {
-	                            if ($scope.matched_buildings > 0) {
-	                                $scope.step.number = 8;
-	                            } else {
-	                                $scope.step.number = 10;
-	                                building_services.get_total_number_of_buildings_for_user();
-	                            }
+                                if ($scope.matched_buildings > 0) {
+                                    $scope.step.number = 8;
+                                } else {
+                                    $scope.step.number = 10;
+                                    building_services.get_total_number_of_buildings_for_user();
+                                }
                             }
                         });
                     }, function(data) {

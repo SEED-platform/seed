@@ -25,7 +25,7 @@ angular.module('BE.seed.controller.cleansing_admin', [])
 
     var loadRules = function (rules) {
       $scope.rows = {};
-      _.each(rules.in_range_checking, function (rule) {
+      _.forEach(rules.in_range_checking, function (rule) {
         if (!$scope.rows.hasOwnProperty(rule.field)) $scope.rows[rule.field] = [];
         var row = _.pick(rule, ['enabled', 'type', 'min', 'max', 'severity', 'units']);
         row.title = _.find(all_columns.fields, {sort_column: rule.field}).title;
@@ -57,8 +57,8 @@ angular.module('BE.seed.controller.cleansing_admin', [])
         missing_values: cleansing_rules_payload.missing_values,
         in_range_checking: []
       };
-      _.each($scope.rows, function (field_rules, field) {
-        _.each(field_rules, function (row) {
+      _.forEach($scope.rows, function (field_rules, field) {
+        _.forEach(field_rules, function (row) {
           var r = {
             field: field,
             enabled: row.enabled,

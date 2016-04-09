@@ -1,0 +1,60 @@
+{
+  "extends": "eslint:recommended",
+  "env": {
+    "browser": true,
+    "jquery": true
+  },
+  "globals": {
+    "_": true,
+    "$filter": true,
+    "$route": true,
+    "angular": true,
+    "BE": true,
+    "dimple": true,
+    "inject": true,
+    "module": true,
+    "moment": true,
+    "Spinner": true
+  },
+  "plugins": ["angular", "lodash"],
+  "rules": {
+    // Possible errors
+    "no-console": "off", // Comment for production
+    // Best practices
+    "dot-notation": "warn",
+    "no-multi-spaces": "warn",
+    // Variables
+    "no-unused-vars": "off", // Set to "warn" for production
+    // Stylistic Issues
+    "array-bracket-spacing": "warn",
+    //"camelcase": ["warn", {"properties": "always"}],
+    "comma-spacing": "warn",
+    "consistent-this": ["error", "that", "self"],
+    "no-mixed-spaces-and-tabs": "warn",
+    "no-trailing-spaces": "warn",
+    "quote-props": ["warn", "as-needed", {"keywords": true}],
+    "quotes": ["warn", "single"],
+    "semi": ["error", "always"],
+    // Angular plugin
+    "angular/log": "off", // Comment for production
+    "angular/no-service-method": "off",
+    // Lodash plugin
+    "lodash/callback-binding": "error",
+    "lodash/collection-return": "error",
+    "lodash/matches-prop-shorthand": ["warn", "always"],
+    "lodash/matches-shorthand": ["warn", "always"],
+    "lodash/no-double-unwrap": "error",
+    "lodash/no-extra-args": "error",
+    //"lodash/prefer-constant": "warn",
+    "lodash/prefer-filter": ["warn", 3],
+    "lodash/prefer-get": ["warn", 2],
+    "lodash/prefer-is-nil": "warn",
+    "lodash/prefer-lodash-typecheck": "warn",
+    "lodash/prefer-matches": ["warn", 2],
+    "lodash/prefer-startswith": "warn",
+    "lodash/prefer-times": "warn",
+    "lodash/preferred-alias": "warn",
+    "lodash/prop-shorthand": ["warn", "always"],
+    "lodash/unwrap": "error"
+  }
+}

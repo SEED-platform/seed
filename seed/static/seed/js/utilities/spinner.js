@@ -16,15 +16,15 @@ angular.module('BE.seed.utility.spinner', []).factory('spinner_utility', [
     spinner_utility.show = function(params, target) {
 
       var refresh = !!(params || target);
-      var target = target || $('.display')[0];
+      target = target || $('.display')[0];
 
       if (!_spinner) {
           _spinner = new Spinner(params).spin(target);
       } else if (_spinner && refresh) {
-          _spinner.stop()
-          _spinner = new Spinner(params).spin(target)
+          _spinner.stop();
+          _spinner = new Spinner(params).spin(target);
       } else {
-          _spinner.spin(target)
+          _spinner.spin(target);
       }
 
       $('.page')[0].style.opacity = 0.4;

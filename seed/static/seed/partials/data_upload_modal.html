@@ -35,9 +35,9 @@
             </div>
             <div class="form-group col-lg-12 col-sm-12">
                 <div class="row">
-                    <div class="col-lg-6" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload a Spreadsheet" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
-                    <div class="col-lg-6" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Upload Portfolio Manager Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
-                    <div class="col-lg-6 green_button" sd-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Green Button Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                    <div class="col-md-6" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload a Spreadsheet" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                    <div class="col-md-6" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Upload Portfolio Manager Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                    <div class="col-md-6 green_button" sd-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Green Button Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress">Upload Green Button Data</div>
                 </div>
                 <div class="progress_bar_container" ng-show="uploader.in_progress">
                     <div class="progress_bar_copy_top">Uploading <strong>{$ dataset.filename $}</strong></div>
@@ -152,7 +152,7 @@
         <div class="row">
             <div class="alert alert-warning alert-dismissable">
                 <button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
-                    Did you review your mappings? It's a good idea to double check your mappings. Once SEED matches your buildings you can not undo or edit these mappings.
+                    Did you review your mappings? It's a good idea to double check your mappings. Once SEED matches your buildings you cannot undo or edit these mappings.
             </div>
         </div>
     </div>

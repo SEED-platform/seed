@@ -1,7 +1,7 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
-describe("controller: mapping_controller", function(){
+describe('controller: mapping_controller', function(){
     // globals set up and used in each test scenario
     var mock_building_services, scope, controller, modal_state;
     var mapping_ctrl, mapping_ctrl_scope, modalInstance, labels;
@@ -21,7 +21,7 @@ describe("controller: mapping_controller", function(){
             controller = $controller;
             scope = $rootScope;
             mapping_ctrl_scope = $rootScope.$new();
-            modal_state = "";
+            modal_state = '';
             timeout = $timeout;
             mock_user_service = user_service;
             mock_search_service = search_service;
@@ -32,7 +32,7 @@ describe("controller: mapping_controller", function(){
                 });
             spyOn(mock_search_service, 'search_buildings')
                 .andCallFake(function(){
-                    return [1,2,3];
+                    return [1, 2, 3];
                 });
         }
     ));
@@ -41,31 +41,31 @@ describe("controller: mapping_controller", function(){
     function create_mapping_controller(){
         var mock_datasets = [
             {
-                name: "DC 2013 data",
+                name: 'DC 2013 data',
                 last_modified: (new Date()).getTime(),
-                last_modified_by: "john.s@buildingenergy.com",
+                last_modified_by: 'john.s@buildingenergy.com',
                 number_of_buildings: 89,
                 id: 1
             },
             {
-                name: "DC 2014 data",
+                name: 'DC 2014 data',
                 last_modified: (new Date()).getTime() -
                     1550 * 60 * 60 * 1000,
-                last_modified_by: "gavin.m@buildingenergy.com",
+                last_modified_by: 'gavin.m@buildingenergy.com',
                 number_of_buildings: 70,
                 id: 2
             }
         ];
         var fake_import_file_payload = {
-            "status": "success",
-            "import_file": {
-                        file_name: "assessor_fun.csv",
-                        last_modified: (new Date()).getTime(),
-                        last_modified_by: "john.s@buildingenergy.com",
-                        source_type: 'AssessorRaw',
-                        dataset: mock_datasets[0],
-                        id: 1
-                    }
+            status: 'success',
+            import_file: {
+                file_name: 'assessor_fun.csv',
+                last_modified: (new Date()).getTime(),
+                last_modified_by: 'john.s@buildingenergy.com',
+                source_type: 'AssessorRaw',
+                dataset: mock_datasets[0],
+                id: 1
+            }
         };
 
         var mock_be_building_columns = [
@@ -78,21 +78,21 @@ describe("controller: mapping_controller", function(){
         ];
 
         var mock_be_building_types = {
-            'gross_floor_area': {
+            gross_floor_area: {
                 unit_type: 'float',
                 schema: 'BEDES'
             }
         };
 
         var mock_mapping_suggestions_payload = {
-            'status': 'success',
-            'suggested_column_mappings': {
+            status: 'success',
+            suggested_column_mappings: {
                 // key(django model attribute): [csv_header1, ... csv_header3]
                 'property id': ['pm_property_id', 89],
-                'lot number': ['tax_lot_id' , 54]
+                'lot number': ['tax_lot_id', 54]
             },
-            "building_columns": mock_be_building_columns,
-            "building_column_types": mock_be_building_types
+            building_columns: mock_be_building_columns,
+            building_column_types: mock_be_building_types
         };
 
         var mock_raw_column_names = [
@@ -107,8 +107,8 @@ describe("controller: mapping_controller", function(){
         for (var i=0; i < 4; i++) {
             mock_first_five_rows.push({
                 'property id': i,
-                'property_name': 'Property ' + i,
-                'property_notes': 'Nup.',
+                property_name: 'Property ' + i,
+                property_notes: 'Nup.',
                 'lot number': i * 2,
                 'lot size': 454 * i
             });
@@ -116,19 +116,19 @@ describe("controller: mapping_controller", function(){
 
         mock_first_five_rows.push({
             'property id': '121L',
-            'property_name': 'Inconsistent Property',
-            'property_notes': 'N/A',
+            property_name: 'Inconsistent Property',
+            property_notes: 'N/A',
             'lot number': 'N/A',
             'lot size': 45
         });
 
         var raw_columns_payload = {
-            "status": "success",
-            "raw_columns": mock_raw_column_names
+            status: 'success',
+            raw_columns: mock_raw_column_names
         };
         var first_five_rows_payload = {
-            "status": "success",
-            "first_five_rows": mock_first_five_rows
+            status: 'success',
+            first_five_rows: mock_first_five_rows
         };
         mapping_ctrl = controller('mapping_controller', {
             $scope: mapping_ctrl_scope,
@@ -146,7 +146,7 @@ describe("controller: mapping_controller", function(){
      * Test scenarios
      */
 
-    it("should have a import_file_payload", function() {
+    it('should have a import_file_payload', function() {
         // arrange
         create_mapping_controller();
 
@@ -154,10 +154,10 @@ describe("controller: mapping_controller", function(){
         mapping_ctrl_scope.$digest();
 
         // assertions
-        expect(mapping_ctrl_scope.import_file.dataset.name).toBe("DC 2013 data");
+        expect(mapping_ctrl_scope.import_file.dataset.name).toBe('DC 2013 data');
     });
 
-    it("should show suggested mappings and confidence", function() {
+    it('should show suggested mappings and confidence', function() {
         // arrange
         create_mapping_controller();
 
@@ -169,10 +169,10 @@ describe("controller: mapping_controller", function(){
         var first_column = raw_columns[0];
 
         expect(first_column.confidence).toBe(89);
-        expect(first_column.suggestion).toBe("Pm Property Id");
+        expect(first_column.suggestion).toBe('Pm Property Id');
     });
 
-    it("should show 'low', 'med', 'high', or '' confidence text", function() {
+    it('should show \'low\', \'med\', \'high\', or \'\' confidence text', function() {
         // arrange
         create_mapping_controller();
 
@@ -182,28 +182,28 @@ describe("controller: mapping_controller", function(){
         // assertions
         var raw_columns = mapping_ctrl_scope.raw_columns;
         var first_column = raw_columns[0];
-        expect(first_column.confidence_text()).toBe("high");
+        expect(first_column.confidence_text()).toBe('high');
         first_column.confidence = 70;
-        expect(first_column.confidence_text()).toBe("med");
+        expect(first_column.confidence_text()).toBe('med');
         first_column.confidence = 35;
-        expect(first_column.confidence_text()).toBe("low");
+        expect(first_column.confidence_text()).toBe('low');
         delete(first_column.confidence);
-        expect(first_column.confidence_text()).toBe("");
+        expect(first_column.confidence_text()).toBe('');
     });
 
-    it("should validate initial data", function() {
+    it('should validate initial data', function() {
         create_mapping_controller();
         // act
         mapping_ctrl_scope.$digest();
         // assertions
         angular.forEach(mapping_ctrl_scope.raw_columns, function(rc) {
-            if (rc.suggestion !== '' && typeof(rc.suggestion) !== "undefined") {
+            if (!_.isEmpty(rc.suggestion) && !_.isUndefined(rc.suggestion)) {
                 expect(rc.validity).toBe('valid');
             }
         });
     });
 
-    it("should invalidate bad suggestions", function() {
+    it('should invalidate bad suggestions', function() {
         // Simulate a change on the tcm, make it fail.
         create_mapping_controller();
         // act
@@ -212,14 +212,14 @@ describe("controller: mapping_controller", function(){
         //
         // We change the suggested mapping for the "property name" column
         // to "gross_floor_area" (which validates as float) to
-        // purposesly cause a failing change.
+        // purposely cause a failing change.
         mapping_ctrl_scope.raw_columns[1].suggestion = 'gross_floor_area';
         mapping_ctrl_scope.validate_data(mapping_ctrl_scope.raw_columns[1]);
         expect(mapping_ctrl_scope.raw_columns[1].validity).toBe('invalid');
 
     });
 
-    it("should set td_class appropriately", function() {
+    it('should set td_class appropriately', function() {
         var tcm;
 
         create_mapping_controller();
@@ -274,7 +274,7 @@ describe("controller: mapping_controller", function(){
 
     });
 
-    it("should detect duplicates of mapped rows", function() {
+    it('should detect duplicates of mapped rows', function() {
         create_mapping_controller();
         mapping_ctrl_scope.$digest();
 
@@ -316,7 +316,7 @@ describe("controller: mapping_controller", function(){
 
     });
 
-    it("should ignore duplicates of unmapped rows", function() {
+    it('should ignore duplicates of unmapped rows', function() {
         create_mapping_controller();
         mapping_ctrl_scope.$digest();
 
@@ -339,7 +339,7 @@ describe("controller: mapping_controller", function(){
         expect(test_class).toBe(false);
     });
 
-    it("should get mapped buildings", function() {
+    it('should get mapped buildings', function() {
         // arrange
         create_mapping_controller();
 
@@ -353,8 +353,8 @@ describe("controller: mapping_controller", function(){
         expect(mock_user_service.set_default_columns).toHaveBeenCalled();
     });
 
-    it("should enbale the 'show & review buildings' button if duplicates are" +
-        " not present", function() {
+    it('should enable the \'show & review buildings\' button if duplicates are' +
+        ' not present', function() {
         // arrange
         create_mapping_controller();
 
@@ -369,15 +369,15 @@ describe("controller: mapping_controller", function(){
         expect(duplicates_found).toBe(false);
     });
 
-    it("should disable the 'show & review buildings' button if duplicates " +
-        "are present", function() {
+    it('should disable the \'show & review buildings\' button if duplicates ' +
+        'are present', function() {
         // arrange
         create_mapping_controller();
 
         // act
         mapping_ctrl_scope.$digest();
         for (var i = mapping_ctrl_scope.raw_columns.length - 1; i >= 0; i--) {
-            mapping_ctrl_scope.raw_columns[i].suggestion = "pm_property_id";
+            mapping_ctrl_scope.raw_columns[i].suggestion = 'pm_property_id';
             mapping_ctrl_scope.change(mapping_ctrl_scope.raw_columns[i]);
         }
         var duplicates_found = mapping_ctrl_scope.duplicates_present();
@@ -386,7 +386,7 @@ describe("controller: mapping_controller", function(){
         expect(duplicates_found).toBe(true);
     });
 
-    it("should get mappings in an API friendly way", function() {
+    it('should get mappings in an API friendly way', function() {
         create_mapping_controller();
         mapping_ctrl_scope.$digest();
         var mappings = mapping_ctrl_scope.get_mappings();
@@ -397,7 +397,7 @@ describe("controller: mapping_controller", function(){
         expect(mappings[3]).toEqual(['Tax Lot Id', 'lot number']);
     });
 
-    it("should show the 'STEP 2' tab when reviewing mappings", function() {
+    it('should show the \'STEP 2\' tab when reviewing mappings', function() {
         // arrange
         create_mapping_controller();
         mapping_ctrl_scope.$digest();
@@ -407,9 +407,9 @@ describe("controller: mapping_controller", function(){
 
         // assert
         expect(mapping_ctrl_scope.tabs).toEqual({
-            'one_active': false,
-            'two_active': true,
-            'three_active': false
+            one_active: false,
+            two_active: true,
+            three_active: false
         });
     });
 });

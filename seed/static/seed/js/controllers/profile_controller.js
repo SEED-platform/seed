@@ -20,7 +20,7 @@ angular.module('BE.seed.controller.profile', [])
     $scope.user = user_profile_payload.user;
     $scope.user_updated = false;
     var user_copy = angular.copy($scope.user);
-    $scope.username = user_profile_payload.user.first_name + " " + 
+    $scope.username = user_profile_payload.user.first_name + ' ' +
         user_profile_payload.user.last_name;
 
     /**
@@ -30,7 +30,7 @@ angular.module('BE.seed.controller.profile', [])
         user_service.update_user($scope.user).then(function (data) {
             $scope.user_updated = true;
             user_copy = angular.copy($scope.user);
-            $scope.username = user_profile_payload.user.first_name + " " + 
+            $scope.username = user_profile_payload.user.first_name + ' ' +
               user_profile_payload.user.last_name;
         });
     };

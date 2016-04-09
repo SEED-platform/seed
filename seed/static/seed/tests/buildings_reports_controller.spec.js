@@ -1,4 +1,4 @@
-describe("controller: buildings_reports_controller", function(){
+describe('controller: buildings_reports_controller', function(){
     // globals set up and used in each test scenario
     var scope, controller;
     var buildings_reports_ctrl, buildings_reports_ctrl_scope, labels;
@@ -28,13 +28,13 @@ describe("controller: buildings_reports_controller", function(){
             // and return their promises
             mock_buildings_reports_service = buildings_reports_service;
 
-            spyOn(mock_buildings_reports_service, "get_report_data")
+            spyOn(mock_buildings_reports_service, 'get_report_data')
                 .andCallFake(function (xVar, yVar, startDate, endDate){
                     return $q.when(fake_report_data_payload);
                 }
             );
 
-            spyOn(mock_buildings_reports_service, "get_aggregated_report_data")
+            spyOn(mock_buildings_reports_service, 'get_aggregated_report_data')
                 .andCallFake(function (xVar, yVar, startDate, endDate){
                     return $q.when(fake_aggregated_report_data_payload);
                 }
@@ -49,84 +49,84 @@ describe("controller: buildings_reports_controller", function(){
 
         /* Assuming site_eui vs. gross_floor_area */
         fake_report_data_payload = {
-            "status": "success",
-            "building_counts" : [
-                {   "yr_e": "Dec 31,2011",
-                    "num_buildings": 10, 
-                    "num_buildings_w_data": 9
+            status: 'success',
+            building_counts : [
+                { yr_e: 'Dec 31,2011',
+                    num_buildings: 10,
+                    num_buildings_w_data: 9
                 },
                 {
-                    "yr_e": "Dec 31,2012",
-                    "num_buildings": 15,
-                    "num_buildings_w_data": 14
+                    yr_e: 'Dec 31,2012',
+                    num_buildings: 15,
+                    num_buildings_w_data: 14
                 }
             ],
-            "report_data": [
+            report_data: [
                 {
                     id: 5321,
                     x: 70,
                     y: 20000,
-                    yr_e: "2011-12-31"   
+                    yr_e: '2011-12-31'
                 },
                 {
                     id: 5322,
                     x: 71,
                     y: 40000,
-                    yr_e: "2011-12-31"   
+                    yr_e: '2011-12-31'
                 },
                 {
                     id: 5321,
                     x: 73.1,
                     y: 20000,
-                    yr_e: "2012-12-31"   
+                    yr_e: '2012-12-31'
                 },
                 {
                     id: 5322,
                     x: 75,
                     y: 40000,
-                    yr_e: "2012-12-31"   
-                },
-            ]                       
+                    yr_e: '2012-12-31'
+                }
+            ]
         };
 
         /* Assuming site_eui vs. gross_floor_area */
         fake_aggregated_report_data_payload = {
-            "status": "success",
-            "building_counts" : [
-                {   "yr_e": "Dec 31,2011",
-                    "num_buildings": 10, 
-                    "num_buildings_w_data": 9
+            status: 'success',
+            building_counts : [
+                { yr_e: 'Dec 31,2011',
+                    num_buildings: 10,
+                    num_buildings_w_data: 9
                 },
                 {
-                    "yr_e": "Dec 31,2012",
-                    "num_buildings": 15,
-                    "num_buildings_w_data": 14
+                    yr_e: 'Dec 31,2012',
+                    num_buildings: 15,
+                    num_buildings_w_data: 14
                 }
             ],
-            "report_data": [
+            report_data: [
                 {
                     x: 70,
                     y: '100-199k',
-                    yr_e: "2011-12-31" ,  
+                    yr_e: '2011-12-31'
                 },
                 {
                     x: 71,
                     y: '200-299k',
-                    yr_e: "2011-12-31"   
+                    yr_e: '2011-12-31'
                 },
                 {
                     x: 73.1,
                     y: '100-199k',
-                    yr_e: "2012-12-31"   
+                    yr_e: '2012-12-31'
                 },
                 {
                     x: 75,
                     y: '200-299k',
-                    yr_e: "2012-12-31"   
-                },
+                    yr_e: '2012-12-31'
+                }
             ]
         };
-        
+
         buildings_reports_ctrl = controller('buildings_reports_controller', {
             $scope: buildings_reports_ctrl_scope,
             $log: log,
@@ -137,11 +137,11 @@ describe("controller: buildings_reports_controller", function(){
     /*
      * Test scenarios
      */
-    it("should have proper settings for the range of x and y variables", function() {
-        
+    it('should have proper settings for the range of x and y variables', function() {
+
         // arrange
         create_buildings_reports_controller();
-        
+
         // no action, go straight to assertions to check defaults
 
         // assertions
@@ -163,18 +163,18 @@ describe("controller: buildings_reports_controller", function(){
             expect(yVarDef.axisType).toBeDefined();
             expect(yVarDef.axisTickFormat).toBeDefined();
         }
-    });   
-    it("should have defaults for selected x and y variable", function(){
+    });
+    it('should have defaults for selected x and y variable', function(){
         // arrange
         create_buildings_reports_controller();
-        
+
         // no action, go straight to assertions to check defaults
 
         // assertions
         expect(buildings_reports_ctrl_scope.xAxisSelectedItem).toBeDefined();
-        expect(buildings_reports_ctrl_scope.yAxisSelectedItem).toBeDefined();          
-    }); 
-    it("should load data from service and assign it to scope variables and build the chart configuration objects", function() {
+        expect(buildings_reports_ctrl_scope.yAxisSelectedItem).toBeDefined();
+    });
+    it('should load data from service and assign it to scope variables and build the chart configuration objects', function() {
         // arrange
         create_buildings_reports_controller();
 
@@ -187,7 +187,7 @@ describe("controller: buildings_reports_controller", function(){
         //make sure data from (mock) service is loaded correctly
         expect(buildings_reports_ctrl_scope.chartData.chartData).toEqual(fake_report_data_payload.chartData);
         expect(buildings_reports_ctrl_scope.aggChartData.chartData).toEqual(fake_aggregated_report_data_payload.chartData);
-    
+
         //make sure titles are set
         expect(buildings_reports_ctrl_scope.chart1Title).toBeDefined();
         expect(buildings_reports_ctrl_scope.chart2Title).toBeDefined();
@@ -211,7 +211,7 @@ describe("controller: buildings_reports_controller", function(){
         expect(aggChartData.colors[1].seriesName).toEqual(bldgCountsAgg[1].yr_e);
         expect(aggChartData.colors[1].color).toEqual(defaultColors[1]);
     });
-    
+
 
 
 });

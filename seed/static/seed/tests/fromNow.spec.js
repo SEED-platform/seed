@@ -9,7 +9,7 @@
 // create dummy angularJS app to attach filter(s)
 var myfromNowFilterApp = angular.module('myfromNowFilterApp', ['fromNow']);
 
-describe("The fromNow filter", function() {
+describe('The fromNow filter', function() {
     beforeEach(module('myfromNowFilterApp'));
 
     it('shows the present time as "a few seconds ago"',
@@ -29,7 +29,7 @@ describe("The fromNow filter", function() {
         inject(function(fromNowFilter) {
             // arrange
             var date_epoch_mills = (new Date()).getTime();
-            date_epoch_mills = date_epoch_mills - 5  * 60 * 1000;
+            date_epoch_mills = date_epoch_mills - 5 * 60 * 1000;
 
             // act
             var from_now_value = fromNowFilter(date_epoch_mills);
@@ -104,9 +104,9 @@ describe("The fromNow filter", function() {
             // assert
             expect(fromNowFilter(undefined)).toBe('a few seconds ago');
             expect(fromNowFilter(null)).toBe('a few seconds ago');
-            expect(fromNowFilter("some text")).toBe('a few seconds ago');
+            expect(fromNowFilter('some text')).toBe('a few seconds ago');
             expect(fromNowFilter({})).toBe('a few seconds ago');
-            expect(fromNowFilter({time: "not time"})).toBe('a few seconds ago');
+            expect(fromNowFilter({time: 'not time'})).toBe('a few seconds ago');
         })
     );
 });

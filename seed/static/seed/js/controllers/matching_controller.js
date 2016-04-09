@@ -27,7 +27,7 @@ angular.module('BE.seed.controller.matching', [])
         $uibModal,
         $log,
         search_service,
-        matching_service, 
+        matching_service,
         $filter
     ) {
     $scope.search = angular.copy(search_service);
@@ -36,10 +36,10 @@ angular.module('BE.seed.controller.matching', [])
     $scope.import_file = import_file_payload.import_file;
     $scope.buildings = buildings_payload.buildings;
     console.log({import_file: import_file_payload, bld_payload: buildings_payload});
-    $scope.q = "";
+    $scope.q = '';
     $scope.number_per_page = 10;
     $scope.current_page = 1;
-    $scope.order_by = "";
+    $scope.order_by = '';
     $scope.sort_reverse = false;
     $scope.filter_params = {};
     $scope.existing_filter_params = {};
@@ -55,7 +55,7 @@ angular.module('BE.seed.controller.matching', [])
     $scope.pills = {};
     $scope.loading_pills = true;
     $scope.show_building_list = true;
-    $scope.selected_row = "";
+    $scope.selected_row = '';
     $scope.fields = all_columns.fields;
     $scope.default_columns = default_columns.columns;
     $scope.columns = [];
@@ -68,7 +68,7 @@ angular.module('BE.seed.controller.matching', [])
     var order_by = $filter('orderBy');
 
     /* Handle 'update filters' button click */
-    $scope.do_update_filters = function() {        
+    $scope.do_update_filters = function() {
         $scope.current_page = 1;
         $scope.filter_search();
     };
@@ -89,7 +89,7 @@ angular.module('BE.seed.controller.matching', [])
             $scope.order_by, $scope.sort_reverse, $scope.filter_params, $scope.file_select.file.id).then(
             function(data) {
                 // resolve promise
-                // safe-guard against furutre init() calls
+                // safe-guard against future init() calls
                 buildings_payload = data;
 
                 $scope.buildings = data.buildings;
@@ -115,9 +115,9 @@ angular.module('BE.seed.controller.matching', [])
     *  Code for filter dropdown
     */
 
-    var SHOW_ALL = "Show All";
-    var SHOW_MATCHED = "Show Matched";
-    var SHOW_UNMATCHED = "Show Unmatched";
+    var SHOW_ALL = 'Show All';
+    var SHOW_MATCHED = 'Show Matched';
+    var SHOW_UNMATCHED = 'Show Unmatched';
 
     $scope.filter_options = [
         {id:SHOW_ALL, value:SHOW_ALL},
@@ -130,17 +130,17 @@ angular.module('BE.seed.controller.matching', [])
     $scope.update_show_filter = function(optionValue) {
 
         switch(optionValue){
-            case SHOW_ALL:               
+            case SHOW_ALL:
                 $scope.filter_params.children__isnull = undefined;
                 break;
             case SHOW_MATCHED:
-                $scope.filter_params.children__isnull = false;  //has children therefore is matched               
+                $scope.filter_params.children__isnull = false;  //has children therefore is matched
                 break;
             case SHOW_UNMATCHED:
                 $scope.filter_params.children__isnull = true;   //does not have children therefore is unmatched
                 break;
             default:
-                $log.error("#matching_controller: unexpected filter value: ", optionValue);
+                $log.error('#matching_controller: unexpected filter value: ', optionValue);
                 return;
         }
 
@@ -263,7 +263,7 @@ angular.module('BE.seed.controller.matching', [])
     $scope.match_building = function(building) {
         // shows a matched building detail page
         $scope.search.filter_params = {};
-        // chain promisses to exclude the match_tree from the search of
+        // chain promises to exclude the match_tree from the search of
         // existing buildings
         matching_service.get_match_tree( building.id )
         .then( function ( data ) {
@@ -305,20 +305,20 @@ angular.module('BE.seed.controller.matching', [])
             templateUrl: urls.static_url + 'seed/partials/custom_view_modal.html',
             controller: 'buildings_settings_controller',
             resolve: {
-                'all_columns': function() {
+                all_columns: function() {
                     return all_columns;
                 },
-                'default_columns': function() {
+                default_columns: function() {
                     return default_columns;
                 },
-                'shared_fields_payload': function() {
+                shared_fields_payload: function() {
                     return {show_shared_buildings: false};
                 },
-                'project_payload': function() {
+                project_payload: function() {
                     return {project: {}};
                 },
-                'building_payload': function() {
-                    return {'building': {}};
+                building_payload: function() {
+                    return {building: {}};
                 }
             }
         });

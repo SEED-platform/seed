@@ -2,15 +2,14 @@
  * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-angular.module('ignoremap', []).filter('ignoremap', [
-  '$filter',
-  function($filter) {
-
-    return function(input) {
-        if (_.isNil(input) || _.isEmpty(input)) {
-            return '------ Ignore Row ------';
-        }
-        return input;
-    };
-
-}]);
+angular.module('BE.seed.controller.about', [])
+.controller('about_controller', [
+  '$scope',
+  'version_payload',
+  function (
+    $scope,
+    version_payload
+  ) {
+    $scope.version = version_payload.version;
+    $scope.sha = version_payload.sha;
+  }]);

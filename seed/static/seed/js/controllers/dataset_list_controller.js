@@ -14,19 +14,19 @@ angular.module('BE.seed.controller.dataset', [])
     $scope.datasets = datasets_payload.datasets;
     $scope.columns = [
         {
-            title: "Data Set Name"
+            title: 'Data Set Name'
         },
         {
-            title: "# Of Files"
+            title: '# Of Files'
         },
         {
-            title: "Last Changed"
+            title: 'Last Changed'
         },
         {
-            title: "Changed By"
+            title: 'Changed By'
         },
         {
-            title: "Actions"
+            title: 'Actions'
         }
     ];
     /**
@@ -52,7 +52,7 @@ angular.module('BE.seed.controller.dataset', [])
      */
     $scope.open_data_upload_modal = function(dataset) {
         var step = 2;
-        if (typeof dataset === "undefined"){
+        if (_.isUndefined(dataset)){
             step = 1;
             dataset = {};
         } else if ($scope.missing_assessor_files(dataset)) {
@@ -82,7 +82,7 @@ angular.module('BE.seed.controller.dataset', [])
     };
 
     $scope.confirm_delete = function (dataset) {
-        var yes = confirm("Are you sure you want to PERMANENTLY delete '" + dataset.name + "'?");
+        var yes = confirm('Are you sure you want to PERMANENTLY delete \'' + dataset.name + '\'?');
         if (yes) {
             $scope.delete_dataset(dataset);
         }
@@ -107,7 +107,7 @@ angular.module('BE.seed.controller.dataset', [])
     $scope.goto_mapping = function(dataset) {
         for (var i=0; i < dataset.importfiles.length; i++){
             var importfile = dataset.importfiles[i];
-            if (importfile.source_type === "Assessed Raw") {
+            if (importfile.source_type === 'Assessed Raw') {
                 $location.path('/data/mapping/' + importfile.id);
                 break;
             }
@@ -121,7 +121,7 @@ angular.module('BE.seed.controller.dataset', [])
     $scope.goto_matching = function(dataset) {
         for (var i=0; i < dataset.importfiles.length; i++){
             var importfile = dataset.importfiles[i];
-            if (importfile.source_type === "Portfolio Raw") {
+            if (importfile.source_type === 'Portfolio Raw') {
                 $location.path('/data/matching/' + importfile.id);
                 break;
             }
@@ -134,7 +134,7 @@ angular.module('BE.seed.controller.dataset', [])
     $scope.missing_assessor_files = function(dataset) {
         for (var i=0; i < dataset.importfiles.length; i++){
             var importfile = dataset.importfiles[i];
-            if (importfile.source_type === "Assessed Raw") {
+            if (importfile.source_type === 'Assessed Raw') {
                 return false;
             }
         }
@@ -147,7 +147,7 @@ angular.module('BE.seed.controller.dataset', [])
     $scope.missing_pm_files = function(dataset) {
         for (var i=0; i < dataset.importfiles.length; i++){
             var importfile = dataset.importfiles[i];
-            if (importfile.source_type === "Portfolio Raw") {
+            if (importfile.source_type === 'Portfolio Raw') {
                 return false;
             }
         }

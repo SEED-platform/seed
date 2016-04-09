@@ -11,7 +11,7 @@
 </div>
 <div class="section_nav_container">
     <div class="section_nav">
-        <a ng-href="#/profile" >Profile Info</a><a ng-href="#/profile/security">Security</a><a ng-href="#/profile/admin" class="active">Admin</a><a ng-href="#/profile/developer">Developer</a>
+        <a ng-href="#/profile">Profile Info</a><a ng-href="#/profile/security">Security</a><a ng-href="#/profile/admin" class="active">Admin</a><a ng-href="#/profile/developer">Developer</a>
     </div>
 </div>
 <div class="display">
@@ -38,7 +38,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="user_emails">User E-mail:</label>
                             <div class="col-sm-4">
-                                <select class="form-control" name="user_emails" id="user_emails" ng-options="u as u.email for u in org.users" ng-model="org.email" >
+                                <select class="form-control" name="user_emails" id="user_emails" ng-options="u as u.email for u in org.users" ng-model="org.email">
                                 </select>
                             </div>
                         </div>
@@ -124,7 +124,7 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label" for="add_emails">Add user to organization:</label>
                                 <div class="col-sm-8">
-                                    <select name="user_emails" class="form-control" id="user_emails" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org_user.user" ></select>
+                                    <select name="user_emails" class="form-control" id="user_emails" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org_user.user"></select>
                                 </div>
                             </div>
                             <div class="form-group">

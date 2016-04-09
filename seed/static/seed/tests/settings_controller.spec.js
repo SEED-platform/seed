@@ -1,7 +1,7 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
-describe("controller: settings_controller", function(){
+describe('controller: settings_controller', function(){
     // globals set up and used in each test scenario
     var mockService, scope, controller;
     var ctrl, ctrl_scope, modalInstance;
@@ -24,7 +24,7 @@ describe("controller: settings_controller", function(){
             ctrl_scope = $rootScope.$new();
 
             mock_organization_service = organization_service;
-            
+
         }
     ));
 
@@ -35,7 +35,7 @@ describe("controller: settings_controller", function(){
             all_columns: {fields: [
                 {checked: false, title: 'PM Property ID', sort_column: 'pm_property_id'},
                 {checked: false, title: 'G', sort_column: 'g'},
-                {checked: false, title: "Gross Floor Area", sort_column: 'gross_floor_area'}
+                {checked: false, title: 'Gross Floor Area', sort_column: 'gross_floor_area'}
             ]},
             organization_payload: {
                 organization: {name: 'my org', id: 4}
@@ -46,20 +46,20 @@ describe("controller: settings_controller", function(){
             shared_fields_payload: {
                 shared_fields: [
                     {
-                        title: "PM Property Id",
-                        sort_column: "pm_property_id"
+                        title: 'PM Property Id',
+                        sort_column: 'pm_property_id'
                     }
                 ],
                 public_fields: [
                 {
-                    title: "Gross Floor Area",
-                    sort_column: "gross_floor_area"
+                    title: 'Gross Floor Area',
+                    sort_column: 'gross_floor_area'
                 }]
             },
             auth_payload: {
                 auth: {
-                    'is_owner': true,
-                    'is_parent_org_owner': false
+                    is_owner: true,
+                    is_parent_org_owner: false
                 }
             }
         });
@@ -69,7 +69,7 @@ describe("controller: settings_controller", function(){
      * Test scenarios
      */
 
-    it("should accepts its payload", function() {
+    it('should accepts its payload', function() {
         // arrange
         create_settings_controller();
 
@@ -86,7 +86,7 @@ describe("controller: settings_controller", function(){
         expect(ctrl_scope.fields[1].checked).toEqual(false);
         expect(ctrl_scope.fields[0].title).toEqual('PM Property ID');
     });
-    it("should select all", function() {
+    it('should select all', function() {
         // arrange
         create_settings_controller();
 

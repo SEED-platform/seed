@@ -10,7 +10,7 @@ angular.module('BE.seed.controller.accounts', [])
     'urls',
     'organization_service',
     function ($scope, $uibModal, organization_payload, urls, organization_service) {
-    
+
     $scope.create_organization_modal = function(org) {
         var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/create_organization_modal.html',
@@ -33,7 +33,7 @@ angular.module('BE.seed.controller.accounts', [])
                 // dismiss
         });
     };
-    
+
     var init = function(){
         $scope.orgs = organization_payload.organizations;
         $scope.orgs_I_own = organization_payload.organizations.filter(function (o) {

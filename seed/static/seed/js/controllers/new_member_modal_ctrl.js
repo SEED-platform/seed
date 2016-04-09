@@ -12,16 +12,16 @@ angular.module('BE.seed.controller.new_member_modal', [])
   function ($scope, $uibModalInstance, organization, user_service, $timeout) {
     $scope.roles = [
       {
-        name: "Member",
-        value: "member"
+        name: 'Member',
+        value: 'member'
       },
       {
-        name: "Owner",
-        value: "owner"
+        name: 'Owner',
+        value: 'owner'
       },
       {
-        name: "Viewer",
-        value: "viewer"
+        name: 'Viewer',
+        value: 'viewer'
       }
     ];
     $scope.user = {};
@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.new_member_modal', [])
              $scope.$emit('app_error', data);
         });
     };
-    
+
     $scope.close = function () {
         $uibModalInstance.close();
     };
@@ -53,7 +53,7 @@ angular.module('BE.seed.controller.new_member_modal', [])
 
     $timeout(function(name) {
       angular.element('#newMemberFirstName').focus();
-    }, 50); 
+    }, 50);
 }]);
 
 angular.module('BE.seed.controller.existing_members_modal', [])
@@ -61,7 +61,7 @@ angular.module('BE.seed.controller.existing_members_modal', [])
   '$scope',
   '$uibModalInstance',
   function ($scope, $uibModalInstance) {
-    
+
     $scope.close = function () {
         $uibModalInstance.close();
     };

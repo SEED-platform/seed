@@ -16,9 +16,9 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': window.BE.urls.get_datasets,
-            'params': {
-                'organization_id': user_service.get_organization().id
+            url: window.BE.urls.get_datasets,
+            params: {
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             dataset_factory.total_datasets_for_user = (data.datasets !== undefined) ? data.datasets.length : 0;
@@ -35,9 +35,9 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': window.BE.urls.get_dataset,
-            'params': {
-                'dataset_id': dataset_id
+            url: window.BE.urls.get_dataset,
+            params: {
+                dataset_id: dataset_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -52,10 +52,10 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
         var defer = $q.defer();
         $http({
             method: 'DELETE',
-            'url': window.BE.urls.delete_file,
-            'data': {
-                'file_id': file_id,
-                'organization_id': user_service.get_organization().id
+            url: window.BE.urls.delete_file,
+            data: {
+                file_id: file_id,
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -70,10 +70,10 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
         var defer = $q.defer();
         $http({
             method: 'DELETE',
-            'url': window.BE.urls.delete_dataset,
-            'data': {
-                'dataset_id': dataset_id,
-                'organization_id': user_service.get_organization().id
+            url: window.BE.urls.delete_dataset,
+            data: {
+                dataset_id: dataset_id,
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -88,12 +88,12 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            'url': window.BE.urls.update_dataset,
-            'data': {
-                'dataset': dataset
+            url: window.BE.urls.update_dataset,
+            data: {
+                dataset: dataset
             },
-            'params': {
-                'organization_id': user_service.get_organization().id
+            params: {
+                organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -108,9 +108,9 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
         var defer = $q.defer();
         $http({
             method: 'GET',
-            'url': window.BE.urls.get_import_file,
-            'params': {
-                'import_file_id': import_file_id
+            url: window.BE.urls.get_import_file,
+            params: {
+                import_file_id: import_file_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);

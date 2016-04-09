@@ -13,14 +13,14 @@ angular.module('BE.seed.controller.create_note_modal', [])
     function ($scope, $uibModalInstance, audit_service, $timeout, building, note) {
     $scope.note = note || {};
     $scope.note = angular.copy($scope.note);
-    $scope.error_message = "";
+    $scope.error_message = '';
 
     /**
      * saves a new note or updates an existing note
      * @param  {Boolean} is_valid whether the form is valid (checked in the html)
      */
     $scope.submit_form = function(is_valid) {
-        if (typeof note !== 'undefined') {
+        if (!_.isUndefined(note)) {
             // update existing note
             audit_service.update_note(note.id, $scope.note.action_note)
             .then(function(data){
@@ -44,8 +44,8 @@ angular.module('BE.seed.controller.create_note_modal', [])
             });
         }
     };
-    
-    
+
+
     $scope.close = function () {
         $uibModalInstance.close($scope.note);
     };

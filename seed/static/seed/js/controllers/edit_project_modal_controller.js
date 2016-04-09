@@ -15,7 +15,7 @@ angular.module('BE.seed.controller.edit_project_modal', [])
     $scope.project = angular.copy(project);
     $scope.project.deadline_date = $filter('date')($scope.project.deadline_date, 'yyyy-MM-dd') || null;
     $scope.project.end_date = $filter('date')($scope.project.end_date, 'yyyy-MM') || null;
-    $scope.create_project_state = "create";
+    $scope.create_project_state = 'create';
 
     $scope.ok = function () {
         if (create_project) {
@@ -24,7 +24,7 @@ angular.module('BE.seed.controller.edit_project_modal', [])
                     // resolve promise
                     console.log({data: data});
                     angular.extend($scope.project, data);
-                    $scope.create_project_state = "success";
+                    $scope.create_project_state = 'success';
                 },
                 function(data, status){
                     $scope.create_project_error = true;
@@ -61,11 +61,11 @@ angular.module('BE.seed.controller.edit_project_modal', [])
 
     var init = function() {
         if (create_project) {
-            $scope.modal_title = "Create a New Project";
-            $scope.ok_button_text = "Create Project";
+            $scope.modal_title = 'Create a New Project';
+            $scope.ok_button_text = 'Create Project';
         } else {
-            $scope.modal_title = "Edit Project";
-            $scope.ok_button_text = "Save";
+            $scope.modal_title = 'Edit Project';
+            $scope.ok_button_text = 'Save';
         }
     };
     init();

@@ -43,7 +43,7 @@ angular.module('BE.seed.controller.mapping', [])
     cleansing_service
 ) {
 
-    var db_field_columns   = suggested_mappings_payload.building_columns;
+    var db_field_columns = suggested_mappings_payload.building_columns;
     var extra_data_columns = suggested_mappings_payload.extra_data_columns;
     var original_columns = angular.copy(db_field_columns.concat(extra_data_columns));
 
@@ -59,7 +59,7 @@ angular.module('BE.seed.controller.mapping', [])
         var result = [];
         for(i=0; i<params.length;i++) {
             var current = params[i];
-            if(result.indexOf(current) === -1) {
+            if(!_.includes(result, current)) {
                 result.push(current);
             }
         }
@@ -67,9 +67,9 @@ angular.module('BE.seed.controller.mapping', [])
     }
     $scope.typeahead_columns = uniquify($scope.typeahead_columns);
     $scope.tabs = {
-      'one_active': true,
-      'two_active': false,
-      'three_active': false
+      one_active: true,
+      two_active: false,
+      three_active: false
     };
     $scope.import_file = import_file_payload.import_file;
     $scope.import_file.matching_finished = false;
@@ -77,7 +77,7 @@ angular.module('BE.seed.controller.mapping', [])
     angular.forEach($scope.suggested_mappings, function (v, k) {
         // only title case fields like address_line_1 which have had their
         // typeahead suggestions title cased
-        if ($scope.typeahead_columns.indexOf(v[0]) === -1) {
+        if (!_.includes($scope.typeahead_columns, v[0])) {
             v[0] = $filter('titleCase')(v[0]);
         }
     });
@@ -137,7 +137,7 @@ angular.module('BE.seed.controller.mapping', [])
     $scope.get_validity = function(tcm) {
         /*var diff = tcm.raw_data.length - tcm.invalids.length;
         // Used to display the state of the row overall.
-        if (typeof(tcm.invalids) === "undefined") {
+        if (_.isUndefined(tcm.invalids)) {
             return undefined;
         }
         if ( tcm.invalids.length === 0) {
@@ -163,11 +163,11 @@ angular.module('BE.seed.controller.mapping', [])
         if (tcm.suggestion === '') {
             return '';
         }
-        if (tcm.validity === 'valid')  {
+        if (tcm.validity === 'valid') {
             return 'success';
         }
         for (
-            var i = 0; typeof tcm.invalids !== "undefined" &&
+            var i = 0; _.isUndefined(tcm.invalids) &&
             i < tcm.invalids.length; i++
         ) {
             if (col_value === tcm.invalids[i]) {
@@ -180,13 +180,13 @@ angular.module('BE.seed.controller.mapping', [])
     };
 
     $scope.find_duplicates = function (array, element) {
-        var indicies = [];
+        var indices = [];
         var idx = array.indexOf(element);
         while (idx !== -1) {
-            indicies.push(idx);
+            indices.push(idx);
             idx = array.indexOf(element, idx + 1);
         }
-        return indicies;
+        return indices;
     };
 
     /*
@@ -196,19 +196,16 @@ angular.module('BE.seed.controller.mapping', [])
         var suggestions = [];
         for (var i = 0; i < $scope.raw_columns.length; i++){
             var potential = $scope.raw_columns[i].suggestion;
-            if (typeof potential === 'undefined' ||
-                    potential === '' ||
-                    ! $scope.raw_columns[i].mapped_row
+            if (_.isUndefined(potential) ||
+              _.isEmpty(potential) ||
+              ! $scope.raw_columns[i].mapped_row
             ) {
                 continue;
             }
             suggestions.push($scope.raw_columns[i].suggestion);
         }
         var dups = $scope.find_duplicates(suggestions, tcm.suggestion);
-        if (dups.length > 1) {
-            return true;
-        }
-        return false;
+        return dups.length > 1;
     };
 
     /*
@@ -219,14 +216,14 @@ angular.module('BE.seed.controller.mapping', [])
      */
     $scope.validate_data = function(tcm) {
         tcm.user_suggestion = true;
-        if (typeof(tcm.suggestion) !== "undefined" && tcm.suggestion !== '') {
+        if (!_.isUndefined(tcm.suggestion) && !_.isEmpty(tcm.suggestion)) {
             var type;
-            if (~original_columns.indexOf(angular.lowercase(tcm.suggestion).replace(/ /g, '_'))) {
+            if (_.includes(original_columns, angular.lowercase(tcm.suggestion).replace(/ /g, '_'))) {
                 type = $scope.building_column_types[angular.lowercase(tcm.suggestion).replace(/ /g, '_')];
             } else {
                 type = $scope.building_column_types[tcm.suggestion];
             }
-            if (typeof type !== "undefined") {
+            if (!_.isUndefined(type)) {
                 type = type.unit_type;
             }
             tcm.suggestion_type = type;
@@ -276,13 +273,13 @@ angular.module('BE.seed.controller.mapping', [])
         is_a_concat_parameter: false,
         // Result of a concatenation gets set to true
         is_concatenated: false,
-        "find_suggested_mapping": function (suggestions) {
+        find_suggested_mapping: function (suggestions) {
             var that = this;
             angular.forEach(suggestions, function(value, key) {
                 // Check first element of each value to see if it matches.
                 // if it does, then save that key as a suggestion
                 if (key === that.name) {
-                    if (typeof value[0][0] !== 'undefined' && angular.isArray(value[0])) {
+                    if (!_.isUndefined(value[0][0]) && angular.isArray(value[0])) {
                       that.suggestion = value[0][0];
                     } else {
                       that.suggestion = value[0];
@@ -290,24 +287,24 @@ angular.module('BE.seed.controller.mapping', [])
                     that.confidence = value[1];
                     // if mapping is finished, don't show suggestions
                     if ($scope.import_file.matching_done && that.confidence < 100) {
-                      that.suggestion = "";
+                      that.suggestion = '';
                     }
                 }
             });
         },
-        "confidence_text": function() {
+        confidence_text: function() {
           if (this.confidence < 40) {
-            return "low";
+            return 'low';
           }
           if (this.confidence < 75) {
-            return "med";
+            return 'med';
           }
           if (this.confidence >= 75) {
-            return "high";
+            return 'high';
           }
-          return "";
+          return '';
         },
-        "label_status": function() {
+        label_status: function() {
             var status;
             var that = this;
             if (!that.mapped_row) {
@@ -372,7 +369,7 @@ angular.module('BE.seed.controller.mapping', [])
         mapped_columns, $scope.user.show_shared_buildings
       );
       $scope.search.filter_params = {
-        "import_file_id": $scope.import_file.id
+        import_file_id: $scope.import_file.id
       };
       $scope.show_mapped_buildings = true;
       $scope.save_mappings = false;
@@ -437,7 +434,7 @@ angular.module('BE.seed.controller.mapping', [])
         var mappings = $scope.get_mappings().map(function (m) {
             var mapping = m[0];
             mapping = angular.lowercase(mapping).replace(/ /g, '_');
-            if (~original_columns.indexOf(mapping)) {
+            if (_.includes(original_columns, mapping)) {
                 m[0] = mapping;
             }
             return m;
@@ -461,7 +458,7 @@ angular.module('BE.seed.controller.mapping', [])
         .then(function (data){
           // start re-mapping
           mapping_service.remap_buildings($scope.import_file.id).then(function(data){
-            if (data.status === "error" || data.status === "warning") {
+            if (data.status === 'error' || data.status === 'warning') {
               $scope.$emit('app_error', data);
               $scope.get_mapped_buildings();
             } else {
@@ -516,7 +513,7 @@ angular.module('BE.seed.controller.mapping', [])
               return $scope.duplicates_present();
             }
           });
-          
+
         }
 
         else return true;
@@ -556,16 +553,16 @@ angular.module('BE.seed.controller.mapping', [])
             controller: 'cleansing_controller',
             size: 'lg',
             resolve: {
-                'cleansingResults': function() {
+                cleansingResults: function() {
                     return cleansing_service.get_cleansing_results($scope.import_file.id);
                 },
-                'name': function() {
+                name: function() {
                     return $scope.import_file.name;
                 },
-                'uploaded': function() {
+                uploaded: function() {
                     return $scope.import_file.created;
                 },
-                'importFileId': function() {
+                importFileId: function() {
                   return $scope.import_file.id;
                 }
             }
@@ -611,10 +608,10 @@ angular.module('BE.seed.controller.mapping', [])
 
     };
 
-    $scope.MAP_copy = "A 'check' indicates you want to map a data field header from your import file to either a standard header from the Building Energy Data Exchange Specification (BEDES) or to a custom header of your choice. Unchecked rows will be ignored for mapping purposes and the data will be imported with the header from your import file.";
+    $scope.MAP_copy = 'A \'check\' indicates you want to map a data field header from your import file to either a standard header from the Building Energy Data Exchange Specification (BEDES) or to a custom header of your choice. Unchecked rows will be ignored for mapping purposes and the data will be imported with the header from your import file.';
 
-    $scope.BEDES_copy = "A Green check in this column indicates the mapping is done to a standard field in the BEDES specification.";
+    $scope.BEDES_copy = 'A Green check in this column indicates the mapping is done to a standard field in the BEDES specification.';
 
-    $scope.VALIDATE_copy = "Indicates whether data mapping was successful, if there's invalid data in your columns, or a duplicate field header mappings that need to be re-mapped to a unique BEDES/non-BEDES field. ";
+    $scope.VALIDATE_copy = 'Indicates whether data mapping was successful, if there\'s invalid data in your columns, or a duplicate field header mappings that need to be re-mapped to a unique BEDES/non-BEDES field. ';
 
 }]);

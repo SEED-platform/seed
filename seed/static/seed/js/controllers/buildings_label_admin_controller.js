@@ -12,12 +12,12 @@ angular.module('BE.seed.controller.label_admin', [])
     'simple_modal_service',
     'Notification',
 function ($scope, $log, urls, label_service, simple_modal_service, notification) {
-   
+
     $scope.available_colors = label_service.get_available_colors();
     $scope.labels = [];
 
     function initialize_new_label() {
-        $scope.new_label = {color:"gray", label:"default", name:""};
+        $scope.new_label = {color:'gray', label:'default', name:''};
     }
 
     $scope.showColor = function(label) {
@@ -31,39 +31,39 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
 
 
 
-    /*  Take user input from New Label form and submit 
+    /*  Take user input from New Label form and submit
         to service to create a new label. */
     $scope.submitNewLabelForm = function (form){
         if (form.$invalid) {
             return;
         }
         label_service.create_label($scope.new_label).then(
-            function(result){                  
+            function(result){
                 get_labels();
-                var msg = "Created label " + getTruncatedName($scope.new_label.name); 
-                notification.primary(msg);       
-                initialize_new_label();     
-                form.$setPristine(); 
+                var msg = 'Created label ' + getTruncatedName($scope.new_label.name);
+                notification.primary(msg);
+                initialize_new_label();
+                form.$setPristine();
             },
             function(message){
-                $log.error("Error creating new label.", message);
+                $log.error('Error creating new label.', message);
             }
-        );        
+        );
     };
 
-  
+
     /* Checks for existing label name for inline edit form.
         Form assumes function will return a string if there's an existing label */
     $scope.checkEditLabelBeforeSave = function(data, currentLabelName){
         if (data === currentLabelName){
             return;
         }
-        if (data===undefined || data==="") {
-            return "Enter at least one character";
+        if (data===undefined || data==='') {
+            return 'Enter at least one character';
         }
         if(isLabelNameUsed(data)){
-            return "That label name already exists";
-        }         
+            return 'That label name already exists';
+        }
     };
 
     function isLabelNameUsed(newLabelName) {
@@ -84,20 +84,20 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
         }
     };
 
-  
-    
+
+
     $scope.saveLabel = function(label, id, index) {
         //Don't update $scope.label until a 'success' from server
-        angular.extend(label, {id: id});        
+        angular.extend(label, {id: id});
         label_service.update_label(label).then(
             function(data){
-                var msg = "Label updated.";
-                notification.primary(msg);    
+                var msg = 'Label updated.';
+                notification.primary(msg);
                 $scope.labels.splice(index, 1, data);
                 $scope.label = data;
             },
             function(message){
-                $log.error("Error saving label.", message);
+                $log.error('Error saving label.', message);
             }
         );
     };
@@ -105,11 +105,11 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
 
     $scope.deleteLabel = function(label, index) {
         var modalOptions = {
-            type: "default",
+            type: 'default',
             okButtonText: 'OK',
             cancelButtonText: 'Cancel',
             headerText: 'Confirm delete',
-            bodyText: "Delete label \"" + label.name + "\" and remove it from all buildings it's been applied to?"
+            bodyText: 'Delete label "' + label.name + '" and remove it from all buildings it\'s been applied to?'
         };
         simple_modal_service.showModal(modalOptions).then(
             function(result){
@@ -118,20 +118,20 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
                     function(result){
                         //server deleted label, so remove it locally
                         $scope.labels.splice(index, 1);
-                        var msg = "Deleted label " + getTruncatedName(label.name);
+                        var msg = 'Deleted label ' + getTruncatedName(label.name);
                         notification.primary(msg);
                     },
                     function(message){
-                        $log.error("Error deleting label.", message);
+                        $log.error('Error deleting label.', message);
                     }
-                );               
+                );
             },
             function(message){
                 //user doesn't want to delete after all.
         });
-        
+
     };
-  
+
 
 
    function get_labels(building) {
@@ -144,11 +144,11 @@ function ($scope, $log, urls, label_service, simple_modal_service, notification)
 
     function getTruncatedName(name) {
         if (name && name.length>20){
-             name = name.substr(0,20) + "...";
+             name = name.substr(0, 20) + '...';
         }
-        return name;       
+        return name;
     }
-    
+
     function init(){
        get_labels();
        initialize_new_label();

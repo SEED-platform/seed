@@ -17,7 +17,7 @@ angular.module('BE.seed.controller.security', [])
       user_profile_payload
     ) {
     $scope.auth = auth_payload.auth;
-    $scope.username = user_profile_payload.user.first_name + " " + 
+    $scope.username = user_profile_payload.user.first_name + ' ' +
         user_profile_payload.user.last_name;
 
     /**
@@ -27,7 +27,7 @@ angular.module('BE.seed.controller.security', [])
         user_service.set_password($scope.current_password, $scope.password_1, $scope.password_2)
         .then(function (data) {
             $scope.password_updated = true;
-            $scope.error_message = "";
+            $scope.error_message = '';
         }, function (data) {
             $scope.error_message = data.message;
         });

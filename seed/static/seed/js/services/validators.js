@@ -18,7 +18,7 @@ angular.module('mappingValidatorService', []).factory(
 
         var validatorService = {};
         validatorService.validate = function(originals, type) {
-            var invalid_date = "Invalid Date";
+            var invalid_date = 'Invalid Date';
 
             var date_converter = function(item) {
                 return new Date(item);
@@ -33,7 +33,7 @@ angular.module('mappingValidatorService', []).factory(
             };
 
             var float_converter = function(item) {
-                if (typeof(item) === 'string'){
+                if (_.isString(item)){
                     item = item.replace(/[,$$]/g, '');
                 }
                 return Number(item);

@@ -11,7 +11,7 @@ angular.module('BE.seed.controller.create_organization_modal', [])
     '$timeout',
     function ($scope, $uibModalInstance, organization_service, organization, $timeout) {
         $scope.sub_org = {};
-        $scope.error_message = "";
+        $scope.error_message = '';
 
       /**
      * creates a sub organization with an owner
@@ -28,8 +28,8 @@ angular.module('BE.seed.controller.create_organization_modal', [])
             $scope.error_message = data.message;
         });
     };
-    
-    
+
+
     $scope.close = function () {
         $uibModalInstance.close();
     };
@@ -49,6 +49,6 @@ angular.module('BE.seed.controller.create_organization_modal', [])
      * clear the error message when the user starts typing
      */
     $scope.$watch('sub_org.email', function(){
-        $scope.error_message = "";
+        $scope.error_message = '';
     });
 }]);

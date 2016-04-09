@@ -8,11 +8,11 @@ angular.module('BE.seed.services.label_helper', []).factory('label_helper_servic
     return {
         lookup_label: function (color) {
             var lookup_colors = {
-                'red': 'danger',
-                'gray': 'default',
-                'orange': 'warning',
-                'green': 'success',
-                'blue': 'primary',
+                red: 'danger',
+                gray: 'default',
+                orange: 'warning',
+                green: 'success',
+                blue: 'primary',
                 'light blue': 'info'
             };
             try {

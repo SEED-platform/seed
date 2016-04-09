@@ -32,8 +32,8 @@ from seed.models import (
 )
 from seed.utils.api import api_endpoint
 
-from ..utils import projects as utils
-from ..utils.time import convert_to_js_timestamp
+from seed.utils import projects as utils
+from seed.utils.time import convert_to_js_timestamp
 
 _log = logging.getLogger(__name__)
 
