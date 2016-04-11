@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=100)),
-                ('query_threshold', models.IntegerField(max_length=4, null=True, blank=True)),
+                ('query_threshold', models.IntegerField(null=True, blank=True)),
                 ('parent_org', models.ForeignKey(related_name='child_orgs', blank=True, to='orgs.Organization', null=True)),
             ],
             options={
