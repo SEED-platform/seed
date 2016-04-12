@@ -769,7 +769,7 @@ class TestTasks(TestCase):
 
     def test_delete_organization_doesnt_delete_user_if_multiple_memberships(self):
         """
-        Deleting an org shouldnt delete the orgs users if the user belongs to many orgs.
+        Deleting an org shouldn't delete the orgs users if the user belongs to many orgs.
         """
         org = Organization.objects.create()
         OrganizationUser.objects.create(organization=org, user=self.fake_user)
