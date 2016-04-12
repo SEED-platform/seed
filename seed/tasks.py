@@ -67,7 +67,7 @@ from seed.utils import time as time_utils
 from seed.utils.buildings import get_source_type, get_search_query
 from seed.utils.cache import set_cache, increment_cache, get_cache
 from seed.utils.mapping import get_mappable_columns
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.lib.exporter import Exporter
 from seed.cleansing.models import Cleansing
 from seed.cleansing.tasks import (
@@ -1472,7 +1472,16 @@ def delete_organization(org_pk, deleting_cache_key, chunk_size=100, *args, **kwa
 @shared_task
 @lock_and_track
 def _delete_organization_related_data(chain, org_pk, prog_key):
+    # Get all org users
+    user_ids = OrganizationUser.objects.filter(organization_id=org_pk).values_list('user_id', flat=True)
+    users = list(User.objects.filter(pk__in=user_ids))
+
     Organization.objects.get(pk=org_pk).delete()
+
+    # Delete any abandoned users.
+    for user in users:
+        if not OrganizationUser.objects.filter(user_id=user.pk).exists():
+            user.delete()
 
     result = {
         'status': 'success',

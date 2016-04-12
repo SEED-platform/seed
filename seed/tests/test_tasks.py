@@ -96,7 +96,7 @@ class TestTasks(TestCase):
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
         self.import_record = ImportRecord.objects.create(
-            owner=self.fake_user,
+            owner=self.fake_user, last_modified_by=self.fake_user
         )
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record
@@ -755,15 +755,30 @@ class TestTasks(TestCase):
         ).count(), 0)
 
     def test_delete_organization(self):
+        self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
         self.assertTrue(Organization.objects.filter(pk=self.fake_org.pk).exists())
         self.assertTrue(ImportRecord.objects.filter(pk=self.import_record.pk).exists())
         self.assertTrue(ImportFile.objects.filter(pk=self.import_file.pk).exists())
 
         tasks.delete_organization(self.fake_org.pk, 'fake-progress-key')
 
+        self.assertFalse(User.objects.filter(pk=self.fake_user.pk).exists())
         self.assertFalse(Organization.objects.filter(pk=self.fake_org.pk).exists())
         self.assertFalse(ImportRecord.objects.filter(pk=self.import_record.pk).exists())
         self.assertFalse(ImportFile.objects.filter(pk=self.import_file.pk).exists())
+
+    def test_delete_organization_doesnt_delete_user_if_multiple_memberships(self):
+        """
+        Deleting an org shouldnt delete the orgs users if the user belongs to many orgs.
+        """
+        org = Organization.objects.create()
+        OrganizationUser.objects.create(organization=org, user=self.fake_user)
+
+        self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
+
+        tasks.delete_organization(self.fake_org.pk, 'fake-progress-key')
+
+        self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
 
 
 class TestTasksXLS(TestTasks):
