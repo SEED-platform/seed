@@ -166,6 +166,7 @@
                             <thead>
                                 <tr>
                                     <th>Organization</th>
+                                    <th>Created</th>
                                     <th>User Count</th>
                                     <th>Building Count</th>
                                     <th></th>
@@ -174,6 +175,7 @@
                             <tbody>
                                 <tr ng-repeat="o in org_user.organizations">
                                     <td>{$ o.name $}</td>
+                                    <td><strong>{$ o.created $}</strong></td>
                                     <td><strong>{$ o.number_of_users | number:0 $}</strong></td>
                                     <td><strong>{$ o.num_buildings | number:0 $}</strong></td>
                                     <td>

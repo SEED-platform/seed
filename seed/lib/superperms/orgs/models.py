@@ -116,6 +116,9 @@ class Organization(models.Model):
         'Organization', blank=True, null=True, related_name='child_orgs'
     )
 
+    created = models.DateTimeField(auto_now_add=True, null=True)
+    modified = models.DateTimeField(auto_now=True, null=True)
+
     # If below this threshold, we don't show results from this Org
     # in exported views of its data.
     query_threshold = models.IntegerField(blank=True, null=True)
