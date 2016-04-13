@@ -10,8 +10,8 @@ import base64
 from decimal import getcontext, Decimal
 
 getcontext().prec = 7
-from localflavor.us.us_states import STATE_CHOICES
 from seed.test_helpers.factory.lib.chomsky import generate_chomsky
+
 
 class DjangoFunctionalFactory:
 
@@ -86,10 +86,6 @@ class DjangoFunctionalFactory:
     @classmethod
     def rand_domain(cls):
         return RANDOM_EMAIL_DOMAINS[cls.rand_int(0, len(RANDOM_EMAIL_DOMAINS) - 1)]
-
-    @classmethod
-    def rand_us_state(cls):
-        return STATE_CHOICES[cls.rand_int(0, len(STATE_CHOICES) - 1)][0]
 
     @classmethod
     def valid_test_cc_number(cls):

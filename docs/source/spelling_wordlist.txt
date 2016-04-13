@@ -128,6 +128,7 @@ queryset
 Recurse
 Redis
 Redistributions
+regex
 repo
 rtype
 seeddb
