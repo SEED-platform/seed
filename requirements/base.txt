@@ -4,7 +4,6 @@ Django==1.9.5
 # Forms
 django_compressor==1.5
 django-extensions==1.6.1
-django-passwords==0.2.0
 django-redis-cache==1.6.0
 django-ses==0.4.1
 django-sslify==0.2
