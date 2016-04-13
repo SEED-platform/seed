@@ -8,6 +8,7 @@ import logging
 
 from django.contrib import auth
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.forms import SetPasswordForm
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.forms.utils import ErrorList
@@ -18,7 +19,7 @@ from django.shortcuts import render_to_response
 from tos.models import (
     has_user_agreed_latest_tos, TermsOfService, NoActiveTermsOfService
 )
-from forms import LoginForm, SetStrongPasswordForm
+from forms import LoginForm
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +123,7 @@ def password_reset_confirm(request, uidb64=None, token=None):
         uidb64=uidb64,
         token=token,
         template_name='landing/password_reset_confirm.html',
-        set_password_form=SetStrongPasswordForm,
+        set_password_form=SetPasswordForm,
         post_reset_redirect=reverse('landing:password_reset_complete')
     )
 
@@ -141,6 +142,6 @@ def signup(request, uidb64=None, token=None):
         uidb64=uidb64,
         token=token,
         template_name='landing/signup.html',
-        set_password_form=SetStrongPasswordForm,
+        set_password_form=SetPasswordForm,
         post_reset_redirect=reverse('landing:landing_page') + "?setup_complete"
     )
