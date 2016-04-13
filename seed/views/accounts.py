@@ -90,6 +90,7 @@ def _dict_org(request, organizations):
             'sub_orgs': _dict_org(request, o.child_orgs.all()),
             'is_parent': o.is_parent,
             'num_buildings': org_map[o.pk],
+            'created': o.created.strftime('%Y-%m-%d') if o.created else '',
         }
         orgs.append(org)
 
