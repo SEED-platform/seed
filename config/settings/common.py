@@ -252,14 +252,36 @@ MATCH_MIN_THRESHOLD = 0.3
 MATCH_MED_THRESHOLD = 0.4
 
 
-# django-passwords settings: passwords should requre alphnumberic and 8
-# character minimum, with a minimum of 1 upper and 1 lower case character
-PASSWORD_MIN_LENGTH = 8
-PASSWORD_COMPLEXITY = {
-    "UPPER": 1,  # at least 1 Uppercase
-    "LOWER": 1,  # at least 1 Lowercase
-    "DIGITS": 1,  # at least 1 Digit
-}
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        }
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'seed.validators.PasswordUppercaseCharacterValidator',
+        'OPTIONS': {
+            'quantity': 1,
+        }
+    },
+    {
+        'NAME': 'seed.validators.PasswordLowercaseCharacterValidator',
+        'OPTIONS': {
+            'quantity': 1,
+        }
+    },
+    {
+        'NAME': 'seed.validators.PasswordDigitValidator',
+        'OPTIONS': {
+            'quantity': 1,
+        }
+    },
+]
+
 
 # Django Rest Framework
 REST_FRAMEWORK = {

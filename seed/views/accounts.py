@@ -8,8 +8,10 @@ import json
 import logging
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
+
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm, PERMS
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
@@ -19,9 +21,6 @@ from seed.lib.superperms.orgs.models import (
     ROLE_VIEWER,
     Organization,
     OrganizationUser,
-)
-from passwords.validators import (
-    validate_length, common_sequences, dictionary_words, complexity
 )
 from seed.utils.buildings import get_columns as utils_get_columns
 from seed.models import CanonicalBuilding
@@ -1350,7 +1349,7 @@ def update_user(request):
 def set_password(request):
     """
     sets/updates a user's password, follows the min requirement of
-    django-passwords settings in config/settings/common.py
+    django password validation settings in config/settings/common.py
 
     Payload::
 
@@ -1366,9 +1365,6 @@ def set_password(request):
             'status': 'success'
         }
     """
-    default_validators = [
-        validate_length, common_sequences, dictionary_words, complexity
-    ]
     if request.method != 'PUT':
         return {'status': 'error', 'message': 'only HTTP PUT allowed'}
     body = json.loads(request.body)
@@ -1379,12 +1375,10 @@ def set_password(request):
         return {'status': 'error', 'message': 'current password is not valid'}
     if p1 is None or p1 != p2:
         return {'status': 'error', 'message': 'entered password do not match'}
-    # validate password from django-password settings
-    for validator in default_validators:
-        try:
-            validator(p2)
-        except ValidationError as e:
-            return {'status': 'error', 'message': e.message}
+    try:
+        validate_password(p2)
+    except ValidationError as e:
+        return {'status': 'error', 'message': e.messages[0]}
     request.user.set_password(p1)
     request.user.save()
     return {'status': 'success'}

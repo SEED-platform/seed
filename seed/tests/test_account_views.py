@@ -850,7 +850,7 @@ class AccountsViewTests(TestCase):
             json.loads(resp.content),
             {
                 'status': 'error',
-                'message': 'Invalid Length (Must be 8 characters or more)',
+                'message': 'This password is too short. It must contain at least 8 characters.',
             })
         # check new password is has uppercase letters
         password_payload = {
@@ -871,8 +871,7 @@ class AccountsViewTests(TestCase):
             {
                 'status': 'error',
                 'message': (
-                    'Must be more complex (Must contain 1 or more uppercase '
-                    'characters)'
+                    'This password must contain at least 1 uppercase characters.'
                 ),
             })
         # check new password is has lowercase letters
@@ -894,8 +893,7 @@ class AccountsViewTests(TestCase):
             {
                 'status': 'error',
                 'message': (
-                    'Must be more complex (Must contain 1 or more lowercase '
-                    'characters)'
+                    'This password must contain at least 1 lowercase characters.'
                 ),
             })
         # check new password is has alphanumeric letters
@@ -917,7 +915,7 @@ class AccountsViewTests(TestCase):
             {
                 'status': 'error',
                 'message': (
-                    'Must be more complex (Must contain 1 or more digits)'
+                    'This password must contain at least 1 numeric characters.'
                 ),
             })
         password_payload = {
@@ -937,7 +935,7 @@ class AccountsViewTests(TestCase):
             json.loads(resp.content),
             {
                 'status': 'error',
-                'message': 'Based on a common sequence of characters',
+                'message': 'This password is too common.',
             })
 
     def test_create_sub_org(self):
