@@ -17,7 +17,7 @@ seed local_untracked.py
 """
 
 from __future__ import absolute_import
-from kombu import Exchange, Queue
+
 
 # postgres DB config
 DATABASES = {
@@ -32,7 +32,7 @@ DATABASES = {
 }
 
 DOMAIN_URLCONFS = {}
-DOMAIN_URLCONFS['default'] = 'config.urls'
+DOMAIN_URLCONFS['default'] = 'urls.main'
 
 # redis cache config
 # with AWS ElastiCache redis, the LOCATION setting looks something like:
