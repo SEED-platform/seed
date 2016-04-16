@@ -46,9 +46,6 @@ CACHES = {
     }
 }
 
-# SMTP config
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
 # config for local storage backend
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
