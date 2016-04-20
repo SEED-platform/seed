@@ -85,7 +85,7 @@ TSDB = {
     'query_url': TSDB_SERVER_URL+'/api/v1/datapoints/query',
     'delete_url': TSDB_SERVER_URL+'/api/v1/datapoints/delete',
     'version_url': TSDB_SERVER_URL+'/api/v1/version',
-    'measurement': 'your-time-series-db-name'
+    'measurement': 'your-time-series-db-name',
     'batch_insert_size': 1000
 }
 LOCAL_TIMEZONE = 'your-local-timezone'  #e.g. America/New_York'

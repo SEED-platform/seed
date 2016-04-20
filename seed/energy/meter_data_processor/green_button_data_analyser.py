@@ -1,4 +1,5 @@
 import logging
+import math
 from datetime import date, datetime
 
 import tasks
@@ -87,7 +88,7 @@ def data_analyse(ts_data, name):
             cache[building_id + '_' + custom_meter_id] = seed_meter_id
 
     _log.info('finish data scan')
-    print 'finish data scan'
+
     for ts_cell in monthly_ts:
         building_id = str(ts_cell['canonical_id'])
         custom_meter_id = str(ts_cell['custom_meter_id'])
@@ -118,7 +119,6 @@ def data_analyse(ts_data, name):
 
     _log.info('insert monthly data into postgresql finished')
 
-    print 'start insert finer ts data'
     insert_flag = tsdb.insert(finer_ts)
     _log.info('insert ts data into KairosDB finished: ' + str(insert_flag))
 

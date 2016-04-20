@@ -1,21 +1,16 @@
 import json
 import requests
-import sets
-import operator
-import numpy
 import logging
 
-from string import strip
 from threading import Thread
 from Queue import Queue, Empty as QueueEmptyException
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from seed.decorators import ajax_request
 from seed.utils.api import api_endpoint
 from seed.energy.tsdb.kairosdb import kairosdb_detector
 
 from django.conf import settings
-from django.db.models import Max, Min, Sum
 from seed.models import(
     BuildingSnapshot,
     CanonicalBuilding,
@@ -399,7 +394,8 @@ def get_daily_ts_data(canonical_id, query_start, query_end, days, energy_type):
     thread_args = []
     thread_args.append(q)
     threads = [Thread(target=do_days_query, args=thread_args) for i in xrange(days/10)]
-    _ = [t.start() for t in threads]
+    for t in threads:
+        t.start()
 
     q.join()
 
