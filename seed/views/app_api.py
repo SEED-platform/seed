@@ -3,6 +3,7 @@ import requests
 import sets
 import operator
 import numpy
+import logging
 
 from string import strip
 from threading import Thread
@@ -21,6 +22,8 @@ from seed.models import(
     TimeSeries,
     Meter,
 )
+
+_log = logging.getLogger(__name__)
 
 
 def query_canonical_snapshots(city, state, canonical_ids=None):
@@ -58,6 +61,13 @@ def filter_building_snapshots(city, state, fields, canonical_ids=None, exclude_n
 @api_endpoint
 @ajax_request
 def query_building_info(request):
+    '''
+    Optional parameters are city, state and fields, fields is 
+    a comma delimited string having the queried column names
+
+    Note: only records have not Null value on all quereid columns
+    will be returned
+    '''
     res = {}
 
     city = request.GET.get('city')
@@ -84,6 +94,17 @@ def get_canonical_ids_from_meter_ids(meter_ids):
 @api_endpoint
 @ajax_request
 def query_building_info_with_monthly_data(request):
+    '''
+    Required parameters are start_year, start_month, end_year,
+    end_month and end_day
+
+    Optional parameters are city, state and fields, fields is
+    a comma delimited string having the queried column names.
+    Parameter fields is same as in query_building_info API.
+
+    Records have monthly energy data within the specified time
+    period will be returned
+    '''
     res = {}
 
     city = request.GET.get('city')
@@ -124,6 +145,13 @@ def query_building_info_with_monthly_data(request):
 @api_endpoint
 @ajax_request
 def query_canonical_meter_pairs(request):
+    '''
+    Optional parameters are city, state and fields, fields is
+    a comma delimited string having the queried column names.
+    Parameter fields is same as in query_building_info API.
+
+    Return list of {canonical_id, meter_id} pairs
+    '''
     res = {}
 
     city = request.GET.get('city')
@@ -143,6 +171,14 @@ def query_canonical_meter_pairs(request):
 @api_endpoint
 @ajax_request
 def query_canonical_meter_pairs_and_info(request):
+    '''
+    Optional parameters are city, state and fields, fields is
+    a comma delimited string having the queried column names.
+    Parameter fields is same as in query_building_info API.
+
+    Return a list of {canonical_id, meter_id} pairs and the info
+    of meters appear in the list
+    '''
     res = {}
 
     city = request.GET.get('city')
@@ -166,6 +202,13 @@ def query_canonical_meter_pairs_and_info(request):
 
 
 def get_buildings_finer_timeseries_start_end(canonical_id=None):
+    '''
+    Return the very first and last timestamp of finer timeseries
+    data in KairosDB
+
+    If canonical_id is not provided, all the building's very first 
+    and last timestamp will be returned
+    '''
     query_body = {}
     query_body['start_absolute'] = 1  # special timestamp for meta data
     query_body['end_absolute'] = 2
@@ -203,7 +246,6 @@ def get_buildings_finer_timeseries_start_end(canonical_id=None):
 
     headers = {'content-type': 'application/json'}
 
-    print query_str
     response = requests.post(settings.TSDB['query_url'], data=query_str, headers=headers)
 
     ret = {}
@@ -232,6 +274,18 @@ def get_buildings_finer_timeseries_start_end(canonical_id=None):
 
 
 def do_days_query(q):
+    '''
+    Fetch a task fro Queue, and query KairosDB.
+
+    The task provides building id, start and end time,
+    2D array to put result, and optional energy type.
+
+    Note: the time interval between start and end time
+    is 10 days for optimal query performance
+
+    The daily energy data will be put into the 2D array,
+    first dimension is days, second dimention is 24 hours
+    '''
     while True:
         try:
             arg = q.get(False)
@@ -283,11 +337,8 @@ def do_days_query(q):
         headers = {'content-type': 'application/json'}
 
         response = requests.post(settings.TSDB['query_url'], data=query_str, headers=headers)
-        print "querying " + query_str
 
         if response.status_code == 200:
-            print "Successful: " + str(arg['track']) + "/" + str(arg['total']) + "\r\n\r\n"
-
             json_data = response.json()
             values = json_data['queries'][0]['results'][0]['values']
             del values[240:]
@@ -299,17 +350,25 @@ def do_days_query(q):
             for d in xrange(arg['days']):
                 result[day + d] = values[d * 24: (d + 1) * 24]
         else:
-            print response.status_code
-            print response.text
+            _log.error(response.status_code)
+            _log.error(response.text)
 
         q.task_done()
 
 
 def get_daily_ts_data(canonical_id, query_start, query_end, days, energy_type):
     '''
-    query_end is round up to nearest previous hour timestamp
-    return list of [days][hours] = accumulative value
+    Query KairosDB for daily energy data of a building.
+
+    Note: the time interval days should be a multiplier of ten.
+    The start time is query_end - days, the end time is query_end.
+
+    Divide the query into batch of 10 day query and put the 
+    pending queries into a queue with necessary data. Then 
+    a group of threads will be launched to fetch the pending
+    query from the queue to do parallel KairosDB query.
     '''
+
     res = [[0 for x in range(24)] for x in range(days)]
 
     q = Queue(days/10)
@@ -337,8 +396,6 @@ def get_daily_ts_data(canonical_id, query_start, query_end, days, energy_type):
         timestamp += daily_milliseconds * 10
         day += 10
 
-    print "queue put finished"
-
     thread_args = []
     thread_args.append(q)
     threads = [Thread(target=do_days_query, args=thread_args) for i in xrange(days/10)]
@@ -352,6 +409,16 @@ def get_daily_ts_data(canonical_id, query_start, query_end, days, energy_type):
 @api_endpoint
 @ajax_request
 def query_building_finer_ts_from_latest(request):
+    '''
+    Query building's daily energy consumption of the last
+    given number of days. E.g., if a building has finer
+    timeseries data till 2015-12-31, the last 10 days data
+    is from 2015-12-21
+
+    Required parameters are days_till_last and canonical_id.
+
+    Optional parameter is energy_type
+    '''
     res = {}
 
     if not kairosdb_detector.detect():
@@ -412,6 +479,11 @@ def query_building_finer_ts_from_latest(request):
 @api_endpoint
 @ajax_request
 def earliest_timeseries_data_year(request):
+    '''
+    Return the year of earliest finer timeseries data
+
+    Optional parameters are city and state
+    '''
     city = request.GET.get('city')
     state = request.GET.get('state')
 
@@ -438,6 +510,13 @@ def earliest_timeseries_data_year(request):
 
 
 def get_building_monthly_energy_consumption_from_meters(meter_ids, start_time, end_time):
+    '''
+    Since the montly energy consumption's start and end timestamp
+    may not necessarily lay on very first and end day of month, any
+    record has overlap with give time period will be returned.
+
+    Note: no data interpolation applied, just raw data
+    '''
     if not meter_ids:
         return None
 
@@ -484,6 +563,18 @@ def get_building_monthly_energy_consumption_from_canonical_ids(canonical_ids, st
 @api_endpoint
 @ajax_request
 def get_building_monthly_energy_consumptions_by_building_type(request):
+    '''
+    Return monthly energy consumption records with given time interval of
+    buildings that belong to the given building type.
+
+    Required parameters are building_type, start_year, start_month, end_year,
+    end_month, and end_day
+
+    Optional parameters are city and state
+
+    Note: the building type is read from column of use_description
+    '''
+
     building_type = request.GET.get('building_type')
     start_year = request.GET.get('start_year')
     start_month = request.GET.get('start_month')
@@ -527,6 +618,13 @@ def get_building_monthly_energy_consumptions_by_building_type(request):
 @api_endpoint
 @ajax_request
 def get_building_monthly_energy_consumptions_by_meter(request):
+    '''
+    Return the monthly energy consumption of the given meter(s)
+
+    Required parameters are start_year, start_month, end_year,
+    end_month and end_day
+    '''
+
     meter_ids = request.GET.get('meter_ids')
     start_year = request.GET.get('start_year')
     start_month = request.GET.get('start_month')
