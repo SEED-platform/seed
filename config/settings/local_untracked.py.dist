@@ -49,17 +49,3 @@ CACHES = {
 # config for local storage backend
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
