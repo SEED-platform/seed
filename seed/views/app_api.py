@@ -6,6 +6,7 @@ from threading import Thread
 from Queue import Queue, Empty as QueueEmptyException
 from datetime import datetime
 
+from django.db.models import Min
 from seed.decorators import ajax_request
 from seed.utils.api import api_endpoint
 from seed.energy.tsdb.kairosdb import kairosdb_detector
@@ -57,7 +58,7 @@ def filter_building_snapshots(city, state, fields, canonical_ids=None, exclude_n
 @ajax_request
 def query_building_info(request):
     '''
-    Optional parameters are city, state and fields, fields is 
+    Optional parameters are city, state and fields, fields is
     a comma delimited string having the queried column names
 
     Note: only records have not Null value on all quereid columns
@@ -201,7 +202,7 @@ def get_buildings_finer_timeseries_start_end(canonical_id=None):
     Return the very first and last timestamp of finer timeseries
     data in KairosDB
 
-    If canonical_id is not provided, all the building's very first 
+    If canonical_id is not provided, all the building's very first
     and last timestamp will be returned
     '''
     query_body = {}
@@ -358,15 +359,15 @@ def get_daily_ts_data(canonical_id, query_start, query_end, days, energy_type):
     Note: the time interval days should be a multiplier of ten.
     The start time is query_end - days, the end time is query_end.
 
-    Divide the query into batch of 10 day query and put the 
-    pending queries into a queue with necessary data. Then 
+    Divide the query into batch of 10 day query and put the
+    pending queries into a queue with necessary data. Then
     a group of threads will be launched to fetch the pending
     query from the queue to do parallel KairosDB query.
     '''
 
     res = [[0 for x in range(24)] for x in range(days)]
 
-    q = Queue(days/10)
+    q = Queue(days / 10)
 
     daily_milliseconds = 24 * 3600 * 1000
     delta_milliseconds = days * daily_milliseconds
