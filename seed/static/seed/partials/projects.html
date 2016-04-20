@@ -5,7 +5,10 @@
         </div>
         <div class="page_title">
             <h1><i class="fa fa-folder-o"></i>
-                <ng-pluralize count="projects_count | number:0" when="{'one': '1 Project','other': '{} Projects'}"></ng-pluralize>
+                {$ projects_count | number:0 $}
+                <ng-pluralize count="projects_count"
+                              when="{'one': 'Project','other': 'Projects'}">
+                </ng-pluralize>
             </h1>
         </div>
         <div class="right page_action_container">

@@ -5,7 +5,7 @@
         </div>
         <div class="page_title">
             <h1><i class="fa fa-folder-o"></i>
-                {$ project.name $} (<ng-pluralize count="search.number_matching_search | number:0" when="{'one': '1 Building','other': '{} Buildings'}"></ng-pluralize>)</h1>
+                {$ project.name $} ({$ search.number_matching_search | number:0 $} <ng-pluralize count="search.number_matching_search" when="{'one': 'Building','other': 'Buildings'}"></ng-pluralize>)</h1>
         </div>
         <div class="right page_action_container">
         </div>
