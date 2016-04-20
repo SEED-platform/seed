@@ -4,8 +4,11 @@
            
         </div>
         <div class="page_title">
-            <h1><i class="fa fa-building-o"></i>
-                <ng-pluralize count="search.number_matching_search | number:0" when="{'one': '1 Building','other': '{} Buildings'}"></ng-pluralize>
+            <h1>
+                <i class="fa fa-building-o"></i>
+                {$ search.number_matching_search | number:0 $}
+                <ng-pluralize count="search.number_matching_search"
+                              when="{'one': 'Building','other': 'Buildings'}"></ng-pluralize>
             </h1>
         </div>
         <div class="right page_action_container page_action_btn">
