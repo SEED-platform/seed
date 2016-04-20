@@ -394,7 +394,7 @@ def get_daily_ts_data(canonical_id, query_start, query_end, days, energy_type):
 
     thread_args = []
     thread_args.append(q)
-    threads = [Thread(target=do_days_query, args=thread_args) for i in xrange(days/10)]
+    threads = [Thread(target=do_days_query, args=thread_args) for i in xrange(days / 10)]
     for t in threads:
         t.start()
 
