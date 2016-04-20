@@ -792,6 +792,16 @@ def _save_raw_data(file_pk, *args, **kwargs):
 
         if import_file.source_type == "Green Button Raw":
             return _save_raw_green_button_data(file_pk, *args, **kwargs)
+        if import_file.source_type == 'Energy Template Raw' or import_file.source_type == 'PM energy Raw':
+            # skip chrod
+            import_file.save()
+            res = {
+                'status': 'success',
+                'progress': 100,
+                'progress_key': prog_key
+            }
+            set_cache(prog_key, res['status'], res)
+            return res
 
         parser = reader.MCMParser(import_file.local_file)
         cache_first_rows(import_file, parser)

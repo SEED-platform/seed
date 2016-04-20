@@ -7,6 +7,7 @@ import random
 from time import sleep
 
 from django.conf import settings
+from seed.energy.tsdb.kairosdb import kairosdb_detector
 
 _log = logging.getLogger(__name__)
 
@@ -61,6 +62,9 @@ def batch_insert_kairosdb(meta_data, ts_data):
     wrap = []
     db_data = settings.TSDB
 
+    total_len = len(meta_data)
+    batch_insert_size = settings.TSDB['batch_insert_size']
+
     for ts, meta in zip(ts_data, meta_data):
         insert_data = {}
         insert_data['name'] = db_data['measurement']
@@ -71,14 +75,15 @@ def batch_insert_kairosdb(meta_data, ts_data):
 
         wrap.append(insert_data)
 
-    json_insert_data = json.dumps(wrap)
+    batches = [wrap[i:i + batch_insert_size] for i in xrange(0, total_len, batch_insert_size)]
+    for batch in batches:
+        json_insert_data = json.dumps(batch)
+        r = requests.post(db_data['insert_url'], data=json_insert_data)
+        if r.status_code != 204:
+            _log.error('Insert Into KairosDB Error ' + str(r.status_code))
+            _log.info('Error Message: ' + r.text)
+            return False
 
-    r = requests.post(db_data['insert_url'], data=json_insert_data)
-
-    if r.status_code != 204:
-        _log.error('Insert Into KairosDB Error ' + str(r.status_code))
-        _log.info('Error Message: ' + r.text)
-        return False
     return True
 
 
@@ -189,6 +194,10 @@ def update_timestamp_record(timestamps, is_last_timestamp):
 def insert(gb_data):
     if not gb_data:
         return True
+
+    if not kairosdb_detector.detect():
+        _log.info('KairosDB no found, insert finer timeseries data cancelled')
+        return False
 
     ret_flag = True
 

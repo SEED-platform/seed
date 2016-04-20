@@ -5,5 +5,4 @@ _log = logging.getLogger(__name__)
 
 
 def parse_pm_energy_file(pm_file_path):
-    pm.read_pm(pm_file_path)
-    _log.info('\nend converting pm to template')
+    return pm.read_pm(pm_file_path)

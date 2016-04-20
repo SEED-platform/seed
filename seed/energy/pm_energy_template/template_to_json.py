@@ -1,27 +1,22 @@
 import datetime as dt
-import glob
 import logging
 
+import json
 import numpy as np
-import pandas as pd
 
 from seed.energy.pm_energy_template import query as qr
 
 _log = logging.getLogger(__name__)
 
 
-def pm_to_json(pm_file_path):
-    filelist = glob.glob(pm_file_path)
-    for excel in filelist:
-        pm_to_json_single(excel, pm_file_path)
+def pm_to_json(excel_data_frame):
+    return pm_to_json_single(excel_data_frame)
 
 
-def pm_to_json_single(excel, file_path):
+def pm_to_json_single(meter_con_df):
     '''
     Assume PM is in local time
     '''
-
-    meter_con_df = pd.read_excel(excel, sheetname=0)
 
     # Replace empty cell with NaN
     for c in meter_con_df.select_dtypes(include=["object"]).columns:
@@ -46,7 +41,7 @@ def pm_to_json_single(excel, file_path):
     for a in np.nditer(address, flags=['refs_ok']):
         address_dict['{0}'.format(a)] = None
     qr.retrieve_building_id(address_dict)
-    _log.debug('address_dict: {0}'.format(address_dict))
+    _log.info('address_dict: {0}'.format(address_dict))
 
     meter_con_df['buildingsnapshot_id'] = meter_con_df['Street Address'].map(lambda x: address_dict[x]['buildingsnapshot_id'])
     meter_con_df['canonical_id'] = meter_con_df['Street Address'].map(lambda x: address_dict[x]['canonical_building'])
@@ -55,8 +50,8 @@ def pm_to_json_single(excel, file_path):
     # Calculate time interval of days
     meter_con_df['interval'] = meter_con_df['End Date'] - meter_con_df['Start Date']
 
-    meter_con_df['End Date'] = meter_con_df['End Date'].map(lambda x: x + dt.timedelta(hours=12))
-    meter_con_df['Start Date'] = meter_con_df['Start Date'].map(lambda x: x + dt.timedelta(hours=12))
+    meter_con_df['End Date'] = meter_con_df['End Date'].map(lambda x: (x + dt.timedelta(hours=12) / 1000000000))
+    meter_con_df['Start Date'] = meter_con_df['Start Date'].map(lambda x: (x + dt.timedelta(hours=12) / 1000000000))
 
     meter_con_df['reading_kind'] = 'energy'
 
@@ -74,8 +69,4 @@ def pm_to_json_single(excel, file_path):
 
     meter_con_df = meter_con_df.rename(columns=name_lookup)
 
-    file_out = file_path[0:-5] + '_json.txt'
-    # the 'interval' output is in [ns], so use ns for all time object and
-    # post process with postProcess.py
-    meter_con_df.to_json(file_out, 'records',
-                         date_unit='ns')
+    return json.loads(meter_con_df.reset_index().to_json(orient='records'))

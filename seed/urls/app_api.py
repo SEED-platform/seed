@@ -1,0 +1,45 @@
+from django.conf.urls import patterns, url
+
+urlpatterns = patterns(
+    'seed.views.app_api',
+    url(
+        r'^query_building_info/$',
+        'query_building_info',
+        name='query_building_info'
+    ),
+    url(
+        r'^query_building_info_with_monthly_data/$',
+        'query_building_info_with_monthly_data',
+        name='query_building_info_with_monthly_data'
+    ),
+    url(
+        r'^get_building_monthly_energy_consumptions_by_building_type/$',
+        'get_building_monthly_energy_consumptions_by_building_type',
+        name='get_building_monthly_energy_consumptions_by_building_type'
+    ),
+    url(
+        r'^get_building_monthly_energy_consumptions_by_meter/$',
+        'get_building_monthly_energy_consumptions_by_meter',
+        name='get_building_monthly_energy_consumptions_by_meter'
+    ),
+    url(
+        r'^query_canonical_meter_pairs/$',
+        'query_canonical_meter_pairs',
+        name='query_canonical_meter_pairs'
+    ),
+    url(
+        r'^query_canonical_meter_pairs_and_info/$',
+        'query_canonical_meter_pairs_and_info',
+        name='query_canonical_meter_pairs_and_info'
+    ),
+    url(
+        r'^query_building_finer_ts_from_latest/$',
+        'query_building_finer_ts_from_latest',
+        name='query_building_finer_ts_from_latest'
+    ),
+    url(
+        r'^earliest_timeseries_data_year/$',
+        'earliest_timeseries_data_year',
+        name='earliest_timeseries_data_year'
+    ),
+)

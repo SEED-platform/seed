@@ -130,6 +130,10 @@ def aggregate_monthly_data(building_id=-1):
     # find out last month's start and end timestamps
     monthlist = [1, 3, 5, 7, 8, 10, 12]
     today = datetime.today()
+
+    # to avoid day is out of range error when set month
+    today = today.replace(day=1)
+
     # last month
     if today.month == 1:
         lastmonth = today.replace(year=(today.year - 1))

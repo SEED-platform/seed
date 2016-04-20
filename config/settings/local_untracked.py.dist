@@ -83,7 +83,10 @@ TSDB_SERVER_URL = 'http://127.0.0.1:8013'
 TSDB = {
     'insert_url': TSDB_SERVER_URL+'/api/v1/datapoints',
     'query_url': TSDB_SERVER_URL+'/api/v1/datapoints/query',
+    'delete_url': TSDB_SERVER_URL+'/api/v1/datapoints/delete',
+    'version_url': TSDB_SERVER_URL+'/api/v1/version',
     'measurement': 'your-time-series-db-name'
+    'batch_insert_size': 1000
 }
 LOCAL_TIMEZONE = 'your-local-timezone'  #e.g. America/New_York'
 

@@ -2,7 +2,7 @@ import logging
 from datetime import date, datetime
 
 import tasks
-from seed.energy.meter_data_processor import kairos_insert as tsdb
+from seed.energy.tsdb.kairosdb import kairosdb_insert as tsdb
 from seed.models import (
     Meter,
     CanonicalBuilding,
@@ -16,11 +16,13 @@ interval_threshold = 60 * 60 * 24 * 20  # 20 days seconds
 
 
 def get_month_from_ts(ts):
-    dateObj = datetime.fromtimestamp(long(ts))
-    return {'year': int(dateObj.year), 'month': int(dateObj.month)}
+    date_obj = datetime.fromtimestamp(long(ts))
+    return {'year': int(date_obj.year), 'month': int(date_obj.month)}
 
 
 def data_analyse(ts_data, name):
+    _log.info('start data analysis')
+
     finer_ts = []
     monthly_ts = []
 
@@ -34,8 +36,8 @@ def data_analyse(ts_data, name):
     for ts_cell in ts_data:
         if name == 'Energy Template' or name == 'PM':
             # convert from nanoseconds to seconds
-            ts_cell['start'] = int(ts_cell['start']) / 1000000000
-            ts_cell['interval'] = int(ts_cell['interval']) / 1000000000
+            ts_cell['start'] = int(ts_cell['start']) / 1000
+            ts_cell['interval'] = int(ts_cell['interval']) / 1000
 
         try:
             ts_cell['canonical_id'] = str(int(float(ts_cell['canonical_id'])))
@@ -84,6 +86,8 @@ def data_analyse(ts_data, name):
 
             cache[building_id + '_' + custom_meter_id] = seed_meter_id
 
+    _log.info('finish data scan')
+    print 'finish data scan'
     for ts_cell in monthly_ts:
         building_id = str(ts_cell['canonical_id'])
         custom_meter_id = str(ts_cell['custom_meter_id'])
@@ -94,14 +98,27 @@ def data_analyse(ts_data, name):
         begin_ts = int(ts_cell['start'])
         interval = int(ts_cell['interval'])
 
-        new_ts = TimeSeries(begin_time=datetime.fromtimestamp(begin_ts),
-                            end_time=datetime.fromtimestamp(begin_ts + interval),
-                            reading=float(ts_cell['value']),
-                            meter_id=seed_meter_id)
-        new_ts.save()
+        begin_time = datetime.fromtimestamp(begin_ts)
+        end_time = datetime.fromtimestamp(begin_ts + interval)
+        reading = float(ts_cell['value'])
+        if 'tens' in ts_cell:
+            reading *= math.pow(10, int(ts_cell['value']))
+
+        db_record = TimeSeries.objects.filter(meter_id=seed_meter_id, begin_time=begin_time)
+        if not db_record:
+            db_record = TimeSeries(begin_time=begin_time,
+                                   end_time=end_time,
+                                   reading=reading,
+                                   meter_id=seed_meter_id)
+        else:
+            db_record = db_record[0]
+            db_record.reading = reading
+
+        db_record.save()
 
     _log.info('insert monthly data into postgresql finished')
 
+    print 'start insert finer ts data'
     insert_flag = tsdb.insert(finer_ts)
     _log.info('insert ts data into KairosDB finished: ' + str(insert_flag))
 
