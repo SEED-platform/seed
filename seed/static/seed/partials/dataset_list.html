@@ -6,7 +6,10 @@
         </div>
         <div class="page_title">
             <h1><i class="fa fa-sitemap"></i>
-                <ng-pluralize count="datasets.length | number:0" when="{'one': '1 Data Set','other': '{} Data Sets'}"></ng-pluralize>
+                {$ datasets.length | number:0 $}
+                <ng-pluralize count="datasets.length"
+                              when="{'one': 'Data Set','other': 'Data Sets'}">
+                </ng-pluralize>
             </h1>
         </div>
         <div class="right page_action_container">
