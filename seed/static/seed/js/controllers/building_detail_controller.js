@@ -172,8 +172,9 @@ angular.module('BE.seed.controller.building_detail', ['ngToast'])
         var loopback_flag = $scope.loopback;
         // read user front-end input ends
 
-        // empty input check
-        if(!(gb_url_input && min_time_para && max_time_para && time_type && active_flag && gb_subscription_id
+        // If active is set to 'Y', all the fields are required to request GreenButton data
+        // If active is set to 'N', empty field value is allowed then previous field value will be overwritten that acts as deletion
+        if(active_flag == 'Y' && !(gb_url_input && min_time_para && max_time_para && time_type && active_flag && gb_subscription_id
                 && ($scope.gb_req_flag==='Y' || loopback_flag)
                 && (time_type==='timestamp' || date_pattern))){
             ngToast.create({

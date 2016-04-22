@@ -2787,7 +2787,8 @@ def save_gb_request_info(request):
     if not record:
         record = GreenButtonBatchRequestsInfo(url=url, last_date=last_date, min_date_parameter=min_date_parameter, max_date_parameter=max_date_parameter, building_id=building_id, active=active, time_type=time_type, date_pattern=date_pattern, subscription_id=subscription_id)
         record.save()
-        process_green_button_batch_request.delay(record.id, url, subscription_id, building_id, time_type, date_pattern, min_date_parameter, last_date, max_date_parameter)
+
+        last_date = record.last_date
     else:
         record = GreenButtonBatchRequestsInfo.objects.get(building_id=building_id)
         record.url = url
@@ -2798,7 +2799,9 @@ def save_gb_request_info(request):
         record.time_type = time_type
         record.date_pattern = date_pattern
         record.save()
-        process_green_button_batch_request.delay(record.id, url, subscription_id, building_id, time_type, date_pattern, min_date_parameter, record.last_date, max_date_parameter)
+
+    if active == 'Y':
+        process_green_button_batch_request.delay(record.id, url, subscription_id, building_id, time_type, date_pattern, min_date_parameter, last_date, max_date_parameter)
 
 
 @api_endpoint

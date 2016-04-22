@@ -365,7 +365,7 @@ def get_daily_ts_data(canonical_id, query_start, query_end, days, energy_type):
     query from the queue to do parallel KairosDB query.
     '''
 
-    res = [[0 for x in range(24)] for x in range(days)]
+    res = [[-1 for x in range(24)] for x in range(days)]
 
     q = Queue(days / 10)
 
