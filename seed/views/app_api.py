@@ -337,14 +337,21 @@ def do_days_query(q):
         if response.status_code == 200:
             json_data = response.json()
             values = json_data['queries'][0]['results'][0]['values']
+
             del values[240:]
 
             result = arg['result']
             values = [value[1] for value in values]
 
-            day = arg['start_day']
-            for d in xrange(arg['days']):
-                result[day + d] = values[d * 24: (d + 1) * 24]
+            start_day = arg['start_day']
+            total_days = arg['total']
+
+            diff_days = total_days - start_day
+            if diff_days > 10:
+                diff_days = 10
+
+            for d in xrange(diff_days):
+                result[start_day + d] = values[d * 24: (d + 1) * 24]
         else:
             _log.error(response.status_code)
             _log.error(response.text)
@@ -367,7 +374,11 @@ def get_daily_ts_data(canonical_id, query_start, query_end, days, energy_type):
 
     res = [[-1 for x in range(24)] for x in range(days)]
 
-    q = Queue(days / 10)
+    chuncks = days / 10
+    if days % 10 > 0:
+        chuncks += 1
+
+    q = Queue(chuncks)
 
     daily_milliseconds = 24 * 3600 * 1000
     delta_milliseconds = days * daily_milliseconds
@@ -394,7 +405,7 @@ def get_daily_ts_data(canonical_id, query_start, query_end, days, energy_type):
 
     thread_args = []
     thread_args.append(q)
-    threads = [Thread(target=do_days_query, args=thread_args) for i in xrange(days / 10)]
+    threads = [Thread(target=do_days_query, args=thread_args) for i in xrange(chuncks)]
     for t in threads:
         t.start()
 
@@ -437,11 +448,6 @@ def query_building_finer_ts_from_latest(request):
     except ValueError:
         res['status'] = 'error'
         res['msg'] = 'Expecting integer parameter days_till_last and canonical_id, days_till_last is tens'
-        return res
-
-    if days_till_last % 10 != 0:
-        res['status'] = 'error'
-        res['msg'] = 'Expecting tnes integer parameter days_till_last'
         return res
 
     energy_type = request.GET.get('energy_type')
