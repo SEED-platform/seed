@@ -40,16 +40,8 @@ COPY ./.bowerrc /seed/.bowerrc
 
 RUN npm update && npm install -g bower && bower install --allow-root
 
-WORKDIR /seed/seed/static/vendors/bower_components/fine-uploader
-RUN npm install -g grunt-cli
-
-### There is a dependency issue with fine-uploader 3.1.9.  Everything compiles fine in later versions.
-### Everything but karma installs, so grunt will still build the dist.
-
-RUN if npm install; then echo "installed"; else true; fi
-RUN grunt package
-
 COPY . /seed/
+RUN /seed/bin/install_javascript_dependencies.sh
 COPY ./config/settings/local_untracked_docker.py /seed/config/settings/local_untracked.py
 
 WORKDIR /seed
