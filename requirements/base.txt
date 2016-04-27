@@ -21,7 +21,7 @@ pytz==2012h
 celery==3.1.18
 redis==2.10.3
 flower==0.8.3
-kombu==3.0.26
+kombu==3.0.31
 
 # Custom
 ajaxuploader==0.3.8
