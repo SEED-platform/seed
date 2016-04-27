@@ -61,9 +61,6 @@ DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
 
-DOMAIN_URLCONFS = {}
-DOMAIN_URLCONFS['default'] = 'config.urls'
-
 # redis cache config
 # with AWS ElastiCache redis, the LOCATION setting looks something like:
 # 'xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379'
