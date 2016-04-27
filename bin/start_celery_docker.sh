@@ -2,7 +2,6 @@
 
 cd /seed
 
-WORKERS=$(($(nproc) * 2))
-WORKERS=$(($WORKERS>1?$WORKERS:1))
-celery -A seed worker -l info -c $WORKERS \
-    --maxtasksperchild 1000 --events
+export WORKERS=$(($(nproc) * 2))
+export WORKERS=$(($WORKERS>1?$WORKERS:1))
+celery -A seed worker -l info -c $WORKERS -B --maxtasksperchild 1000 --events
