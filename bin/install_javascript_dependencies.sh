@@ -2,10 +2,10 @@
 # installs npm dependencies, bower dependencies, and builds fine-uploader
 # assumes npm is installed
 
-echo "Installing npm dependencies"
+echo "Installing npm dependencies from packages.json"
 npm install
-echo -e "\n\n\nInstalling bower dependencies"
-$(npm bin)/bower install --config.interactive=false
+echo -e "\n\n\nInstalling bower dependencies from bower.json"
+$(npm bin)/bower install --config.interactive=false --allow-root
 
 if [ ! -f seed/static/vendors/bower_components/fine-uploader/_build/s3.fineuploader.js ];
 then
