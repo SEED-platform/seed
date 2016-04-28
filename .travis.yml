@@ -49,9 +49,7 @@ before_script:
   - export PATH="$PATH:/usr/lib/jvm/java-8-oracle/bin"
   - export java_path="/usr/lib/jvm/java-8-oracle/jre/bin/java"
   - java -version
-  - wget https://github.com/kairosdb/kairosdb/releases/download/v1.1.1/kairosdb-1.1.1-1.tar.gz
-  - tar -xvzf kairosdb-1.1.1-1.tar.gz
-  - kairosdb-1.1.1-1/bin/kairosdb.sh run
+  - wget https://github.com/kairosdb/kairosdb/releases/download/v1.1.1/kairosdb-1.1.1-1.tar.gz && tar -xvzf kairosdb-1.1.1-1.tar.gz && ./kairosdb-1.1.1-1/bin/kairosdb.sh start
 
 script:
   - travis_wait tox -e $TOX_ENV
