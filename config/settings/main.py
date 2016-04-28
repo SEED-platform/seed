@@ -24,8 +24,6 @@ ENV = STACK_OUTPUTS.get('StackFlavor', 'dev')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 TEMPLATE_DEBUG = DEBUG
-DOMAIN_URLCONFS = {}
-DOMAIN_URLCONFS[STACK_OUTPUTS.get('HostName')] = 'config.urls'
 
 # Handle SSL with django-sslify
 ONLY_HTTPS = os.environ.get('ONLY_HTTPS', 'True') == 'True'
