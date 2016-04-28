@@ -557,6 +557,9 @@ def get_meter_info(meter_ids):
 
 def get_building_monthly_energy_consumption_from_canonical_ids(canonical_ids, start_time, end_time):
     canonical_meter_pairs = get_building_canonical_id_meter_pairs(canonical_ids)
+    if not canonical_meter_pairs:
+        return None
+
     meter_ids = [r['meters'] for r in canonical_meter_pairs]
 
     energy_consumption = get_building_monthly_energy_consumption_from_meters(meter_ids, start_time, end_time)
@@ -612,6 +615,10 @@ def get_building_monthly_energy_consumptions_by_building_type(request):
     canonical_ids = [r['canonical_building_id'] for r in canonical_snapshots.values()]
 
     energy_consumption = get_building_monthly_energy_consumption_from_canonical_ids(canonical_ids, start_time, end_time)
+    if not energy_consumption:
+        res['status'] = 'error'
+        res['msg'] = 'No monthly energy data found'
+        return res
 
     res['status'] = 'success'
     res['data'] = energy_consumption
