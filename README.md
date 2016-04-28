@@ -62,10 +62,10 @@ reserved.
 [production-aws-url]: http://www.github.com/seed-platform/seed/wiki/Installation
 [developer-resources]: https://github.com/SEED-platform/seed/blob/develop/docs/source/developer_resources.rst
 [developer-testing-notes]: https://github.com/SEED-platform/seed/blob/39bc55b846f0c1dc4c8d1574272cac50378de651/docs/source/developer_resources.rst#testing
-[read-the-docs-stable]: http://seed-platform.readthedocs.org/en/stable
-[read-the-docs-stable-img]: https://readthedocs.org/projects/seed-platform/badge/?version=stable
-[read-the-docs-latest]: http://seed-platform.readthedocs.org/en/latest/
-[read-the-docs-latest-img]: https://readthedocs.org/projects/seed-platform/badge/?version=latest
+[read-the-docs-stable]: http://seed-platform.readthedocs.io/en/stable
+[read-the-docs-stable-img]: https://readthedocs.io/projects/seed-platform/badge/?version=stable
+[read-the-docs-latest]: http://seed-platform.readthedocs.io/en/latest/
+[read-the-docs-latest-img]: https://readthedocs.io/projects/seed-platform/badge/?version=latest
 [travis-img]: https://travis-ci.org/SEED-platform/seed.svg?branch=develop
 [travis-url]: https://travis-ci.org/SEED-platform/seed
 [coveralls-img]: https://coveralls.io/repos/SEED-platform/seed/badge.svg
