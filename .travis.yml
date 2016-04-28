@@ -51,7 +51,7 @@ before_script:
   - java -version
   - wget https://github.com/kairosdb/kairosdb/releases/download/v1.1.1/kairosdb-1.1.1-1.tar.gz
   - tar -xvzf kairosdb-1.1.1-1.tar.gz
-  - kairosdb-1.1.1-1/bin/kairosdb.sh start
+  - kairosdb-1.1.1-1/bin/kairosdb.sh run
 
 script:
   - travis_wait tox -e $TOX_ENV
