@@ -79,7 +79,7 @@ CELERY_QUEUES = (
 )
 
 # KairosDB Settings
-TSDB_SERVER_URL = 'http://127.0.0.1:8013'
+TSDB_SERVER_URL = 'http://127.0.0.1:8080'
 TSDB = {
     'insert_url': TSDB_SERVER_URL+'/api/v1/datapoints',
     'query_url': TSDB_SERVER_URL+'/api/v1/datapoints/query',
