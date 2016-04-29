@@ -303,7 +303,7 @@ def do_days_query(q):
         tags['canonical_id'] = []
         tags['canonical_id'].append(arg['canonical_id'])
 
-        if not energy_type:
+        if energy_type:
             tags['energy_type'] = []
             tags['energy_type'].append(energy_type)
 
