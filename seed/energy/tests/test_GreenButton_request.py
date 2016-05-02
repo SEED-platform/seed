@@ -19,7 +19,6 @@ class GreenButtonRequest(TestCase):
 
 @receiver(post_save, sender=CanonicalBuilding, dispatch_uid="GreenButtonRequest_cont")
 def GreenButtonRequest_cont(sender, instance, **kwargs):
-    print "Post save signal captured"
     test_bld = CanonicalBuilding.objects.filter(pk=99999)
 
     if test_bld:

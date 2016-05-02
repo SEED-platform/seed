@@ -79,7 +79,7 @@ def data_analyse(ts_data, name):
                                   energy_units=ts_cell['uom_int'],
                                   custom_meter_id=ts_cell['custom_meter_id'])
                 new_meter.save()
-                new_meter.canonical_building.add(CanonicalBuilding.objects.get(id=building_id))
+                new_meter.canonical_building.add(CanonicalBuilding.objects.get(pk=building_id))
 
                 seed_meter_id = int(new_meter.id)
             else:
