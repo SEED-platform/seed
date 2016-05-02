@@ -304,8 +304,7 @@ def do_days_query(q):
         tags['canonical_id'].append(arg['canonical_id'])
 
         if energy_type:
-            tags['energy_type'] = []
-            tags['energy_type'].append(energy_type)
+            tags['energy_type'] = energy_type.split(',')
 
         metric['tags'] = tags
 

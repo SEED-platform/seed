@@ -13,7 +13,8 @@ class GreenButtonRequest(TestCase):
         new_canonical_bld = CanonicalBuilding(id=99999, active=False)
         new_canonical_bld.save(force_insert=True)
 
-        self.assertTrue(CanonicalBuilding.objects.get(id=99999))
+        print new_canonical_bld.pk
+        self.assertTrue(CanonicalBuilding.objects.get(pk=new_canonical_bld.pk))
 
         ts_data = driver.get_gb_data(url, 99999)
         self.assertTrue(ts_data)
