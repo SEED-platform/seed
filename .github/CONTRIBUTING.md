@@ -6,7 +6,7 @@ software, reporting issues, contributing documentation, or contributing
 code back to the project. The GitHub [Contributing to Open Source](https://guides.github.com/activities/contributing-to-open-source/#contributing) guide provides a good overview.
 
 This wiki provides a quick overview of the software. Full documentation is
-available at http://seed-platform.readthedocs.org.
+available at http://seed-platform.readthedocs.io.
 
 If you find a bug, report it in the GitHub [issue tracker](https://github.com/SEED-platform/seed/issues)
 for this repository.

@@ -82,7 +82,7 @@ Django CSRF Token and AJAX Requests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For ease of making angular `$http` requests, we automatically add the CSRF token to all `$http` requests as
-recommended by http://django-angular.readthedocs.org/en/latest/integration.html#xmlhttprequest
+recommended by http://django-angular.readthedocs.io/en/latest/integration.html#xmlhttprequest
 
 .. code-block:: JavaScript
 

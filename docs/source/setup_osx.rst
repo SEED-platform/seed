@@ -2,7 +2,7 @@ Installation on OSX
 ===================
 
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
-.. _virtualenvwrapper: https://virtualenvwrapper.readthedocs.org/en/latest/
+.. _virtualenvwrapper: https://virtualenvwrapper.readthedocs.io/en/latest/
 .. _MacPorts: https://www.macports.org/
 .. _Homebrew: http://brew.sh/
 .. _npm: https://www.npmjs.com/

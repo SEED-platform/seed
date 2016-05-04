@@ -44,12 +44,11 @@ celery -A seed worker -l info -c 4 --maxtasksperchild 1000 --events
 
 ### Developer Resources
 
-* Several notes regarding Django and AngularJS integration: See [Developer Resources](...)
-* Process monitoring: See [Monitoring](...)
+* Several notes regarding Django and AngularJS integration: See [Developer Resources][developer-resources]
 
 #### Testing
 
-* Running tests: See [Testing Notes](...)
+* Running tests: See [Testing Notes][developer-testing-notes]
 
 ### Copyright
 Copyright ©  2014 - 2016, The Regents of the University of California, through
@@ -58,13 +57,15 @@ approvals from the U.S. Department of Energy) and contributors. All rights
 reserved.
 
 
-[development-docker]: https://github.com/SEED-platform/seed/wiki/Development-version-of-SEED-on-a-Docker
-[development-mac-osx]: https://github.com/SEED-platform/seed/wiki/Development-version-of-SEED-on-a-Mac-OSX
+[development-docker]: https://github.com/SEED-platform/seed/blob/develop/docs/source/setup_docker.rst
+[development-mac-osx]: https://github.com/SEED-platform/seed/blob/develop/docs/source/setup_osx.rst
 [production-aws-url]: http://www.github.com/seed-platform/seed/wiki/Installation
-[read-the-docs-stable]: http://seed-platform.readthedocs.org/en/stable
-[read-the-docs-stable-img]: https://readthedocs.org/projects/seed-platform/badge/?version=stable
-[read-the-docs-latest]: http://seed-platform.readthedocs.org/en/latest/
-[read-the-docs-latest-img]: https://readthedocs.org/projects/seed-platform/badge/?version=latest
+[developer-resources]: https://github.com/SEED-platform/seed/blob/develop/docs/source/developer_resources.rst
+[developer-testing-notes]: https://github.com/SEED-platform/seed/blob/39bc55b846f0c1dc4c8d1574272cac50378de651/docs/source/developer_resources.rst#testing
+[read-the-docs-stable]: http://seed-platform.readthedocs.io/en/stable
+[read-the-docs-stable-img]: https://readthedocs.io/projects/seed-platform/badge/?version=stable
+[read-the-docs-latest]: http://seed-platform.readthedocs.io/en/latest/
+[read-the-docs-latest-img]: https://readthedocs.io/projects/seed-platform/badge/?version=latest
 [travis-img]: https://travis-ci.org/SEED-platform/seed.svg?branch=develop
 [travis-url]: https://travis-ci.org/SEED-platform/seed
 [coveralls-img]: https://coveralls.io/repos/SEED-platform/seed/badge.svg
