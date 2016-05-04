@@ -74,6 +74,7 @@ CACHES = {
 }
 
 # redis celery/message broker config
+BROKER_TRANSPORT = 'redis'
 BROKER_URL = "redis://%s:%s/1" % (DB_REDIS_PORT_6379_TCP_ADDR, DB_REDIS_PORT_6379_TCP_PORT)
 # BROKER_URL with AWS ElastiCache redis looks something like:
 # 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'

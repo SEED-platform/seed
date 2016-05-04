@@ -25,33 +25,28 @@ RUN apt-get update \
         libpcre3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-### install python requirements
-COPY ./requirements.txt /seed/requirements.txt
-COPY ./requirements/*.txt /seed/requirements/
-
-WORKDIR /seed
-RUN pip install -r requirements/local.txt
-
 ### link the apt install of nodejs to node (expected by bower)
 RUN ln -s /usr/bin/nodejs /usr/bin/node
 
+WORKDIR /seed
+### Install JavaScript requirements - do this first because they take awhile
+### and the dependencies will probably change slower than python packages.
+### README.md stops the no readme warning
 COPY ./bower.json /seed/bower.json
 COPY ./.bowerrc /seed/.bowerrc
+COPY ./package.json /seed/package.json
+COPY ./README.md /seed/README.md
+#RUN npm update
+COPY ./bin/install_javascript_dependencies.sh /seed/bin/install_javascript_dependencies.sh
+RUN /seed/bin/install_javascript_dependencies.sh
 
-RUN npm update && npm install -g bower && bower install --allow-root
+### Install python requirements
+COPY ./requirements.txt /seed/requirements.txt
+COPY ./requirements/*.txt /seed/requirements/
+RUN pip install -r requirements/local.txt
 
-WORKDIR /seed/seed/static/vendors/bower_components/fine-uploader
-RUN npm install -g grunt-cli
-
-### There is a dependency issue with fine-uploader 3.1.9.  Everything compiles fine in later versions.
-### Everything but karma installs, so grunt will still build the dist. 
-
-RUN if npm install; then echo "installed"; else true; fi
-RUN grunt package
-
+### Copy over the remaining part of the SEED application
 COPY . /seed/
 COPY ./config/settings/local_untracked_docker.py /seed/config/settings/local_untracked.py
-
-WORKDIR /seed
 
 EXPOSE 8000
