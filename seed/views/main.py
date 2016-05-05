@@ -1433,10 +1433,22 @@ def get_first_five_rows(request):
     body = json.loads(request.body)
     import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
 
-    rows = [
-        r.split(ROW_DELIMITER)
-        for r in import_file.cached_second_to_fifth_row.splitlines()
-    ]
+    '''
+    import_file.cached_second_to_fifth_row is a field that contains the first
+    4 lines of data from the file, split on newlines, delimited by
+    ROW_DELIMITER. This becomes an issue when fields have newlines in them,
+    so the following is to handle newlines in the fields.
+    '''
+    lines = []
+    for l in import_file.cached_second_to_fifth_row.splitlines():
+        if ROW_DELIMITER in l:
+            lines.append(l)
+        else:
+            # Line caused by newline in data, concat it to previous line.
+            index = len(lines) - 1
+            lines[index] = lines[index] + '\n' + l
+
+    rows = [r.split(ROW_DELIMITER) for r in lines]
 
     return {
         'status': 'success',
