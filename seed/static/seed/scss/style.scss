@@ -410,7 +410,7 @@ a:not([href]) {
             }
           }
 
-          ul.uib-dropdown-menu {
+          ul.dropdown-menu {
 
             text-align: center;
 
@@ -420,8 +420,10 @@ a:not([href]) {
                 margin: 0;
               }
 
-              &.dropdown_header {
+              &.dropdown-header {
                 padding: 8px 0;
+                font-size: 14px;
+                color: #000;
                 font-weight: bold;
                 text-align: center;
               }
@@ -743,7 +745,7 @@ a:not([href]) {
 
         .btn-group {
 
-          ul.uib-dropdown-menu {
+          ul.dropdown-menu {
 
             li {
               .dropdown_menu_title {
