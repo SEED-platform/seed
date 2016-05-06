@@ -680,17 +680,17 @@ def search_buildings(request):
     """
     params = search.parse_body(request)
 
+    orgs = request.user.orgs.select_related('parent_org').all()
+    parent_org = orgs[0].parent_org
+
     buildings_queryset = search.orchestrate_search_filter_sort(
         params=params,
         user=request.user,
     )
 
-    # apply order_by here if extra_data_sort is True
-    parent_org = request.user.orgs.first().parent_org
-
     below_threshold = (
         parent_org and parent_org.query_threshold and
-        buildings_queryset.count() < parent_org.query_threshold
+        len(buildings_queryset) < parent_org.query_threshold
     )
 
     buildings, building_count = search.generate_paginated_results(
@@ -698,8 +698,9 @@ def search_buildings(request):
         number_per_page=params['number_per_page'],
         page=params['page'],
         # Generally just orgs, sometimes all orgs with public fields.
-        whitelist_orgs=request.user.orgs.all(),
+        whitelist_orgs=orgs,
         below_threshold=below_threshold,
+        matching=False
     )
 
     return {
@@ -786,7 +787,7 @@ def search_building_snapshots(request):
         buildings_queryset, other_search_params, db_columns
     )
     buildings, building_count = search.generate_paginated_results(
-        buildings_queryset, number_per_page=number_per_page, page=page
+        buildings_queryset, number_per_page=number_per_page, page=page, matching=True
     )
 
     return {
