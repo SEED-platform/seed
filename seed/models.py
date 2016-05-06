@@ -1426,7 +1426,7 @@ class BuildingSnapshot(TimeStampedModel):
             if value and isinstance(value, basestring):
                 setattr(self, field, convert_datestr(value))
 
-    def to_dict(self, fields=None, include_co_parent=True, include_parents=True):
+    def to_dict(self, fields=None, include_related_data=True):
         """
         Returns a dict version of this building, either with all fields
         or masked to just those requested.
@@ -1459,12 +1459,10 @@ class BuildingSnapshot(TimeStampedModel):
 
             return result
 
-        d = obj_to_dict(self, include_m2m=False)
+        d = obj_to_dict(self, include_m2m=include_related_data)
 
-        if include_parents:
+        if include_related_data:
             d['parents'] = list(self.parents.values_list('id', flat=True))
-
-        if include_co_parent:
             d['co_parent'] = self.co_parent.pk if self.co_parent else None
 
         return d

@@ -131,11 +131,10 @@ def generate_paginated_results(queryset, number_per_page=25, page=1,
     for b in buildings_from_query:
         # check and process buildings from other orgs
         if is_not_whitelist_building(parent_org, b, whitelist_orgs):
-            building_dict = b.to_dict(exportable_field_names, include_co_parent=matching,
-                include_parents=matching)
+            building_dict = b.to_dict(exportable_field_names,
+                include_related_data=matching)
         else:
-            building_dict = b.to_dict(include_co_parent=matching,
-                include_parents=matching)
+            building_dict = b.to_dict(include_related_data=matching)
         # see if a building is matched
 
         # This data is only needed on mapping/matching steps, not general filtering
