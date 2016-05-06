@@ -203,8 +203,9 @@ def obj_to_dict(obj, include_m2m=True):
     if include_m2m:
         data = serializers.serialize('json', [obj, ])
     else:
-        data = serializers.serialize('json', [obj, ],
-           fields=tuple([f.name for f in obj.__class__._meta.local_fields]))
+        data = serializers.serialize('json', [obj, ], fields=tuple(
+            [f.name for f in obj.__class__._meta.local_fields]
+        ))
 
     struct = json.loads(data)[0]
     response = struct['fields']
