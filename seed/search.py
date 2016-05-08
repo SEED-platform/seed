@@ -64,7 +64,8 @@ def search_buildings(q, fieldnames=None, queryset=None):
 
 
 def generate_paginated_results(queryset, number_per_page=25, page=1,
-                               whitelist_orgs=None, below_threshold=False):
+                               whitelist_orgs=None, below_threshold=False,
+                               matching=True):
     """
     Return a page of results as a list from the queryset for the given fields
 
@@ -78,7 +79,8 @@ def generate_paginated_results(queryset, number_per_page=25, page=1,
     :param below_threshold: True if less than the parent org's query threshold \
         is greater than the number of queryset results. If True, only return \
         buildings within whitelist_orgs.
-
+    :param matching: Toggle expanded parent and children data, including
+        coparent and confidence
     Usage::
 
         generate_paginated_results(q, 1)
@@ -129,19 +131,25 @@ def generate_paginated_results(queryset, number_per_page=25, page=1,
     for b in buildings_from_query:
         # check and process buildings from other orgs
         if is_not_whitelist_building(parent_org, b, whitelist_orgs):
-            building_dict = b.to_dict(exportable_field_names)
+            building_dict = b.to_dict(
+                exportable_field_names,
+                include_related_data=matching
+            )
         else:
-            building_dict = b.to_dict()
+            building_dict = b.to_dict(include_related_data=matching)
         # see if a building is matched
-        co_parent = b.co_parent
-        if co_parent:
-            building_dict['matched'] = True
-            building_dict['coparent'] = co_parent.to_dict()
-            child = b.children.first()
-            if child:
-                building_dict['confidence'] = child.confidence
-        else:
-            building_dict['matched'] = False
+
+        # This data is only needed on mapping/matching steps, not general filtering
+        if matching:
+            co_parent = b.co_parent
+            if co_parent:
+                building_dict['matched'] = True
+                building_dict['coparent'] = co_parent.to_dict()
+                child = b.children.first()
+                if child:
+                    building_dict['confidence'] = child.confidence
+            else:
+                building_dict['matched'] = False
 
         # only add the buildings if it is in an org the user belongs or the
         # query count exceeds the query threshold

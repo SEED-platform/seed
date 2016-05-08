@@ -194,12 +194,19 @@ def find_canonical_building_values(org):
     ).distinct().values_list(*BS_VALUES_LIST)
 
 
-def obj_to_dict(obj):
+def obj_to_dict(obj, include_m2m=True):
     """serializes obj for a JSON friendly version
         tries to serialize JsonField
 
     """
-    data = serializers.serialize('json', [obj, ])
+
+    if include_m2m:
+        data = serializers.serialize('json', [obj, ])
+    else:
+        data = serializers.serialize('json', [obj, ], fields=tuple(
+            [f.name for f in obj.__class__._meta.local_fields]
+        ))
+
     struct = json.loads(data)[0]
     response = struct['fields']
     response[u'id'] = response[u'pk'] = struct['pk']
@@ -1420,7 +1427,7 @@ class BuildingSnapshot(TimeStampedModel):
             if value and isinstance(value, basestring):
                 setattr(self, field, convert_datestr(value))
 
-    def to_dict(self, fields=None):
+    def to_dict(self, fields=None, include_related_data=True):
         """
         Returns a dict version of this building, either with all fields
         or masked to just those requested.
@@ -1453,9 +1460,12 @@ class BuildingSnapshot(TimeStampedModel):
 
             return result
 
-        d = obj_to_dict(self)
-        d['parents'] = list(self.parents.values_list('id', flat=True))
-        d['co_parent'] = self.co_parent.pk if self.co_parent else None
+        d = obj_to_dict(self, include_m2m=include_related_data)
+
+        if include_related_data:
+            d['parents'] = list(self.parents.values_list('id', flat=True))
+            d['co_parent'] = self.co_parent.pk if self.co_parent else None
+
         return d
 
     def __unicode__(self):
