@@ -170,6 +170,41 @@ class DataImporterViewTests(TestCase):
 
         self.assertEqual(body.get('first_five_rows', []), expected)
 
+    def test_get_first_five_rows_with_newlines(self):
+        import_record = ImportRecord.objects.create()
+        expected_raw_columns = ['id', 'name', 'etc']
+        expected_raw_rows = [
+            ['1', 'test', 'new\nline'],
+            ['2', 'test', 'single'],
+        ]
+
+        expected = [
+            dict(zip(expected_raw_columns, row)) for row in expected_raw_rows
+        ]
+        expected_saved_format = "1%stest%snew\nline\n2%stest%ssingle".replace('%s', ROW_DELIMITER)
+
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            cached_first_row=ROW_DELIMITER.join(expected_raw_columns),
+            cached_second_to_fifth_row=expected_saved_format
+        )
+
+        # Just make sure we were saved correctly
+        self.assertEqual(
+            import_file.cached_second_to_fifth_row, expected_saved_format
+        )
+
+        url = reverse_lazy("seed:get_first_five_rows")
+        resp = self.client.post(
+            url, data=json.dumps(
+                {'import_file_id': import_file.pk}
+            ), content_type='application/json'
+        )
+
+        body = json.loads(resp.content)
+
+        self.assertEqual(body.get('first_five_rows', []), expected)
+
 
 class DefaultColumnsViewTests(TestCase):
     """
