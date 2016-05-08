@@ -356,24 +356,28 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.review_mappings = true;
       $scope.tabs.one_active = false;
       $scope.tabs.two_active = true;
-      var mapped_columns = get_untitle_cased_mappings().map(function(d){
-        return d[0];
-      });
-      $scope.columns = $scope.search.generate_columns(
-            all_columns.fields,
-            mapped_columns,
-            $scope.search.column_prototype
+
+      // refresh columns
+      building_services.get_columns().then(function (new_columns) {
+        var mapped_columns = get_untitle_cased_mappings().map(function(d){
+          return d[0];
+        });
+        $scope.columns = $scope.search.generate_columns(
+          new_columns.fields,
+          mapped_columns,
+          $scope.search.column_prototype
         );
-      // save as default columns
-      user_service.set_default_columns(
-        mapped_columns, $scope.user.show_shared_buildings
-      );
-      $scope.search.filter_params = {
-        import_file_id: $scope.import_file.id
-      };
-      $scope.show_mapped_buildings = true;
-      $scope.save_mappings = false;
-      $scope.search.search_buildings();
+        // save as default columns
+        user_service.set_default_columns(
+          mapped_columns, $scope.user.show_shared_buildings
+        );
+        $scope.search.filter_params = {
+          import_file_id: $scope.import_file.id
+        };
+        $scope.show_mapped_buildings = true;
+        $scope.save_mappings = false;
+        $scope.search.search_buildings();
+      });
     };
 
     /*
