@@ -259,54 +259,38 @@ def filter_other_params(queryset, other_params, db_columns):
                     Q(**{'extra_data__at_%s__isnull' % k: True}) |
                     Q(**{'extra_data__at_%s' % k: ''})
                 )
-                continue
             elif not_empty_match:
                 # Only return records that have the key in extra_data, but the
                 # value is not empty.
                 queryset = queryset.filter(
                     Q(**{'extra_data__at_%s__isnull' % k: False}) & ~Q(**{'extra_data__at_%s' % k: ''})
                 )
-                continue
             elif exclude_filter:
                 # Exclude this value
                 queryset = queryset.filter(
                     ~Q(**{'extra_data__at_%s__icontains' % k: exclude_filter.group(1)})
                 )
-                continue
             elif exact_exclude_filter:
                 # Exclude this exact value
                 queryset = queryset.filter(
                     ~Q(**{'extra_data__at_%s__exact' % k: exact_exclude_filter.group(2)})
                 )
-                continue
-
-            conditions = {
-                'value': v
-            }
-
-            if exact_match:
-                conditions['value'] = exact_match.group(2)
-                conditions['key_cast'] = 'text'
+            elif exact_match:
+                queryset = queryset.filter(
+                    Q(**{'extra_data__at_%s__exact' % k: exact_match.group(2)})
+                )
             elif case_insensitive_match:
-                conditions['value'] = case_insensitive_match.group(2)
-                conditions['key_cast'] = 'text'
-                conditions['case_insensitive'] = True
-            elif k.endswith(('__gt', '__gte')):
-                k = search_utils.strip_suffixes(k, ['__gt', '__gte'])
-                conditions['cond'] = '>'
-                conditions['key_cast'] = 'float'
-            elif k.endswith(('__lt', '__lte')):
-                k = search_utils.strip_suffixes(k, ['__lt', '__lte'])
-                conditions['cond'] = '<'
-                conditions['key_cast'] = 'float'
+                queryset = queryset.filter(
+                    Q(**{'extra_data__at_%s__iexact' % k: case_insensitive_match.group(2)})
+                )
+            elif k.endswith(('__gt', '__gte', '__lt', '__lte')):
+                queryset = queryset.filter(
+                    Q(**{'extra_data__at_%s' % k: v})
+                )
             else:
-                conditions['cond'] = 'LIKE'
-                conditions['key_cast'] = 'text'
-                conditions['value'] = "%{0}%".format(v)
-                conditions['case_insensitive'] = True
-
-            queryset = queryset.json_query(k, **conditions)
-
+                queryset = queryset.filter(
+                    Q(**{'extra_data__at_%s__icontains' % k: v})
+                )
     return queryset
 
 
@@ -480,7 +464,7 @@ def search_public_buildings(request, orgs):
         buildings_queryset, other_search_params, db_columns
     )
     if extra_data_sort:
-        buildings_queryset = buildings_queryset.json_query(
+        buildings_queryset = buildings_queryset.json_order_by(
             params['order_by'],
             order_by=params['order_by'],
             order_by_rev=params['sort_reverse'],
@@ -670,7 +654,7 @@ def orchestrate_search_filter_sort(params, user, skip_sort=False):
         ).first()
         ed_unit = ed_column.unit
 
-        buildings_queryset = buildings_queryset.json_query(
+        buildings_queryset = buildings_queryset.json_order_by(
             params['order_by'],
             order_by=params['order_by'],
             order_by_rev=params['sort_reverse'],
