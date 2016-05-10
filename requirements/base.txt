@@ -9,7 +9,7 @@ django-ses==0.4.1
 django-sslify==0.2
 
 # For the persistence stores
-psycopg2==2.5.1
+psycopg2==2.6.1
 
 # Unicode slugification
 django-autoslug==1.9.3
