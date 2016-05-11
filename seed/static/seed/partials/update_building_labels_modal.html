@@ -10,7 +10,7 @@
             Add/Remove Labels</h4>
     </div>
     <div class="modal-body">
-        <div class="newLabelInput" style="margin-top:0px;">               
+        <div class="newLabelInput" style="margin-top:0px;">
             <form   name="newLabelForm" 
                     class="form-inline" 
                     role="form"
@@ -18,7 +18,7 @@
                     novalidate>
                 <div    class="form-group" 
                         ng-class="{'has-error': newLabelForm.name.$invalid &&
-                                                newLabelForm.name.$dirty }">       
+                                                newLabelForm.name.$dirty }">
                     <label  class="control-label sectionLabel" 
                             style="padding-right:20px;">
                             Create new label</label>
@@ -29,12 +29,14 @@
                                 name="name"
                                 class="form-control" 
                                 ng-model="new_label.name" 
-                                placeholder="Label Name"                             
+                                placeholder="Label Name"
                                 sd-check-label-exists="labels"
+                                ng-disabled="disabled"
                                 required>
                         <div uib-dropdown class="input-group-btn">
                             <button type="button" 
-                                    class="btn btn-{$ new_label.label $} dropdown-toggle" 
+                                    class="btn btn-{$ new_label.label $} dropdown-toggle"
+                                    ng-disabled="disabled"
                                     data-toggle="dropdown">{$ new_label.color $} 
                                 <span class="caret"></span>
                             </button>
@@ -46,11 +48,11 @@
                                     </a>
                                 </li>
                             </ul>
-                        </div>                    
+                        </div>
                     </div>
                     <button type="submit" 
                             class="btn btn-primary" 
-                            ng-disabled="newLabelForm.$invalid">
+                            ng-disabled="newLabelForm.$invalid || disabled">
                         Create label
                     </button>
                     <div class="help-block">
@@ -59,7 +61,7 @@
                                 This label name is already taken.
                         </span>
                     </div>
-                </div>             
+                </div>
             </form>
         </div>
 
@@ -75,7 +77,7 @@
                 <div ng-show="loading==false && labels.length == 0">
                     <p>No labels available. Add a label above to get started.</p>
                 </div>
-            </div>           
+            </div>
 
             <table ng-show="labels.length > 0" class="table table-striped">
                 <tr ng-repeat="label in labels">
@@ -93,6 +95,7 @@
                                 class="btn btn-sm btn-default action_link" 
                                 ng-class="{'btn-danger':label.is_checked_remove}"
                                 ng-click="toggle_remove(label)"
+                                ng-disabled="disabled"
                                 >Remove
                         </button>   
 
@@ -104,8 +107,9 @@
                                 class="btn btn-sm btn-default action_link" 
                                 ng-class="{'btn-primary':label.is_checked_add}"
                                 ng-click="toggle_add(label)"
+                                ng-disabled="disabled"
                                 >Add
-                        </button>                           
+                        </button>
                     </td>
                 </tr>
             </table>
@@ -118,11 +122,13 @@
         <button type="button" 
                 class="btn btn-primary" 
                 style="min-width:90px;"
+                ng-disabled="disabled"
                 ng-click="done()">
                 Done</button>
         <button type="button" 
                 class="btn btn-default" 
                 style="min-width:90px;"
+                ng-disabled="disabled"
                 ng-click="cancel()">
                 Cancel</button>
     </div>

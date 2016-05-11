@@ -9,7 +9,8 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
   'label_service',
   'search',
   'Notification',
-  function ($scope, $uibModalInstance, label_service, search, notification) {
+  'spinner_utility',
+  function ($scope, $uibModalInstance, label_service, search, notification, spinner_utility) {
 
     //Controller for the Update Building Labels modal window.
     //Manages applying labels to a pre-selected set of buildings, as
@@ -17,6 +18,9 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
 
     //keep track of status of service call
     $scope.loading = false;
+
+    //disable all buttons during saving
+    $scope.disabled = false;
 
     //convenience refs for the parts of the search object we're concerned about in this controller
     var selected_buildings = search.selected_buildings;
@@ -109,10 +113,14 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
         // Parameters used to limit the loaded building list.
         var search_params = search.construct_search_query();
 
-        $uibModalInstance.close();
+        spinner_utility.show();
+        $scope.disabled = true;
 
         label_service.update_building_labels(addLabelIDs, removeLabelIDs, selected_buildings, select_all_checkbox, search_params).then(
             function(data){
+                spinner_utility.hide();
+                $uibModalInstance.close();
+
                 var msg = data.num_buildings_updated.toString() + ' buildings updated.';
                 notification.primary(msg);
             },
@@ -122,8 +130,6 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
                alert('Error updating building labels: ' + status);
             }
         );
-
-
     };
 
     /* User has cancelled dialog */
