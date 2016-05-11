@@ -201,9 +201,11 @@ angular.module('BE.seed.controller.building_list', [])
             if (!_.isUndefined(Storage) && sessionStorage.getItem($location.$$path + ':' + 'seedBuildingFilterParams') !== null) {
                 var filter_params = JSON.parse(sessionStorage.getItem($location.$$path + ':' + 'seedBuildingFilterParams'));
                 var label_ids = filter_params.canonical_building__labels;
-                $scope.selected_labels = _.filter($scope.labels, function(lbl) {
-                    return label_ids.indexOf(lbl.id) !== -1;
-                });
+                if (label_ids) {
+                    $scope.selected_labels = _.filter($scope.labels, function(lbl) {
+                        return label_ids.indexOf(lbl.id) !== -1;
+                    });
+                }
             }
         });
     };
