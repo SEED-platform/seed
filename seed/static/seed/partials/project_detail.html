@@ -27,13 +27,21 @@
         <div class="section_header fixed_height">
             <div class="left_40 section_action_container">
                 <div class="check_action">
-                    <div uib-dropdown class="btn-group" ng-style="nothing_selected_cursor()">
-                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" ng-disabled="nothing_selected()">
+                    <div uib-dropdown
+                         class="btn-group"
+                         ng-style="nothing_selected_cursor()">
+                        <button id="btnProjectActions"
+                                type="button"
+                                uib-dropdown-toggle
+                                class="btn btn-default btn-sm"
+                                ng-disabled="nothing_selected()">
                           Project Actions <span class="caret"></span>
                         </button>
-                        <ul class="uib-dropdown-menu" role="menu">
+                        <ul uib-dropdown-menu
+                            class="dropdown-menu"
+                            aria-labelledby="btnProjectActions"
+                            role="menu">
                             <li ng-show="menu.user.organization.user_role !== 'viewer'"><a data-toggle="modal" data-target="#myModal" ng-click="create_project_state='create'">Remove buildings from project</a></li>
-                            
                             <li ng-show="menu.user.organization.user_role !== 'viewer'"><a data-toggle="modal" data-target="#existingProjectModal" ng-click="create_project_state='create'">Move/copy buildings to another project</a></li>
                             <li><a ng-click="open_export_modal()">Export Buildings</a></li>
                         </ul>
