@@ -1650,6 +1650,7 @@ class ReportViewsTests(TestCase):
         params = {
             'start_date': (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d'),
             'end_date': datetime.now().strftime('%Y-%m-%d'),
+            'organization_id': self.org.pk
         }
 
         response = self.client.get(reverse("seed:get_building_summary_report_data"), params)
