@@ -2082,7 +2082,7 @@ def remap_buildings(request):
     body = json.loads(request.body)
     import_file_id = body.get('file_id')
     if not import_file_id:
-        return {'status': 'error', 'message': 'Blah Import File does not exist'}
+        return {'status': 'error', 'message': 'Import File does not exist'}
 
     return remap_data(import_file_id)
 
