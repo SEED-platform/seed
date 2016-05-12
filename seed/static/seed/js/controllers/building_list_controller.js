@@ -196,6 +196,17 @@ angular.module('BE.seed.controller.building_list', [])
         label_service.get_labels().then(function(data) {
             // resolve promise
             $scope.labels = data.results;
+ 
+            // Load filtered labels from session storage and put them in selected_labels.
+            if (!_.isUndefined(Storage) && sessionStorage.getItem($location.$$path + ':' + 'seedBuildingFilterParams') !== null) {
+                var filter_params = JSON.parse(sessionStorage.getItem($location.$$path + ':' + 'seedBuildingFilterParams'));
+                var label_ids = filter_params.canonical_building__labels;
+                if (label_ids) {
+                    $scope.selected_labels = _.filter($scope.labels, function(lbl) {
+                        return label_ids.indexOf(lbl.id) !== -1;
+                    });
+                }
+            }
         });
     };
 
