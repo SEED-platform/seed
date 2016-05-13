@@ -10,17 +10,17 @@ def robots_txt(request, allow=False):
     try:
         if settings.ENV.lower() != "production":
             return HttpResponse(
-                "User-agent: *\nDisallow: /", mimetype="text/plain"
+                "User-agent: *\nDisallow: /", content_type="text/plain"
             )
         else:
             return HttpResponse(
-                "User-agent: *\nAllow: /", mimetype="text/plain"
+                "User-agent: *\nAllow: /", content_type="text/plain"
             )
     except:
         pass
     if allow:
-        return HttpResponse("User-agent: *\nAllow: /", mimetype="text/plain")
+        return HttpResponse("User-agent: *\nAllow: /", content_type="text/plain")
     else:
         return HttpResponse(
-            "User-agent: *\nDisallow: /", mimetype="text/plain"
+            "User-agent: *\nDisallow: /", content_type="text/plain"
         )

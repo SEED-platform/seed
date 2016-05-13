@@ -49,7 +49,7 @@ urlpatterns = patterns(
     # i18n setlang # TODO: remove i18n support per Nick Serra?
     url(r'^i18n/', include('django.conf.urls.i18n')),
 
-    url(r'^robots.txt', 'config.views.robots_txt', name='robots_txt'),
+    url(r'^robots\.txt', 'config.views.robots_txt', name='robots_txt'),
 
 )
 
