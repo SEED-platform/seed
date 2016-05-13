@@ -8,9 +8,10 @@ import json
 from functools import wraps
 
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 
 from seed.utils.cache import make_key, lock_cache, unlock_cache, get_lock
+
 
 SEED_CACHE_PREFIX = 'SEED:{0}'
 LOCK_CACHE_PREFIX = SEED_CACHE_PREFIX + ':LOCK'
@@ -115,6 +116,22 @@ def ajax_request(func):
             response['content-length'] = len(data)
         return response
     return wrapper
+
+
+def require_organization_id(fn):
+    """
+    Validate that organization_id is in the GET params and it's an int.
+    """
+    @wraps(fn)
+    def _wrapped(request, *args, **kwargs):
+
+        try:
+            int(request.GET['organization_id'])
+        except (KeyError, ValueError):
+            return HttpResponseBadRequest('Valid organization ID is required.')
+
+        return fn(request, *args, **kwargs)
+    return _wrapped
 
 
 def DecoratorMixin(decorator):

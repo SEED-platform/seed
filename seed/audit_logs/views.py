@@ -11,13 +11,14 @@ import json
 from django.contrib.auth.decorators import login_required
 
 # app imports
-from seed.decorators import ajax_request
+from seed.decorators import ajax_request, require_organization_id
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.utils.api import api_endpoint
 from seed.models import CanonicalBuilding
 from seed.audit_logs.models import AuditLog, NOTE
 
 
+@require_organization_id
 @api_endpoint
 @ajax_request
 @login_required
@@ -60,7 +61,7 @@ def get_building_logs(request):
     cb = CanonicalBuilding.objects.get(
         pk=request.GET.get('building_id')
     )
-    org_id = request.GET.get('organization_id', '')
+    org_id = request.GET['organization_id']
     log_qs = cb.audit_logs.filter(organization=org_id)
 
     audit_logs = [log.to_dict() for log in log_qs]

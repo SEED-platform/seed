@@ -22,7 +22,7 @@ from seed.tasks import (
     remove_buildings,
 )
 
-from seed.decorators import ajax_request
+from seed.decorators import ajax_request, require_organization_id
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import (
     Compliance,
@@ -43,6 +43,7 @@ DEFAULT_CUSTOM_COLUMNS = [
 ]
 
 
+@require_organization_id
 @api_endpoint
 @ajax_request
 @login_required
@@ -77,7 +78,7 @@ def get_projects(request):
             ]
         }
     """
-    organization_id = request.GET.get('organization_id', '')
+    organization_id = request.GET['organization_id']
     projects = []
 
     for p in Project.objects.filter(
@@ -117,6 +118,7 @@ def get_projects(request):
     return {'status': 'success', 'projects': projects}
 
 
+@require_organization_id
 @api_endpoint
 @ajax_request
 @login_required
@@ -151,9 +153,8 @@ def get_project(request):
 
     """
     project_slug = request.GET.get('project_slug', '')
-    organization_id = request.GET.get('organization_id', '')
     project = Project.objects.get(slug=project_slug)
-    if project.super_organization_id != int(organization_id):
+    if project.super_organization_id != int(request.GET['organization_id']):
         return {'status': 'error', 'message': 'Permission denied'}
     project_dict = project.__dict__
     project_dict['is_compliance'] = project.has_compliance
@@ -463,6 +464,7 @@ def get_adding_buildings_to_project_status_percentage(request):
     }
 
 
+@require_organization_id
 @api_endpoint
 @ajax_request
 @login_required
@@ -482,9 +484,8 @@ def get_projects_count(request):
         }
 
     """
-    organization_id = request.GET.get('organization_id', '')
     projects_count = Project.objects.filter(
-        super_organization_id=organization_id
+        super_organization_id=request.GET['organization_id']
     ).distinct().count()
 
     return {'status': 'success', 'projects_count': projects_count}
