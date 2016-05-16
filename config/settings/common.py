@@ -121,7 +121,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.static',
     'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages',
-    'config.template_context.compress_enabled',
     'config.template_context.session_key',
     'config.template_context.sentry_js',
 )
