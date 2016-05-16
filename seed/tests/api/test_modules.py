@@ -264,12 +264,16 @@ def account(header, main_url, username, log):
     # # NOTE: Loop through the organizations and get the org_id
     # # where the organization owner is 'username' else get the first organization.
     orgs_result = result.json()
-    for ctr in range(len(orgs_result['organizations'])):
-        if orgs_result['organizations'][ctr]['owners'][0]['email'] == username:
-            organization_id = orgs_result['organizations'][ctr]['org_id']
-            break
-        else:
-            organization_id = orgs_result['organizations'][0]['org_id']
+
+    for org in orgs_result['organizations']:
+        try:
+            if org['owners'][0]['email'] == username:
+                organization_id = org['org_id']
+                break
+        except IndexError:
+            pass
+    else:
+        organization_id = orgs_result['organizations'][0]['org_id']
 
     # Get the organization details
     partmsg = 'get_organization (2)'
