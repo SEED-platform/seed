@@ -44,7 +44,7 @@ from test_modules import upload_match_sort, account, delete_set, search_and_proj
 defaultchoice = raw_input('Use "seed_API_test.ini" credentials? [Y]es or Press Any Key ')
 
 if defaultchoice.upper() == 'Y':
-    with open('seed_API_test.txt', 'r') as f:
+    with open('seed_API_test.ini', 'r') as f:
         (hostname, main_url, username, api_key) = f.read().splitlines()
 
 else:
