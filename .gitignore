@@ -48,3 +48,5 @@ dump.rdb
 log
 *.log
 .tox
+
+seed/tests/api/seed_API_test.ini
