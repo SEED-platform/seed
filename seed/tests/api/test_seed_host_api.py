@@ -33,29 +33,36 @@ some apps.
 import datetime as dt
 import json
 import os
+import sys
 
 import requests
 
 from seed_readingtools import check_status, setup_logger
 from test_modules import upload_match_sort, account, delete_set, search_and_project
 
+
 # ---
 # Set up the request credentials
-defaultchoice = raw_input('Use "seed_API_test.ini" credentials? [Y]es or Press Any Key ')
 
-if defaultchoice.upper() == 'Y':
+if '--noinput' in sys.argv:
     with open('seed_API_test.ini', 'r') as f:
         (hostname, main_url, username, api_key) = f.read().splitlines()
-
 else:
-    hostname = raw_input('Hostname (default: "localhost"): \t')
-    if hostname == '':
-        hostname = 'localhost'
-    main_url = raw_input('Host URL (default: "http://localhost:8080": \t')
-    if main_url == '':
-        main_url = 'http://localhost:8000'
-    username = raw_input('Username: \t')
-    api_key = raw_input('APIKEY: \t')
+    defaultchoice = raw_input('Use "seed_API_test.ini" credentials? [Y]es or Press Any Key ')
+
+    if defaultchoice.upper() == 'Y':
+        with open('seed_API_test.ini', 'r') as f:
+            (hostname, main_url, username, api_key) = f.read().splitlines()
+
+    else:
+        hostname = raw_input('Hostname (default: "localhost"): \t')
+        if hostname == '':
+            hostname = 'localhost'
+        main_url = raw_input('Host URL (default: "http://localhost:8080": \t')
+        if main_url == '':
+            main_url = 'http://localhost:8000'
+        username = raw_input('Username: \t')
+        api_key = raw_input('APIKEY: \t')
 
 header = {'authorization': ':'.join([username.lower(), api_key])}
 # NOTE: The header only accepts lower case usernames.
