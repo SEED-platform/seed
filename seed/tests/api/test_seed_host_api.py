@@ -34,15 +34,21 @@ import datetime as dt
 import json
 import os
 import sys
+import time
 
 import requests
+
+from subprocess import Popen
 
 from seed_readingtools import check_status, setup_logger
 from test_modules import upload_match_sort, account, delete_set, search_and_project
 
 
-# ---
-# Set up the request credentials
+if '--standalone' in sys.argv:
+    # Open runserver as subprocess because tox doesn't support redirects or
+    # job control in commands.
+    Popen(['python', '../../../manage.py', 'runserver', '--settings=config.settings.test'])
+    time.sleep(5)
 
 if '--noinput' in sys.argv:
     with open('seed_API_test.ini', 'r') as f:
