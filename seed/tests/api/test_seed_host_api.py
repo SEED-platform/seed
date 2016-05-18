@@ -49,7 +49,7 @@ location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))
 if '--standalone' in sys.argv:
     # Open runserver as subprocess because tox doesn't support redirects or
     # job control in commands.
-    Popen(['python', os.path.join(location, '..', '..', '..', 'manage.py'), 'runserver', '--settings=config.settings.test'])
+    Popen(['python', os.path.join(location, '..', '..', '..', 'manage.py'), 'runserver'])
     time.sleep(5)
 
 if '--noinput' in sys.argv:
