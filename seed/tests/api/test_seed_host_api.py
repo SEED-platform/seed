@@ -8,12 +8,12 @@
 API Testing for remote SEED installations.
 
 Instructions:
-- Download the three python modules: test_seed_host_api.py, seed_readingtools.py, test_modules.py
-as well as seed_API_test.ini and the folder ../data in a custom directory
 
-- Fill out the different fields in seed_API_test.ini by replacing the <content> on each line (don't include the <>)
+- Run this file from the root of the repo.
 
-- Run the script in test_seed_host_api.py
+- Copy seed_API_test.ini.example to seed_API_test.ini and make necessary changes. Don't commit the ini file.
+
+- Run the script eg. python seed/tests/api/test_seed_host_api.py
 
 Description:
 The script reproduce the different steps that a SEED user would do to upload a building file and portfolio manager file,
@@ -44,20 +44,22 @@ from seed_readingtools import check_status, setup_logger
 from test_modules import upload_match_sort, account, delete_set, search_and_project
 
 
+location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+
 if '--standalone' in sys.argv:
     # Open runserver as subprocess because tox doesn't support redirects or
     # job control in commands.
-    Popen(['python', '../../../manage.py', 'runserver', '--settings=config.settings.test'])
+    Popen(['python', os.path.join(location, '..', '..', '..', 'manage.py'), 'runserver', '--settings=config.settings.test'])
     time.sleep(5)
 
 if '--noinput' in sys.argv:
-    with open('seed_API_test.ini', 'r') as f:
+    with open(os.path.join(location, 'seed_API_test.ini'), 'r') as f:
         (hostname, main_url, username, api_key) = f.read().splitlines()
 else:
     defaultchoice = raw_input('Use "seed_API_test.ini" credentials? [Y]es or Press Any Key ')
 
     if defaultchoice.upper() == 'Y':
-        with open('seed_API_test.ini', 'r') as f:
+        with open(os.path.join(location, 'seed_API_test.ini'), 'r') as f:
             (hostname, main_url, username, api_key) = f.read().splitlines()
 
     else:
@@ -75,25 +77,25 @@ header = {'authorization': ':'.join([username.lower(), api_key])}
 
 time1 = dt.datetime.now()
 
-# Set up output file
 fileout_name = hostname + '_seedhost.txt'
-fileout = open(fileout_name, 'w')
-fileout.write('Hostname: \t' + hostname)
-fileout.write('\nURL: \t\t' + main_url)
-fileout.write('\nTest Date:\t' + dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-fileout.close()
-
 log = setup_logger(fileout_name)
 
-sample_dir = os.path.join("../data")
+if '--nofile' not in sys.argv:
+    print 'MAKE FILE'
+    # Set up output file
+    fileout = open(fileout_name, 'w')
+    fileout.write('Hostname: \t' + hostname)
+    fileout.write('\nURL: \t\t' + main_url)
+    fileout.write('\nTest Date:\t' + dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+    fileout.close()
 
-raw_building_file = os.path.relpath(os.path.join(sample_dir, 'covered-buildings-sample.csv'))
+raw_building_file = os.path.relpath(os.path.join(location, '..', 'data', 'covered-buildings-sample.csv'))
 assert (os.path.isfile(raw_building_file)), 'Missing file ' + raw_building_file
-raw_map_file = os.path.relpath(os.path.join(sample_dir, 'covered-buildings-mapping.csv'))
+raw_map_file = os.path.relpath(os.path.join(location, '..', 'data', 'covered-buildings-mapping.csv'))
 assert (os.path.isfile(raw_map_file)), 'Missing file ' + raw_map_file
-pm_building_file = os.path.relpath(os.path.join(sample_dir, 'portfolio-manager-sample.csv'))
+pm_building_file = os.path.relpath(os.path.join(location, '..', 'data', 'portfolio-manager-sample.csv'))
 assert (os.path.isfile(pm_building_file)), 'Missing file ' + pm_building_file
-pm_map_file = os.path.relpath(os.path.join(sample_dir, 'portfolio-manager-mapping.csv'))
+pm_map_file = os.path.relpath(os.path.join(location, '..', 'data', 'portfolio-manager-mapping.csv'))
 assert (os.path.isfile(pm_map_file)), 'Missing file ' + pm_map_file
 
 # -- Accounts
