@@ -78,16 +78,19 @@ header = {'authorization': ':'.join([username.lower(), api_key])}
 time1 = dt.datetime.now()
 
 fileout_name = hostname + '_seedhost.txt'
-log = setup_logger(fileout_name)
 
 if '--nofile' not in sys.argv:
-    print 'MAKE FILE'
+    log = setup_logger(fileout_name)
+
     # Set up output file
     fileout = open(fileout_name, 'w')
     fileout.write('Hostname: \t' + hostname)
     fileout.write('\nURL: \t\t' + main_url)
     fileout.write('\nTest Date:\t' + dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d %H:%M:%S'))
     fileout.close()
+else:
+    log = setup_logger(fileout_name, write_file=False)
+
 
 raw_building_file = os.path.relpath(os.path.join(location, '..', 'data', 'covered-buildings-sample.csv'))
 assert (os.path.isfile(raw_building_file)), 'Missing file ' + raw_building_file
