@@ -224,7 +224,7 @@ def read_map_file(mapfilePath):
     return maplist
 
 
-def setup_logger(filename):
+def setup_logger(filename, write_file=True):
     """Set-up the logger object"""
 
     logging.getLogger("requests").setLevel(logging.WARNING)
@@ -235,10 +235,11 @@ def setup_logger(filename):
     formatter = logging.Formatter('%(message)s')
     formatter_console = logging.Formatter('%(levelname)s - %(message)s')
 
-    fh = logging.FileHandler(filename, mode='a')
-    fh.setLevel(logging.DEBUG)
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
+    if write_file:
+        fh = logging.FileHandler(filename, mode='a')
+        fh.setLevel(logging.DEBUG)
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
 
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
