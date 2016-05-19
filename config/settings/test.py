@@ -66,15 +66,6 @@ NOSE_ARGS = [
     '--nologcapture'
 ]
 
-
-class DisableMigrations(object):
-    def __contains__(self, item):
-        return True
-    def __getitem__(self, item):
-        return "notmigrations"
-
-MIGRATION_MODULES = DisableMigrations()
-
 REQUIRE_UNIQUE_EMAIL = False
 
 INTERNAL_IPS = ('127.0.0.1',)
