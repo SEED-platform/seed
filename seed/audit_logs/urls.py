@@ -5,11 +5,15 @@
 :author
 """
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
-urlpatterns = patterns(
-    'seed.audit_logs.views',
-    url(r'^get_building_logs/$', 'get_building_logs', name='get_building_logs'),
-    url(r'^create_note/$', 'create_note', name='create_note'),
-    url(r'^update_note/$', 'update_note', name='update_note'),
+from seed.audit_logs.views import (
+    get_building_logs, create_note, update_note
 )
+
+
+urlpatterns = [
+    url(r'^get_building_logs/$', get_building_logs, name='get_building_logs'),
+    url(r'^create_note/$', create_note, name='create_note'),
+    url(r'^update_note/$', update_note, name='update_note'),
+]

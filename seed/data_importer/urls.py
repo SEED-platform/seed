@@ -5,12 +5,16 @@
 :author
 """
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
-urlpatterns = patterns(
-    'seed.data_importer.views',
-    url(r's3_upload_complete/$', 'handle_s3_upload_complete', name='s3_upload_complete'),
-    url(r'get_upload_details/$', 'get_upload_details', name='get_upload_details'),
-    url(r'sign_policy_document/$', 'sign_policy_document', name='sign_policy_document'),
-    url(r'upload/$', 'local_uploader', name='local_uploader'),
+from seed.data_importer.views import (
+    handle_s3_upload_complete, get_upload_details, sign_policy_document,
+    local_uploader
 )
+
+urlpatterns = [
+    url(r's3_upload_complete/$', handle_s3_upload_complete, name='s3_upload_complete'),
+    url(r'get_upload_details/$', get_upload_details, name='get_upload_details'),
+    url(r'sign_policy_document/$', sign_policy_document, name='sign_policy_document'),
+    url(r'upload/$', local_uploader, name='local_uploader'),
+]

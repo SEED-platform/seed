@@ -5,17 +5,21 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.views.static import serve
 
 import ajaxuploader.urls
 
+from config.views import robots_txt
+
+
 admin.autodiscover()
 
-urlpatterns = patterns(
-    '',
+
+urlpatterns = [
     # landing page
     url(r'^', include('seed.landing.urls', namespace="landing", app_name="landing")),
 
@@ -49,21 +53,19 @@ urlpatterns = patterns(
     # i18n setlang # TODO: remove i18n support per Nick Serra?
     url(r'^i18n/', include('django.conf.urls.i18n')),
 
-    url(r'^robots\.txt', 'config.views.robots_txt', name='robots_txt'),
-
-)
+    url(r'^robots\.txt', robots_txt, name='robots_txt'),
+]
 
 if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()
-    urlpatterns += patterns(
-        '',
+    urlpatterns += [
         # admin
         url(r'^admin/', include(admin.site.urls)),
         url(
             r'^media/(?P<path>.*)$',
-            'django.views.static.serve',
+            serve,
             {
                 'document_root': settings.MEDIA_ROOT,
             }
         ),
-    )
+    ]
