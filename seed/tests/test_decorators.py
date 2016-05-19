@@ -4,7 +4,8 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from django.test import TestCase
+from django.http import HttpResponse
+from django.test import TestCase, RequestFactory
 
 from seed import decorators
 from seed.utils.cache import make_key, get_cache, get_lock, increment_cache, clear_cache
@@ -93,3 +94,35 @@ class TestDecorators(TestCase):
         fake_func(self.pk)
 
         self.assertEqual(float(get_cache(key, 0.0)['progress']), expected)
+
+
+class RequireOrganizationIDTests(TestCase):
+
+    def setUp(self):
+        @decorators.require_organization_id
+        def test_view(request):
+            return HttpResponse()
+
+        self.test_view = test_view
+
+    def test_require_organization_id_success_string(self):
+        request = RequestFactory().get('', {'organization_id': '1'})
+        response = self.test_view(request)
+        self.assertEqual(200, response.status_code)
+
+    def test_require_organization_id_success_integer(self):
+        request = RequestFactory().get('', {'organization_id': '1'})
+        response = self.test_view(request)
+        self.assertEqual(200, response.status_code)
+
+    def test_require_organization_id_fail_no_key(self):
+        request = RequestFactory().get('')
+        response = self.test_view(request)
+        self.assertEqual(400, response.status_code)
+        self.assertEqual('Valid organization ID is required.', response.content)
+
+    def test_require_organization_id_fail_not_numeric(self):
+        request = RequestFactory().get('', {'organization_id': 'invalid'})
+        response = self.test_view(request)
+        self.assertEqual(400, response.status_code)
+        self.assertEqual('Valid organization ID is required.', response.content)

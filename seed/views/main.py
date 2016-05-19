@@ -29,7 +29,7 @@ from seed.audit_logs.models import AuditLog
 from seed.common import mapper as simple_mapper
 from seed.common import views as vutil
 from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
-from seed.decorators import ajax_request, get_prog_key
+from seed.decorators import ajax_request, get_prog_key, require_organization_id
 from seed.lib.exporter import Exporter
 from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm
@@ -481,6 +481,7 @@ def get_total_number_of_buildings_for_user(request):
     return {'status': 'success', 'buildings_count': buildings_count}
 
 
+@require_organization_id
 @api_endpoint
 @ajax_request
 @login_required
@@ -540,8 +541,7 @@ def get_building(request):
 
     """
     building_id = request.GET.get('building_id')
-    organization_id = request.GET.get('organization_id')
-    org = Organization.objects.get(pk=organization_id)
+    org = Organization.objects.get(pk=request.GET['organization_id'])
     canon = CanonicalBuilding.objects.get(pk=building_id)
     building = canon.canonical_snapshot
     user_orgs = request.user.orgs.all()
@@ -595,6 +595,7 @@ def get_building(request):
 @ajax_request
 @login_required
 @has_perm('requires_viewer')
+@require_organization_id
 def get_datasets_count(request):
     """
     Retrieves the number of datasets for an org.
@@ -609,9 +610,8 @@ def get_datasets_count(request):
         }
 
     """
-    organization_id = request.GET.get('organization_id', '')
     datasets_count = Organization.objects.get(
-        pk=organization_id).import_records.all().distinct().count()
+        pk=request.GET['organization_id']).import_records.all().distinct().count()
 
     return {'status': 'success', 'datasets_count': datasets_count}
 
@@ -876,6 +876,7 @@ def set_default_building_detail_columns(request):
     return _set_default_columns_by_request(body, request.user, 'default_building_detail_custom_columns')
 
 
+@require_organization_id
 @ajax_request
 @login_required
 @has_perm('requires_viewer')
@@ -884,10 +885,9 @@ def get_columns(request):
 
     :GET: Expects organization_id in the query string.
     """
-    organization_id = request.GET.get('organization_id', '')
     all_fields = request.GET.get('all_fields', '')
     all_fields = True if all_fields.lower() == 'true' else False
-    return utils_get_columns(organization_id, all_fields)
+    return utils_get_columns(request.GET['organization_id'], all_fields)
 
 
 @api_endpoint
@@ -1655,6 +1655,7 @@ def create_dataset(request):
     }
 
 
+@require_organization_id
 @api_endpoint
 @ajax_request
 @login_required
@@ -1694,7 +1695,7 @@ def get_datasets(request):
     """
     from seed.models import obj_to_dict
 
-    org = Organization.objects.get(pk=request.GET.get('organization_id'))
+    org = Organization.objects.get(pk=request.GET['organization_id'])
     datasets = []
     for d in ImportRecord.objects.filter(super_organization=org):
         importfiles = [obj_to_dict(f) for f in d.files]
@@ -2331,6 +2332,7 @@ def delete_buildings(request):
 # DMcQ: Test for building reporting
 
 
+@require_organization_id
 @api_endpoint
 @ajax_request
 @login_required
@@ -2412,7 +2414,7 @@ def get_building_summary_report_data(request):
 
     # Read in x and y vars requested by client
     try:
-        orgs = [request.GET.get('organization_id')]  # How should we capture user orgs here?
+        orgs = [request.GET['organization_id']]  # How should we capture user orgs here?
     except Exception as e:
         msg = "Error while calling the API function get_scatter_data_series, missing parameter"
         _log.error(msg)
