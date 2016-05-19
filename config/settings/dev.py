@@ -8,7 +8,6 @@ from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 SESSION_COOKIE_SECURE = False
 
 # AWS credentials for S3.  Set them in environment or local_untracked.py

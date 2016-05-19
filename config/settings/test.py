@@ -30,7 +30,6 @@ PASSWORD_HASHERS = (
 )
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 SESSION_COOKIE_SECURE = False
 
 # override this in local_untracked.py
