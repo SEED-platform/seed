@@ -233,7 +233,7 @@ def filter_other_params(queryset, other_params, db_columns):
             elif ('__isnull' in k or
                   k == 'import_file_id' or k == 'source_type'):
                 query_filters &= Q(**{"%s" % k: v})
-            
+
             elif k == 'canonical_building__labels':
                 for l in v:
                     queryset &= queryset.filter(**{

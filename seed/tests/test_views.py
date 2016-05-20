@@ -702,7 +702,7 @@ class SearchViewTests(TestCase):
         b = SEEDFactory.building_snapshot(
             canonical_building=cb,
             tax_lot_id="1",
-            year_ending = date(year=2015, month=1, day=1)
+            year_ending=date(year=2015, month=1, day=1)
         )
         cb.canonical_snapshot = b
         cb.save()

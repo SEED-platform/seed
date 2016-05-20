@@ -14,6 +14,7 @@ from functools import reduce
 SUFFIXES = ['__lt', '__gt', '__lte', '__gte', '__isnull']
 DATE_FIELDS = ['year_ending']
 
+
 def strip_suffix(k, suffix):
     match = k.find(suffix)
     if match >= 0:
