@@ -11,6 +11,9 @@ from django.db.models import Q
 from functools import reduce
 
 
+SUFFIXES = ['__lt', '__gt', '__lte', '__gte', '__isnull']
+DATE_FIELDS = ['year_ending']
+
 def strip_suffix(k, suffix):
     match = k.find(suffix)
     if match >= 0:
@@ -24,8 +27,15 @@ def strip_suffixes(k, suffixes):
 
 
 def is_column(k, columns):
-    sanitized = strip_suffixes(k, ['__lt', '__gt', '__lte', '__gte', '__isnull'])
+    sanitized = strip_suffixes(k, SUFFIXES)
     if sanitized in columns:
+        return True
+    return False
+
+
+def is_date_field(k):
+    sanitized = strip_suffixes(k, SUFFIXES)
+    if sanitized in DATE_FIELDS:
         return True
     return False
 
