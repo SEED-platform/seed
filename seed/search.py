@@ -9,6 +9,7 @@ Search methods pertaining to buildings.
 """
 import operator
 import json
+import re
 
 from django.db.models import Q
 from seed.lib.superperms.orgs.models import Organization
@@ -222,10 +223,17 @@ def filter_other_params(queryset, other_params, db_columns):
             elif ('__lt' in k or
                   '__lte' in k or
                   '__gt' in k or
-                  '__gte' in k or
-                  '__isnull' in k or
+                  '__gte' in k):
+
+                # Check if this is ISO8601 from a input date. Shorten to YYYY-MM-DD
+                if search_utils.is_date_field(k) and re.match(r'^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}.\d{3}\w$', v):
+                    v = re.search(r'^\d{4}-\d{2}-\d{2}', v).group()
+
+                query_filters &= Q(**{"%s" % k: v})
+            elif ('__isnull' in k or
                   k == 'import_file_id' or k == 'source_type'):
                 query_filters &= Q(**{"%s" % k: v})
+
             elif k == 'canonical_building__labels':
                 for l in v:
                     queryset &= queryset.filter(**{
