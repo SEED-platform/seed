@@ -82,6 +82,16 @@ class MainViewTests(TestCase):
                                     content_type='application/json')
         self.assertTrue(json.loads(response.content)['success'])
 
+    def test_export_buildings_empty(self):
+        payload = {
+            "export_name": "My Export",
+            "export_type": "csv",
+            "selected_buildings": []
+        }
+        response = self.client.post(reverse('seed:export_buildings'), json.dumps(payload),
+                                    content_type='application/json')
+        self.assertTrue(json.loads(response.content)['success'])
+
     def test_export_buildings_progress(self):
         payload = {
             "export_id": "1234"
