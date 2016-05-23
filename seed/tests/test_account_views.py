@@ -4,7 +4,6 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import datetime
 import json
 
 from django.core.urlresolvers import reverse_lazy
@@ -65,7 +64,7 @@ class AccountsViewTests(TestCase):
             'id': self.org.pk,
             'user_is_owner': True,
             'num_buildings': 0,
-            'created': datetime.datetime.today().strftime('%Y-%m-%d')
+            'created': self.org.created.strftime('%Y-%m-%d')
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
@@ -109,7 +108,7 @@ class AccountsViewTests(TestCase):
                 'id': new_org.pk,
                 'user_is_owner': True,
                 'num_buildings': 0,
-                'created': datetime.datetime.today().strftime('%Y-%m-%d')
+                'created': new_org.created.strftime('%Y-%m-%d')
             }],
             'owners': [{
                 'first_name': u'Johnny',
@@ -125,7 +124,7 @@ class AccountsViewTests(TestCase):
             'id': self.org.pk,
             'user_is_owner': True,
             'num_buildings': 0,
-            'created': datetime.datetime.today().strftime('%Y-%m-%d')
+            'created': self.org.created.strftime('%Y-%m-%d')
         }
 
         new_org.parent_org = self.org

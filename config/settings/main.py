@@ -23,7 +23,6 @@ STACK_OUTPUTS = aws.get_stack_outputs()
 ENV = STACK_OUTPUTS.get('StackFlavor', 'dev')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
-TEMPLATE_DEBUG = DEBUG
 
 # Handle SSL with django-sslify
 ONLY_HTTPS = os.environ.get('ONLY_HTTPS', 'True') == 'True'
