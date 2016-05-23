@@ -149,6 +149,9 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
 
 def check_status(resultOut, partmsg, log, PIIDflag=None):
     """Checks the status of the API endpoint and makes the appropriate print outs."""
+    passed = '\033[1;32m...passed\033[1;0m'
+    failed = '\033[1;31m...failed\033[1;0m'
+
     if resultOut.status_code in [200, 403, 401]:
         if PIIDflag == 'cleansing':
             msg = pprint.pformat(resultOut.json(), indent=2, width=70)
@@ -156,12 +159,12 @@ def check_status(resultOut, partmsg, log, PIIDflag=None):
             try:
                 if 'status' in resultOut.json().keys() and resultOut.json()['status'] == 'error':
                     msg = resultOut.json()['message']
-                    log.error(partmsg + '...not passed')
+                    log.error(partmsg + failed)
                     log.debug(msg)
                     raise RuntimeError
                 elif 'success' in resultOut.json().keys() and not resultOut.json()['success']:
                     msg = resultOut.json()
-                    log.error(partmsg + '...not passed')
+                    log.error(partmsg + failed)
                     log.debug(msg)
                     raise RuntimeError
                 else:
@@ -176,15 +179,15 @@ def check_status(resultOut, partmsg, log, PIIDflag=None):
                     else:
                         msg = pprint.pformat(resultOut.json(), indent=2, width=70)
             except:
-                log.error(partmsg, '...not passed')
+                log.error(partmsg, failed)
                 log.debug('Unknown error during request results recovery')
                 raise RuntimeError
 
-        log.info(partmsg + '...passed')
+        log.info(partmsg + passed)
         log.debug(msg)
     else:
         msg = resultOut.reason
-        log.error(partmsg + '...not passed')
+        log.error(partmsg + failed)
         log.debug(msg)
         raise RuntimeError
 
@@ -221,7 +224,7 @@ def read_map_file(mapfilePath):
     return maplist
 
 
-def setup_logger(filename):
+def setup_logger(filename, write_file=True):
     """Set-up the logger object"""
 
     logging.getLogger("requests").setLevel(logging.WARNING)
@@ -232,10 +235,11 @@ def setup_logger(filename):
     formatter = logging.Formatter('%(message)s')
     formatter_console = logging.Formatter('%(levelname)s - %(message)s')
 
-    fh = logging.FileHandler(filename, mode='a')
-    fh.setLevel(logging.DEBUG)
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
+    if write_file:
+        fh = logging.FileHandler(filename, mode='a')
+        fh.setLevel(logging.DEBUG)
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
 
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)

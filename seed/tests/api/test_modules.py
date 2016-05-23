@@ -19,12 +19,8 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
     # Upload the covered-buildings-sample file
     print ('API Function: upload_file\n'),
     partmsg = 'upload_file'
-    try:
-        result = upload_file(header, filepath, main_url, dataset_id, filetype)
-        check_status(result, partmsg, log)
-    except:
-        log.error("Following API could not be tested")
-        return
+    result = upload_file(header, filepath, main_url, dataset_id, filetype)
+    check_status(result, partmsg, log)
 
     # Get import ID
     import_id = result.json()['import_file_id']
@@ -34,28 +30,24 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
     partmsg = 'save_raw_data'
     payload = {'file_id': import_id,
                'organization_id': organization_id}
-    try:
-        result = requests.post(main_url + '/app/save_raw_data/',
-                               headers=header,
-                               data=json.dumps(payload))
-        # progress = check_progress(main_url, header, result.json()['progress_key'])
-        check_status(result, partmsg, log)
-    except:
-        log.error("Following API could not be tested")
-        return
+    result = requests.post(main_url + '/app/save_raw_data/',
+                           headers=header,
+                           data=json.dumps(payload))
+    # progress = check_progress(main_url, header, result.json()['progress_key'])
+    check_status(result, partmsg, log)
+
+    time.sleep(10)
 
     # Get the mapping suggestions
     print ('API Function: get_column_mapping_suggestions\n'),
     partmsg = 'get_column_mapping_suggestions'
     payload = {'import_file_id': import_id,
                'org_id': organization_id}
-    try:
-        result = requests.get(main_url + '/app/get_column_mapping_suggestions/',
-                              headers=header,
-                              data=json.dumps(payload))
-        check_status(result, partmsg, log, PIIDflag='mappings')
-    except:
-        pass
+
+    result = requests.get(main_url + '/app/get_column_mapping_suggestions/',
+                          headers=header,
+                          data=json.dumps(payload))
+    check_status(result, partmsg, log, PIIDflag='mappings')
 
     # Save the column mappings
     print ('API Function: save_column_mappings\n'),
@@ -63,69 +55,60 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
     payload = {'import_file_id': import_id,
                'organization_id': organization_id}
     payload['mappings'] = read_map_file(mappingfilepath)
-    try:
-        result = requests.get(main_url + '/app/save_column_mappings/',
-                              headers=header,
-                              data=json.dumps(payload))
-        check_status(result, partmsg, log)
-    except:
-        log.error("Following API could not be tested")
-        return
+
+    result = requests.get(main_url + '/app/save_column_mappings/',
+                          headers=header,
+                          data=json.dumps(payload))
+    check_status(result, partmsg, log)
 
     # Map the buildings with new column mappings.
     print ('API Function: remap_buildings\n'),
     partmsg = 'remap_buildings'
     payload = {'file_id': import_id,
                'organization_id': organization_id}
-    try:
-        result = requests.get(main_url + '/app/remap_buildings/',
-                              headers=header,
-                              data=json.dumps(payload))
 
-        # progress = check_progress(main_url, header, result.json()['progress_key'])
-        check_status(result, partmsg, log)
-    except:
-        log.error("Following API could not be tested")
-        return
+    result = requests.get(main_url + '/app/remap_buildings/',
+                          headers=header,
+                          data=json.dumps(payload))
+
+    # progress = check_progress(main_url, header, result.json()['progress_key'])
+    check_status(result, partmsg, log)
 
     # Get Data Cleansing Message
     print ('API Function: cleansing\n'),
     partmsg = 'cleansing'
-    try:
-        result = requests.get(main_url + '/cleansing/results/',
-                              headers=header,
-                              params={'import_file_id': import_id})
-        check_status(result, partmsg, log, PIIDflag='cleansing')
-    except:
-        pass
+
+    result = requests.get(main_url + '/cleansing/results/',
+                          headers=header,
+                          params={'import_file_id': import_id})
+    check_status(result, partmsg, log, PIIDflag='cleansing')
 
     # Match uploaded buildings with buildings already in the organization.
     print ('API Function: start_system_matching\n'),
     partmsg = 'start_system_matching'
     payload = {'file_id': import_id,
                'organization_id': organization_id}
-    try:
+
+    count = 100
+    while(count > 0):
         result = requests.post(main_url + '/app/start_system_matching/',
                                headers=header,
                                data=json.dumps(payload))
+        if result.status_code == 200:
+            break
+        time.sleep(5)
+        count -= 1
 
-        # progress = check_progress(main_url, header, result.json()['progress_key'])
-        check_status(result, partmsg, log)
-    except:
-        pass
+    check_status(result, partmsg, log)
 
     # Check number of matched and unmatched BuildingSnapshots
     print ('API Function: get_PM_filter_by_counts\n'),
     partmsg = 'get_PM_filter_by_counts'
-    try:
-        result = requests.get(main_url + '/app/get_PM_filter_by_counts/',
-                              headers=header,
-                              params={'import_file_id': import_id})
-        check_status(result, partmsg, log, PIIDflag='PM_filter')
-    except:
-        pass
 
-    return
+    result = requests.get(main_url + '/app/get_PM_filter_by_counts/',
+                          headers=header,
+                          params={'import_file_id': import_id})
+    check_status(result, partmsg, log, PIIDflag='PM_filter')
 
 
 def search_and_project(header, main_url, organization_id, log):
@@ -133,13 +116,11 @@ def search_and_project(header, main_url, organization_id, log):
     print ('API Function: search_buildings\n'),
     partmsg = 'search_buildings'
     search_payload = {'filter_params': {u'address_line_1': u'94734 SE Honeylocust Street'}}
-    try:
-        result = requests.get(main_url + '/app/search_buildings/',
-                              headers=header,
-                              data=json.dumps(search_payload))
-        check_status(result, partmsg, log)
-    except:
-        pass
+
+    result = requests.get(main_url + '/app/search_buildings/',
+                          headers=header,
+                          data=json.dumps(search_payload))
+    check_status(result, partmsg, log)
 
     # Project
     print ('\n-------Project-------\n')
@@ -152,30 +133,25 @@ def search_and_project(header, main_url, organization_id, log):
                                       'compliance_type': 'describe compliance type',
                                       'description': 'project description'},
                           'organization_id': organization_id}
-    try:
-        result = requests.post(main_url + '/app/projects/create_project/',
-                               headers=header,
-                               data=json.dumps(newproject_payload))
-        check_status(result, partmsg, log)
-    except:
-        log.error("Could not create a project. Following API in SEARCH_AND_PROJECT not tested")
-        return
 
-        # Get project slug
+    result = requests.post(main_url + '/app/projects/create_project/',
+                           headers=header,
+                           data=json.dumps(newproject_payload))
+    check_status(result, partmsg, log)
+
+    # Get project slug
     project_slug = result.json()['project_slug']
 
     # Get the projects for the organization
     print ('API Function: get_project\n'),
     partmsg = 'get_project'
-    try:
-        result = requests.get(main_url + '/app/projects/get_projects/',
-                              headers=header,
-                              params={'organization_id': organization_id})
-        check_status(result, partmsg, log)
-    except:
-        pass
 
-        # Populate project by search buildings result
+    result = requests.get(main_url + '/app/projects/get_projects/',
+                          headers=header,
+                          params={'organization_id': organization_id})
+    check_status(result, partmsg, log)
+
+    # Populate project by search buildings result
     print ('API Function: add_buildings_to_project\n'),
     partmsg = 'add_buildings_to_project'
     projectbldg_payload = {'project': {'status': 'active',
@@ -185,20 +161,18 @@ def search_and_project(header, main_url, organization_id, log):
                                        'selected_buildings': [],
                                        'filter_params': {'use_description': 'CONDO'}},
                            'organization_id': organization_id}
-    try:
-        result = requests.post(main_url + '/app/projects/add_buildings_to_project/',
-                               headers=header,
-                               data=json.dumps(projectbldg_payload))
-        time.sleep(10)
-        check_status(result, partmsg, log)
 
-        # Get the percent/progress of buildings added to project
-        progress = requests.post(main_url + '/app/projects/get_adding_buildings_to_project_status_percentage/',
-                                 headers=header,
-                                 data=json.dumps({'project_loading_cache_key': result.json()['project_loading_cache_key']}))
-        log.debug(pprint.pformat(progress.json()))
-    except:
-        pass
+    result = requests.post(main_url + '/app/projects/add_buildings_to_project/',
+                           headers=header,
+                           data=json.dumps(projectbldg_payload))
+    time.sleep(10)
+    check_status(result, partmsg, log)
+
+    # Get the percent/progress of buildings added to project
+    progress = requests.post(main_url + '/app/projects/get_adding_buildings_to_project_status_percentage/',
+                             headers=header,
+                             data=json.dumps({'project_loading_cache_key': result.json()['project_loading_cache_key']}))
+    log.debug(pprint.pformat(progress.json()))
 
     # Export
     print ('\n-------Export-------\n')
@@ -210,37 +184,36 @@ def search_and_project(header, main_url, organization_id, log):
                       'export_type': "csv",
                       'select_all_checkbox': True,
                       'filter_params': {'project__slug': project_slug}}
-    try:
-        result = requests.post(main_url + '/app/export_buildings/',
-                               headers=header,
-                               data=json.dumps(export_payload))
-        check_status(result, partmsg, log)
-        if result.json()['total_buildings'] != 58:
-            log.warning('Export Buildings: ' + str(result.json()['total_buildings']) + " ; expected 58")
 
-            # Get exportID
-        exportID = result.json()['export_id']
+    result = requests.post(main_url + '/app/export_buildings/',
+                           headers=header,
+                           data=json.dumps(export_payload))
+    check_status(result, partmsg, log)
+    if result.json()['total_buildings'] != 58:
+        log.warning('Export Buildings: ' + str(result.json()['total_buildings']) + " ; expected 58")
 
-        time.sleep(25)
-        progress = requests.post(main_url + '/app/export_buildings/progress/',
-                                 headers=header,
-                                 data=json.dumps({'export_id': exportID}))
-        log.debug(pprint.pformat(progress.json()))
-        time.sleep(25)
+        # Get exportID
+    exportID = result.json()['export_id']
 
-    except:
-        log.error("Could not export building. Following API in SEARCH_AND_PROJECT not tested")
-        return project_slug
+    progress = requests.post(main_url + '/app/export_buildings/progress/',
+                             headers=header,
+                             data=json.dumps({'export_id': exportID}))
+    log.debug(pprint.pformat(progress.json()))
 
     print ('API Function: export_buildings_download\n'),
     partmsg = 'export_buildings_download'
-    try:
+
+    count = 100
+    while(count > 0):
         result = requests.post(main_url + '/app/export_buildings/download/',
                                headers=header,
                                data=json.dumps({'export_id': exportID}))
-        check_status(result, partmsg, log)
-    except:
-        pass
+        if result.status_code == 200:
+            break
+        time.sleep(5)
+        count -= 1
+
+    check_status(result, partmsg, log)
 
     return project_slug
 
@@ -264,12 +237,16 @@ def account(header, main_url, username, log):
     # # NOTE: Loop through the organizations and get the org_id
     # # where the organization owner is 'username' else get the first organization.
     orgs_result = result.json()
-    for ctr in range(len(orgs_result['organizations'])):
-        if orgs_result['organizations'][ctr]['owners'][0]['email'] == username:
-            organization_id = orgs_result['organizations'][ctr]['org_id']
-            break
-        else:
-            organization_id = orgs_result['organizations'][0]['org_id']
+
+    for org in orgs_result['organizations']:
+        try:
+            if org['owners'][0]['email'] == username:
+                organization_id = org['org_id']
+                break
+        except IndexError:
+            pass
+    else:
+        organization_id = orgs_result['organizations'][0]['org_id']
 
     # Get the organization details
     partmsg = 'get_organization (2)'
@@ -325,41 +302,30 @@ def delete_set(header, main_url, organization_id, dataset_id, project_slug, log)
     partmsg = 'delete_buildings'
     payload = {'organization_id': organization_id,
                'search_payload': {'select_all_checkbox': True}}
-    try:
-        result = requests.delete(main_url + '/app/delete_buildings/',
-                                 headers=header,
-                                 data=json.dumps(payload))
-        check_status(result, partmsg, log)
-    except:
-        print("\n WARNING: Can't delete BUILDING RECORDS, delete manually!")
-        raw_input("Press Enter to continue...")
+
+    result = requests.delete(main_url + '/app/delete_buildings/',
+                             headers=header,
+                             data=json.dumps(payload))
+    check_status(result, partmsg, log)
 
     # Delete dataset
     print ('API Function: delete_dataset\n'),
     partmsg = 'delete_dataset'
     payload = {'dataset_id': dataset_id,
                'organization_id': organization_id}
-    try:
-        result = requests.delete(main_url + '/app/delete_dataset/',
-                                 headers=header,
-                                 data=json.dumps(payload))
-        check_status(result, partmsg, log)
-    except:
-        print("\n WARNING: Can't delete BUILDING SET, delete manually!")
-        raw_input("Press Enter to continue...")
+
+    result = requests.delete(main_url + '/app/delete_dataset/',
+                             headers=header,
+                             data=json.dumps(payload))
+    check_status(result, partmsg, log)
 
     # Delete project
     print ('API Function: delete_project\n'),
     partmsg = 'delete_project'
     payload = {'organization_id': organization_id,
                'project_slug': project_slug}
-    try:
-        result = requests.delete(main_url + '/app/projects/delete_project/',
-                                 headers=header,
-                                 data=json.dumps(payload))
-        check_status(result, partmsg, log)
-    except:
-        print("\n WARNING: Can't delete PROJECT, delete manually!")
-        raw_input("Press Enter to continue...")
 
-    return
+    result = requests.delete(main_url + '/app/projects/delete_project/',
+                             headers=header,
+                             data=json.dumps(payload))
+    check_status(result, partmsg, log)

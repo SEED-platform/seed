@@ -60,7 +60,6 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.template.context_processors.request',
                 'django.contrib.messages.context_processors.messages',
-                'config.template_context.compress_enabled',
                 'config.template_context.session_key',
                 'config.template_context.sentry_js',
             ],

@@ -6,7 +6,7 @@
 """
 import json
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from django.core.cache import cache
 from django.core.urlresolvers import reverse, reverse_lazy
@@ -77,6 +77,16 @@ class MainViewTests(TestCase):
             "export_name": "My Export",
             "export_type": "csv",
             "selected_buildings": [b.pk]
+        }
+        response = self.client.post(reverse('seed:export_buildings'), json.dumps(payload),
+                                    content_type='application/json')
+        self.assertTrue(json.loads(response.content)['success'])
+
+    def test_export_buildings_empty(self):
+        payload = {
+            "export_name": "My Export",
+            "export_type": "csv",
+            "selected_buildings": []
         }
         response = self.client.post(reverse('seed:export_buildings'), json.dumps(payload),
                                     content_type='application/json')
@@ -695,6 +705,47 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['year_built'], 5)
         self.assertEqual(data['buildings'][1]['year_built'], 6)
         self.assertEqual(data['buildings'][2]['year_built'], 7)
+
+    def test_search_filter_date_range_ISO8601(self):
+        cb = CanonicalBuilding(active=True)
+        cb.save()
+        b = SEEDFactory.building_snapshot(
+            canonical_building=cb,
+            tax_lot_id="1",
+            year_ending=date(year=2015, month=1, day=1)
+        )
+        cb.canonical_snapshot = b
+        cb.save()
+        b.super_organization = self.org
+        b.save()
+
+        url = reverse_lazy("seed:search_buildings")
+        post_data = {
+            'filter_params': {
+                'year_ending__gte': '2014-01-01T00:00:00.000Z',
+                'year_ending__lte': '2016-01-01T00:00:00.000Z'
+            },
+            'number_per_page': 100,
+            'order_by': '',
+            'page': 1,
+            'q': '',
+            'sort_reverse': False,
+            'project_id': None,
+        }
+
+        # act
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        json_string = response.content
+        data = json.loads(json_string)
+
+        # assert
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['number_matching_search'], 1)
+        self.assertEqual(len(data['buildings']), 1)
 
     def test_search_exact_match(self):
         """
