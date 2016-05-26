@@ -36,7 +36,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
     # progress = check_progress(main_url, header, result.json()['progress_key'])
     check_status(result, partmsg, log)
 
-    time.sleep(10)
+    time.sleep(20)
 
     # Get the mapping suggestions
     print ('API Function: get_column_mapping_suggestions\n'),
