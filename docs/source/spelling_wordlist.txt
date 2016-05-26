@@ -144,6 +144,7 @@ subdirectory
 Submodules
 Subpackages
 subtask
+sudo
 tastypie
 td
 templatetags
