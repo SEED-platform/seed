@@ -5,9 +5,11 @@ from django_pgjson.fields import JsonField
 from django.db import models
 
 from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization
 
 
 class Cycle(models.Model):
+    organization = models.ForeignKey(Organization, blank=True, null=True)
     user = models.ForeignKey(User, blank=True, null=True)
     name = models.CharField(max_length=255)
     start = models.DateTimeField()
@@ -18,6 +20,7 @@ class Cycle(models.Model):
 
 
 class Property(models.Model):
+    organization = models.ForeignKey(Organization)
     campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', blank=True, null=True)
 
@@ -82,6 +85,7 @@ class PropertyView(models.Model):
 
 
 class TaxLot(models.Model):
+    organization = models.ForeignKey(Organization)
 
     def __unicode__(self):
         return u'TaxLot - %s' % (self.pk)
