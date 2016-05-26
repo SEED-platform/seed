@@ -106,8 +106,8 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
             'source_type': upload_datatype
         }
         return requests.post(main_url + completion_uri,
-                            headers=upload_header,
-                            data=completion_payload)
+                             headers=upload_header,
+                             data=completion_payload)
 
     def _upload_file_to_file_system(upload_details):
         """
