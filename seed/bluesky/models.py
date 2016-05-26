@@ -69,7 +69,7 @@ class PropertyState(models.Model):
     space_alerts = models.TextField(null=True, blank=True)
     building_certification = models.CharField(max_length=255, null=True, blank=True)
 
-    extra_data = JsonField(default={})
+    extra_data = JsonField(default={}, blank=True)
 
     def __unicode__(self):
         return u'Property State - %s' % (self.pk)
@@ -108,7 +108,7 @@ class TaxLotState(models.Model):
     postal_code = models.CharField(max_length=255, null=True, blank=True)
     number_properties = models.IntegerField(null=True, blank=True)
 
-    extra_data = JsonField(default={})
+    extra_data = JsonField(default={}, blank=True)
 
     def __unicode__(self):
         return u'TaxLot State - %s' % (self.pk)
