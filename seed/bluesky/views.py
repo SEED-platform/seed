@@ -45,7 +45,7 @@ def get_property(request, property_pk):
 @has_perm('requires_viewer')
 def get_taxlots(request):
     taxlot_views = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
-        .filter(property__organization_id=request.GET['organization_id'])
+        .filter(taxlot__organization_id=request.GET['organization_id'])
 
     return {
         'taxlot_views': taxlot_views
