@@ -107,7 +107,7 @@ First check to see what existing containers there are, and what there status is:
 
     docker ps -a
 
-You should see something similiar to this if there are no containers.
+You should see something similar to this if there are no containers.
 
 ::
     CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
@@ -136,7 +136,7 @@ rid of them using this command:
 
     docker rmi -f $(docker images -q -a -f dangling=true)
 
-Otherwise they can be removed using docker rmi image using the image name or id
+Otherwise they can be removed using `docker rmi image` using the image name or id
 shown by docker images.
 
 Install Docker Compose
@@ -168,14 +168,14 @@ Setting up without a Virtual Machine
 If we don't use Virtual Box we can run Docker directly. This assumes you are in
 the same directory as the Git repo. You should also set up a virtualenv for it.
 Setting it up  this way means it will use your local ip, so you will be able to
-access the app via localhost. As we are using containers we don't have to worry
-about setting up the database and redis directly, Docker will do this for us.
+access the SEED website via localhost. As we are using containers we don't have to worry
+about setting up the database and Redis directly, Docker will do this for us.
 
 In this part we are going to set up the project so that the seed directory in
-web container's root filesystem points to the copy on your local filesystem
+web container's root file system points to the copy on your local file system
 (i.e. the directory with the repo in it). This is an advantage of running
-docker directly: changes on your local file sytem show up in the container so
-you can edit with your local tools etc without having to have them running in
+docker directly: changes on your local file system show up in the container so
+you can edit with your local tools etc. without having to have them running in
 the container.
 
 Before you start ensure you have set up a virtualenv for the project. Then at
@@ -185,7 +185,7 @@ a minimum you will need to install the tos module manually.
 
     pip install -e  'git+https://github.com/revsys/django-tos.git@aca823ccd12fdb897b2827832458b3c34e91dee6#egg=django_tos-master'
 
-note the quotes.
+Note the quotes.
 
 If you notice complaints about this not being present try:
 `pip install ip install -r requirements/base.txt`, you might also need
@@ -203,10 +203,10 @@ lines like this:
 You will to change the part before the colon to match your local setup. On my
 system the repo is a directory called seed under the projects folder in my home
 directory for the first line. In the second line my virtualenvs live under
-.virtualenvs  in my home directory as I use virtualenv wrapper. You wil need
+.virtualenvs  in my home directory as I use virtualenv wrapper. You will need
 to adjust this to match your local setup.
 
-Then you will need to open the ports for redis and postgres. In the section
+Then you will need to open the ports for Redis and PostgreSQL. In the section
 `db-postgres:` add
 
 ::
@@ -219,7 +219,7 @@ in db-redis add
     ports:
         - "6379:6379"
 
-You should be careful not to add the changes to this file to your git commmits
+You should be careful not to add the changes to this file to your git commits
 as it is local only. You can do this with the following command.
 
 .. code-block:: bash
@@ -253,9 +253,9 @@ Then you will need to edit the databases section. Here is a sample
         }
     }
 
-The tricky part is the HOST line. The app can't connect to the db on localhost
+The tricky part is the HOST line. The web server can't connect to the database on localhost
 with this setup. Use `ifconfig` to find out the ip addresses on your
-local machine. In this example 172.17.0.1 was lsited for docker0 and that
+local machine. In this example 172.17.0.1 was listed for docker0 and that
 worked.
 
 Run Docker Compose
@@ -276,13 +276,14 @@ Note this process will spit out a warning that some containers are being ignored
 **Note that you may need to build the containers a couple times for everything to converge**. You will likely need to do this. Run `docker-compose up` hit Ctrl-C, then run both the commands again to get everything working correctly.
 
 Note for whatever reason things like collectstatic aren't run automatically
-if you aren't using Virtual Box. You can fix it with the following
+if you aren't using Virtual Box. You can fix it with the following. Use this
+to connect to a shell in the container.
 
 .. code-block:: bash
 
     docker exec -it "seed_web_1" bash
 
-to connect to a hell in the container, then run
+Then run the following when you are there.
 
 .. code-block:: bash
 

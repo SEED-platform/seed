@@ -1,6 +1,7 @@
 Accessor
 accessor
 admin
+afterwards
 ajax
 Andriy
 angularjs
@@ -30,12 +31,14 @@ Chomsky
 chomsky
 chunked
 ci
+collectstatic
 concat
 cond
 config
 coparents
 coparent
 csv
+Ctrl
 dataset
 datasets
 datasource
@@ -51,6 +54,7 @@ django
 Django
 docstring
 docstrings
+docker0
 Drozdyuk
 edgecase
 eui
@@ -77,6 +81,7 @@ ImportFile
 Indices
 initializer
 ior
+ip
 iterable
 Iterable
 js
@@ -127,10 +132,12 @@ qqfile
 qs
 queryset
 Recurse
+redis
 Redis
 Redistributions
 regex
 repo
+rmi
 rtype
 seeddb
 seeduser
@@ -173,6 +180,8 @@ util
 utils
 uwsgi
 uWSGI
+virtualenv
+virtualenvs
 virtualenvwrapper
 whitelist
 wildcards
