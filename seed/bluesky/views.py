@@ -1,7 +1,5 @@
 from django.contrib.auth.decorators import login_required
-
 from django.forms.models import model_to_dict
-
 
 from seed.bluesky.models import PropertyView, TaxLotView, TaxLotProperty
 from seed.decorators import ajax_request, require_organization_id
