@@ -463,6 +463,32 @@ class TestBuildingSnapshot(TestCase):
             sorted(fake_building_extra.keys())
         )
 
+    def test_update_building_with_dates(self):
+        fake_building_kwargs = {
+            u'extra_data': {}
+        }
+
+        fake_building = util.make_fake_snapshot(
+            self.import_file2,
+            fake_building_kwargs,
+            seed_models.COMPOSITE_BS,
+            is_canon=True
+        )
+
+        fake_building.super_organization = self.fake_org
+        fake_building.save()
+
+        fake_building_pk = fake_building.pk
+        fake_building = seed_models.BuildingSnapshot.objects.filter(pk=fake_building_pk).first()
+
+        fake_building_kwargs['year_ending'] = '12/30/2015'
+
+        new_snap = seed_models.update_building(
+            fake_building, fake_building_kwargs, self.fake_user
+        )
+
+        self.assertNotEqual(new_snap.pk, fake_building.pk)
+
     def test_recurse_tree(self):
         """Make sure we get an accurate child tree."""
         self._add_additional_fake_buildings()
