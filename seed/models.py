@@ -541,16 +541,17 @@ def update_building(old_snapshot, updated_values, user, *args, **kwargs):
         initial_data=sources  # Copy parent's source attributes.
     )
 
+    # convert dates to something django likes
+    new_snapshot.clean()
     new_snapshot.save()
 
     diff_sources = _get_diff_sources(mappable, old_snapshot)
     for diff in diff_sources:
         setattr(new_snapshot, '{0}_source'.format(diff), new_snapshot)
 
-    # convert dates to something django likes
-    new_snapshot.clean()
     new_snapshot.canonical_building = canon
     new_snapshot.save()
+
     # All all the orgs the old snapshot had.
     new_snapshot.super_organization = old_snapshot.super_organization
     # Move the meta data over.
