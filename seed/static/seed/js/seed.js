@@ -52,7 +52,9 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.organization_settings',
     'BE.seed.controller.project',
     'BE.seed.controller.update_building_labels_modal',
-    'BE.seed.controller.security'
+    'BE.seed.controller.security',
+    'BE.seed.controller.bluesky_properties_controller',
+    'BE.seed.controller.bluesky_taxlots_controller'
     ]);
 angular.module('BE.seed.filters', [
     'district',
@@ -90,7 +92,8 @@ angular.module('BE.seed.services', [
     'mappingValidatorService',
     'BE.seed.service.search',
     'BE.seed.service.simple_modal',
-    'BE.seed.service.httpParamSerializerSeed'
+    'BE.seed.service.httpParamSerializerSeed',
+    'BE.seed.service.bluesky_service'
     ]);
 angular.module('BE.seed.utilities', [
     'BE.seed.utility.spinner'
@@ -788,6 +791,24 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
         .when('/labels', {
             controller: 'labels_controller',
             templateUrl: static_url + 'seed/partials/labels.html'
+        })
+        .when('/bluesky/properties', {
+            controller: 'bluesky_properties_controller',
+            templateUrl: static_url + 'seed/partials/bluesky/list.html',
+            resolve: {
+                properties: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_properties();
+                }]
+            }
+        })
+        .when('/bluesky/taxlots', {
+            controller: 'bluesky_taxlots_controller',
+            templateUrl: static_url + 'seed/partials/bluesky/list.html',
+            resolve: {
+                taxlots: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_taxlots();
+                }]
+            }
         })
         .otherwise({ redirectTo: '/' });
 

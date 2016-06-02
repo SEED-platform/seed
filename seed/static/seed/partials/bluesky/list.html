@@ -1,0 +1,39 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+           
+        </div>
+        <div class="page_title">
+            <h1>
+                <i class="fa fa-building-o"></i>
+                {$ search.number_matching_search | number:0 $}
+                <ng-pluralize count="search.number_matching_search"
+                              when="{'one': 'Building','other': 'Buildings'}"></ng-pluralize>
+            </h1>
+        </div>
+        <div class="right page_action_container page_action_btn">
+            
+        </div>
+    </div>
+    
+</div>
+
+<div class="buildingListControls"></div>
+
+
+<ul class="nav nav-tabs" style="margin-bottom:1px;">
+    <li ng-class="{active: tab=='P'}" heading="View by Property">
+        <a href="#/bluesky/properties">View by Property</a>
+    </li>
+    <li ng-class="{active: tab=='T'}" heading="View by Tax Lot">
+        <a href="#/bluesky/taxlots">View by Tax Lot</a>
+    </li>
+</ul>
+
+<div class="section_content_container" ng-cloak style="clear:both;">
+    <div class="section_content">
+        <ng-include src="urls.static_url + 'seed/partials/bluesky/table.html'">
+            <!-- buildings table loads here -->
+        </ng-include>
+    </div>
+</div>
