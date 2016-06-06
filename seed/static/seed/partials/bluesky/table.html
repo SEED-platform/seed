@@ -1,16 +1,24 @@
 <div id="building-list-table" class="table_list_container">
-    <table class="resizable table table-striped sortable" id="verify-mapping-table">
+    <table class="resizable table sortable" id="verify-mapping-table">
         <thead>
             <tr>
                 <th sd-resizable ng-repeat="c in columns" >{$ c $}</span>
                 </th>
             </tr>
         </thead>
-        <tbody>
-            <tr ng-repeat="o in objects">
+        <tbody ng-repeat="o in objects" style="border: none;">
+        <!-- Looping tbody is awful but angular isn't giving me a better way. -->
+            <tr>
                 <td ng-repeat="c in columns">
                     <span>
                         {$ o.state[c] $}
+                    </span>
+                </td>
+            </tr>
+            <tr ng-repeat="r in o.related " bgcolor="#EFEFEF">
+                <td ng-repeat="c in columns">
+                    <span>
+                        {$ r.state[c] $}
                     </span>
                 </td>
             </tr>

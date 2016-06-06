@@ -22,7 +22,8 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
         'property_name',
         'address_line_1',
         'energy_score',
-        'site_eui'
+        'site_eui',
+        'district'
       ];
       $scope.objects = properties.results;
       $scope.pagination = properties.pagination;
