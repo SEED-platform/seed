@@ -144,11 +144,40 @@ def get_taxlots(request):
         },
         'results': []
     }
+
+    # Ids of taxlotviews to look up in m2m
+    lot_ids = [l.pk for l in taxlot_views]
+    joins = TaxLotProperty.objects.filter(taxlot_view_id__in=lot_ids)
+
+    # Get all ids of properties on these joins
+    property_view_ids = [j.property_view_id for j in joins]
+
+    # Get all property views that are related
+    property_views = PropertyView.objects.select_related('property', 'state', 'cycle').filter(pk__in=property_view_ids)
+
+    # Map property view id to property view's state data
+    property_map = {}
+    for property_view in property_views:
+        property_map[property_view.pk] = model_to_dict(property_view.state)
+
+    # A mapping of taxlot view pk to a list of property state info for a property view
+    join_map = {}
+    for join in joins:
+        join_dict = {
+            'primary': join.primary,
+            'state': property_map[join.property_view_id]
+        }
+        try:
+            join_map[join.taxlot_view_id].append(join_dict)
+        except KeyError:
+            join_map[join.taxlot_view_id] = [join_dict]
+
     for lot in taxlot_views:
         l = model_to_dict(lot)
         l['state'] = model_to_dict(lot.state)
         l['taxlot'] = model_to_dict(lot.taxlot)
         l['cycle'] = model_to_dict(lot.cycle)
+        l['related'] = join_map.get(lot.pk, [])
         response['results'].append(l)
 
     return response

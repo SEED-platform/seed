@@ -15,7 +15,6 @@ angular.module('BE.seed.controller.bluesky_taxlots_controller', [])
     taxlots
   ) {
       $scope.object = 'taxlot';
-      $scope.page = 1;
 
       $scope.columns = [
           'jurisdiction_taxlot_identifier',
