@@ -26,8 +26,8 @@ angular.module('BE.seed.controller.bluesky_taxlots_controller', [])
       $scope.objects = taxlots.results;
       $scope.pagination = taxlots.pagination;
 
-      $scope.number_per_page_options = [1, 2, 5];
-      $scope.number_per_page = 1;
+      $scope.number_per_page_options = [10, 25, 50];
+      $scope.number_per_page = $scope.number_per_page_options[0];
       $scope.update_number_per_page = function(number) {
         $scope.number_per_page = number;
         bluesky_service.get_taxlots(1, number).then(function(taxlots) {

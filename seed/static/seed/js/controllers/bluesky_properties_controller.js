@@ -27,8 +27,8 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
       $scope.objects = properties.results;
       $scope.pagination = properties.pagination;
 
-      $scope.number_per_page_options = [1, 2, 5];
-      $scope.number_per_page = 1;
+      $scope.number_per_page_options = [10, 25, 50];
+      $scope.number_per_page = $scope.number_per_page_options[0];
       $scope.update_number_per_page = function(number) {
         $scope.number_per_page = number;
         bluesky_service.get_properties(1, number).then(function(properties) {
