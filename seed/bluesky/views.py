@@ -24,6 +24,7 @@ def get_properties(request):
 
     try:
         property_views = paginator.page(page)
+        page = int(page)
     except PageNotAnInteger:
         property_views = paginator.page(1)
         page = 1
@@ -33,8 +34,12 @@ def get_properties(request):
 
     response = {
         'pagination': {
+            'page': page,
             'start': paginator.page(page).start_index(),
             'end': paginator.page(page).end_index(),
+            'num_pages': paginator.num_pages,
+            'has_next': paginator.page(page).has_next(),
+            'has_previous': paginator.page(page).has_previous(),
             'total': paginator.count
         },
         'results': []
@@ -90,6 +95,7 @@ def get_taxlots(request):
 
     try:
         taxlot_views = paginator.page(page)
+        page = int(page)
     except PageNotAnInteger:
         taxlot_views = paginator.page(1)
         page = 1
@@ -99,8 +105,12 @@ def get_taxlots(request):
 
     response = {
         'pagination': {
+            'page': page,
             'start': paginator.page(page).start_index(),
             'end': paginator.page(page).end_index(),
+            'num_pages': paginator.num_pages,
+            'has_next': paginator.page(page).has_next(),
+            'has_previous': paginator.page(page).has_previous(),
             'total': paginator.count
         },
         'results': []
