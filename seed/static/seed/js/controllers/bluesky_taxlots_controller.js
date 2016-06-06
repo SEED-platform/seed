@@ -6,18 +6,34 @@ angular.module('BE.seed.controller.bluesky_taxlots_controller', [])
 .controller('bluesky_taxlots_controller', [
   '$scope',
   '$routeParams',
+  'bluesky_service',
   'taxlots',
   function(
     $scope,
     $routeParams,
+    bluesky_service,
     taxlots
   ) {
-      $scope.tab = 'T';
+      $scope.object = 'taxlot';
+      $scope.page = 1;
+
       $scope.columns = [
           'jurisdiction_taxlot_identifier',
           'block_number',
           'district',
           'address'
       ];
-      $scope.objects = taxlots;
+      $scope.objects = taxlots.results;
+      $scope.pagination = taxlots.pagination;
+
+      $scope.number_per_page_options = [1, 2, 5];
+      $scope.number_per_page = 1;
+      $scope.page = 1;
+      $scope.update_number_per_page = function(number) {
+        $scope.number_per_page = number;
+        bluesky_service.get_taxlots(1, number).then(function(taxlots) {
+          $scope.objects = taxlots.results;
+          $scope.pagination = taxlots.pagination;
+        });
+      }
 }]);

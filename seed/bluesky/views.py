@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
 
 from seed.bluesky.models import PropertyView, TaxLotView, TaxLotProperty
@@ -13,16 +14,37 @@ from seed.utils.api import api_endpoint
 @login_required
 @has_perm('requires_viewer')
 def get_properties(request):
-    property_views = PropertyView.objects.select_related('property', 'state', 'cycle') \
+    page = request.GET.get('page', 1)
+    per_page = request.GET.get('per_page', 1)
+
+    property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
         .filter(property__organization_id=request.GET['organization_id'])
 
-    response = []
+    paginator = Paginator(property_views_list, per_page)
+
+    try:
+        property_views = paginator.page(page)
+    except PageNotAnInteger:
+        property_views = paginator.page(1)
+        page = 1
+    except EmptyPage:
+        property_views = paginator.page(paginator.num_pages)
+        page = paginator.num_pages
+
+    response = {
+        'pagination': {
+            'start': paginator.page(page).start_index(),
+            'end': paginator.page(page).end_index(),
+            'total': paginator.count
+        },
+        'results': []
+    }
     for prop in property_views:
         p = model_to_dict(prop)
         p['state'] = model_to_dict(prop.state)
         p['property'] = model_to_dict(prop.property)
         p['cycle'] = model_to_dict(prop.cycle)
-        response.append(p)
+        response['results'].append(p)
 
     return response
 
@@ -58,16 +80,37 @@ def get_property(request, property_pk):
 @login_required
 @has_perm('requires_viewer')
 def get_taxlots(request):
-    taxlot_views = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
+    page = request.GET.get('page', 1)
+    per_page = request.GET.get('per_page', 1)
+
+    taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
         .filter(taxlot__organization_id=request.GET['organization_id'])
 
-    response = []
+    paginator = Paginator(taxlot_views_list, per_page)
+
+    try:
+        taxlot_views = paginator.page(page)
+    except PageNotAnInteger:
+        taxlot_views = paginator.page(1)
+        page = 1
+    except EmptyPage:
+        taxlot_views = paginator.page(paginator.num_pages)
+        page = paginator.num_pages
+
+    response = {
+        'pagination': {
+            'start': paginator.page(page).start_index(),
+            'end': paginator.page(page).end_index(),
+            'total': paginator.count
+        },
+        'results': []
+    }
     for lot in taxlot_views:
         l = model_to_dict(lot)
         l['state'] = model_to_dict(lot.state)
         l['taxlot'] = model_to_dict(lot.taxlot)
         l['cycle'] = model_to_dict(lot.cycle)
-        response.append(l)
+        response['results'].append(l)
 
     return response
 

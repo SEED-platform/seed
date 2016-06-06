@@ -17,17 +17,23 @@
         </tbody>
     </table>
 </div>
+
 <div class="table_footer">
     <div class="display_number_entries col-sm-3 col-md-3">
          <div class="display_number_entries_text">Display:</div>
          <div class="display_number_entries_select">
-            <select class="form-control input-sm col-xs-2" name="number_per_page_select" id="number_per_page_select" ng-options="number_per_page_option for number_per_page_option in search.number_per_page_options" ng-model="search.number_per_page_options_model" ng-change="search.update_number_per_page()">
+            <select class="form-control input-sm col-xs-2" name="number_per_page_select" id="number_per_page_select" ng-options="number_per_page_option for number_per_page_option in number_per_page_options" ng-model="number_per_page" ng-change="update_number_per_page(number_per_page)">
             </select>
         </div>
-        <div class="display_number_entries_text">buildings</div>
+        <div class="display_number_entries_text">
+            <span ng-show="object == 'property'">properties</span>
+            <span ng-show="object == 'taxlot'">tax lots</span>
+        </div>
     </div>
     <div class="counts col-sm-4 col-md-4">
-        <span>Showing {$ search.showing.start | number:0 $} to {$ search.showing.end | number:0 $} of {$ search.number_matching_search | number:0 $} buildings</span>
+        <span>Showing {$ pagination.start | number:0 $} to {$ pagination.end | number:0 $} of {$ pagination.total | number:0 $} </span>
+        <span ng-show="object == 'property'">properties</span>
+        <span ng-show="object == 'taxlot'">tax lots</span>
     </div>
     <div class="pager_container col-sm-5 col-md-5">
         <ul class="pager">

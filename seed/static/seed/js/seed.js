@@ -797,7 +797,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             templateUrl: static_url + 'seed/partials/bluesky/list.html',
             resolve: {
                 properties: ['bluesky_service', function(bluesky_service){
-                    return bluesky_service.get_properties();
+                    return bluesky_service.get_properties(1, 1);
                 }]
             }
         })
@@ -806,7 +806,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             templateUrl: static_url + 'seed/partials/bluesky/list.html',
             resolve: {
                 taxlots: ['bluesky_service', function(bluesky_service){
-                    return bluesky_service.get_taxlots();
+                    return bluesky_service.get_taxlots(1, 1);
                 }]
             }
         })
