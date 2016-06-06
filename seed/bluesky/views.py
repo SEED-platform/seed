@@ -177,4 +177,3 @@ def get_taxlot(request, taxlot_pk):
         l['properties'].append(model_to_dict(prop))
 
     return l
-

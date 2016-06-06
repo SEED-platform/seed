@@ -1,6 +1,9 @@
 from django.contrib import admin
 
-from seed.bluesky.models import *
+from seed.bluesky.models import (
+    Property, PropertyView, PropertyState, Cycle, TaxLot, TaxLotView, TaxLotState,
+    TaxLotProperty
+)
 
 
 admin.site.register(Property)

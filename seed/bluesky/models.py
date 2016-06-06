@@ -43,9 +43,9 @@ class PropertyState(models.Model):
     city = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
     postal_code = models.CharField(max_length=255, null=True, blank=True)
-    building_count = models.IntegerField(null=True, blank=True) # Only spot where it's 'building' in the app, b/c this is a PortMgr field.
+    building_count = models.IntegerField(null=True, blank=True)  # Only spot where it's 'building' in the app, b/c this is a PortMgr field.
     property_notes = models.TextField(null=True, blank=True)
-    use_description = models.CharField(max_length=255, null=True, blank=True) # Tax IDs are often stuck in here.
+    use_description = models.CharField(max_length=255, null=True, blank=True)  # Tax IDs are often stuck in here.
     gross_floor_area = models.FloatField(null=True, blank=True)
     year_built = models.IntegerField(null=True, blank=True)
     recent_sale_date = models.DateTimeField(null=True, blank=True)
