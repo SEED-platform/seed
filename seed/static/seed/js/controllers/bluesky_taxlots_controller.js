@@ -20,7 +20,11 @@ angular.module('BE.seed.controller.bluesky_taxlots_controller', [])
           'jurisdiction_taxlot_identifier',
           'block_number',
           'district',
-          'address'
+          'address',
+          // Property columns:
+          'energy_score',
+          'site_eui',
+          'property_name'
       ];
       $scope.objects = taxlots.results;
       $scope.pagination = taxlots.pagination;

@@ -23,6 +23,7 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
         'address_line_1',
         'energy_score',
         'site_eui',
+        // Taxlot fields
         'district'
       ];
       $scope.objects = properties.results;
