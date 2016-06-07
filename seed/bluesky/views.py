@@ -2,13 +2,14 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
 
-from seed.bluesky.models import PropertyView, TaxLotView, TaxLotProperty
-from seed.decorators import ajax_request, require_organization_id
+from seed.bluesky.models import Cycle, PropertyView, TaxLotView, TaxLotProperty
+from seed.decorators import ajax_request, require_organization_id, require_organization_membership
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.utils.api import api_endpoint
 
 
 @require_organization_id
+@require_organization_membership
 @api_endpoint
 @ajax_request
 @login_required
@@ -84,6 +85,7 @@ def get_properties(request):
 
 
 @require_organization_id
+@require_organization_membership
 @api_endpoint
 @ajax_request
 @login_required
@@ -109,6 +111,7 @@ def get_property(request, property_pk):
 
 
 @require_organization_id
+@require_organization_membership
 @api_endpoint
 @ajax_request
 @login_required
@@ -184,6 +187,7 @@ def get_taxlots(request):
 
 
 @require_organization_id
+@require_organization_membership
 @api_endpoint
 @ajax_request
 @login_required
@@ -206,3 +210,20 @@ def get_taxlot(request, taxlot_pk):
         l['properties'].append(model_to_dict(prop))
 
     return l
+
+
+@require_organization_id
+@require_organization_membership
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('requires_viewer')
+def get_cycles(request):
+    cycles = Cycle.objects.filter(organization_id=request.GET['organization_id'])
+    response = []
+    for cycle in cycles:
+        response.append({
+            'pk': cycle.pk,
+            'name': cycle.name
+        })
+    return response

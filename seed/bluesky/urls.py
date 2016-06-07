@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'^property/(?P<property_pk>\d+)/$', views.get_property, name='property-detail'),
     url(r'^lots/$', views.get_taxlots, name='lots'),
     url(r'^lot/(?P<taxlot_pk>\d+)/$', views.get_taxlot, name='lot-detail'),
+    url(r'^cycles/$', views.get_cycles, name='cycles'),
 ]
