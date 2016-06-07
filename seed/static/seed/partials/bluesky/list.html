@@ -6,16 +6,15 @@
         <div class="page_title">
             <h1>
                 <i class="fa fa-building-o"></i>
-                {$ search.number_matching_search | number:0 $}
-                <ng-pluralize count="search.number_matching_search"
-                              when="{'one': 'Building','other': 'Buildings'}"></ng-pluralize>
+                {$ pagination.total | number:0 $}
+                <span ng-show="object == 'property'"><ng-pluralize count="pagination.total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize></span>
+                <span ng-show="object == 'taxlot'"><ng-pluralize count="pagination.total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
             </h1>
         </div>
         <div class="right page_action_container page_action_btn">
             
         </div>
     </div>
-    
 </div>
 
 <div class="buildingListControls"></div>
