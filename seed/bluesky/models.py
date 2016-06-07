@@ -14,9 +14,14 @@ class Cycle(models.Model):
     name = models.CharField(max_length=255)
     start = models.DateTimeField()
     end = models.DateTimeField()
+    created = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
         return u'Cycle - %s' % (self.name)
+
+    class Meta:
+        ordering = ['-created']
+        get_latest_by = 'created'
 
 
 class Property(models.Model):
