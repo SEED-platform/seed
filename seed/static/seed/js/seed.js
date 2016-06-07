@@ -798,6 +798,9 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             resolve: {
                 properties: ['bluesky_service', function(bluesky_service){
                     return bluesky_service.get_properties(1, 10);
+                }],
+                cycles: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_cycles();
                 }]
             }
         })
@@ -807,6 +810,9 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             resolve: {
                 taxlots: ['bluesky_service', function(bluesky_service){
                     return bluesky_service.get_taxlots(1, 10);
+                }],
+                cycles: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_cycles();
                 }]
             }
         })

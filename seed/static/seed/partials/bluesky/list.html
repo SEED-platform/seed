@@ -12,7 +12,9 @@
             </h1>
         </div>
         <div class="right page_action_container page_action_btn">
-            
+            <select class="form-control input-sm col-xs-2" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
+                ng-options="option.name for option in cycle.cycles track by option.pk">
+            </select>
         </div>
     </div>
 </div>

@@ -18,8 +18,14 @@ def get_properties(request):
     page = request.GET.get('page', 1)
     per_page = request.GET.get('per_page', 1)
 
+    cycle_id = request.GET.get('cycle')
+    if cycle_id:
+        cycle = Cycle.objects.get(organization_id=request.GET['organization_id'], pk=cycle_id)
+    else:
+        cycle = Cycle.objects.filter(organization_id=request.GET['organization_id']).latest()
+
     property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-        .filter(property__organization_id=request.GET['organization_id'])
+        .filter(property__organization_id=request.GET['organization_id'], cycle=cycle)
 
     paginator = Paginator(property_views_list, per_page)
 
@@ -120,8 +126,14 @@ def get_taxlots(request):
     page = request.GET.get('page', 1)
     per_page = request.GET.get('per_page', 1)
 
+    cycle_id = request.GET.get('cycle')
+    if cycle_id:
+        cycle = Cycle.objects.get(organization_id=request.GET['organization_id'], pk=cycle_id)
+    else:
+        cycle = Cycle.objects.filter(organization_id=request.GET['organization_id']).latest()
+
     taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
-        .filter(taxlot__organization_id=request.GET['organization_id'])
+        .filter(taxlot__organization_id=request.GET['organization_id'], cycle=cycle)
 
     paginator = Paginator(taxlot_views_list, per_page)
 
