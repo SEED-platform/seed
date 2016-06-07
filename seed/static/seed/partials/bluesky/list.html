@@ -12,14 +12,21 @@
             </h1>
         </div>
         <div class="right page_action_container page_action_btn">
+
+        </div>
+    </div>
+</div>
+
+<div class="buildingListControls">
+    <div class="form-group">
+        <label>Cycle:</label>
+        <div class="btn-group">
             <select class="form-control input-sm col-xs-2" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
                 ng-options="option.name for option in cycle.cycles track by option.pk">
             </select>
         </div>
     </div>
 </div>
-
-<div class="buildingListControls"></div>
 
 
 <ul class="nav nav-tabs" style="margin-bottom:1px;">
