@@ -10,3 +10,10 @@ The configuration is separated in two steps. The first one will take care about 
 
 The main configurations that you need to change are inside the file vars/seed.yml, there you can find the a lot of variables that you need to adequate to your environment. All the important variables are between ##.
 
+To execute the playbook for the first time, just run:
+ansible-playbook -vv seed.yml --extra-vars "{ 'deploy': 'false' }"
+
+If you need to run just the application configuration tasks, run the following command:
+ansible-playbook -vv seed.yml --extra-vars "{ 'deploy': 'true' }"
+
+Feel free to get in touch if you have any doubts.
