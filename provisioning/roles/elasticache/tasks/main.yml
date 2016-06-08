@@ -1,0 +1,46 @@
+---
+- name: Create Security Group for Redis
+  ec2_group:
+    name: "redis-{{ app_environment }}-sg"
+    description: "Security Group Redis {{ app_environment }}"
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    rules:
+      - proto: tcp
+        from_port: 6379
+        to_port: 6379
+        cidr_ip: "{{ vpc_range }}"
+  register: security_group_redis
+
+- name: Tagging Elasticache
+  ec2_tag:
+    region: "{{ region }}"
+    resource: "{{ security_group_redis.group_id }}"
+    tags:
+      Name: "{{ tags_redis.Name }}"
+      environment: "{{ app_environment }}"
+
+- name: Create Cache Subnet Group
+  elasticache_subnet_group:
+    state: present
+    name: "{{ cache_subnet_group_name }}"
+    description: Cache Subnet Group
+    subnets:
+      - subnet-2a274f5c
+      - subnet-92a3e6af
+      - subnet-b42baaec
+    region: "{{ region }}"
+  register: redis_subnet
+
+- name: Create Redis instance
+  elasticache:
+    name: "{{ redis_name }}"
+    state: present
+    engine: redis
+    node_type: "{{ redis_size }}"
+    num_nodes: "{{ redis_num_nodes }}"
+    cache_subnet_group: "{{ cache_subnet_group_name }}"
+    cache_security_groups: []
+    security_group_ids: "{{ security_group_redis.group_id }}"
+    cache_port: 6379
+    region: "{{ region }}"

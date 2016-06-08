@@ -1,0 +1,125 @@
+---
+  - hosts: "{{ hosts | default('tag_Name_seed_devolopment*') }}"
+    remote_user: ubuntu
+    become: yes
+
+    tasks:
+      - name: Update apt-get
+        command: apt-get update
+
+      - name: Install git 
+        apt: name=git state=latest
+
+      - name: Install PIP 
+        apt: name=python-pip state=latest
+
+      - name: Clone seed repo
+        command: git clone https://github.com/SEED-platform/seed.git /home/ubuntu/seed
+        become_user: ubuntu
+        args:
+          creates: /home/ubuntu/seed
+
+      - name: Install python dependencies
+        apt: name={{ item }} state=latest
+        with_items:
+            - postgresql-server-dev-9.3
+            - python-dev
+            - libpq-dev
+            - libmemcached-dev
+
+      - name: Python Pre Dependencies
+        become: yes
+        command: pip install {{ item }}
+        with_items:
+            - docutils
+            - jinja2
+            - pep8
+            - contextlib2
+            - django-appconf
+
+      - name: Python Dependencies
+        become: yes
+        command: pip install -r aws.txt
+        args:
+            chdir: /home/ubuntu/seed/requirements/
+
+      - name: Javascript dependencies
+        apt: name={{ item }} state=latest
+        with_items:
+          - build-essential
+          - libssl-dev
+          - curl
+
+      - name: Install Nodejs
+        apt: name='nodejs' state='installed'
+
+      - name: Install NPM
+        apt: name='npm' state='installed'
+
+      - name: Install Celery
+        pip: name='Celery' state='present' extra_args='-U'
+
+      - name: Install uwsgi
+        pip: name='uwsgi' state='present'
+
+      - name: Install Gulp
+        become: yes
+        command: npm install -g bower gulp
+
+      - name: Install Javascript Dependencies
+        command: bin/install_javascript_dependencies.sh
+        become: yes
+        args:
+            chdir: /home/ubuntu/seed
+
+      - name: Copy connections configuration database
+        template: src="./templates/database/local_untracked.py" dest="/home/ubuntu/seed/config/settings/local_untracked.py" owner=ubuntu group=ubuntu mode=0644
+
+      - name: MigrateDB
+        command: python manage.py migrate
+        args:
+            chdir: /home/ubuntu/seed/
+        ignore_errors: true
+
+      - name: Create Link to Nodejs
+        file: src="/usr/bin/nodejs" dest="/usr/bin/node" owner=root group=root state=link
+
+      - name: Post Compile
+        command: bin/post_compile
+        become: yes
+        args:
+            chdir: /home/ubuntu/seed/
+        ignore_errors: true
+
+      - name: Start Seed UWSGI
+        command: bin/start-seed.sh
+        args:
+            chdir: /home/ubuntu/seed/
+        ignore_errors: true
+
+      - name: Install Nginx
+        apt: name=nginx state=latest
+
+      # Nginx Default Configuration
+      - name: Copy Nginx Default Configuration file
+        template: src="./templates/nginx/nginx.conf.j2" dest="/etc/nginx/nginx.conf" owner=root group=root mode=0640
+        notify:
+          - restart nginx
+
+      # SEED Nginx Vhost
+      - name: Copy Nginx SEED Configuration file
+        template: src="./templates/nginx/seed.conf.j2" dest="/etc/nginx/sites-available/seed.conf" owner=root group=root mode=0640
+        notify:
+          - restart nginx
+
+      - name: Remove Default Vhost
+        file: path="/etc/nginx/sites-enabled/default" state=absent
+
+      - name: Create Link to Seed Vhost
+        file: src="/etc/nginx/sites-available/seed.conf" dest="/etc/nginx/sites-enabled/seed" owner=root group=root state=link
+        notify:
+          - restart nginx
+
+    handlers:
+      - name: restart nginx
+        service: name=nginx state=reloaded

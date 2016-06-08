@@ -1,0 +1,13 @@
+---
+- name: seed API 
+  hosts: localhost
+  connection: localhost
+  gather_facts: false
+  vars_files:
+    - "vars/{{ app_name }}.yml"
+  roles:
+    { role: rds, when: deploy == "false" }
+    { role: elasticache, when: deploy == "false" }
+    { role: seed, when: deploy == "false" }
+
+- include: seed_app.yml
