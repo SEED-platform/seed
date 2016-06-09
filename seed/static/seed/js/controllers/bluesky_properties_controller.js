@@ -27,7 +27,7 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
         'address_line_1',
         'city',
         'property_name',
-        //'campus',
+        'campus',
         //'PM Parent Property ID',
         'gross_floor_area',
         'use_description',

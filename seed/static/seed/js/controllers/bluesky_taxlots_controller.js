@@ -29,7 +29,7 @@ angular.module('BE.seed.controller.bluesky_taxlots_controller', [])
         'district',
         'primary',
         'property_name',
-        //'campus',
+        'campus',
         //'PM Parent Property ID',
         'jurisdiction_property_identifier',
         'building_portfolio_manager_identifier',

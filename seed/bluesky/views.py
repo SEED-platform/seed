@@ -80,10 +80,9 @@ def get_properties(request):
             join_map[join.property_view_id] = [join_dict]
 
     for prop in property_views:
-        p = model_to_dict(prop)
-        p['state'] = model_to_dict(prop.state)
-        p['property'] = model_to_dict(prop.property)
-        p['cycle'] = model_to_dict(prop.cycle)
+        # Each object in the response is built from the state data, with related data added on.
+        p = model_to_dict(prop.state)
+        p['campus'] = prop.property.campus
         p['related'] = join_map.get(prop.pk, [])
         response['results'].append(p)
 
@@ -173,13 +172,14 @@ def get_taxlots(request):
     # Map property view id to property view's state data
     property_map = {}
     for property_view in property_views:
-        property_map[property_view.pk] = model_to_dict(property_view.state)
+        property_data = model_to_dict(property_view.state)
+        property_data['campus'] = property_view.property.campus
+        property_map[property_view.pk] = property_data
 
     # A mapping of taxlot view pk to a list of property state info for a property view
     join_map = {}
     for join in joins:
         join_dict = property_map[join.property_view_id].copy()
-        
         join_dict.update({
             'primary': 'P' if join.primary else 'S'
         })
@@ -189,10 +189,8 @@ def get_taxlots(request):
             join_map[join.taxlot_view_id] = [join_dict]
 
     for lot in taxlot_views:
-        l = model_to_dict(lot)
-        l['state'] = model_to_dict(lot.state)
-        l['taxlot'] = model_to_dict(lot.taxlot)
-        l['cycle'] = model_to_dict(lot.cycle)
+        # Each object in the response is built from the state data, with related data added on.
+        l = model_to_dict(lot.state)
         l['related'] = join_map.get(lot.pk, [])
         response['results'].append(l)
 
