@@ -94,12 +94,6 @@ class Command(BaseCommand):
                 other_buildingsnapshots = [building_dict[bs_id] for bs_id in other_nodes]
 
                 createBlueSkyStructures(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix)
-
-
-
-
-
-
         # counts = collections.Counter()
         # for label in labelarray: counts[label] += 1
         # nontrivial_tree_labels = set(map(projection_onto_index(0), filter(lambda (x,y): y > 1, counts.items())))
@@ -114,8 +108,7 @@ class Command(BaseCommand):
 
 
 def createBlueSkyStructures(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix):
-    """Take tree structure describing an
-
-
+    """Take tree structure describing a single Property/TaxLot over time and create the entities."""
     logging.info("Creating a new entity thing-a-majig!")
+    embed()
     return
