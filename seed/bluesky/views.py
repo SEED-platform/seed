@@ -70,10 +70,10 @@ def get_properties(request):
     # A mapping of property view pk to a list of taxlot state info for a taxlot view
     join_map = {}
     for join in joins:
-        join_dict = {
-            'primary': join.primary,
-            'state': taxlot_map[join.taxlot_view_id]
-        }
+        join_dict = taxlot_map[join.taxlot_view_id].copy()
+        join_dict.update({
+            'primary': 'P' if join.primary else 'S'
+        })
         try:
             join_map[join.property_view_id].append(join_dict)
         except KeyError:
@@ -178,10 +178,11 @@ def get_taxlots(request):
     # A mapping of taxlot view pk to a list of property state info for a property view
     join_map = {}
     for join in joins:
-        join_dict = {
-            'primary': join.primary,
-            'state': property_map[join.property_view_id]
-        }
+        join_dict = property_map[join.property_view_id].copy()
+        
+        join_dict.update({
+            'primary': 'P' if join.primary else 'S'
+        })
         try:
             join_map[join.taxlot_view_id].append(join_dict)
         except KeyError:
