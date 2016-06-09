@@ -11,13 +11,13 @@ from django.apps import apps
 import pdb
 import collections
 import os
-import networkx as nx
-import matplotlib.pyplot as plt
-import pygraphviz
+#import networkx as nx
+#import matplotlib.pyplot as plt
+#import pygraphviz
 import logging
 import itertools
 from IPython import embed
-from networkx.drawing.nx_agraph import graphviz_layout
+#from networkx.drawing.nx_agraph import graphviz_layout
 import seed.bluesky.models
 import numpy as np
 from scipy.sparse import dok_matrix
