@@ -50,6 +50,7 @@ class PropertyState(models.Model):
     postal_code = models.CharField(max_length=255, null=True, blank=True)
     building_count = models.IntegerField(null=True, blank=True)  # Only spot where it's 'building' in the app, b/c this is a PortMgr field.
     property_notes = models.TextField(null=True, blank=True)
+    year_ending = models.DateField(null=True, blank=True)
     use_description = models.CharField(max_length=255, null=True, blank=True)  # Tax IDs are often stuck in here.
     gross_floor_area = models.FloatField(null=True, blank=True)
     year_built = models.IntegerField(null=True, blank=True)
@@ -63,11 +64,12 @@ class PropertyState(models.Model):
     owner_city_state = models.CharField(max_length=255, null=True, blank=True)
     owner_postal_code = models.CharField(max_length=255, null=True, blank=True)
     building_portfolio_manager_identifier = models.CharField(max_length=255, null=True, blank=True)
-    building_home_energy_saver_identifier = models.CharField(max_length=255, null=True, blank=True)
+    building_home_energy_score_identifier = models.CharField(max_length=255, null=True, blank=True)
     energy_score = models.IntegerField(null=True, blank=True)
     site_eui = models.FloatField(null=True, blank=True)
     generation_date = models.DateTimeField(null=True, blank=True)
     release_date = models.DateTimeField(null=True, blank=True)
+    source_eui_weather_normalized = models.FloatField(null=True, blank=True)
     site_eui_weather_normalized = models.FloatField(null=True, blank=True)
     source_eui = models.FloatField(null=True, blank=True)
     energy_alerts = models.TextField(null=True, blank=True)
