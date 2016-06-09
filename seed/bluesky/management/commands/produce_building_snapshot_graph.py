@@ -107,7 +107,7 @@ class Command(BaseCommand):
         return
 
 
-def createBlueSkyStructures(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix):
+def create_associated_blue_sky_structure(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix):
     """Take tree structure describing a single Property/TaxLot over time and create the entities."""
     logging.info("Creating a new entity thing-a-majig!")
     embed()
