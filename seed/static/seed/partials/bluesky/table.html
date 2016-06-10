@@ -2,7 +2,7 @@
     <table class="resizable table sortable" id="verify-mapping-table">
         <thead>
             <tr>
-                <th sd-resizable ng-repeat="c in columns track by $index" >{$ c $}</span>
+                <th sd-resizable ng-repeat="c in columns track by $index" >{$ c.display $}</span>
                 </th>
             </tr>
         </thead>
@@ -11,14 +11,14 @@
             <tr>
                 <td ng-repeat="c in columns track by $index">
                     <span>
-                        {$ o[c] $}
+                        {$ o[c.field] $}
                     </span>
                 </td>
             </tr>
             <tr ng-repeat="r in o.related " bgcolor="#EFEFEF">
                 <td ng-repeat="c in columns track by $index">
                     <span>
-                        {$ r[c] $}
+                        {$ r[c.field] $}
                     </span>
                 </td>
             </tr>
