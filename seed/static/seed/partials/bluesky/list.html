@@ -1,0 +1,47 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+           
+        </div>
+        <div class="page_title">
+            <h1>
+                <i class="fa fa-building-o"></i>
+                {$ pagination.total | number:0 $}
+                <span ng-show="object == 'property'"><ng-pluralize count="pagination.total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize></span>
+                <span ng-show="object == 'taxlot'"><ng-pluralize count="pagination.total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
+            </h1>
+        </div>
+        <div class="right page_action_container page_action_btn">
+
+        </div>
+    </div>
+</div>
+
+<div class="buildingListControls">
+    <div class="form-group">
+        <label>Cycle:</label>
+        <div class="btn-group">
+            <select class="form-control input-sm col-xs-2" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
+                ng-options="option.name for option in cycle.cycles track by option.pk">
+            </select>
+        </div>
+    </div>
+</div>
+
+
+<ul class="nav nav-tabs" style="margin-bottom:1px;">
+    <li ng-class="{active: object=='property'}" heading="View by Property">
+        <a href="#/bluesky/properties">View by Property</a>
+    </li>
+    <li ng-class="{active: object=='taxlot'}" heading="View by Tax Lot">
+        <a href="#/bluesky/taxlots">View by Tax Lot</a>
+    </li>
+</ul>
+
+<div class="section_content_container" ng-cloak style="clear:both;">
+    <div class="section_content">
+        <ng-include src="urls.static_url + 'seed/partials/bluesky/table.html'">
+            <!-- buildings table loads here -->
+        </ng-include>
+    </div>
+</div>
