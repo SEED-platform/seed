@@ -33,7 +33,7 @@ class Property(models.Model):
 
 class PropertyState(models.Model):
     # import_record = models.ForeignKey(ImportRecord)
-    confidence = models.FloatField(default=0)
+    confidence = models.FloatField(default=0,null=True,blank=True)
 
     jurisdiction_property_identifier = models.CharField(max_length=255, null=True, blank=True)
     lot_number = models.CharField(max_length=255, null=True, blank=True)
@@ -97,7 +97,7 @@ class TaxLotState(models.Model):
     # communicating with the cities.
 
     # import_record = models.ForeignKey(ImportRecord)
-    confidence = models.FloatField(default=0)
+    confidence = models.FloatField(default=0, null=True, blank=True)
 
     jurisdiction_taxlot_identifiers = models.CharField(max_length=255, null=True, blank=True)
     block_number = models.CharField(max_length=255, null=True, blank=True)
