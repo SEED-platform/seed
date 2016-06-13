@@ -84,6 +84,27 @@ def get_properties(request):
         p = model_to_dict(prop.state)
         p['campus'] = prop.property.campus
         p['related'] = join_map.get(prop.pk, [])
+
+        # Map of fields in related model to unique list of values
+        related_field_map = {}
+
+        # Iterate over related dicts and gather field values
+        for related in p['related']:
+            for k, v in related.items():
+                try:
+                    related_field_map[k].add(v)
+                except KeyError:
+                    try:
+                        related_field_map[k] = set([v])
+                    except TypeError:
+                        # Extra data field, ignore it
+                        pass
+
+        for k, v in related_field_map.items():
+            related_field_map[k] = list(v)
+
+        p['collapsed'] = related_field_map
+
         response['results'].append(p)
 
     return response
@@ -192,6 +213,27 @@ def get_taxlots(request):
         # Each object in the response is built from the state data, with related data added on.
         l = model_to_dict(lot.state)
         l['related'] = join_map.get(lot.pk, [])
+
+        # Map of fields in related model to unique list of values
+        related_field_map = {}
+
+        # Iterate over related dicts and gather field values
+        for related in l['related']:
+            for k, v in related.items():
+                try:
+                    related_field_map[k].add(v)
+                except KeyError:
+                    try:
+                        related_field_map[k] = set([v])
+                    except TypeError:
+                        # Extra data field, ignore it
+                        pass
+
+        for k, v in related_field_map.items():
+            related_field_map[k] = list(v)
+
+        l['collapsed'] = related_field_map
+
         response['results'].append(l)
 
     return response

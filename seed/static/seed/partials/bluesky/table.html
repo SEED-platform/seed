@@ -10,12 +10,15 @@
         <!-- Looping tbody is awful but angular isn't giving me a better way. -->
             <tr>
                 <td ng-repeat="c in columns track by $index">
-                    <span>
-                        {$ o[c.field] $}
+                    <span ng-if="!c.related">{$ o[c.field] $}</span>
+                    <span ng-if="c.related && !expanded">
+                        <span ng-repeat="value in o.collapsed[c.field]">
+                        {$ value $}<span ng-if="!$last">; </span>
+                        </span>
                     </span>
                 </td>
             </tr>
-            <tr ng-repeat="r in o.related " bgcolor="#EFEFEF">
+            <tr ng-if="expanded" ng-repeat="r in o.related " bgcolor="#EFEFEF">
                 <td ng-repeat="c in columns track by $index">
                     <span>
                         {$ r[c.field] $}
