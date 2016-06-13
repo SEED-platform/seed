@@ -14,12 +14,12 @@ import datetime
 #import pygraphviz
 import logging
 import itertools
-from IPython import embed
+# from IPython import embed
 #from networkx.drawing.nx_agraph import graphviz_layout
 import seed.bluesky.models
-import numpy as np
-from scipy.sparse import dok_matrix
-from scipy.sparse.csgraph import connected_components
+# import numpy as np
+# from scipy.sparse import dok_matrix
+# from scipy.sparse.csgraph import connected_components
 from _localtools import projection_onto_index
 from _localtools import get_static_building_snapshot_tree_file
 from _localtools import read_building_snapshot_tree_structure
