@@ -326,7 +326,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
             chartData: data.chart_data,
             xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
             yAxisTitle: $scope.yAxisSelectedItem.axisLabel,
-            yAxisType: Category,
+            yAxisType: 'Category',
             colors: colorsArr
           };
           if($scope.aggChartData.chartData && $scope.aggChartData.chartData.length > 0) {
