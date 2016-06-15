@@ -76,5 +76,36 @@ angular.module('BE.seed.service.bluesky_service', [])
           return defer.promise;
       };
 
+      bluesky_service.get_property_columns = function() {
+          var defer = $q.defer();
+          $http({
+              method: 'GET',
+              url: window.BE.urls.get_property_columns,
+              params: {
+                  organization_id: user_service.get_organization().id
+              }
+          }).success(function(data, status, headers, config) {
+              defer.resolve(data);
+          }).error(function(data, status, headers, config) {
+              defer.reject(data, status);
+          });
+          return defer.promise;
+      };
+
+      bluesky_service.get_taxlot_columns = function() {
+          var defer = $q.defer();
+          $http({
+              method: 'GET',
+              url: window.BE.urls.get_taxlot_columns,
+              params: {
+                  organization_id: user_service.get_organization().id
+              }
+          }).success(function(data, status, headers, config) {
+              defer.resolve(data);
+          }).error(function(data, status, headers, config) {
+              defer.reject(data, status);
+          });
+          return defer.promise;
+      };
       return bluesky_service;
 }]);

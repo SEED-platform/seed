@@ -280,3 +280,143 @@ def get_cycles(request):
             'name': cycle.name
         })
     return response
+
+
+@require_organization_id
+@require_organization_membership
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('requires_viewer')
+def get_property_columns(request):
+    columns = [
+        {'field': 'building_portfolio_manager_identifier', 'display': 'PM Property ID', 'related': False, 'extra_data': False},
+        {'field': 'jurisdiction_property_identifier', 'display': 'Property / Building ID', 'related': False},
+        {'field': 'jurisdiction_taxlot_identifier', 'display': 'Tax Lot ID', 'related': True},
+        {'field': 'primary', 'display': 'Primary/Secondary', 'related': True},
+        {'field': 'no_field', 'display': 'Associated TaxLot IDs', 'related': False},
+        {'field': 'no_field', 'display': 'Associated Building Tax Lot ID', 'related': False},
+        {'field': 'address', 'display': 'Tax Lot Address', 'related': True},
+        {'field': 'address_line_1', 'display': 'Property Address 1', 'related': False},
+        {'field': 'city', 'display': 'Property City', 'related': False},
+        {'field': 'property_name', 'display': 'Property Name', 'related': False},
+        {'field': 'campus', 'display': 'Campus', 'related': False},
+        {'field': 'no_field', 'display': 'PM Parent Property ID', 'related': False},
+        {'field': 'gross_floor_area', 'display': 'Property Floor Area', 'related': False},
+        {'field': 'use_description', 'display': 'Property Type', 'related': False},
+        {'field': 'energy_score', 'display': 'ENERGY STAR Score', 'related': False},
+        {'field': 'site_eui', 'display': 'Site EUI (kBtu/sf-yr)', 'related': False},
+        {'field': 'property_notes', 'display': 'Property Notes', 'related': False},
+        {'field': 'year_ending', 'display': 'Benchmarking year', 'related': False},
+        {'field': 'owner', 'display': 'Owner', 'related': False},
+        {'field': 'owner_email', 'display': 'Owner Email', 'related': False},
+        {'field': 'owner_telephone', 'display': 'Owner Telephone', 'related': False},
+        {'field': 'generation_date', 'display': 'PM Generation Date', 'related': False},
+        {'field': 'release_date', 'display': 'PM Release Date', 'related': False},
+        {'field': 'address_line_2', 'display': 'Property Address 2', 'related': False},
+        {'field': 'state', 'display': 'Property State', 'related': False},
+        {'field': 'postal_code', 'display': 'Property Postal Code', 'related': False},
+        {'field': 'building_count', 'display': 'Number of Buildings', 'related': False},
+        {'field': 'year_built', 'display': 'Year Built', 'related': False},
+        {'field': 'recent_sale_date', 'display': 'Property Sale Data', 'related': False},
+        {'field': 'conditioned_floor_area', 'display': 'Property Conditioned Floor Area', 'related': False},
+        {'field': 'occupied_floor_area', 'display': 'Property Occupied Floor Area', 'related': False},
+        {'field': 'owner_address', 'display': 'Owner Address', 'related': False},
+        {'field': 'owner_city_state', 'display': 'Owner City/State', 'related': False},
+        {'field': 'owner_postal_code', 'display': 'Owner Postal Code', 'related': False},
+        {'field': 'building_home_energy_score_identifier', 'display': 'Home Energy Saver ID', 'related': False},
+        {'field': 'source_eui_weather_normalized', 'display': 'Source EUI Weather Normalized', 'related': False},
+        {'field': 'site_eui_weather_normalized', 'display': 'Site EUI Normalized', 'related': False},
+        {'field': 'source_eui', 'display': 'Source EUI', 'related': False},
+        {'field': 'energy_alerts', 'display': 'Energy Alerts', 'related': False},
+        {'field': 'space_alerts', 'display': 'Space Alerts', 'related': False},
+        {'field': 'building_certification', 'display': 'Building Certification', 'related': False},
+        {'field': 'city', 'display': 'Tax Lot City', 'related': True},
+        {'field': 'state', 'display': 'Tax Lot State', 'related': True},
+        {'field': 'postal_code', 'display': 'Tax Lot Postal Code', 'related': True},
+        {'field': 'number_properties', 'display': 'Number Properties', 'related': True},
+        {'field': 'block_number', 'display': 'Block Number', 'related': True},
+        {'field': 'district', 'display': 'District', 'related': True}
+    ]
+
+    extra_data_columns = Column.objects.filter(organization_id=request.GET['organization_id'],
+        is_extra_data=True, extra_data_source__isnull=False)
+
+    for c in extra_data_columns:
+        columns.append({
+            'field': c.column_name,
+            'display': '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source]),
+            'related': c.extra_data_source == Column.SOURCE_TAXLOT,
+            'source': Column.SOURCE_CHOICES_MAP[c.extra_data_source],
+        })
+    return columns
+
+@require_organization_id
+@require_organization_membership
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('requires_viewer')
+def get_taxlot_columns(request):
+    columns = [
+        {'field': 'jurisdiction_taxlot_identifier', 'display': 'Tax Lot ID', 'related': False},
+        {'field': 'no_field', 'display': 'Associated TaxLot IDs', 'related': False},
+        {'field': 'no_field', 'display': 'Associated Building Tax Lot ID', 'related': False},
+        {'field': 'address', 'display': 'Tax Lot Address', 'related': False},
+        {'field': 'city', 'display': 'Tax Lot City', 'related': False},
+        {'field': 'state', 'display': 'Tax Lot State', 'related': False},
+        {'field': 'postal_code', 'display': 'Tax Lot Postal Code', 'related': False},
+        {'field': 'number_properties', 'display': 'Number Properties', 'related': False},
+        {'field': 'block_number', 'display': 'Block Number', 'related': False},
+        {'field': 'district', 'display': 'District', 'related': False},
+        {'field': 'primary', 'display': 'Primary/Secondary', 'related': True},
+        {'field': 'property_name', 'display': 'Property Name', 'related': True},
+        {'field': 'campus', 'display': 'Campus', 'related': True},
+        {'field': 'no_field', 'display': 'PM Parent Property ID', 'related': False},
+        {'field': 'jurisdiction_property_identifier', 'display': 'Property / Building ID', 'related': True},
+        {'field': 'building_portfolio_manager_identifier', 'display': 'PM Property ID', 'related': True},
+        {'field': 'gross_floor_area', 'display': 'Property Floor Area', 'related': True},
+        {'field': 'use_description', 'display': 'Property Type', 'related': True},
+        {'field': 'energy_score', 'display': 'ENERGY STAR Score', 'related': True},
+        {'field': 'site_eui', 'display': 'Site EUI (kBtu/sf-yr)', 'related': True},
+        {'field': 'property_notes', 'display': 'Property Notes', 'related': True},
+        {'field': 'year_ending', 'display': 'Benchmarking year', 'related': True},
+        {'field': 'owner', 'display': 'Owner', 'related': True},
+        {'field': 'owner_email', 'display': 'Owner Email', 'related': True},
+        {'field': 'owner_telephone', 'display': 'Owner Telephone', 'related': True},
+        {'field': 'generation_date', 'display': 'PM Generation Date', 'related': True},
+        {'field': 'release_date', 'display': 'PM Release Date', 'related': True},
+        {'field': 'address_line_1', 'display': 'Property Address 1', 'related': True},
+        {'field': 'address_line_2', 'display': 'Property Address 2', 'related': True},
+        {'field': 'city', 'display': 'Property City', 'related': True},
+        {'field': 'state', 'display': 'Property State', 'related': True},
+        {'field': 'postal_code', 'display': 'Property Postal Code', 'related': True},
+        {'field': 'building_count', 'display': 'Number of Buildings', 'related': True},
+        {'field': 'year_built', 'display': 'Year Built', 'related': True},
+        {'field': 'recent_sale_date', 'display': 'Property Sale Data', 'related': True},
+        {'field': 'conditioned_floor_area', 'display': 'Property Conditioned Floor Area', 'related': True},
+        {'field': 'occupied_floor_area', 'display': 'Property Occupied Floor Area', 'related': True},
+        {'field': 'owner_address', 'display': 'Owner Address', 'related': True},
+        {'field': 'owner_city_state', 'display': 'Owner City/State', 'related': True},
+        {'field': 'owner_postal_code', 'display': 'Owner Postal Code', 'related': True},
+        {'field': 'building_home_energy_score_identifier', 'display': 'Home Energy Saver ID', 'related': True},
+        {'field': 'source_eui_weather_normalized', 'display': 'Source EUI Weather Normalized', 'related': True},
+        {'field': 'site_eui_weather_normalized', 'display': 'Site EUI Normalized', 'related': True},
+        {'field': 'source_eui', 'display': 'Source EUI', 'related': True},
+        {'field': 'energy_alerts', 'display': 'Energy Alerts', 'related': True},
+        {'field': 'space_alerts', 'display': 'Space Alerts', 'related': True},
+        {'field': 'building_certification', 'display': 'Building Certification', 'related': True},
+        {'field': 'lot_number', 'display': 'Associated Tax Lot ID', 'related': True}
+    ]
+
+    extra_data_columns = Column.objects.filter(organization_id=request.GET['organization_id'],
+        is_extra_data=True, extra_data_source__isnull=False)
+
+    for c in extra_data_columns:
+        columns.append({
+            'field': c.column_name,
+            'display': '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source]),
+            'related': c.extra_data_source == Column.SOURCE_PROPERTY,
+            'source': Column.SOURCE_CHOICES_MAP[c.extra_data_source],
+        })
+    return columns
