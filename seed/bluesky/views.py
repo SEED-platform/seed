@@ -5,6 +5,7 @@ from django.forms.models import model_to_dict
 from seed.bluesky.models import Cycle, PropertyView, TaxLotView, TaxLotProperty
 from seed.decorators import ajax_request, require_organization_id, require_organization_membership
 from seed.lib.superperms.orgs.decorators import has_perm
+from seed.models import Column
 from seed.utils.api import api_endpoint
 
 
@@ -65,7 +66,10 @@ def get_properties(request):
     # Map tax lot view id to tax lot view's state data
     taxlot_map = {}
     for taxlot_view in taxlot_views:
-        taxlot_map[taxlot_view.pk] = model_to_dict(taxlot_view.state)
+        taxlot_state_data = model_to_dict(taxlot_view.state, exclude=['extra_data'])
+        for extra_data_field, extra_data_value in taxlot_view.state.extra_data.items():
+            taxlot_state_data[extra_data_field] = extra_data_value
+        taxlot_map[taxlot_view.pk] = taxlot_state_data
 
     # A mapping of property view pk to a list of taxlot state info for a taxlot view
     join_map = {}
@@ -81,7 +85,11 @@ def get_properties(request):
 
     for prop in property_views:
         # Each object in the response is built from the state data, with related data added on.
-        p = model_to_dict(prop.state)
+        p = model_to_dict(prop.state, exclude=['extra_data'])
+
+        for extra_data_field, extra_data_value in prop.state.extra_data.items():
+            p[extra_data_field] = extra_data_value
+
         p['campus'] = prop.property.campus
         p['related'] = join_map.get(prop.pk, [])
 
@@ -193,8 +201,10 @@ def get_taxlots(request):
     # Map property view id to property view's state data
     property_map = {}
     for property_view in property_views:
-        property_data = model_to_dict(property_view.state)
+        property_data = model_to_dict(property_view.state, exclude=['extra_data'])
         property_data['campus'] = property_view.property.campus
+        for extra_data_field, extra_data_value in property_view.state.extra_data.items():
+            property_data[extra_data_field] = extra_data_value
         property_map[property_view.pk] = property_data
 
     # A mapping of taxlot view pk to a list of property state info for a property view
@@ -211,7 +221,11 @@ def get_taxlots(request):
 
     for lot in taxlot_views:
         # Each object in the response is built from the state data, with related data added on.
-        l = model_to_dict(lot.state)
+        l = model_to_dict(lot.state, exclude=['extra_data'])
+
+        for extra_data_field, extra_data_value in lot.state.extra_data.items():
+            l[extra_data_field] = extra_data_value
+
         l['related'] = join_map.get(lot.pk, [])
 
         # Map of fields in related model to unique list of values
