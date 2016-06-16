@@ -931,14 +931,27 @@ class Enum(models.Model):
 
 class Column(models.Model):
     """The name of a column for a given organization."""
+    SOURCE_PROPERTY = 'P'
+    SOURCE_TAXLOT = 'T'
+    SOURCE_CHOICES = (
+        (SOURCE_PROPERTY, 'Property'),
+        (SOURCE_TAXLOT, 'Taxlot'),
+    )
+    SOURCE_CHOICES_MAP = {
+        SOURCE_PROPERTY: 'property',
+        SOURCE_TAXLOT: 'taxlot',
+    }
+
     organization = models.ForeignKey(SuperOrganization, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
+    extra_data_source = models.CharField(max_length=1, null=True, blank=True,
+        db_index=True, choices=SOURCE_CHOICES)
 
     class Meta:
-        unique_together = ('organization', 'column_name', 'is_extra_data')
+        unique_together = ('organization', 'column_name', 'is_extra_data', 'extra_data_source')
 
     def __unicode__(self):
         return u'{0}'.format(self.column_name)
