@@ -38,7 +38,7 @@ class Property(models.Model):
 
 class PropertyState(models.Model):
     # import_record = models.ForeignKey(ImportRecord)
-    confidence = models.FloatField(default=0,null=True,blank=True)
+    confidence = models.FloatField(default=0, null=True, blank=True)
 
     jurisdiction_property_identifier = models.CharField(max_length=255, null=True, blank=True)
     lot_number = models.CharField(max_length=255, null=True, blank=True)

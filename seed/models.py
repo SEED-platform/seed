@@ -947,8 +947,10 @@ class Column(models.Model):
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
-    extra_data_source = models.CharField(max_length=1, null=True, blank=True,
-        db_index=True, choices=SOURCE_CHOICES)
+    extra_data_source = models.CharField(
+        max_length=1, null=True, blank=True,
+        db_index=True, choices=SOURCE_CHOICES
+    )
 
     class Meta:
         unique_together = ('organization', 'column_name', 'is_extra_data', 'extra_data_source')

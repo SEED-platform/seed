@@ -97,7 +97,7 @@ def get_properties(request):
         # All the related tax lot states.
         p['related'] = join_map.get(prop.pk, [])
 
-        # Start collapsed field data 
+        # Start collapsed field data
         # Map of fields in related model to unique list of values
         related_field_map = {}
 
@@ -118,7 +118,7 @@ def get_properties(request):
             related_field_map[k] = list(v)
 
         p['collapsed'] = related_field_map
-        # End collapsed field data 
+        # End collapsed field data
 
         response['results'].append(p)
 
@@ -246,7 +246,7 @@ def get_taxlots(request):
 
         l['related'] = join_map.get(lot.pk, [])
 
-        # Start collapsed field data 
+        # Start collapsed field data
         # Map of fields in related model to unique list of values
         related_field_map = {}
 
@@ -266,7 +266,7 @@ def get_taxlots(request):
             related_field_map[k] = list(v)
 
         l['collapsed'] = related_field_map
-        # End collapsed field data 
+        # End collapsed field data
 
         response['results'].append(l)
 
@@ -373,8 +373,11 @@ def get_property_columns(request):
         {'field': 'district', 'display': 'District', 'related': True}
     ]
 
-    extra_data_columns = Column.objects.filter(organization_id=request.GET['organization_id'],
-        is_extra_data=True, extra_data_source__isnull=False)
+    extra_data_columns = Column.objects.filter(
+        organization_id=request.GET['organization_id'],
+        is_extra_data=True,
+        extra_data_source__isnull=False
+    )
 
     for c in extra_data_columns:
         columns.append({
@@ -384,6 +387,7 @@ def get_property_columns(request):
             'source': Column.SOURCE_CHOICES_MAP[c.extra_data_source],
         })
     return columns
+
 
 @require_organization_id
 @require_organization_membership
@@ -443,8 +447,11 @@ def get_taxlot_columns(request):
         {'field': 'lot_number', 'display': 'Associated Tax Lot ID', 'related': True}
     ]
 
-    extra_data_columns = Column.objects.filter(organization_id=request.GET['organization_id'],
-        is_extra_data=True, extra_data_source__isnull=False)
+    extra_data_columns = Column.objects.filter(
+        organization_id=request.GET['organization_id'],
+        is_extra_data=True,
+        extra_data_source__isnull=False
+    )
 
     for c in extra_data_columns:
         columns.append({
