@@ -12,6 +12,11 @@ angular.module('BE.seed.angular_dependencies', [
     ]);
 angular.module('BE.seed.vendor_dependencies', [
     'ui.bootstrap',
+    'ui.grid',
+    'ui.grid.grouping',
+    'ui.grid.pagination',
+    'ui.grid.resizeColumns',
+    'ui.grid.treeView',
     'ui.sortable',
     'ui.tree',
     'xeditable',
@@ -797,7 +802,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             templateUrl: static_url + 'seed/partials/bluesky/list.html',
             resolve: {
                 properties: ['bluesky_service', function(bluesky_service){
-                    return bluesky_service.get_properties(1, 10);
+                    return bluesky_service.get_properties(1);
                 }],
                 cycles: ['bluesky_service', function(bluesky_service){
                     return bluesky_service.get_cycles();
@@ -873,3 +878,16 @@ SEED_app.constant('urls', {
     static_url: BE.urls.STATIC_URL
 });
 SEED_app.constant('generated_urls', window.BE.app_urls);
+
+/**
+ * UI Grid string overrides
+ */
+angular.module('ui.grid').config(['$provide', function ($provide) {
+    $provide.decorator('i18nService', ['$delegate', function ($delegate) {
+        var pagination = $delegate.get('en').pagination;
+        pagination.sizes = 'properties per page';
+        pagination.totalItems = 'properties';
+        $delegate.add('en', {pagination: pagination});
+        return $delegate;
+    }]);
+}]);

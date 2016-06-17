@@ -2,8 +2,7 @@
     <table class="resizable table sortable" id="verify-mapping-table">
         <thead>
             <tr>
-                <th sd-resizable ng-repeat="c in columns track by $index" >{$ c.display $}</span>
-                </th>
+                <th sd-resizable ng-repeat="c in columns track by $index" >{$ c.display $}</th>
             </tr>
         </thead>
         <tbody ng-repeat="o in objects" style="border: none;">
@@ -57,4 +56,9 @@
             <li ng-class="{disabled: !pagination.has_next}"><a ng-click="pagination_last()">Last Record <i class="fa fa-angle-double-right"></i></a></li>
         </ul>
     </div>
+</div><br><br><br>
+
+<div style="width: 100%">
+    <div ui-grid="gridOptions" ui-grid-pagination ui-grid-resize-columns ui-grid-tree-view></div>
 </div>
+

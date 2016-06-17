@@ -16,7 +16,7 @@ angular.module('BE.seed.service.bluesky_service', [])
           var params = {
               organization_id: user_service.get_organization().id,
               page: page,
-              per_page: per_page
+              per_page: per_page || 999999999
           };
 
           if (cycle) {
