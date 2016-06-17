@@ -63,10 +63,12 @@ def get_properties(request):
     # Get all tax lot views that are related
     taxlot_views = TaxLotView.objects.select_related('taxlot', 'state', 'cycle').filter(pk__in=taxlot_view_ids)
 
-    # Map tax lot view id to tax lot view's state data
+    # Map tax lot view id to tax lot view's state data, so we can reference these easily and save some queries.
     taxlot_map = {}
     for taxlot_view in taxlot_views:
         taxlot_state_data = model_to_dict(taxlot_view.state, exclude=['extra_data'])
+
+        # Add extra data fields right to this object.
         for extra_data_field, extra_data_value in taxlot_view.state.extra_data.items():
             taxlot_state_data[extra_data_field] = extra_data_value
         taxlot_map[taxlot_view.pk] = taxlot_state_data
@@ -91,12 +93,16 @@ def get_properties(request):
             p[extra_data_field] = extra_data_value
 
         p['campus'] = prop.property.campus
+
+        # All the related tax lot states.
         p['related'] = join_map.get(prop.pk, [])
 
+        # Start collapsed field data 
         # Map of fields in related model to unique list of values
         related_field_map = {}
 
-        # Iterate over related dicts and gather field values
+        # Iterate over related dicts and gather field values.
+        # Basically get a unique list off all related values for each field.
         for related in p['related']:
             for k, v in related.items():
                 try:
@@ -112,6 +118,7 @@ def get_properties(request):
             related_field_map[k] = list(v)
 
         p['collapsed'] = related_field_map
+        # End collapsed field data 
 
         response['results'].append(p)
 
@@ -198,11 +205,13 @@ def get_taxlots(request):
     # Get all property views that are related
     property_views = PropertyView.objects.select_related('property', 'state', 'cycle').filter(pk__in=property_view_ids)
 
-    # Map property view id to property view's state data
+    # Map property view id to property view's state data, so we can reference these easily and save some queries.
     property_map = {}
     for property_view in property_views:
         property_data = model_to_dict(property_view.state, exclude=['extra_data'])
         property_data['campus'] = property_view.property.campus
+
+        # Add extra data fields right to this object.
         for extra_data_field, extra_data_value in property_view.state.extra_data.items():
             property_data[extra_data_field] = extra_data_value
         property_map[property_view.pk] = property_data
@@ -237,6 +246,7 @@ def get_taxlots(request):
 
         l['related'] = join_map.get(lot.pk, [])
 
+        # Start collapsed field data 
         # Map of fields in related model to unique list of values
         related_field_map = {}
 
@@ -256,6 +266,7 @@ def get_taxlots(request):
             related_field_map[k] = list(v)
 
         l['collapsed'] = related_field_map
+        # End collapsed field data 
 
         response['results'].append(l)
 
