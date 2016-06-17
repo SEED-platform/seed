@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
 
-from seed.bluesky.models import Cycle, PropertyView, TaxLotView, TaxLotProperty
+from seed.bluesky.models import Cycle, PropertyView, TaxLotView, TaxLotState, TaxLotProperty
 from seed.decorators import ajax_request, require_organization_id, require_organization_membership
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import Column
@@ -210,9 +210,18 @@ def get_taxlots(request):
     # A mapping of taxlot view pk to a list of property state info for a property view
     join_map = {}
     for join in joins:
+
+        # Find all the taxlot ids that this property relates to
+        related_taxlot_view_ids = TaxLotProperty.objects.filter(property_view_id=join.property_view_id) \
+            .values_list('taxlot_view_id', flat=True)
+        state_ids = TaxLotView.objects.filter(pk__in=related_taxlot_view_ids)
+        jurisdiction_taxlot_identifiers = TaxLotState.objects.filter(pk__in=state_ids) \
+            .values_list('jurisdiction_taxlot_identifier', flat=True)
+
         join_dict = property_map[join.property_view_id].copy()
         join_dict.update({
-            'primary': 'P' if join.primary else 'S'
+            'primary': 'P' if join.primary else 'S',
+            'calculated_taxlot_ids': ', '.join(jurisdiction_taxlot_identifiers)
         })
         try:
             join_map[join.taxlot_view_id].append(join_dict)
@@ -374,7 +383,7 @@ def get_property_columns(request):
 def get_taxlot_columns(request):
     columns = [
         {'field': 'jurisdiction_taxlot_identifier', 'display': 'Tax Lot ID', 'related': False},
-        {'field': 'no_field', 'display': 'Associated TaxLot IDs', 'related': False},
+        {'field': 'calculated_taxlot_ids', 'display': 'Associated TaxLot IDs', 'related': True},
         {'field': 'no_field', 'display': 'Associated Building Tax Lot ID', 'related': False},
         {'field': 'address', 'display': 'Tax Lot Address', 'related': False},
         {'field': 'city', 'display': 'Tax Lot City', 'related': False},
