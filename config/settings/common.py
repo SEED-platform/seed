@@ -100,6 +100,7 @@ INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
     'tos',
     'rest_framework',
+    'rest_framework_swagger',
 )
 
 SEED_CORE_APPS = (
@@ -300,3 +301,9 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 25,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
+
+# Django Rest Swagger
+SWAGGER_SETTINGS = {
+    'exclude_namespaces': ['labels'],
+}
+

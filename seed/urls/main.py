@@ -5,7 +5,7 @@
 :author
 """
 
-from django.conf.urls import url
+from django.conf.urls import url, include
 
 from seed.views.main import (
     home, version, create_pm_mapping, get_total_number_of_buildings_for_user,
@@ -180,5 +180,9 @@ urlpatterns = [
         r'^delete_organization/$',
         delete_organization,
         name='delete_organization'
+    ),
+    url(
+        r'^api-docs/',
+        include('rest_framework_swagger.urls')
     ),
 ]

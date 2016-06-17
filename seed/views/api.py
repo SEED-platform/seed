@@ -8,14 +8,29 @@ from seed.decorators import ajax_request
 from seed.utils.api import (
     get_api_endpoints, format_api_docstring, api_endpoint
 )
+from rest_framework.decorators import api_view
+from rest_framework import serializers
 
+class APIEndpointSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    description = serializers.CharField()
 
+class APISchemaSerializer(serializers.Serializer):
+    endpoints = serializers.DictField(
+        child = APIEndpointSerializer()
+    )
+
+@api_view(['GET'])
 @api_endpoint
 @ajax_request
 def get_api_schema(request):
     """
     Returns a hash of all API endpoints and their descriptions.
+    ---
+    response_serializer: APISchemaSerializer
+    """
 
+    """
     Returns::
 
         {
