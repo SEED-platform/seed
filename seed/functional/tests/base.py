@@ -79,7 +79,7 @@ if not os.getenv('TRAVIS') == 'true':
 # Don't remove if hack is not longer needed, just remove
 # elif FIREFOX_IS_BROKEN and HAS_MARIONETTE section
 def get_webdriver(browser):
-    if browser.lower() == 'chrome':
+    if browser.lower() == 'chrome' and not os.getenv('TRAVIS') == 'true':
         driver = webdriver.Chrome()
     elif FIREFOX_IS_BROKEN and HAS_MARIONETTE:
         caps = DesiredCapabilities.FIREFOX
