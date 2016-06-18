@@ -943,6 +943,12 @@ a:not([href]) {
           min-width: 100%;
         }
 
+        &.fixed-layout {
+            /* use in combination with th.ellipsis-resizable
+              for resizable columns                         */
+            table-layout: fixed;
+        }
+
         th, td {
           font-family: $font-family-base-narrow;
           white-space: nowrap;
@@ -1024,6 +1030,15 @@ a:not([href]) {
 
           &.ellipsis {
               max-width: 80px;
+              text-overflow: ellipsis;
+              /* Required for text-overflow to do anything */
+              white-space: nowrap;
+              overflow: hidden;
+          }
+          &.ellipsis-resizable {
+              /* use in combination with table.fixed-layout
+                    for resizable columns                         */
+              min-width: 80px;
               text-overflow: ellipsis;
               /* Required for text-overflow to do anything */
               white-space: nowrap;
@@ -1647,7 +1662,7 @@ a:not([href]) {
       float: none;
     }
   }
-  
+
   .btn {
     min-width:90px;
   }
@@ -2055,9 +2070,9 @@ select {
 
 /* Holds inline form for creating new labels */
 .newLabelInput{
-    margin: 20px 0px; 
-    border:1px solid #EEE; 
-    padding: 10px 10px 5px 10px; 
+    margin: 20px 0px;
+    border:1px solid #EEE;
+    padding: 10px 10px 5px 10px;
     border-radius: 5px;
     background-color: #F1F1F1;
 }
@@ -2080,7 +2095,7 @@ select {
         background-color: #cdcdcd !important;
         text-shadow: 0 1px 0 white;
         border-bottom: 1px solid #b3b3b3;
-    }   
+    }
 
     /* Get xeditable fields to extend 100% of td */
     form[editable-form] > div {
@@ -2096,7 +2111,7 @@ select {
 
   margin:5px 10px 10px 20px;
 
-  .label-action {      
+  .label-action {
     display: inline-block;
     .label-edit-text {
       margin-right: 20px;
@@ -2118,7 +2133,7 @@ select {
 }
 
 
-.label {  
+.label {
     margin-right: 5px;
 }
 
@@ -2159,7 +2174,7 @@ select {
     max-height:350px;
     margin-bottom: 10px;
     table {
-      
+
     }
     th, td {
       border: 0px;
@@ -2178,7 +2193,7 @@ tags-input .tags {
   border-color: #428bca !important;
   background: #428bca !important;
 }
-  
+
 .tag-success {
   border-color: #5cb85c !important;
   background: #5cb85c !important;
@@ -2198,7 +2213,7 @@ tags-input .tags {
   border-color:  #d43f3a !important;
   background: #d43f3a !important;
 }
-gs-input .tags .tag-item .remove-button { 
+gs-input .tags .tag-item .remove-button {
   color: #FFF;
 }
 
@@ -2211,11 +2226,11 @@ gs-input .tags .tag-item .remove-button {
   background-color: #EEE;
   color: #000;
   border-left: thick solid $blue;
-  
+
   &.warning {
     border-left: thick solid $warningBackground;
     }
-    &.error {     
+    &.error {
     border-left: thick solid $errorBackground;
     }
     &.success {
@@ -2245,4 +2260,11 @@ gs-input .tags .tag-item .remove-button {
   .btn+.btn {
     margin-left: 5px;
   }
+}
+
+/* Styles for building page */
+
+#building-fields {
+    //  set a min width for the field column
+    min-width: 275px;
 }
