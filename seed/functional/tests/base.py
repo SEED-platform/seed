@@ -133,7 +133,7 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         # Assume tests are being ran locally.
         if os.getenv('TRAVIS') == 'true':
             capabilities = self.get_capabilities()
-            hub_url = "{}:{}s@localhost:4445".format(
+            hub_url = "{}:{}@localhost:4445".format(
                 os.getenv('SAUCE_USERNAME'), os.getenv('SAUCE_ACCESS_KEY')
             )
             driver = webdriver.Remote(
