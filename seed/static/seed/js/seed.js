@@ -14,7 +14,7 @@ angular.module('BE.seed.vendor_dependencies', [
     'ui.bootstrap',
     'ui.grid',
     'ui.grid.grouping',
-    'ui.grid.pagination',
+    'ui.grid.moveColumns',
     'ui.grid.resizeColumns',
     'ui.grid.treeView',
     'ui.sortable',

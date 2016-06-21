@@ -461,6 +461,12 @@ a:not([href]) {
   }
 }
 
+@media (max-width: 945px) {
+  .search_bar_container {
+    display: none;
+  }
+}
+
 .page {
   clear: both;
   position: relative;
@@ -517,7 +523,7 @@ a:not([href]) {
         padding: 11px 20px 7px;
         float: left;
         text-align: center;
-        overflow: auto;
+        overflow: hidden;
         text-overflow: ellipsis;
 
         h1 {
@@ -2254,3 +2260,16 @@ gs-input .tags .tag-item .remove-button {
   background-color: #efefef;
 }
 
+.ui-grid-tree-base-row-header-buttons {
+  cursor: pointer;
+}
+
+#grid-container {
+  min-height: 302px;
+  overflow: hidden;
+  width: 100%;
+
+  > div {
+    min-height: 300px;
+  }
+}

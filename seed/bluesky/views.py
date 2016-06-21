@@ -325,65 +325,241 @@ def get_cycles(request):
 @has_perm('requires_viewer')
 def get_property_columns(request):
     columns = [
-        {'field': 'building_portfolio_manager_identifier', 'display': 'PM Property ID', 'related': False, 'extra_data': False},
-        {'field': 'jurisdiction_property_identifier', 'display': 'Property / Building ID', 'related': False},
-        {'field': 'jurisdiction_taxlot_identifier', 'display': 'Tax Lot ID', 'related': True},
-        {'field': 'primary', 'display': 'Primary/Secondary', 'related': True},
-        {'field': 'no_field', 'display': 'Associated TaxLot IDs', 'related': False},
-        {'field': 'no_field', 'display': 'Associated Building Tax Lot ID', 'related': False},
-        {'field': 'address', 'display': 'Tax Lot Address', 'related': True},
-        {'field': 'address_line_1', 'display': 'Property Address 1', 'related': False},
-        {'field': 'city', 'display': 'Property City', 'related': False},
-        {'field': 'property_name', 'display': 'Property Name', 'related': False},
-        {'field': 'campus', 'display': 'Campus', 'related': False},
-        {'field': 'no_field', 'display': 'PM Parent Property ID', 'related': False},
-        {'field': 'gross_floor_area', 'display': 'Property Floor Area', 'related': False},
-        {'field': 'use_description', 'display': 'Property Type', 'related': False},
-        {'field': 'energy_score', 'display': 'ENERGY STAR Score', 'related': False},
-        {'field': 'site_eui', 'display': 'Site EUI (kBtu/sf-yr)', 'related': False},
-        {'field': 'property_notes', 'display': 'Property Notes', 'related': False},
-        {'field': 'year_ending', 'display': 'Benchmarking year', 'related': False},
-        {'field': 'owner', 'display': 'Owner', 'related': False},
-        {'field': 'owner_email', 'display': 'Owner Email', 'related': False},
-        {'field': 'owner_telephone', 'display': 'Owner Telephone', 'related': False},
-        {'field': 'generation_date', 'display': 'PM Generation Date', 'related': False},
-        {'field': 'release_date', 'display': 'PM Release Date', 'related': False},
-        {'field': 'address_line_2', 'display': 'Property Address 2', 'related': False},
-        {'field': 'state', 'display': 'Property State', 'related': False},
-        {'field': 'postal_code', 'display': 'Property Postal Code', 'related': False},
-        {'field': 'building_count', 'display': 'Number of Buildings', 'related': False},
-        {'field': 'year_built', 'display': 'Year Built', 'related': False},
-        {'field': 'recent_sale_date', 'display': 'Property Sale Data', 'related': False},
-        {'field': 'conditioned_floor_area', 'display': 'Property Conditioned Floor Area', 'related': False},
-        {'field': 'occupied_floor_area', 'display': 'Property Occupied Floor Area', 'related': False},
-        {'field': 'owner_address', 'display': 'Owner Address', 'related': False},
-        {'field': 'owner_city_state', 'display': 'Owner City/State', 'related': False},
-        {'field': 'owner_postal_code', 'display': 'Owner Postal Code', 'related': False},
-        {'field': 'building_home_energy_score_identifier', 'display': 'Home Energy Saver ID', 'related': False},
-        {'field': 'source_eui_weather_normalized', 'display': 'Source EUI Weather Normalized', 'related': False},
-        {'field': 'site_eui_weather_normalized', 'display': 'Site EUI Normalized', 'related': False},
-        {'field': 'source_eui', 'display': 'Source EUI', 'related': False},
-        {'field': 'energy_alerts', 'display': 'Energy Alerts', 'related': False},
-        {'field': 'space_alerts', 'display': 'Space Alerts', 'related': False},
-        {'field': 'building_certification', 'display': 'Building Certification', 'related': False},
-        {'field': 'city', 'display': 'Tax Lot City', 'related': True},
-        {'field': 'state', 'display': 'Tax Lot State', 'related': True},
-        {'field': 'postal_code', 'display': 'Tax Lot Postal Code', 'related': True},
-        {'field': 'number_properties', 'display': 'Number Properties', 'related': True},
-        {'field': 'block_number', 'display': 'Block Number', 'related': True},
-        {'field': 'district', 'display': 'District', 'related': True}
+        {
+            'name': 'building_portfolio_manager_identifier',
+            'displayName': 'PM Property ID',
+            'type': 'number',
+            'related': False,
+            'extra_data': False
+        }, {
+            'name': 'jurisdiction_property_identifier',
+            'displayName': 'Property / Building ID',
+            'type': 'number',
+            'related': False
+        }, {
+            'name': 'jurisdiction_taxlot_identifier',
+            'displayName': 'Tax Lot ID',
+            'treeAggregationType': 'uniqueList',
+            'type': 'numberStr',
+            'related': True
+        }, {
+            'name': 'primary',
+            'displayName': 'Primary/Secondary',
+            'related': True
+        }, {
+            # INCOMPLETE, FIELD DOESN'T EXIST
+            'name': 'associated_tax_lot_ids',
+            'displayName': 'Associated TaxLot IDs',
+            'related': False
+        }, {
+            'name': 'lot_number',
+            'displayName': 'Associated Building Tax Lot ID',
+            'type': 'number',
+            'related': False
+        }, {
+            'name': 'address',
+            'displayName': 'Tax Lot Address',
+            'treeAggregationType': 'uniqueList',
+            'type': 'numberStr',
+            'related': True
+        }, {
+            'name': 'address_line_1',
+            'displayName': 'Property Address 1',
+            'type': 'numberStr',
+            'related': False
+        }, {
+            'name': 'city',
+            'displayName': 'Property City',
+            'related': False
+        }, {
+            'name': 'property_name',
+            'displayName': 'Property Name',
+            'related': False
+        }, {
+            'name': 'campus',
+            'displayName': 'Campus',
+            'type': 'boolean',
+            'related': False
+        }, {
+            # INCOMPLETE, FIELD DOESN'T EXIST
+            'name': 'pm_parent_property_id',
+            'displayName': 'PM Parent Property ID',
+            'type': 'number',
+            'related': False
+        }, {
+            'name': 'gross_floor_area',
+            'displayName': 'Property Floor Area',
+            'type': 'number',
+            'related': False
+        }, {
+            'name': 'use_description',
+            'displayName': 'Property Type',
+            'related': False
+        }, {
+            'name': 'energy_score',
+            'displayName': 'ENERGY STAR Score',
+            'type': 'number',
+            'related': False
+        }, {
+            'name': 'site_eui',
+            'displayName': 'Site EUI (kBtu/sf-yr)',
+            'type': 'number',
+            'related': False
+        }, {
+            'name': 'property_notes',
+            'displayName': 'Property Notes',
+            'related': False
+        }, {
+            'name': 'year_ending',
+            'displayName': 'Benchmarking year',
+            'related': False
+        }, {
+            'name': 'owner',
+            'displayName': 'Owner',
+            'related': False
+        }, {
+            'name': 'owner_email',
+            'displayName': 'Owner Email',
+            'related': False
+        }, {
+            'name': 'owner_telephone',
+            'displayName': 'Owner Telephone',
+            'related': False
+        }, {
+            'name': 'address_line_2',
+            'displayName': 'Property Address 2',
+            'type': 'numberStr',
+            'related': False
+        }, {
+            'name': 'state',
+            'displayName': 'Property State',
+            'related': False
+        }, {
+            'name': 'postal_code',
+            'displayName': 'Property Postal Code',
+            'type': 'number',
+            'related': False
+        }, {
+            'name': 'building_count',
+            'displayName': 'Number of Buildings',
+            'type': 'number',
+            'related': False
+        }, {
+            'name': 'year_built',
+            'displayName': 'Year Built',
+            'related': False
+        }, {
+            'name': 'recent_sale_date',
+            'displayName': 'Property Sale Date',
+            'related': False
+        }, {
+            'name': 'conditioned_floor_area',
+            'displayName': 'Property Conditioned Floor Area',
+            'type': 'number',
+            'related': False
+        }, {
+            'name': 'occupied_floor_area',
+            'displayName': 'Property Occupied Floor Area',
+            'type': 'number',
+            'related': False
+        }, {
+            'name': 'owner_address',
+            'displayName': 'Owner Address',
+            'type': 'numberStr',
+            'related': False
+        }, {
+            'name': 'owner_city_state',
+            'displayName': 'Owner City/State',
+            'related': False
+        }, {
+            'name': 'owner_postal_code',
+            'displayName': 'Owner Postal Code',
+            'type': 'number',
+            'related': False
+        }, {
+            'name': 'building_home_energy_score_identifier',
+            'displayName': 'Home Energy Saver ID',
+            'related': False
+        }, {
+            'name': 'generation_date',
+            'displayName': 'PM Generation Date',
+            'related': False
+        }, {
+            'name': 'release_date',
+            'displayName': 'PM Release Date',
+            'related': False
+        }, {
+            'name': 'source_eui_weather_normalized',
+            'displayName': 'Source EUI Weather Normalized',
+            'type': 'number',
+            'related': False
+        }, {
+            'name': 'site_eui_weather_normalized',
+            'displayName': 'Site EUI Weather Normalized',
+            'type': 'number',
+            'related': False
+        }, {
+            'name': 'source_eui',
+            'displayName': 'Source EUI',
+            'type': 'number',
+            'related': False
+        }, {
+            'name': 'energy_alerts',
+            'displayName': 'Energy Alerts',
+            'related': False
+        }, {
+            'name': 'space_alerts',
+            'displayName': 'Space Alerts',
+            'related': False
+        }, {
+            'name': 'building_certification',
+            'displayName': 'Building Certification',
+            'related': False
+        }, {
+            # Modified field name
+            'name': 'tax_city',
+            'displayName': 'Tax Lot City',
+            'treeAggregationType': 'uniqueList',
+            'related': True
+        }, {
+            # Modified field name
+            'name': 'tax_state',
+            'displayName': 'Tax Lot State',
+            'related': True
+        }, {
+            # Modified field name
+            'name': 'tax_postal_code',
+            'displayName': 'Tax Lot Postal Code',
+            'type': 'number',
+            'related': True
+        }, {
+            'name': 'number_properties',
+            'displayName': 'Number Properties',
+            'treeAggregationType': 'sum',
+            'type': 'number',
+            'related': True
+        }, {
+            'name': 'block_number',
+            'displayName': 'Block Number',
+            'type': 'number',
+            'related': True
+        }, {
+            'name': 'district',
+            'displayName': 'District',
+            'related': True
+        }
     ]
 
     extra_data_columns = Column.objects.filter(
-        organization_id=request.GET['organization_id'],
-        is_extra_data=True,
-        extra_data_source__isnull=False
+            organization_id=request.GET['organization_id'],
+            is_extra_data=True,
+            extra_data_source__isnull=False
     )
 
     for c in extra_data_columns:
         columns.append({
-            'field': c.column_name,
-            'display': '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source]),
+            'name': c.column_name,
+            'displayName': '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source]),
             'related': c.extra_data_source == Column.SOURCE_TAXLOT,
             'source': Column.SOURCE_CHOICES_MAP[c.extra_data_source],
         })
@@ -398,66 +574,66 @@ def get_property_columns(request):
 @has_perm('requires_viewer')
 def get_taxlot_columns(request):
     columns = [
-        {'field': 'jurisdiction_taxlot_identifier', 'display': 'Tax Lot ID', 'related': False},
-        {'field': 'calculated_taxlot_ids', 'display': 'Associated TaxLot IDs', 'related': True},
-        {'field': 'no_field', 'display': 'Associated Building Tax Lot ID', 'related': False},
-        {'field': 'address', 'display': 'Tax Lot Address', 'related': False},
-        {'field': 'city', 'display': 'Tax Lot City', 'related': False},
-        {'field': 'state', 'display': 'Tax Lot State', 'related': False},
-        {'field': 'postal_code', 'display': 'Tax Lot Postal Code', 'related': False},
-        {'field': 'number_properties', 'display': 'Number Properties', 'related': False},
-        {'field': 'block_number', 'display': 'Block Number', 'related': False},
-        {'field': 'district', 'display': 'District', 'related': False},
-        {'field': 'primary', 'display': 'Primary/Secondary', 'related': True},
-        {'field': 'property_name', 'display': 'Property Name', 'related': True},
-        {'field': 'campus', 'display': 'Campus', 'related': True},
-        {'field': 'no_field', 'display': 'PM Parent Property ID', 'related': False},
-        {'field': 'jurisdiction_property_identifier', 'display': 'Property / Building ID', 'related': True},
-        {'field': 'building_portfolio_manager_identifier', 'display': 'PM Property ID', 'related': True},
-        {'field': 'gross_floor_area', 'display': 'Property Floor Area', 'related': True},
-        {'field': 'use_description', 'display': 'Property Type', 'related': True},
-        {'field': 'energy_score', 'display': 'ENERGY STAR Score', 'related': True},
-        {'field': 'site_eui', 'display': 'Site EUI (kBtu/sf-yr)', 'related': True},
-        {'field': 'property_notes', 'display': 'Property Notes', 'related': True},
-        {'field': 'year_ending', 'display': 'Benchmarking year', 'related': True},
-        {'field': 'owner', 'display': 'Owner', 'related': True},
-        {'field': 'owner_email', 'display': 'Owner Email', 'related': True},
-        {'field': 'owner_telephone', 'display': 'Owner Telephone', 'related': True},
-        {'field': 'generation_date', 'display': 'PM Generation Date', 'related': True},
-        {'field': 'release_date', 'display': 'PM Release Date', 'related': True},
-        {'field': 'address_line_1', 'display': 'Property Address 1', 'related': True},
-        {'field': 'address_line_2', 'display': 'Property Address 2', 'related': True},
-        {'field': 'city', 'display': 'Property City', 'related': True},
-        {'field': 'state', 'display': 'Property State', 'related': True},
-        {'field': 'postal_code', 'display': 'Property Postal Code', 'related': True},
-        {'field': 'building_count', 'display': 'Number of Buildings', 'related': True},
-        {'field': 'year_built', 'display': 'Year Built', 'related': True},
-        {'field': 'recent_sale_date', 'display': 'Property Sale Data', 'related': True},
-        {'field': 'conditioned_floor_area', 'display': 'Property Conditioned Floor Area', 'related': True},
-        {'field': 'occupied_floor_area', 'display': 'Property Occupied Floor Area', 'related': True},
-        {'field': 'owner_address', 'display': 'Owner Address', 'related': True},
-        {'field': 'owner_city_state', 'display': 'Owner City/State', 'related': True},
-        {'field': 'owner_postal_code', 'display': 'Owner Postal Code', 'related': True},
-        {'field': 'building_home_energy_score_identifier', 'display': 'Home Energy Saver ID', 'related': True},
-        {'field': 'source_eui_weather_normalized', 'display': 'Source EUI Weather Normalized', 'related': True},
-        {'field': 'site_eui_weather_normalized', 'display': 'Site EUI Normalized', 'related': True},
-        {'field': 'source_eui', 'display': 'Source EUI', 'related': True},
-        {'field': 'energy_alerts', 'display': 'Energy Alerts', 'related': True},
-        {'field': 'space_alerts', 'display': 'Space Alerts', 'related': True},
-        {'field': 'building_certification', 'display': 'Building Certification', 'related': True},
-        {'field': 'lot_number', 'display': 'Associated Tax Lot ID', 'related': True}
+        {'name': 'jurisdiction_taxlot_identifier', 'displayName': 'Tax Lot ID', 'related': False},
+        {'name': 'calculated_taxlot_ids', 'displayName': 'Associated TaxLot IDs', 'related': True},
+        {'name': 'no_field', 'displayName': 'Associated Building Tax Lot ID', 'related': False},
+        {'name': 'address', 'displayName': 'Tax Lot Address', 'related': False},
+        {'name': 'city', 'displayName': 'Tax Lot City', 'related': False},
+        {'name': 'state', 'displayName': 'Tax Lot State', 'related': False},
+        {'name': 'postal_code', 'displayName': 'Tax Lot Postal Code', 'related': False},
+        {'name': 'number_properties', 'displayName': 'Number Properties', 'related': False},
+        {'name': 'block_number', 'displayName': 'Block Number', 'related': False},
+        {'name': 'district', 'displayName': 'District', 'related': False},
+        {'name': 'primary', 'displayName': 'Primary/Secondary', 'related': True},
+        {'name': 'property_name', 'displayName': 'Property Name', 'related': True},
+        {'name': 'campus', 'displayName': 'Campus', 'related': True},
+        {'name': 'no_field', 'displayName': 'PM Parent Property ID', 'related': False},
+        {'name': 'jurisdiction_property_identifier', 'displayName': 'Property / Building ID', 'related': True},
+        {'name': 'building_portfolio_manager_identifier', 'displayName': 'PM Property ID', 'related': True},
+        {'name': 'gross_floor_area', 'displayName': 'Property Floor Area', 'related': True},
+        {'name': 'use_description', 'displayName': 'Property Type', 'related': True},
+        {'name': 'energy_score', 'displayName': 'ENERGY STAR Score', 'related': True},
+        {'name': 'site_eui', 'displayName': 'Site EUI (kBtu/sf-yr)', 'related': True},
+        {'name': 'property_notes', 'displayName': 'Property Notes', 'related': True},
+        {'name': 'year_ending', 'displayName': 'Benchmarking year', 'related': True},
+        {'name': 'owner', 'displayName': 'Owner', 'related': True},
+        {'name': 'owner_email', 'displayName': 'Owner Email', 'related': True},
+        {'name': 'owner_telephone', 'displayName': 'Owner Telephone', 'related': True},
+        {'name': 'generation_date', 'displayName': 'PM Generation Date', 'related': True},
+        {'name': 'release_date', 'displayName': 'PM Release Date', 'related': True},
+        {'name': 'address_line_1', 'displayName': 'Property Address 1', 'related': True},
+        {'name': 'address_line_2', 'displayName': 'Property Address 2', 'related': True},
+        {'name': 'city', 'displayName': 'Property City', 'related': True},
+        {'name': 'state', 'displayName': 'Property State', 'related': True},
+        {'name': 'postal_code', 'displayName': 'Property Postal Code', 'related': True},
+        {'name': 'building_count', 'displayName': 'Number of Buildings', 'related': True},
+        {'name': 'year_built', 'displayName': 'Year Built', 'related': True},
+        {'name': 'recent_sale_date', 'displayName': 'Property Sale Data', 'related': True},
+        {'name': 'conditioned_floor_area', 'displayName': 'Property Conditioned Floor Area', 'related': True},
+        {'name': 'occupied_floor_area', 'displayName': 'Property Occupied Floor Area', 'related': True},
+        {'name': 'owner_address', 'displayName': 'Owner Address', 'related': True},
+        {'name': 'owner_city_state', 'displayName': 'Owner City/State', 'related': True},
+        {'name': 'owner_postal_code', 'displayName': 'Owner Postal Code', 'related': True},
+        {'name': 'building_home_energy_score_identifier', 'displayName': 'Home Energy Saver ID', 'related': True},
+        {'name': 'source_eui_weather_normalized', 'displayName': 'Source EUI Weather Normalized', 'related': True},
+        {'name': 'site_eui_weather_normalized', 'displayName': 'Site EUI Normalized', 'related': True},
+        {'name': 'source_eui', 'displayName': 'Source EUI', 'related': True},
+        {'name': 'energy_alerts', 'displayName': 'Energy Alerts', 'related': True},
+        {'name': 'space_alerts', 'displayName': 'Space Alerts', 'related': True},
+        {'name': 'building_certification', 'displayName': 'Building Certification', 'related': True},
+        {'name': 'lot_number', 'displayName': 'Associated Tax Lot ID', 'related': True}
     ]
 
     extra_data_columns = Column.objects.filter(
-        organization_id=request.GET['organization_id'],
-        is_extra_data=True,
-        extra_data_source__isnull=False
+            organization_id=request.GET['organization_id'],
+            is_extra_data=True,
+            extra_data_source__isnull=False
     )
 
     for c in extra_data_columns:
         columns.append({
-            'field': c.column_name,
-            'display': '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source]),
+            'name': c.column_name,
+            'displayName': '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source]),
             'related': c.extra_data_source == Column.SOURCE_PROPERTY,
             'source': Column.SOURCE_CHOICES_MAP[c.extra_data_source],
         })
