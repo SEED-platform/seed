@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
 
-from seed.bluesky.models import Cycle, PropertyView, TaxLotView, TaxLotProperty
+from seed.bluesky.models import Cycle, PropertyView, TaxLotView, TaxLotState, TaxLotProperty
 from seed.decorators import ajax_request, require_organization_id, require_organization_membership
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import Column
@@ -63,10 +63,12 @@ def get_properties(request):
     # Get all tax lot views that are related
     taxlot_views = TaxLotView.objects.select_related('taxlot', 'state', 'cycle').filter(pk__in=taxlot_view_ids)
 
-    # Map tax lot view id to tax lot view's state data
+    # Map tax lot view id to tax lot view's state data, so we can reference these easily and save some queries.
     taxlot_map = {}
     for taxlot_view in taxlot_views:
         taxlot_state_data = model_to_dict(taxlot_view.state, exclude=['extra_data'])
+
+        # Add extra data fields right to this object.
         for extra_data_field, extra_data_value in taxlot_view.state.extra_data.items():
             taxlot_state_data[extra_data_field] = extra_data_value
         taxlot_map[taxlot_view.pk] = taxlot_state_data
@@ -91,12 +93,16 @@ def get_properties(request):
             p[extra_data_field] = extra_data_value
 
         p['campus'] = prop.property.campus
+
+        # All the related tax lot states.
         p['related'] = join_map.get(prop.pk, [])
 
+        # Start collapsed field data
         # Map of fields in related model to unique list of values
         related_field_map = {}
 
-        # Iterate over related dicts and gather field values
+        # Iterate over related dicts and gather field values.
+        # Basically get a unique list off all related values for each field.
         for related in p['related']:
             for k, v in related.items():
                 try:
@@ -112,6 +118,7 @@ def get_properties(request):
             related_field_map[k] = list(v)
 
         p['collapsed'] = related_field_map
+        # End collapsed field data
 
         response['results'].append(p)
 
@@ -198,11 +205,13 @@ def get_taxlots(request):
     # Get all property views that are related
     property_views = PropertyView.objects.select_related('property', 'state', 'cycle').filter(pk__in=property_view_ids)
 
-    # Map property view id to property view's state data
+    # Map property view id to property view's state data, so we can reference these easily and save some queries.
     property_map = {}
     for property_view in property_views:
         property_data = model_to_dict(property_view.state, exclude=['extra_data'])
         property_data['campus'] = property_view.property.campus
+
+        # Add extra data fields right to this object.
         for extra_data_field, extra_data_value in property_view.state.extra_data.items():
             property_data[extra_data_field] = extra_data_value
         property_map[property_view.pk] = property_data
@@ -210,9 +219,18 @@ def get_taxlots(request):
     # A mapping of taxlot view pk to a list of property state info for a property view
     join_map = {}
     for join in joins:
+
+        # Find all the taxlot ids that this property relates to
+        related_taxlot_view_ids = TaxLotProperty.objects.filter(property_view_id=join.property_view_id) \
+            .values_list('taxlot_view_id', flat=True)
+        state_ids = TaxLotView.objects.filter(pk__in=related_taxlot_view_ids)
+        jurisdiction_taxlot_identifiers = TaxLotState.objects.filter(pk__in=state_ids) \
+            .values_list('jurisdiction_taxlot_identifier', flat=True)
+
         join_dict = property_map[join.property_view_id].copy()
         join_dict.update({
-            'primary': 'P' if join.primary else 'S'
+            'primary': 'P' if join.primary else 'S',
+            'calculated_taxlot_ids': ', '.join(jurisdiction_taxlot_identifiers)
         })
         try:
             join_map[join.taxlot_view_id].append(join_dict)
@@ -228,6 +246,7 @@ def get_taxlots(request):
 
         l['related'] = join_map.get(lot.pk, [])
 
+        # Start collapsed field data
         # Map of fields in related model to unique list of values
         related_field_map = {}
 
@@ -247,6 +266,7 @@ def get_taxlots(request):
             related_field_map[k] = list(v)
 
         l['collapsed'] = related_field_map
+        # End collapsed field data
 
         response['results'].append(l)
 
@@ -353,8 +373,11 @@ def get_property_columns(request):
         {'field': 'district', 'display': 'District', 'related': True}
     ]
 
-    extra_data_columns = Column.objects.filter(organization_id=request.GET['organization_id'],
-        is_extra_data=True, extra_data_source__isnull=False)
+    extra_data_columns = Column.objects.filter(
+        organization_id=request.GET['organization_id'],
+        is_extra_data=True,
+        extra_data_source__isnull=False
+    )
 
     for c in extra_data_columns:
         columns.append({
@@ -365,6 +388,7 @@ def get_property_columns(request):
         })
     return columns
 
+
 @require_organization_id
 @require_organization_membership
 @api_endpoint
@@ -374,7 +398,7 @@ def get_property_columns(request):
 def get_taxlot_columns(request):
     columns = [
         {'field': 'jurisdiction_taxlot_identifier', 'display': 'Tax Lot ID', 'related': False},
-        {'field': 'no_field', 'display': 'Associated TaxLot IDs', 'related': False},
+        {'field': 'calculated_taxlot_ids', 'display': 'Associated TaxLot IDs', 'related': True},
         {'field': 'no_field', 'display': 'Associated Building Tax Lot ID', 'related': False},
         {'field': 'address', 'display': 'Tax Lot Address', 'related': False},
         {'field': 'city', 'display': 'Tax Lot City', 'related': False},
@@ -423,8 +447,11 @@ def get_taxlot_columns(request):
         {'field': 'lot_number', 'display': 'Associated Tax Lot ID', 'related': True}
     ]
 
-    extra_data_columns = Column.objects.filter(organization_id=request.GET['organization_id'],
-        is_extra_data=True, extra_data_source__isnull=False)
+    extra_data_columns = Column.objects.filter(
+        organization_id=request.GET['organization_id'],
+        is_extra_data=True,
+        extra_data_source__isnull=False
+    )
 
     for c in extra_data_columns:
         columns.append({
