@@ -7,21 +7,17 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
     '$scope',
     '$routeParams',
     '$window',
-    'uiGridConstants',
     'bluesky_service',
     'properties',
     'cycles',
     'columns',
-    'uiGridGroupingConstants',
     function ($scope,
               $routeParams,
               $window,
-              uiGridConstants,
               bluesky_service,
               properties,
               cycles,
-              cols,
-              uiGridGroupingConstants) {
+              columns) {
       $scope.object = 'property';
       $scope.objects = properties.results;
       $scope.pagination = properties.pagination;
@@ -44,91 +40,14 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
         refresh_objects();
       };
 
-      var textRegex = /^(!?)"(([^"]|\\")*)"$/;
-      var textFilter = function () {
-        return {
-          condition: function (searchTerm, cellValue) {
-            if (_.isNil(cellValue)) cellValue = '';
-            var filterData = searchTerm.match(textRegex);
-            var regex;
-            if (filterData) {
-              var inverse = filterData[1] == '!';
-              var value = filterData[2];
-              regex = new RegExp('^' + _.escapeRegExp(value) + '$');
-              return inverse ? !regex.test(cellValue) : regex.test(cellValue);
-            } else {
-              regex = new RegExp(_.escapeRegExp(searchTerm), 'i');
-              return regex.test(cellValue);
-            }
-          }
-        };
-      };
-
-      var numRegex = /^(==?|!=?|<>)?\s*(null|-?\d+)|(<=?|>=?)\s*(-?\d+)$/;
-      var numFilter = function () {
-        return {
-          condition: function (searchTerm, cellValue) {
-            var match = true;
-            var searchTerms = _.map(_.split(searchTerm, ','), _.trim);
-            _.forEach(searchTerms, function (search) {
-              var filterData = search.match(numRegex);
-              if (filterData) {
-                var operator, value;
-                if (!_.isUndefined(filterData[2])) {
-                  // Equality condition
-                  operator = filterData[1];
-                  value = filterData[2];
-                  if (_.isUndefined(operator) || _.startsWith(operator, '=')) {
-                    // Equal
-                    match = (value == 'null') ? (_.isNil(cellValue)) : (cellValue == value);
-                    return match;
-                  } else {
-                    // Not equal
-                    match = (value == 'null') ? (!_.isNil(cellValue)) : (cellValue != value);
-                    return match;
-                  }
-                } else {
-                  // Range condition
-                  if (_.isNil(cellValue)) {
-                    match = false;
-                    return match;
-                  }
-
-                  operator = filterData[3];
-                  value = Number(filterData[4]);
-                  switch (operator) {
-                    case '<':
-                      match = cellValue < value;
-                      return match;
-                    case '<=':
-                      match = cellValue <= value;
-                      return match;
-                    case '>':
-                      match = cellValue > value;
-                      return match;
-                    case '>=':
-                      match = cellValue >= value;
-                      return match;
-                  }
-                }
-              } else {
-                match = false;
-                return match;
-              }
-            });
-            return match;
-          }
-        };
-      };
-
       var defaults = {
         minWidth: 150
         //type: 'string'
       };
-      _.map(cols, function (col) {
+      _.map(columns, function (col) {
         var filter;
-        if (col.type == 'number') filter = {filter: numFilter()};
-        else filter = {filter: textFilter()};
+        if (col.type == 'number') filter = {filter: bluesky_service.numFilter()};
+        else filter = {filter: bluesky_service.textFilter()};
         return _.defaults(col, filter, defaults);
       });
 
@@ -176,28 +95,8 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
         fastWatch: true,
         flatEntityAccess: true,
         showTreeExpandNoChildren: false,
-        columnDefs: cols,
-        treeCustomAggregations: {
-          sum: {
-            aggregationFn: function (aggregation, fieldValue) {
-              if (!_.has(aggregation, 'values')) aggregation.values = [fieldValue];
-              else aggregation.values.push(fieldValue);
-            },
-            finalizerFn: function (aggregation) {
-              var sum = _.sum(aggregation.values);
-              aggregation.value = sum ? sum : null;
-            }
-          },
-          uniqueList: {
-            aggregationFn: function (aggregation, fieldValue) {
-              if (!_.has(aggregation, 'values')) aggregation.values = [fieldValue];
-              else aggregation.values.push(fieldValue);
-            },
-            finalizerFn: function (aggregation) {
-              aggregation.value = _.join(_.uniq(aggregation.values), '; ');
-            }
-          }
-        },
+        columnDefs: columns,
+        treeCustomAggregations: bluesky_service.aggregations(),
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
           $scope.updateHeight();
