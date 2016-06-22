@@ -223,7 +223,8 @@ def get_taxlots(request):
         # Find all the taxlot ids that this property relates to
         related_taxlot_view_ids = TaxLotProperty.objects.filter(property_view_id=join.property_view_id) \
             .values_list('taxlot_view_id', flat=True)
-        state_ids = TaxLotView.objects.filter(pk__in=related_taxlot_view_ids)
+        state_ids = TaxLotView.objects.filter(pk__in=related_taxlot_view_ids).values_list('state_id', flat=True)
+
         jurisdiction_taxlot_identifiers = TaxLotState.objects.filter(pk__in=state_ids) \
             .values_list('jurisdiction_taxlot_identifier', flat=True)
 
