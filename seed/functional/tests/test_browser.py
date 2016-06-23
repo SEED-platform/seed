@@ -288,9 +288,13 @@ def get_tsts(Test):
 
     def test_func_factory(TestClass, test, tname):
         def test_func():
-            if hasattr(TestClass, 'setUp'):
-                Test.setUp()
             try:
+                # include setUp in try, to ensure tearDown happens
+                # if it fails. This was causing issues with tests when
+                # login() failed. This should be ok as super gets
+                # called first then login
+                if hasattr(TestClass, 'setUp'):
+                    TestClass.setUp()
                 test()
             except:
                 msg = "test: {} failed with browser {}".format(
