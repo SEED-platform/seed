@@ -309,7 +309,9 @@ EDGE = BrowserDefinition(
 
 # tests running on Travis, Sauce Labs and BrowserCapabilities will be used
 if os.getenv('TRAVIS') == 'true':
-    BROWSERS = [FIREFOX, CHROME, IE]     # IE10, SAFARI, EDGE]
+    # IE removed as set_cookies does not work
+    # see: https://support.saucelabs.com/customer/en/portal/articles/2014444-error---unable-to-add-cookie-to-page-in-ie-
+    BROWSERS = [FIREFOX, CHROME] # IE,  IE10, SAFARI, EDGE]
 else:
     # tests running locally, we might want to do os detection at some point
     # for now use only cross platform browsers
