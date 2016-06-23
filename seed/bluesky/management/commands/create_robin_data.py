@@ -28,6 +28,104 @@ from _localtools import get_node_sinks
 
 logging.basicConfig(level=logging.DEBUG)
 
+
+# tax_lot_columns = tax_lot_extra_data_map.keys()[0]
+# property_columns = property_extra_data_map.keys()[0]
+
+tax_lot_extra_data_map = {}
+tax_lot_extra_data_map["1552813"] = {"Owner City": "Rust",
+                                     "Tax Year": "2012",
+                                     "Parcel Gross Area": "25522",
+                                     "Use Class": "Hotel",
+                                     "Ward": "5",
+                                     "X Coordinate": "",
+                                     "Y Coordinate": "",
+                                     "Owner Name": "Univerity Inn LLC",
+                                     "Owner Address": "50 Willow Ave SE",
+                                     "Owner State": "CA",
+                                     "Owner Zip": "94930",
+                                     "Tax Class": "5",
+                                     "City Code": "392-129"}
+
+tax_lot_extra_data_map["11160509"] = {"Owner City": "Cleveland",
+                                      "Tax Year": "2015",
+                                      "Parcel Gross Area": "2,000,000",
+                                      "Use Class": "Mixed Use",
+                                      "Ward": "6",
+                                      "X Coordinate": "",
+                                      "Y Coordinate": "",
+                                      "Owner Name": "Shops R Us LLC",
+                                      "Owner Address": "39200 Wilmington Blvd",
+                                      "Owner State": "OH",
+                                      "Owner Zip": "93029",
+                                      "Tax Class": "4",
+                                      "City Code": "502-561"}
+
+tax_lot_extra_data_map["33366555"] =  {"Owner City": "Seattle",
+                                       "Tax Year": "2016",
+                                       "Parcel Gross Area": "500,000",
+                                       "Use Class": "School",
+                                       "Ward": "2",
+                                       "X Coordinate": "",
+                                       "Y Coordinate": "",
+                                       "Owner Name": "Montessori Inc",
+                                       "Owner Address": "555 East Shore Hwy",
+                                       "Owner State": "WA",
+                                       "Owner Zip": "",
+                                       "Tax Class": "4",
+                                       "City Code": "562-123"}
+
+
+
+tax_lot_extra_data_map["33366125"] = {"Owner City": "Rust",
+                                      "Tax Year": "2011",
+                                      "Parcel Gross Area": "25,000",
+                                      "Use Class": "School",
+                                      "Ward": "2",
+                                      "X Coordinate": "",
+                                      "Y Coordinate": "",
+                                      "Owner Name": "Harry Wills",
+                                      "Owner Address": "31 Main",
+                                      "Owner State": "CA",
+                                      "Owner Zip": "",
+                                      "Tax Class": "2",
+                                      "City Code": "612-846"}
+
+tax_lot_extra_data_map["33366148"] = {"Owner City": "Seattle",
+                                      "Tax Year": "2015",
+                                      "Parcel Gross Area": "10,000",
+                                      "Use Class": "School",
+                                      "Ward": "2",
+                                      "X Coordinate": "",
+                                      "Y Coordinate": "",
+                                      "Owner Name": "Loretta Wilkins",
+                                      "Owner Address": "3311253 Highway 56",
+                                      "Owner State": "WA",
+                                      "Owner Zip": "",
+                                      "Tax Class": "4",
+                                      "City Code": "955-225N"}
+
+property_extra_data_map = {}
+property_extra_data_map[2264] = { "CoStar Property ID": "2312456",
+                                  "Organization": "",
+                                  "Compliance Required": "Y",
+                                  "County": "Contra Costa",
+                                  "Date / Last Personal Correspondence": "2/5/2016",
+                                  "Does Not Need to Comply": "" }
+
+property_extra_data_map[3020139] = {}
+property_extra_data_map[4828379] = {}
+property_extra_data_map[1154623] = {}
+property_extra_data_map[5233255] = {}
+property_extra_data_map[1311523] = {}
+property_extra_data_map[1311524] = {}
+property_extra_data_map[1311525] = {}
+property_extra_data_map[1311526] = {}
+property_extra_data_map[1311527] = {}
+property_extra_data_map[1311528] = {}
+property_extra_data_map[6798215] = {}
+
+
 def create_structure():
     org = Organization.objects.create(name = "SampleDataDemo_caseA")
     create_cycle(org)
@@ -57,9 +155,9 @@ def create_structure():
 
 def create_cycle(org):
     seed.bluesky.models.Cycle.objects.get_or_create(name="2015 Annual",
-                         organization = org,
-                         start=datetime.datetime(2015,1,1),
-                         end=datetime.datetime(2016,1,1)-datetime.timedelta(seconds=1))
+                                                    organization = org,
+                                                    start=datetime.datetime(2015,1,1),
+                                                    end=datetime.datetime(2016,1,1)-datetime.timedelta(seconds=1))
     return
 
 
@@ -70,8 +168,27 @@ def create_cases(org, tax_lots, properties):
         property, _ = seed.bluesky.models.Property.objects.get_or_create(organization=org)
         taxlot, _ = seed.bluesky.models.TaxLot.objects.get_or_create(organization=org)
 
+        # Doesn't match
+        # LINE 1: ...1'::date AND "bluesky_propertystate"."extra_data" = '{"Does ...
+        # HINT:  No operator matches the given name and argument type(s). You might need to add explicit type casts.
+
+        tax_extra_data = tax_lot_extra_data_map[tl_def["jurisdiction_taxlot_identifier"]]
+        prop_extra_data = property_extra_data_map[prop_def["building_portfolio_manager_identifier"]]
+
         prop_state, _ = seed.bluesky.models.PropertyState.objects.get_or_create(**prop_def)
+
+        for k in prop_extra_data:
+            prop_state.extra_data[k] = prop_extra_data[k]
+
+        prop_state.save()
+
         taxlot_state, _ = seed.bluesky.models.TaxLotState.objects.get_or_create(**tl_def)
+
+        for k in tax_extra_data:
+            taxlot_state.extra_data[k] = tax_extra_data[k]
+
+        taxlot_state.save()
+
 
         taxlot_view, _ = seed.bluesky.models.TaxLotView.objects.get_or_create(taxlot = taxlot, cycle=cycle, state = taxlot_state)
         prop_view, _ = seed.bluesky.models.PropertyView.objects.get_or_create(property=property, cycle=cycle, state = prop_state)
@@ -79,6 +196,7 @@ def create_cases(org, tax_lots, properties):
         seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view = prop_view, taxlot_view = taxlot_view, cycle = cycle)
 
     return
+
 
 
 def create_case_A_objects(org):
@@ -105,12 +223,12 @@ def create_case_A_objects(org):
     return
 
 
-
 def create_case_B_objects(org):
     tax_lots = [ {"jurisdiction_taxlot_identifier":"11160509",
                   "address": "2655 Welstone Ave NE",
                   "city": "Rust",
-                  "number_properties": 2}]
+                  "number_properties": 2 }]
+
 
     properties = [{ "building_portfolio_manager_identifier": 3020139,
                     "property_name": "Hilltop Condos",
@@ -164,7 +282,8 @@ def create_case_C_objects(org):
                   "city": "Rust"},
                  {"jurisdiction_taxlot_identifier":"33366125",
                   "address": "525 Elm Street",
-                  "city": "Rust"},
+                  "city": "Rust"
+                 },
                  {"jurisdiction_taxlot_identifier":"33366148",
                   "address": "530 Elm Street",
                   "city": "Rust"}]
@@ -177,7 +296,7 @@ def create_case_C_objects(org):
                     "energy_score": 55,
                     "site_eui": 1358,
                     "year_ending": datetime.datetime(2015,12,31),
-                    "gross_floor_area":200000,
+                    "gross_floor_area": "20000",
                     "owner": "Norton Schools",
                     "owner_email": "Lee@norton.com",
                     "owner_telephone": "213-555-4368",
@@ -191,15 +310,18 @@ def create_case_D_objects(org):
     tax_lots = [ {"jurisdiction_taxlot_identifier":"24651456",
                   "address": "11 Ninth Street",
                   "city": "Rust",
-                  "number_properties": 5},
+                  "number_properties": 5
+                  },
                  {"jurisdiction_taxlot_identifier":"13334485",
                   "address": "93029 Wellington Blvd",
                   "city": "Rust",
-                  "number_properties": None},
+                  "number_properties": None,
+                 },
                  {"jurisdiction_taxlot_identifier":"23810533",
                   "address": "94000 Wellington Blvd",
                   "city": "Rust",
-                  "number_properties": None}]
+                  "number_properties": None,
+                 }]
 
     campus = [{ "building_portfolio_manager_identifier": 1311523,
                 "property_name": "Lucky University ",
@@ -216,32 +338,32 @@ def create_case_D_objects(org):
                 "property_notes": "Case D: Campus with Multiple associated buildings"}]
 
     properties = [
-                  { "building_portfolio_manager_identifier": 1311524,
-                    "property_name": "Grange Hall ",
-                    "address_line_1": "12 Ninth Street",
-                    "city": "Rust",
-                    "use_description": "Performing Arts",
-                    "energy_score": 77,
-                    "site_eui": 219,
-                    "year_ending": datetime.datetime(2015,12,31),
-                    "gross_floor_area": 124523,
-                    "owner": "Lucky University",
-                    "owner_email": "ralph@lucky.edu",
-                    "owner_telephone": "224-587-5602",
-                    "property_notes": "Case D: Campus with Multiple associated buildings"},
-                  { "building_portfolio_manager_identifier": 1311525,
-                    "property_name": "Biology Hall ",
-                    "address_line_1": "20 Tenth Street",
-                    "city": "Rust",
-                    "use_description": "Laboratory",
-                    "energy_score": 43,
-                    "site_eui": 84,
-                    "year_ending": datetime.datetime(2015,12,31),
-                    "gross_floor_area": 421351,
-                    "owner": "Lucky University",
-                    "owner_email": "ralph@lucky.edu",
-                    "owner_telephone": "224-587-5602",
-                    "property_notes": "Case D: Campus with Multiple associated buildings"},
+        { "building_portfolio_manager_identifier": 1311524,
+          "property_name": "Grange Hall ",
+          "address_line_1": "12 Ninth Street",
+          "city": "Rust",
+          "use_description": "Performing Arts",
+          "energy_score": 77,
+          "site_eui": 219,
+          "year_ending": datetime.datetime(2015,12,31),
+          "gross_floor_area": 124523,
+          "owner": "Lucky University",
+          "owner_email": "ralph@lucky.edu",
+          "owner_telephone": "224-587-5602",
+          "property_notes": "Case D: Campus with Multiple associated buildings"},
+        { "building_portfolio_manager_identifier": 1311525,
+          "property_name": "Biology Hall ",
+          "address_line_1": "20 Tenth Street",
+          "city": "Rust",
+          "use_description": "Laboratory",
+          "energy_score": 43,
+          "site_eui": 84,
+          "year_ending": datetime.datetime(2015,12,31),
+          "gross_floor_area": 421351,
+          "owner": "Lucky University",
+          "owner_email": "ralph@lucky.edu",
+          "owner_telephone": "224-587-5602",
+          "property_notes": "Case D: Campus with Multiple associated buildings"},
 
                   { "building_portfolio_manager_identifier": 1311526,
                     "property_name": "Rowling Gym ",
@@ -270,19 +392,19 @@ def create_case_D_objects(org):
                     "owner_email": "ralph@lucky.edu",
                     "owner_telephone": "224-587-5602",
                     "property_notes": "Case D: Campus with Multiple associated buildings"},
-                  { "building_portfolio_manager_identifier": 1311528,
-                    "property_name": "International House",
-                    "address_line_1": "93029 Wellington Blvd",
-                    "city": "Rust",
-                    "use_description": "Residence",
-                    "energy_score": None,
-                    "site_eui": None,
-                    "year_ending": datetime.datetime(2015,12,31),
-                    "gross_floor_area": 482215,
-                    "owner": "Lucky University",
-                    "owner_email": "ralph@lucky.edu",
-                    "owner_telephone": "224-587-5602",
-                    "property_notes": "Case D: Campus with Multiple associated buildings"}]
+        { "building_portfolio_manager_identifier": 1311528,
+          "property_name": "International House",
+          "address_line_1": "93029 Wellington Blvd",
+          "city": "Rust",
+          "use_description": "Residence",
+          "energy_score": None,
+          "site_eui": None,
+          "year_ending": datetime.datetime(2015,12,31),
+          "gross_floor_area": 482215,
+          "owner": "Lucky University",
+          "owner_email": "ralph@lucky.edu",
+          "owner_telephone": "224-587-5602",
+          "property_notes": "Case D: Campus with Multiple associated buildings"}]
 
     # I manually create everything here
     cycle = seed.bluesky.models.Cycle.objects.filter(organization=org).first()
