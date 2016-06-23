@@ -8,7 +8,9 @@
 
 :author Paul Munday<paul@paulmunday.net>
 """
+from __future__ import print_function
 import os
+import sys
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -258,6 +260,10 @@ def get_classname(classname, browser):
     """Return a browser specific class name."""
     return "{}{}".format(classname, browser)
 
+
+def eprint(*args, **kwargs):
+    """Print to stderr."""
+    print(*args, file=sys.stderr, **kwargs)
 
 # Dynamically create Test Classes for browsers named in BROWSERS
 LOGGED_IN_CLASSES = {}

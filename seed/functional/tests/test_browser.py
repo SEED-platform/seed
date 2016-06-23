@@ -12,6 +12,7 @@ import inspect
 import os
 
 from seed.functional.tests.browser_definitions import BROWSERS
+from seed.functional.tests.base import eprint
 from seed.functional.tests.base import LOGGED_IN_CLASSES
 from seed.functional.tests.base import LOGGED_OUT_CLASSES
 
@@ -218,7 +219,7 @@ def loggedin_tests_generator():
                 """Make sure building detail page loads."""
                 import_file, _ = self.create_import()
                 self.create_building(import_file)
-                url = "{}/app/#/buildings'".format(self.live_server_url)
+                url = "{}/app/#/buildings".format(self.live_server_url)
                 self.browser.get(url)
                 self.wait_for_element_by_css('#building-list')
 
@@ -245,7 +246,6 @@ def loggedin_tests_generator():
                     canonical_building.pk
                 )
                 self.browser.get(url)
-                self.wait_for_element_by_css('#building-list')
 
                 # Make sure project is in list.
                 self.wait_for_element_by_css('tbody tr td a')
@@ -292,6 +292,12 @@ def get_tsts(Test):
                 Test.setUp()
             try:
                 test()
+            except:
+                msg = "test: {} failed with browser {}".format(
+                    tname, TestClass.browser_type.name
+                )
+                eprint(msg)
+                raise
             finally:
                 if hasattr(TestClass, 'tearDown'):
                     TestClass.tearDown()
