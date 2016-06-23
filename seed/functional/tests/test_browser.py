@@ -45,7 +45,8 @@ def loggedout_tests_generator():
 
         # Leave this at the end
         Test = LoggedOutTests()
-        for test in get_tsts(Test):
+        tests = get_tsts(Test)
+        for test in tests:
             yield test
 
 
@@ -284,17 +285,23 @@ def get_tsts(Test):
     if hasattr(Test, 'setUpClass'):
         Test.setUpClass()
     tests = []
+
+    def test_func_factory(TestClass, test, tname):
+        def test_func():
+            if hasattr(TestClass, 'setUp'):
+                Test.setUp()
+            try:
+                test()
+            finally:
+                if hasattr(TestClass, 'tearDown'):
+                    TestClass.tearDown()
+        test_func.__name__ = tname
+        return test_func
+
     for method in inspect.getmembers(Test, inspect.ismethod):
         if method[0].startswith('test_'):
             test = method[1]
+            tname = method[0]
 
-            def test_func():
-                if hasattr(Test, 'setUp'):
-                    Test.setUp()
-                try:
-                    test()
-                finally:
-                    if hasattr(Test, 'tearDown'):
-                        Test.tearDown()
-            tests.append(test_func)
+            tests.append(test_func_factory(Test, test, tname))
     return tests
