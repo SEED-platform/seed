@@ -5,9 +5,9 @@
 
 {% block content %}
 <div ng-controller="seed_menu_controller">
-	
+
 	{% include "seed/_sidebar.html" %}
-    
+
     <div class="display">
         <div ng-class="{narrow: narrow_controller, wide: wide_controller, content: true, hide_transition:is_initial_state}">
 
@@ -23,8 +23,6 @@
                 <div class="section_tab_container" ng-show="menu.loading"><p>Please wait while your data is loaded...</p></div>
                 <div ng-hide="menu.loading" data-ng-view="" id="ng-view"></div>
             </div>
-            
-            {% include "seed/_footer.html" %}
         </div>
     </div>
 </div>

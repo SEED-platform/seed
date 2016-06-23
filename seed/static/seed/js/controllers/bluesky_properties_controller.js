@@ -3,69 +3,104 @@
  * :author
  */
 angular.module('BE.seed.controller.bluesky_properties_controller', [])
-.controller('bluesky_properties_controller', [
-  '$scope',
-  '$routeParams',
-  'bluesky_service',
-  'properties',
-  'cycles',
-  'columns',
-  function(
-    $scope,
-    $routeParams,
-    bluesky_service,
-    properties,
-    cycles,
-    columns
-  ) {
+  .controller('bluesky_properties_controller', [
+    '$scope',
+    '$routeParams',
+    '$window',
+    'bluesky_service',
+    'properties',
+    'cycles',
+    'columns',
+    function ($scope,
+              $routeParams,
+              $window,
+              bluesky_service,
+              properties,
+              cycles,
+              columns) {
       $scope.object = 'property';
       $scope.objects = properties.results;
+      $scope.pagination = properties.pagination;
+      $scope.number_per_page = 999999999;
 
-      $scope.columns = columns;
+      $scope.cycle = {
+        selected_cycle: cycles[0],
+        cycles: cycles
+      };
 
-      var refresh_objects = function() {
-        bluesky_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle).then(function(properties) {
+      var refresh_objects = function () {
+        bluesky_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle).then(function (properties) {
           $scope.objects = properties.results;
           $scope.pagination = properties.pagination;
         });
       };
 
-      $scope.expanded = true;
-      $scope.toggleExpanded = function() {
-          $scope.expanded = !$scope.expanded;
-      };
-
-      $scope.cycle = {
-          selected_cycle: cycles[0],
-          cycles: cycles
-      };
-      $scope.update_cycle = function(cycle) {
+      $scope.update_cycle = function (cycle) {
         $scope.cycle.selected_cycle = cycle;
         refresh_objects();
       };
 
-      $scope.pagination = properties.pagination;
-      $scope.number_per_page_options = [10, 25, 50];
-      $scope.number_per_page = $scope.number_per_page_options[0];
-      $scope.update_number_per_page = function(number) {
-        $scope.number_per_page = number;
-        $scope.pagination.page = 1;
-        refresh_objects();
+      var defaults = {
+        minWidth: 150
+        //type: 'string'
       };
-      $scope.pagination_first = function() {
-        $scope.pagination.page = 1;
-        refresh_objects();
+      _.map(columns, function (col) {
+        var filter;
+        if (col.type == 'number') filter = {filter: bluesky_service.numFilter()};
+        else filter = {filter: bluesky_service.textFilter()};
+        return _.defaults(col, filter, defaults);
+      });
+
+      var data = angular.copy($scope.objects);
+      var roots = data.length;
+      for (var i = 0, trueIndex = 0; i < roots; ++i) {
+        data[trueIndex].$$treeLevel = 0;
+        var related = data[trueIndex].related;
+        var relatedIndex = trueIndex;
+        for (var j = 0; j < related.length; ++j) {
+          // Rename nested keys
+          var map = {
+            city: 'tax_city',
+            state: 'tax_state',
+            postal_code: 'tax_postal_code'
+          };
+          var updated = _.reduce(related[j], function (result, value, key) {
+            key = map[key] || key;
+            result[key] = value;
+            return result;
+          }, {});
+
+          data.splice(++trueIndex, 0, updated);
+        }
+        // Remove unnecessary data
+        delete data[relatedIndex].collapsed;
+        delete data[relatedIndex].related;
+        ++trueIndex;
+      }
+
+      $scope.updateHeight = function () {
+        var height = 0;
+        _.forEach(['.header', '.page_header_container', '.buildingListControls', 'ul.nav'], function (selector) {
+          height += angular.element(selector)[0].offsetHeight;
+        });
+        angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
+        angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');
       };
-      $scope.pagination_previous = function() {
-        $scope.pagination.page--;
-        refresh_objects();
-      };
-      $scope.pagination_next = function() {
-        $scope.pagination.page++;
-        refresh_objects();
-      };
-      $scope.pagination_last = function() {
-        $scope.pagination.page = $scope.pagination.num_pages;
-        refresh_objects();
-      };
-}]);
+
+      $scope.gridOptions = {
+        data: data,
+        enableColumnMenus: false,
+        enableFiltering: true,
+        enableSorting: true,
+        fastWatch: true,
+        flatEntityAccess: true,
+        showTreeExpandNoChildren: false,
+        columnDefs: columns,
+        treeCustomAggregations: bluesky_service.aggregations(),
+        onRegisterApi: function (gridApi) {
+          $scope.gridApi = gridApi;
+          $scope.updateHeight();
+          angular.element($window).on('resize', _.debounce($scope.updateHeight, 150));
+        }
+      }
+    }]);
