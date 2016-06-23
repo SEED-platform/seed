@@ -159,7 +159,7 @@ CHROME_CAP = BrowserCap(
 
 SAFARI_CAP = BrowserCap(
     OS_X_VERSIONS,
-    {platform: "{}.0".format(OS_X_VERSIONS.index(platform) + 6) for
+    {platform: "{}.0".format(9 - OS_X_VERSIONS.index(platform)) for
      platform in OS_X_VERSIONS}
 )
 
@@ -219,7 +219,7 @@ def browser_cap_factory(browser_name, version=None, platform=None, **kw):
         raise TypeError('version must be a string or int if supplied')
     version, platform = validate_browser(browser_name, version, platform)
     capabilities = {
-        'browserName': browser_name.lower(),
+        'browserName': 'MicrosoftEdge' if browser_name == 'Microsoft Edge' else browser_name.lower(),
         'platform': platform,
         'version': version,
         'loggingPrefs': {'browser': 'ALL'},
