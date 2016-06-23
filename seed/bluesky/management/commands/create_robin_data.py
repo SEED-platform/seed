@@ -113,17 +113,82 @@ property_extra_data_map[2264] = { "CoStar Property ID": "2312456",
                                   "Date / Last Personal Correspondence": "2/5/2016",
                                   "Does Not Need to Comply": "" }
 
-property_extra_data_map[3020139] = {}
-property_extra_data_map[4828379] = {}
-property_extra_data_map[1154623] = {}
-property_extra_data_map[5233255] = {}
-property_extra_data_map[1311523] = {}
-property_extra_data_map[1311524] = {}
-property_extra_data_map[1311525] = {}
-property_extra_data_map[1311526] = {}
-property_extra_data_map[1311527] = {}
-property_extra_data_map[1311528] = {}
-property_extra_data_map[6798215] = {}
+property_extra_data_map[3020139] = {"CoStar Property ID" : "2453125", 
+                                    "Organization" : "",
+                                    "Compliance Required" : "Y",
+                                    "County" : "Contra Costa",
+                                    "Date / Last Personal Correspondence" : "5/6/2016",
+                                    "Does Not Need to Comply" : ""}
+
+property_extra_data_map[4828379] = {"CoStar Property ID" : "1245683", 
+                                    "Organization" : "",
+                                    "Compliance Required" : "Y",
+                                    "County" : "Contra Costa",
+                                    "Date / Last Personal Correspondence" : "5/12/2016",
+                                    "Does Not Need to Comply" : ""}
+
+property_extra_data_map[1154623] = {"CoStar Property ID" : "4467856", 
+                                    "Organization" : "",
+                                    "Compliance Required" : "Y",
+                                    "County" : "Contra Costa",
+                                    "Date / Last Personal Correspondence" : "5/6/2016",
+                                    "Does Not Need to Comply" : ""}
+
+property_extra_data_map[5233255] = {"CoStar Property ID" : "1234856", 
+                                    "Organization" : "",
+                                    "Compliance Required" : "Y",
+                                    "County" : "Contra Costa",
+                                    "Date / Last Personal Correspondence" : "3/15/2016",
+                                    "Does Not Need to Comply" : ""}
+
+property_extra_data_map[1311523] = {"CoStar Property ID" : "5412648", 
+                                    "Organization" : "Lucky University",
+                                    "Compliance Required" : "Y",
+                                    "County" : "Contra Costa",
+                                    "Date / Last Personal Correspondence" : "",
+                                    "Does Not Need to Comply" : ""}
+
+property_extra_data_map[1311524] = {"CoStar Property ID" : "5123456", 
+                                    "Organization" : "Lucky University",
+                                    "Compliance Required" : "Y",
+                                    "County" : "Contra Costa",
+                                    "Date / Last Personal Correspondence" : "",
+                                    "Does Not Need to Comply" : ""}
+
+property_extra_data_map[1311525] = {"CoStar Property ID" : "2154532", 
+                                    "Organization" : "Lucky University",
+                                    "Compliance Required" : "Y",
+                                    "County" : "Contra Costa",
+                                    "Date / Last Personal Correspondence" : "",
+                                    "Does Not Need to Comply" : ""}
+
+property_extra_data_map[1311526] = {"CoStar Property ID" : "754863", 
+                                    "Organization" : "Lucky University",
+                                    "Compliance Required" : "Y",
+                                    "County" : "Contra Costa",
+                                    "Date / Last Personal Correspondence" : "",
+                                    "Does Not Need to Comply" : ""}
+
+property_extra_data_map[1311527] = {"CoStar Property ID" : "1154286", 
+                                    "Organization" : "Lucky University",
+                                    "Compliance Required" : "Y",
+                                    "County" : "Contra Costa",
+                                    "Date / Last Personal Correspondence" : "5/5/2015",
+                                    "Does Not Need to Comply" : ""}
+                                    
+property_extra_data_map[1311528] = {"CoStar Property ID" : "2145954", 
+                                    "Organization" : "",
+                                    "Compliance Required" : "N",
+                                    "County" : "",
+                                    "Date / Last Personal Correspondence" : "",
+                                    "Does Not Need to Comply" : "X"}
+
+property_extra_data_map[6798215] = {"CoStar Property ID" : "", 
+                                    "Organization" : "",
+                                    "Compliance Required" : "",
+                                    "County" : "Contra Costa",
+                                    "Date / Last Personal Correspondence" : "",
+                                    "Does Not Need to Comply" : ""}
 
 
 def create_structure():
