@@ -45,7 +45,7 @@ You can also add tests that will only be invoked by Travis using::
 
     if os.getenv('TRAVIS') == 'true':
 
-When tests are run locally(i.e. not on Travis) only cross platform browsers will be used. If you need to write a browser specfic test against anything else, and you wish to run the test locally, you can override this by setting the environment 'SEED_TEST_BROWSER' to one of IE, SAFARI, EDGE. This will cause that browser to be used as well. You will need to ensure you have the relevant driver installed.
+When tests are run locally(i.e. not on Travis) only cross platform browsers will be used. If you need to write a browser specific test against anything else, and you wish to run the test locally, you can override this by setting the environment 'SEED_TEST_BROWSER' to one of IE, SAFARI, EDGE. This will cause that browser to be used as well. You will need to ensure you have the relevant driver installed.
 
 Running Tests.
 --------------
@@ -160,7 +160,7 @@ Definitions:
       define any function and pass it in here. Note for both it *must* be
       func not func() or webdriver not webdriver()
 
-A browser capabilities factory is provided for your convinience in base.py.
+A browser capabilities factory is provided for your convenience in base.py.
 This should ensure a valid browser capacity definition.
 
 Depending on whether the tests are running locally or on Travis Capabilities or driver will be used.

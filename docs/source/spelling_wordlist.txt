@@ -111,10 +111,12 @@ metadata
 MIDDLEWARE
 middleware
 mixin
+Munday
 MyBrowser
 namespace
 NGINX
 nginx
+nlong
 nodejs
 noncanonicalprojectbuildings
 noqa
@@ -156,6 +158,7 @@ sendmail
 serializable
 serializers
 setUp
+setUpClass
 signup
 str
 strftime

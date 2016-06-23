@@ -24,7 +24,7 @@ def loggedout_tests_generator():
     Generator containing the LoggedOut Test Class definition.
 
     Any tests added to the definition will be expanded at run time to
-    cover all browers and yielded individually to the test runner.
+    cover all browsers and yielded individually to the test runner.
     """
     for browser in BROWSERS:
 
@@ -54,7 +54,7 @@ def loggedin_tests_generator():
     Generator containing the Logged In Test Class definition.
 
     Any tests added to the definition will be expanded at run time to
-    cover all browers and yielded individually to the test runner.
+    cover all browsers and yielded individually to the test runner.
     """
     for browser in BROWSERS:
 
