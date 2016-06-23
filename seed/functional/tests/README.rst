@@ -58,7 +58,7 @@ e.g.::
         [snip]...
         File "/home/paulmunday/projects/seed/seed/functional/tests/test_browser.py",    line 341, in test_pass
 
-In addition the tests will print the name of a failed test and the browser used to standard error, though this prints inline with the tests, not the same place as the report from the test runner.
+In addition the tests will print the name of a failed test and the browser used to standard error, though this prints in line with the tests, not the same place as the report from the test runner.
 
 Adding Test Cases to test_browsers.py
 -------------------------------------
