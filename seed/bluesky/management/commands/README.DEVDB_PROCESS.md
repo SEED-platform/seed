@@ -16,7 +16,7 @@ perspective.
 
 # The Core Users
    - Organization: CEC Diane(124): 6154, 959
-   - Organization: City of Atlanta(21): 14540, 1010
+   - Organization: City of Atlanta(181): 14540, 1010
    - Organization: City of Berkeley(117): 785, 177
    - Organization: City of Cambridge(69): 10257, 1002
    - Organization: City of Houston(6): 43494, 6648

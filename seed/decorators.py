@@ -142,8 +142,8 @@ def require_organization_membership(fn):
     @wraps(fn)
     def _wrapped(request, *args, **kwargs):
 
-        if not OrganizationUser.objects.filter(organization_id=request.GET['organization_id'],
-            user=request.user).exists():
+        if not OrganizationUser.objects.filter(
+                organization_id=request.GET['organization_id'], user=request.user).exists():
 
             return HttpResponseForbidden()
 

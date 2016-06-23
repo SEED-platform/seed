@@ -1,7 +1,7 @@
 <div class="page_header_container" ng-cloak>
     <div class="page_header">
         <div class="left page_action_container">
-           
+
         </div>
         <div class="page_title">
             <h1>
@@ -11,9 +11,7 @@
                 <span ng-show="object == 'taxlot'"><ng-pluralize count="pagination.total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
             </h1>
         </div>
-        <div class="right page_action_container page_action_btn">
-
-        </div>
+        <div class="right page_action_container page_action_btn"></div>
     </div>
 </div>
 
@@ -25,10 +23,6 @@
                 ng-options="option.name for option in cycle.cycles track by option.pk">
             </select>
         </div>
-    </div>
-    <div class="form-group">
-        <button type="button" ng-show="expanded" ng-click="toggleExpanded()"><i class="fa fa-compress"></i></button>
-        <button type="button" ng-show="!expanded" ng-click="toggleExpanded()"><i class="fa fa-expand"></i></button>
     </div>
 </div>
 
@@ -43,9 +37,5 @@
 </ul>
 
 <div class="section_content_container" ng-cloak style="clear:both;">
-    <div class="section_content">
-        <ng-include src="urls.static_url + 'seed/partials/bluesky/table.html'">
-            <!-- buildings table loads here -->
-        </ng-include>
-    </div>
+    <div class="section_content" ng-include="urls.static_url + 'seed/partials/bluesky/table.html'"></div>
 </div>
