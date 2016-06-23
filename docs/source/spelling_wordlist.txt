@@ -21,6 +21,7 @@ backend
 bashrc
 bedes
 boolean
+BrowserDefinition
 buildingsnapshot
 BuildingSnapshot
 BuildingSnapshots
@@ -66,9 +67,13 @@ filepath
 filesystem
 fineuploader
 firefox
+Firefox
 fn
+func
+FunctionalLiveServerBaseTestCase
 gcc
 getitem
+getenv
 Github
 Google
 graphviz
@@ -96,6 +101,9 @@ Linux
 localhost
 login
 Login
+LoggedInTests
+LoggedOutTests
+loggedout
 lookup
 lte
 MapItem
@@ -103,6 +111,7 @@ metadata
 MIDDLEWARE
 middleware
 mixin
+MyBrowser
 namespace
 NGINX
 nginx
@@ -119,6 +128,7 @@ params
 paramType
 pk
 pks
+py
 postfix
 postgres
 postgresql
@@ -139,11 +149,13 @@ regex
 repo
 rmi
 rtype
+runTest
 seeddb
 seeduser
 sendmail
 serializable
 serializers
+setUp
 signup
 str
 strftime
@@ -154,7 +166,10 @@ subtask
 sudo
 tastypie
 td
+tearDown
 templatetags
+TestCaseFactory
+TestCaseFactoryBrowser
 Thusly
 timeseries
 timestamp
@@ -162,10 +177,12 @@ todo
 TODO
 Todo
 ToS
+tsts
 travis
 tuples
 Ubuntu
 unicode
+unittest
 unmatch
 unmatching
 untracked
@@ -183,6 +200,7 @@ uWSGI
 virtualenv
 virtualenvs
 virtualenvwrapper
+webdriver
 whitelist
 wildcards
 workflow

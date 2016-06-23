@@ -2,9 +2,12 @@
 # encoding: utf-8
 """
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
-:author
-"""
 
+..warning::
+    SEE README BEFORE EDITING THIS FILE!
+
+:author Paul Munday<paul@paulmunday.net>
+"""
 import os
 
 from selenium import webdriver
@@ -19,117 +22,43 @@ from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test.client import Client
 
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.functional.tests.browser_definitions import BROWSERS
 from seed.landing.models import SEEDUser
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-
-################################################################################
-#                            WARNING! HACK ALERT                               #
-#                                                                              #
-#   There's a bug with Firefox version >= 47.0 that prevents the Selenium      #
-#   webdriver from working: https://github.com/SeleniumHQ/selenium/issues/2110 #
-#   There is a fix coming:                                                     #
-#   https://developer.mozilla.org/en-US/docs/Mozilla/QA/Marionette/WebDriver   #
-#   In the meantime you can manually install it to get things working.         #
-#   It will need to be on the sytem search path e.g. /usr/local/bin/wires      #
-#                                                                              #
-#   N.B it will need to be named wires not geckodriver                         #
-#                                                                              #
-#   The following is a hack to detect the browser version and check to see     #
-#   if Marionette is installed and if so, use it.                              #
-#                                                                              #
-#   It should be removed when the upstream fix lands. Check if to see          #
-#   if it has landed if your browser version > 47.0                            #
-#                                                                              #
-#                                                                              #
-#   If you do please add the test_building_detail_th_resize test               #
-#   from test_chrome to SmokeTests in test_firefox                             #
-#                                                                              #
-################################################################################
-
-from distutils.spawn import find_executable
-import errno
-import subprocess
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-
-FIREFOX_IS_BROKEN = False
-HAS_MARIONETTE = False
-
-# Assume tests are being ran locally.
-if not os.getenv('TRAVIS') == 'true':
-    HAS_MARIONETTE = find_executable('wires')
-    THIS_PATH = os.path.dirname(os.path.realpath(__file__))
-    THIS_FILE = os.path.join(THIS_PATH, 'base.py')
-
-    try:
-        FIREFOX_VERSION = subprocess.check_output(
-            ['firefox', '--version']).rstrip().split()[-1]
-        FIREFOX_IS_BROKEN = FIREFOX_VERSION >= '47.0'
-    except OSError as err:
-        print "Can't find Firefox!"
-        errmsg = os.strerror(errno.ENOPKG)
-        errmsg += 'Firefox See: {}'.format(THIS_FILE)
-        raise EnvironmentError(errno.ENOPKG, errmsg)
-
-    if FIREFOX_IS_BROKEN and not HAS_MARIONETTE:
-        errmsg = os.strerror(errno.ENOPKG)
-        errmsg += ': Marionette. See: {}'.format(THIS_FILE)
-        raise EnvironmentError(errno.ENOPKG, errmsg)
-
-
-# Don't remove if hack is not longer needed, just remove
-# elif FIREFOX_IS_BROKEN and HAS_MARIONETTE section
-def get_webdriver(browser):
-    if browser.lower() == 'chrome' and not os.getenv('TRAVIS') == 'true':
-        driver = webdriver.Chrome()
-    elif FIREFOX_IS_BROKEN and HAS_MARIONETTE:
-        caps = DesiredCapabilities.FIREFOX
-        caps["marionette"] = True
-        caps["binary"] = find_executable('firefox')
-        driver = webdriver.Firefox(capabilities=caps)
-    else:
-        driver = webdriver.Firefox()
-    return driver
-
-################################################################################
-#                                    HACK ENDS                                 #
-################################################################################
-
-# FIXME: should this be hard coded?
-FIREFOX_DEFINITION = {
-    'platform': 'OS X 10.11',
-    'browserName': 'firefox',
-    'version': '44',
-    'javascriptEnabled': True,
-    'selenium-version': '2.52.0',
-    'loggingPrefs': {
-        'browser': 'ALL',
-    },
-}
+from seed.models import BuildingSnapshot, CanonicalBuilding
 
 
 class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
+    """
+    Base class for Functioal/Selenium tests.
 
-    @classmethod
-    def get_capabilities(cls):
+    Sets up browser and user for all tests. Includes helper methods.
+
+    ..::WARNING
+        Don't use this class directly for tests, use one of the subclasses.
+    """
+
+    # Magic! We need this since the class methods are only indirectly
+    # invoked by the test runner, without it the tests won't run.
+    def runTest(self):
+        pass
+
+    def get_capabilities(self):
+        # used by Travis/Sauce Labs
         capabilities = None
         if os.getenv('TRAVIS') == 'true':
             build_id = 'Build #{}'.format(os.environ.get('TRAVIS_JOB_NUMBER'))
             capabilities = {
                 'tunnel-identifier': os.environ.get('TRAVIS_JOB_NUMBER'),
                 'build': os.environ.get('TRAVIS_BUILD_NUMBER'),
-                'name': '{} ({})'.format(build_id, cls.__name__)
+                'name': '{} ({})'.format(build_id, self.__class__.__name__)
             }
-
-            # FIXME: should this be hard coded?
-            capabilities.update(FIREFOX_DEFINITION)
+            capabilities.update(self.browser_type.capabilities)
         return capabilities
 
-    @classmethod
-    def setUpClass(cls):
-        super(FunctionalLiveServerBaseTestCase, cls).setUpClass()
-        cls.capabilities = cls.get_capabilities()
-
-    def get_driver(self, browser):
+    def get_driver(self):
+        """Sets the right driver for the platform the tests are run on."""
         # Assume tests are being ran locally.
         if os.getenv('TRAVIS') == 'true':
             capabilities = self.get_capabilities()
@@ -141,16 +70,18 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
                 command_executor="http://{}/wd/hub".format(hub_url)
             )
         else:
-            driver = get_webdriver(browser)
+            driver = self.browser_type.driver()
         return driver
 
-    def setUp(self, browser=None):
-        self.browser = self.get_driver(browser)
+    def setUp(self):
+        """Generate Selnium resources/browser and a user for tests."""
+        self.browser = self.get_driver()
         self.browser.implicitly_wait(30)
 
         # Generate User and Selenium Resources
         user_details = {
-            'username': 'test@example.com',  # the username needs to be in the form of an email.
+            # the username needs to be in the form of an email.
+            'username': 'test@example.com',
             'password': 'password',
             'email': 'test@example.com',
             'first_name': 'Jane',
@@ -159,10 +90,16 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         self.user = SEEDUser.objects.create_user(**user_details)
         self.user.generate_key()
         self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
-        self.headers = {'HTTP_AUTHORIZATION': '%s:%s' % (self.user.username, self.user.api_key)}
+        self.org_user = OrganizationUser.objects.create(
+            user=self.user, organization=self.org)
+        self.headers = {
+            'HTTP_AUTHORIZATION': '{}:{}'.format(
+                self.user.username, self.user.api_key
+            )
+        }
 
     def login(self):
+        """Login the test user."""
         # Selenium will not set a cookie unless you've alreaday fetched a page from
         # said domain.
         self.browser.get('%s/' % self.live_server_url)
@@ -186,20 +123,34 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         self.browser.add_cookie(set_to)
 
     def logout(self):
+        """Logout the test user."""
         self.browser.delete_cookie(settings.SESSION_COOKIE_NAME)
 
     def tearDown(self):
+        """Close browser and delete user."""
         self.browser.quit()
+        self.org_user.delete()
+        self.org.delete()
+        self.user.delete()
         super(FunctionalLiveServerBaseTestCase, self).tearDown()
 
     # Helper methods
     def wait_for_element_by_css(self, selector, timeout=15):
+        """
+        Get a page element by css, allowing time for the page to load.
+
+        :returns WebElement.
+        """
         return WebDriverWait(self.browser, timeout).until(presence_of_element_located((By.CSS_SELECTOR, selector,)))
 
     def get_action_chains(self):
         """
         Return an ActionChains instance that can be used to
         simulate user interactions.
+
+        :returns selenium.webdriver.common.action_chains.ActionChains
+
+        :Example:
 
         actions = self.get_action_chains()
         my_button = self.browser.find_element_by_id('my_button')
@@ -211,26 +162,107 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         """
         return ActionChains(self.browser)
 
+    def create_import(self, **kw):
+        """
+        Create an ImportRecord object and the associated ImportFile.
 
-class LoggedOutFunctionalTestCase(FunctionalLiveServerBaseTestCase):
-    pass
+        Set up a minimal ImportRecords and ImportFile sufficient to run a
+        test. The import record contains only the owner and super_organization
+        and by default, the ImportFile only references the ImportRecord.
+
+        Any keywords supplied will be passed to ImportFile.object.create
+
+        :param **kw: keywords passed to ImportFile.object.create
+
+        :returns: ImportFile, ImportRecord
+
+        :Example:
+
+        import_file = self.create_import_file()
+        import_file = self.create_import_file(source_type='csv')
+        """
+        import_record = ImportRecord.objects.create(
+            owner=self.user,
+            super_organization=self.org
+        )
+        import_file = ImportFile.objects.create(
+            import_record=import_record, **kw
+        )
+        return import_file, import_record
+
+    def create_building(self, import_file, **kw):
+        """
+        Create a CanonicalBuilding and an associated BuildingSnapshot.
+
+        Set up a minimal CanonicalBuilding and BuildingSnapshot suitable for
+        use in tests. The defaults for the BuildingSnapshot set the
+        super_organization, the import file (as supplied) and address_line_1
+        with a value of 'address'. Any supplied keywords will be passed to
+        BuildingSnapshot.objects.create and will overide the defaults.
+
+        :param import_file: an ImportFile object (created by create_import_file)
+        : param **kw: keywords passed to BuildingSnapshot.objects.create
+
+        :returns: CanonicalBuilding instance
+        """
+        canonical_building = CanonicalBuilding.objects.create()
+        snapshot_params = {
+            'super_organization': self.org,
+            'import_file': import_file,
+            'canonical_building': canonical_building,
+            'address_line_1': 'address'
+        }
+        snapshot_params.update(kw)
+        building = BuildingSnapshot.objects.create(**snapshot_params)
+        canonical_building.canonical_snapshot = building
+        canonical_building.save()
+        return canonical_building
 
 
 class LoggedInFunctionalTestCase(FunctionalLiveServerBaseTestCase):
+    """Private class for inheritance"""
     def setUp(self):
         super(LoggedInFunctionalTestCase, self).setUp()
         self.login()
 
 
-# N.B These require the Chorme webdriver to be installed
-# See: https://sites.google.com/a/chromium.org/chromedriver/home
+def loggedOutFunctionalTestCaseFactory(browser):
+    """
+    Dynamically create a browser specific LoggedOutFunctionalTestCase class.
 
-class LoggedInFunctionalTestCaseChrome(FunctionalLiveServerBaseTestCase):
-    def setUp(self):
-        super(LoggedInFunctionalTestCaseChrome, self).setUp('Chrome')
-        self.login()
+    e.g. loggedOutFunctionalTestCaseFactory(firefox) generates
+    LoggedOutFunctionalTestCaseFirefox.
+    """
+    classname = get_classname('LoggedOutFunctionalTestCase', browser.name)
+    return type(
+        classname, (FunctionalLiveServerBaseTestCase, ),
+        {'browser_type': browser}
+    )
 
 
-class LoggedOutFunctionalTestCaseChrome(FunctionalLiveServerBaseTestCase):
-    def setUp(self):
-        super(LoggedOutFunctionalTestCaseChrome, self).setUp('Chrome')
+def loggedInFunctionalTestCaseFactory(browser):
+    """
+    Dynamically create a browser specific LoggedInFunctionalTestCase class.
+
+    e.g. loggedInFunctionalTestCaseFactory(firefox) generates
+    LoggedInFunctionalTestCaseFirefox.
+    """
+    classname = get_classname('LoggedInFunctionalTestCase', browser.name)
+    return type(
+        classname, (LoggedInFunctionalTestCase, ),
+        {'browser_type': browser}
+    )
+
+
+def get_classname(classname, browser):
+    """Return a browser specific class name."""
+    return "{}{}".format(classname, browser)
+
+
+# Dynamically create Test Classes for browsers named in BROWSERS
+LOGGED_IN_CLASSES = {}
+LOGGED_OUT_CLASSES = {}
+for browser in BROWSERS:
+    bname = browser.name
+    LOGGED_IN_CLASSES[bname] = loggedInFunctionalTestCaseFactory(browser)
+    LOGGED_OUT_CLASSES[bname] = loggedOutFunctionalTestCaseFactory(browser)
