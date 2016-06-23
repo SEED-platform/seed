@@ -15,10 +15,10 @@ Managers
 Models
 ------
 
-.. automodule:: seed.data_importer.models
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. .. automodule:: seed.data_importer.models
+..    :members:
+..    :undoc-members:
+..    :show-inheritance:
 
 URLs
 ----
