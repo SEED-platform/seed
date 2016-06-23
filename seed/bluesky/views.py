@@ -9,6 +9,15 @@ from seed.models import Column
 from seed.utils.api import api_endpoint
 
 
+def unique(lol):
+
+    unique_elements = set()
+    for l in lol:
+        unique_elements = unique_elements.union(l)
+
+    return sorted(list(unique_elements))
+
+
 @require_organization_id
 @require_organization_membership
 @api_endpoint
@@ -380,6 +389,7 @@ def get_property_columns(request):
         extra_data_source__isnull=False
     )
 
+
     for c in extra_data_columns:
         columns.append({
             'field': c.column_name,
@@ -387,6 +397,28 @@ def get_property_columns(request):
             'related': c.extra_data_source == Column.SOURCE_TAXLOT,
             'source': Column.SOURCE_CHOICES_MAP[c.extra_data_source],
         })
+
+    taxlot_extra_data_fields =  unique(map(lambda x: x.state.extra_data.keys(), TaxLotView.objects.filter(taxlot__organization_id=request.GET['organization_id']).select_related('state').all()))
+    property_extra_data_fields = unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(property__organization_id=request.GET['organization_id']).select_related('state').all()))
+
+    for c in property_extra_data_fields:
+        print "Adding {}".format(c)
+        columns.append({
+            'field': c,
+            'display': 'PropertyED.{}'.format(c),
+            'related': False,
+            'source': 'property'
+        })
+
+    for c in taxlot_extra_data_fields:
+        print "Adding {}".format(c)
+        columns.append({
+            'field': c,
+            'display': 'TaxLotED.{}'.format(c),
+            'related': True,
+            'source': 'taxlot'
+        })
+
     return columns
 
 
@@ -461,4 +493,26 @@ def get_taxlot_columns(request):
             'related': c.extra_data_source == Column.SOURCE_PROPERTY,
             'source': Column.SOURCE_CHOICES_MAP[c.extra_data_source],
         })
+
+    taxlot_extra_data_fields =  unique(map(lambda x: x.state.extra_data.keys(), TaxLotView.objects.filter(taxlot__organization_id=request.GET['organization_id']).select_related('state').all()))
+    property_extra_data_fields = unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(property__organization_id=request.GET['organization_id']).select_related('state').all()))
+
+    for c in property_extra_data_fields:
+        print "Adding {}".format(c)
+        columns.append({
+            'field': c,
+            'display': 'PropertyED.{}'.format(c),
+            'related': True,
+            'source': 'property'
+        })
+
+    for c in taxlot_extra_data_fields:
+        print "Adding {}".format(c)
+        columns.append({
+            'field': c,
+            'display': 'TaxLotED.{}'.format(c),
+            'related': False,
+            'source': 'taxlot'
+        })
+
     return columns
