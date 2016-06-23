@@ -51,13 +51,14 @@ Running Tests.
 --------------
 Tests can be run as normal, but a failing test may produce different output from what you are expecting. In particular the FAIL: statement will list the name of the generator, not the test method. So you will see
 
-However the place the test failed can still be derived from the Traceback
+However the place the test failed can still be derived from the trace back
 e.g.::
 
     Traceback (most recent call last):
         [snip]...
         File "/home/paulmunday/projects/seed/seed/functional/tests/test_browser.py",    line 341, in test_pass
 
+In addition the tests will print the name of a failed test and the browser used to standard error, though this prints inline with the tests, not the same place as the report from the test runner.
 
 Adding Test Cases to test_browsers.py
 -------------------------------------
@@ -171,7 +172,7 @@ Make sure to add your browser definition to BROWSERS (or equivalent) (and your c
 The Gory Details
 ================
 
-There's a lot of indirection and dynamic definition going on underneath the hood (compounded by the fact that theres a lot of deep magic going on with unit tests in the first place). However I tried to write in such a way that it uses common idioms for things that will be changed frequently so mostly this can be ignored. Explanations for what is going on can be found below if you want, or need, to know.
+There is a lot of indirection and dynamic definition going on underneath the hood (compounded by the fact that there's a lot of deep magic going on with unit tests in the first place). However I tried to write in such a way that it uses common idioms for things that will be changed frequently so mostly this can be ignored. Explanations for what is going on can be found below if you want, or need, to know.
 
 The rationale for all this is easy testing across multiple browsers. As long as we wrap them in the right way we need only to write our base and test classes once and we will get a set of tests for each browser definition with out having to worry about the definitions, if a new definition is added it will automatically get picked up by all tests.
 
