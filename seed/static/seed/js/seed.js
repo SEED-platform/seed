@@ -13,9 +13,11 @@ angular.module('BE.seed.angular_dependencies', [
 angular.module('BE.seed.vendor_dependencies', [
     'ui.bootstrap',
     'ui.grid',
+    'ui.grid.exporter',
     'ui.grid.grouping',
     'ui.grid.moveColumns',
     'ui.grid.resizeColumns',
+    'ui.grid.saveState',
     'ui.grid.treeView',
     'ui.sortable',
     'ui.tree',
