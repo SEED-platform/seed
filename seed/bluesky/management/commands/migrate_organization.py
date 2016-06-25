@@ -13,13 +13,11 @@ import copy
 import collections
 import os
 import datetime
-#import networkx as nx
-#import matplotlib.pyplot as plt
-#import pygraphviz
 import logging
 import itertools
+import csv
+import StringIO
 from IPython import embed
-#from networkx.drawing.nx_agraph import graphviz_layout
 import seed.bluesky.models
 import numpy as np
 from scipy.sparse import dok_matrix
@@ -32,26 +30,151 @@ from _localtools import get_node_sinks
 
 logging.basicConfig(level=logging.DEBUG)
 
-def is_merge(node):
-    return node.import_file_id is None
 
-def check_import(node):
-    return node.import_file_id is None or (is_tax_import(node) or is_pm_import(node))
+def copy_extra_data_excluding(extra_data, bad_fields):
+    bad_fields = set(bad_fields)
+    return {x:y for (x,y) in extra_data.items() if x not in bad_fields}
 
-def is_tax_import(node):
-    return node.import_file_id is not None and node.tax_lot_id # and node.source_type in [0,2]
+def create_property_state_for_node(node, org):
+    dont_include_fields = [x[0] for x in organization_extra_data_mapping[org.id].items() if x[1][0] != "Property"]
+    extra_data_copy = copy_extra_data_excluding(node.extra_data, dont_include_fields)
 
-def is_pm_import(node):
-    return node.import_file_id is not None and node.pm_property_id
+    property_state = seed.bluesky.models.PropertyState(confidence = node.confidence,
+                                                       jurisdiction_property_identifier = None,
+                                                       lot_number = node.lot_number,
+                                                       property_name = node.property_name,
+                                                       address_line_1 = node.address_line_1,
+                                                       address_line_2 = node.address_line_2,
+                                                       city = node.city,
+                                                       state = node.state_province,
+                                                       postal_code = node.postal_code,
+                                                       building_count = node.building_count,
+                                                       property_notes = node.property_notes,
+                                                       use_description = node.use_description,
+                                                       gross_floor_area = node.gross_floor_area,
+                                                       year_built = node.year_built,
+                                                       recent_sale_date = node.recent_sale_date,
+                                                       conditioned_floor_area = node.conditioned_floor_area,
+                                                       occupied_floor_area = node.occupied_floor_area,
+                                                       owner = node.owner,
+                                                       owner_email = node.owner_email,
+                                                       owner_telephone = node.owner_telephone,
+                                                       owner_address = node.owner_address,
+                                                       owner_city_state = node.owner_city_state,
+                                                       owner_postal_code = node.owner_postal_code,
+                                                       building_portfolio_manager_identifier = node.pm_property_id,
+                                                       building_home_energy_score_identifier = None,
+                                                       energy_score = node.energy_score,
+                                                       site_eui = node.site_eui,
+                                                       generation_date = node.generation_date,
+                                                       release_date = node.release_date,
+                                                       site_eui_weather_normalized = node.site_eui_weather_normalized,
+                                                       source_eui = node.source_eui,
+                                                       energy_alerts = node.energy_alerts,
+                                                       space_alerts = node.space_alerts,
+                                                       building_certification = node.building_certification,
+                                                       extra_data = extra_data_copy)
+    property_state.save()
 
-def load_cycle(org, node):
-    time = node.modified
-    cycle = seed.bluesky.models.Cycle.objects.filter(organization=org, start__lt=time, end__gt=time).first()
+    return property_state
+
+
+
+def create_tax_lot_state_for_node(node, org):
+
+    dont_include_fields = [x[0] for x in organization_extra_data_mapping[org.id].items() if x[1][0] != "Tax"]
+    extra_data_copy = copy_extra_data_excluding(node.extra_data, dont_include_fields)
+
+
+    taxlotstate = seed.bluesky.models.TaxLotState.objects.create(confidence = node.confidence,
+                                                                 jurisdiction_taxlot_identifier = node.tax_lot_id,
+                                                                 block_number = node.block_number,
+                                                                 district = node.district,
+                                                                 address = node.address_line_1,
+                                                                 city = node.city,
+                                                                 state = node.state_province,
+                                                                 postal_code = node.postal_code,
+                                                                 number_properties = node.building_count,
+                                                                 extra_data = extra_data_copy)
+    return taxlotstate
+
+
+def is_import(node, org):
+    return node.import_file_id is not None
+
+def is_merge(node, org):
+    return not is_import(node, org)
+
+MERGE = 0
+TAX_IMPORT = 1
+PROPERTY_IMPORT = 2
+COMBO_IMPORT = 3
+
+def classify_node(node, org):
+    if is_merge(node, org):
+        return MERGE
+    else:
+        return classify_import_node(node, org)
+
+
+def node_has_tax_lot_info(node, org):
+    # TODO: Add extra data classification
+    tax_fields = set([x[0] for x in organization_extra_data_mapping[org.id].items() if x[1][0] == "Tax"])
+    has_tax_extra_data = len({x:y for x,y in node.extra_data.items() if x in tax_fields and y})
+    return node.tax_lot_id is not None or has_tax_extra_data
+
+def node_has_property_info(node, org):
+    property_fields = set([x[0] for x in organization_extra_data_mapping[org.id].items() if x[1][0] == "Property"])
+    has_property_extra_data = len({x:y for x,y in node.extra_data.items() if x in property_fields and y})
+    # TODO: Add extra data classification
+    return node.pm_property_id is not None
+
+def classify_import_node(node, org):
+    has_tax_lot = node_has_tax_lot_info(node, org)
+    has_property = node_has_property_info(node, org)
+
+    assert node.import_file_id is not None, "Thought this was an import node"
+
+    if has_tax_lot and not has_property:
+        return TAX_IMPORT
+    elif not has_tax_lot and has_property:
+        return PROPERTY_IMPORT
+    elif has_tax_lot and has_property:
+        return COMBO_IMPORT
+    else:
+        return PROPERTY_IMPORT
+        raise Exception("Could not classify import node.")
+
+def load_cycle(org, node, year_ending = True, fallback = True):
+    if year_ending:
+        time = node.year_ending
+
+        if not fallback:
+            assert time is not None, "Got no time!"
+        elif time is None:
+            logging.warning("Node does not have 'year ending' field.")
+            time = node.modified
+    else:
+        time = node.modified
+
+
+    time = datetime.datetime(year = time.year, month=time.month, day = time.day)
+    try:
+        cycle_start = time.replace(month = 1, day = 1, hour = 0, minute = 0, second = 0, microsecond = 0)
+        cycle_end = cycle_start.replace(year=cycle_start.year+1)-datetime.timedelta(seconds = 1)
+    except:
+        pdb.set_trace()
+
+    cycle, created = seed.bluesky.models.Cycle.objects.get_or_create(organization=org,
+                                                                     name = "{} Calendar Year".format(cycle_start.year),
+                                                                     start = cycle_start,
+                                                                     end = cycle_end)
     return cycle
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--org', dest='organization', default=False, type=int)
+        parser.add_argument('--max', dest='max_num', default=0, type=int)
         return
 
     def handle(self, *args, **options):
@@ -87,6 +210,9 @@ class Command(BaseCommand):
         else:
             core_organization = get_core_organizations()
 
+        max_records = options['max'] if "max" in options else 0
+
+
         for org_id in core_organization:
             # Writing loop over organizations
 
@@ -99,7 +225,7 @@ class Command(BaseCommand):
             org_canonical_snapshots = [cb.canonical_snapshot for cb in org_canonical_buildings]
 
             last_date = max([cs.modified for cs in org_canonical_snapshots])
-            create_bluesky_cycles_for_org(org, last_date)
+            # create_bluesky_cycles_for_org(org, last_date)
 
             tree_sizes = [counts[labelarray[bs.id]] for bs in org_canonical_snapshots]
 
@@ -110,6 +236,11 @@ class Command(BaseCommand):
             print len(set(map(lambda x: x.id, org_canonical_snapshots)))
 
             for ndx, bs in enumerate(org_canonical_snapshots):
+
+                if max_records and (ndx+1) > max_records:
+                    print "That's enough!"
+                    break
+
                 print "Processing Building {}/{}".format(ndx+1, len(org_canonical_snapshots))
                 bs_label = labelarray[bs.id]
                 # print "Label is {}".format(bs_label)
@@ -126,16 +257,13 @@ class Command(BaseCommand):
 
                 print "Creating snapshot for {}".format(leaf_buildingsnapshots[0])
 
-                pdb.set_trace()
                 create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix)
         return
 
 
 def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix):
     """Take tree structure describing a single Property/TaxLot over time and create the entities."""
-    # logging.info("Creating a new entity thing-a-majig!")
-
-    #print set([x.import_file for x in import_buildingsnapshots])
+    logging.info("Creating a new entity thing-a-majig!")
 
     tax_lot_created = 0
     property_created = 0
@@ -147,247 +275,150 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
 
     logging.info("Creating Property/TaxLot from {} nodes".format( sum(map(len, (leaf_buildingsnapshots, other_buildingsnapshots, import_buildingsnapshots)))))
 
-    cycle_map = {cycle.start.year: cycle for cycle in seed.bluesky.models.Cycle.objects.filter(organization=org).all()}
-
     all_nodes = list(itertools.chain(import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots))
     all_nodes.sort(key = lambda rec: rec.created)
 
     tax_lot = None
-    property = None
+    property_obj = None
 
-    tax_lot_views = {}
-    property_views = {}
+    # pdb.set_trace()
 
+    # pdb.set_trace()
+    if node_has_tax_lot_info(leaf_buildingsnapshots[0], org):
+        tax_lot = seed.bluesky.models.TaxLot(organization=org)
+        tax_lot.save()
+        tax_lot_created += 1
 
-    merged_type = {}
+    if node_has_property_info(leaf_buildingsnapshots[0], org):
+        property_obj = seed.bluesky.models.Property(organization=org)
+        property_obj.save()
+        property_created += 1
+
+    if not property_obj and not tax_lot:
+        property_obj = seed.bluesky.models.Property(organization=org)
+        property_obj.save()
+        property_created += 1
+
+    last_taxlot_view = False
+    last_property_view = False
 
     for node in all_nodes:
-        assert check_import(node)
+        # pdb.set_trace()
+        node_type = classify_node(node, org)
 
-        if is_tax_import(node):
-            merged_type[node.id] = "TAX"
+        if node_type == TAX_IMPORT or node_type == COMBO_IMPORT:
+            # Get the cycle associated with the node
 
-            if tax_lot is None:
-                #print "Creating tax lot"
-                tax_lot = seed.bluesky.models.TaxLot(organization=org)
-                tax_lot.save()
-                tax_lot_created += 1
-            new_state = seed.bluesky.models.TaxLotState(confidence = node.confidence,
-                                                        jurisdiction_taxlot_identifier = node.tax_lot_id,
-                                                        block_number = node.block_number,
-                                                        district = node.district,
-                                                        address = node.address_line_1,
-                                                        city = node.city,
-                                                        state = node.state_province,
-                                                        postal_code = node.postal_code,
-                                                        number_properties = node.building_count,
-                                                        extra_data = copy.deepcopy(node.extra_data))
-            new_state.save()
+            # pdb.set_trace()
+            import_cycle = load_cycle(org, node)
+            tax_lot_state = create_tax_lot_state_for_node(node, org)
             tax_lot_state_created += 1
-            cycle = load_cycle(org, node)
 
-            if cycle.id in tax_lot_views:
-                tax_lot_views[cycle.id].state = new_state
-                tax_lot_views[cycle.id].save()
+            query = seed.bluesky.models.TaxLotView.objects.filter(taxlot=tax_lot, cycle=import_cycle)
+            if query.count():
+                taxlotview = query.first()
+                taxlotview.state = tax_lot_state
+                taxlotview.save()
             else:
-                tax_lot_views[cycle.id] = seed.bluesky.models.TaxLotView(taxlot=tax_lot, cycle=cycle, state = new_state)
-                tax_lot_views[cycle.id].save()
-                tax_lot_view_created += 1
-        elif is_pm_import(node):
-            merged_type[node.id] = "PM"
-            if property is None:
-                print "Creating Property"
-                property = seed.bluesky.models.Property(organization=org)
-                property.save()
-                property_created += 1
-
-            #print "Creating Property State"
-            new_state = seed.bluesky.models.PropertyState(confidence = node.confidence,
-                                                          jurisdiction_property_identifier = None,
-                                                          lot_number = node.lot_number,
-                                                          property_name = node.property_name,
-                                                          address_line_1 = node.address_line_1,
-                                                          address_line_2 = node.address_line_2,
-                                                          city = node.city,
-                                                          state = node.state_province,
-                                                          postal_code = node.postal_code,
-                                                          building_count = node.building_count,
-                                                          property_notes = node.property_notes,
-                                                          use_description = node.use_description,
-                                                          gross_floor_area = node.gross_floor_area,
-                                                          year_built = node.year_built,
-                                                          recent_sale_date = node.recent_sale_date,
-                                                          conditioned_floor_area = node.conditioned_floor_area,
-                                                          occupied_floor_area = node.occupied_floor_area,
-                                                          owner = node.owner,
-                                                          owner_email = node.owner_email,
-                                                          owner_telephone = node.owner_telephone,
-                                                          owner_address = node.owner_address,
-                                                          owner_city_state = node.owner_city_state,
-                                                          owner_postal_code = node.owner_postal_code,
-                                                          building_portfolio_manager_identifier = node.pm_property_id,
-                                                          building_home_energy_score_identifier = None,
-                                                          energy_score = node.energy_score,
-                                                          site_eui = node.site_eui,
-                                                          generation_date = node.generation_date,
-                                                          release_date = node.release_date,
-                                                          site_eui_weather_normalized = node.site_eui_weather_normalized,
-                                                          source_eui = node.source_eui,
-                                                          energy_alerts = node.energy_alerts,
-                                                          space_alerts = node.space_alerts,
-                                                          building_certification = node.building_certification,
-                                                          extra_data = copy.deepcopy(node.extra_data))
-            new_state.save()
+                taxlotview, created = seed.bluesky.models.TaxLotView.objects.get_or_create(taxlot=tax_lot, cycle=import_cycle, state=tax_lot_state)
+                tax_lot_view_created += int(created)
+                assert created, "Should have created a tax lot."
+                taxlotview.save()
+            last_taxlot_view = taxlotview
+        elif node_type == PROPERTY_IMPORT or node_type == COMBO_IMPORT:
+            import_cycle = load_cycle(org, node)
+            property_state = create_property_state_for_node(node, org)
             property_state_created += 1
-            cycle = load_cycle(org, node)
 
-            if cycle.id in property_views:
-                #print "Updating ProperyView"
-                property_views[cycle.id].state = new_state
-                property_views[cycle.id].save()
+
+            query = seed.bluesky.models.PropertyView.objects.filter(property=property_obj, cycle=import_cycle)
+            if query.count():
+                property_view = query.first()
+                property_view.state = property_state
+                property_view.save()
             else:
-                #print "Creating ProperyView"
-                property_views[cycle.id] = seed.bluesky.models.PropertyView(property=property, cycle=cycle, state = new_state)
-                property_views[cycle.id].save()
-                property_view_created += 1
+                try:
+                    propertyview, created = seed.bluesky.models.PropertyView.objects.get_or_create(property=property_obj, cycle=import_cycle, state=property_state)
+                except:
+                    pdb.set_trace()
+                assert created, "Should have created something"
+                property_view_created += int(created)
+                propertyview.save()
+            last_property_view = propertyview
 
-        elif is_merge(node):
-            # A merge in the old-world represents an m2m in the previous world.
-            # IF the merge joins a tax lot and a parent record.
+        if node_type == MERGE or node_type == COMBO_IMPORT:
+            if last_property_view and last_taxlot_view:
+                m2m_cycle = load_cycle(org, node)
 
-            node_parents = parent_dictionary[node.id]
-            err_msg = "{} is a bad number of parents".format(len(node_parents))
+                if node_type == MERGE:
+                    # Check to make sure the last stuff created is
+                    # associated with the same cycle as the merge.
+                    assert last_property_view, "Didn't expect NO proeprty view"
+                    assert last_taxlot_view, "Didn't expect NO tax lot view"
 
-            try:
-                assert len(node_parents) == 2, err_msg
-            except:
-                pdb.set_trace()
+                    if m2m_cycle != last_property_view:
+                        # Ultimately Copy the state over to a new state
+                        last_property_view, _ = seed.bluesky.models.PropertyView.objects.get_or_create(property=property_obj, cycle=m2m_cycle, state=last_property_view.state)
+                    if m2m_cycle != last_taxlot_view:
+                        last_taxlot_view, _ = seed.bluesky.models.TaxLotView.objects.get_or_create(taxlot=tax_lot, cycle=m2m_cycle, state=last_taxlot_view.state)
 
-            types = [merged_type[x] for x in node_parents]
-            if len(set(types)) == 2:
-                cycle = load_cycle(org, node)
-                property_view_to_merge = property_views[cycle.id]
-                tl_view_to_merge = tax_lot_views[cycle.id]
-
-                #print "Creating M2M!"
-                tlp = seed.bluesky.models.TaxLotProperty(property_view = property_view_to_merge,
-                                                         taxlot_view = tl_view_to_merge,
-                                                         cycle = cycle)
-                m2m_created += 1
-                tlp.save()
-            elif "TAX" in types:
-                merged_type[node.id] = "TAX"
-
-                if tax_lot is None:
-                    #print "Creating tax lot"
-                    tax_lot = seed.bluesky.models.TaxLot(organization=org)
-                    tax_lot.save()
-                    tax_lot_created += 1
-
-                #print "Creating tax lot state"
-                new_state = seed.bluesky.models.TaxLotState.objects.create(confidence = node.confidence,
-                                                                           jurisdiction_taxlot_identifier = node.tax_lot_id,
-                                                                           block_number = node.block_number,
-                                                                           district = node.district,
-                                                                           address = node.address_line_1,
-                                                                           city = node.city,
-                                                                           state = node.state_province,
-                                                                           postal_code = node.postal_code,
-                                                                           number_properties = node.building_count,
-                                                                           extra_data = copy.deepcopy(node.extra_data))
-                new_state.save()
-                tax_lot_state_created += 1
-                cycle = load_cycle(org, node)
-
-                if cycle.id in tax_lot_views:
-                    #print "Updating Tax Lot View"
-                    tax_lot_views[cycle.id].state = new_state
-                    tax_lot_views[cycle.id].save()
-                else:
-                    #print "Creating Tax Lot View"
-                    tax_lot_views[cycle.id] = seed.bluesky.models.TaxLotView(taxlot=taxlot, cycle=cycle, state = new_state)
-                    tax_lot_views[cycle.id].save()
-                    tax_lot_view_created += 1
-            elif "PM" in types:
-                merged_type[node.id] = "PM"
-                if property is None:
-                    #print "Creating Property"
-                    property = seed.bluesky.models.Property(organization=org)
-                    property.save()
-                    property_created += 1
-
-                #print "Creating property state"
-                new_state = seed.bluesky.models.PropertyState(confidence = node.confidence,
-                                                                             jurisdiction_property_identifier = None,
-                                                              lot_number = node.lot_number,
-                                                              property_name = node.property_name,
-                                                              address_line_1 = node.address_line_1,
-                                                              address_line_2 = node.address_line_2,
-                                                              city = node.city,
-                                                              state = node.state_province,
-                                                              postal_code = node.postal_code,
-                                                              building_count = node.building_count,
-                                                              property_notes = node.property_notes,
-                                                              use_description = node.use_description,
-                                                              gross_floor_area = node.gross_floor_area,
-                                                              year_built = node.year_built,
-                                                              recent_sale_date = node.recent_sale_date,
-                                                              conditioned_floor_area = node.conditioned_floor_area,
-                                                              occupied_floor_area = node.occupied_floor_area,
-                                                              owner = node.owner,
-                                                              owner_email = node.owner_email,
-                                                              owner_telephone = node.owner_telephone,
-                                                              owner_address = node.owner_address,
-                                                              owner_city_state = node.owner_city_state,
-                                                              owner_postal_code = node.owner_postal_code,
-                                                              building_portfolio_manager_identifier = pm_property_id,
-                                                              building_home_energy_saver_identifier = None,
-                                                              energy_score = node.energy_score,
-                                                              site_eui = node.site_eui,
-                                                              generation_date = node.generation_date,
-                                                              release_date = node.release_date,
-                                                              site_eui_weather_normalized = note.site_eui_weather_normalized,
-                                                              source_eui = node.source_eui,
-                                                              energy_alerts = node.energy_alerts,
-                                                              space_alerts = node.space_alerts,
-                                                              building_certification = node.building_certification,
-                                                              extra_data = copy.deepcopy(extra_data))
-                new_state.save()
-                property_state_created += 1
+                    assert m2m_cycle == last_taxlot_view.cycle == last_property_view.cycle, "Why aren't all these equal?!"
 
 
-                cycle = load_cycle(org, node)
+                    tlp, created  = seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view = last_property_view,
+                                                                                             taxlot_view = last_taxlot_view,
+                                                                                             cycle = m2m_cycle)
+                    m2m_created += int(created)
 
-                if cycle.id in property_views:
-                    #print "Updating Property View"
-                    property_views[cycle.id].state = new_state
-                    property_views[cycle.id].save()
-                else:
-                    #print "Creating Property View"
-                    property_views[cycle.id] = seed.bluesky.models.PropertyView(property = property, cycle=cycle, state = new_state)
-                    property_views[cycle.id].save()
-                    property_view_created += 1
+            else:
+                # Treat it like an import.
+                if node_has_tax_lot_info(node, org):
+                    import_cycle = load_cycle(org, node)
+                    tax_lot_state = create_tax_lot_state_for_node(node, org)
+                    tax_lot_state_created += 1
+
+                    taxlotview, created = seed.bluesky.models.TaxLotView.objects.update_or_create(taxlot=tax_lot, cycle=import_cycle, defaults={"state": tax_lot_state})
+                    tax_lot_view_created += int(created)
+
+                    taxlotview.save()
+                    last_taxlot_view = taxlotview
+                if node_has_property_info(node, org):
+                    import_cycle = load_cycle(org, node)
+                    property_state = create_property_state_for_node(node, org)
+                    property_state_created += 1
+
+                    propertyview, created = seed.bluesky.models.PropertyView.objects.update_or_create(property=property_obj, cycle=import_cycle, defaults={"state": property_state})
+                    property_view_created += int(created)
+
+                    propertyview.save()
+                    last_property_view = propertyview
+
 
     logging.info("{} Tax Lot, {} Property, {} TaxLotView, {} PropertyView, {} TaxLotState, {} PropertyState, {} m2m created.".format(tax_lot_created,
-                                                                                                                                      property_created,
-                                                                                                                                      tax_lot_view_created,
-                                                                                                                                      property_view_created ,
-                                                                                                                                      tax_lot_state_created ,
-                                                                                                                                      property_state_created,
-                                                                                                                                      m2m_created))
+                                                                                                                                     property_created,
+                                                                                                                                     tax_lot_view_created,
+                                                                                                                                     property_view_created,
+                                                                                                                                     tax_lot_state_created,
+                                                                                                                                     property_state_created,
+                                                                                                                                     m2m_created))
 
     return
 
 
-def create_bluesky_cycles_for_org(org, last_date):
 
-    for year in xrange(2000, last_date.year + 1):
-        start_cycle_date = datetime.datetime(year, 1, 1, 0, 0)
-        end_cycle_date = datetime.datetime(year+1, 1, 1, 0, 0) - datetime.timedelta(seconds = 1)
-        name = "{} Calendar Year".format(year)
+def load_organization_extra_data_mapping():
+    # pdb.set_trace()
+    fl = open("/Users/naddy/Source/LBL/seed/seed/bluesky/management/commands/extradata.csv").readlines()
+    fl = filter(lambda x: x.startswith("1,"), fl)
 
-        cycle, created = seed.bluesky.models.Cycle.objects.get_or_create(organization =org,
-                                                                         name = name,
-                                                                         start = start_cycle_date,
-                                                                         end = end_cycle_date)
-    return
+    d = collections.defaultdict(lambda : {})
+    reader = csv.reader(StringIO.StringIO("".join(fl)))
+    for r in reader:
+        org_str, key_name, table, field = r[1:5]
+        d[int(org_str)][key_name] = (table, field)
+
+
+    return d
+
+
+organization_extra_data_mapping = load_organization_extra_data_mapping()

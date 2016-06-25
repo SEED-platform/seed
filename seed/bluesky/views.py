@@ -10,11 +10,9 @@ from seed.utils.api import api_endpoint
 
 
 def unique(lol):
-
     unique_elements = set()
     for l in lol:
         unique_elements = unique_elements.union(l)
-
     return sorted(list(unique_elements))
 
 
@@ -586,10 +584,9 @@ def get_property_columns(request):
     property_extra_data_fields = unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(property__organization_id=request.GET['organization_id']).select_related('state').all()))
 
     for c in property_extra_data_fields:
-        print "Adding {}".format(c)
         columns.append({
             'field': c,
-            'display': 'PropertyED.{}'.format(c),
+            'displayName': 'PRED.{}'.format(c),
             'related': False,
             'source': 'property'
         })
@@ -598,7 +595,7 @@ def get_property_columns(request):
         print "Adding {}".format(c)
         columns.append({
             'field': c,
-            'display': 'TaxLotED.{}'.format(c),
+            'displayName': 'TLED.{}'.format(c),
             'related': True,
             'source': 'taxlot'
         })
