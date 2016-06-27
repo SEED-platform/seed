@@ -335,6 +335,7 @@ def get_property_columns(request):
         {
             'name': 'building_portfolio_manager_identifier',
             'displayName': 'PM Property ID',
+            'pinnedLeft': True,
             'type': 'number',
             'related': False,
             'extra_data': False
@@ -619,6 +620,7 @@ def get_taxlot_columns(request):
         {
             'name': 'jurisdiction_taxlot_identifier',
             'displayName': 'Tax Lot ID',
+            'pinnedLeft': True,
             'type': 'number',
             'related': False
         }, {

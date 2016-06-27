@@ -16,6 +16,7 @@ angular.module('BE.seed.vendor_dependencies', [
     'ui.grid.exporter',
     'ui.grid.grouping',
     'ui.grid.moveColumns',
+    'ui.grid.pinning',
     'ui.grid.resizeColumns',
     'ui.grid.saveState',
     'ui.grid.treeView',
