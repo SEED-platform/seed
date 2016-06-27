@@ -132,7 +132,6 @@ angular.module('BE.seed.controller.bluesky_taxlots_controller', [])
         saveFocus: false,
         saveGrouping: false,
         saveGroupingExpandedStates: false,
-        savePinning: false,
         saveScroll: false,
         saveSelection: false,
         saveTreeView: false,
@@ -149,6 +148,7 @@ angular.module('BE.seed.controller.bluesky_taxlots_controller', [])
           gridApi.core.on.columnVisibilityChanged($scope, saveState);
           gridApi.core.on.filterChanged($scope, saveState);
           gridApi.core.on.sortChanged($scope, saveState);
+          gridApi.pinning.on.columnPinned($scope, saveState);
 
           _.defer(function () {
             $scope.defaultState = $scope.gridApi.saveState.save();
