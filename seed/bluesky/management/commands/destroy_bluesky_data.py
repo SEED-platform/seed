@@ -45,16 +45,17 @@ class Command(BaseCommand):
         return
 
     def handle(self, *args, **options):
-        print "Destroying Blue Sky Data"
-
         if options['organizations']:
             orgs_to_delete = options['organizations']
             orgs_to_delete = orgs_to_delete.split(",")
             orgs_to_delete = [int(x) for x in orgs_to_delete]
+
             for org in orgs_to_delete:
+                print "Destroying Blue Sky Data for organization {}".format(org)
                 delete_based_on_org(apps, org)
 
         else:
+            print "Destroying all Blue Sky Data."
             apps.get_model("bluesky", "Cycle").objects.all().delete()
             apps.get_model("bluesky", "PropertyState").objects.all().delete()
             apps.get_model("bluesky", "PropertyView").objects.all().delete()
