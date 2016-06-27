@@ -5,7 +5,7 @@ def get_core_organizations():
     # IDs of the 12 organizations defined by robin 6/6/16.
     # Google Doc for file describing this:
     # https://docs.google.com/document/u/4/d/1z1FScU-lysmgkCNGa9-hH0PCQudpzV_IG2IKcxYzyfM/edit
-    GOOD_ORGS = [124,21,117,69,6,20,7,156,10,49,105,126]
+    GOOD_ORGS = [124,181,117,69,6,20,7,156,10,49,105,126]
     return GOOD_ORGS
 
 
@@ -14,6 +14,10 @@ def projection_onto_index(n):
     def projection_func(vect): return vect[n]
     return projection_func
 
+def get_static_extradata_mapping_file():
+    management_file_directory = os.path.split(__file__)[0]
+    extradata_file = os.path.join(management_file_directory, "extradata.csv")
+    return extradata_file
 
 def get_static_building_snapshot_tree_file():
     management_file_directory = os.path.split(__file__)[0]
