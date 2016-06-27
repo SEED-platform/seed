@@ -1,7 +1,3 @@
-"""Take an organization pk and produce a graph of its BuildingSnapshot
-View.
-"""
-
 from __future__ import unicode_literals
 
 from django.db import models, migrations
@@ -24,12 +20,21 @@ from scipy.sparse import dok_matrix
 from scipy.sparse.csgraph import connected_components
 from _localtools import projection_onto_index
 from _localtools import get_static_building_snapshot_tree_file
+from _localtools import get_static_extradata_mapping_file
 from _localtools import read_building_snapshot_tree_structure
 from _localtools import get_core_organizations
 from _localtools import get_node_sinks
 
 logging.basicConfig(level=logging.DEBUG)
 
+
+def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
+    # FIXME
+    return
+
+def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
+    # FIXME
+    return
 
 def copy_extra_data_excluding(extra_data, bad_fields):
     bad_fields = set(bad_fields)
@@ -38,6 +43,10 @@ def copy_extra_data_excluding(extra_data, bad_fields):
 def create_property_state_for_node(node, org):
     dont_include_fields = [x[0] for x in organization_extra_data_mapping[org.id].items() if x[1][0] != "Property"]
     extra_data_copy = copy_extra_data_excluding(node.extra_data, dont_include_fields)
+
+    extra_data_copy["record_created"] = node.created
+    extra_data_copy["record_modified"] = node.modified
+    extra_data_copy["record_year_ending"] = node.year_ending
 
     property_state = seed.bluesky.models.PropertyState(confidence = node.confidence,
                                                        jurisdiction_property_identifier = None,
@@ -75,16 +84,16 @@ def create_property_state_for_node(node, org):
                                                        building_certification = node.building_certification,
                                                        extra_data = extra_data_copy)
     property_state.save()
-
     return property_state
 
 
-
 def create_tax_lot_state_for_node(node, org):
-
     dont_include_fields = [x[0] for x in organization_extra_data_mapping[org.id].items() if x[1][0] != "Tax"]
     extra_data_copy = copy_extra_data_excluding(node.extra_data, dont_include_fields)
 
+    extra_data_copy["record_created"] = node.created
+    extra_data_copy["record_modified"] = node.modified
+    extra_data_copy["record_year_ending"] = node.year_ending
 
     taxlotstate = seed.bluesky.models.TaxLotState.objects.create(confidence = node.confidence,
                                                                  jurisdiction_taxlot_identifier = node.tax_lot_id,
@@ -118,16 +127,14 @@ def classify_node(node, org):
 
 
 def node_has_tax_lot_info(node, org):
-    # TODO: Add extra data classification
     tax_fields = set([x[0] for x in organization_extra_data_mapping[org.id].items() if x[1][0] == "Tax"])
     has_tax_extra_data = len({x:y for x,y in node.extra_data.items() if x in tax_fields and y})
-    return node.tax_lot_id is not None or has_tax_extra_data
+    return bool(node.tax_lot_id is not None or has_tax_extra_data)
 
 def node_has_property_info(node, org):
     property_fields = set([x[0] for x in organization_extra_data_mapping[org.id].items() if x[1][0] == "Property"])
     has_property_extra_data = len({x:y for x,y in node.extra_data.items() if x in property_fields and y})
-    # TODO: Add extra data classification
-    return node.pm_property_id is not None
+    return bool(node.pm_property_id is not None or has_property_extra_data)
 
 def classify_import_node(node, org):
     has_tax_lot = node_has_tax_lot_info(node, org)
@@ -173,8 +180,8 @@ def load_cycle(org, node, year_ending = True, fallback = True):
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--org', dest='organization', default=False, type=int)
-        parser.add_argument('--max', dest='max_num', default=0, type=int)
+        parser.add_argument('--org', dest='organization', default=False)
+        parser.add_argument('--limit', dest='limit', default=0, type=int)
         return
 
     def handle(self, *args, **options):
@@ -204,14 +211,14 @@ class Command(BaseCommand):
         counts = collections.Counter()
         for label in labelarray: counts[label] += 1
 
-
-        if 'organization' in options:
-            core_organization = [options['organization']]
+        if options['organization']:
+            core_organization = map(int, options['organization'].split(","))
         else:
             core_organization = get_core_organizations()
 
-        max_records = options['max'] if "max" in options else 0
+        limit = options['limit'] if "limit" in options else 0
 
+        print "Migration organization: {}".format(",".join(map(str, core_organization)))
 
         for org_id in core_organization:
             # Writing loop over organizations
@@ -219,10 +226,15 @@ class Command(BaseCommand):
             org = Organization.objects.filter(pk=org_id).first()
             logging.info("Processing organization {}".format(org))
 
-            assert org, "Should get something back here."
+            assert org, "Organization {} not found".format(org_id)
 
             org_canonical_buildings = seed.models.CanonicalBuilding.objects.filter(canonical_snapshot__super_organization=org_id, active=True).all()
             org_canonical_snapshots = [cb.canonical_snapshot for cb in org_canonical_buildings]
+
+            if len(org_canonical_buildings) == 0:
+                print "Organization {} has no buildings".format(org_id)
+                continue
+
 
             last_date = max([cs.modified for cs in org_canonical_snapshots])
             # create_bluesky_cycles_for_org(org, last_date)
@@ -237,7 +249,7 @@ class Command(BaseCommand):
 
             for ndx, bs in enumerate(org_canonical_snapshots):
 
-                if max_records and (ndx+1) > max_records:
+                if limit and (ndx+1) > limit:
                     print "That's enough!"
                     break
 
@@ -283,7 +295,6 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
 
     # pdb.set_trace()
 
-    # pdb.set_trace()
     if node_has_tax_lot_info(leaf_buildingsnapshots[0], org):
         tax_lot = seed.bluesky.models.TaxLot(organization=org)
         tax_lot.save()
@@ -303,7 +314,6 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     last_property_view = False
 
     for node in all_nodes:
-        # pdb.set_trace()
         node_type = classify_node(node, org)
 
         if node_type == TAX_IMPORT or node_type == COMBO_IMPORT:
@@ -339,7 +349,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
             else:
                 try:
                     propertyview, created = seed.bluesky.models.PropertyView.objects.get_or_create(property=property_obj, cycle=import_cycle, state=property_state)
-                except:
+                except Exception, xcpt:
                     pdb.set_trace()
                 assert created, "Should have created something"
                 property_view_created += int(created)
@@ -408,7 +418,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
 
 def load_organization_extra_data_mapping():
     # pdb.set_trace()
-    fl = open("/Users/naddy/Source/LBL/seed/seed/bluesky/management/commands/extradata.csv").readlines()
+    fl = open(get_static_extradata_mapping_file()).readlines()
     fl = filter(lambda x: x.startswith("1,"), fl)
 
     d = collections.defaultdict(lambda : {})
