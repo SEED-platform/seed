@@ -148,6 +148,7 @@ angular.module('BE.seed.controller.bluesky_taxlots_controller', [])
           gridApi.core.on.columnVisibilityChanged($scope, saveState);
           gridApi.core.on.filterChanged($scope, saveState);
           gridApi.core.on.sortChanged($scope, saveState);
+          gridApi.pinning.on.columnPinned($scope, saveState);
 
           _.defer(function () {
             $scope.defaultState = $scope.gridApi.saveState.save();
