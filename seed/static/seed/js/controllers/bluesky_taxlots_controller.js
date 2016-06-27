@@ -132,7 +132,6 @@ angular.module('BE.seed.controller.bluesky_taxlots_controller', [])
         saveFocus: false,
         saveGrouping: false,
         saveGroupingExpandedStates: false,
-        savePinning: false,
         saveScroll: false,
         saveSelection: false,
         saveTreeView: false,
