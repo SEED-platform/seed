@@ -231,8 +231,15 @@ def get_taxlots(request):
             .values_list('taxlot_view_id', flat=True)
         state_ids = TaxLotView.objects.filter(pk__in=related_taxlot_view_ids).values_list('state_id', flat=True)
 
+        # FIXME: this should be relative to a particular cycle.
         jurisdiction_taxlot_identifiers = TaxLotState.objects.filter(pk__in=state_ids) \
             .values_list('jurisdiction_taxlot_identifier', flat=True)
+
+        # Filter out associated tax lots that are present but which do not have preferred
+        none_in_juridiction_tax_lot_ids = None in jurisdiction_taxlot_identifiers
+        jurisdiction_taxlot_identifiers = filter(lambda x: x is not None, jurisdiction_taxlot_identifiers)
+
+        if none_in_juridiction_tax_lot_ids: jurisdiction_taxlot_identifiers.append("Missing")
 
         join_dict = property_map[join.property_view_id].copy()
         join_dict.update({
