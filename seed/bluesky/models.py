@@ -41,6 +41,7 @@ class PropertyState(models.Model):
     confidence = models.FloatField(default=0, null=True, blank=True)
 
     jurisdiction_property_identifier = models.CharField(max_length=255, null=True, blank=True)
+    pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True)
     lot_number = models.CharField(max_length=255, null=True, blank=True)
     property_name = models.CharField(max_length=255, null=True, blank=True)
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
