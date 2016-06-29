@@ -5,6 +5,7 @@ import csv
 import StringIO
 import collections
 import seed.bluesky.models
+from seed.bluesky.models import TaxLotView
 
 
 def get_core_organizations():
@@ -60,7 +61,6 @@ def get_node_sinks(tree_label, labelarray, parent_adj_dict, child_adj_dict):
     # print "leaf_nodes({}): {}".format(len(leaf_nodes), leaf_nodes)
     # print "other_nodes({}): {}".format(len(other_nodes), other_nodes)
     return import_nodes, leaf_nodes, other_nodes
-
 
 
 def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
