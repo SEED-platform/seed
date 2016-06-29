@@ -32,21 +32,35 @@ def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
     # FIXME
     return
 
+
 def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
     # FIXME
     return
+
 
 def copy_extra_data_excluding(extra_data, bad_fields):
     bad_fields = set(bad_fields)
     return {x:y for (x,y) in extra_data.items() if x not in bad_fields}
 
+
 def create_property_state_for_node(node, org):
-    dont_include_fields = [x[0] for x in organization_extra_data_mapping[org.id].items() if x[1][0] != "Property"]
+
+    dont_include_fields = load_organization_property_extra_data_mapping_exclusions(org)
+
     extra_data_copy = copy_extra_data_excluding(node.extra_data, dont_include_fields)
 
     extra_data_copy["record_created"] = node.created
     extra_data_copy["record_modified"] = node.modified
     extra_data_copy["record_year_ending"] = node.year_ending
+
+
+    desired_field_mapping = load_organization_property_field_mapping(org)
+    premapped_data = {}
+
+    for key in desired_field_mapping:
+        if key in extra_data_copy:
+            premapped_data[key] = extra_data_copy[key]
+            extra_data_copy.pop(key)
 
     property_state = seed.bluesky.models.PropertyState(confidence = node.confidence,
                                                        jurisdiction_property_identifier = None,
@@ -83,7 +97,13 @@ def create_property_state_for_node(node, org):
                                                        space_alerts = node.space_alerts,
                                                        building_certification = node.building_certification,
                                                        extra_data = extra_data_copy)
+
+
+    for (field_to_move, value) in premapped_data.items():
+        setattr(property_state, desired_field_mapping[field_to_move], value)
+
     property_state.save()
+
     return property_state
 
 
@@ -95,6 +115,15 @@ def create_tax_lot_state_for_node(node, org):
     extra_data_copy["record_modified"] = node.modified
     extra_data_copy["record_year_ending"] = node.year_ending
 
+
+    desired_field_mapping = load_organization_taxlot_field_mapping(org)
+    premapped_data = {}
+
+    for key in desired_field_mapping:
+        if key in extra_data_copy:
+            premapped_data[key] = extra_data_copy[key]
+            extra_data_copy.pop(key)
+
     taxlotstate = seed.bluesky.models.TaxLotState.objects.create(confidence = node.confidence,
                                                                  jurisdiction_taxlot_identifier = node.tax_lot_id,
                                                                  block_number = node.block_number,
@@ -105,6 +134,11 @@ def create_tax_lot_state_for_node(node, org):
                                                                  postal_code = node.postal_code,
                                                                  number_properties = node.building_count,
                                                                  extra_data = extra_data_copy)
+
+    for (field_to_move, value) in premapped_data.items():
+        setattr(taxlotstate, desired_field_mapping[field_to_move], value)
+
+    taxlotstate.save()
     return taxlotstate
 
 
@@ -293,14 +327,14 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     tax_lot = None
     property_obj = None
 
-    # pdb.set_trace()
-
     if node_has_tax_lot_info(leaf_buildingsnapshots[0], org):
+        # tax_lot, created = find_or_create_bluesky_property_associated_with_building_snapshot(leaf_buildingsnapshots[0], org)
         tax_lot = seed.bluesky.models.TaxLot(organization=org)
         tax_lot.save()
         tax_lot_created += 1
 
     if node_has_property_info(leaf_buildingsnapshots[0], org):
+        # property_obj, created = find_or_create_bluesky_property_associated_with_building_snapshot(leaf_buildingsnapshots[0], org)
         property_obj = seed.bluesky.models.Property(organization=org)
         property_obj.save()
         property_created += 1
@@ -411,14 +445,57 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                                                                                                                                      tax_lot_state_created,
                                                                                                                                      property_state_created,
                                                                                                                                      m2m_created))
-
     return
 
 
+def load_organization_field_mapping_for_type_exclusions(org, type):
+    assert type in ["Tax", "Property"]
 
-def load_organization_extra_data_mapping():
+    data = load_raw_mapping_data()
+
+    remove_from_extra_data_mapping = []
+
+    for key in data[org]:
+        (table, column) = data[org][key]
+
+        if (table != type):
+            remove_from_extra_data_mapping.append(key)
+
+    return remove_from_extra_data_mapping
+
+
+def load_organization_field_mapping_for_type(org, type):
+    """This returns a list of keys -> (table, attr) to map the key into."""
+    data = load_raw_mapping_data()
+
+    mapping = {}
+    for column in data[org].keys():
+        table, dest_column = data[org][column]
+        if table == type and dest_column != "extra_data":
+            mapping[column] = dest_column
+
+    return mapping
+
+
+def load_organization_property_extra_data_mapping_exclusions(org):
+    return load_organization_field_mapping_for_type_exclusions(org.pk, "Property")
+
+def load_organization_taxlot_extra_data_mapping_exclusions(org):
+    return load_organization_field_mapping_for_type_exclusions(org.pk, "Tax")
+
+def load_organization_property_field_mapping(org):
+    """This returns a list of keys -> (table, attr) to map the key into."""
+    return load_organization_field_mapping_for_type(org.pk, "Property")
+
+def load_organization_taxlot_field_mapping(org):
+    """This returns a list of keys -> (table, attr) to map the key into."""
+    return load_organization_field_mapping_for_type(org.pk, "Tax")
+
+
+def load_raw_mapping_data():
     # pdb.set_trace()
     fl = open(get_static_extradata_mapping_file()).readlines()
+
     fl = filter(lambda x: x.startswith("1,"), fl)
 
     d = collections.defaultdict(lambda : {})
@@ -427,8 +504,8 @@ def load_organization_extra_data_mapping():
         org_str, key_name, table, field = r[1:5]
         d[int(org_str)][key_name] = (table, field)
 
-
     return d
 
 
-organization_extra_data_mapping = load_organization_extra_data_mapping()
+
+organization_extra_data_mapping = load_raw_mapping_data()
