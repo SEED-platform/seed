@@ -58,7 +58,8 @@ def create_property_state_for_node(node, org):
 
     for key in desired_field_mapping:
         if key in extra_data_copy:
-            premapped_data[key] = extra_data_copy[key]
+            if extra_data_copy[key]:
+                premapped_data[key] = extra_data_copy[key]
             extra_data_copy.pop(key)
 
     property_state = seed.bluesky.models.PropertyState(confidence = node.confidence,
