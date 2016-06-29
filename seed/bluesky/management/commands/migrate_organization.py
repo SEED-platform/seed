@@ -29,14 +29,58 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
-    # FIXME
-    return
+    desired_field_mapping = load_organization_taxlot_field_mapping(org)
+    reverse_mapping = {y:x for x,y in desired_field_mapping.items()}
+
+    bs_taxlot_val = bs.tax_lot_id
+    if ('jurisdiction_taxlot_identifier' in reverse_mapping and reverse_mapping['jurisdiction_taxlot_identifier'] in bs.extra_data):
+        bs_taxlot_val = bs.extra_data[reverse_mapping['jurisdiction_taxlot_identifier']]
+
+    if bs_taxlot_val is None:
+        tax_lot = seed.bluesky.models.TaxLot(organization=org)
+        tax_lot.save()
+        return tax_lot, True
+
+
+    qry = seed.bluesky.models.TaxLotView.objects.filter(state__jurisdiction_taxlot_identifier=bs_taxlot_val)
+
+    # See if we have any tax lot views that have tax lot states
+    # with that id, if yes, find/return associated property.
+
+    if qry.count():
+        print "HAHA: Found a match!"
+        return qry.first().taxlot, False
+
+    else:
+        tax_lot = seed.bluesky.models.TaxLot(organization=org)
+        tax_lot.save()
+        return tax_lot, True
 
 
 def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
-    # FIXME
-    return
+    mapping_field = 'building_portfolio_manager_identifier'
 
+
+    desired_field_mapping = load_organization_property_field_mapping(org)
+    reverse_mapping = {y:x for x,y in desired_field_mapping.items()}
+    bs_property_id = bs.pm_property_id
+    if (mapping_field in reverse_mapping and reverse_mapping[mapping_field] in bs.extra_data):
+        bs_property_id = bs.extra_data[reverse_mapping[mapping_field]]
+
+    if bs_property_id is None:
+        property = seed.bluesky.models.Property(organization=org)
+        property.save()
+        return property, True
+
+    qry = seed.bluesky.models.PropertyView.objects.filter(state__building_portfolio_manager_identifier=bs_property_id)
+
+    if qry.count():
+        print "HOHO: Found a property match"
+        return qry.first().property, False
+    else:
+        property = seed.bluesky.models.Property(organization=org)
+        property.save()
+        return property, True
 
 def copy_extra_data_excluding(extra_data, bad_fields):
     bad_fields = set(bad_fields)
@@ -328,16 +372,16 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     property_obj = None
 
     if node_has_tax_lot_info(leaf_buildingsnapshots[0], org):
-        # tax_lot, created = find_or_create_bluesky_property_associated_with_building_snapshot(leaf_buildingsnapshots[0], org)
-        tax_lot = seed.bluesky.models.TaxLot(organization=org)
+        tax_lot, created = find_or_create_bluesky_taxlot_associated_with_building_snapshot(leaf_buildingsnapshots[0], org)
+        # tax_lot = seed.bluesky.models.TaxLot(organization=org)
         tax_lot.save()
-        tax_lot_created += 1
+        tax_lot_created += int(created)
 
     if node_has_property_info(leaf_buildingsnapshots[0], org):
-        # property_obj, created = find_or_create_bluesky_property_associated_with_building_snapshot(leaf_buildingsnapshots[0], org)
-        property_obj = seed.bluesky.models.Property(organization=org)
+        property_obj, created = find_or_create_bluesky_property_associated_with_building_snapshot(leaf_buildingsnapshots[0], org)
+        # property_obj = seed.bluesky.models.Property(organization=org)
         property_obj.save()
-        property_created += 1
+        property_created += int(created)
 
     if not property_obj and not tax_lot:
         property_obj = seed.bluesky.models.Property(organization=org)
