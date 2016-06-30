@@ -85,7 +85,6 @@ def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
     # with that id, if yes, find/return associated property.
 
     if qry.count():
-        print "HAHA: Found a match!"
         return qry.first().taxlot, False
 
     else:
@@ -112,7 +111,6 @@ def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
     qry = seed.bluesky.models.PropertyView.objects.filter(state__building_portfolio_manager_identifier=bs_property_id)
 
     if qry.count():
-        print "HOHO: Found a property match"
         return qry.first().property, False
     else:
         property = seed.bluesky.models.Property(organization=org)
