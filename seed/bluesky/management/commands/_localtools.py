@@ -13,7 +13,7 @@ def get_core_organizations():
     # Google Doc for file describing this:
     # https://docs.google.com/document/u/4/d/1z1FScU-lysmgkCNGa9-hH0PCQudpzV_IG2IKcxYzyfM/edit
     # [69,20,156,49,7,10,181,117,105,126, 124,6]
-    GOOD_ORGS = [20, 7, 49, 69, 10, 21, 156, 117, 124, 105, 126]
+    GOOD_ORGS = [20, 7, 49, 69, 10, 181, 156, 117, 124, 105, 126, 6]
     assert len(GOOD_ORGS) == 12
     return GOOD_ORGS
 
