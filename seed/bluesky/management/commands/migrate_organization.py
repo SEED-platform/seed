@@ -40,6 +40,10 @@ logging.basicConfig(level=logging.DEBUG)
 def logging_info(msg):
     print msg
 
+def logging_debug(msg):
+    logging_info(msg)
+    return
+
 # These encode rules for how final values
 tax_collapse_rules = collections.defaultdict(lambda : {})
 tax_collapse_rules[10] = { 'jurisdiction_taxlot_identifier': ['jurisdiction_taxlot_identifier', "extra_data/custom_id_1", "extra_data/CS_TaxID2"] }
@@ -238,7 +242,7 @@ def load_cycle(org, node, year_ending = True, fallback = True):
         if not fallback:
             assert time is not None, "Got no time!"
         elif time is None:
-            logging.warning("Node does not have 'year ending' field.")
+            logging_debug("Node does not have 'year ending' field.")
             time = node.modified
     else:
         time = node.modified
@@ -312,7 +316,7 @@ class Command(BaseCommand):
             org_canonical_snapshots = [cb.canonical_snapshot for cb in org_canonical_buildings]
 
             if len(org_canonical_buildings) == 0:
-                logging.debug("Organization {} has no buildings".format(org_id))
+                logging_info("Organization {} has no buildings".format(org_id))
                 continue
 
 
@@ -325,6 +329,23 @@ class Command(BaseCommand):
             ## For each of those trees find the import records
             ## For each of those trees find the cycles associated with it
             for ndx, bs in enumerate(org_canonical_snapshots):
+                # if not ("ML" in bs.extra_data and bs.extra_data["ML"] == "136-2"):
+                #     print "Skipping non 136-2 record."
+                #     continue
+
+                # DEBUG CODE
+                # WHITE_LIST = set(["776008020;776008030","881115950;881115975","883084801;883084802;883084803;883084803;883084805","778799005;778799020","883101010;883101510","881113406;881113407;881113408","788007700;788008001;788008100","882002800;881302200"])
+                # WHITE_LIST = set(["883101010;883101510"])
+                # if bs.tax_lot_id not in WHITE_LIST:
+                #     continue
+                # else:
+                #     print "Installing: {}".format(bs.tax_lot_id)
+
+                # if bs.tax_lot_id not in set(["776008020;776008030","881115950;881115975","883084801;883084802;883084803;883084803;883084805","778799005;778799020","883101010;883101510","881113406;881113407;881113408","788007700;788008001;788008100","882002800;881302200"]):
+                #     continue
+                # else:
+                #     print "Installing: {}".format(bs.tax_lot_id)
+                # # END DEBUG
 
                 if limit and (ndx+1) > limit:
                     logging_info("Migrated limit={} buildings.".format(limit))
