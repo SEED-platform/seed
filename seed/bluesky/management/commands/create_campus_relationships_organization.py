@@ -33,7 +33,6 @@ from _localtools import load_organization_property_extra_data_mapping_exclusions
 from _localtools import load_organization_taxlot_extra_data_mapping_exclusions
 from _localtools import load_organization_property_field_mapping
 from _localtools import load_organization_taxlot_field_mapping
-from _localtools import load_raw_mapping_data
 
 logging.basicConfig(level=logging.DEBUG)
 
