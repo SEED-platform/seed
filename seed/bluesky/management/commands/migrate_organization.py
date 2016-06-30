@@ -296,7 +296,7 @@ class Command(BaseCommand):
 
         limit = options['limit'] if "limit" in options else 0
 
-        print "Migration organization: {}".format(",".join(map(str, core_organization)))
+        logging.info("Migration organization: {}".format(",".join(map(str, core_organization))))
 
         for org_id in core_organization:
             # Writing loop over organizations
@@ -310,7 +310,7 @@ class Command(BaseCommand):
             org_canonical_snapshots = [cb.canonical_snapshot for cb in org_canonical_buildings]
 
             if len(org_canonical_buildings) == 0:
-                print "Organization {} has no buildings".format(org_id)
+                logging.debug("Organization {} has no buildings".format(org_id))
                 continue
 
 
@@ -322,18 +322,15 @@ class Command(BaseCommand):
             ## For each of those trees find the tip
             ## For each of those trees find the import records
             ## For each of those trees find the cycles associated with it
-            print len(map(lambda x: x.id, org_canonical_snapshots))
-            print len(set(map(lambda x: x.id, org_canonical_snapshots)))
-
             for ndx, bs in enumerate(org_canonical_snapshots):
 
                 if limit and (ndx+1) > limit:
-                    print "That's enough!"
+                    logging.info("Migrated limit={} buildings.".format(limit))
+                    logging.info("Skipping remainder of buildings for organization.")
                     break
 
-                print "Processing Building {}/{}".format(ndx+1, len(org_canonical_snapshots))
+                logging.debug("Processing Building {}/{}".format(ndx+1, len(org_canonical_snapshots)))
                 bs_label = labelarray[bs.id]
-                # print "Label is {}".format(bs_label)
                 import_nodes, leaf_nodes, other_nodes  = get_node_sinks(bs_label, labelarray, parent_dictionary, child_dictionary)
 
                 # Load all those building snapshots
@@ -345,7 +342,7 @@ class Command(BaseCommand):
                 leaf_buildingsnapshots = [building_dict[bs_id] for bs_id in leaf_nodes]
                 other_buildingsnapshots = [building_dict[bs_id] for bs_id in other_nodes]
 
-                print "Creating snapshot for {}".format(leaf_buildingsnapshots[0])
+                logging.info("Creating Blue Sky Data for for CanonicalBuilding={}".format(leaf_buildingsnapshots[0]))
 
                 create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix)
         return
@@ -542,15 +539,6 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                     tax_lot_view_created += int(created)
 
                     taxlotview.save()
-
-
-                    # DEBUG
-                    if last_taxlot_view[taxlotview.cycle] and last_taxlot_view[taxlotview.cycle].state.jurisdiction_taxlot_identifier is not None and taxlotview.state.jurisdiction_taxlot_identifier is None:
-                        print "You mine!"
-                        pdb.set_trace()
-                    # ENDDEBUG
-
-
                     last_taxlot_view[taxlotview.cycle] = taxlotview
 
                 if node_has_property_info(node, org):
