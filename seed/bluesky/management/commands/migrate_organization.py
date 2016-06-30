@@ -135,11 +135,6 @@ def create_property_state_for_node(node, org):
 
 
     for (field_to_move, value) in premapped_data.items():
-        if field_to_move == "Property ID":
-            if value is not None and value != "":
-                print value
-            else:
-                print "null equivalent."
         setattr(property_state, desired_field_mapping[field_to_move], value)
 
     # If we want to aggregate a value in an organization specific way,
@@ -336,7 +331,7 @@ class Command(BaseCommand):
                     logging_info("Skipping remainder of buildings for organization.")
                     break
 
-                logging.debug("Processing Building {}/{}".format(ndx+1, len(org_canonical_snapshots)))
+                logging_info("Processing Building {}/{}".format(ndx+1, len(org_canonical_snapshots)))
                 bs_label = labelarray[bs.id]
                 import_nodes, leaf_nodes, other_nodes  = get_node_sinks(bs_label, labelarray, parent_dictionary, child_dictionary)
 
