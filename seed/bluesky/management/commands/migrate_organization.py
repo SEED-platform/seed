@@ -37,6 +37,7 @@ from _localtools import _load_raw_mapping_data
 logging.basicConfig(level=logging.DEBUG)
 
 
+
 # These encode rules for how final values
 tax_collapse_rules = collections.defaultdict(lambda : {})
 tax_collapse_rules[10] = { 'jurisdiction_taxlot_identifier': ['jurisdiction_taxlot_identifier', "extra_data/custom_id_1", "extra_data/CS_TaxID2"] }
@@ -54,7 +55,7 @@ def get_value_for_key(state, field_string):
             # FIXME: This will work for now, because a "tax_lot" type in
             # SEED is always a str.  But ultimately this should be cast to
             # the type of the underlying Column.
-            return str(state.extra_data[key])
+            return state.extra_data[key]
     else:
 
         return getattr(state, field_string)
@@ -267,6 +268,7 @@ class Command(BaseCommand):
         m2m = read_building_snapshot_tree_structure(tree_file)
 
         all_nodes = set(map(projection_onto_index(0), m2m)).union(set(map(projection_onto_index(1), m2m)))
+
         child_dictionary = collections.defaultdict(lambda : set())
         parent_dictionary = collections.defaultdict(lambda : set())
 
@@ -328,6 +330,23 @@ class Command(BaseCommand):
                 #     print "Skipping non 136-2 record."
                 #     continue
 
+                # DEBUG CODE
+                # WHITE_LIST = set(["776008020;776008030","881115950;881115975","883084801;883084802;883084803;883084803;883084805","778799005;778799020","883101010;883101510","881113406;881113407;881113408","788007700;788008001;788008100","882002800;881302200"])
+                WHITE_LIST = set(["883101010;883101510"])
+                if bs.tax_lot_id not in WHITE_LIST:
+                    continue
+                else:
+                    print "Installing: {}".format(bs.tax_lot_id)
+
+                if bs.tax_lot_id not in set(["776008020;776008030","881115950;881115975","883084801;883084802;883084803;883084803;883084805","778799005;778799020","883101010;883101510","881113406;881113407;881113408","788007700;788008001;788008100","882002800;881302200"]):
+                    continue
+                else:
+                    print "Installing: {}".format(bs.tax_lot_id)
+                # END DEBUG
+
+
+
+
                 if limit and (ndx+1) > limit:
                     print "That's enough!"
                     break
@@ -351,8 +370,66 @@ class Command(BaseCommand):
                 create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix)
         return
 
+def is_descendant_of(node_1_id, node_2_id, child_dictionary):
+    # If node_1 is a descendent of node 2, then node 2 has a path
+    # following it's children to node 1 because every node only has
+    # one child.
+    continue_search = True # A non-false value definitely not equal to
+
+    while node_2_id:
+        node_2_id = child_dictionary[node_2_id]
+        node_2_id = next(iter(node_2_id)) if node_2_id else node_2_id
+        if node_2_id == node_1_id: return True
+
+    return False
+
+
+def calculate_generation(node_id, child_dictionary):
+    generation = 0
+
+    while node_id:
+        generation += 1
+        node_id = child_dictionary[node_id]
+        if node_id: node_id = next(iter(node_id))
+
+    return generation
+
+def calculate_migration_order(node_list, child_dictionary):
+    """Take a list of building snapshots and determine the order they
+    should be processed.
+
+    The created/modified flags are not reliable indicators of the tree
+    order because nodes are created out of order.
+
+    This calculated an order where n1 < n2 if node n1 is an ancestor of n2.
+
+    Bubble sort on the is_descendant
+    """
+
+    for node in node_list:
+        assert node.id in child_dictionary
+
+    if len(node_list) <= 1:
+        return node_list
+
+    pdb.set_trace()
+    needs_sort = True
+    # FIXME: It's probably perfectly safe to copy django objects with
+    # their underlying objects but I'm going to be silly and safe.
+    orig_id_list = [node.id for node in node_list]
+    node_id_list = [node.id for node in node_list]
+
+
+    node_id_list.sort(key = lambda node_id: calculate_generation(node_id, child_dictionary))
+    pdb.set_trace()
+
+    migration_order = [seed.models.BuildingSnapshot.get(pk=id) for id in node_id_list]
+
+    pdb.set_trace()
+    return migration_order
 
 def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix):
+
     """Take tree structure describing a single Property/TaxLot over time and create the entities."""
     logging.info("Populating new blue sky entities for canonical snapshot tree!")
 
@@ -392,6 +469,14 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
 
     last_taxlot_view = collections.defaultdict(lambda : False)
     last_property_view = collections.defaultdict(lambda : False)
+
+
+    # # FIXME: Must call the node ordering code
+    # pdb.set_trace()
+    # node_process_order = all_nodes
+    # calculate_migration_order(node_process_order, child_dictionary)
+
+    all_nodes = reversed(all_nodes)
 
     for node in all_nodes:
         node_type = classify_node(node, org)
@@ -477,6 +562,15 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                     tax_lot_view_created += int(created)
 
                     taxlotview.save()
+
+
+                    # DEBUG
+                    if last_taxlot_view[taxlotview.cycle] and last_taxlot_view[taxlotview.cycle].state.jurisdiction_taxlot_identifier is not None and taxlotview.state.jurisdiction_taxlot_identifier is None:
+                        print "You mine!"
+                        pdb.set_trace()
+                    # ENDDEBUG
+
+
                     last_taxlot_view[taxlotview.cycle] = taxlotview
 
                 if node_has_property_info(node, org):
