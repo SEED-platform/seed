@@ -122,22 +122,30 @@ def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
 def load_organization_field_mapping_for_type_exclusions(org, type):
     assert type in ["Tax", "Property"]
 
-    data = load_raw_mapping_data()
+    data, _ = _load_raw_mapping_data()
 
     remove_from_extra_data_mapping = []
 
+    # custom_not_explicitly_mapped = "custom_id_1" not in data[org]
+
     for key in data[org]:
         (table, column) = data[org][key]
-
         if (table != type):
             remove_from_extra_data_mapping.append(key)
 
+    # if (custom_not_explicitly_mapped):
+    #     remove_from_extra_data_mapping.append("custom_id_1")
+
+    # FIXME: Tired.  Can't figure out this super-basic logic.  Taking
+    # a fairly harmless conservative state for now.  We just make sure
+    # it goes everywhere.
+    remove_from_extra_data_mapping = filter(lambda x: x != "custom_id_1", remove_from_extra_data_mapping)
     return remove_from_extra_data_mapping
 
 
 def load_organization_field_mapping_for_type(org, type):
     """This returns a list of keys -> (table, attr) to map the key into."""
-    data = load_raw_mapping_data()
+    data, _ = _load_raw_mapping_data()
 
     mapping = {}
     for column in data[org].keys():
@@ -163,7 +171,11 @@ def load_organization_taxlot_field_mapping(org):
     return load_organization_field_mapping_for_type(org.pk, "Tax")
 
 
-def load_raw_mapping_data():
+def get_organization_map_custom():
+    _, org_map_custom = _load_raw_mapping_data()
+    return org_map_custom
+
+def _load_raw_mapping_data():
     # pdb.set_trace()
     fl = open(get_static_extradata_mapping_file()).readlines()
 
@@ -171,8 +183,16 @@ def load_raw_mapping_data():
 
     d = collections.defaultdict(lambda : {})
     reader = csv.reader(StringIO.StringIO("".join(fl)))
-    for r in reader:
-        org_str, key_name, table, field = r[1:5]
-        d[int(org_str)][key_name] = (table, field)
 
-    return d
+    org_map_custom_id = collections.defaultdict(lambda : False)
+
+    for r in reader:
+        org_str, is_explicit_field, key_name, table, field = r[1:6]
+
+        if is_explicit_field and int(is_explicit_field) == 1:
+            org_map_custom_id[int(org_str)] = (table, field)
+
+        if not is_explicit_field or not int(is_explicit_field):
+            d[int(org_str)][key_name] = (table, field)
+
+    return d, is_explicit_field

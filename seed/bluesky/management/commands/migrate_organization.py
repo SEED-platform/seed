@@ -32,10 +32,42 @@ from _localtools import load_organization_property_extra_data_mapping_exclusions
 from _localtools import load_organization_taxlot_extra_data_mapping_exclusions
 from _localtools import load_organization_property_field_mapping
 from _localtools import load_organization_taxlot_field_mapping
-from _localtools import load_raw_mapping_data
+from _localtools import _load_raw_mapping_data
 
 logging.basicConfig(level=logging.DEBUG)
 
+
+# These encode rules for how final values
+tax_collapse_rules = collections.defaultdict(lambda : {})
+tax_collapse_rules[10] = { 'jurisdiction_taxlot_identifier': ['jurisdiction_taxlot_identifier', "extra_data/custom_id_1", "extra_data/CS_TaxID2"] }
+
+property_collapse_rules = collections.defaultdict(lambda : {})
+
+
+def get_value_for_key(state, field_string):
+    if "/" in field_string:
+        initial, key = field_string.split("/")
+        assert initial == "extra_data"
+        if key not in state.extra_data:
+            return None
+        else:
+            # FIXME: This will work for now, because a "tax_lot" type in
+            # SEED is always a str.  But ultimately this should be cast to
+            # the type of the underlying Column.
+            return str(state.extra_data[key])
+    else:
+
+        return getattr(state, field_string)
+
+def aggregate_value_from_state(state, field, collapse_rules):
+    if field not in collapse_rules:
+        return getattr(state, field)
+
+    for source_string in collapse_rules[field]:
+        val = get_value_for_key(state, source_string)
+        if val is not None and val != "": return val
+    else:
+        return None
 
 def copy_extra_data_excluding(extra_data, bad_fields):
     bad_fields = set(bad_fields)
@@ -43,6 +75,7 @@ def copy_extra_data_excluding(extra_data, bad_fields):
 
 
 def create_property_state_for_node(node, org):
+    node.extra_data['custom_id_1'] = node.custom_id_1
 
     dont_include_fields = load_organization_property_extra_data_mapping_exclusions(org)
 
@@ -51,7 +84,6 @@ def create_property_state_for_node(node, org):
     extra_data_copy["record_created"] = node.created
     extra_data_copy["record_modified"] = node.modified
     extra_data_copy["record_year_ending"] = node.year_ending
-
 
     desired_field_mapping = load_organization_property_field_mapping(org)
     premapped_data = {}
@@ -102,13 +134,20 @@ def create_property_state_for_node(node, org):
     for (field_to_move, value) in premapped_data.items():
         setattr(property_state, desired_field_mapping[field_to_move], value)
 
+    # If we want to aggregate a value in an organization specific way,
+    # this is where we should do it.
+    # for field in property_collapse_rules[org.id]:
+    #     value = aggregate_value_from_state(property_state, field, property_collapse_rules[org.id])
+
     property_state.save()
 
     return property_state
 
-
 def create_tax_lot_state_for_node(node, org):
-    dont_include_fields = [x[0] for x in organization_extra_data_mapping[org.id].items() if x[1][0] != "Tax"]
+    node.extra_data['custom_id_1'] = node.custom_id_1
+
+    dont_include_fields = load_organization_taxlot_extra_data_mapping_exclusions(org)
+
     extra_data_copy = copy_extra_data_excluding(node.extra_data, dont_include_fields)
 
     extra_data_copy["record_created"] = node.created
@@ -137,6 +176,9 @@ def create_tax_lot_state_for_node(node, org):
 
     for (field_to_move, value) in premapped_data.items():
         setattr(taxlotstate, desired_field_mapping[field_to_move], value)
+
+    for field in tax_collapse_rules[org.id]:
+        value = aggregate_value_from_state(taxlotstate, field, tax_collapse_rules[org.id])
 
     taxlotstate.save()
     return taxlotstate
@@ -282,6 +324,9 @@ class Command(BaseCommand):
             print len(set(map(lambda x: x.id, org_canonical_snapshots)))
 
             for ndx, bs in enumerate(org_canonical_snapshots):
+                # if not ("ML" in bs.extra_data and bs.extra_data["ML"] == "136-2"):
+                #     print "Skipping non 136-2 record."
+                #     continue
 
                 if limit and (ndx+1) > limit:
                     print "That's enough!"
@@ -309,7 +354,7 @@ class Command(BaseCommand):
 
 def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix):
     """Take tree structure describing a single Property/TaxLot over time and create the entities."""
-    logging.info("Creating a new entity thing-a-majig!")
+    logging.info("Populating new blue sky entities for canonical snapshot tree!")
 
     tax_lot_created = 0
     property_created = 0
@@ -330,6 +375,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     if node_has_tax_lot_info(leaf_buildingsnapshots[0], org):
         tax_lot, created = find_or_create_bluesky_taxlot_associated_with_building_snapshot(leaf_buildingsnapshots[0], org)
         # tax_lot = seed.bluesky.models.TaxLot(organization=org)
+
         tax_lot.save()
         tax_lot_created += int(created)
 
@@ -344,8 +390,8 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
         property_obj.save()
         property_created += 1
 
-    last_taxlot_view = False
-    last_property_view = False
+    last_taxlot_view = collections.defaultdict(lambda : False)
+    last_property_view = collections.defaultdict(lambda : False)
 
     for node in all_nodes:
         node_type = classify_node(node, org)
@@ -368,7 +414,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                 tax_lot_view_created += int(created)
                 assert created, "Should have created a tax lot."
                 taxlotview.save()
-            last_taxlot_view = taxlotview
+            last_taxlot_view[taxlotview.cycle] = taxlotview
         elif node_type == PROPERTY_IMPORT or node_type == COMBO_IMPORT:
             import_cycle = load_cycle(org, node)
             property_state = create_property_state_for_node(node, org)
@@ -388,46 +434,52 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                 assert created, "Should have created something"
                 property_view_created += int(created)
                 propertyview.save()
-            last_property_view = propertyview
+            last_property_view[propertyview.cycle] = propertyview
 
         if node_type == MERGE or node_type == COMBO_IMPORT:
-            if last_property_view and last_taxlot_view:
-                m2m_cycle = load_cycle(org, node)
+            m2m_cycle = load_cycle(org, node)
+            if last_property_view[m2m_cycle] and last_taxlot_view[m2m_cycle]:
+
 
                 if node_type == MERGE:
                     # Check to make sure the last stuff created is
                     # associated with the same cycle as the merge.
-                    assert last_property_view, "Didn't expect NO proeprty view"
-                    assert last_taxlot_view, "Didn't expect NO tax lot view"
+                    assert last_property_view[m2m_cycle], "Didn't expect NO proeprty view"
+                    assert last_taxlot_view[m2m_cycle], "Didn't expect NO tax lot view"
 
-                    if m2m_cycle != last_property_view:
-                        # Ultimately Copy the state over to a new state
-                        last_property_view, _ = seed.bluesky.models.PropertyView.objects.get_or_create(property=property_obj, cycle=m2m_cycle, state=last_property_view.state)
-                    if m2m_cycle != last_taxlot_view:
-                        last_taxlot_view, _ = seed.bluesky.models.TaxLotView.objects.get_or_create(taxlot=tax_lot, cycle=m2m_cycle, state=last_taxlot_view.state)
+                    # # FIXME - bad logic
+                    # if m2m_cycle != last_property_view[cycle].cycle:
+                    #     # Ultimately Copy the state over to a new state
+                    #     last_property_view, _ = seed.bluesky.models.PropertyView.objects.get_or_create(property=property_obj, cycle=m2m_cycle, state=last_property_view.state)
+                    # if m2m_cycle != last_taxlot_view.cycle:
+                    #     last_taxlot_view, _ = seed.bluesky.models.TaxLotView.objects.get_or_create(taxlot=tax_lot, cycle=m2m_cycle, state=last_taxlot_view.state)
 
-                    assert m2m_cycle == last_taxlot_view.cycle == last_property_view.cycle, "Why aren't all these equal?!"
+                    # assert m2m_cycle == last_taxlot_view.cycle == last_property_view.cycle, "Why aren't all these equal?!"
 
 
-                    tlp, created  = seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view = last_property_view,
-                                                                                             taxlot_view = last_taxlot_view,
+                    tlp, created  = seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view = last_property_view[m2m_cycle],
+                                                                                             taxlot_view = last_taxlot_view[m2m_cycle],
                                                                                              cycle = m2m_cycle)
                     m2m_created += int(created)
 
             else:
+
+                import_cycle = load_cycle(org, node)
+
                 # Treat it like an import.
                 if node_has_tax_lot_info(node, org):
-                    import_cycle = load_cycle(org, node)
                     tax_lot_state = create_tax_lot_state_for_node(node, org)
                     tax_lot_state_created += 1
+
+                    # Check if there is a TaxLotView Present
 
                     taxlotview, created = seed.bluesky.models.TaxLotView.objects.update_or_create(taxlot=tax_lot, cycle=import_cycle, defaults={"state": tax_lot_state})
                     tax_lot_view_created += int(created)
 
                     taxlotview.save()
-                    last_taxlot_view = taxlotview
+                    last_taxlot_view[taxlotview.cycle] = taxlotview
+
                 if node_has_property_info(node, org):
-                    import_cycle = load_cycle(org, node)
                     property_state = create_property_state_for_node(node, org)
                     property_state_created += 1
 
@@ -435,7 +487,13 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                     property_view_created += int(created)
 
                     propertyview.save()
-                    last_property_view = propertyview
+                    last_property_view[propertyview.cycle] = propertyview
+
+                if node_has_tax_lot_info(node, org) and node_has_property_info(node, org):
+                    _, created = seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view =last_property_view[import_cycle],
+                                                                                          taxlot_view = last_taxlot_view[import_cycle],
+                                                                                          cycle = import_cycle)
+                    m2m_created += int(created)
 
 
     logging.info("{} Tax Lot, {} Property, {} TaxLotView, {} PropertyView, {} TaxLotState, {} PropertyState, {} m2m created.".format(tax_lot_created,
@@ -449,4 +507,5 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
 
 
 
-organization_extra_data_mapping = load_raw_mapping_data()
+# FIXME: Remove this global variable
+organization_extra_data_mapping, _ = _load_raw_mapping_data()
