@@ -240,6 +240,8 @@ def get_taxlots(request):
 
         if none_in_juridiction_tax_lot_ids: jurisdiction_taxlot_identifiers.append("Missing")
 
+        # jurisdiction_taxlot_identifiers = [""]
+
         join_dict = property_map[join.property_view_id].copy()
         join_dict.update({
             'primary': 'P' if join.primary else 'S',
@@ -588,25 +590,25 @@ def get_property_columns(request):
     # FIXME - Very inefficient queries to dynamically calculate the
     # extra data present in an org's data.  This should ultimately be
     # stored in the DB.
-    taxlot_extra_data_fields =  filter(lambda x: x, unique(map(lambda x: x.state.extra_data.keys(), TaxLotView.objects.filter(taxlot__organization_id=request.GET['organization_id']).select_related('state').all())))
-    property_extra_data_fields = filter(lambda x: x, unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(property__organization_id=request.GET['organization_id']).select_related('state').all())))
+    # taxlot_extra_data_fields =  filter(lambda x: x, unique(map(lambda x: x.state.extra_data.keys(), TaxLotView.objects.filter(taxlot__organization_id=request.GET['organization_id']).select_related('state').all())))
+    # property_extra_data_fields = filter(lambda x: x, unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(property__organization_id=request.GET['organization_id']).select_related('state').all())))
 
-    for c in property_extra_data_fields:
-        columns.append({
-            'field': c,
-            'displayName': 'PRED.{}'.format(c),
-            'related': False,
-            'source': 'property'
-        })
+    # for c in property_extra_data_fields:
+    #     columns.append({
+    #         'field': c,
+    #         'displayName': 'PRED.{}'.format(c),
+    #         'related': False,
+    #         'source': 'property'
+    #     })
 
-    for c in taxlot_extra_data_fields:
-        print "Adding {}".format(c)
-        columns.append({
-            'field': c,
-            'displayName': 'TLED.{}'.format(c),
-            'related': True,
-            'source': 'taxlot'
-        })
+    # for c in taxlot_extra_data_fields:
+    #     print "Adding {}".format(c)
+    #     columns.append({
+    #         'field': c,
+    #         'displayName': 'TLED.{}'.format(c),
+    #         'related': True,
+    #         'source': 'taxlot'
+    #     })
 
     # END FIXME
 
@@ -912,26 +914,26 @@ def get_taxlot_columns(request):
     # extra data present in an org's data.  This should ultimately be
     # stored in the DB.
 
-    taxlot_extra_data_fields =  unique(map(lambda x: x.state.extra_data.keys(), TaxLotView.objects.filter(taxlot__organization_id=request.GET['organization_id']).select_related('state').all()))
-    property_extra_data_fields = unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(property__organization_id=request.GET['organization_id']).select_related('state').all()))
+    # taxlot_extra_data_fields =  unique(map(lambda x: x.state.extra_data.keys(), TaxLotView.objects.filter(taxlot__organization_id=request.GET['organization_id']).select_related('state').all()))
+    # property_extra_data_fields = unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(property__organization_id=request.GET['organization_id']).select_related('state').all()))
 
-    for c in property_extra_data_fields:
-        print "Adding {}".format(c)
-        columns.append({
-            'field': c,
-            'display': 'PropertyED.{}'.format(c),
-            'related': True,
-            'source': 'property'
-        })
+    # for c in property_extra_data_fields:
+    #     print "Adding {}".format(c)
+    #     columns.append({
+    #         'field': c,
+    #         'display': 'PropertyED.{}'.format(c),
+    #         'related': True,
+    #         'source': 'property'
+    #     })
 
-    for c in taxlot_extra_data_fields:
-        print "Adding {}".format(c)
-        columns.append({
-            'field': c,
-            'display': 'TaxLotED.{}'.format(c),
-            'related': False,
-            'source': 'taxlot'
-        })
+    # for c in taxlot_extra_data_fields:
+    #     print "Adding {}".format(c)
+    #     columns.append({
+    #         'field': c,
+    #         'display': 'TaxLotED.{}'.format(c),
+    #         'related': False,
+    #         'source': 'taxlot'
+    #     })
 
     # END FIXME
     return columns
