@@ -37,6 +37,8 @@ from _localtools import _load_raw_mapping_data
 logging.basicConfig(level=logging.DEBUG)
 
 
+def logging_info(msg):
+    print msg
 
 # These encode rules for how final values
 tax_collapse_rules = collections.defaultdict(lambda : {})
@@ -133,6 +135,11 @@ def create_property_state_for_node(node, org):
 
 
     for (field_to_move, value) in premapped_data.items():
+        if field_to_move == "Property ID":
+            if value is not None and value != "":
+                print value
+            else:
+                print "null equivalent."
         setattr(property_state, desired_field_mapping[field_to_move], value)
 
     # If we want to aggregate a value in an organization specific way,
@@ -296,13 +303,13 @@ class Command(BaseCommand):
 
         limit = options['limit'] if "limit" in options else 0
 
-        logging.info("Migration organization: {}".format(",".join(map(str, core_organization))))
+        logging_info("Migration organization: {}".format(",".join(map(str, core_organization))))
 
         for org_id in core_organization:
             # Writing loop over organizations
 
             org = Organization.objects.filter(pk=org_id).first()
-            logging.info("Processing organization {}".format(org))
+            logging_info("Processing organization {}".format(org))
 
             assert org, "Organization {} not found".format(org_id)
 
@@ -325,8 +332,8 @@ class Command(BaseCommand):
             for ndx, bs in enumerate(org_canonical_snapshots):
 
                 if limit and (ndx+1) > limit:
-                    logging.info("Migrated limit={} buildings.".format(limit))
-                    logging.info("Skipping remainder of buildings for organization.")
+                    logging_info("Migrated limit={} buildings.".format(limit))
+                    logging_info("Skipping remainder of buildings for organization.")
                     break
 
                 logging.debug("Processing Building {}/{}".format(ndx+1, len(org_canonical_snapshots)))
@@ -342,7 +349,7 @@ class Command(BaseCommand):
                 leaf_buildingsnapshots = [building_dict[bs_id] for bs_id in leaf_nodes]
                 other_buildingsnapshots = [building_dict[bs_id] for bs_id in other_nodes]
 
-                logging.info("Creating Blue Sky Data for for CanonicalBuilding={}".format(leaf_buildingsnapshots[0]))
+                logging_info("Creating Blue Sky Data for for CanonicalBuilding={}".format(leaf_buildingsnapshots[0]))
 
                 create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix)
         return
@@ -408,7 +415,7 @@ def calculate_migration_order(node_list, child_dictionary):
 def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix):
 
     """Take tree structure describing a single Property/TaxLot over time and create the entities."""
-    logging.info("Populating new blue sky entities for canonical snapshot tree!")
+    logging_info("Populating new blue sky entities for canonical snapshot tree!")
 
     tax_lot_created = 0
     property_created = 0
@@ -418,7 +425,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     property_state_created = 0
     m2m_created =  0
 
-    logging.info("Creating Property/TaxLot from {} nodes".format( sum(map(len, (leaf_buildingsnapshots, other_buildingsnapshots, import_buildingsnapshots)))))
+    logging_info("Creating Property/TaxLot from {} nodes".format( sum(map(len, (leaf_buildingsnapshots, other_buildingsnapshots, import_buildingsnapshots)))))
 
     all_nodes = list(itertools.chain(import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots))
     all_nodes.sort(key = lambda rec: rec.created)
@@ -558,7 +565,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                     m2m_created += int(created)
 
 
-    logging.info("{} Tax Lot, {} Property, {} TaxLotView, {} PropertyView, {} TaxLotState, {} PropertyState, {} m2m created.".format(tax_lot_created,
+    logging_info("{} Tax Lot, {} Property, {} TaxLotView, {} PropertyView, {} TaxLotState, {} PropertyState, {} m2m created.".format(tax_lot_created,
                                                                                                                                      property_created,
                                                                                                                                      tax_lot_view_created,
                                                                                                                                      property_view_created,
