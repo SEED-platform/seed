@@ -231,7 +231,6 @@ def get_taxlots(request):
             .values_list('taxlot_view_id', flat=True)
         state_ids = TaxLotView.objects.filter(pk__in=related_taxlot_view_ids).values_list('state_id', flat=True)
 
-        # FIXME: this should be relative to a particular cycle.
         jurisdiction_taxlot_identifiers = TaxLotState.objects.filter(pk__in=state_ids) \
             .values_list('jurisdiction_taxlot_identifier', flat=True)
 
