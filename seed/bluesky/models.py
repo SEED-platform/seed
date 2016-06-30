@@ -91,6 +91,10 @@ class PropertyView(models.Model):
     def __unicode__(self):
         return u'Property View - %s' % (self.pk)
 
+    # FIXME: Add unique constraint on (property, cycle)
+    class Meta:
+        unique_together = ('property', 'cycle',)
+
 
 class TaxLot(models.Model):
     organization = models.ForeignKey(Organization)
@@ -130,6 +134,11 @@ class TaxLotView(models.Model):
     def __unicode__(self):
         return u'TaxLot View - %s' % (self.pk)
 
+    # FIXME: Add unique constraint on (property, cycle)
+    class Meta:
+        unique_together = ('taxlot', 'cycle',)
+
+
 
 class TaxLotProperty(models.Model):
     property_view = models.ForeignKey(PropertyView)
@@ -144,3 +153,6 @@ class TaxLotProperty(models.Model):
 
     def __unicode__(self):
         return u'M2M Property View %s / TaxLot View %s' % (self.property_view_id, self.taxlot_view_id)
+
+    class Meta:
+        unique_together = ('property_view', 'taxlot_view',)
