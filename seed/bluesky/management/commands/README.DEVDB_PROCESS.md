@@ -21,7 +21,7 @@ perspective.
    - Organization: City of Cambridge(69): 10257, 1002
    - Organization: City of Houston(6): 43494, 6648
    - Organization: City of Philadelphia(20): 33257, 2269
-   - Organization: District of Columbia Department of Energy and Environment(7): 40232, 1624
+   - Organization: DC BlueSky Test(7)
    - Organization: Kansas City(156): 37844, 1436
    - Organization: Montgomery County DEP(10): 3546, 1163
    - Organization: New York City(49): 105662, 12988
@@ -29,9 +29,5 @@ perspective.
    - Organization: Salt Lake City(126): 18141, 2258
 
 ## The Core User IDS
-[69,10,156,49,7,20,181,117,105,126, 124,6]
-
-## Pre migrated
-126,
-
-156, 49, 69, 7
+In prioritized order
+[20, 7, 49, 69, 10, 21, 156, 117, 124, 105, 126]
