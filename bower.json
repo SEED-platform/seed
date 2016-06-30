@@ -14,7 +14,7 @@
     "angular-cookies": "~1.4.7",
     "angular-mocks": "~1.4.7",
     "angular-route": "~1.4.7",
-    "angular-ui-grid": "~3.1.1",
+    "angular-ui-grid": "3.2.1",
     "angular-ui-notification": "~0.1.0",
     "angular-ui-sortable": "~0.13.4",
     "angular-ui-tree": "~2.10.0",
