@@ -12,7 +12,8 @@ def get_core_organizations():
     # IDs of the 12 organizations defined by robin 6/6/16.
     # Google Doc for file describing this:
     # https://docs.google.com/document/u/4/d/1z1FScU-lysmgkCNGa9-hH0PCQudpzV_IG2IKcxYzyfM/edit
-    GOOD_ORGS = [124,181,117,69,6,20,7,156,10,49,105,126]
+    GOOD_ORGS = [69,10,156,49,7,20,181,117,105,126, 124,6]
+    assert len(GOOD_ORGS) == 12
     return GOOD_ORGS
 
 
