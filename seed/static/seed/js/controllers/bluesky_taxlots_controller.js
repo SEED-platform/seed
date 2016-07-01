@@ -75,14 +75,16 @@ angular.module('BE.seed.controller.bluesky_taxlots_controller', [])
       processData();
 
       var defaults = {
-        minWidth: 150
+        minWidth: 75,
+        width: 150
         //type: 'string'
       };
       _.map(columns, function (col) {
-        var filter;
+        var filter = aggregation = {};
         if (col.type == 'number') filter = {filter: bluesky_service.numFilter()};
         else filter = {filter: bluesky_service.textFilter()};
-        return _.defaults(col, filter, defaults);
+        if (col.related) aggregation.treeAggregationType = 'uniqueList';
+        return _.defaults(col, filter, aggregation, defaults);
       });
 
       var updateHeight = function () {
