@@ -352,7 +352,7 @@ class Command(BaseCommand):
             ## For each of those trees find the tip
             ## For each of those trees find the import records
             ## For each of those trees find the cycles associated with it
-            for ndx, bs in enumerate(org_canonical_snapshots):
+            for ndx, (cb, bs) in enumerate(zip(org_canonical_buildings, org_canonical_snapshots)):
                 # if not ("ML" in bs.extra_data and bs.extra_data["ML"] == "136-2"):
                 #     print "Skipping non 136-2 record."
                 #     continue
@@ -391,7 +391,7 @@ class Command(BaseCommand):
 
                 logging_info("Creating Blue Sky Data for for CanonicalBuilding={}".format(leaf_buildingsnapshots[0]))
 
-                create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix)
+                create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix, cb)
         return
 
 def is_descendant_of(node_1_id, node_2_id, child_dictionary):
@@ -452,7 +452,7 @@ def calculate_migration_order(node_list, child_dictionary):
     pdb.set_trace()
     return migration_order
 
-def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix):
+def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix, canonical_building)
 
     """Take tree structure describing a single Property/TaxLot over time and create the entities."""
     logging_info("Populating new blue sky entities for canonical snapshot tree!")
