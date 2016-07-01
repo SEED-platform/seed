@@ -265,10 +265,21 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--org', dest='organization', default=False)
         parser.add_argument('--limit', dest='limit', default=0, type=int)
+        parser.add_argument('--starting_from_canonical', dest='canonical_start', default=0, type=int)
         return
 
     def handle(self, *args, **options):
         """Do something."""
+
+        # Process Arguments
+
+        if options['organization']:
+            core_organization = map(int, options['organization'].split(","))
+        else:
+            core_organization = get_core_organizations()
+
+        limit = options['limit'] if "limit" in options else 0
+        starting_from_canonical = False if not options['canonical_start'] else options['canonical_start']
 
         tree_file = get_static_building_snapshot_tree_file()
         m2m = read_building_snapshot_tree_structure(tree_file)
@@ -295,12 +306,7 @@ class Command(BaseCommand):
         counts = collections.Counter()
         for label in labelarray: counts[label] += 1
 
-        if options['organization']:
-            core_organization = map(int, options['organization'].split(","))
-        else:
-            core_organization = get_core_organizations()
 
-        limit = options['limit'] if "limit" in options else 0
 
         logging_info("Migration organization: {}".format(",".join(map(str, core_organization))))
 
@@ -314,6 +320,24 @@ class Command(BaseCommand):
 
             org_canonical_buildings = seed.models.CanonicalBuilding.objects.filter(canonical_snapshot__super_organization=org_id, active=True).all()
             org_canonical_snapshots = [cb.canonical_snapshot for cb in org_canonical_buildings]
+
+            # FIXME: Turns out the ids are on Building
+            # Snapshot. Leaving it this way because the other code
+            # should be displaying canonical building indexes.
+            if starting_from_canonical:
+                # org_canonical_ids = map(lambda x: x.pk, org_canonical_buildings)
+                org_canonical_ids = map(lambda x: x.pk, org_canonical_snapshots)
+                try:
+                    canonical_index = org_canonical_ids.index(starting_from_canonical)
+                    logging_info("Restricting to canonical starting {}, was {} now {}.".format(canonical_index, len(org_canonical_ids), len(org_canonical_ids) - canonical_index))
+
+                    org_canonical_buildings = list(org_canonical_buildings)[canonical_index:]
+                    org_canonical_snapshots = list(org_canonical_snapshots)[canonical_index:]
+                except ValueError:
+                    raise RuntimeError("Requested to start from canonical {} which was not found.".format(starting_from_canonical))
+
+
+
 
             if len(org_canonical_buildings) == 0:
                 logging_info("Organization {} has no buildings".format(org_id))
