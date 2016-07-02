@@ -594,7 +594,6 @@ def get_property_columns(request):
         })
 
     for c in taxlot_extra_data_fields:
-        print "Adding {}".format(c)
         columns.append({
             'field': c,
             'displayName': 'TLED.{}'.format(c),
