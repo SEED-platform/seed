@@ -82,6 +82,7 @@ def generate_paginated_results(queryset, number_per_page=25, page=1,
         buildings within whitelist_orgs.
     :param matching: Toggle expanded parent and children data, including
         coparent and confidence
+
     Usage::
 
         generate_paginated_results(q, 1)
