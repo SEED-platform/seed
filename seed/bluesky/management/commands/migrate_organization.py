@@ -265,7 +265,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--org', dest='organization', default=False)
         parser.add_argument('--limit', dest='limit', default=0, type=int)
-        parser.add_argument('--starting_from_canonical', dest='canonical_start', default=0, type=int)
+        parser.add_argument('--starting_on_canonical', dest='starting_on_canonical', default=0, type=int)
+        parser.add_argument('--starting_following_canonical', dest='starting_following_canonical', default=0, type=int)
         return
 
     def handle(self, *args, **options):
@@ -279,7 +280,10 @@ class Command(BaseCommand):
             core_organization = get_core_organizations()
 
         limit = options['limit'] if "limit" in options else 0
-        starting_from_canonical = False if not options['canonical_start'] else options['canonical_start']
+        starting_from_canonical = False if not options['starting_on_canonical'] else options['starting_on_canonical']
+        starting_on_canonical_following = False if not options['starting_following_canonical'] else options['starting_following_canonical']
+
+        assert not (starting_on_canonical_following and starting_from_canonical), "Can only specify one of --starting_on_canonical and --starting_following_canonical"
 
         tree_file = get_static_building_snapshot_tree_file()
         m2m = read_building_snapshot_tree_structure(tree_file)
@@ -324,17 +328,25 @@ class Command(BaseCommand):
             # FIXME: Turns out the ids are on Building
             # Snapshot. Leaving it this way because the other code
             # should be displaying canonical building indexes.
-            if starting_from_canonical:
+            if starting_from_canonical or starting_on_canonical_following:
                 # org_canonical_ids = map(lambda x: x.pk, org_canonical_buildings)
                 org_canonical_ids = map(lambda x: x.pk, org_canonical_snapshots)
                 try:
-                    canonical_index = org_canonical_ids.index(starting_from_canonical)
-                    logging_info("Restricting to canonical starting {}, was {} now {}.".format(canonical_index, len(org_canonical_ids), len(org_canonical_ids) - canonical_index))
+                    canonical_index = max(starting_from_canonical, starting_on_canonical_following)
+                    canonical_index = org_canonical_ids.index(canonical_index)
+                    if starting_on_canonical_following: canonical_index += 1
 
                     org_canonical_buildings = list(org_canonical_buildings)[canonical_index:]
                     org_canonical_snapshots = list(org_canonical_snapshots)[canonical_index:]
+
+                    ref_str = "starting" if starting_from_canonical else "following"
+
+                    logging_info("Restricting to canonical starting ndx={} (id={}), was {} now {}.".format(canonical_index, len(org_canonical_ids), len(org_canonical_ids), len(org_canonical_buildings)))
+
+
+
                 except ValueError:
-                    raise RuntimeError("Requested to start from canonical {} which was not found.".format(starting_from_canonical))
+                    raise RuntimeError("Requested to start referencing canonical building id={} which was not found.".format(starting_from_canonical))
 
 
 
