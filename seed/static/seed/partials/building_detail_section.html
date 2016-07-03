@@ -26,7 +26,7 @@
         <div class="section_header fixed_height_short has_no_padding">
             <div class="section_action_container left">
                 <h2><i class="fa fa-building-o"></i> Building Information</h2>
-            </div>           
+            </div>
             <div class="section_action_container right" ng-hide="building.edit_form_showing">
                 <a ng-click="building.edit_form_showing = true; save_building_state()" ng-show="user_role !== 'viewer'"><i class="fa fa-pencil"></i> Edit</a>
             </div>
@@ -49,15 +49,15 @@
 
 
             <div class="table_list_container">
-                <table class="table table-striped table_highlight_first">
+                <table class="table table-striped table_highlight_first fixed-layout">
                     <thead>
                         <tr>
-                            <th sd-resizable class="ellipsis">Field</th>
-                            <th sd-resizable class="ellipsis">Master</th>
+                            <th sd-resizable id="building-fields">Field</th>
+                            <th sd-resizable class="ellipsis-resizable">Master</th>
                             <th ng-repeat="i in imported_buildings"
                                  ng-class="{'is_not_master': !i.is_master && building.edit_form_showing, 'is_master': i.is_master && building.edit_form_showing}"
                                  sd-resizable
-                                 class="ellipsis">
+                                 class="ellipsis-resizable">
                                 <span ng-hide="building.edit_form_showing">
                                      {$ i.import_file_name $}
                                 </span>

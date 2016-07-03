@@ -4,13 +4,13 @@ Features Package
 Submodules
 ----------
 
-Steps
---------------------------
+.. Steps
+.. --------------------------
 
-.. automodule:: seed.features.steps
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. .. automodule:: seed.features.steps
+..     :members:
+..     :undoc-members:
+..     :show-inheritance:
 
 
 Module contents
