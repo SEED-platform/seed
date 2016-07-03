@@ -365,24 +365,6 @@ class Command(BaseCommand):
             ## For each of those trees find the import records
             ## For each of those trees find the cycles associated with it
             for ndx, (cb, bs) in enumerate(zip(org_canonical_buildings, org_canonical_snapshots)):
-                # if not ("ML" in bs.extra_data and bs.extra_data["ML"] == "136-2"):
-                #     print "Skipping non 136-2 record."
-                #     continue
-
-                # DEBUG CODE
-                # WHITE_LIST = set(["776008020;776008030","881115950;881115975","883084801;883084802;883084803;883084803;883084805","778799005;778799020","883101010;883101510","881113406;881113407;881113408","788007700;788008001;788008100","882002800;881302200"])
-                # WHITE_LIST = set(["883101010;883101510"])
-                # if bs.tax_lot_id not in WHITE_LIST:
-                #     continue
-                # else:
-                #     print "Installing: {}".format(bs.tax_lot_id)
-
-                # if bs.tax_lot_id not in set(["776008020;776008030","881115950;881115975","883084801;883084802;883084803;883084803;883084805","778799005;778799020","883101010;883101510","881113406;881113407;881113408","788007700;788008001;788008100","882002800;881302200"]):
-                #     continue
-                # else:
-                #     print "Installing: {}".format(bs.tax_lot_id)
-                # # END DEBUG
-
                 if limit and (ndx+1) > limit:
                     logging_info("Migrated limit={} buildings.".format(limit))
                     logging_info("Skipping remainder of buildings for organization.")
