@@ -268,8 +268,7 @@ def set_state_value(state, field_string, value):
     ed = "extra_data/"
     if field_string.startswith(ed):
         ed_key = field_string[len(ed):]
-        key = state.extra_data[ed_key] if ed_key in state.extra_data else None
-        state.extra_data[key] = value
+        state.extra_data[ed_key] = value
         return
     else:
         assert hasattr(state, field_string), "{} should have an explicit field named {} but does not.".format(field_string)
@@ -280,7 +279,7 @@ def set_state_value(state, field_string, value):
 def get_value_for_key(state, field_string):
     ed = "extra_data/"
     if field_string.startswith(ed):
-        key = field_string[len(ed):] if ed in field_string else None
+        key = field_string[len(ed):] if ed in field_string else ""
 
         if key not in state.extra_data:
             return None

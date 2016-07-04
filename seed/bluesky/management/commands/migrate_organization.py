@@ -11,6 +11,7 @@ from seed.lib.superperms.orgs.models import Organization
 import subprocess
 from django.apps import apps
 import pdb
+import random
 import copy
 import collections
 import os
@@ -135,6 +136,7 @@ def create_property_state_for_node(node, org, cb):
         property_state_extra_data["record_created"] = node.created
         property_state_extra_data["record_modified"] = node.modified
         property_state_extra_data["record_year_ending"] = node.year_ending
+        property_state_extra_data["random"] = str(random.random())
 
         property_state_extra_data["migration_version"] = get_code_version()
 
@@ -177,7 +179,8 @@ def create_property_state_for_node(node, org, cb):
                                                        extra_data = property_state_extra_data)
 
     for (field_origin, field_dest) in mapping.items():
-        set_state_value(property_state, field_dest, get_value_for_key(node, field_origin))
+        value = get_value_for_key(node, field_origin)
+        set_state_value(property_state, field_dest, value)
 
     property_state.save()
     return property_state
@@ -201,6 +204,7 @@ def create_tax_lot_state_for_node(node, org, cb):
         taxlot_extra_data["record_created"] = node.created
         taxlot_extra_data["record_modified"] = node.modified
         taxlot_extra_data["record_year_ending"] = node.year_ending
+        taxlot_extra_data["random"] = str(random.random())
 
 
     taxlotstate = seed.bluesky.models.TaxLotState.objects.create(confidence = node.confidence,
