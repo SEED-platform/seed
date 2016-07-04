@@ -5,6 +5,7 @@ import csv
 import StringIO
 import collections
 import re
+from IPython import embed
 import seed.bluesky.models
 from seed.bluesky.models import TaxLotView
 
@@ -97,7 +98,8 @@ def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
 def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
     mapping_field = 'building_portfolio_manager_identifier'
 
-
+    # FIX ME - This needs to be updated to simply search on the field and be given a rule.
+    # pdb.set_trace()
     desired_field_mapping = load_organization_property_field_mapping(org)
     reverse_mapping = {y:x for x,y in desired_field_mapping.items()}
     bs_property_id = bs.pm_property_id
@@ -126,9 +128,6 @@ def load_organization_field_mapping_for_type_exclusions(org, type):
     data, _ = _load_raw_mapping_data()
 
     remove_from_extra_data_mapping = []
-
-    # custom_not_explicitly_mapped = "custom_id_1" not in data[org]
-
     for key in data[org]:
         (table, column) = data[org][key]
         if (table != type):
@@ -143,18 +142,28 @@ def load_organization_field_mapping_for_type_exclusions(org, type):
     remove_from_extra_data_mapping = filter(lambda x: x != "custom_id_1", remove_from_extra_data_mapping)
     return remove_from_extra_data_mapping
 
-
-def load_organization_field_mapping_for_type(org, type):
+def load_organization_field_mapping_for_type(org_id, type):
     """This returns a list of keys -> (table, attr) to map the key into."""
-    data, _ = _load_raw_mapping_data()
 
-    mapping = {}
-    for column in data[org].keys():
-        table, dest_column = data[org][column]
-        if table == type and dest_column != "extra_data":
-            mapping[column] = dest_column
+    org_mapping_line = "1,{}".format(org_id)
 
-    return mapping
+    fl = open(get_static_extradata_mapping_file()).readlines()
+    fl = filter(lambda x: x.startswith(org_mapping_line), fl)
+    reader = csv.reader(StringIO.StringIO("".join(fl)))
+
+    field_mapping = collections.defaultdict(lambda : collections.defaultdict(lambda : False))
+
+    for r in reader:
+        org_str, is_explicit_field, key_name, table, field = r[1:6]
+        if table != type: continue
+
+        from_field = key_name if is_explicit_field else "extra_data/{}".format(key_name)
+
+        # Note this implies you can remap extra_data->extra data by calling it extra_data/remap"
+        to_field = "extra_data/{}".format(key_name) if field == "extra_data" else field
+        field_mapping[from_field] = to_field
+
+    return field_mapping
 
 
 def load_organization_property_extra_data_mapping_exclusions(org):
@@ -164,11 +173,9 @@ def load_organization_taxlot_extra_data_mapping_exclusions(org):
     return load_organization_field_mapping_for_type_exclusions(org.pk, "Tax")
 
 def load_organization_property_field_mapping(org):
-    """This returns a list of keys -> (table, attr) to map the key into."""
     return load_organization_field_mapping_for_type(org.pk, "Property")
 
 def load_organization_taxlot_field_mapping(org):
-    """This returns a list of keys -> (table, attr) to map the key into."""
     return load_organization_field_mapping_for_type(org.pk, "Tax")
 
 
@@ -197,7 +204,6 @@ def _load_raw_mapping_data():
             d[int(org_str)][key_name] = (table, field)
 
     return d, is_explicit_field
-
 
 
 def valid_id(s):
@@ -258,18 +264,27 @@ def get_id_fields(parse_string):
     return fields
 
 
+def set_state_value(state, field_string, value):
+    ed = "extra_data/"
+    if field_string.startswith(ed):
+        ed_key = field_string[len(ed):]
+        key = state.extra_data[ed_key] if ed_key in state.extra_data else None
+        state.extra_data[key] = value
+        return
+    else:
+        assert hasattr(state, field_string), "{} should have an explicit field named {} but does not.".format(field_string)
+        setattr(state, field_string, value)
+    return
 
 
 def get_value_for_key(state, field_string):
-    if "/" in field_string:
-        initial, key = field_string.split("/")
-        assert initial == "extra_data"
+    ed = "extra_data/"
+    if field_string.startswith(ed):
+        key = field_string[len(ed):] if ed in field_string else None
+
         if key not in state.extra_data:
             return None
         else:
-            # FIXME: This will work for now, because a "tax_lot" type in
-            # SEED is always a str.  But ultimately this should be cast to
-            # the type of the underlying Column.
             return state.extra_data[key]
     else:
         return getattr(state, field_string)

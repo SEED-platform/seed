@@ -1,15 +1,14 @@
+from __future__ import unicode_literals
 """Migration code for the Seed project from the original tables to the
 new tables.
-
-
-
 """
 
-from __future__ import unicode_literals
-
+import collections
+import sys
 from django.db import models, migrations
 from django.core.management.base import BaseCommand
 from seed.lib.superperms.orgs.models import Organization
+import subprocess
 from django.apps import apps
 import pdb
 import copy
@@ -42,6 +41,7 @@ from _localtools import load_organization_taxlot_field_mapping
 from _localtools import _load_raw_mapping_data
 from _localtools import get_value_for_key
 from _localtools import aggregate_value_from_state
+from _localtools import set_state_value
 
 from _localtools import USE_FIRST_VALUE
 from _localtools import JOIN_STRINGS
@@ -68,45 +68,75 @@ tax_collapse_rules[10] = { 'jurisdiction_taxlot_identifier': (USE_FIRST_VALUE, [
 
 property_collapse_rules = collections.defaultdict(lambda : {})
 
-# Externalize to class controlling this.
-TAXLOT_DONTINCLUDE_BYORG = {}
-PROPERTY_DONTINCLUDE_BYORG = {}
-
-for org_ndx in [20, 7, 49, 69, 10, 181, 156, 117, 124, 105, 126, 6]:
-    org = Organization.objects.get(pk=org_ndx)
-    TAXLOT_DONTINCLUDE_BYORG[org] = load_organization_taxlot_extra_data_mapping_exclusions(org)
-    PROPERTY_DONTINCLUDE_BYORG[org] = load_organization_property_extra_data_mapping_exclusions(org)
+def get_code_version():
+    return subprocess.check_output(["git", "describe"])
 
 def copy_extra_data_excluding(extra_data, bad_fields):
     bad_fields = set(bad_fields)
     return {x:y for (x,y) in extra_data.items() if x not in bad_fields}
 
+
+taxlot_by_byorg = collections.defaultdict(lambda : set())
+def get_taxlot_columns(org):
+    org_id = str(org.pk)
+    global taxlot_by_byorg
+
+    if not org_id in taxlot_by_byorg:
+        fl = open(get_static_extradata_mapping_file()).readlines()
+        fl = filter(lambda x: x.startswith("1,{}".format(org_id)), fl)
+        reader = csv.reader(StringIO.StringIO("".join(fl)))
+
+        for r in reader:
+            org_str, is_explicit_field, key_name, table, field = r[1:6]
+            if table != "Tax": continue
+            taxlot_by_byorg[org_id].add(key_name)
+
+    return  taxlot_by_byorg[org_id]
+
+property_by_byorg = collections.defaultdict(lambda : set())
+def get_property_columns(org):
+
+    org_id = str(org.pk)
+
+    global property_by_byorg
+
+    if not org in property_by_byorg:
+        fl = open(get_static_extradata_mapping_file()).readlines()
+        fl = filter(lambda x: x.startswith("1,{}".format(org_id)), fl)
+        reader = csv.reader(StringIO.StringIO("".join(fl)))
+
+        for r in reader:
+            org_str, is_explicit_field, key_name, table, field = r[1:6]
+            if table != "Property": continue
+            property_by_byorg[org_id].add(key_name)
+
+    return property_by_byorg[org_id]
+
+
+
+
 def create_property_state_for_node(node, org, cb):
 
-    # Check that every key is mapped.
+    property_columns = get_property_columns(org)
+    taxlot_columns = get_taxlot_columns(org)
+
+    # Check every key is mapped at least once.
     for key in node.extra_data:
         if key=='' and not node.extra_data[key]: continue
-        assert key in TAXLOT_DONTINCLUDE_BYORG[org] or key in PROPERTY_DONTINCLUDE_BYORG[org], "Every key must be mapped: '{}' for org={} missing!".format(key, org)
+        assert key in taxlot_columns or key in property_columns, "Every key must be mapped: '{}' for org={} missing!".format(key, org)
 
-    extra_data_copy = copy_extra_data_excluding(node.extra_data, PROPERTY_DONTINCLUDE_BYORG[org])
-    desired_field_mapping = load_organization_property_field_mapping(org)
-
-    premapped_data = {}
-
-    for key in desired_field_mapping:
-        if key in extra_data_copy:
-            if extra_data_copy[key]:
-                premapped_data[key] = extra_data_copy[key]
-            extra_data_copy.pop(key)
-
+    property_state_extra_data = {x:y for (x,y) in node.extra_data.items() if y in property_columns}
+    mapping = load_organization_property_field_mapping(org)
 
     if ADD_METADATA:
-        extra_data_copy["prop_cb_id"] = cb.pk
-        extra_data_copy["prop_bs_id"] = node.pk
+        property_state_extra_data["prop_cb_id"] = cb.pk
+        property_state_extra_data["prop_bs_id"] = node.pk
 
-        extra_data_copy["record_created"] = node.created
-        extra_data_copy["record_modified"] = node.modified
-        extra_data_copy["record_year_ending"] = node.year_ending
+        property_state_extra_data["record_created"] = node.created
+        property_state_extra_data["record_modified"] = node.modified
+        property_state_extra_data["record_year_ending"] = node.year_ending
+
+        property_state_extra_data["migration_version"] = get_code_version()
 
 
 
@@ -144,43 +174,34 @@ def create_property_state_for_node(node, org, cb):
                                                        energy_alerts = node.energy_alerts,
                                                        space_alerts = node.space_alerts,
                                                        building_certification = node.building_certification,
-                                                       extra_data = extra_data_copy)
+                                                       extra_data = property_state_extra_data)
 
-
-
-    for (field_to_move, value) in premapped_data.items():
-        setattr(property_state, desired_field_mapping[field_to_move], value)
-
-    # If we want to aggregate a value in an organization specific way,
-    # this is where we should do it.
-    for field in property_collapse_rules[org.id]:
-        value = aggregate_value_from_state(property_state, property_collapse_rules[org.id][field])
+    for (field_origin, field_dest) in mapping.items():
+        set_state_value(property_state, field_dest, get_value_for_key(node, field_origin))
 
     property_state.save()
     return property_state
 
 def create_tax_lot_state_for_node(node, org, cb):
-    dont_include_fields = load_organization_taxlot_extra_data_mapping_exclusions(org)
+    property_columns = get_property_columns(org)
+    taxlot_columns = get_taxlot_columns(org)
 
-    extra_data_copy = copy_extra_data_excluding(node.extra_data, dont_include_fields)
+    # Check every key is mapped at least once.
+    for key in node.extra_data:
+        if key=='' and not node.extra_data[key]: continue
+        assert key in taxlot_columns or key in property_columns, "Every key must be mapped: '{}' for org={} missing!".format(key, org)
 
-    extra_data_copy["record_created"] = node.created
-    extra_data_copy["record_modified"] = node.modified
-    extra_data_copy["record_year_ending"] = node.year_ending
-
-
-    desired_field_mapping = load_organization_taxlot_field_mapping(org)
-    premapped_data = {}
-
-    for key in desired_field_mapping:
-        if key in extra_data_copy:
-            premapped_data[key] = extra_data_copy[key]
-            extra_data_copy.pop(key)
-
+    taxlot_extra_data = {x:y for (x,y) in node.extra_data.items() if y in taxlot_columns}
+    mapping = load_organization_taxlot_field_mapping(org)
 
     if ADD_METADATA:
-        extra_data_copy["taxlot_cb_id"] = cb.pk
-        extra_data_copy["taxlot_bs_id"] = node.pk
+        taxlot_extra_data["taxlot_cb_id"] = cb.pk
+        taxlot_extra_data["taxlot_bs_id"] = node.pk
+
+        taxlot_extra_data["record_created"] = node.created
+        taxlot_extra_data["record_modified"] = node.modified
+        taxlot_extra_data["record_year_ending"] = node.year_ending
+
 
     taxlotstate = seed.bluesky.models.TaxLotState.objects.create(confidence = node.confidence,
                                                                  jurisdiction_taxlot_identifier = node.tax_lot_id,
@@ -191,13 +212,11 @@ def create_tax_lot_state_for_node(node, org, cb):
                                                                  state = node.state_province,
                                                                  postal_code = node.postal_code,
                                                                  number_properties = node.building_count,
-                                                                 extra_data = extra_data_copy)
+                                                                 extra_data = taxlot_extra_data)
 
-    for (field_to_move, value) in premapped_data.items():
-        setattr(taxlotstate, desired_field_mapping[field_to_move], value)
 
-    for field in tax_collapse_rules[org.id]:
-        value = aggregate_value_from_state(taxlotstate, field, tax_collapse_rules[org.id][field])
+    for (field_origin, field_dest) in mapping.items():
+        set_state_value(taxlotstate, field_dest, get_value_for_key(node, field_origin))
 
     taxlotstate.save()
     return taxlotstate
@@ -352,6 +371,7 @@ class Command(BaseCommand):
             # Writing loop over organizations
 
             org = Organization.objects.filter(pk=org_id).first()
+
             logging_info("Processing organization {}".format(org))
 
             assert org, "Organization {} not found".format(org_id)
