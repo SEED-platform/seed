@@ -36,6 +36,11 @@ from _localtools import _load_raw_mapping_data
 
 logging.basicConfig(level=logging.DEBUG)
 
+# FIXME: This should get factored out into the soon-to-be class structure of this module.
+# Global values for controlling whether or not extra data columns get
+# added to the metadata.
+ADD_METADATA = True
+CURRENT_CANONICAL_BUILDING = False
 
 def logging_info(msg):
     print msg
@@ -81,7 +86,7 @@ def copy_extra_data_excluding(extra_data, bad_fields):
     return {x:y for (x,y) in extra_data.items() if x not in bad_fields}
 
 
-def create_property_state_for_node(node, org):
+def create_property_state_for_node(node, org, cb):
     node.extra_data['custom_id_1'] = node.custom_id_1
 
     dont_include_fields = load_organization_property_extra_data_mapping_exclusions(org)
@@ -100,6 +105,11 @@ def create_property_state_for_node(node, org):
             if extra_data_copy[key]:
                 premapped_data[key] = extra_data_copy[key]
             extra_data_copy.pop(key)
+
+
+    if ADD_METADATA:
+        extra_data_copy["prop_cb_id"] = cb.pk
+        extra_data_copy["prop_bs_id"] = node.pk
 
     property_state = seed.bluesky.models.PropertyState(confidence = node.confidence,
                                                        jurisdiction_property_identifier = None,
@@ -150,7 +160,7 @@ def create_property_state_for_node(node, org):
 
     return property_state
 
-def create_tax_lot_state_for_node(node, org):
+def create_tax_lot_state_for_node(node, org, cb):
     node.extra_data['custom_id_1'] = node.custom_id_1
 
     dont_include_fields = load_organization_taxlot_extra_data_mapping_exclusions(org)
@@ -169,6 +179,12 @@ def create_tax_lot_state_for_node(node, org):
         if key in extra_data_copy:
             premapped_data[key] = extra_data_copy[key]
             extra_data_copy.pop(key)
+
+
+    if ADD_METADATA:
+        extra_data_copy["taxlot_cb_id"] = cb.pk
+        extra_data_copy["taxlot_bs_id"] = node.pk
+
 
     taxlotstate = seed.bluesky.models.TaxLotState.objects.create(confidence = node.confidence,
                                                                  jurisdiction_taxlot_identifier = node.tax_lot_id,
@@ -267,6 +283,8 @@ class Command(BaseCommand):
         parser.add_argument('--limit', dest='limit', default=0, type=int)
         parser.add_argument('--starting_on_canonical', dest='starting_on_canonical', default=0, type=int)
         parser.add_argument('--starting_following_canonical', dest='starting_following_canonical', default=0, type=int)
+        parser.add_argument('--add_metadata', dest='add_metadata', default=False, action='store_true')
+        parser.add_argument('--cb', dest='cb_whitelist_string', default=False,)
         return
 
     def handle(self, *args, **options):
@@ -283,7 +301,19 @@ class Command(BaseCommand):
         starting_from_canonical = False if not options['starting_on_canonical'] else options['starting_on_canonical']
         starting_on_canonical_following = False if not options['starting_following_canonical'] else options['starting_following_canonical']
 
+        ADD_METADATA = options['add_metadata']
+
         assert not (starting_on_canonical_following and starting_from_canonical), "Can only specify one of --starting_on_canonical and --starting_following_canonical"
+
+        canonical_buildings_whitelist = map(int, options['cb_whitelist_string'].split(",")) if options['cb_whitelist_string'] else False
+
+
+
+        # End Processing
+
+
+
+
 
         tree_file = get_static_building_snapshot_tree_file()
         m2m = read_building_snapshot_tree_structure(tree_file)
@@ -347,6 +377,17 @@ class Command(BaseCommand):
 
                 except ValueError:
                     raise RuntimeError("Requested to start referencing canonical building id={} which was not found.".format(starting_from_canonical))
+
+
+
+            if canonical_buildings_whitelist:
+                good_canonical_building_indexes = [ndx for (ndx, cb) in enumerate(org_canonical_buildings) if cb.pk in canonical_buildings_whitelist]
+                org_canonical_buildings = [org_canonical_buildings[ndx] for ndx in good_canonical_building_indexes]
+                org_canonical_snapshots = [org_canonical_snapshots[ndx] for ndx in good_canonical_building_indexes]
+
+                logging_info("Restricted to {} elements in whitelist.".format(len(org_canonical_buildings)))
+                logging_info("IDS: {}".format(", ".join(map(lambda cs: str(cs.pk), org_canonical_buildings))))
+
 
 
 
@@ -430,7 +471,6 @@ def calculate_migration_order(node_list, child_dictionary):
     if len(node_list) <= 1:
         return node_list
 
-    pdb.set_trace()
     needs_sort = True
     # FIXME: It's probably perfectly safe to copy django objects with
     # their underlying objects but I'm going to be silly and safe.
@@ -439,14 +479,12 @@ def calculate_migration_order(node_list, child_dictionary):
 
 
     node_id_list.sort(key = lambda node_id: calculate_generation(node_id, child_dictionary))
-    pdb.set_trace()
 
     migration_order = [seed.models.BuildingSnapshot.get(pk=id) for id in node_id_list]
 
-    pdb.set_trace()
     return migration_order
 
-def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix, canonical_building):
+def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix, cb):
 
     """Take tree structure describing a single Property/TaxLot over time and create the entities."""
     logging_info("Populating new blue sky entities for canonical snapshot tree!")
@@ -504,7 +542,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
 
             # pdb.set_trace()
             import_cycle = load_cycle(org, node)
-            tax_lot_state = create_tax_lot_state_for_node(node, org)
+            tax_lot_state = create_tax_lot_state_for_node(node, org, cb)
             tax_lot_state_created += 1
 
             query = seed.bluesky.models.TaxLotView.objects.filter(taxlot=tax_lot, cycle=import_cycle)
@@ -520,7 +558,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
             last_taxlot_view[taxlotview.cycle] = taxlotview
         elif node_type == PROPERTY_IMPORT or node_type == COMBO_IMPORT:
             import_cycle = load_cycle(org, node)
-            property_state = create_property_state_for_node(node, org)
+            property_state = create_property_state_for_node(node, org, cb)
             property_state_created += 1
 
 
@@ -571,7 +609,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
 
                 # Treat it like an import.
                 if node_has_tax_lot_info(node, org):
-                    tax_lot_state = create_tax_lot_state_for_node(node, org)
+                    tax_lot_state = create_tax_lot_state_for_node(node, org, cb)
                     tax_lot_state_created += 1
 
                     # Check if there is a TaxLotView Present
@@ -583,7 +621,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                     last_taxlot_view[taxlotview.cycle] = taxlotview
 
                 if node_has_property_info(node, org):
-                    property_state = create_property_state_for_node(node, org)
+                    property_state = create_property_state_for_node(node, org, cb)
                     property_state_created += 1
 
                     propertyview, created = seed.bluesky.models.PropertyView.objects.update_or_create(property=property_obj, cycle=import_cycle, defaults={"state": property_state})
