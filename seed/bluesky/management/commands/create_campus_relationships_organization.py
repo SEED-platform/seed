@@ -99,8 +99,11 @@ class Command(BaseCommand):
 
                     # Create a view and a state for the active cycle.
                     parent_property_state = PropertyState(building_portfolio_manager_identifier=pm_parent_property_id,
+                                                          pm_parent_property_id=pm_parent_property_id,
                                                           property_notes="Created by campus relations migration on {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
                     parent_property_state.save()
+
+
 
                     parent_property_view = PropertyView(property = parent_property, cycle = pv.cycle, state=parent_property_state)
                     parent_property_view.save()
