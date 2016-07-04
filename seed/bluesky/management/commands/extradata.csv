@@ -1,5 +1,5 @@
 Migration Script Rule Indicator,Org ID,Building Snapshot Field name,Building snapshot extra data field key,Bluesky table name,Bluesky Field Name,Data Source,,Multiple Tax Lot data source
-,City of Cambridge,,,,,,"RM (6/17/2016): Send Bronwyn email to edit the gdoc with her fields in it 
+,City of Cambridge,,,,,,"RM (6/17/2016): Send Bronwyn email to edit the gdoc with her fields in it
 6/20/2016: this represents first cut for Nathan to use to get his procedure figured out",
 1,69,,2015 Report Received,Property,extra_data,CBL,,
 1,69,,2nd Contact Email,Property,extra_data,CBL,,
@@ -1479,7 +1479,7 @@ RM (6/22/2016): Final version -- added edits from Rupal",
 1,20,,Other Water Sources: Combined Indoor/Outdoor Or Other Use (kgal),Property,extra_data,PM,,
 1,20,,Outdoor Water Use (All Water Sources) (kgal),Property,extra_data,PM,,
 1,20,,Outpatient Rehabilitation/Physical Therapy - Gross Floor Area (ft2),Property,extra_data,PM,,
-1,20,,Parent Property Id,Property,parent_property,,,
+1,20,,Parent Property Id,Property,pm_parent_property_id,,,
 1,20,,Parent Property Name,Property,extra_data,,,
 1,20,,Parking - Gross Floor Area (ft2),Property,extra_data,PM,,
 1,20,,Percent Better than National Median Site EUI,Property,extra_data,PM,,
