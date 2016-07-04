@@ -1,3 +1,10 @@
+"""Migration code for the Seed project from the original tables to the
+new tables.
+
+
+
+"""
+
 from __future__ import unicode_literals
 
 from django.db import models, migrations
@@ -33,6 +40,12 @@ from _localtools import load_organization_taxlot_extra_data_mapping_exclusions
 from _localtools import load_organization_property_field_mapping
 from _localtools import load_organization_taxlot_field_mapping
 from _localtools import _load_raw_mapping_data
+from _localtools import get_value_for_key
+from _localtools import aggregate_value_from_state
+
+from _localtools import USE_FIRST_VALUE
+from _localtools import JOIN_STRINGS
+from _localtools import UNIQUE_LIST
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -51,53 +64,33 @@ def logging_debug(msg):
 
 # These encode rules for how final values
 tax_collapse_rules = collections.defaultdict(lambda : {})
-tax_collapse_rules[10] = { 'jurisdiction_taxlot_identifier': ['jurisdiction_taxlot_identifier', "extra_data/custom_id_1", "extra_data/CS_TaxID2"] }
+tax_collapse_rules[10] = { 'jurisdiction_taxlot_identifier': (USE_FIRST_VALUE, ['jurisdiction_taxlot_identifier', "extra_data/custom_id_1", "extra_data/CS_TaxID2"])}
 
 property_collapse_rules = collections.defaultdict(lambda : {})
 
+# Externalize to class controlling this.
+TAXLOT_DONTINCLUDE_BYORG = {}
+PROPERTY_DONTINCLUDE_BYORG = {}
 
-def get_value_for_key(state, field_string):
-    if "/" in field_string:
-        initial, key = field_string.split("/")
-        assert initial == "extra_data"
-        if key not in state.extra_data:
-            return None
-        else:
-            # FIXME: This will work for now, because a "tax_lot" type in
-            # SEED is always a str.  But ultimately this should be cast to
-            # the type of the underlying Column.
-            return state.extra_data[key]
-    else:
-
-        return getattr(state, field_string)
-
-def aggregate_value_from_state(state, field, collapse_rules):
-    if field not in collapse_rules:
-        return getattr(state, field)
-
-    for source_string in collapse_rules[field]:
-        val = get_value_for_key(state, source_string)
-        if val is not None and val != "": return val
-    else:
-        return None
+for org_ndx in [20, 7, 49, 69, 10, 181, 156, 117, 124, 105, 126, 6]:
+    org = Organization.objects.get(pk=org_ndx)
+    TAXLOT_DONTINCLUDE_BYORG[org] = load_organization_taxlot_extra_data_mapping_exclusions(org)
+    PROPERTY_DONTINCLUDE_BYORG[org] = load_organization_property_extra_data_mapping_exclusions(org)
 
 def copy_extra_data_excluding(extra_data, bad_fields):
     bad_fields = set(bad_fields)
     return {x:y for (x,y) in extra_data.items() if x not in bad_fields}
 
-
 def create_property_state_for_node(node, org, cb):
-    node.extra_data['custom_id_1'] = node.custom_id_1
 
-    dont_include_fields = load_organization_property_extra_data_mapping_exclusions(org)
+    # Check that every key is mapped.
+    for key in node.extra_data:
+        if key=='' and not node.extra_data[key]: continue
+        assert key in TAXLOT_DONTINCLUDE_BYORG[org] or key in PROPERTY_DONTINCLUDE_BYORG[org], "Every key must be mapped: '{}' for org={} missing!".format(key, org)
 
-    extra_data_copy = copy_extra_data_excluding(node.extra_data, dont_include_fields)
-
-    extra_data_copy["record_created"] = node.created
-    extra_data_copy["record_modified"] = node.modified
-    extra_data_copy["record_year_ending"] = node.year_ending
-
+    extra_data_copy = copy_extra_data_excluding(node.extra_data, PROPERTY_DONTINCLUDE_BYORG[org])
     desired_field_mapping = load_organization_property_field_mapping(org)
+
     premapped_data = {}
 
     for key in desired_field_mapping:
@@ -110,6 +103,12 @@ def create_property_state_for_node(node, org, cb):
     if ADD_METADATA:
         extra_data_copy["prop_cb_id"] = cb.pk
         extra_data_copy["prop_bs_id"] = node.pk
+
+        extra_data_copy["record_created"] = node.created
+        extra_data_copy["record_modified"] = node.modified
+        extra_data_copy["record_year_ending"] = node.year_ending
+
+
 
     property_state = seed.bluesky.models.PropertyState(confidence = node.confidence,
                                                        jurisdiction_property_identifier = None,
@@ -148,21 +147,19 @@ def create_property_state_for_node(node, org, cb):
                                                        extra_data = extra_data_copy)
 
 
+
     for (field_to_move, value) in premapped_data.items():
         setattr(property_state, desired_field_mapping[field_to_move], value)
 
     # If we want to aggregate a value in an organization specific way,
     # this is where we should do it.
-    # for field in property_collapse_rules[org.id]:
-    #     value = aggregate_value_from_state(property_state, field, property_collapse_rules[org.id])
+    for field in property_collapse_rules[org.id]:
+        value = aggregate_value_from_state(property_state, property_collapse_rules[org.id][field])
 
     property_state.save()
-
     return property_state
 
 def create_tax_lot_state_for_node(node, org, cb):
-    node.extra_data['custom_id_1'] = node.custom_id_1
-
     dont_include_fields = load_organization_taxlot_extra_data_mapping_exclusions(org)
 
     extra_data_copy = copy_extra_data_excluding(node.extra_data, dont_include_fields)
@@ -185,7 +182,6 @@ def create_tax_lot_state_for_node(node, org, cb):
         extra_data_copy["taxlot_cb_id"] = cb.pk
         extra_data_copy["taxlot_bs_id"] = node.pk
 
-
     taxlotstate = seed.bluesky.models.TaxLotState.objects.create(confidence = node.confidence,
                                                                  jurisdiction_taxlot_identifier = node.tax_lot_id,
                                                                  block_number = node.block_number,
@@ -201,7 +197,7 @@ def create_tax_lot_state_for_node(node, org, cb):
         setattr(taxlotstate, desired_field_mapping[field_to_move], value)
 
     for field in tax_collapse_rules[org.id]:
-        value = aggregate_value_from_state(taxlotstate, field, tax_collapse_rules[org.id])
+        value = aggregate_value_from_state(taxlotstate, field, tax_collapse_rules[org.id][field])
 
     taxlotstate.save()
     return taxlotstate
@@ -279,12 +275,27 @@ def load_cycle(org, node, year_ending = True, fallback = True):
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--org', dest='organization', default=False)
-        parser.add_argument('--limit', dest='limit', default=0, type=int)
-        parser.add_argument('--starting_on_canonical', dest='starting_on_canonical', default=0, type=int)
-        parser.add_argument('--starting_following_canonical', dest='starting_following_canonical', default=0, type=int)
-        parser.add_argument('--add_metadata', dest='add_metadata', default=False, action='store_true')
-        parser.add_argument('--cb', dest='cb_whitelist_string', default=False,)
+        parser.add_argument('--org', dest='organization',
+                            default=False, help="Restrict to organization")
+
+        parser.add_argument('--limit', dest='limit',
+                            default=0, type=int,
+                            help="Maximum number of records to import")
+
+        parser.add_argument('--starting_on_canonical', dest='starting_on_canonical',
+                            default=0, type=int,
+                            help = "Start with a particular canonical index. Useful for re-running error cases.")
+
+        parser.add_argument('--starting_following_canonical', dest='starting_following_canonical',
+                            default=0, type=int,
+                            help="Start from the canonical after. Useful for running one-at-a-time")
+
+        parser.add_argument('--no_metadata', dest='no_metadata',
+                            default=False, action='store_true',
+                            help="Don't add useful info to property/taxlot states (eg parent record ids).")
+
+        parser.add_argument('--cb', dest='cb_whitelist_string', default=False,
+                            help="Only add the canonical buildings in the following list. No whitespace in list please.")
         return
 
     def handle(self, *args, **options):
@@ -301,19 +312,12 @@ class Command(BaseCommand):
         starting_from_canonical = False if not options['starting_on_canonical'] else options['starting_on_canonical']
         starting_on_canonical_following = False if not options['starting_following_canonical'] else options['starting_following_canonical']
 
-        ADD_METADATA = options['add_metadata']
+        ADD_METADATA = False if options['no_metadata'] else True
 
         assert not (starting_on_canonical_following and starting_from_canonical), "Can only specify one of --starting_on_canonical and --starting_following_canonical"
 
         canonical_buildings_whitelist = map(int, options['cb_whitelist_string'].split(",")) if options['cb_whitelist_string'] else False
-
-
-
         # End Processing
-
-
-
-
 
         tree_file = get_static_building_snapshot_tree_file()
         m2m = read_building_snapshot_tree_structure(tree_file)
@@ -532,7 +536,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     # node_process_order = all_nodes
     # calculate_migration_order(node_process_order, child_dictionary)
 
-    all_nodes = reversed(all_nodes)
+    all_nodes = reversed(all_nodes) # FIXME: Test this thoroughly.
 
     for node in all_nodes:
         node_type = classify_node(node, org)

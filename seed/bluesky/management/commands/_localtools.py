@@ -4,6 +4,7 @@ import itertools
 import csv
 import StringIO
 import collections
+import re
 import seed.bluesky.models
 from seed.bluesky.models import TaxLotView
 
@@ -196,3 +197,122 @@ def _load_raw_mapping_data():
             d[int(org_str)][key_name] = (table, field)
 
     return d, is_explicit_field
+
+
+
+def valid_id(s):
+    #pattern = r"[\w\-\s]+$"
+    if len(s) == 1:
+        #trying to do the case where the string is only one character was too complicated
+        #so just do it separate for now
+        pattern = r"\w"
+    else:
+        #Rules for individual field:
+        #Must start and end with alphanumeric (\w)
+        #May have any combination of whitespace, hyphens ("-") and alphanumerics in the middle
+        pattern = r"\w[\w\-\s]*\w$"
+    return re.match(pattern, s)
+
+def sanitize_delimiters(s, delimiter_to_use, other_delimiters):
+    """Replace all delimiters with preferred delimiter"""
+    for d in other_delimiters:
+        s = s.replace(d, delimiter_to_use)
+    return s
+
+def check_delimiter_sanity(check_str, delimiters):
+    """Ensure that only one kind of delimiter is used."""
+    return map(lambda delim: delim in check_str, delimiters).count(True) <= 1
+
+def get_id_fields(parse_string):
+    """Parse a string into a list of taxlots.
+
+    Raises an exception if string does not match
+    """
+
+    if parse_string is None: raise TaxLotIDValueError(parse_string)
+
+    #The id field can use any of several delimiters so reduce it to just one
+    #delimiter first to make things easier
+    delimiter_to_use = ","
+    other_delimiters = [";", ":"]
+
+    if not check_delimiter_sanity(parse_string, [delimiter_to_use] + other_delimiters):
+        raise TaxLotIDValueError(parse_string)
+
+
+    cleaned_str = sanitize_delimiters(parse_string, delimiter_to_use, other_delimiters)
+
+    #If there is nothing in the string return an empty list
+    if not len(cleaned_str.strip()):
+        return []
+
+    fields = cleaned_str.split(delimiter_to_use)
+    #leading and trailing whitespace is part of the delimiter and not the ids
+    #so remove it here before additional processing
+    fields = [f.strip() for f in fields]
+
+    for field in fields:
+        if not valid_id(field):
+            raise TaxLotIDValueError(parse_string, field)
+
+    return fields
+
+
+
+
+def get_value_for_key(state, field_string):
+    if "/" in field_string:
+        initial, key = field_string.split("/")
+        assert initial == "extra_data"
+        if key not in state.extra_data:
+            return None
+        else:
+            # FIXME: This will work for now, because a "tax_lot" type in
+            # SEED is always a str.  But ultimately this should be cast to
+            # the type of the underlying Column.
+            return state.extra_data[key]
+    else:
+        return getattr(state, field_string)
+
+
+USE_FIRST_VALUE = 1
+JOIN_STRINGS = 2
+UNIQUE_LIST = 3
+
+def aggregate_value_from_state(state, collapse_rules):
+    aggregation_type, collapse_fields = collapse_rules
+
+    if aggregation_type == USE_FIRST_VALUE:
+        return aggregate_value_from_state_usefirstvalue(state, collapse_fields)
+    elif aggregation_type == JOIN_STRINGS:
+        return aggregate_value_from_state_joinstrings(state, collapse_fields)
+    elif aggregation_type == UNIQUE_LIST:
+        return aggregate_value_from_state_uniquelist(state, collapse_fields)
+    else:
+        raise ValueError("Unknown aggregation type: {}".format(aggregation_type))
+
+def aggregate_value_from_state_usefirstvalue(state, use_first_fields):
+    for source_string in use_first_fields:
+        val = get_value_for_key(state, source_string)
+        if val is not None and val != "": return val
+    else:
+        return None
+
+
+def aggregate_value_from_state_uniquelist(state, list_fields):
+    list_of_values = []
+
+    for source_string in list_fields:
+        val = get_value_for_key(state, source_string)
+        if val: list_of_values.extend(get_id_fields(val))
+    else:
+        return set(list_of_values)
+
+def aggregate_value_from_state_joinstrings(state, string_fields):
+    values = []
+
+    for source_string in string_fields:
+        val = get_value_for_key(state, source_string)
+        if val: values.append(val)
+    else:
+        return ";".join(values)
