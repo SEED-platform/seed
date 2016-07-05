@@ -98,7 +98,7 @@ class Command(BaseCommand):
 
         for view in TaxLotView.objects.filter(taxlot__organization_id=org_id).all():
             try:
-                pdb.set_trace()
+                # pdb.set_trace()
                 aggregate_value_from_state(view.state, org_taxlot_split_extra[org_id])
 
                 taxlot_field_list = get_id_fields(view.state.jurisdiction_taxlot_identifier)
@@ -119,8 +119,8 @@ class Command(BaseCommand):
         # pdb.set_trace()
         for m2m in TaxLotProperty.objects.filter(property_view__property__organization=org).all():
 
-            pdb.set_trace()
-            aggregate_value_from_state(view.state, org_rules_map[org_id])
+            # pdb.set_trace()
+            # aggregate_value_from_state(view.state, org_rules_map[org_id])
 
 
 
