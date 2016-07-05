@@ -123,8 +123,13 @@ def create_property_state_for_node(node, org, cb):
 
     # Check every key is mapped at least once.
     for key in node.extra_data:
-        if key=='' and not node.extra_data[key]: continue
-        assert key in taxlot_columns or key in property_columns, "Every key must be mapped: '{}' for org={} missing!".format(key, org)
+        if key.strip()=='':
+            print "WARNING: key '{}' for organization={} has value={} (cb={})".format(key, org, node.extra_data[key], cb.pk)
+            continue
+        try:
+            assert (key in taxlot_columns or key in property_columns)
+        except AssertionError:
+            raise KeyError("Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key, node.extra_data[key], org))
 
     property_state_extra_data = {x:y for (x,y) in node.extra_data.items() if y in property_columns}
     mapping = load_organization_property_field_mapping(org)
@@ -191,8 +196,17 @@ def create_tax_lot_state_for_node(node, org, cb):
 
     # Check every key is mapped at least once.
     for key in node.extra_data:
-        if key=='' and not node.extra_data[key]: continue
-        assert key in taxlot_columns or key in property_columns, "Every key must be mapped: '{}' for org={} missing!".format(key, org)
+        if key.strip()=='':
+            if node.extra_data[key]:
+                print "WARNING: key '{}' for organization={} has value={} (cb={})".format(key, org, node.extra_data[key], cb.pk)
+            continue
+
+        try:
+            assert (key in taxlot_columns or key in property_columns)
+        except AssertionError:
+            print "WARNING: Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key, node.extra_data[key], org)
+            #raise KeyError("Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key, node.extra_data[key], org))
+
 
     taxlot_extra_data = {x:y for (x,y) in node.extra_data.items() if y in taxlot_columns}
     mapping = load_organization_taxlot_field_mapping(org)
@@ -277,11 +291,17 @@ def load_cycle(org, node, year_ending = True, fallback = True):
         if not fallback:
             assert time is not None, "Got no time!"
         elif time is None:
-            logging_debug("Node does not have 'year ending' field.")
+            # logging_debug("Node does not have 'year ending' field.")
             time = node.modified
     else:
         time = node.modified
 
+    # FIXME: Refactor.
+
+    # Only Berkeley is allowed
+    orgs_allowing_2016 = set([117])
+    if org.pk not in orgs_allowing_2016 and time.year == 2016:
+        time = datetime.date(2015,12,31)
 
     time = datetime.datetime(year = time.year, month=time.month, day = time.day)
     try:

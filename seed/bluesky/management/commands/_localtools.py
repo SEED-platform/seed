@@ -287,7 +287,10 @@ def get_value_for_key(state, field_string):
         if key not in state.extra_data:
             return None
         else:
-            return state.extra_data[key]
+            value = state.extra_data[key]
+            if not str(value).strip():
+                return None
+            return value
     else:
         return getattr(state, field_string)
 
