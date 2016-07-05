@@ -10,6 +10,14 @@ import seed.bluesky.models
 from seed.bluesky.models import TaxLotView
 
 
+class TaxLotIDValueError(ValueError):
+    def __init__(self, original_string, field = None):
+        super(TaxLotIDValueError, self).__init__("Invalid id string found: {}".format(original_string))
+        self.invalid_field = field
+        self.original_string = original_string
+        return
+
+
 def get_core_organizations():
     # IDs of the 12 organizations defined by robin 6/6/16.
     # Google Doc for file describing this:

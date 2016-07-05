@@ -41,7 +41,7 @@ from seed.bluesky.models import Property
 from seed.bluesky.models import PropertyView
 from seed.bluesky.models import PropertyState
 from seed.bluesky.models import Cycle
-# from _localtools import TaxLotIDValueError
+from _localtools import TaxLotIDValueError
 from _localtools import get_id_fields
 from _localtools import USE_FIRST_VALUE
 from _localtools import JOIN_STRINGS
@@ -51,14 +51,6 @@ from _localtools import aggregate_value_from_state
 import re
 
 logging.basicConfig(level=logging.DEBUG)
-
-class TaxLotIDValueError(ValueError):
-    def __init__(self, original_string, field = None):
-        super(TaxLotIDValueError, self).__init__("Invalid id string found: {}".format(original_string))
-        self.invalid_field = field
-        self.original_string = original_string
-        return
-
 
 
 class Command(BaseCommand):
