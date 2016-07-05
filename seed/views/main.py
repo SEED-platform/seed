@@ -750,7 +750,7 @@ def search_building_snapshots(request):
             'number_returned': Number of buildings returned for this page
         }
     """
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     q = body.get('q', '')
     other_search_params = body.get('filter_params', {})
     order_by = body.get('order_by', 'pm_property_id')
@@ -794,12 +794,12 @@ def search_building_snapshots(request):
         buildings_queryset, number_per_page=number_per_page, page=page, matching=True
     )
 
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'buildings': buildings,
         'number_matching_search': building_count,
         'number_returned': len(buildings)
-    }
+    }))
 
 
 @ajax_request
@@ -1254,7 +1254,7 @@ def delete_duplicates_from_import_file(request):
         'deleted': orig_duplicate_ct - new_duplicate_ct,
     }
 
-@api_view(['GET'])
+@api_view(['POST'])
 @api_endpoint
 @ajax_request
 @login_required
@@ -1286,7 +1286,7 @@ def get_column_mapping_suggestions(request):
     """
     result = {'status': 'success'}
 
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     org_id = body.get('org_id')
 
     membership = OrganizationUser.objects.select_related('organization') \
@@ -1376,10 +1376,10 @@ def get_column_mapping_suggestions(request):
     result['extra_data_columns'] = list(extra_data_columns)
     result['building_column_types'] = column_types
 
-    return result
+    return HttpResponse(json.dumps(result))
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @api_endpoint
 @ajax_request
 @login_required
@@ -1402,16 +1402,16 @@ def get_raw_column_names(request):
             ]
         }
     """
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
 
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'raw_columns': import_file.first_row_columns
-    }
+    }))
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @api_endpoint
 @ajax_request
 @login_required
@@ -1437,7 +1437,7 @@ def get_first_five_rows(request):
             ]
         }
     """
-    body = json.loads(request.body)
+    body = request.data # json.loads(request.body)
     import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
 
     '''
@@ -1457,14 +1457,14 @@ def get_first_five_rows(request):
 
     rows = [r.split(ROW_DELIMITER) for r in lines]
 
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'first_five_rows': [
             dict(
                 zip(import_file.first_row_columns, row)
             ) for row in rows
         ]
-    }
+    }))
 
 
 def _column_fields_to_columns(fields, organization):
@@ -1558,7 +1558,7 @@ def save_column_mappings(request):
 
         {'status': 'success'}
     """
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
     organization = import_file.import_record.super_organization
     mappings = body.get('mappings', [])
@@ -1601,7 +1601,7 @@ def save_column_mappings(request):
         column_mapping.user = request.user
         column_mapping.save()
 
-    return {'status': 'success'}
+    return HttpResponse(json.dumps({'status': 'success'}))
 
 
 @api_view(['POST'])
@@ -2028,12 +2028,12 @@ def save_raw_data(request):
             'progress_key': ID of background job, for retrieving job progress
         }
     """
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     import_file_id = body.get('file_id')
     if not import_file_id:
         return {'status': 'error'}
 
-    return task_save_raw(import_file_id)
+    return HttpResponse(json.dumps(task_save_raw(import_file_id)))
 
 
 @api_view(['POST'])
@@ -2092,12 +2092,12 @@ def remap_buildings(request):
             'progress_key': ID of background job, for retrieving job progress
         }
     """
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     import_file_id = body.get('file_id')
     if not import_file_id:
-        return {'status': 'error', 'message': 'Import File does not exist'}
+        return HttpResponse(json.dumps({'status': 'error', 'message': 'Import File does not exist'}))
 
-    return remap_data(import_file_id)
+    return HttpResponse(json.dumps(remap_data(import_file_id)))
 
 
 @api_view(['POST'])
@@ -2123,12 +2123,12 @@ def start_system_matching(request):
             'progress_key': ID of background job, for retrieving job progress
         }
     """
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     import_file_id = body.get('file_id')
     if not import_file_id:
-        return {'status': 'error'}
+        return HttpResponse(json.dumps({'status': 'error'}))
 
-    return match_buildings(import_file_id, request.user.pk)
+    return HttpResponse(json.dumps(match_buildings(import_file_id, request.user.pk)))
 
 
 @api_view(['POST'])
@@ -2153,16 +2153,16 @@ def progress(request):
         }
     """
 
-    progress_key = json.loads(request.body).get('progress_key')
+    progress_key = request.data.get('progress_key')
 
     if get_cache(progress_key):
-        return get_cache(progress_key)
+        return HttpResponse(json.dumps(get_cache(progress_key)))
     else:
-        return {
+        return HttpResponse(json.dumps({
             'progress_key': progress_key,
             'progress': 0,
             'status': 'waiting'
-        }
+        }))
 
 
 @api_view(['PUT'])
