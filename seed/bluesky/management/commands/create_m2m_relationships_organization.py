@@ -41,7 +41,7 @@ from seed.bluesky.models import Property
 from seed.bluesky.models import PropertyView
 from seed.bluesky.models import PropertyState
 from seed.bluesky.models import Cycle
-from _localtools import TaxLotIDValueError
+# from _localtools import TaxLotIDValueError
 from _localtools import get_id_fields
 from _localtools import USE_FIRST_VALUE
 from _localtools import JOIN_STRINGS
