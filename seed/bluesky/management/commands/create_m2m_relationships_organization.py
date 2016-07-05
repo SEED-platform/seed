@@ -99,7 +99,7 @@ class Command(BaseCommand):
         for view in TaxLotView.objects.filter(taxlot__organization_id=org_id).all():
             try:
                 # pdb.set_trace()
-                aggregate_value_from_state(view.state, org_taxlot_split_extra[org_id])
+                # aggregate_value_from_state(view.state, org_taxlot_split_extra[org_id])
 
                 taxlot_field_list = get_id_fields(view.state.jurisdiction_taxlot_identifier)
                 if len(taxlot_field_list) > 1:
