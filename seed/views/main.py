@@ -1666,7 +1666,15 @@ def create_dataset(request):
 def get_datasets(request):
     """
     Retrieves all datasets for the user's organization.
+    ---
+    parameters:
+        - name: organization_id
+          description: SEED defined organization ID
+          required: true
+          type: string
+    """
 
+    """
     :GET: Expects 'organization_id' of org to retrieve datasets from
         in query string.
 
@@ -1800,7 +1808,18 @@ def get_dataset(request):
 def delete_dataset(request):
     """
     Deletes all files from a dataset and the dataset itself.
-
+    ---
+    parameters:
+        - name: organization_id
+          description: SEED defined organization ID
+          required: true
+          type: string
+        - name: dataset_id
+          description: Dataset ID
+          required: true
+          type: string
+    """
+    """
     :DELETE: Expects organization id and dataset id.
 
     Payload::
