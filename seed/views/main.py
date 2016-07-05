@@ -70,7 +70,7 @@ from seed.views.accounts import _get_js_role
 from .. import search
 
 from rest_framework.decorators import api_view
-
+from django.http import HttpResponse
 DEFAULT_CUSTOM_COLUMNS = [
     'project_id',
     'project_building_snapshots__status_label__name',
@@ -1628,7 +1628,7 @@ def create_dataset(request):
             'name': The name of the newly-created ImportRecord
         }
     """
-    body = json.loads(request.body)
+    body = request.data
 
     # validate inputs
     invalid = vutil.missing_request_keys(['organization_id'], body)
@@ -1656,12 +1656,7 @@ def create_dataset(request):
         owner=request.user,
     )
 
-    return {
-        'status': 'success',
-        'id': record.pk,
-        'name': record.name,
-    }
-
+    return HttpResponse(json.dumps({'status':'success', 'id':record.pk, 'name':record.name}))
 
 @api_view(['GET'])
 @require_organization_id
