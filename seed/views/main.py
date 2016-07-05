@@ -164,10 +164,10 @@ def version(request):
 
     sha = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).strip()
 
-    return {
+    return HttpResponse(json.dumps({
         'version': manifest['version'],
         'sha': sha
-    }
+    }))
 
 
 @api_view(['POST'])
@@ -219,19 +219,19 @@ def create_pm_mapping(request):
         }
     """
     _log.info("create_pm_mapping: request.body='{}'".format(request.body))
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
 
     # validate inputs
     invalid = vutil.missing_request_keys(['columns'], body)
     if invalid:
-        return vutil.api_error(invalid)
+        return HttpResponse(json.dumps(vutil.api_error(invalid)))
 
     try:
         result = simple_mapper.get_pm_mapping('1.0', body['columns'])
     except ValueError as err:
-        return vutil.api_error(str(err))
+        return HttpResponse(json.dumps(vutil.api_error(str(err))))
     json_result = [[c] + v.as_json() for c, v in result.items()]
-    return vutil.api_success(mapping=json_result)
+    return HttpResponse(json.dumps(vutil.api_success(mapping=json_result)))
 
 @api_view(['POST'])
 @api_endpoint
@@ -260,7 +260,7 @@ def export_buildings(request):
             "total_buildings": count of buildings,
         }
     """
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
 
     export_name = body.get('export_name')
     export_type = body.get('export_type')
@@ -336,14 +336,14 @@ def export_buildings(request):
         selected_fields,
     )
 
-    return {
+    return HttpResponse(json.dumps({
         "success": True,
         "status": "success",
         'progress': 100,
         'progress_key': progress_key,
         "export_id": export_id,
         "total_buildings": len(building_ids),
-    }
+    }))
 
 @api_view(['GET'])
 @api_endpoint
@@ -368,7 +368,7 @@ def export_buildings_progress(request):
             'buildings_processed': number of buildings exported
         }
     """
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     export_id = body.get('export_id')
     progress_key = "export_buildings__%s" % export_id
     progress_data = get_cache(progress_key)
@@ -376,12 +376,12 @@ def export_buildings_progress(request):
     percent_done = progress_data['progress']
     total_buildings = progress_data['total_buildings']
 
-    return {
+    return HttpResponse(json.dumps({
         "success": True,
         "status": "success",
         'total_buildings': progress_data['total_buildings'],
         "buildings_processed": (percent_done / 100) * total_buildings
-    }
+    }))
 
 @api_view(['GET'])
 @api_endpoint
@@ -406,7 +406,7 @@ def export_buildings_download(request):
             'url': The url to the exported file.
         }
     """
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     export_id = body.get('export_id')
 
     # This is non-ideal, it is returning the directory/s3 key and assumes that
@@ -422,16 +422,16 @@ def export_buildings_download(request):
             files = file_storage.listdir(export_subdir)
         except OSError:
             # Likely scenario is that the file hasn't been written to disk yet.
-            return {
+            return HttpResponse(json.dumps({
                 'success': False,
                 'status': 'working'
-            }
+            }))
 
         if not files:
-            return {
+            return HttpResponse(json.dumps({
                 'success': False,
                 'status': 'error'
-            }
+            }))
         else:
             # get the first file in the directory -- which is the first entry
             # of the second part of the tuple
@@ -439,41 +439,41 @@ def export_buildings_download(request):
 
             if file_storage.exists(file_name):
                 url = file_storage.url(file_name)
-                return {
+                return HttpResponse(json.dumps({
                     'success': True,
                     "status": "success",
                     "url": url
-                }
+                }))
             else:
-                return {
+                return HttpResponse(json.dumps({
                     'success': False,
                     'message': 'Could not find file on server',
                     'status': 'error'
-                }
+                }))
 
     else:
         keys = list(DefaultStorage().bucket.list(export_subdir))
 
         if not keys:
-            return {
+            return HttpResponse(json.dumps({
                 'success': False,
                 'status': 'working'
-            }
+            }))
 
         if len(keys) > 1:
-            return {
+            return HttpResponse(json.dumps({
                 "success": False,
                 "status": "error",
-            }
+            }))
 
         download_key = keys[0]
         download_url = download_key.generate_url(900)
 
-        return {
+        return HttpResponse(json.dumps({
             'success': True,
             "status": "success",
             "url": download_url
-        }
+        }))
 
 
 @ajax_request
@@ -482,7 +482,7 @@ def get_total_number_of_buildings_for_user(request):
     """gets a count of all buildings in the user's organizations"""
     buildings_count = get_buildings_for_user_count(request.user)
 
-    return {'status': 'success', 'buildings_count': buildings_count}
+    return HttpResponse(json.dumps({'status': 'success', 'buildings_count': buildings_count}))
 
 @api_view(['GET'])
 @require_organization_id
@@ -584,7 +584,7 @@ def get_building(request):
         organization=building.super_organization
     ).first()
 
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'building': building_dict,
         'labels': [l.to_dict() for l in canon.labels.all()],
@@ -592,7 +592,7 @@ def get_building(request):
         'projects': projects,
         'user_role': _get_js_role(ou.role_level) if ou else "",
         'user_org_id': ou.organization.pk if ou else "",
-    }
+    }))
 
 @api_view(['GET'])
 @api_endpoint
@@ -617,7 +617,7 @@ def get_datasets_count(request):
     datasets_count = Organization.objects.get(
         pk=request.GET['organization_id']).import_records.all().distinct().count()
 
-    return {'status': 'success', 'datasets_count': datasets_count}
+    return HttpResponse(json.dumps({'status': 'success', 'datasets_count': datasets_count}))
 
 
 @ajax_request
@@ -633,12 +633,12 @@ def public_search(request):
     search_results = search.remove_results_below_q_threshold(search_results)
     search_results = search.paginate_results(request, search_results)
     search_results = search.mask_results(search_results)
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'buildings': search_results,
         'number_matching_search': building_count,
         'number_returned': len(search_results)
-    }
+    }))
 
 @api_view(['POST'])
 @api_endpoint
@@ -707,12 +707,12 @@ def search_buildings(request):
         matching=False
     )
 
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'buildings': buildings,
         'number_matching_search': building_count,
         'number_returned': len(buildings)
-    }
+    }))
 
 @api_view(['POST'])
 @api_endpoint
@@ -823,9 +823,9 @@ def get_default_columns(request):
         # PostgreSQL 9.1 stores JsonField as unicode
         columns = json.loads(columns)
 
-    return {
+    return HttpResponse(json.dumps({
         'columns': columns,
-    }
+    }))
 
 
 @ajax_request
@@ -850,9 +850,9 @@ def get_default_building_detail_columns(request):
         # PostgreSQL 9.1 stores JsonField as unicode
         columns = json.loads(columns)
 
-    return {
+    return HttpResponse(json.dumps({
         'columns': columns,
-    }
+    }))
 
 
 def _set_default_columns_by_request(body, user, field):
@@ -863,7 +863,7 @@ def _set_default_columns_by_request(body, user, field):
     if show_shared_buildings is not None:
         user.show_shared_buildings = show_shared_buildings
     user.save()
-    return {}
+    return HttpResponse(json.dumps({}))
 
 
 @ajax_request
@@ -921,7 +921,7 @@ def save_match(request):
                         containing merged data from the two parents.
         }
     """
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     create = body.get('create_match')
     b1_pk = body['source_building_id']
     b2_pk = body.get('target_building_id')
@@ -932,19 +932,19 @@ def save_match(request):
     if create:
         b2 = BuildingSnapshot.objects.get(pk=b2_pk)
         if b1.super_organization_id != b2.super_organization_id:
-            return {
+            return HttpResponse(json.dumps({
                 'status': 'error',
                 'message': (
                     'Only buildings within an organization can be matched'
                 )
-            }
+            }))
     if b1.super_organization_id != int(body.get('organization_id')):
-        return {
+        return HttpResponse(json.dumps({
             'status': 'error',
             'message': (
                 'The source building does not belong to the organization'
             )
-        }
+        }))
 
     if create:
         child_id, changelist = save_snapshot_match(
@@ -967,7 +967,7 @@ def save_match(request):
         'status': 'success',
         'child_id': child_id,
     }
-    return resp
+    return HttpResponse(json.dumps(resp))
 
 @api_view(['GET'])
 @api_endpoint
@@ -1023,10 +1023,10 @@ def get_match_tree(request):
     # co-parent trees of the children.
     tree = bs.tip.parent_tree + [bs.tip]
     tree = map(lambda b: b.to_dict(), tree)
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'match_tree': tree,
-    }
+    }))
 
 
 def _parent_tree_coparents(snapshot):
@@ -1168,7 +1168,7 @@ def get_coparents(request):
         'tip': tip.to_dict(),
     }
 
-    return response
+    return HttpResponse(json.dumps(response))
 
 @api_view(['GET'])
 @api_endpoint
@@ -1207,14 +1207,14 @@ def get_PM_filter_by_counts(request):
         source_type__in=[2, 3],
         duplicate__isnull=False
     ).count()
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'matched': matched,
         'unmatched': unmatched,
         'duplicates': duplicates,
-    }
+    }))
 
-@api_view(['DELETE'])
+@api_view(['GET'])
 @api_endpoint
 @ajax_request
 @login_required
@@ -1249,10 +1249,10 @@ def delete_duplicates_from_import_file(request):
         source_type__in=[2, 3],
         duplicate__isnull=False
     ).count()
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'deleted': orig_duplicate_ct - new_duplicate_ct,
-    }
+    }))
 
 @api_view(['POST'])
 @api_endpoint
@@ -1714,10 +1714,10 @@ def get_datasets(request):
         dataset['updated_at'] = convert_to_js_timestamp(d.updated_at)
         datasets.append(dataset)
 
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'datasets': datasets,
-    }
+    }))
 
 
 @api_view(['GET'])
@@ -1786,10 +1786,10 @@ def get_dataset(request):
     ).count()
     dataset['updated_at'] = convert_to_js_timestamp(d.updated_at)
 
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'dataset': dataset,
-    }
+    }))
 
 
 @api_view(['DELETE'])
@@ -1817,7 +1817,7 @@ def delete_dataset(request):
             'message': 'error message, if any'
         }
     """
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     dataset_id = body.get('dataset_id', '')
     organization_id = body.get('organization_id')
     # check if user has access to the dataset
@@ -1825,15 +1825,15 @@ def delete_dataset(request):
         super_organization_id=organization_id, pk=dataset_id
     )
     if not d.exists():
-        return {
+        return HttpResponse(json.dumps({
             'status': 'error',
             'message': 'user does not have permission to delete dataset',
-        }
+        }))
     d = d[0]
     d.delete()
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
-    }
+    }))
 
 
 @api_view(['PUT'])
@@ -1861,23 +1861,23 @@ def update_dataset(request):
             'message': 'error message, if any'
         }
     """
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     orgs = request.user.orgs.all()
     # check if user has access to the dataset
     d = ImportRecord.objects.filter(
         super_organization__in=orgs, pk=body['dataset']['id']
     )
     if not d.exists():
-        return {
+        return HttpResponse(json.dumps({
             'status': 'error',
             'message': 'user does not have permission to update dataset',
-        }
+        }))
     d = d[0]
     d.name = body['dataset']['name']
     d.save()
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
-    }
+    }))
 
 
 @api_view(['GET'])
@@ -1928,10 +1928,10 @@ def get_import_file(request):
     )
     # check if user has access to the import file
     if not d.exists():
-        return {
+        return HttpResponse(json.dumps({
             'status': 'success',
             'import_file': {},
-        }
+        }))
 
     f = obj_to_dict(import_file)
     f['name'] = import_file.filename_only
@@ -1951,10 +1951,10 @@ def get_import_file(request):
     })
     files[0], files[i] = files[i], files[0]
 
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'import_file': f,
-    }
+    }))
 
 
 @api_view(['DELETE'])
@@ -1981,11 +1981,11 @@ def delete_file(request):
         }
     """
     if request.method != 'DELETE':
-        return {
+        return HttpResponse(json.dumps({
             'status': 'error',
             'message': 'only HTTP DELETE allowed',
-        }
-    body = json.loads(request.body)
+        }))
+    body = request.data #json.loads(request.body)
     file_id = body.get('file_id', '')
     import_file = ImportFile.objects.get(pk=file_id)
     d = ImportRecord.objects.filter(
@@ -1994,15 +1994,15 @@ def delete_file(request):
     )
     # check if user has access to the dataset
     if not d.exists():
-        return {
+        return HttpResponse(json.dumps({
             'status': 'error',
             'message': 'user does not have permission to delete file',
-        }
+        }))
 
     import_file.delete()
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
-    }
+    }))
 
 
 @api_view(['POST'])
@@ -2059,12 +2059,12 @@ def start_mapping(request):
             'progress_key': ID of background job, for retrieving job progress
         }
     """
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     import_file_id = body.get('file_id')
     if not import_file_id:
-        return {'status': 'error'}
+        return HttpResponse(json.dumps({'status': 'error'}))
 
-    return map_data(import_file_id)
+    return HttpResponse(json.dumps(map_data(import_file_id)))
 
 
 @api_view(['POST'])
@@ -2196,7 +2196,7 @@ def update_building(request):
             "child_id": "The ID of the newly-created BuildingSnapshot"
         }
     """
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     # Will be a dict representation of a hydrated building, incl pk.
     building = body.get('building')
     org_id = body['organization_id']
@@ -2209,7 +2209,7 @@ def update_building(request):
             'child_id': new_building.pk}
 
     AuditLog.objects.log_action(request, canon, org_id, resp)
-    return resp
+    return HttpResponse(json.dumps(resp))
 
 
 @api_view(['GET'])
@@ -2237,11 +2237,11 @@ def delete_organization_buildings(request):
         org_id
     )
     tasks.delete_organization_buildings.delay(org_id, deleting_cache_key)
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'progress': 0,
         'progress_key': deleting_cache_key
-    }
+    }))
 
 
 @api_view(['GET'])
@@ -2268,11 +2268,11 @@ def delete_organization(request):
         org_id
     )
     tasks.delete_organization.delay(org_id, deleting_cache_key)
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'progress': 0,
         'progress_key': deleting_cache_key
-    }
+    }))
 
 
 @api_view(['DELETE'])
@@ -2308,7 +2308,7 @@ def delete_buildings(request):
         }
     """
     # get all orgs the user is in where the user is a member or owner
-    body = json.loads(request.body)
+    body = request.data #json.loads(request.body)
     search_payload = body['search_payload']
 
     params = search.process_search_params(
@@ -2344,7 +2344,7 @@ def delete_buildings(request):
         # casting can be removed.
         buildingsnapshot__in=tuple(selected_buildings)
     ).update(active=False)
-    return {'status': 'success'}
+    return HttpResponse(json.dumps({'status': 'success'}))
 
 
 # DMcQ: Test for building reporting
@@ -2455,10 +2455,10 @@ def get_building_summary_report_data(request):
     }
 
     # Send back to client
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'summary_data': data
-    }
+    }))
 
 
 def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
@@ -2846,11 +2846,11 @@ def get_building_report_data(request):
             chart_data.append(d)
 
     # Send back to client
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'chart_data': chart_data,
         'building_counts': building_counts
-    }
+    }))
 
 
 @api_view(['GET'])
@@ -3134,8 +3134,8 @@ def get_aggregated_building_report_data(request):
                 })
 
     # Send back to client
-    return {
+    return HttpResponse(json.dumps({
         'status': 'success',
         'chart_data': chart_data,
         'building_counts': building_counts
-    }
+    }))

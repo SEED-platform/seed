@@ -323,7 +323,7 @@ def parse_body(request):
         }
     """
     try:
-        body = json.loads(request.body)
+        body = request.data #json.loads(request.body)
     except ValueError:
         body = {}
 
