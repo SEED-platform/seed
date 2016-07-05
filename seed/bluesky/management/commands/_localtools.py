@@ -68,18 +68,20 @@ def get_node_sinks(tree_label, labelarray, parent_adj_dict, child_adj_dict):
 
 
 def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
+
     desired_field_mapping = load_organization_taxlot_field_mapping(org)
     reverse_mapping = {y:x for x,y in desired_field_mapping.items()}
 
-    bs_taxlot_val = bs.tax_lot_id
-    if ('jurisdiction_taxlot_identifier' in reverse_mapping and reverse_mapping['jurisdiction_taxlot_identifier'] in bs.extra_data):
-        bs_taxlot_val = bs.extra_data[reverse_mapping['jurisdiction_taxlot_identifier']]
+    resolution_list = []
+    if "jurisdiction_taxlot_identifier" in reverse_mapping: resolution_list.append(reverse_mapping["jurisdiction_taxlot_identifier"])
+    resolution_list.append("tax_lot_id")
+
+    bs_taxlot_val = aggregate_value_from_state(bs, (USE_FIRST_VALUE, resolution_list))
 
     if bs_taxlot_val is None:
         tax_lot = seed.bluesky.models.TaxLot(organization=org)
         tax_lot.save()
         return tax_lot, True
-
 
     qry = seed.bluesky.models.TaxLotView.objects.filter(state__jurisdiction_taxlot_identifier=bs_taxlot_val)
 
@@ -94,17 +96,20 @@ def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
         tax_lot.save()
         return tax_lot, True
 
-
 def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
     mapping_field = 'building_portfolio_manager_identifier'
 
     # FIX ME - This needs to be updated to simply search on the field and be given a rule.
-    # pdb.set_trace()
+
     desired_field_mapping = load_organization_property_field_mapping(org)
     reverse_mapping = {y:x for x,y in desired_field_mapping.items()}
-    bs_property_id = bs.pm_property_id
-    if (mapping_field in reverse_mapping and reverse_mapping[mapping_field] in bs.extra_data):
-        bs_property_id = bs.extra_data[reverse_mapping[mapping_field]]
+
+
+    resolution_list = []
+    if mapping_field in reverse_mapping: resolution_list.append(reverse_mapping[mapping_field])
+    resolution_list.append("pm_property_id")
+
+    bs_property_id = aggregate_value_from_state(bs, (USE_FIRST_VALUE, resolution_list))
 
     if bs_property_id is None:
         property = seed.bluesky.models.Property(organization=org)
@@ -119,8 +124,6 @@ def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
         property = seed.bluesky.models.Property(organization=org)
         property.save()
         return property, True
-
-
 
 def load_organization_field_mapping_for_type_exclusions(org, type):
     assert type in ["Tax", "Property"]
