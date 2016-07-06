@@ -452,7 +452,7 @@ def calculate_migration_order(node_list, child_dictionary):
     pdb.set_trace()
     return migration_order
 
-def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix, canonical_building)
+def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix, canonical_building):
 
     """Take tree structure describing a single Property/TaxLot over time and create the entities."""
     logging_info("Populating new blue sky entities for canonical snapshot tree!")
