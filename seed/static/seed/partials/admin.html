@@ -166,6 +166,7 @@
                             <thead>
                                 <tr>
                                     <th>Parent ID</th>
+                                    <th>ID</th>
                                     <th>Organization</th>
                                     <th>Created</th>
                                     <th>User Count</th>
@@ -176,12 +177,13 @@
                             <tbody>
                                 <tr ng-repeat="o in org_user.organizations">
                                     <td>{$ o.parent_id $}</td>
+                                    <td>{$ o.org_id $}</td>
                                     <td>{$ o.name $}</td>
                                     <td><strong>{$ o.created $}</strong></td>
                                     <td><strong>{$ o.number_of_users | number:0 $}</strong></td>
                                     <td><strong>{$ o.num_buildings | number:0 $}</strong></td>
                                     <td>
-                                        <div style="width: 270px;">
+                                        <div style="width: 285px;">
                                             <button class="btn btn-default" ng-click="confirm_buildings_delete(o)" ng-hide="o.progress > -1 || o.total_buildings_count == 0">Remove Buildings</button>
                                             <button class="btn btn-danger" style="margin-left:20px;" ng-click="confirm_org_delete(o)" ng-hide="o.progress > -1"><i class="fa fa-exclamation-triangle"></i> Delete Organization</button>
                                             <uib-progressbar class="progress-striped active" value="o.progress" type="danger" ng-show="o.progress > -1">{$ o.remove_message $}</uib-progressbar>
