@@ -31,6 +31,18 @@ from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import BuildingSnapshot, CanonicalBuilding
 
 
+STRATEGIES = {
+    'CLASS_NAME': By.CLASS_NAME,
+    'CSS_SELECTOR': By.CSS_SELECTOR,
+    'ID': By.ID,
+    'LINK_TEXT': By.LINK_TEXT,
+    'NAME': By.NAME,
+    'PARTIAL_LINK_TEXT': By.PARTIAL_LINK_TEXT,
+    'TAG_NAME': By.TAG_NAME,
+    'XPATH': By.XPATH,
+}
+
+
 class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
     """
     Base class for Functioal/Selenium tests.
@@ -137,13 +149,26 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         super(FunctionalLiveServerBaseTestCase, self).tearDown()
 
     # Helper methods
+
+    def wait_for_element(self, strategy, search, timeout=15):
+        """
+        Get a page element, allowing time for the page to load.
+
+        :returns WebElement.
+        """
+        return WebDriverWait(self.browser, timeout).until(
+            presence_of_element_located(
+                (STRATEGIES[strategy], search,)
+            )
+        )
+
     def wait_for_element_by_css(self, selector, timeout=15):
         """
         Get a page element by css, allowing time for the page to load.
 
         :returns WebElement.
         """
-        return WebDriverWait(self.browser, timeout).until(presence_of_element_located((By.CSS_SELECTOR, selector,)))
+        return self.wait_for_element('CSS_SELECTOR', selector, timeout=timeout)
 
     def get_action_chains(self):
         """
@@ -172,9 +197,9 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         test. The import record contains only the owner and super_organization
         and by default, the ImportFile only references the ImportRecord.
 
-        Any keywords supplied will be passed to ImportFile.object.create
+        Any keywords supplied will be passed to ImportFile.objects.create
 
-        :param **kw: keywords passed to ImportFile.object.create
+        :param **kw: keywords passed to ImportFile.objects.create
 
         :returns: ImportFile, ImportRecord
 
@@ -219,6 +244,21 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         canonical_building.canonical_snapshot = building
         canonical_building.save()
         return canonical_building
+
+    def set_buildings_list_columns(self, column_list):
+        """
+        Set the columns to display in the Buildings list view.
+        address_line_1 is always added if not present.
+
+        :param: column_list: list of columns to display
+        :type: column_list: list (or string if a single column is supplied)
+        """
+        if not isinstance(column_list, list):
+            column_list = [column_list]
+        if 'address_line_1' not in column_list:
+            column_list.append('address_line_1')
+        self.user.default_custom_columns = column_list
+        self.user.save()
 
 
 class LoggedInFunctionalTestCase(FunctionalLiveServerBaseTestCase):

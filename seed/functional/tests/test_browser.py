@@ -8,6 +8,7 @@
 
 :author nlong, Paul Munday<paul@paulmunday.net>
 """
+from datetime import date
 import inspect
 import os
 
@@ -63,6 +64,50 @@ def loggedin_tests_generator():
         # TestClass definition for tests run when the user is
         # logged in. Add your test methods here
         class LoggedInTests(LOGGED_IN_CLASSES[browser.name]):
+
+            def test_building_detail_edit_year_end_save(self):
+                """Make sure changes to Year Ending date propagate."""
+                # make sure Year Ending column will show
+                self.set_buildings_list_columns('year_ending')
+
+                import_file, _ = self.create_import()
+                self.create_building(import_file, year_ending='2014-12-31')
+                url = "{}/app/#/buildings".format(self.live_server_url)
+                self.browser.get(url)
+                self.wait_for_element_by_css('#building-list')
+
+                # Click a building.
+                self.browser.find_element_by_css_selector('td a').click()
+
+                # Wait for details page and click the edit button
+                self.wait_for_element('PARTIAL_LINK_TEXT', 'Edit')
+                self.browser.find_element_by_partial_link_text('Edit').click()
+
+                # Wait for form to load
+                self.wait_for_element('LINK_TEXT', 'Save Changes')
+
+                # Find Year Ending and set new value
+                new_year_ending = date(2015, 12, 31)
+                year_ending = self.browser.find_element_by_xpath(
+                    "//table/tbody/tr[last()]/td[2]/div[1]/input[@id='edit_tax_lot_id']"
+                )
+                year_ending.clear()
+                year_ending.send_keys(str(new_year_ending))
+                self.browser.find_element_by_link_text('Save Changes').click()
+
+                # Return to Buildings List
+                self.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
+                self.browser.find_element_by_partial_link_text(
+                    'Buildings').click()
+
+                # Find Year Ending field
+                self.wait_for_element_by_css('#building-list')
+                year_ending = self.browser.find_element_by_xpath(
+                    "//table/tbody/tr[1]/td[2]/span"
+                )
+
+                # Assert new year ending values correctly set
+                assert year_ending.text == new_year_ending.strftime('%D')
 
             def test_building_detail_th_resize(self):
                 """Make sure building detail table headers are resizable."""
@@ -131,7 +176,8 @@ def loggedin_tests_generator():
                 self.wait_for_element_by_css('.dataset_list')
 
                 # Click a dataset.
-                self.browser.find_element_by_css_selector('td a.import_name').click()
+                self.browser.find_element_by_css_selector(
+                    'td a.import_name').click()
 
                 # Make sure import file is there.
                 self.wait_for_element_by_css('td.data_file_name')
@@ -223,7 +269,7 @@ def loggedin_tests_generator():
                 self.browser.get(url)
                 self.wait_for_element_by_css('#building-list')
 
-                # Click a builing.
+                # Click a building.
                 self.browser.find_element_by_css_selector('td a').click()
 
                 # We know detail page is loaded when projects tab is there.
