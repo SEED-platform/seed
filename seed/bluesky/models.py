@@ -139,7 +139,6 @@ class TaxLotView(models.Model):
         unique_together = ('taxlot', 'cycle',)
 
 
-
 class TaxLotProperty(models.Model):
     property_view = models.ForeignKey(PropertyView)
     taxlot_view = models.ForeignKey(TaxLotView)

@@ -13,11 +13,14 @@ import itertools
 # data fields in the columns returned for the view.
 DISPLAY_RAW_EXTRADATA = True
 DISPLAY_RAW_EXTRADATA_TIME = True
-if DISPLAY_RAW_EXTRADATA_TIME: import time
+if DISPLAY_RAW_EXTRADATA_TIME:
+    import time
+
 
 def unique(lol):
     """Calculate unique elements in a list of lists."""
     return sorted(set(itertools.chain.from_iterable(lol)))
+
 
 @require_organization_id
 @require_organization_membership
@@ -119,7 +122,7 @@ def get_properties(request):
                     related_field_map[k].add(v)
                 except KeyError:
                     try:
-                        related_field_map[k] = set([v])
+                        related_field_map[k] = {v}
                     except TypeError:
                         # Extra data field, ignore it
                         pass
@@ -243,7 +246,8 @@ def get_taxlots(request):
         none_in_juridiction_tax_lot_ids = None in jurisdiction_taxlot_identifiers
         jurisdiction_taxlot_identifiers = filter(lambda x: x is not None, jurisdiction_taxlot_identifiers)
 
-        if none_in_juridiction_tax_lot_ids: jurisdiction_taxlot_identifiers.append("Missing")
+        if none_in_juridiction_tax_lot_ids:
+            jurisdiction_taxlot_identifiers.append("Missing")
 
         # jurisdiction_taxlot_identifiers = [""]
 
@@ -277,7 +281,7 @@ def get_taxlots(request):
                     related_field_map[k].add(v)
                 except KeyError:
                     try:
-                        related_field_map[k] = set([v])
+                        related_field_map[k] = {v}
                     except TypeError:
                         # Extra data field, ignore it
                         pass
@@ -355,7 +359,6 @@ def get_property_columns(request):
         }, {
             'name': 'jurisdiction_property_identifier',
             'displayName': 'Property / Building ID',
-            'type': 'number',
             'related': False
         }, {
             'name': 'jurisdiction_taxlot_identifier',
@@ -404,7 +407,7 @@ def get_property_columns(request):
             # INCOMPLETE, FIELD DOESN'T EXIST
             'name': 'pm_parent_property_id',
             'displayName': 'PM Parent Property ID',
-            'type': 'number',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'gross_floor_area',
@@ -575,7 +578,6 @@ def get_property_columns(request):
         extra_data_source__isnull=False
     )
 
-
     for c in extra_data_columns:
         columns.append({
             'name': c.column_name,
@@ -589,9 +591,18 @@ def get_property_columns(request):
     # stored in the DB.
 
     if DISPLAY_RAW_EXTRADATA:
-        if DISPLAY_RAW_EXTRADATA_TIME: start_time = time.time()
-        taxlot_extra_data_fields =  filter(lambda x: x, unique(map(lambda x: x.state.extra_data.keys(), TaxLotView.objects.filter(taxlot__organization_id=request.GET['organization_id']).select_related('state').all())))
-        property_extra_data_fields = filter(lambda x: x, unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(property__organization_id=request.GET['organization_id']).select_related('state').all())))
+        if DISPLAY_RAW_EXTRADATA_TIME:
+            start_time = time.time()
+        taxlot_extra_data_fields = filter(lambda x: x, unique(map(lambda x: x.state.extra_data.keys(),
+                                                                  TaxLotView.objects.filter(
+                                                                      taxlot__organization_id=request.GET[
+                                                                          'organization_id']).select_related(
+                                                                      'state').all())))
+        property_extra_data_fields = filter(lambda x: x, unique(map(lambda x: x.state.extra_data.keys(),
+                                                                    PropertyView.objects.filter(
+                                                                        property__organization_id=request.GET[
+                                                                            'organization_id']).select_related(
+                                                                        'state').all())))
 
         for c in property_extra_data_fields:
             columns.append({
@@ -606,7 +617,8 @@ def get_property_columns(request):
                 'displayName': 'TLED.{}'.format(c),
                 'related': True,
             })
-    if DISPLAY_RAW_EXTRADATA_TIME: print "get_property_columns took {:.1f} seconds.".format(time.time() - start_time)
+    if DISPLAY_RAW_EXTRADATA_TIME:
+        print "get_property_columns took {:.1f} seconds.".format(time.time() - start_time)
     # END FIXME
     return columns
 
@@ -673,7 +685,6 @@ def get_taxlot_columns(request):
         }, {
             'name': 'jurisdiction_property_identifier',
             'displayName': 'Property / Building ID',
-            'type': 'number',
             'related': True
         }, {
             'name': 'building_portfolio_manager_identifier',
@@ -689,7 +700,7 @@ def get_taxlot_columns(request):
             # INCOMPLETE, FIELD DOESN'T EXIST
             'name': 'pm_parent_property_id',
             'displayName': 'PM Parent Property ID',
-            'type': 'number',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'gross_floor_area',
@@ -871,9 +882,12 @@ def get_taxlot_columns(request):
     # stored in the DB.
 
     if DISPLAY_RAW_EXTRADATA:
-        if DISPLAY_RAW_EXTRADATA_TIME: start_time = time.time()
-        taxlot_extra_data_fields =  unique(map(lambda x: x.state.extra_data.keys(), TaxLotView.objects.filter(taxlot__organization_id=request.GET['organization_id']).select_related('state').all()))
-        property_extra_data_fields = unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(property__organization_id=request.GET['organization_id']).select_related('state').all()))
+        if DISPLAY_RAW_EXTRADATA_TIME:
+            start_time = time.time()
+        taxlot_extra_data_fields = unique(map(lambda x: x.state.extra_data.keys(), TaxLotView.objects.filter(
+            taxlot__organization_id=request.GET['organization_id']).select_related('state').all()))
+        property_extra_data_fields = unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(
+            property__organization_id=request.GET['organization_id']).select_related('state').all()))
 
         for c in property_extra_data_fields:
             columns.append({
@@ -889,7 +903,7 @@ def get_taxlot_columns(request):
                 'related': False,
             })
 
-
-    if DISPLAY_RAW_EXTRADATA_TIME: print "get_taxlot_columns took {:.1f} seconds.".format(time.time() - start_time)
+    if DISPLAY_RAW_EXTRADATA_TIME:
+        print "get_taxlot_columns took {:.1f} seconds.".format(time.time() - start_time)
     # End FIXME
     return columns
