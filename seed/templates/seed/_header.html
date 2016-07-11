@@ -1,69 +1,61 @@
-
- <div class="header">
-		<div class="menu_toggle_container">
-			<a class="menu_toggle" ng-click="toggle_menu()">
-				<i class="fa fa-bars"></i>
-			</a>
-		</div>
-		<div class="logo_container">
-			<div class="logo">
-				<div class="logo_text">
-					<span class="logo_text_seed">Seed</span> <span class="logo_text_patform" ng-hide="saving_indicator">Platform&#8482;</span> <span class="logo_text_saving" ng-show="saving_indicator">Saving</span> <span class="saving_progress" ng-show="saving_indicator"></span>
-				</div>
-			</div>
-		</div>
-		<div class="search_bar_container">
-			<div class="search_bar">
-				<div class="input-group">
-      		<input class="form-control" type="Search" placeholder="Search" ng-model="search_input" sd-enter="input_search()">
-			    	<span class="input-group-btn">
-			      	<button class="btn btn-primary" type="button" ng-click="input_search()"><i class="fa fa-search"></i></button>
-			      </span>
-				</div>
-			</div>
-		</div>
-	 	<div class="add_menu_container">
-			<div class="btn-group org-dropdown"
-					 uib-dropdown
-					 is-open="status.isopen">
-				<button id="btnUserOrgs"
-								type="button"
-								class="btn btn-default"
-								uib-dropdown-toggle
-								ng-disabled="disabled">
-					{$ menu.user.organization.name $} <span class="caret"></span>
-				</button>
-				<ul class="dropdown-menu"
-						uib-dropdown-menu
-						role="menu"
-						aria-labelledby="btnUserOrgs">
-					<li ng-repeat="org in menu.user.organizations">
-						<a href ng-click="set_user_org(org)">{$ org.name $} <i class="fa fa-check" ng-show="org.id == menu.user.organization.id"></i></a>
-					</li>
-				</ul>
-			</div>
-			<div 	class="btn-group"
-					 	uib-dropdown
-						ng-hide="menu.user.organization.user_role === 'viewer'">
-				<button id="btnCreateNew"
-								type="button"
-								class="btn dropdown-toggle"
-								uib-dropdown-toggle>
-			    	<i class="fa fa-plus"></i>
-			    	<span class="sr-only">Toggle Dropdown</span>
-				</button>
-				<ul uib-dropdown-menu
-						class="dropdown-menu pull-right"
-						role="menu"
-						aria-labelledby="btnCreateNew">
-					<li class="dropdown-header">Create a new...</li>
-					<li class="divider"></li>
-					<li><a data-toggle="modal" data-target="#newProjectModalIndex" ng-click="open_create_project_modal()">Project</a></li>
-					<li class="divider" ng-show="menu.user.organization.user_role !== 'viewer'"></li>
-					<li ng-show="menu.user.organization.user_role !== 'viewer'"><a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()">Data Set</a></li>
-				</ul>
-			</div>
-		</div>
-	</div>
-	
-   
+<div class="header">
+    <div class="menu_toggle_container">
+        <a class="menu_toggle" ng-click="toggle_menu()">
+            <i class="fa fa-bars"></i>
+        </a>
+    </div>
+    <div class="logo_container">
+        <div class="logo">
+            <div class="logo_text">
+                <span class="logo_text_seed">Seed</span>
+                <span class="logo_text_patform" ng-hide="saving_indicator">Platform&#8482;</span>
+                <span class="logo_text_saving" ng-show="saving_indicator">Saving</span>
+                <span class="saving_progress" ng-show="saving_indicator"></span>
+            </div>
+        </div>
+    </div>
+    <div class="search_bar_container">
+        <div class="search_bar">
+            <div class="input-group">
+                <input class="form-control" type="Search" placeholder="Search" ng-model="search_input" sd-enter="input_search()">
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" type="button" ng-click="input_search()"><i class="fa fa-search"></i></button>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="add_menu_container">
+        <div class="btn-group org-dropdown" uib-dropdown is-open="status.isopen">
+            <button id="btnUserOrgs" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
+                {$ menu.user.organization.name $} <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btnUserOrgs">
+                <li ng-if="!menu.user.organizations.length" style="text-align: center;">
+                    <span class="glyphicon glyphicon-refresh spinning"></span> Loading...
+                </li>
+                <li ng-repeat="org in menu.user.organizations">
+                    <a href ng-click="set_user_org(org)">{$ org.name $}
+                        <i class="fa fa-check" ng-show="org.id == menu.user.organization.id"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="btn-group" uib-dropdown ng-hide="menu.user.organization.user_role === 'viewer'">
+            <button id="btnCreateNew" type="button" class="btn dropdown-toggle" uib-dropdown-toggle>
+                <i class="fa fa-plus"></i>
+                <span class="sr-only">Toggle Dropdown</span>
+            </button>
+            <ul uib-dropdown-menu class="dropdown-menu pull-right" role="menu" aria-labelledby="btnCreateNew">
+                <li class="dropdown-header">Create a new...</li>
+                <li class="divider"></li>
+                <li>
+                    <a data-toggle="modal" data-target="#newProjectModalIndex" ng-click="open_create_project_modal()">Project</a>
+                </li>
+                <li class="divider" ng-show="menu.user.organization.user_role !== 'viewer'"></li>
+                <li ng-show="menu.user.organization.user_role !== 'viewer'">
+                    <a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()">Data Set</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
