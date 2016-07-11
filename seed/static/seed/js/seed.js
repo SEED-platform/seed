@@ -216,13 +216,38 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             templateUrl: static_url + 'seed/partials/project_detail.html',
             resolve: {
                 search_payload: ['building_services', '$route', function(building_services, $route){
+                    var orderBy = '';
+                    var sortReverse = false;
                     var params = angular.copy($route.current.params);
+                    var q = params.q || '';
+                    var numberPerPage = 10;
                     var project_slug = params.project_id;
+                    var pageNumber = 1;
                     delete(params.project_id);
                     params.project__slug = project_slug;
-                    var q = params.q || '';
-                    // params: (query, number_per_page, page_number, order_by, sort_reverse, other_params, project_id, project_slug)
-                    return building_services.search_buildings(q, 10, 1, '', false, params, null, project_slug);
+
+                    // Check session storage for order, sort, and filter values.
+                    if (!_.isUndefined(Storage)) {
+
+                        var prefix = 'buildings';
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
+                            orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
+                        }
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
+                            sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
+                        }
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
+                            params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
+                        }
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
+                            numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
+                        }
+                        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
+                            pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
+                        }
+                    }
+                    // params: (query, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id)
+                    return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null);
                 }],
                 default_columns: ['user_service', function(user_service){
                     return user_service.get_default_columns();
@@ -300,7 +325,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     // Check session storage for order, sort, and filter values.
                     if (!_.isUndefined(Storage)) {
 
-                        var prefix = $route.current.$$route.originalPath;
+                        var prefix = 'buildings';
                         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
                             orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
                         }

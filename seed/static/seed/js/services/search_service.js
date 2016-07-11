@@ -209,10 +209,9 @@ angular.module('BE.seed.service.search', [])
         this.number_matching_search = data.number_matching_search || 0;
         this.alert = false;
         this.error_message = '';
-        // This is not right, the number per page is not being updated when it is changed
+        // Num Pages is now a method to allow for it to be up to date.
         // console.log("Number per page: " + this.number_per_page);
-        console.log("Number per page: " + this.number_per_page);
-        console.log("Number of pages: " + this.num_pages());
+        // console.log("Number of pages: " + this.num_pages());
 
         this.update_start_end_paging();
         this.update_buttons();
