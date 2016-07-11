@@ -196,7 +196,7 @@ angular.module('BE.seed.controller.building_list', [])
         label_service.get_labels().then(function(data) {
             // resolve promise
             $scope.labels = data.results;
- 
+
             // Load filtered labels from session storage and put them in selected_labels.
             if (!_.isUndefined(Storage) && sessionStorage.getItem($location.$$path + ':' + 'seedBuildingFilterParams') !== null) {
                 var filter_params = JSON.parse(sessionStorage.getItem($location.$$path + ':' + 'seedBuildingFilterParams'));
@@ -525,11 +525,13 @@ angular.module('BE.seed.controller.building_list', [])
             }
         });
 
-        $scope.search.init_storage($location.$$path);
+        // console.log("Storage " + $location.$$path)
+        // hardcoding the name of the storage and removing the preceding / to follow pattern of cleansing.
+        $scope.search.init_storage('buildings');
         get_columns();
         get_labels();
         init_matching_dropdown();
-
+        // console.log("number of pages " + $scope.search.num_pages())
     };
     init();
 }]);

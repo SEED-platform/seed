@@ -39,7 +39,11 @@ angular.module('BE.seed.service.search', [])
   '$http',
   '$q',
   'spinner_utility',
-  function ($http, $q, spinner_utility) {
+  function(
+      $http,
+      $q,
+      spinner_utility
+  ) {
     /************
      * variables
      */
@@ -59,7 +63,6 @@ angular.module('BE.seed.service.search', [])
         order_by: '',
         sort_reverse: false,
         is_loading: false,
-        num_pages: 0,
         query: '',
         number_per_page_options: [10, 25, 50, 100],
         number_per_page_options_model: 10,
@@ -200,14 +203,17 @@ angular.module('BE.seed.service.search', [])
     search_service.update_results = function(data) {
         // safely handle no data back
         saas = this;
+
         data = data || {};
         this.buildings = data.buildings || [];
         this.number_matching_search = data.number_matching_search || 0;
         this.alert = false;
         this.error_message = '';
-        this.num_pages = Math.ceil(
-            this.number_matching_search / this.number_per_page
-        );
+        // This is not right, the number per page is not being updated when it is changed
+        // console.log("Number per page: " + this.number_per_page);
+        console.log("Number per page: " + this.number_per_page);
+        console.log("Number of pages: " + this.num_pages());
+
         this.update_start_end_paging();
         this.update_buttons();
         this.select_or_deselect_all_buildings();
@@ -225,7 +231,6 @@ angular.module('BE.seed.service.search', [])
             sessionStorage.setItem(this.prefix + ':' + 'seedBuildingFilterParams', JSON.stringify(this.filter_params));
         }
     };
-
 
 
     /**
@@ -252,7 +257,7 @@ angular.module('BE.seed.service.search', [])
      *   1,000 buildings` and is called after a successful search
      */
     search_service.update_start_end_paging = function() {
-        if (this.current_page === this.num_pages) {
+        if (this.current_page === this.num_pages()) {
             this.showing.end = this.number_matching_search;
         } else {
             this.showing.end = this.current_page * this.number_per_page;
@@ -271,11 +276,21 @@ angular.module('BE.seed.service.search', [])
     };
 
     /**
+    * num_pages: return the number of pages that are expected based on the
+    * total matches and the number_per_page setting
+    */
+    search_service.num_pages = function() {
+        return Math.ceil(
+            this.number_matching_search / this.number_per_page
+        );
+    };
+
+      /**
     * last_page: triggered when the `last` paging button is clicked, it
     *   sets the page to the last in the results, and fetches that page
     */
     search_service.last_page = function() {
-      this.current_page = this.num_pages;
+      this.current_page = this.num_pages();
       this.search_buildings();
     };
 
@@ -285,8 +300,8 @@ angular.module('BE.seed.service.search', [])
      */
     search_service.next_page = function() {
         this.current_page += 1;
-        if (this.current_page > this.num_pages) {
-            this.current_page = this.num_pages;
+        if (this.current_page > this.num_pages()) {
+            this.current_page = this.num_pages();
         }
         if (!_.isUndefined(Storage)) {
             sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
@@ -315,7 +330,7 @@ angular.module('BE.seed.service.search', [])
     search_service.update_buttons = function() {
         // body goes here
         this.prev_page_disabled = this.current_page === 1;
-        this.next_page_disabled = this.current_page === this.num_pages;
+        this.next_page_disabled = this.current_page === this.num_pages();
     };
     /**
      * end pagination code
