@@ -627,7 +627,6 @@ def get_datasets_count(request):
                             status=400)
 
 
-
 @ajax_request
 def public_search(request):
     """the public API unauthenticated endpoint

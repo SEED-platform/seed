@@ -136,9 +136,9 @@ def require_organization_id(func):
         if error:
             format_type = 'application/json'
             message = {
-                        'status': 'error',
-                        'message': 'Invalid organization_id: either blank or not an integer'
-                       }
+                'status': 'error',
+                'message': 'Invalid organization_id: either blank or not an integer'
+            }
 
             # NL: I think the error code should be 401: unauthorized, not 400: bad request.
             # Leaving as 400 for now in case this breaks something else.
