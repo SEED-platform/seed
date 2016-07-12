@@ -8,7 +8,7 @@ import json
 from functools import wraps
 
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse
 
 from seed.utils.cache import make_key, lock_cache, unlock_cache, get_lock
 
