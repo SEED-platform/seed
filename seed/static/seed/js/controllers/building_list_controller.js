@@ -525,9 +525,8 @@ angular.module('BE.seed.controller.building_list', [])
             }
         });
 
-        // console.log("Storage " + $location.$$path)
-        // hardcoding the name of the storage and removing the preceding / to follow pattern of cleansing.
-        $scope.search.init_storage('buildings');
+        // console.log("Storage " + $location.$$path);
+        $scope.search.init_storage($location.$$path);
         get_columns();
         get_labels();
         init_matching_dropdown();
