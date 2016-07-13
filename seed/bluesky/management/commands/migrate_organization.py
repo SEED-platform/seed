@@ -532,9 +532,9 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
 
             query = seed.bluesky.models.PropertyView.objects.filter(property=property_obj, cycle=import_cycle)
             if query.count():
-                property_view = query.first()
-                property_view.state = property_state
-                property_view.save()
+                propertyview = query.first()
+                propertyview.state = property_state
+                propertyview.save()
             else:
                 try:
                     propertyview, created = seed.bluesky.models.PropertyView.objects.get_or_create(property=property_obj, cycle=import_cycle, state=property_state)
