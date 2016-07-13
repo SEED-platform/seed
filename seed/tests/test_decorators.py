@@ -4,11 +4,14 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import json
+
 from django.http import HttpResponse
 from django.test import TestCase, RequestFactory
 
 from seed import decorators
-from seed.utils.cache import make_key, get_cache, get_lock, increment_cache, clear_cache
+from seed.utils.cache import make_key, get_cache, get_lock, increment_cache, \
+    clear_cache
 
 
 class TestException(Exception):
@@ -30,7 +33,8 @@ class TestDecorators(TestCase):
     def test_get_prog_key(self):
         """We format our cache key properly."""
         expected = make_key('SEED:fun_func:PROG:' + str(self.pk))
-        self.assertEqual(decorators.get_prog_key('fun_func', self.pk), expected)
+        self.assertEqual(decorators.get_prog_key('fun_func', self.pk),
+                         expected)
 
     def test_increment_cache(self):
         """Sum our progress by increments properly."""
@@ -97,7 +101,6 @@ class TestDecorators(TestCase):
 
 
 class RequireOrganizationIDTests(TestCase):
-
     def setUp(self):
         @decorators.require_organization_id
         def test_view(request):
@@ -119,10 +122,16 @@ class RequireOrganizationIDTests(TestCase):
         request = RequestFactory().get('')
         response = self.test_view(request)
         self.assertEqual(400, response.status_code)
-        self.assertEqual('Valid organization ID is required.', response.content)
+        j = json.loads(response.content)
+        self.assertEqual(j['status'], 'error')
+        self.assertEqual(j['message'],
+                         'Invalid organization_id: either blank or not an integer')
 
     def test_require_organization_id_fail_not_numeric(self):
         request = RequestFactory().get('', {'organization_id': 'invalid'})
         response = self.test_view(request)
         self.assertEqual(400, response.status_code)
-        self.assertEqual('Valid organization ID is required.', response.content)
+        j = json.loads(response.content)
+        self.assertEqual(j['status'], 'error')
+        self.assertEqual(j['message'],
+                         'Invalid organization_id: either blank or not an integer')
