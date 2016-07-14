@@ -70,7 +70,7 @@ def get_properties(request):
     # Get all ids of tax lots on these joins
     taxlot_view_ids = [j.taxlot_view_id for j in joins]
 
-    # Get all tax lot views that are related
+     # Get all tax lot views that are related
     taxlot_views = TaxLotView.objects.select_related('taxlot', 'state', 'cycle').filter(pk__in=taxlot_view_ids)
 
     # Map tax lot view id to tax lot view's state data, so we can reference these easily and save some queries.
@@ -627,6 +627,7 @@ def get_property_columns(request):
             columns.append({
                 'name': c,
                 'displayName': 'PRED.{}'.format(c),
+                'treeAggregationType': 'uniqueList',
                 'related': False,
             })
 
@@ -634,6 +635,7 @@ def get_property_columns(request):
             columns.append({
                 'name': c,
                 'displayName': 'TLED.{}'.format(c),
+                'treeAggregationType': 'uniqueList',
                 'related': True,
             })
     if DISPLAY_RAW_EXTRADATA and DISPLAY_RAW_EXTRADATA_TIME: print "get_property_columns took {:.1f} seconds.".format(time.time() - start_time)
@@ -935,9 +937,7 @@ def get_taxlot_columns(request):
             'source': Column.SOURCE_CHOICES_MAP[c.extra_data_source],
         })
 
-    # FIXME - Very inefficient queries to dynamically calculate the
-    # extra data present in an org's data.  This should ultimately be
-    # stored in the DB.
+    # FIXME
 
     if DISPLAY_RAW_EXTRADATA:
         if DISPLAY_RAW_EXTRADATA_TIME: start_time = time.time()
@@ -947,6 +947,22 @@ def get_taxlot_columns(request):
 
         # taxlot_extra_data_fields =  unique(map(lambda x: x.state.extra_data.keys(), TaxLotView.objects.filter(taxlot__organization_id=request.GET['organization_id']).select_related('state').all()))
         # property_extra_data_fields = unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(property__organization_id=request.GET['organization_id']).select_related('state').all()))
+
+        for c in property_extra_data_fields:
+            columns.append({
+                'name': c,
+                'displayName': 'PRED.{}'.format(c),
+                'treeAggregationType': 'uniqueList',
+                'related': False,
+            })
+
+        for c in taxlot_extra_data_fields:
+            columns.append({
+                'name': c,
+                'displayName': 'TLED.{}'.format(c),
+                'treeAggregationType': 'uniqueList',
+                'related': True,
+            })
 
     if DISPLAY_RAW_EXTRADATA_TIME: print "get_taxlot_columns took {:.1f} seconds.".format(time.time() - start_time)
     # End FIXME
