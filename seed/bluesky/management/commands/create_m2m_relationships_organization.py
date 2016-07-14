@@ -182,29 +182,42 @@ class Command(BaseCommand):
 
                 if created_tax_lots[taxlot_id]:
                     tax_lot = created_tax_lots[taxlot_id]
+
+                    # Apparently this is how Django clones things?
+                    taxlot_state = original_taxlot_view.state
+                    taxlot_state.pk = None
+                    taxlot_state.jurisdiction_taxlot_identifier = taxlot_id
+                    taxlot_state.save()
+
                 else:
                     tl = TaxLot(organization=m2m.taxlot_view.taxlot.organization)
                     tl.save()
                     created_tax_lots[taxlot_id] = tl
 
-                # Apparently this is how Django clones things?
-                taxlot_state = original_taxlot_view.state
-                taxlot_state.pk = None
-                taxlot_state.jurisdiction_taxlot_identifier = taxlot_id
-                taxlot_state.save()
-
-                # print "Creating TaxLotView for {} on cycle {}".format(taxlot_id, m2m.cycle)
-
-                # if TaxLotView.objects.filter(taxlot = created_tax_lots[taxlot_id], cycle = m2m.cycle).count() > 0:
-                #     pdb.set_trace()
+                    # Apparently this is how Django clones things?
+                    taxlot_state = original_taxlot_view.state
+                    taxlot_state.pk = None
+                    taxlot_state.jurisdiction_taxlot_identifier = taxlot_id
+                    taxlot_state.save()
 
 
-                taxlotview = TaxLotView(taxlot = created_tax_lots[taxlot_id], cycle = m2m.cycle, state = taxlot_state)
-                # Clone the state from above
-                taxlotview.save()
 
-                new_m2m = TaxLotProperty(property_view = m2m.property_view, taxlot_view = taxlotview, cycle = m2m.cycle)
-                new_m2m.save()
+
+                # Check and see if the Tax Lot View exists
+                qry = TaxLotView.objects.filter(taxlot = created_tax_lots[taxlot_id], cycle = m2m.cycle)
+                if qry.count():
+                    taxlotview = qry.first()
+                    taxlotview.state = taxlot_state
+                    taxlotview.save()
+                else:
+                    taxlotview = TaxLotView(taxlot = created_tax_lots[taxlot_id], cycle = m2m.cycle, state = taxlot_state)
+                    # Clone the state from above
+                    taxlotview.save()
+
+
+                TaxLotProperty.objects.get_or_create(property_view = m2m.property_view, taxlot_view = taxlotview, cycle = m2m.cycle)
+
+
             else:
                 # The existing TaxLotView and m2m is deleted.
                 tl_view = m2m.taxlot_view
