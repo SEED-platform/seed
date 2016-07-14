@@ -9,6 +9,11 @@ from seed.models import Column
 from seed.utils.api import api_endpoint
 import itertools
 
+# Global toggle that controls whether or not to display the raw extra
+# data fields in the columns returned for the view.
+DISPLAY_RAW_EXTRADATA = True
+DISPLAY_RAW_EXTRADATA_TIME = True
+if DISPLAY_RAW_EXTRADATA_TIME: import time
 
 def unique(lol):
     """Calculate unique elements in a list of lists."""
@@ -943,5 +948,6 @@ def get_taxlot_columns(request):
         # taxlot_extra_data_fields =  unique(map(lambda x: x.state.extra_data.keys(), TaxLotView.objects.filter(taxlot__organization_id=request.GET['organization_id']).select_related('state').all()))
         # property_extra_data_fields = unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(property__organization_id=request.GET['organization_id']).select_related('state').all()))
 
-    # END FIXME
+    if DISPLAY_RAW_EXTRADATA_TIME: print "get_taxlot_columns took {:.1f} seconds.".format(time.time() - start_time)
+    # End FIXME
     return columns
