@@ -166,7 +166,8 @@ class Command(BaseCommand):
         created_tax_lots = collections.defaultdict(lambda : False)
 
         # pdb.set_trace()
-        for m2m in TaxLotProperty.objects.filter(property_view__property__organization=org).all():
+        for m2m in itertools.chain(TaxLotProperty.objects.filter(property_view__property__organization=org).all(),
+                                   TaxLotProperty.objects.filter(taxlot_view__taxlot__organization=org).all()):
             jurisdiction_taxlot_identifier = m2m.taxlot_view.state.jurisdiction_taxlot_identifier
             try:
                 taxlot_id_list = get_id_fields(m2m.taxlot_view.state.jurisdiction_taxlot_identifier)
