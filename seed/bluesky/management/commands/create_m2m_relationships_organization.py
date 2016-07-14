@@ -53,6 +53,8 @@ class TaxLotIDValueError(ValueError):
         return
 
 def valid_id(s):
+    if not s: return True
+
     #pattern = r"[\w\-\s]+$"
     if len(s) == 1:
         #trying to do the case where the string is only one character was too complicated
@@ -102,6 +104,11 @@ def get_id_fields(parse_string):
     #leading and trailing whitespace is part of the delimiter and not the ids
     #so remove it here before additional processing
     fields = [f.strip() for f in fields]
+
+    # A list like "a;b;" is always interperet as a two element list
+    # A list like a;;b is interpreted as a two element list
+    # A list like a;;b; is interpreted as a two element list
+    if fields and not fields[-1]: fields.pop()
 
     for field in fields:
         if not valid_id(field):
