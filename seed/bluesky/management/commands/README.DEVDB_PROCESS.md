@@ -7,7 +7,7 @@ perspective.
 # Importing the new database
 
    psql# CREATE DATABASE seeddb WITH OWNER seeduser;
-   $ psql seeddb < db/seed_prod-20160428.sql
+   $ psql seeddb < db/seed_prod-20160624.sql
    $ python manage.py migrate --fake-initial
 
 # Deleting the old database
