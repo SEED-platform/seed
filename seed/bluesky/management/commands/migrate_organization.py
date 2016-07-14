@@ -380,8 +380,6 @@ class Command(BaseCommand):
                 except ValueError:
                     raise RuntimeError("Requested to start from canonical {} which was not found.".format(starting_from_canonical))
 
-
-
             if canonical_buildings_whitelist:
                 good_canonical_building_indexes = [ndx for (ndx, cb) in enumerate(org_canonical_buildings) if cb.pk in canonical_buildings_whitelist]
                 org_canonical_buildings = [org_canonical_buildings[ndx] for ndx in good_canonical_building_indexes]
@@ -444,7 +442,7 @@ class Command(BaseCommand):
                 leaf_buildingsnapshots = [building_dict[bs_id] for bs_id in leaf_nodes]
                 other_buildingsnapshots = [building_dict[bs_id] for bs_id in other_nodes]
 
-                logging_info("Creating Blue Sky Data for for CanonicalBuilding={}".format(leaf_buildingsnapshots[0]))
+                logging_info("Creating Blue Sky Data for for CanonicalBuilding={}".format(cb.pk))
 
                 create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix, cb)
         return
