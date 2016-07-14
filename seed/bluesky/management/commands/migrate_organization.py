@@ -249,6 +249,16 @@ def load_cycle(org, node, year_ending = True, fallback = True):
 
 
     time = datetime.datetime(year = time.year, month=time.month, day = time.day)
+
+
+    # FIXME: Refactor.
+
+    # Only Berkeley is allowed
+    orgs_allowing_2016 = set([117])
+    if org.pk not in orgs_allowing_2016 and time.year == 2016:
+        time = datetime.datetime(2015,12,31)
+
+
     try:
         cycle_start = time.replace(month = 1, day = 1, hour = 0, minute = 0, second = 0, microsecond = 0)
         cycle_end = cycle_start.replace(year=cycle_start.year+1)-datetime.timedelta(seconds = 1)
