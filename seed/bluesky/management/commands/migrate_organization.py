@@ -293,7 +293,7 @@ class Command(BaseCommand):
         parser.add_argument('--limit', dest='limit', default=0, type=int)
         parser.add_argument('--starting_on_canonical', dest='starting_on_canonical', default=0, type=int)
         parser.add_argument('--starting_following_canonical', dest='starting_following_canonical', default=0, type=int)
-        parser.add_argument('--add_metadata', dest='add_metadata', default=False, action='store_true')
+        parser.add_argument('--no_metadata', dest='add_metadata', default=True, action='store_false')
         parser.add_argument('--cb', dest='cb_whitelist_string', default=False,)
         return
 
