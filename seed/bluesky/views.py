@@ -7,6 +7,17 @@ from seed.decorators import ajax_request, require_organization_id, require_organ
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import Column
 from seed.utils.api import api_endpoint
+import itertools
+
+# Global toggle that controls whether or not to display the raw extra
+# data fields in the columns returned for the view.
+DISPLAY_RAW_EXTRADATA = True
+DISPLAY_RAW_EXTRADATA_TIME = True
+
+
+def unique(lol):
+    """Calculate unique elements in a list of lists."""
+    return sorted(set(itertools.chain.from_iterable(lol)))
 
 
 @require_organization_id
@@ -228,6 +239,15 @@ def get_taxlots(request):
 
         jurisdiction_taxlot_identifiers = TaxLotState.objects.filter(pk__in=state_ids) \
             .values_list('jurisdiction_taxlot_identifier', flat=True)
+
+        # Filter out associated tax lots that are present but which do not have preferred
+        none_in_juridiction_tax_lot_ids = None in jurisdiction_taxlot_identifiers
+        jurisdiction_taxlot_identifiers = filter(lambda x: x is not None, jurisdiction_taxlot_identifiers)
+
+        if none_in_juridiction_tax_lot_ids:
+            jurisdiction_taxlot_identifiers.append("Missing")
+
+        # jurisdiction_taxlot_identifiers = [""]
 
         join_dict = property_map[join.property_view_id].copy()
         join_dict.update({
@@ -564,6 +584,56 @@ def get_property_columns(request):
             'related': c.extra_data_source == Column.SOURCE_TAXLOT,
             'source': Column.SOURCE_CHOICES_MAP[c.extra_data_source],
         })
+
+    # FIXME - Very inefficient queries to dynamically calculate the
+    # extra data present in an org's data.  This should ultimately be
+    # stored in the DB.
+    # taxlot_extra_data_fields =  filter(lambda x: x, unique(map(lambda x: x.state.extra_data.keys(), TaxLotView.objects.filter(taxlot__organization_id=request.GET['organization_id']).select_related('state').all())))
+    # property_extra_data_fields = filter(lambda x: x, unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(property__organization_id=request.GET['organization_id']).select_related('state').all())))
+
+    # for c in property_extra_data_fields:
+    #     columns.append({
+    #         'field': c,
+    #         'displayName': 'PRED.{}'.format(c),
+    #         'related': False,
+    #         'source': 'property'
+    #     })
+
+    # for c in taxlot_extra_data_fields:
+    #     print "Adding {}".format(c)
+    #     columns.append({
+    #         'field': c,
+    #         'displayName': 'TLED.{}'.format(c),
+    #         'related': True,
+    #         'source': 'taxlot'
+    #     })
+
+    # if DISPLAY_RAW_EXTRADATA:
+    #     if DISPLAY_RAW_EXTRADATA_TIME: start_time = time.time()
+
+    #     taxlot_extra_data_fields = ["taxlot_cb_id", "taxlot_bs_id", "taxlot_custom_id_1",]
+    #     property_extra_data_fields = ["prop_cb_id", "prop_bs_id",  "prop_custom_id_1", "Philadelphia Building ID"]
+    #     # taxlot_extra_data_fields =  filter(lambda x: x, unique(map(lambda x: x.state.extra_data.keys(), TaxLotView.objects.filter(taxlot__organization_id=request.GET['organization_id']).select_related('state').all())))
+    #     # property_extra_data_fields = filter(lambda x: x, unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(property__organization_id=request.GET['organization_id']).select_related('state').all())))
+
+    #     for c in property_extra_data_fields:
+    #         columns.append({
+    #             'name': c,
+    #             'displayName': 'PRED.{}'.format(c),
+    #             'treeAggregationType': 'uniqueList',
+    #             'related': False,
+    #         })
+
+    #     for c in taxlot_extra_data_fields:
+    #         columns.append({
+    #             'name': c,
+    #             'displayName': 'TLED.{}'.format(c),
+    #             'treeAggregationType': 'uniqueList',
+    #             'related': True,
+    #         })
+    # if DISPLAY_RAW_EXTRADATA and DISPLAY_RAW_EXTRADATA_TIME: print "get_property_columns took {:.1f} seconds.".format(time.time() - start_time)
+
+    # END FIXME
     return columns
 
 
@@ -821,4 +891,34 @@ def get_taxlot_columns(request):
             'related': c.extra_data_source == Column.SOURCE_PROPERTY,
             'source': Column.SOURCE_CHOICES_MAP[c.extra_data_source],
         })
+
+    # FIXME
+
+    # if DISPLAY_RAW_EXTRADATA:
+    #     if DISPLAY_RAW_EXTRADATA_TIME: start_time = time.time()
+
+    #     taxlot_extra_data_fields = ["taxlot_cb_id", "taxlot_bs_id", "taxlot_custom_id_1"]
+    #     property_extra_data_fields = ["prop_cb_id", "prop_bs_id",  "prop_custom_id_1", "Philadelphia Building ID"]
+
+    #     # taxlot_extra_data_fields =  unique(map(lambda x: x.state.extra_data.keys(), TaxLotView.objects.filter(taxlot__organization_id=request.GET['organization_id']).select_related('state').all()))
+    #     # property_extra_data_fields = unique(map(lambda x: x.state.extra_data.keys(), PropertyView.objects.filter(property__organization_id=request.GET['organization_id']).select_related('state').all()))
+
+    #     for c in property_extra_data_fields:
+    #         columns.append({
+    #             'name': c,
+    #             'displayName': 'PRED.{}'.format(c),
+    #             'treeAggregationType': 'uniqueList',
+    #             'related': False,
+    #         })
+
+    #     for c in taxlot_extra_data_fields:
+    #         columns.append({
+    #             'name': c,
+    #             'displayName': 'TLED.{}'.format(c),
+    #             'treeAggregationType': 'uniqueList',
+    #             'related': True,
+    #         })
+
+    # if DISPLAY_RAW_EXTRADATA_TIME: print "get_taxlot_columns took {:.1f} seconds.".format(time.time() - start_time)
+    # End FIXME
     return columns
