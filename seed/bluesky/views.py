@@ -13,11 +13,12 @@ import itertools
 # data fields in the columns returned for the view.
 DISPLAY_RAW_EXTRADATA = True
 DISPLAY_RAW_EXTRADATA_TIME = True
-if DISPLAY_RAW_EXTRADATA_TIME: import time
+
 
 def unique(lol):
     """Calculate unique elements in a list of lists."""
     return sorted(set(itertools.chain.from_iterable(lol)))
+
 
 @require_organization_id
 @require_organization_membership
@@ -70,7 +71,7 @@ def get_properties(request):
     # Get all ids of tax lots on these joins
     taxlot_view_ids = [j.taxlot_view_id for j in joins]
 
-     # Get all tax lot views that are related
+    # Get all tax lot views that are related
     taxlot_views = TaxLotView.objects.select_related('taxlot', 'state', 'cycle').filter(pk__in=taxlot_view_ids)
 
     # Map tax lot view id to tax lot view's state data, so we can reference these easily and save some queries.
@@ -243,7 +244,8 @@ def get_taxlots(request):
         none_in_juridiction_tax_lot_ids = None in jurisdiction_taxlot_identifiers
         jurisdiction_taxlot_identifiers = filter(lambda x: x is not None, jurisdiction_taxlot_identifiers)
 
-        if none_in_juridiction_tax_lot_ids: jurisdiction_taxlot_identifiers.append("Missing")
+        if none_in_juridiction_tax_lot_ids:
+            jurisdiction_taxlot_identifiers.append("Missing")
 
         # jurisdiction_taxlot_identifiers = [""]
 
@@ -582,7 +584,6 @@ def get_property_columns(request):
         is_extra_data=True,
         extra_data_source__isnull=False
     )
-
 
     for c in extra_data_columns:
         columns.append({
