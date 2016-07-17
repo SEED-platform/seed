@@ -48,13 +48,13 @@ Models
     :undoc-members:
     :show-inheritance:
 
-Reconcile
----------
+.. Reconcile
+.. ---------
 
-.. automodule:: seed.reconcile
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. ..  automodule:: seed.reconcile
+..      :members:
+..      :undoc-members:
+..      :show-inheritance:
 
 Search
 ------

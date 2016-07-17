@@ -67,7 +67,6 @@ angular.module('BE.seed.service.simple_modal', [])
             @param {object} [modalDefaults={}]      Optional, and can have one or more of the properties defined above in this class
         */
         function showModal(customModalOptions, customModalDefaults) {
-
             if (customModalOptions && customModalOptions.type !== null){
                 if (!_.includes(validModalTypes, customModalOptions.type)){
                     throw 'Invalid modal type';
@@ -98,13 +97,13 @@ angular.module('BE.seed.service.simple_modal', [])
             //Map modal.html $scope custom properties to defaults defined in service
             angular.extend(tempModalOptions, modalOptions, customModalOptions);
 
-            tempModalDefaults.controller = function ($scope, $modalInstance) {
+            tempModalDefaults.controller = function ($scope, $uibModalInstance) {
                 $scope.modalOptions = tempModalOptions;
                 $scope.modalOptions.ok = function (result) {
-                    $modalInstance.close(tempModalOptions.okResult);
+                    $uibModalInstance.close(tempModalOptions.okResult);
                 };
                 $scope.modalOptions.cancel = function (result) {
-                    $modalInstance.dismiss('cancel');
+                    $uibModalInstance.dismiss('cancel');
                 };
             };
 
