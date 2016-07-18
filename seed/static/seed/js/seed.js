@@ -12,6 +12,14 @@ angular.module('BE.seed.angular_dependencies', [
     ]);
 angular.module('BE.seed.vendor_dependencies', [
     'ui.bootstrap',
+    'ui.grid',
+    'ui.grid.exporter',
+    'ui.grid.grouping',
+    'ui.grid.moveColumns',
+    'ui.grid.pinning',
+    'ui.grid.resizeColumns',
+    'ui.grid.saveState',
+    'ui.grid.treeView',
     'ui.sortable',
     'ui.tree',
     'xeditable',
@@ -52,7 +60,9 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.organization_settings',
     'BE.seed.controller.project',
     'BE.seed.controller.update_building_labels_modal',
-    'BE.seed.controller.security'
+    'BE.seed.controller.security',
+    'BE.seed.controller.bluesky_properties_controller',
+    'BE.seed.controller.bluesky_taxlots_controller'
     ]);
 angular.module('BE.seed.filters', [
     'district',
@@ -90,7 +100,8 @@ angular.module('BE.seed.services', [
     'mappingValidatorService',
     'BE.seed.service.search',
     'BE.seed.service.simple_modal',
-    'BE.seed.service.httpParamSerializerSeed'
+    'BE.seed.service.httpParamSerializerSeed',
+    'BE.seed.service.bluesky_service'
     ]);
 angular.module('BE.seed.utilities', [
     'BE.seed.utility.spinner'
@@ -789,6 +800,36 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             controller: 'labels_controller',
             templateUrl: static_url + 'seed/partials/labels.html'
         })
+        .when('/bluesky/properties', {
+            controller: 'bluesky_properties_controller',
+            templateUrl: static_url + 'seed/partials/bluesky/list.html',
+            resolve: {
+                properties: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_properties(1);
+                }],
+                cycles: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_cycles();
+                }],
+                columns: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_property_columns();
+                }]
+            }
+        })
+        .when('/bluesky/taxlots', {
+            controller: 'bluesky_taxlots_controller',
+            templateUrl: static_url + 'seed/partials/bluesky/list.html',
+            resolve: {
+                taxlots: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_taxlots(1, 10);
+                }],
+                cycles: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_cycles();
+                }],
+                columns: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_taxlot_columns();
+                }]
+            }
+        })
         .otherwise({ redirectTo: '/' });
 
 }]);
@@ -840,3 +881,16 @@ SEED_app.constant('urls', {
     static_url: BE.urls.STATIC_URL
 });
 SEED_app.constant('generated_urls', window.BE.app_urls);
+
+/**
+ * UI Grid string overrides
+ */
+angular.module('ui.grid').config(['$provide', function ($provide) {
+    $provide.decorator('i18nService', ['$delegate', function ($delegate) {
+        var pagination = $delegate.get('en').pagination;
+        pagination.sizes = 'properties per page';
+        pagination.totalItems = 'properties';
+        $delegate.add('en', {pagination: pagination});
+        return $delegate;
+    }]);
+}]);

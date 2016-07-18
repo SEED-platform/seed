@@ -8,8 +8,9 @@ import json
 from functools import wraps
 
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 
+from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.utils.cache import make_key, lock_cache, unlock_cache, get_lock
 
 
@@ -129,6 +130,22 @@ def require_organization_id(fn):
             int(request.GET['organization_id'])
         except (KeyError, ValueError):
             return HttpResponseBadRequest('Valid organization ID is required.')
+
+        return fn(request, *args, **kwargs)
+    return _wrapped
+
+
+def require_organization_membership(fn):
+    """
+    Validate that the organization_id passed in GET is valid for request user.
+    """
+    @wraps(fn)
+    def _wrapped(request, *args, **kwargs):
+
+        if not OrganizationUser.objects.filter(
+                organization_id=request.GET['organization_id'], user=request.user).exists():
+
+            return HttpResponseForbidden()
 
         return fn(request, *args, **kwargs)
     return _wrapped
