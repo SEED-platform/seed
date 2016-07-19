@@ -48,6 +48,11 @@ from distutils.spawn import find_executable
 import errno
 import subprocess
 
+try:
+    ENOPKG = errno.ENOPKG
+except AttributeError:
+    errno.ENOPKG = 65
+
 FIREFOX_IS_BROKEN = False
 HAS_MARIONETTE = False
 
@@ -55,17 +60,22 @@ HAS_MARIONETTE = False
 if not os.getenv('TRAVIS') == 'true':
     HAS_MARIONETTE = find_executable('wires')
     THIS_PATH = os.path.dirname(os.path.realpath(__file__))
-    THIS_FILE = os.path.join(THIS_PATH, 'base.py')
+    THIS_FILE = os.path.join(THIS_PATH, 'browser_definitions.py')
 
-    try:
-        FIREFOX_VERSION = subprocess.check_output(
-            ['firefox', '--version']).rstrip().split()[-1]
-        FIREFOX_IS_BROKEN = FIREFOX_VERSION >= '47.0'
-    except OSError as err:
+    FIREFOX_BINARY = find_executable('firefox')
+    if not FIREFOX_BINARY:
         print "Can't find Firefox!"
-        errmsg = os.strerror(errno.ENOPKG)
-        errmsg += 'Firefox See: {}'.format(THIS_FILE)
+        errmsg = (
+            "Can't find Firefox! Please ensure it is on $PATH"
+            "or somewhere it can be found.See: {}".format(THIS_FILE)
+        )
         raise EnvironmentError(errno.ENOPKG, errmsg)
+    FIREFOX_VERSION = subprocess.check_output(
+        [FIREFOX_BINARY, '--version']).rstrip().split()[-1]
+
+    FIREFOX_IS_BROKEN = FIREFOX_VERSION >= '47.0'
+    print "HAS MARIONETTE: {}".format(HAS_MARIONETTE)
+    print "FIREFOX VERSION is: {}".format(FIREFOX_VERSION)
 
     if FIREFOX_IS_BROKEN and not HAS_MARIONETTE:
         errmsg = os.strerror(errno.ENOPKG)
@@ -81,6 +91,7 @@ def get_firefox_webdriver():
         caps["marionette"] = True
         caps["binary"] = find_executable('firefox')
         driver = webdriver.Firefox(capabilities=caps)
+
     else:
         driver = webdriver.Firefox()
     return driver
@@ -90,7 +101,7 @@ def get_firefox_webdriver():
 ################################################################################
 
 
-# N.B. driver must be the name of the websirver not an instance
+# N.B. driver must be the name of the webdriver not an instance
 # e.g. webdriver.Chrome *not* webdriver.Chrome()
 BrowserDefinition = namedtuple(
     'BrowserDefinition', ['name', 'capabilities', 'driver'])

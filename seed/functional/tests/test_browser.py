@@ -12,13 +12,20 @@ from datetime import date
 import inspect
 import os
 
+
 from seed.functional.tests.browser_definitions import BROWSERS
 from seed.functional.tests.base import eprint
 from seed.functional.tests.base import LOGGED_IN_CLASSES
 from seed.functional.tests.base import LOGGED_OUT_CLASSES
+from seed.functional.tests.base import mock_file_factory
+from seed.functional.tests.pages import BuildingInfo, BuildingLabels
+from seed.functional.tests.pages import BuildingsList, BuildingListSettings
+from seed.functional.tests.pages import BuildingProjects, BuildingReports
+from seed.functional.tests.pages import DataMapping, DataSetInfo, DataSetsList
+from seed.functional.tests.pages import LandingPage, MainPage
 
 from seed.data_importer.models import ROW_DELIMITER
-from seed.models import Project, ProjectBuilding, StatusLabel
+# from seed.models import Project, ProjectBuilding, StatusLabel
 
 
 def loggedout_tests_generator():
@@ -35,13 +42,19 @@ def loggedout_tests_generator():
         class LoggedOutTests(LOGGED_OUT_CLASSES[browser.name]):
 
             def test_login(self):
-                self.browser.get(self.live_server_url)
-                username_input = self.browser.find_element_by_id("id_email")
+                page = LandingPage(self, use_url=True)
+                username_input = page.find_element_by_id("id_email")
                 username_input.send_keys('test@example.com')
-                password_input = self.browser.find_element_by_id("id_password")
+                password_input = page.find_element_by_id("id_password")
                 password_input.send_keys('password')
-                self.browser.find_element_by_css_selector('input[value="Log In"]').click()
-                self.wait_for_element_by_css('.menu')
+                page.find_element_by_css_selector('input[value="Log In"]').click()
+                # should now be on main page
+                main_page = MainPage(self)
+                title_container = main_page.wait_for_element(
+                    'CLASS_NAME', 'home_hero_content_container'
+                )
+                title = title_container.find_element_by_tag_name('h1')
+                assert title.text == 'Getting Started'
 
         # ================= TESTS GO ABOVE THIS LINE ======================
 
@@ -65,48 +78,200 @@ def loggedin_tests_generator():
         # logged in. Add your test methods here
         class LoggedInTests(LOGGED_IN_CLASSES[browser.name]):
 
+            def test_dataset_list(self):
+                """Make sure dataset list works."""
+                # load imports
+                self.create_import(name="Test Dataset")
+                page = MainPage(self, use_url=True)
+                page.find_element_by_id('sidebar-data').click()
+                datasets = DataSetsList(self)
+
+                # Make sure there's a row in the table
+                datasets.find_element_by_css_selector('td.name')
+                table = datasets.ensure_table_is_loaded()
+                data_set_name = table.first_row['DATA SET NAME']
+                data_set_files = table.first_row['# OF FILES']
+                assert data_set_name.text == "Test Dataset"
+                assert data_set_files.text == "1"
+
+            def test_dataset_detail(self):
+                """
+                Make sure you can click dataset name on dataset list page
+                and load dataset.
+                """
+                mock_file = mock_file_factory("test.csv")
+                datasets = DataSetsList(
+                    self, create_import=True,
+                    import_file={'mock_file': mock_file}
+                )
+                # Click a dataset.
+                datasets.find_element_by_css_selector(
+                    'td a.import_name').click()
+
+                # ensure page is loaded
+                dataset = DataSetInfo(self)
+
+                # Make sure import file is there.
+                table = dataset.ensure_table_is_loaded()
+                row = table.first_row
+                data_file_cell = row['DATA FILES']
+                assert data_file_cell.text == mock_file.base_name
+
+            def test_mapping_page(self):
+                """
+                Make sure you can click mapping button on dataset page and
+                mapping loads.
+                """
+                # Create records and navigate to dataset detail view.
+                mock_file = mock_file_factory("test.csv")
+                import_record = {'name': 'Test Dataset'}
+                import_file = {
+                    'cached_first_row': ROW_DELIMITER.join(
+                        [u'name', u'address']
+                    ),
+                    'cached_second_to_fifth_row': ROW_DELIMITER.join(
+                        ['name', 'address.']
+                    ),
+                    'mock_file': mock_file
+                }
+                dataset = DataSetInfo(
+                    self, import_record=import_record, import_file=import_file
+                )
+
+                # Click mapping button.
+                dataset.find_element_by_id('data-mapping-0').click()
+
+                # Make sure mapping table is shown.
+                data_mapping = DataMapping(self)
+                table = data_mapping.ensure_table_is_loaded()
+                row = table.find_row_by_field('DATA FILE HEADER', 'address')
+                address = row['ROW 1']
+                assert address.text == 'address.'
+
+            def test_building_list(self):
+                """
+                Make sure you can click from the menu to the building list
+                page and it loads.
+                """
+                # load main page and create building snapshot
+                main_page = MainPage(self, use_url=True)
+                main_page.create_record(create_building=True)
+
+                # click on building in sidebar
+                main_page.find_element_by_id('sidebar-buildings').click()
+                self.wait_for_element_by_css('#building-list')
+
+                # Make sure a building is present.
+                self.browser.find_element_by_css_selector(
+                    '#building-list-table td')
+                buildings_list = BuildingsList(self)
+                table = buildings_list.ensure_table_is_loaded()
+                address = table.first_row['ADDRESS LINE 1']
+                assert address.text == 'address'
+
+            def test_building_list_tab_settings(self):
+                """Make sure building list settings tab loads."""
+                # load buildings list and create records
+                buildings_list = BuildingsList(self, url=True)
+                # locate setting link and click on it
+                settings_link = buildings_list.find_element_by_id(
+                    'list-settings'
+                )
+                settings_link.click()
+
+                # ensure settings page has loaded correctly.
+                settings_page = BuildingListSettings(self)
+                table = settings_page.ensure_table_is_loaded()
+                assert table.first_row['COLUMN NAME'].text == 'Address Line 1'
+
+            def test_building_list_tab_reports(self):
+                """Make sure building list reports tab loads."""
+                # load buildings list and create records
+                buildings_list = BuildingsList(self, url=True)
+                reports_link = buildings_list.find_element_by_id('reports')
+                reports_link.click()
+
+                reports_page = BuildingReports(self)
+                form = reports_page.wait_for_element_by_class_name('chart-inputs')
+                form_groups = form.find_elements_by_class_name('form-group')
+                button = form_groups[-1].find_element_by_tag_name('button')
+                assert button.text == 'Update Charts'
+
+            def test_building_list_tab_labels(self):
+                """Make sure building list labels tab loads."""
+                buildings_list = BuildingsList(self, url=True)
+                labels_link = buildings_list.find_element_by_id('labels')
+                labels_link.click()
+
+                labels_page = BuildingLabels(self)
+                button = labels_page.find_element_by_id('btnCreateLabel')
+                assert button.text == 'Create label'
+
+            def test_building_detail(self):
+                """Make sure building detail page loads."""
+                # load Buildings List
+                buildings_list = BuildingsList(self, url=True)
+                # Click a building.
+                buildings_link = buildings_list.wait_for_element(
+                    'CSS_SELECTOR', 'td a')
+                buildings_link.click()
+
+                # Wait for details page
+                details_page = BuildingInfo(self)
+                table = details_page.ensure_table_is_loaded()
+                assert table.first_row['FIELD'].text == 'Address Line 1'
+
+            def test_building_detail_tab_projects(self):
+                """Make sure building detail projects tab shows project."""
+                details_page = BuildingInfo(
+                    self,
+                    create_building=True,
+                    create_project=True
+                )
+                projects_link = details_page.find_element_by_id('projects')
+                projects_link.click()
+                project_list = BuildingProjects(self)
+                table = project_list.ensure_table_is_loaded()
+                project = table.last_row['PROJECT']
+                assert project.text == 'test'
+
             def test_building_detail_edit_year_end_save(self):
                 """Make sure changes to Year Ending date propagate."""
                 # make sure Year Ending column will show
                 self.set_buildings_list_columns('year_ending')
 
-                import_file, _ = self.create_import()
-                self.create_building(import_file, year_ending='2014-12-31')
-                url = "{}/app/#/buildings".format(self.live_server_url)
-                self.browser.get(url)
-                self.wait_for_element_by_css('#building-list')
-
+                # load Buildings List
+                buildings_list = BuildingsList(self, url=True)
                 # Click a building.
-                self.browser.find_element_by_css_selector('td a').click()
+                buildings_link = buildings_list.wait_for_element(
+                    'CSS_SELECTOR', 'td a')
+                buildings_link.click()
 
                 # Wait for details page and click the edit button
-                self.wait_for_element('PARTIAL_LINK_TEXT', 'Edit')
-                self.browser.find_element_by_partial_link_text('Edit').click()
+                details_page = BuildingInfo(self)
+                details_page.find_element_by_partial_link_text('Edit').click()
 
                 # Wait for form to load
-                self.wait_for_element('LINK_TEXT', 'Save Changes')
+                details_page.wait_for_element('LINK_TEXT', 'Save Changes')
 
                 # Find Year Ending and set new value
+                details_table = details_page.ensure_table_is_loaded()
                 new_year_ending = date(2015, 12, 31)
-                year_ending = self.browser.find_element_by_xpath(
-                    "//table/tbody/tr[last()]/td[2]/div[1]/input[@id='edit_tax_lot_id']"
-                )
+                row = details_table.find_row_by_field('FIELD', 'Year Ending')
+                year_ending = row['MASTER'].find_element_by_id('edit_tax_lot_id')
                 year_ending.clear()
                 year_ending.send_keys(str(new_year_ending))
-                self.browser.find_element_by_link_text('Save Changes').click()
+                details_page.find_element_by_link_text('Save Changes').click()
 
                 # Return to Buildings List
-                self.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
-                self.browser.find_element_by_partial_link_text(
+                details_page.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
+                details_page.find_element_by_partial_link_text(
                     'Buildings').click()
-
-                # Find Year Ending field
-                self.wait_for_element_by_css('#building-list')
-                year_ending = self.browser.find_element_by_xpath(
-                    "//table/tbody/tr[1]/td[2]/span"
-                )
+                buildings_list.reload()
 
                 # Assert new year ending values correctly set
+                table = buildings_list.ensure_table_is_loaded()
+                year_ending = table.last_row['YEAR ENDING']
                 assert year_ending.text == new_year_ending.strftime('%D')
 
             def test_building_detail_th_resize(self):
@@ -128,179 +293,31 @@ def loggedin_tests_generator():
                 if ((os.getenv('TRAVIS') == 'true') and
                         (self.browser_type.name != 'Firefox')) or (
                         self.browser_type.name == 'Chrome'):
-                    import_file, _ = self.create_import()
-                    canonical_building = self.create_building(import_file)
-                    live_server_url = "{}/app/#/buildings/{}".format(
-                        self.live_server_url,
-                        canonical_building.pk
-                    )
-                    self.browser.get(live_server_url)
+                    # load Building Details
+                    building_details = BuildingInfo(self, create_building=True)
 
                     # test to make sure we can resize table header
-                    fields = self.browser.find_element_by_id(
+                    fields = building_details.find_element_by_id(
                         'building-fields')
                     assert fields is not None
                     size = fields.size['width']
                     xoffset = fields.size['width']
                     yoffset = 0
-                    actions = self.get_action_chains()
+
                     # move to right hand edge and click and drag
-                    actions.move_to_element_with_offset(
+                    building_details.action.move_to_element_with_offset(
                         fields, xoffset, yoffset)
-                    actions.click_and_hold()
-                    actions.move_to_element_with_offset(
+                    building_details.action.click_and_hold()
+                    building_details.action.move_to_element_with_offset(
                         fields, fields.location['x'] + 180, yoffset
                     )
-                    actions.release()
-                    actions.perform()
+                    building_details.action.release()
+                    building_details.perform_stored_actions()
+
                     # assert it has been resized
                     assert size > fields.size['width']
                     # crude test to test against #982
                     assert fields.size['width'] > 80
-
-            def test_dataset_list(self):
-                """Make sure dataset list works."""
-                self.create_import()
-                self.browser.get(self.live_server_url)
-                self.wait_for_element_by_css('.menu')
-                self.browser.find_element_by_id('sidebar-data').click()
-                self.wait_for_element_by_css('.dataset_list')
-
-                # Make sure there's a row in the table
-                self.browser.find_element_by_css_selector('td.name')
-
-            def test_dataset_detail(self):
-                """
-                Make sure you can click dataset name on dataset list page
-                and load dataset.
-                """
-                self.create_import()
-
-                # Navigate to dataset list view.
-                self.browser.get(self.live_server_url + '/app/#/data')
-                self.wait_for_element_by_css('.dataset_list')
-
-                # Click a dataset.
-                self.browser.find_element_by_css_selector(
-                    'td a.import_name').click()
-
-                # Make sure import file is there.
-                self.wait_for_element_by_css('td.data_file_name')
-
-            def test_mapping_page(self):
-                """
-                Make sure you can click mapping button on dataset page and
-                mapping loads.
-                """
-                import_file, import_record = self.create_import(
-                    cached_first_row=ROW_DELIMITER.join(
-                        [u'name', u'address']
-                    ),
-                    cached_second_to_fifth_row=ROW_DELIMITER.join(
-                        ['name', 'address.']
-                    )
-                )
-
-                # Navigate to dataset detail view.
-                url = "{}/app/#/data/{}".format(
-                    self.live_server_url, import_record.pk)
-                self.browser.get(url)
-
-                # Wait for load.
-                self.wait_for_element_by_css('td.data_file_name')
-
-                # Click mapping button.
-                self.browser.find_element_by_id('data-mapping-0').click()
-
-                # Make sure mapping table is shown.
-                self.wait_for_element_by_css('div.mapping')
-
-            def test_building_list(self):
-                """
-                Make sure you can click from the menu to the building list
-                page and it loads.
-                """
-                import_file, _ = self.create_import()
-                self.create_building(import_file)
-                self.browser.get(self.live_server_url)
-
-                self.wait_for_element_by_css('.menu')
-                self.browser.find_element_by_id('sidebar-buildings').click()
-                self.wait_for_element_by_css('#building-list')
-
-                # Make sure a building is present.
-                self.browser.find_element_by_css_selector(
-                    '#building-list-table td')
-
-            def test_building_list_tab_settings(self):
-                """Make sure building list settings tab loads."""
-                import_file, _ = self.create_import()
-                self.create_building(import_file)
-                url = "{}/app/#/buildings/settings".format(
-                    self.live_server_url)
-                self.browser.get(url)
-
-                self.wait_for_element_by_css('#building-settings')
-
-            def test_building_list_tab_reports(self):
-                """Make sure building list reports tab loads."""
-                import_file, _ = self.create_import()
-                self.create_building(import_file)
-                url = "{}/app/#/buildings/reports".format(
-                    self.live_server_url)
-                self.browser.get(url)
-
-                self.wait_for_element_by_css('.building-reports')
-
-            def test_building_list_tab_labels(self):
-                """Make sure building list labels tab loads."""
-                import_file, _ = self.create_import()
-                self.create_building(import_file)
-                StatusLabel.objects.create(
-                    name='test',
-                    super_organization=self.org
-                )
-                url = "{}/app/#/buildings/labels".format(self.live_server_url)
-                self.browser.get(url)
-
-                # Make sure a label is in the list.
-                self.wait_for_element_by_css('tbody tr td span.label')
-
-            def test_building_detail(self):
-                """Make sure building detail page loads."""
-                import_file, _ = self.create_import()
-                self.create_building(import_file)
-                url = "{}/app/#/buildings".format(self.live_server_url)
-                self.browser.get(url)
-                self.wait_for_element_by_css('#building-list')
-
-                # Click a building.
-                self.browser.find_element_by_css_selector('td a').click()
-
-                # We know detail page is loaded when projects tab is there.
-                self.wait_for_element_by_css('#projects')
-
-            def test_building_detail_tab_projects(self):
-                """Make sure building detail projects tab shows project."""
-                import_file, _ = self.create_import()
-                canonical_building = self.create_building(import_file)
-                project = Project.objects.create(
-                    name='test', owner=self.user,
-                    super_organization=self.org
-                )
-                ProjectBuilding.objects.create(
-                    project=project,
-                    building_snapshot=canonical_building.canonical_snapshot
-                )
-                url = "{}/app/#/buildings/{}/projects".format(
-                    self.live_server_url,
-                    canonical_building.pk
-                )
-                self.browser.get(url)
-
-                # Make sure project is in list.
-                self.wait_for_element_by_css('tbody tr td a')
-
         # ================= TESTS GO ABOVE THIS LINE ======================
 
         # Leave this at the end
