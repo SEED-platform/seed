@@ -2,9 +2,9 @@ from destroy_bluesky_data import Command as DestroyDataCommand
 from migrate_organization import Command as MigrateOrganizationCommand
 from create_campus_relationships_organization import Command as CreateCampusCommand
 from create_m2m_relationships_organization import Command as CreateM2MCommand
-
-
 from django.core.management.base import BaseCommand
+from seed.models import CanonicalBuilding
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -14,6 +14,8 @@ class Command(BaseCommand):
         parser.add_argument('--campus', dest='campus', default=False, action="store_true")
         parser.add_argument('--m2m', dest='m2m', default=False, action="store_true")
 
+        # Global search parameters
+        parser.add_argument('--pm', dest='pm', default=False)
 
         parser.add_argument('--org', dest='organization', default=False)
 
@@ -29,8 +31,21 @@ class Command(BaseCommand):
         return
 
 
-
     def handle(self, *args, **options):
+
+
+
+        if options['pm']:
+            pm_property_ids = options['pm']
+
+            pms = map(lambda x: x.strip(), pm_property_ids.split(","))
+            cbs = ",".join(map(lambda x: str(x.pk), CanonicalBuilding.objects.filter(buildingsnapshot__pm_property_id__in=pms, active=True).all()))
+
+            if not options['cb_whitelist_string']:
+                options['cb_whitelist_string'] = cbs
+            else:
+                options['cb_whitelist_string'] = options['cb_whitelist_string'] + "," + cbs
+
         destroy, migrate, campus, m2m = map(lambda x: options[x], ("destroy", "migrate", "campus", "m2m"))
 
         if not destroy and not migrate and not campus and not m2m:
