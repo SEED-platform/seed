@@ -178,18 +178,21 @@ class Command(BaseCommand):
 
             original_taxlot_view = m2m.taxlot_view
 
-
-
-
-
             # Some have duplicates
             for taxlot_id in set(taxlot_id_list):
                 print "Break up tax lot {} to {} for cycle {}".format(jurisdiction_taxlot_identifier, taxlot_id_list, m2m.cycle)
                 # Take tax lot and create a taxlot, a taxlot view, and a taxlot state.
                 # taxlot state, and an m2m for the view and installs each.
 
-                if created_tax_lots[taxlot_id]:
-                    tax_lot = created_tax_lots[taxlot_id]
+
+                # Check to see if the tax lot exists
+
+                matching_views_qry = TaxLotView.objects.filter(taxlot__organization=org, state__jurisdiction_taxlot_identifier=taxlot_id)
+                if matching_views_qry.count():
+                    tax_lot = matching_views_qry.first().taxlot
+
+                    # FIXME: Yuck! Refactor me please!
+                    created_tax_lots[taxlot_id] = tax_lot
 
                     # Apparently this is how Django clones things?
                     taxlot_state = original_taxlot_view.state
