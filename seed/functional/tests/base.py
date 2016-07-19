@@ -346,7 +346,7 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         if 'address_line_1' not in kw:
             snapshot_params.update({'address_line_1': 'address'})
         snapshot_params.update(kw)
-        building= BuildingSnapshot.objects.create(**snapshot_params)
+        building = BuildingSnapshot.objects.create(**snapshot_params)
         canonical_building.canonical_snapshot = building
         canonical_building.save()
         return canonical_building
