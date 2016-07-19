@@ -153,8 +153,7 @@ A better version of the test is this::
         address = table.first_row['ADDRESS LINE 1']
         assert address.text == 'address'
 
-Now the test checks some data is present as well (in this case 'address' is th
-e
+Now the test checks some data is present as well (in this case 'address' is the
 default text set where a building is created if 'address_line_1' is not set).
 
 Traversing Pages:
