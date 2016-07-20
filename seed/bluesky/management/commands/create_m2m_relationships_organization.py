@@ -83,6 +83,9 @@ def get_id_fields(parse_string):
     Raises an exception if string does not match
     """
 
+    # pdb.set_trace()
+
+
     if parse_string is None: raise TaxLotIDValueError(parse_string)
 
     #The id field can use any of several delimiters so reduce it to just one
@@ -90,8 +93,8 @@ def get_id_fields(parse_string):
     delimiter_to_use = ","
     other_delimiters = [";", ":"]
 
-    if not check_delimiter_sanity(parse_string, [delimiter_to_use] + other_delimiters):
-        raise TaxLotIDValueError(parse_string)
+    # if not check_delimiter_sanity(parse_string, [delimiter_to_use] + other_delimiters):
+    #     raise TaxLotIDValueError(parse_string)
 
 
     cleaned_str = sanitize_delimiters(parse_string, delimiter_to_use, other_delimiters)
@@ -141,22 +144,19 @@ class Command(BaseCommand):
             self.split_taxlots_into_m2m_relationships(org_id)
 
         # At the end run two checks:
-        # Go through and delete any orphaned Tax Lots with no Views
-        for taxlot in TaxLot.objects.filter(organization_id=org_id).all():
-            if TaxLotView.objects.filter(taxlot=taxlot).count() == 0:
-                print "Removing empty taxlot."
-                taxlot.delete()
 
-        # Go through the tax Lots, collect
+
+        # Go through the tax Lots, collect any that are left, make
+        # sure they aren't a part of any m2m entities.
         for view in TaxLotView.objects.filter(taxlot__organization_id=org_id).all():
             try:
                 taxlot_field_list = get_id_fields(view.state.jurisdiction_taxlot_identifier)
                 if len(taxlot_field_list) > 1:
                     print "Danger - tax lot '{}' still exists.".format(view.state.jurisdiction_taxlot_identifier)
-
-
             except TaxLotIDValueError, e:
                 continue
+
+
         return
 
     def split_taxlots_into_m2m_relationships(self, org_id):
@@ -165,25 +165,26 @@ class Command(BaseCommand):
 
         created_tax_lots = collections.defaultdict(lambda : False)
 
-        # pdb.set_trace()
         for m2m in itertools.chain(TaxLotProperty.objects.filter(property_view__property__organization=org).all(),
                                    TaxLotProperty.objects.filter(taxlot_view__taxlot__organization=org).all()):
             jurisdiction_taxlot_identifier = m2m.taxlot_view.state.jurisdiction_taxlot_identifier
+            taxlot_id_list = []
             try:
                 taxlot_id_list = get_id_fields(m2m.taxlot_view.state.jurisdiction_taxlot_identifier)
+                print taxlot_id_list # HOHO
             except TaxLotIDValueError, e:
+                print e # HOHO
                 continue
+
+
             if len(taxlot_id_list) <= 1: continue
 
-
             original_taxlot_view = m2m.taxlot_view
-
             # Some have duplicates
             for taxlot_id in set(taxlot_id_list):
                 print "Break up tax lot {} to {} for cycle {}".format(jurisdiction_taxlot_identifier, taxlot_id_list, m2m.cycle)
                 # Take tax lot and create a taxlot, a taxlot view, and a taxlot state.
                 # taxlot state, and an m2m for the view and installs each.
-
 
                 # Check to see if the tax lot exists
 
@@ -236,12 +237,65 @@ class Command(BaseCommand):
                 tl_view.delete()
                 pass
 
-
-
             # Go through each view, find all it's tax lot ids and make sure they don't look like lists of many things.
-
-
             print "{} => {}".format(jurisdiction_taxlot_identifier, taxlot_id_list)
+
+
+        # Go through the tax Lots, collect any that are left, make
+        # sure they aren't a part of any m2m entities.
+        for original_taxlot_view in TaxLotView.objects.filter(taxlot__organization=org).all():
+            try:
+
+                jurisdiction_taxlot_identifier = original_taxlot_view.state.jurisdiction_taxlot_identifier
+                taxlot_id_list = get_id_fields(jurisdiction_taxlot_identifier)
+                if len(taxlot_id_list) <= 1: continue
+                assert TaxLotProperty.objects.filter(taxlot_view = original_taxlot_view).count() == 0, "Tax Lot should have been broken up already."
+
+                # Some have duplicates
+                for taxlot_id in set(taxlot_id_list):
+                    print "Break up tax lot {} to {} for cycle {}".format(jurisdiction_taxlot_identifier, taxlot_id_list, m2m.cycle)
+                    # Take tax lot and create a taxlot, a taxlot view, and a taxlot state.
+                    # taxlot state, and an m2m for the view and installs each.
+
+                    matching_views_qry = TaxLotView.objects.filter(taxlot__organization=org, state__jurisdiction_taxlot_identifier=taxlot_id)
+                    if matching_views_qry.count():
+                        taxlot = matching_views_qry.first().taxlot
+
+                        if TaxLotView.objects.filter(taxlot = taxlot, cycle = original_taxlot_view.cycle).count() == 0:
+                            taxlot_state = original_taxlot_view.state
+                            taxlot_state.pk = None
+                            taxlot_state.jurisdiction_taxlot_identifier = taxlot_id
+                            taxlot_state.save()
+
+                            tlv = TaxLotView(taxlot = taxlot, cycle = original_taxlot_view.cycle, state = taxlot_state)
+                            tlv.save()
+
+                    else:
+                        tl = TaxLot(organization=original_taxlot_view.taxlot.organization)
+                        tl.save()
+                        created_tax_lots[taxlot_id] = tl
+
+                        # Apparently this is how Django clones things?
+                        taxlot_state = original_taxlot_view.state
+                        taxlot_state.pk = None
+                        taxlot_state.jurisdiction_taxlot_identifier = taxlot_id
+                        taxlot_state.save()
+
+                        tlv = TaxLotView(taxlot = tl, cycle = original_taxlot_view.cycle, state = taxlot_state)
+                        tlv.save()
+                else:
+                    original_taxlot_view.delete()
+
+
+            except TaxLotIDValueError, e:
+                continue
+
+
+        # Go through and delete any orphaned Tax Lots with no Views
+        for taxlot in TaxLot.objects.filter(organization_id=org_id).all():
+            if TaxLotView.objects.filter(taxlot=taxlot).count() == 0:
+                print "Removing empty taxlot."
+                taxlot.delete()
 
         return
 
