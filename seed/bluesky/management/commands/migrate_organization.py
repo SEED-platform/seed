@@ -537,8 +537,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     last_property_view = collections.defaultdict(lambda : False)
 
 
-    # # FIXME: Must call the node ordering code
-    # pdb.set_trace()
+    # FIXME: Make sure the nodes are all ordered here.
     # node_process_order = all_nodes
     # calculate_migration_order(node_process_order, child_dictionary)
 
@@ -578,10 +577,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                 propertyview.state = property_state
                 propertyview.save()
             else:
-                try:
-                    propertyview, created = seed.bluesky.models.PropertyView.objects.get_or_create(property=property_obj, cycle=import_cycle, state=property_state)
-                except Exception, xcpt:
-                    pdb.set_trace()
+                propertyview, created = seed.bluesky.models.PropertyView.objects.get_or_create(property=property_obj, cycle=import_cycle, state=property_state)
                 assert created, "Should have created something"
                 property_view_created += int(created)
                 propertyview.save()

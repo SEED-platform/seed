@@ -83,9 +83,6 @@ def get_id_fields(parse_string):
     Raises an exception if string does not match
     """
 
-    # pdb.set_trace()
-
-
     if parse_string is None: raise TaxLotIDValueError(parse_string)
 
     #The id field can use any of several delimiters so reduce it to just one
