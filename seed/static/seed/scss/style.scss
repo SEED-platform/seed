@@ -2263,3 +2263,44 @@ gs-input .tags .tag-item .remove-button {
     //  set a min width for the field column
     min-width: 275px;
 }
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* Styles for mods to blue sky buiding list. /
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+/* Placing these style here for initial dev. These should be integrated into styles above once approved */
+
+/* Tabs: The section_tab_container defined above doesn't seem to fit well with how we wants tabs to
+         appear in the building list. So defining a style here that can hopefully be refactored into
+         the styles above at a later point. */
+
+.building_list_tab_container {
+
+  margin-left: 10px;
+  margin-bottom: -2px;
+
+  .nav-tabs>li{
+    margin-right:4px;
+  }
+  .nav-tabs>li>a{
+    background-color: #D6D6D6;
+    border: 1px solid #bbb;
+    color: #222;
+    border-radius: 6px 6px 0 0;
+  }
+  .nav-tabs>li.active>a{
+    background-color: #F1F1F1;
+    border: 1px solid #D1D1D1;
+  }
+
+}
+
+
+/* UI Grid modifications */
+/* Remove gradient on top bar. It's distracting and decreases legibilty */
+.ui-grid-top-panel {
+    background: #F1F1F1;
+    filter: none;
+}
+
