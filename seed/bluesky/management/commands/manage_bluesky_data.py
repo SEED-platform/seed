@@ -2,6 +2,7 @@ from destroy_bluesky_data import Command as DestroyDataCommand
 from migrate_organization import Command as MigrateOrganizationCommand
 from create_campus_relationships_organization import Command as CreateCampusCommand
 from create_m2m_relationships_organization import Command as CreateM2MCommand
+from create_primarysecondary_taxlots import Command as CreatePrimarySecondaryCommand
 from django.core.management.base import BaseCommand
 from seed.models import CanonicalBuilding
 
@@ -13,6 +14,7 @@ class Command(BaseCommand):
         parser.add_argument('--migrate', dest='migrate', default=False, action="store_true")
         parser.add_argument('--campus', dest='campus', default=False, action="store_true")
         parser.add_argument('--m2m', dest='m2m', default=False, action="store_true")
+        parser.add_argument('--primarysecondary', dest='primarysecondary', default=False, action="store_true")
 
         # Global search parameters
         parser.add_argument('--pm', dest='pm', default=False)
@@ -46,10 +48,10 @@ class Command(BaseCommand):
             else:
                 options['cb_whitelist_string'] = options['cb_whitelist_string'] + "," + cbs
 
-        destroy, migrate, campus, m2m = map(lambda x: options[x], ("destroy", "migrate", "campus", "m2m"))
+        destroy, migrate, campus, m2m, primarysecondary = map(lambda x: options[x], ("destroy", "migrate", "campus", "m2m", "primarysecondary"))
 
-        if not destroy and not migrate and not campus and not m2m:
-            destroy, migrate, campus, m2m = [True] * 4
+        if not destroy and not migrate and not campus and not m2m and not primarysecondary:
+            destroy, migrate, campus, m2m, primarysecondary = [True] * 5
 
         if destroy:
             ddc = DestroyDataCommand()
@@ -66,5 +68,9 @@ class Command(BaseCommand):
         if m2m:
             create_m2m_command = CreateM2MCommand()
             create_m2m_command.handle(*args, **options)
+
+        if primarysecondary:
+            create_primarysecondary_command = CreatePrimarySecondaryCommand()
+            create_primarysecondary_command.handle(*args, **options)
 
         return

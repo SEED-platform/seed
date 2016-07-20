@@ -1,3 +1,6 @@
+"""Command to go through m2m Records and assign primary/secondary.
+"""
+
 from __future__ import unicode_literals
 
 from django.db import models, migrations
@@ -42,8 +45,7 @@ class Command(BaseCommand):
         return
 
     def handle(self, *args, **options):
-        """Do something."""
-
+        """Go through organization by organization and look for m2m."""
 
         if options['organization']:
             core_organization = map(int, options['organization'].split(","))
@@ -59,11 +61,20 @@ class Command(BaseCommand):
 
             assert org, "Organization {} not found".format(org_id)
 
+            self.assign_primarysecondary_tax_lots(org)
 
-            property_views = PropertyView.objects.filter(cycle__organization=org).all()
+        return
 
 
+    def assign_primarysecondary_tax_lots(self, org):
+        for property_view in PropertyView.objects.filter(property__organization=org).all():
+            if TaxLotProperty.objects.filter(property_view = property_view).count() <= 1: continue
 
+            links = list(TaxLotProperty.objects.filter(property_view = property_view).order_by('property_view__state__building_portfolio_manager_identifier').all())
 
+            for ndx in xrange(1, len(links)):
+                print "Setting secondary"
+                links[ndx].primary = False
+                links[ndx].save()
 
         return
