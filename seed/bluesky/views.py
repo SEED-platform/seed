@@ -171,7 +171,8 @@ def get_property(request, property_pk):
 @has_perm('requires_viewer')
 def get_taxlots(request):
     page = request.GET.get('page', 1)
-    per_page = request.GET.get('per_page', 1)
+    #per_page = request.GET.get('per_page', 1)
+    per_page = 15000
 
     cycle_id = request.GET.get('cycle')
     if cycle_id:
