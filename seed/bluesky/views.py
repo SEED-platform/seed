@@ -171,7 +171,10 @@ def get_property(request, property_pk):
 @has_perm('requires_viewer')
 def get_taxlots(request):
     page = request.GET.get('page', 1)
-    #per_page = request.GET.get('per_page', 1)
+
+    # FIXME
+    # Temporarily disable paging on this view - does not seem to work.
+    # per_page = request.GET.get('per_page', 1)
     per_page = 15000
 
     cycle_id = request.GET.get('cycle')
@@ -870,7 +873,6 @@ def get_taxlot_columns(request):
             'treeAggregationType': 'uniqueList',
             'related': True,
         })
-
 
     taxlot_extra_data_fields = ["taxlot_cb_id"]
     for c in taxlot_extra_data_fields:
