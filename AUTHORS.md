@@ -1,7 +1,7 @@
-LBNL 
+LBNL
 - Stephen Czarnecki (https://github.com/StephenCzarnecki)
 - Spencer Dutton (https://github.com/spencerdutton)
-- Megha Sandesh (https://github.com/meghasandesh) 
+- Megha Sandesh (https://github.com/meghasandesh)
 - Dan Gunter (https://github.com/dangunter)
 - Claudine Custodio (https://github.com/cycustodio)
 
@@ -17,7 +17,7 @@ QuickLeft
 - Phuong Palmares	(ppalmares@quickleft.com)
 
 ---
-PSD Consulting / Impact Lab			
+PSD Consulting / Impact Lab
 - Rich Andrulis (https://github.com/andrulis)
 - Greg Thomas (gthomas@psdconsulting.com)
 - (https://github.com/jasbrand)
@@ -28,22 +28,26 @@ PSD Consulting / Impact Lab
 - Phil Ngo (https://github.com/philngo)
 
 ---
-McQuillen Interactive		
+McQuillen Interactive
 - Daniel McQuillen	(https://github.com/danielmcquillen)
 
 ---
-Cake Systems		
+Cake Systems
 - Michael Atkins (matkins@earthadvantage.org)
 - Brandon Gallagher (bgallagher@cakesystems.com)
 - Julie Gallagher	(https://github.com/juliecov)
 
+--
+Windfall Technical
+- Nathan Addy (nathan.addy@gmail.com)
+
 ---
-NREL		
+NREL
 - Nicholas Long (https://github.com/nllong)
 - Alex Swindler (https://github.com/axelstudios)
 
 ---
-Maalka 
+Maalka
 - Clay Teeter (clay@maalka.com)
 
 ---

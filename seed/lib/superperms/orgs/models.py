@@ -184,6 +184,16 @@ class Organization(models.Model):
             return self
         return self.parent_org
 
+    @property
+    def parent_id(self):
+        """
+        The id of the  top-most org in this org's tree.
+        That could be this org, or it could be this org's parent.
+        """
+        if self.is_parent:
+            return self.id
+        return self.parent_org.id
+
     def __unicode__(self):
         return u'Organization: {0}({1})'.format(self.name, self.pk)
 

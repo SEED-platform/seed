@@ -34,6 +34,7 @@
         <link href="{{STATIC_URL}}vendors/bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
         <link href="{{STATIC_URL}}vendors/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
         <link href="{{STATIC_URL}}vendors/bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css" rel="stylesheet" type="text/css">
+        <link href="{{STATIC_URL}}vendors/bower_components/angular-ui-grid/ui-grid.min.css" rel="stylesheet" type="text/css">
         <link href="{{STATIC_URL}}vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.css" rel="stylesheet" type="text/css">
         <link href="{{STATIC_URL}}vendors/bower_components/ng-tags-input/ng-tags-input.css" rel="stylesheet" type="text/css">
         <link href="{{STATIC_URL}}vendors/bower_components/ng-tags-input/ng-tags-input.bootstrap.css" rel="stylesheet" type="text/css">
@@ -90,6 +91,7 @@
             {% endif %}
 
             <script src="{{STATIC_URL}}vendors/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+            <script src="{{STATIC_URL}}seed/js/vendor/ui-grid.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-sortable/sortable.min.js"></script>
 
@@ -107,9 +109,9 @@
             <script src="{{STATIC_URL}}vendors/bower_components/spin.js/spin.min.js"></script>
 
             {% ifequal FILE_UPLOAD_DESTINATION 'S3' %}
-            <script src="{{STATIC_URL}}vendors/bower_components/fine-uploader/_build/s3.fineuploader.js" ></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/fine-uploader/_build/s3.fineuploader.js"></script>
             {% else %}
-            <script src="{{STATIC_URL}}vendors/bower_components/fine-uploader/_build/fineuploader.js" ></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/fine-uploader/_build/fineuploader.js"></script>
             {% endifequal %}
 
 
@@ -121,7 +123,7 @@
 
     {% block body %}
     <body>
-        <div class="app" data-ng-app="BE.seed">
+        <div class="app" ng-app="BE.seed" ng-strict-di>
         {% block content %}{% endblock %}
         </div>
     </body>
