@@ -429,7 +429,8 @@ a:not([href]) {
               }
 
               a {
-                padding: 8px;
+                padding: 8px 40px 8px 8px;
+                position: relative;
                 color: $blue;
               }
             }
@@ -445,12 +446,16 @@ a:not([href]) {
               padding-bottom: 15px;
             }
             ul {
+              max-height: calc(100vh - 60px);
+              overflow-y: auto;
               right: 0;
               left: inherit;
               text-align: left;
 
               .fa {
-                float: right;
+                position: absolute;
+                right: 5px;
+                top: 10px;
               }
             }
           }
@@ -2262,4 +2267,19 @@ gs-input .tags .tag-item .remove-button {
 #building-fields {
     //  set a min width for the field column
     min-width: 275px;
+}
+
+.glyphicon.spinning {
+    animation: spin 1s infinite linear;
+    -webkit-animation: spin2 1s infinite linear;
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg); }
+    to { transform: scale(1) rotate(360deg); }
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
 }
