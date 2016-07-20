@@ -5,14 +5,12 @@
 angular.module('BE.seed.controller.bluesky_properties_controller', [])
   .controller('bluesky_properties_controller', [
     '$scope',
-    '$routeParams',
     '$window',
     'bluesky_service',
     'properties',
     'cycles',
     'columns',
     function ($scope,
-              $routeParams,
               $window,
               bluesky_service,
               properties,
@@ -24,8 +22,9 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
       $scope.number_per_page = 999999999;
       $scope.restoring = false;
 
+      var lastCycleId = bluesky_service.get_last_cycle();
       $scope.cycle = {
-        selected_cycle: cycles[0],
+        selected_cycle: lastCycleId ? _.find(cycles, {pk: lastCycleId}) : cycles[0],
         cycles: cycles
       };
 
@@ -68,6 +67,7 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
       };
 
       $scope.update_cycle = function (cycle) {
+        bluesky_service.save_last_cycle(cycle.pk);
         $scope.cycle.selected_cycle = cycle;
         refresh_objects();
       };

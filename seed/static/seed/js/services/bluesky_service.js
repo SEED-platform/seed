@@ -18,8 +18,12 @@ angular.module('BE.seed.service.bluesky_service', []).factory('bluesky_service',
         per_page: per_page || 999999999
       };
 
+      var lastCycleId = bluesky_service.get_last_cycle();
       if (cycle) {
         params.cycle = cycle.pk;
+        bluesky_service.save_last_cycle(cycle.pk);
+      } else if (_.isInteger(lastCycleId)) {
+        params.cycle = lastCycleId;
       }
 
       var defer = $q.defer();
@@ -42,8 +46,12 @@ angular.module('BE.seed.service.bluesky_service', []).factory('bluesky_service',
         per_page: per_page || 999999999
       };
 
+      var lastCycleId = bluesky_service.get_last_cycle();
       if (cycle) {
         params.cycle = cycle.pk;
+        bluesky_service.save_last_cycle(cycle.pk);
+      } else if (_.isInteger(lastCycleId)) {
+        params.cycle = lastCycleId;
       }
 
       var defer = $q.defer();
@@ -73,6 +81,19 @@ angular.module('BE.seed.service.bluesky_service', []).factory('bluesky_service',
         defer.reject(data, status);
       });
       return defer.promise;
+    };
+
+    bluesky_service.get_last_cycle = function () {
+      var organization_id = user_service.get_organization().id,
+        pk = (JSON.parse(sessionStorage.getItem('cycles')) || {})[organization_id];
+      return pk;
+    };
+
+    bluesky_service.save_last_cycle = function (pk) {
+      var organization_id = user_service.get_organization().id,
+        cycles = JSON.parse(sessionStorage.getItem('cycles')) || {};
+      cycles[organization_id] = _.toInteger(pk);
+      sessionStorage.setItem('cycles', JSON.stringify(cycles));
     };
 
     bluesky_service.get_property_columns = function () {
