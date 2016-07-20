@@ -10,7 +10,7 @@ This module defines Page objects representing view in SEED.
 :Example:
 
 Defining a page object
-----------------------
+======================
 
 class Home(Page):
     def __init__(self, test_obj):
@@ -39,6 +39,38 @@ def my_tests_generator():
             home_page = Home(self)
             my_element = home_page.get_element_by_name('example')
             assert my_element.text = 'example text'
+
+:Example:
+
+Defining the Page Object for a page with a table
+================================================
+
+class Home(Page):
+    def __init__(self, test_obj):
+        url = "index.html"
+        locator = Locator('NAME', 'my-button')
+        # will cause ensure_table_is_loaded method to be added
+        self.table_locator = Locator('XPATH', '//table')
+        super(Home, self).__init__(test_obj, locator, url=url)
+        self.load_page()
+
+Calling the page object in a test
+---------------------------------
+::
+    from seed.functional.tests.browser_definitions import import BROWSERS
+    from seed.functional.tests.base import LOGGED_IN_CLASSES
+    from seed.functional.tests.pages import Home
+
+
+    def my_tests_generator():
+        for browser in BROWSERS:
+
+            class Tests((LOGGED_OUT_CLASSES[browser.name]):
+
+            def my_test(self):
+                home_page = Home(self)
+                table = home.page.ensure_table_is_loaded()
+                assert table[0][0].text = 'example text'
 
 :author Paul Munday<paul@paulmunday.net>
 """

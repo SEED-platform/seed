@@ -63,6 +63,37 @@ Calling the page object in a test
 
 :Example:
 
+Sub Classing the Page Object for a page with a table
+====================================================
+class Home(Page):
+    def __init__(self, test_obj):
+        url = "index.html"
+        locator = Locator('NAME', 'my-button')
+        # will cause ensure_table_is_loaded method to be added
+        self.table_locator = Locator('XPATH', '//table')
+        super(Home, self).__init__(test_obj, locator, url=url)
+        self.load_page()
+
+Calling the page object in a test
+---------------------------------
+::
+    from seed.functional.tests.browser_definitions import import BROWSERS
+    from seed.functional.tests.base import LOGGED_IN_CLASSES
+    from seed.functional.tests.pages import Home
+
+
+    def my_tests_generator():
+        for browser in BROWSERS:
+
+            class Tests((LOGGED_OUT_CLASSES[browser.name]):
+
+            def my_test(self):
+                home_page = Home(self)
+                table = home.page.ensure_table_is_loaded()
+                assert table[0][0].text = 'example text'
+
+:Example:
+
 Calling Page directly
 =====================
 ::
@@ -163,7 +194,7 @@ class Page(object):
         # e.g. by clicking on an element of another page.
         if self.url:
             self.browser.get(self.url)
-        self._wait_for_page()
+        return self._wait_for_page()
 
     def reload(self):
         """
@@ -651,23 +682,48 @@ class Table(object):
         error = TypeError('Rows must be sequences, TableRows or OrderedDicts')
         _check_seq(rows, error)
         for row in rows:
-            if self.safe and isinstance(row, (TableRow, collections.OrderedDict)):
+            if isinstance(row, (TableRow, collections.OrderedDict)):
                 _row = TableRow(row)
-                if not _row.header == self.headers:
-                    msg = "Keys in {} do not match {}".format(
-                        row, self.headers)
-                    raise KeyError(msg)
+                if self.safe and tuple(_row.keys()) != self.headers:
+                    raise KeyError(
+                        "Keys in {} do not match {}".format(row, self.headers)
+                    )
             elif _check_seq(row, error):
                 if self.safe and len(row) != len(self.headers):
                     raise IndexError(
-                        "{} does not contain the same number of elements"
+                        "{} does not contain the same number of elements "
                         "as {}".format(row, self.headers)
                     )
-                _row = TableRow(
-                    [(self.headers[idx], val) for idx, val in enumerate(row)]
-                )
-            else:
-                _row = None
+                types = set([
+                    isinstance(val, collections.Sequence)
+                    and not isinstance(val, basestring) for val in row
+                ])
+                if len(types) > 1:
+                    raise TypeError("{} contains mixed types".format(row))
+                if True in types:
+                    if self.safe:
+                        for seq in row:
+                            if len(seq) != 2:
+                                raise IndexError(
+                                    "{} from {} has the wrong length".format(
+                                        seq, row
+                                    )
+                                )
+                        keys = [seq[0] for seq in row]
+                        if tuple(keys) != self.headers:
+                            raise KeyError(
+                                "Keys from  {} would not match {}".format(
+                                    row, self.headers
+                                )
+                            )
+                    _row = TableRow(row)
+                else:
+                    _row = TableRow(
+                        [
+                            (self.headers[idx], val)
+                            for idx, val in enumerate(row)
+                        ]
+                    )
             _rows.append(_row)
         return tuple(_rows)
 
@@ -678,7 +734,7 @@ class Table(object):
         return len(self.rows)
 
     def __eq__(self, other):
-        if not isinstance(Table, other):
+        if not isinstance(other, Table):
             msg = "{} is not an instance of Table".format(other)
             raise TypeError(msg)
         return self.headers == other.headers and self.rows == other.rows
@@ -692,11 +748,11 @@ class Table(object):
         return self
 
     def next(self):
-        while self._itercount < len(self.rows):
-            yield self.rows[self._itercount]
+        if self._itercount < len(self.rows):
+            self._itercount += 1
+            return  self.rows[self._itercount - 1]
         else:
             raise StopIteration
-        self._itercount += 1
 
     @property
     def first_row(self):
@@ -716,14 +772,17 @@ class Table(object):
         An index error will be raised if column corresponding to idx
         is not present.
         """
+        error_msg = "{} is not a column or out of range".format(idx)
         if isinstance(idx, int):
-            name = self.headers[idx]
+            try:
+                name = self.headers[idx]
+            except IndexError:
+                raise IndexError(error_msg)
         else:
             name = idx
-        if name not in self.headers:
-            msg = "{} is not a column or out of range".format(idx)
-            raise IndexError(msg)
-        return TableColumn(name, [row.get(idx, None) for row in self.rows])
+            if name not in self.headers:
+                raise IndexError(error_msg)
+        return TableColumn(name, [row.get(name, None) for row in self.rows])
 
     def find_rows_by_field(self, idx, value):
         """
@@ -735,10 +794,16 @@ class Table(object):
         :type: idx: int/string
         :type: value: string
         """
+        error_msg = "{} is not a column or out of range".format(idx)
         if isinstance(idx, int):
-            name = self.headers[idx]
+            try:
+                name = self.headers[idx]
+            except IndexError:
+                raise IndexError(error_msg)
         else:
             name = idx
+            if name not in self.headers:
+                raise IndexError(error_msg)
         return [
             row for row in self.rows if row.get(name, None).text == value
         ]
@@ -753,10 +818,16 @@ class Table(object):
         :type: idx: int/string
         :type: value: string
         """
+        error_msg = "{} is not a column or out of range".format(idx)
         if isinstance(idx, int):
-            name = self.headers[idx]
+            try:
+                name = self.headers[idx]
+            except IndexError:
+                raise IndexError(error_msg)
         else:
             name = idx
+            if name not in self.headers:
+                raise IndexError(error_msg)
         for row in self.rows:
             if row.get(name, None).text == value:
                 return row
@@ -801,13 +872,20 @@ def table_factory(table):
         # assume the row we want is the first one with the same length as the body
         row_length = len(rows[-1].find_elements_by_tag_name('td'))
         for row in header_rows:
-            if len(row.find_elements_by_tag_name('th')) == row_length:
+            header_row_length = len(row.find_elements_by_tag_name('th')) 
+            if header_row_length == row_length:
                 header_row = row
                 break
         if not header_row:
             #  assume its the last
             safe = False
-            header_row = header_rows[-1]
+            # more headers than cells is ok
+            if header_row_length > row_length:
+                header_row = header_rows[-1]
+            # fewer headers than cells is not ok
+            else:
+                raise IndexError("body row length > number of headers")
+
     else:
         # assume the row we want is the first
         header_row = rows[0]
@@ -868,12 +946,13 @@ class TableRow(collections.Mapping):
     KeyError
     """
     def __init__(self, constructor, **kwargs):
-        key_check = len(constructor)
         if isinstance(constructor, (TableRow, collections.OrderedDict)):
+            key_check = len(constructor)
             constructor = {
                 str(key): val for key, val in constructor.iteritems()
             }
         elif self._check_seq(constructor):
+            key_check = len(constructor)
             constructor = [
                 (str(item[0]), item[1]) for item in constructor
                 if self._check_seq(item)
@@ -914,6 +993,9 @@ class TableRow(collections.Mapping):
 
     def __eq__(self, comp):
         return self.__dict == comp
+
+    def __ne__(self, comp):
+        return self.__dict != comp
 
 
 class TableColumn(collections.Sequence):
