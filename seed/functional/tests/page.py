@@ -750,7 +750,7 @@ class Table(object):
     def next(self):
         if self._itercount < len(self.rows):
             self._itercount += 1
-            return  self.rows[self._itercount - 1]
+            return self.rows[self._itercount - 1]
         else:
             raise StopIteration
 
@@ -872,7 +872,7 @@ def table_factory(table):
         # assume the row we want is the first one with the same length as the body
         row_length = len(rows[-1].find_elements_by_tag_name('td'))
         for row in header_rows:
-            header_row_length = len(row.find_elements_by_tag_name('th')) 
+            header_row_length = len(row.find_elements_by_tag_name('th'))
             if header_row_length == row_length:
                 header_row = row
                 break
