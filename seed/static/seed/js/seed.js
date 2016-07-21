@@ -916,7 +916,7 @@ SEED_app.constant('urls', {
 SEED_app.constant('generated_urls', window.BE.app_urls);
 
 /**
- * UI Grid string overrides
+ * UI Grid overrides
  */
 angular.module('ui.grid').config(['$provide', function ($provide) {
     $provide.decorator('i18nService', ['$delegate', function ($delegate) {
@@ -924,6 +924,38 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
         pagination.sizes = 'properties per page';
         pagination.totalItems = 'properties';
         $delegate.add('en', {pagination: pagination});
+        return $delegate;
+    }]);
+    $provide.decorator('uiGridGridMenuService', ['$delegate', 'i18nService', 'gridUtil', function ($delegate, i18nService, gridUtil) {
+        $delegate.getMenuItems = function ($scope) {
+            var menuItems = [];
+            if ($scope.grid.options.gridMenuCustomItems) {
+                if (!angular.isArray($scope.grid.options.gridMenuCustomItems)) {
+                    gridUtil.logError('gridOptions.gridMenuCustomItems must be an array, and is not');
+                } else {
+                    menuItems = menuItems.concat($scope.grid.options.gridMenuCustomItems);
+                }
+            }
+            var clearFilters = [{
+                title: i18nService.getSafeText('gridMenu.clearAllFilters'),
+                action: function ($event) {
+                    $scope.grid.clearAllFilters();
+                },
+                shown: function () {
+                    return $scope.grid.options.enableFiltering;
+                },
+                order: 100
+            }];
+            menuItems = menuItems.concat(clearFilters);
+            menuItems = menuItems.concat($scope.registeredMenuItems);
+            if ($scope.grid.options.gridMenuShowHideColumns !== false) {
+                menuItems = menuItems.concat($delegate.showHideColumns($scope));
+            }
+            menuItems.sort(function (a, b) {
+                return a.order - b.order;
+            });
+            return menuItems;
+        };
         return $delegate;
     }]);
 }]);
