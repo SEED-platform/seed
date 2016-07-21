@@ -267,20 +267,30 @@ def load_cycle(org, node, year_ending = True, fallback = True):
     time = datetime.datetime(year = time.year, month=time.month, day = time.day)
 
 
-    # FIXME: Refactor.
+    # Rules definitions for how to handle ambiguous data.
+    remap_year = {}
 
-    # Only Berkeley is allowed
-    orgs_allowing_2016 = set([117])
-    if org.pk not in orgs_allowing_2016 and time.year == 2016:
-        time = datetime.datetime(2015,12,31)
+    remap_year[20] = 2014
+    remap_year[7] = 2015
+    remap_year[49] = 2015
+    remap_year[69] = 2015
+    remap_year[10] = 2015
+    remap_year[184] = 2015
+    remap_year[156] = 2015
+    remap_year[117] = 2015
+    remap_year[124] = 2015
+    remap_year[105] = 2015
+    remap_year[126] = 2015
+    remap_year[6] = 2015
+    remap_year[117] = 2016
 
 
-    try:
-        cycle_start = time.replace(month = 1, day = 1, hour = 0, minute = 0, second = 0, microsecond = 0)
-        cycle_end = cycle_start.replace(year=cycle_start.year+1)-datetime.timedelta(seconds = 1)
-    except:
-        pdb.set_trace()
+    if time.year == 2016 and org.pk in remap_year:
+        time = time.replace(year = remap_year[org.pk])
 
+
+    cycle_start = time.replace(month = 1, day = 1, hour = 0, minute = 0, second = 0, microsecond = 0)
+    cycle_end = cycle_start.replace(year=cycle_start.year+1)-datetime.timedelta(seconds = 1)
     cycle, created = seed.bluesky.models.Cycle.objects.get_or_create(organization=org,
                                                                      name = "{} Calendar Year".format(cycle_start.year),
                                                                      start = cycle_start,
@@ -298,10 +308,10 @@ class Command(BaseCommand):
         return
 
     def handle(self, *args, **options):
-        """Do something."""
+        """Migrate the CanonicalBuildings for one or more Organizations into
+        the new 'BlueSky' data structures."""
 
         # Process Arguments
-
         if options['organization']:
             core_organization = map(int, options['organization'].split(","))
         else:
@@ -406,24 +416,6 @@ class Command(BaseCommand):
             ## For each of those trees find the import records
             ## For each of those trees find the cycles associated with it
             for ndx, (cb, bs) in enumerate(zip(org_canonical_buildings, org_canonical_snapshots)):
-                # if not ("ML" in bs.extra_data and bs.extra_data["ML"] == "136-2"):
-                #     print "Skipping non 136-2 record."
-                #     continue
-
-                # DEBUG CODE
-                # WHITE_LIST = set(["776008020;776008030","881115950;881115975","883084801;883084802;883084803;883084803;883084805","778799005;778799020","883101010;883101510","881113406;881113407;881113408","788007700;788008001;788008100","882002800;881302200"])
-                # WHITE_LIST = set(["883101010;883101510"])
-                # if bs.tax_lot_id not in WHITE_LIST:
-                #     continue
-                # else:
-                #     print "Installing: {}".format(bs.tax_lot_id)
-
-                # if bs.tax_lot_id not in set(["776008020;776008030","881115950;881115975","883084801;883084802;883084803;883084803;883084805","778799005;778799020","883101010;883101510","881113406;881113407;881113408","788007700;788008001;788008100","882002800;881302200"]):
-                #     continue
-                # else:
-                #     print "Installing: {}".format(bs.tax_lot_id)
-                # # END DEBUG
-
                 if limit and (ndx+1) > limit:
                     logging_info("Migrated limit={} buildings.".format(limit))
                     logging_info("Skipping remainder of buildings for organization.")
@@ -545,8 +537,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     last_property_view = collections.defaultdict(lambda : False)
 
 
-    # # FIXME: Must call the node ordering code
-    # pdb.set_trace()
+    # FIXME: Make sure the nodes are all ordered here.
     # node_process_order = all_nodes
     # calculate_migration_order(node_process_order, child_dictionary)
 
@@ -558,8 +549,8 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
         if node_type == TAX_IMPORT or node_type == COMBO_IMPORT:
             # Get the cycle associated with the node
 
-            # pdb.set_trace()
             import_cycle = load_cycle(org, node)
+
             tax_lot_state = create_tax_lot_state_for_node(node, org, cb)
             tax_lot_state_created += 1
 
@@ -586,10 +577,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                 propertyview.state = property_state
                 propertyview.save()
             else:
-                try:
-                    propertyview, created = seed.bluesky.models.PropertyView.objects.get_or_create(property=property_obj, cycle=import_cycle, state=property_state)
-                except Exception, xcpt:
-                    pdb.set_trace()
+                propertyview, created = seed.bluesky.models.PropertyView.objects.get_or_create(property=property_obj, cycle=import_cycle, state=property_state)
                 assert created, "Should have created something"
                 property_view_created += int(created)
                 propertyview.save()
