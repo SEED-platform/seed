@@ -2280,6 +2280,11 @@ gs-input .tags .tag-item .remove-button {
   margin-left: 10px;
   margin-bottom: -2px;
 
+  .nav-tabs {
+    position: relative;
+    margin-bottom: -2px;
+    z-index: 99;
+  }
   .nav-tabs>li{
     margin-right:4px;
   }
@@ -2289,11 +2294,17 @@ gs-input .tags .tag-item .remove-button {
     color: #222;
     border-radius: 6px 6px 0 0;
   }
-  .nav-tabs>li.active>a{
+  .nav-tabs>li.active>a, .nav-tabs>li.active>a:hover{
     background-color: #F1F1F1;
     border: 1px solid #D1D1D1;
+    font-weight: bold;
+    color: #000;
+    border-bottom: 1px solid #F1F1F1;
   }
-
+  .nav-tabs>li>a:hover {
+    background-color: $blue;
+    color: #FFF;
+  }
 }
 
 
@@ -2302,5 +2313,8 @@ gs-input .tags .tag-item .remove-button {
 .ui-grid-top-panel {
     background: #F1F1F1;
     filter: none;
+}
+.ui-grid-cell-contents {
+    font-weight: normal;
 }
 
