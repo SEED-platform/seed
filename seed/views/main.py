@@ -1658,6 +1658,47 @@ def create_dataset(request):
 
     return HttpResponse(json.dumps({'status':'success', 'id':record.pk, 'name':record.name}))
 
+
+@api_view(['GET'])
+def simple_api_test_with_get_argument(request, org_id):
+    """
+    Performs a simple API test to show how to capture a GET argument as in /api/call/argument/
+    ---
+    parameters:
+        - name: org_id
+          description: The organization_id
+          required: true
+          paramType: string
+    """
+    return HttpResponse("org_id = " + str(org_id))
+
+
+@api_view(['POST'])
+def simple_api_test_with_post_parameter(request):
+    """
+    Perform a simple API test to show how to capture a POST parameter
+    ---
+    parameters:
+        - name: post_parameter
+          description: This post parameter
+          required: true
+          paramType: string
+    """
+    return HttpResponse("post_parameter = " + str(request.data['post_parameter']))
+
+
+@api_view(['GET'])
+def simple_api_test_with_query_string(request):
+    """
+    Perform a simple API test to show how to capture the query string, expects an org_id query variable
+    ---
+    parameters:
+        - name: org_id
+          paramType: query
+    """
+    return HttpResponse("queried org_id = " + str(request.query_params.get('org_id', None)))
+
+
 @api_view(['GET'])
 @require_organization_id
 @api_endpoint
@@ -1669,14 +1710,12 @@ def get_datasets(request):
     ---
     parameters:
         - name: organization_id
-          description: SEED defined organization ID
+          description: The organization_id
           required: true
-          type: string
+          paramType: query
     """
 
     """
-    :GET: Expects 'organization_id' of org to retrieve datasets from
-        in query string.
 
     Returns::
 
@@ -1705,9 +1744,9 @@ def get_datasets(request):
             ]
         }
     """
+    org_id = request.query_params.get('organization_id', None)
     from seed.models import obj_to_dict
-
-    org = Organization.objects.get(pk=request.GET['organization_id'])
+    org = Organization.objects.get(pk=org_id)
     datasets = []
     for d in ImportRecord.objects.filter(super_organization=org):
         importfiles = [obj_to_dict(f) for f in d.files]

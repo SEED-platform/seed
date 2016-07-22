@@ -125,11 +125,11 @@ def require_organization_id(fn):
     """
     @wraps(fn)
     def _wrapped(request, *args, **kwargs):
-
         try:
-            int(request.GET['organization_id'])
-        except (KeyError, ValueError):
-            return HttpResponseBadRequest('Valid organization ID is required.')
+            if request.query_params.get('organization_id', None) is None:
+                raise Exception()
+        except Exception as e:
+            return HttpResponseBadRequest('Valid organization ID is required in the query parameters.')
 
         return fn(request, *args, **kwargs)
     return _wrapped
