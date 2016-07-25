@@ -57,6 +57,7 @@ urlpatterns = [
 
     # bluesky api views
     url(r'^app/bluesky/', include('seed.urls.properties', namespace="bluesky", app_name="bluesky")),
+    url(r'^app/', include('seed.urls.properties', namespace="api")),
 ]
 
 if settings.DEBUG:
