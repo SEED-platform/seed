@@ -23,7 +23,7 @@ from seed.views.main import (
     simple_api_test_with_post_parameter, simple_api_test_with_query_string
 )
 
-from seed.views.apiv2 import DatasetViewSet
+from seed.views.datasets import DatasetViewSet
 from rest_framework import routers
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'dataset', DatasetViewSet, base_name="dataset")
