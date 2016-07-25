@@ -5,7 +5,7 @@ from django.apps import apps
 
 
 def delete_based_on_org(apps, org):
-    """Delete data in the BlueSky tables associated with an organiation"""
+    """Delete data in the new data model SEED tables associated with an organization"""
     #     Things that can be deleted because they have a direct reference to an org:
     #
     #     Cycle
@@ -28,16 +28,16 @@ def delete_based_on_org(apps, org):
     #     Delete PropertyViews, TaxLotViews, and TaxLotProperties
     #     Delete Cycles, Properties, TaxLots
 
-    apps.get_model("bluesky", "PropertyState").objects.filter(propertyview__cycle__organization__id=org).delete()
-    apps.get_model("bluesky", "TaxLotState").objects.filter(taxlotview__cycle__organization__id=org).delete()
+    apps.get_model("seed", "PropertyState").objects.filter(propertyview__cycle__organization__id=org).delete()
+    apps.get_model("seed", "TaxLotState").objects.filter(taxlotview__cycle__organization__id=org).delete()
 
-    apps.get_model("bluesky", "PropertyView").objects.filter(cycle__organization__id=org).delete()
-    apps.get_model("bluesky", "TaxLotView").objects.filter(cycle__organization__id=org).delete()
-    apps.get_model("bluesky", "TaxLotProperty").objects.filter(cycle__organization__id=org).delete()
+    apps.get_model("seed", "PropertyView").objects.filter(cycle__organization__id=org).delete()
+    apps.get_model("seed", "TaxLotView").objects.filter(cycle__organization__id=org).delete()
+    apps.get_model("seed", "TaxLotProperty").objects.filter(cycle__organization__id=org).delete()
 
-    apps.get_model("bluesky", "Cycle").objects.filter(organization__id=org).delete()
-    apps.get_model("bluesky", "Property").objects.filter(organization__id=org).delete()
-    apps.get_model("bluesky", "TaxLot").objects.filter(organization__id=org).delete()
+    apps.get_model("seed", "Cycle").objects.filter(organization__id=org).delete()
+    apps.get_model("seed", "Property").objects.filter(organization__id=org).delete()
+    apps.get_model("seed", "TaxLot").objects.filter(organization__id=org).delete()
     return
 
 
@@ -53,18 +53,18 @@ class Command(BaseCommand):
             orgs_to_delete = [int(x) for x in orgs_to_delete]
 
             for org in orgs_to_delete:
-                print "Destroying Blue Sky Data for organization {}".format(org)
+                print "Destroying SEED migrated data for organization {}".format(org)
                 delete_based_on_org(apps, org)
 
         else:
-            print "Destroying all Blue Sky Data."
-            apps.get_model("bluesky", "Cycle").objects.all().delete()
-            apps.get_model("bluesky", "PropertyState").objects.all().delete()
-            apps.get_model("bluesky", "PropertyView").objects.all().delete()
-            apps.get_model("bluesky", "Property").objects.all().delete()
-            apps.get_model("bluesky", "TaxLotState").objects.all().delete()
-            apps.get_model("bluesky", "TaxLotView").objects.all().delete()
-            apps.get_model("bluesky", "TaxLot").objects.all().delete()
-            apps.get_model("bluesky", "TaxLotProperty").objects.all().delete()
+            print "Destroying all SEED migrated data"
+            apps.get_model("seed", "Cycle").objects.all().delete()
+            apps.get_model("seed", "PropertyState").objects.all().delete()
+            apps.get_model("seed", "PropertyView").objects.all().delete()
+            apps.get_model("seed", "Property").objects.all().delete()
+            apps.get_model("seed", "TaxLotState").objects.all().delete()
+            apps.get_model("seed", "TaxLotView").objects.all().delete()
+            apps.get_model("seed", "TaxLot").objects.all().delete()
+            apps.get_model("seed", "TaxLotProperty").objects.all().delete()
 
         return

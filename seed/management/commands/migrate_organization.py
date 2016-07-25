@@ -13,7 +13,7 @@ import logging
 import itertools
 import csv
 import StringIO
-from IPython import embed
+# from IPython import embed
 import seed.models
 import numpy as np
 from scipy.sparse import dok_matrix
@@ -517,14 +517,14 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
 
     if node_has_tax_lot_info(leaf_buildingsnapshots[0], org):
         tax_lot, created = find_or_create_bluesky_taxlot_associated_with_building_snapshot(leaf_buildingsnapshots[0], org)
-        # tax_lot = seed.bluesky.models.TaxLot(organization=org)
+        # tax_lot = seed.models.TaxLot(organization=org)
 
         tax_lot.save()
         tax_lot_created += int(created)
 
     if node_has_property_info(leaf_buildingsnapshots[0], org):
         property_obj, created = find_or_create_bluesky_property_associated_with_building_snapshot(leaf_buildingsnapshots[0], org)
-        # property_obj = seed.bluesky.models.Property(organization=org)
+        # property_obj = seed.models.Property(organization=org)
         property_obj.save()
         property_created += int(created)
 
