@@ -1608,18 +1608,24 @@ def save_column_mappings(request):
 @api_endpoint
 @ajax_request
 @login_required
+@require_organization_id
 @has_perm('can_modify_data')
 def create_dataset(request):
     """
     Creates a new empty dataset (ImportRecord).
+    ---
+    parameters:
+        - name: name
+          description: The name of this dataset
+          required: true
+          paramType: string
+        - name: organization_id
+          description: The organization_id
+          required: true
+          paramType: query
+    """
 
-    Payload::
-
-        {
-            "name": Name of new dataset, e.g. "2013 city compliance dataset"
-            "organization_id": ID of the org this dataset belongs to
-        }
-
+    """
     Returns::
 
         {
@@ -1629,16 +1635,7 @@ def create_dataset(request):
         }
     """
     body = request.data
-
-    # validate inputs
-    invalid = vutil.missing_request_keys(['organization_id'], body)
-    if invalid:
-        return vutil.api_error(invalid)
-    invalid = vutil.typeof_request_values({'organization_id': int}, body)
-    if invalid:
-        return vutil.api_error(invalid)
-
-    org_id = int(body['organization_id'])
+    org_id = int(request.query_params.get('organization_id', None))
 
     try:
         _log.info("create_dataset: getting Organization for id=({})".format(org_id))
@@ -1710,9 +1707,42 @@ def get_datasets(request):
     ---
     parameters:
         - name: organization_id
-          description: The organization_id
+          description: The organization_id for this user's organization
           required: true
           paramType: query
+    type:
+        status:
+            required: true
+            type: string
+            description: "'success' if the call succeeds"
+        datasets:
+            required: true
+            description: The datasets
+            schema:
+                "$ref": "#/definitions/datasetobject"
+
+    definitions:
+
+        datasetobject:
+            type: string
+    """
+
+    """
+        schema:
+            type: object
+            properties:
+                status:
+                    type: string
+                    required: true
+
+                datasets:
+                    type: array
+                    required: true
+                    items:
+                        name:
+                            type: string
+                        number_of_buildings:
+                            type: integer
     """
 
     """

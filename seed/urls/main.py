@@ -24,7 +24,6 @@ from seed.views.main import (
 )
 
 from seed.views.apiv2 import DatasetViewSet
-
 from rest_framework import routers
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'dataset', DatasetViewSet, base_name="dataset")
@@ -194,12 +193,14 @@ urlpatterns = [
         delete_organization,
         name='delete_organization'
     ),
-    # v2 api
-    url(r'^api/v2/', include(api_v2_router.urls), name='apiv2'),
     # swagger urls
     url(
         r'^api-docs/',
         include('rest_framework_swagger.urls'),
         name='swagger'
     ),
+
+    # v2 api
+    url(r'^api/v2/', include(api_v2_router.urls), name='apiv2'),
+
 ]
