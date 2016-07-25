@@ -7,7 +7,7 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
     '$scope',
     '$routeParams',
     '$window',
-    'bluesky_service',
+    // 'bluesky_service',
     'properties',
     'cycles',
     'columns',

@@ -14,7 +14,7 @@ import itertools
 import csv
 import StringIO
 from IPython import embed
-import seed.bluesky.models
+import seed.models
 import numpy as np
 from scipy.sparse import dok_matrix
 from scipy.sparse.csgraph import connected_components
@@ -111,7 +111,7 @@ def create_property_state_for_node(node, org, cb):
         extra_data_copy["prop_cb_id"] = cb.pk
         extra_data_copy["prop_bs_id"] = node.pk
 
-    property_state = seed.bluesky.models.PropertyState(confidence = node.confidence,
+    property_state = seed.models.PropertyState(confidence = node.confidence,
                                                        jurisdiction_property_identifier = None,
                                                        lot_number = node.lot_number,
                                                        property_name = node.property_name,
@@ -186,7 +186,7 @@ def create_tax_lot_state_for_node(node, org, cb):
         extra_data_copy["taxlot_bs_id"] = node.pk
 
 
-    taxlotstate = seed.bluesky.models.TaxLotState.objects.create(confidence = node.confidence,
+    taxlotstate = seed.models.TaxLotState.objects.create(confidence = node.confidence,
                                                                  jurisdiction_taxlot_identifier = node.tax_lot_id,
                                                                  block_number = node.block_number,
                                                                  district = node.district,
@@ -291,7 +291,7 @@ def load_cycle(org, node, year_ending = True, fallback = True):
 
     cycle_start = time.replace(month = 1, day = 1, hour = 0, minute = 0, second = 0, microsecond = 0)
     cycle_end = cycle_start.replace(year=cycle_start.year+1)-datetime.timedelta(seconds = 1)
-    cycle, created = seed.bluesky.models.Cycle.objects.get_or_create(organization=org,
+    cycle, created = seed.models.Cycle.objects.get_or_create(organization=org,
                                                                      name = "{} Calendar Year".format(cycle_start.year),
                                                                      start = cycle_start,
                                                                      end = cycle_end)
@@ -529,7 +529,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
         property_created += int(created)
 
     if not property_obj and not tax_lot:
-        property_obj = seed.bluesky.models.Property(organization=org)
+        property_obj = seed.models.Property(organization=org)
         property_obj.save()
         property_created += 1
 
@@ -554,13 +554,13 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
             tax_lot_state = create_tax_lot_state_for_node(node, org, cb)
             tax_lot_state_created += 1
 
-            query = seed.bluesky.models.TaxLotView.objects.filter(taxlot=tax_lot, cycle=import_cycle)
+            query = seed.models.TaxLotView.objects.filter(taxlot=tax_lot, cycle=import_cycle)
             if query.count():
                 taxlotview = query.first()
                 taxlotview.state = tax_lot_state
                 taxlotview.save()
             else:
-                taxlotview, created = seed.bluesky.models.TaxLotView.objects.get_or_create(taxlot=tax_lot, cycle=import_cycle, state=tax_lot_state)
+                taxlotview, created = seed.models.TaxLotView.objects.get_or_create(taxlot=tax_lot, cycle=import_cycle, state=tax_lot_state)
                 tax_lot_view_created += int(created)
                 assert created, "Should have created a tax lot."
                 taxlotview.save()
@@ -571,13 +571,13 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
             property_state_created += 1
 
 
-            query = seed.bluesky.models.PropertyView.objects.filter(property=property_obj, cycle=import_cycle)
+            query = seed.models.PropertyView.objects.filter(property=property_obj, cycle=import_cycle)
             if query.count():
                 propertyview = query.first()
                 propertyview.state = property_state
                 propertyview.save()
             else:
-                propertyview, created = seed.bluesky.models.PropertyView.objects.get_or_create(property=property_obj, cycle=import_cycle, state=property_state)
+                propertyview, created = seed.models.PropertyView.objects.get_or_create(property=property_obj, cycle=import_cycle, state=property_state)
                 assert created, "Should have created something"
                 property_view_created += int(created)
                 propertyview.save()
@@ -604,7 +604,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                     # assert m2m_cycle == last_taxlot_view.cycle == last_property_view.cycle, "Why aren't all these equal?!"
 
 
-                    tlp, created  = seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view = last_property_view[m2m_cycle],
+                    tlp, created  = seed.models.TaxLotProperty.objects.get_or_create(property_view = last_property_view[m2m_cycle],
                                                                                              taxlot_view = last_taxlot_view[m2m_cycle],
                                                                                              cycle = m2m_cycle)
                     m2m_created += int(created)
@@ -620,7 +620,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
 
                     # Check if there is a TaxLotView Present
 
-                    taxlotview, created = seed.bluesky.models.TaxLotView.objects.update_or_create(taxlot=tax_lot, cycle=import_cycle, defaults={"state": tax_lot_state})
+                    taxlotview, created = seed.models.TaxLotView.objects.update_or_create(taxlot=tax_lot, cycle=import_cycle, defaults={"state": tax_lot_state})
                     tax_lot_view_created += int(created)
 
                     taxlotview.save()
@@ -630,14 +630,14 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                     property_state = create_property_state_for_node(node, org, cb)
                     property_state_created += 1
 
-                    propertyview, created = seed.bluesky.models.PropertyView.objects.update_or_create(property=property_obj, cycle=import_cycle, defaults={"state": property_state})
+                    propertyview, created = seed.models.PropertyView.objects.update_or_create(property=property_obj, cycle=import_cycle, defaults={"state": property_state})
                     property_view_created += int(created)
 
                     propertyview.save()
                     last_property_view[propertyview.cycle] = propertyview
 
                 if node_has_tax_lot_info(node, org) and node_has_property_info(node, org):
-                    _, created = seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view =last_property_view[import_cycle],
+                    _, created = seed.models.TaxLotProperty.objects.get_or_create(property_view =last_property_view[import_cycle],
                                                                                           taxlot_view = last_taxlot_view[import_cycle],
                                                                                           cycle = import_cycle)
                     m2m_created += int(created)

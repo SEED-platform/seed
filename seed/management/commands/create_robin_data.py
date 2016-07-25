@@ -16,7 +16,7 @@ import logging
 import itertools
 # from IPython import embed
 #from networkx.drawing.nx_agraph import graphviz_layout
-import seed.bluesky.models
+import seed.models
 # import numpy as np
 # from scipy.sparse import dok_matrix
 # from scipy.sparse.csgraph import connected_components
@@ -219,7 +219,7 @@ def create_structure():
 
 
 def create_cycle(org):
-    seed.bluesky.models.Cycle.objects.get_or_create(name="2015 Annual",
+    seed.models.Cycle.objects.get_or_create(name="2015 Annual",
                                                     organization = org,
                                                     start=datetime.datetime(2015,1,1),
                                                     end=datetime.datetime(2016,1,1)-datetime.timedelta(seconds=1))
@@ -227,11 +227,11 @@ def create_cycle(org):
 
 
 def create_cases(org, tax_lots, properties):
-    cycle = seed.bluesky.models.Cycle.objects.filter(organization=org).first()
+    cycle = seed.models.Cycle.objects.filter(organization=org).first()
 
     for (tl_def, prop_def) in itertools.product(tax_lots, properties):
-        property, _ = seed.bluesky.models.Property.objects.get_or_create(organization=org)
-        taxlot, _ = seed.bluesky.models.TaxLot.objects.get_or_create(organization=org)
+        property, _ = seed.models.Property.objects.get_or_create(organization=org)
+        taxlot, _ = seed.models.TaxLot.objects.get_or_create(organization=org)
 
         # Doesn't match
         # LINE 1: ...1'::date AND "bluesky_propertystate"."extra_data" = '{"Does ...
@@ -243,14 +243,14 @@ def create_cases(org, tax_lots, properties):
 
         print "Adding {} prop extra datas.".format(prop_extra_data)
 
-        prop_state, _ = seed.bluesky.models.PropertyState.objects.get_or_create(**prop_def)
+        prop_state, _ = seed.models.PropertyState.objects.get_or_create(**prop_def)
 
         for k in prop_extra_data:
             prop_state.extra_data[k] = prop_extra_data[k]
 
         prop_state.save()
 
-        taxlot_state, _ = seed.bluesky.models.TaxLotState.objects.get_or_create(**tl_def)
+        taxlot_state, _ = seed.models.TaxLotState.objects.get_or_create(**tl_def)
 
         for k in tax_extra_data:
             taxlot_state.extra_data[k] = tax_extra_data[k]
@@ -258,10 +258,10 @@ def create_cases(org, tax_lots, properties):
         taxlot_state.save()
 
 
-        taxlot_view, _ = seed.bluesky.models.TaxLotView.objects.get_or_create(taxlot = taxlot, cycle=cycle, state = taxlot_state)
-        prop_view, _ = seed.bluesky.models.PropertyView.objects.get_or_create(property=property, cycle=cycle, state = prop_state)
+        taxlot_view, _ = seed.models.TaxLotView.objects.get_or_create(taxlot = taxlot, cycle=cycle, state = taxlot_state)
+        prop_view, _ = seed.models.PropertyView.objects.get_or_create(property=property, cycle=cycle, state = prop_state)
 
-        seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view = prop_view, taxlot_view = taxlot_view, cycle = cycle)
+        seed.models.TaxLotProperty.objects.get_or_create(property_view = prop_view, taxlot_view = taxlot_view, cycle = cycle)
 
     return
 
@@ -475,30 +475,30 @@ def create_case_D_objects(org):
           "property_notes": "Case D: Campus with Multiple associated buildings"}]
 
     # I manually create everything here
-    cycle = seed.bluesky.models.Cycle.objects.filter(organization=org).first()
+    cycle = seed.models.Cycle.objects.filter(organization=org).first()
 
-    campus_property, __ = seed.bluesky.models.Property.objects.get_or_create(organization=org, campus=True)
-    property_objs  = [seed.bluesky.models.Property.objects.get_or_create(organization=org, parent_property=campus_property)[0] for p in properties]
+    campus_property, __ = seed.models.Property.objects.get_or_create(organization=org, campus=True)
+    property_objs  = [seed.models.Property.objects.get_or_create(organization=org, parent_property=campus_property)[0] for p in properties]
 
     property_objs.insert(0, campus_property)
-    taxlot_objs = [seed.bluesky.models.TaxLot.objects.get_or_create(organization=org)[0] for t in tax_lots]
+    taxlot_objs = [seed.models.TaxLot.objects.get_or_create(organization=org)[0] for t in tax_lots]
 
-    property_states = [seed.bluesky.models.PropertyState.objects.get_or_create(**prop_def)[0] for prop_def in itertools.chain(campus, properties)]
-    property_views = [seed.bluesky.models.PropertyView.objects.get_or_create(property=property, cycle=cycle, state = prop_state)[0] for (property, prop_state) in zip(property_objs, property_states)]
+    property_states = [seed.models.PropertyState.objects.get_or_create(**prop_def)[0] for prop_def in itertools.chain(campus, properties)]
+    property_views = [seed.models.PropertyView.objects.get_or_create(property=property, cycle=cycle, state = prop_state)[0] for (property, prop_state) in zip(property_objs, property_states)]
 
-    taxlot_states = [seed.bluesky.models.TaxLotState.objects.get_or_create(**lot_def)[0] for lot_def in tax_lots]
-    taxlot_views = [seed.bluesky.models.TaxLotView.objects.get_or_create(taxlot=taxlot, cycle=cycle, state = taxlot_state)[0] for (taxlot, taxlot_state) in zip(taxlot_objs, taxlot_states)]
+    taxlot_states = [seed.models.TaxLotState.objects.get_or_create(**lot_def)[0] for lot_def in tax_lots]
+    taxlot_views = [seed.models.TaxLotView.objects.get_or_create(taxlot=taxlot, cycle=cycle, state = taxlot_state)[0] for (taxlot, taxlot_state) in zip(taxlot_objs, taxlot_states)]
 
-    seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view = property_views[0], taxlot_view = taxlot_views[0], cycle = cycle)
-    seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view = property_views[1], taxlot_view = taxlot_views[0], cycle = cycle)
-    seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view = property_views[2], taxlot_view = taxlot_views[0], cycle = cycle)
-    seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view = property_views[3], taxlot_view = taxlot_views[0], cycle = cycle)
+    seed.models.TaxLotProperty.objects.get_or_create(property_view = property_views[0], taxlot_view = taxlot_views[0], cycle = cycle)
+    seed.models.TaxLotProperty.objects.get_or_create(property_view = property_views[1], taxlot_view = taxlot_views[0], cycle = cycle)
+    seed.models.TaxLotProperty.objects.get_or_create(property_view = property_views[2], taxlot_view = taxlot_views[0], cycle = cycle)
+    seed.models.TaxLotProperty.objects.get_or_create(property_view = property_views[3], taxlot_view = taxlot_views[0], cycle = cycle)
 
-    seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view = property_views[4], taxlot_view = taxlot_views[1], cycle = cycle)
-    seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view = property_views[4], taxlot_view = taxlot_views[2], cycle = cycle)
+    seed.models.TaxLotProperty.objects.get_or_create(property_view = property_views[4], taxlot_view = taxlot_views[1], cycle = cycle)
+    seed.models.TaxLotProperty.objects.get_or_create(property_view = property_views[4], taxlot_view = taxlot_views[2], cycle = cycle)
 
-    seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view = property_views[5], taxlot_view = taxlot_views[1], cycle = cycle)
-    seed.bluesky.models.TaxLotProperty.objects.get_or_create(property_view = property_views[5], taxlot_view = taxlot_views[2], cycle = cycle)
+    seed.models.TaxLotProperty.objects.get_or_create(property_view = property_views[5], taxlot_view = taxlot_views[1], cycle = cycle)
+    seed.models.TaxLotProperty.objects.get_or_create(property_view = property_views[5], taxlot_view = taxlot_views[2], cycle = cycle)
 
     return
 
