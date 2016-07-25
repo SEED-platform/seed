@@ -800,36 +800,36 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
             controller: 'labels_controller',
             templateUrl: static_url + 'seed/partials/labels.html'
         })
-        // .when('/bluesky/properties', {
-        //     controller: 'bluesky_properties_controller',
-        //     templateUrl: static_url + 'seed/partials/bluesky/list.html',
-        //     resolve: {
-        //         properties: ['bluesky_service', function(bluesky_service){
-        //             return bluesky_service.get_properties(1);
-        //         }],
-        //         cycles: ['bluesky_service', function(bluesky_service){
-        //             return bluesky_service.get_cycles();
-        //         }],
-        //         columns: ['bluesky_service', function(bluesky_service){
-        //             return bluesky_service.get_property_columns();
-        //         }]
-        //     }
-        // })
-        // .when('/bluesky/taxlots', {
-        //     controller: 'bluesky_taxlots_controller',
-        //     templateUrl: static_url + 'seed/partials/bluesky/list.html',
-        //     resolve: {
-        //         taxlots: ['bluesky_service', function(bluesky_service){
-        //             return bluesky_service.get_taxlots(1, 10);
-        //         }],
-        //         cycles: ['bluesky_service', function(bluesky_service){
-        //             return bluesky_service.get_cycles();
-        //         }],
-        //         columns: ['bluesky_service', function(bluesky_service){
-        //             return bluesky_service.get_taxlot_columns();
-        //         }]
-        //     }
-        // })
+        .when('/bluesky/properties', {
+            controller: 'bluesky_properties_controller',
+            templateUrl: static_url + 'seed/partials/bluesky/list.html',
+            resolve: {
+                properties: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_properties(1);
+                }],
+                cycles: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_cycles();
+                }],
+                columns: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_property_columns();
+                }]
+            }
+        })
+        .when('/bluesky/taxlots', {
+            controller: 'bluesky_taxlots_controller',
+            templateUrl: static_url + 'seed/partials/bluesky/list.html',
+            resolve: {
+                taxlots: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_taxlots(1, 10);
+                }],
+                cycles: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_cycles();
+                }],
+                columns: ['bluesky_service', function(bluesky_service){
+                    return bluesky_service.get_taxlot_columns();
+                }]
+            }
+        })
         .otherwise({ redirectTo: '/' });
 
 }]);
