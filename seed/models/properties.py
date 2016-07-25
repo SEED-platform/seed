@@ -14,6 +14,7 @@ from seed.lib.superperms.orgs.models import Organization
 
 from seed.models import Cycle
 
+
 class Property(models.Model):
     organization = models.ForeignKey(Organization)
     campus = models.BooleanField(default=False)
@@ -24,6 +25,7 @@ class Property(models.Model):
 
     def __unicode__(self):
         return u'Property - %s' % (self.pk)
+
 
 class PropertyState(models.Model):
     # import_record = models.ForeignKey(ImportRecord)

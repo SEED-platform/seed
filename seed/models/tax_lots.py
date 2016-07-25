@@ -13,6 +13,7 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import Cycle
 from seed.models import PropertyView
 
+
 class TaxLot(models.Model):
     organization = models.ForeignKey(Organization)
 
