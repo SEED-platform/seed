@@ -186,8 +186,7 @@ To create and edit this file, start by copying over the template
     cd config/settings
     cp local_untracked.py.dist local_untracked.py
 
-* Edit `local_untracked.py`. Open the file you created in your favorite
-editor. The PostgreSQL config section will look something like this:
+Edit `local_untracked.py`. Open the file you created in your favorite editor. The PostgreSQL config section will look something like this:
 
 .. code-block:: python
 

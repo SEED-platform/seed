@@ -949,6 +949,12 @@ a:not([href]) {
           min-width: 100%;
         }
 
+        &.fixed-layout {
+            /* use in combination with th.ellipsis-resizable
+              for resizable columns                         */
+            table-layout: fixed;
+        }
+
         th, td {
           font-family: $font-family-base-narrow;
           white-space: nowrap;
@@ -1034,6 +1040,15 @@ a:not([href]) {
             /* Required for text-overflow to do anything */
             white-space: nowrap;
             overflow: hidden;
+          }
+          &.ellipsis-resizable {
+              /* use in combination with table.fixed-layout
+                    for resizable columns                         */
+              min-width: 80px;
+              text-overflow: ellipsis;
+              /* Required for text-overflow to do anything */
+              white-space: nowrap;
+              overflow: hidden;
           }
 
           &.sorted {
@@ -2053,12 +2068,12 @@ select {
 /* STYLES FOR LABELS AND RELATED */
 
 /* Holds inline form for creating new labels */
-.newLabelInput {
-  margin: 20px 0px;
-  border: 1px solid #EEE;
-  padding: 10px 10px 5px 10px;
-  border-radius: 5px;
-  background-color: #F1F1F1;
+.newLabelInput{
+    margin: 20px 0px;
+    border:1px solid #EEE;
+    padding: 10px 10px 5px 10px;
+    border-radius: 5px;
+    background-color: #F1F1F1;
 }
 
 #label_admin {
@@ -2071,23 +2086,23 @@ select {
     font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
 
-  .tableHeader {
-    font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    white-space: nowrap;
-    padding: 6px 10px 5px 10px;
-    text-transform: uppercase;
-    background-color: #cdcdcd !important;
-    text-shadow: 0 1px 0 white;
-    border-bottom: 1px solid #b3b3b3;
-  }
+    .tableHeader {
+        font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        white-space: nowrap;
+        padding: 6px 10px 5px 10px;
+        text-transform: uppercase;
+        background-color: #cdcdcd !important;
+        text-shadow: 0 1px 0 white;
+        border-bottom: 1px solid #b3b3b3;
+    }
 
-  /* Get xeditable fields to extend 100% of td */
-  form[editable-form] > div {
-    margin: 10px 0;
-  }
-  .editable-wrap {
-    width: 100%;
-  }
+    /* Get xeditable fields to extend 100% of td */
+    form[editable-form] > div {
+      margin: 10px 0;
+    }
+    .editable-wrap {
+      width: 100%;
+    }
 
 }
 
@@ -2116,8 +2131,9 @@ select {
   }
 }
 
+
 .label {
-  margin-right: 5px;
+    margin-right: 5px;
 }
 
 /* Styles for update labels modal */
@@ -2195,7 +2211,6 @@ tags-input .tags {
   border-color: #d43f3a !important;
   background: #d43f3a !important;
 }
-
 gs-input .tags .tag-item .remove-button {
   color: #FFF;
 }
@@ -2210,8 +2225,8 @@ gs-input .tags .tag-item .remove-button {
 
   &.warning {
     border-left: thick solid $warningBackground;
-  }
-  &.error {
+    }
+    &.error {
     border-left: thick solid $errorBackground;
   }
   &.success {
@@ -2242,34 +2257,9 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
-/* UI Grid */
-.ui-grid-cell {
-  border-color: #ccc;
-}
-.ui-grid-header-cell, .ui-grid-cell-contents {
-  font-family: $font-family-base-narrow;
-}
-.ui-grid-header-cell {
-  //background-color: #cdcdcd;
-  border-right-color: #ccc;
-  text-shadow: 0 1px 0 #fff;
-  font-size: 13px;
-  text-transform: uppercase;
-}
-.ui-grid-row:nth-child(even) .ui-grid-cell {
-  background-color: #efefef;
-}
+/* Styles for building page */
 
-.ui-grid-tree-base-row-header-buttons {
-  cursor: pointer;
-}
-
-#grid-container {
-  min-height: 302px;
-  overflow: hidden;
-  width: 100%;
-
-  > div {
-    min-height: 300px;
-  }
+#building-fields {
+    //  set a min width for the field column
+    min-width: 275px;
 }

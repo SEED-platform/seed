@@ -88,6 +88,7 @@ def _dict_org(request, organizations):
             'owners': owners,
             'sub_orgs': _dict_org(request, o.child_orgs.all()),
             'is_parent': o.is_parent,
+            'parent_id': o.parent_id,
             'num_buildings': org_map[o.pk],
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
         }
@@ -189,6 +190,7 @@ def get_organizations(request):
              'sub_orgs': [ a list of orgs having this org as parent, in
                         the same format...],
              'is_parent': True if this org contains suborgs,
+             'parent_id': id of this orgs parent (self.id if it is a parent)
              'num_buildings': Count of buildings belonging to this org
             }...
            ]
