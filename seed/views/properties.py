@@ -1,8 +1,14 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
 
-from seed.bluesky.models import Cycle, PropertyView, TaxLotView, TaxLotState, TaxLotProperty
+from seed.models import Cycle, PropertyView, TaxLotView, TaxLotState, TaxLotProperty
 from seed.decorators import ajax_request, require_organization_id, require_organization_membership
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import Column
