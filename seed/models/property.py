@@ -1,28 +1,12 @@
 from __future__ import unicode_literals
 
-from django_pgjson.fields import JsonField
-
 from django.db import models
 
+from django_pgjson.fields import JsonField
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
 
-
-class Cycle(models.Model):
-    organization = models.ForeignKey(Organization, blank=True, null=True)
-    user = models.ForeignKey(User, blank=True, null=True)
-    name = models.CharField(max_length=255)
-    start = models.DateTimeField()
-    end = models.DateTimeField()
-    created = models.DateTimeField(auto_now_add=True)
-
-    def __unicode__(self):
-        return u'Cycle - %s' % (self.name)
-
-    class Meta:
-        ordering = ['-created']
-        get_latest_by = 'created'
-
+from seed.models import Cycle
 
 class Property(models.Model):
     organization = models.ForeignKey(Organization)
@@ -34,7 +18,6 @@ class Property(models.Model):
 
     def __unicode__(self):
         return u'Property - %s' % (self.pk)
-
 
 class PropertyState(models.Model):
     # import_record = models.ForeignKey(ImportRecord)
@@ -94,64 +77,3 @@ class PropertyView(models.Model):
     # FIXME: Add unique constraint on (property, cycle)
     class Meta:
         unique_together = ('property', 'cycle',)
-
-
-class TaxLot(models.Model):
-    organization = models.ForeignKey(Organization)
-
-    def __unicode__(self):
-        return u'TaxLot - %s' % (self.pk)
-
-
-class TaxLotState(models.Model):
-    # The state field names should match pretty close to the pdf, just
-    # because these are the most 'public' fields in terms of
-    # communicating with the cities.
-
-    # import_record = models.ForeignKey(ImportRecord)
-    confidence = models.FloatField(default=0, null=True, blank=True)
-
-    jurisdiction_taxlot_identifier = models.CharField(max_length=255, null=True, blank=True)
-    block_number = models.CharField(max_length=255, null=True, blank=True)
-    district = models.CharField(max_length=255, null=True, blank=True)
-    address = models.CharField(max_length=255, null=True, blank=True)
-    city = models.CharField(max_length=255, null=True, blank=True)
-    state = models.CharField(max_length=255, null=True, blank=True)
-    postal_code = models.CharField(max_length=255, null=True, blank=True)
-    number_properties = models.IntegerField(null=True, blank=True)
-
-    extra_data = JsonField(default={}, blank=True)
-
-    def __unicode__(self):
-        return u'TaxLot State - %s' % (self.pk)
-
-
-class TaxLotView(models.Model):
-    taxlot = models.ForeignKey(TaxLot, related_name='views', null=True)
-    state = models.ForeignKey(TaxLotState)
-    cycle = models.ForeignKey(Cycle)
-
-    def __unicode__(self):
-        return u'TaxLot View - %s' % (self.pk)
-
-    # FIXME: Add unique constraint on (property, cycle)
-    class Meta:
-        unique_together = ('taxlot', 'cycle',)
-
-
-class TaxLotProperty(models.Model):
-    property_view = models.ForeignKey(PropertyView)
-    taxlot_view = models.ForeignKey(TaxLotView)
-
-    cycle = models.ForeignKey(Cycle)
-
-    # If there is a complex TaxLot/Property association, this field
-    # lists the "main" tax lot that Properties should be reported under.
-    # User controlled flag.
-    primary = models.BooleanField(default=True)
-
-    def __unicode__(self):
-        return u'M2M Property View %s / TaxLot View %s' % (self.property_view_id, self.taxlot_view_id)
-
-    class Meta:
-        unique_together = ('property_view', 'taxlot_view',)
