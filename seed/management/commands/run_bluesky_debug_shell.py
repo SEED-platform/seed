@@ -8,7 +8,6 @@ import os
 
 # DEBUG - HOHO
 from seed.models import *
-from seed.models import *
 
 from django.db import models, migrations
 from django.core.management.base import BaseCommand
@@ -21,7 +20,6 @@ import os
 import logging
 from IPython import embed
 # from networkx.drawing.nx_agraph import graphviz_layout
-import seed.models
 # import numpy as np
 # from scipy.sparse import dok_matrix
 # from scipy.sparse.csgraph import connected_components
