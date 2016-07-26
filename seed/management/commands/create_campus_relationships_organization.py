@@ -4,7 +4,7 @@ from django.db import models, migrations
 from django.core.management.base import BaseCommand
 from seed.lib.superperms.orgs.models import Organization
 from django.apps import apps
-from seed.bluesky.models import *
+from seed.models import *
 import pdb
 import copy
 import collections
@@ -15,7 +15,7 @@ import itertools
 import csv
 import StringIO
 from IPython import embed
-import seed.bluesky.models
+import seed.models
 import numpy as np
 from scipy.sparse import dok_matrix
 from scipy.sparse.csgraph import connected_components

@@ -4,8 +4,7 @@ import itertools
 import csv
 import StringIO
 import collections
-import seed.bluesky.models
-from seed.bluesky.models import TaxLotView
+import seed.models
 
 
 def get_core_organizations():
@@ -74,12 +73,12 @@ def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
         bs_taxlot_val = bs.extra_data[reverse_mapping['jurisdiction_taxlot_identifier']]
 
     if bs_taxlot_val is None:
-        tax_lot = seed.bluesky.models.TaxLot(organization=org)
+        tax_lot = seed.models.TaxLot(organization=org)
         tax_lot.save()
         return tax_lot, True
 
 
-    qry = seed.bluesky.models.TaxLotView.objects.filter(state__jurisdiction_taxlot_identifier=bs_taxlot_val)
+    qry = seed.models.TaxLotView.objects.filter(state__jurisdiction_taxlot_identifier=bs_taxlot_val)
 
     # See if we have any tax lot views that have tax lot states
     # with that id, if yes, find/return associated property.
@@ -88,7 +87,7 @@ def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
         return qry.first().taxlot, False
 
     else:
-        tax_lot = seed.bluesky.models.TaxLot(organization=org)
+        tax_lot = seed.models.TaxLot(organization=org)
         tax_lot.save()
         return tax_lot, True
 
@@ -104,16 +103,16 @@ def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
         bs_property_id = bs.extra_data[reverse_mapping[mapping_field]]
 
     if bs_property_id is None:
-        property = seed.bluesky.models.Property(organization=org)
+        property = seed.models.Property(organization=org)
         property.save()
         return property, True
 
-    qry = seed.bluesky.models.PropertyView.objects.filter(state__building_portfolio_manager_identifier=bs_property_id)
+    qry = seed.models.PropertyView.objects.filter(state__building_portfolio_manager_identifier=bs_property_id)
 
     if qry.count():
         return qry.first().property, False
     else:
-        property = seed.bluesky.models.Property(organization=org)
+        property = seed.models.Property(organization=org)
         property.save()
         return property, True
 

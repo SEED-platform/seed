@@ -6,7 +6,7 @@
 """
 import random
 
-from seed.models import (BuildingSnapshot)
+from seed.models import BuildingSnapshot
 from seed.test_helpers.factory.helpers import DjangoFunctionalFactory
 
 
