@@ -10,15 +10,19 @@ from seed.utils.api import (
 )
 from rest_framework.decorators import api_view
 from rest_framework import serializers
+from django.http import HttpResponse
+import json
 
 class APIEndpointSerializer(serializers.Serializer):
     name = serializers.CharField()
     description = serializers.CharField()
 
+
 class APISchemaSerializer(serializers.Serializer):
     endpoints = serializers.DictField(
-        child = APIEndpointSerializer()
+        child=APIEndpointSerializer()
     )
+
 
 @api_view(['GET'])
 @api_endpoint
@@ -53,4 +57,4 @@ def get_api_schema(request):
         endpoint_details = {'name': fn.func_name,
                             'description': desc}
         resp[url] = endpoint_details
-    return resp
+    return HttpResponse(json.dumps(resp))

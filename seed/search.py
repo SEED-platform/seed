@@ -324,7 +324,7 @@ def parse_body(request):
         }
     """
     try:
-        body = request.data #json.loads(request.body)
+        body = json.loads(request.body)
     except ValueError:
         body = {}
 

@@ -169,7 +169,7 @@ def require_organization_id(fn):
     """
     @wraps(fn)
     def _wrapped(request, *args, **kwargs):
-        org_id = request.query_params.get('organization_id', None)
+        org_id = request.GET.get('organization_id', None)
         if org_id is None:
             return HttpResponseBadRequest('Valid organization_id is required in the query parameters.')
         try:
