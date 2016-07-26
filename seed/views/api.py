@@ -8,10 +8,10 @@ from seed.decorators import ajax_request
 from seed.utils.api import (
     get_api_endpoints, format_api_docstring, api_endpoint
 )
-from rest_framework.decorators import api_view
+# from rest_framework.decorators import api_view
 from rest_framework import serializers
-from django.http import HttpResponse
-import json
+# from django.http import HttpResponse
+# import json
 
 class APIEndpointSerializer(serializers.Serializer):
     name = serializers.CharField()
@@ -24,7 +24,7 @@ class APISchemaSerializer(serializers.Serializer):
     )
 
 
-@api_view(['GET'])
+# @api_view(['GET'])
 @api_endpoint
 @ajax_request
 def get_api_schema(request):
@@ -57,4 +57,4 @@ def get_api_schema(request):
         endpoint_details = {'name': fn.func_name,
                             'description': desc}
         resp[url] = endpoint_details
-    return HttpResponse(json.dumps(resp))
+    return resp

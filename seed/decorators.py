@@ -8,7 +8,7 @@ import json
 from functools import wraps
 
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
 
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.utils.cache import make_key, lock_cache, unlock_cache, get_lock
@@ -163,20 +163,32 @@ def ajax_request_class(func):
     return wrapper
 
 
-def require_organization_id(fn):
+def require_organization_id(func):
     """
     Validate that organization_id is in the GET params and it's an int.
     """
-    @wraps(fn)
+
+    @wraps(func)
     def _wrapped(request, *args, **kwargs):
-        org_id = request.GET.get('organization_id', None)
-        if org_id is None:
-            return HttpResponseBadRequest('Valid organization_id is required in the query parameters.')
+        error = False
         try:
-            ord_id = int(org_id)
-        except Exception as e:
-            return HttpResponseBadRequest('Invalid organization_id in the query parameters, must be integer')
-        return fn(request, *args, **kwargs)
+            int(request.GET['organization_id'])
+        except (ValueError, KeyError):
+            error = True
+            pass
+
+        if error:
+            format_type = 'application/json'
+            message = {
+                'status': 'error',
+                'message': 'Invalid organization_id: either blank or not an integer'
+            }
+
+            # NL: I think the error code should be 401: unauthorized, not 400: bad request.
+            # Leaving as 400 for now in case this breaks something else.
+            return HttpResponse(json.dumps(message), content_type=format_type, status=400)
+        else:
+            return func(request, *args, **kwargs)
     return _wrapped
 
 
