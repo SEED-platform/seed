@@ -550,7 +550,7 @@ def loggedin_tests_generator():
                 )
                 link.click()
                 profile_page.reload(section='security')
-                section_title = profile_page.find_element_by_class_name(
+                section_title = profile_page.wait_for_element_by_class_name(
                     'section_header'
                 )
                 assert section_title.text == 'Change Password'
@@ -644,6 +644,12 @@ def loggedin_tests_generator():
                 profile_page = ProfilePage(
                     self, use_url=True, section='security'
                 )
+                # Firefox intermittenly ignores it profile settings
+                # so the test will intermittently fail to the Reader
+                # first view pop up.
+                # See https://bugzilla.mozilla.org/show_bug.cgi?id=1288551
+                if self.browser_type.name == "Firefox":
+                    time.sleep(0.5)
 
                 new_password = profile_page.wait_for_element_by_id(
                     'editNewPassword'

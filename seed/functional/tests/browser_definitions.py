@@ -89,6 +89,10 @@ def get_firefox_webdriver():
     # which can break tests
     profile = webdriver.FirefoxProfile()
     profile.set_preference("browser.reader.detectedFirstArticle", True)
+    profile.set_preference("browser.reader.parse-on-load.enabled", False)
+    profile.set_preference("browser.startup.homepage_override.mstone", "ignore")
+    profile.set_preference("startup.homepage_welcome_url.additional",
+                           "about:blank")
     profile.update_preferences()
     # This can be removed if hack is not longer needed
     if FIREFOX_IS_BROKEN and HAS_MARIONETTE:

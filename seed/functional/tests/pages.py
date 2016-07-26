@@ -294,7 +294,7 @@ class BuildingsList(Page):
 
     """
     def __init__(self, test_obj, url=None, import_file=None, building=None):
-        locator = Locator('ID', 'building-list')
+        locator = Locator('ID', 'btnBuildingActions')
         # will cause ensure_table_is_loaded method to be added
         self.table_locator = Locator('XPATH', '//table')
 

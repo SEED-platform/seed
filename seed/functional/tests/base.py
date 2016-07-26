@@ -30,11 +30,12 @@ from django.test.client import Client
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.functional.tests.browser_definitions import BROWSERS
+from seed.functional.tests.fake import FakeBuildingSnapshotFactory
 from seed.landing.models import SEEDUser
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.lib.superperms.orgs.models import ROLE_LEVEL_CHOICES
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
-from seed.models import BuildingSnapshot, CanonicalBuilding
+from seed.models import CanonicalBuilding
 from seed.models import Project, ProjectBuilding
 
 
@@ -117,6 +118,11 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
                 self.user.username, self.user.api_key
             )
         }
+        num_owners = getattr(self, 'num_owners', 5)
+        self.building_factory = FakeBuildingSnapshotFactory(
+            super_organization=self.org,
+            num_owners=num_owners
+        )
 
     def login(self):
         """Login the test user."""
@@ -350,10 +356,42 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         if 'address_line_1' not in kw:
             snapshot_params.update({'address_line_1': 'address'})
         snapshot_params.update(kw)
-        building = BuildingSnapshot.objects.create(**snapshot_params)
+        building = self.building_factory.building_snapshot(**snapshot_params)
         canonical_building.canonical_snapshot = building
         canonical_building.save()
         return canonical_building
+
+    def generate_buildings(self, num, import_file, **kw):
+        """
+        Create num CanonicalBuildings and associated BuildingSnapshots.
+
+        Set up multiple CanonicalBuilding and BuildingSnapshots  for
+        use in tests. The defaults for the BuildingSnapshot set the
+        super_organization, the import file (as supplied). Any supplied
+        keywords will be passed to BuildingSnapshot.objects.create
+        and will override the defaults.
+
+        The buildings themselves will be populated with pseudo-random,
+        but predictable data, see first_500_buildings.csv for details
+
+        :param:import_file: an ImportFile object (created by create_import_file)
+        :param: num: number of buildings to create
+        :param: kw: keywords passed to BuildingSnapshot.objects.create
+
+        """
+        for n in num:
+            canonical_building = CanonicalBuilding.objects.create()
+            snapshot_params = {
+                'super_organization': self.org,
+                'import_file': import_file,
+                'canonical_building': canonical_building,
+            }
+            snapshot_params.update(kw)
+            building = self.building_factory.building_snapshot(
+                **snapshot_params
+            )
+            canonical_building.canonical_snapshot = building
+            canonical_building.save()
 
     def get_canonical_building(self, building_id):
         """
