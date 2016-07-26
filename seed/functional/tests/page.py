@@ -695,7 +695,7 @@ class Table(object):
         for row in rows:
             if isinstance(row, (TableRow, collections.OrderedDict)):
                 _row = TableRow(row)
-                if self.safe and tuple(_row.keys()) != self.headers:
+                if self.safe and sorted(_row.keys()) != sorted(self.headers):
                     raise KeyError(
                         "Keys in {} do not match {}".format(row, self.headers)
                     )

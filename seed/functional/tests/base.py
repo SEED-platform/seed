@@ -143,7 +143,7 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         self.browser.add_cookie(set_to)
 
     def logout(self):
-        """Logout the test user."""
+        """Log out the test user."""
         self.browser.delete_cookie(settings.SESSION_COOKIE_NAME)
 
     def tearDown(self):
