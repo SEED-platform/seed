@@ -876,22 +876,19 @@ def _normalize_address_str(address_val):
             normalized_address = _normalize_address_number(
                 addr['AddressNumber'])
 
-        if 'StreetNamePreDirectional' in addr and addr[
-            'StreetNamePreDirectional'] is not None:
+        if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
                 addr['StreetNamePreDirectional'])  # NOQA
 
         if 'StreetName' in addr and addr['StreetName'] is not None:
             normalized_address = normalized_address + ' ' + addr['StreetName']
 
-        if 'StreetNamePostType' in addr and addr[
-            'StreetNamePostType'] is not None:
+        if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
             # remove any periods from abbreviations
             normalized_address = normalized_address + ' ' + _normalize_address_post_type(
                 addr['StreetNamePostType'])  # NOQA
 
-        if 'StreetNamePostDirectional' in addr and addr[
-            'StreetNamePostDirectional'] is not None:
+        if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
                 addr['StreetNamePostDirectional'])  # NOQA
 
@@ -967,7 +964,7 @@ def _match_buildings(file_pk, user_pk):
     unmatched_normalized_addresses = [
         _normalize_address_str(unmatched[4]) for unmatched in
         unmatched_buildings
-        ]
+    ]
     # Here we want all the values not related to the BS id for doing comps.
     # dont do this now
     #     unmatched_ngrams = [
@@ -995,7 +992,7 @@ def _match_buildings(file_pk, user_pk):
     can_rev_idx = {
         _normalize_address_str(value[4]): value[0] for value in
         canonical_buildings
-        }
+    }
     # (SD) This loads up an ngram object with all the canonical buildings. The
     # values are the lists of identifying data for each building
     #
@@ -1011,7 +1008,7 @@ def _match_buildings(file_pk, user_pk):
     # address_1 but different city
     canonical_buildings_addresses = [
         _normalize_address_str(values[4]) for values in canonical_buildings
-        ]
+    ]
     # For progress tracking
     # sd we now use the address
     #    num_unmatched = len(unmatched_ngrams) or 1
@@ -1148,6 +1145,7 @@ def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
 
     return canonical_matches
 
+
 def is_same_snapshot(s1, s2):
     fields_to_ignore = ["id",
                         "created",
@@ -1174,6 +1172,7 @@ def is_same_snapshot(s1, s2):
             return False
 
     return True
+
 
 # TODO: Move this to the models
 class DuplicateDataError(RuntimeError):

@@ -106,6 +106,7 @@ class TestTasks(TestCase):
             open(
                 path.join(
                     path.dirname(__file__),
+                    '..',
                     'test_data',
                     'portfolio-manager-sample.csv'
                 )
@@ -702,6 +703,7 @@ class TestTasksXLS(TestTasks):
             open(
                 path.join(
                     path.dirname(__file__),
+                    '..',
                     'test_data',
                     'portfolio-manager-sample.xls'
                 )
@@ -774,6 +776,7 @@ class TestTasksXLSX(TestTasks):
             open(
                 path.join(
                     path.dirname(__file__),
+                    '..',
                     'test_data',
                     'portfolio-manager-sample.xlsx'
                 )

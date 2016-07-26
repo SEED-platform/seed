@@ -318,9 +318,6 @@ def remove_buildings(project_slug, project_dict, user_pk):
     set_cache(prog_key, result['status'], result)
 
 
-
-
-
 @shared_task
 @lock_and_track
 def delete_organization(org_pk, deleting_cache_key, chunk_size=100, *args,
