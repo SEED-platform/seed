@@ -110,7 +110,7 @@ SEED_CORE_APPS = (
     'seed.lib.superperms.orgs',
     'seed.audit_logs',
     'seed.cleansing',
-    'seed.functional'
+    'seed.functional' # why is this a core_app?
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.

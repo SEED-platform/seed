@@ -48,7 +48,7 @@ from seed.models import (
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
 )
-from seed.tasks import (
+from seed.data_importer.tasks import (
     map_data,
     remap_data,
     match_buildings,

@@ -15,7 +15,7 @@ from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.tests import util
-from seed import tasks
+from seed.data_importer import tasks
 from seed.cleansing.models import Cleansing
 
 from seed.models import (
