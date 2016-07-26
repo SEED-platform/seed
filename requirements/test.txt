@@ -1,7 +1,7 @@
 # Test dependencies go here. The local and test are the same at the moment.
 -r base.txt
 coverage==3.7.1
-django-nose==1.4.1
+django-nose==1.4.4
 flake8==2.5.2
 mock==1.0.1
 nose==1.3.7
