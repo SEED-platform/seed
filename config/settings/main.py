@@ -80,7 +80,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': "seed-deploy",
-        'USER': STACK_OUTPUTS.get('postgres', 'postgres'),
+        'USER': STACK_OUTPUTS.get('DBUsername', 'postgres'),
         'PASSWORD': 'postgres',
         'HOST': STACK_OUTPUTS.get('DBAddress', '127.0.0.1'),
         'PORT': STACK_OUTPUTS.get('DBPort', ''),

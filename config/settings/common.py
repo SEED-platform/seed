@@ -301,9 +301,3 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 25,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
-
-# Django Rest Swagger
-SWAGGER_SETTINGS = {
-    'exclude_namespaces': ['labels'],
-}
-

@@ -28,7 +28,7 @@ ajaxuploader==0.3.8
 boto==2.39.0
 dj-database-url==0.2.1
 djangorestframework==3.3.3
-django-rest-swagger==0.3.10
+django-rest-swagger==0.3.8
 django-pgjson==0.3.1
 django-storages==1.4
 -e git+https://github.com/revsys/django-tos.git@aca823ccd12fdb897b2827832458b3c34e91dee6#egg=django_tos-master

@@ -38,7 +38,6 @@ env:
 install:
   - pip install --upgrade pip
   - pip install tox==2.3.1
-  - pip install django-rest-swagger==0.3.10
 
 before_script:
   - psql -c "create database seeddb;" -U postgres
