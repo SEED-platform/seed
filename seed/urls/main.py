@@ -19,8 +19,7 @@ from seed.views.main import (
     get_first_five_rows, save_column_mappings, start_mapping, remap_buildings,
     start_system_matching, public_search, progress, export_buildings, export_buildings_progress,
     export_buildings_download, angular_js_tests, delete_organization_buildings,
-    delete_buildings, delete_organization, simple_api_test_with_get_argument,
-    simple_api_test_with_post_parameter, simple_api_test_with_query_string
+    delete_buildings, delete_organization
 )
 
 from seed.views.datasets import DatasetViewSet
@@ -39,10 +38,6 @@ urlpatterns = [
 
     # ajax routes
     url(r'^'+apiv1+r'version/$', version, name='version'),
-
-    url(r'^simple_api_test_with_get_argument/(?P<org_id>[0-9]{1})/$', simple_api_test_with_get_argument, name='simple_api_test_with_get_argument'),
-    url(r'^simple_api_test_with_post_parameter/$', simple_api_test_with_post_parameter, name='simple_api_test_with_post_parameter'),
-    url(r'^simple_api_test_with_query_string/$', simple_api_test_with_query_string, name='simple_api_test_with_query_string'),
 
     url(r'^'+apiv1+r'create_pm_mapping/$', create_pm_mapping, name='create_pm_mapping'),
 
