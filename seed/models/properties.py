@@ -7,11 +7,9 @@
 from __future__ import unicode_literals
 
 from django.db import models
-
 from django_pgjson.fields import JsonField
-from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization
 
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import Cycle
 
 
@@ -31,8 +29,10 @@ class PropertyState(models.Model):
     # import_record = models.ForeignKey(ImportRecord)
     confidence = models.FloatField(default=0, null=True, blank=True)
 
-    jurisdiction_property_identifier = models.CharField(max_length=255, null=True, blank=True)
-    pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True)
+    jurisdiction_property_identifier = models.CharField(max_length=255,
+                                                        null=True, blank=True)
+    pm_parent_property_id = models.CharField(max_length=255, null=True,
+                                             blank=True)
     lot_number = models.CharField(max_length=255, null=True, blank=True)
     property_name = models.CharField(max_length=255, null=True, blank=True)
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
@@ -40,10 +40,12 @@ class PropertyState(models.Model):
     city = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
     postal_code = models.CharField(max_length=255, null=True, blank=True)
-    building_count = models.IntegerField(null=True, blank=True)  # Only spot where it's 'building' in the app, b/c this is a PortMgr field.
+    building_count = models.IntegerField(null=True,
+                                         blank=True)  # Only spot where it's 'building' in the app, b/c this is a PortMgr field.
     property_notes = models.TextField(null=True, blank=True)
     year_ending = models.DateField(null=True, blank=True)
-    use_description = models.CharField(max_length=255, null=True, blank=True)  # Tax IDs are often stuck in here.
+    use_description = models.CharField(max_length=255, null=True,
+                                       blank=True)  # Tax IDs are often stuck in here.
     gross_floor_area = models.FloatField(null=True, blank=True)
     year_built = models.IntegerField(null=True, blank=True)
     recent_sale_date = models.DateTimeField(null=True, blank=True)
@@ -55,8 +57,12 @@ class PropertyState(models.Model):
     owner_address = models.CharField(max_length=255, null=True, blank=True)
     owner_city_state = models.CharField(max_length=255, null=True, blank=True)
     owner_postal_code = models.CharField(max_length=255, null=True, blank=True)
-    building_portfolio_manager_identifier = models.CharField(max_length=255, null=True, blank=True)
-    building_home_energy_score_identifier = models.CharField(max_length=255, null=True, blank=True)
+    building_portfolio_manager_identifier = models.CharField(max_length=255,
+                                                             null=True,
+                                                             blank=True)
+    building_home_energy_score_identifier = models.CharField(max_length=255,
+                                                             null=True,
+                                                             blank=True)
     energy_score = models.IntegerField(null=True, blank=True)
     site_eui = models.FloatField(null=True, blank=True)
     generation_date = models.DateTimeField(null=True, blank=True)
@@ -66,7 +72,8 @@ class PropertyState(models.Model):
     source_eui = models.FloatField(null=True, blank=True)
     energy_alerts = models.TextField(null=True, blank=True)
     space_alerts = models.TextField(null=True, blank=True)
-    building_certification = models.CharField(max_length=255, null=True, blank=True)
+    building_certification = models.CharField(max_length=255, null=True,
+                                              blank=True)
 
     extra_data = JsonField(default={}, blank=True)
 

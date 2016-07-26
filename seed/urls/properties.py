@@ -7,8 +7,9 @@
 
 from django.conf.urls import url
 
-from seed.views.properties import *
-
+from seed.views.properties import (get_properties, get_property, get_taxlots,
+                                   get_taxlot, get_property_columns,
+                                   get_taxlot_columns, get_cycles)
 
 urlpatterns = [
     url(r'^properties/$', get_properties, name='properties'),
