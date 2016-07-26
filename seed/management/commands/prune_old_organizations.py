@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 from IPython import embed
 import logging
 import seed.tasks
-import seed.bluesky.models
+import seed.models
 from _localtools import get_core_organizations
 
 logging.basicConfig(level=logging.DEBUG)
@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG)
 def getOrganizationsToDelete():
     """Get all organizations that aren't in the global white list."""
 
-    all_organizations = seed.bluesky.models.Organization.objects.all()
+    all_organizations = seed.models.Organization.objects.all()
     bad_organizations = [org for org in all_organizations if org.id not in get_core_organizations()]
     return bad_organizations
 

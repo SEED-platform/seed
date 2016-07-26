@@ -100,6 +100,7 @@ INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
     'tos',
     'rest_framework',
+    'rest_framework_swagger',
 )
 
 SEED_CORE_APPS = (
@@ -110,8 +111,7 @@ SEED_CORE_APPS = (
     'seed.lib.superperms.orgs',
     'seed.audit_logs',
     'seed.cleansing',
-    'seed.functional',
-    'seed.bluesky'
+    'seed.functional'
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.

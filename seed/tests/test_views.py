@@ -1576,6 +1576,29 @@ class GetDatasetsViewsTests(TestCase):
         response = self.client.get(reverse("seed:get_datasets"), {'organization_id': self.org.pk})
         self.assertEqual(1, len(json.loads(response.content)['datasets']))
 
+    def test_get_datasets_count(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+        response = self.client.get(reverse("seed:get_datasets_count"),
+                                   {'organization_id': self.org.pk})
+        self.assertEqual(200, response.status_code)
+        j = json.loads(response.content)
+        self.assertEqual(j['status'], 'success')
+        self.assertEqual(j['datasets_count'], 1)
+
+    def test_get_datasets_count_invalid(self):
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+        response = self.client.get(reverse("seed:get_datasets_count"),
+                                   {'organization_id': 666})
+        self.assertEqual(400, response.status_code)
+        j = json.loads(response.content)
+        self.assertEqual(j['status'], 'error')
+        self.assertEqual(j['message'],
+                         'Could not find organization_id: 666')
+
     def test_get_dataset(self):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org

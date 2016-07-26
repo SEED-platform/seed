@@ -55,6 +55,18 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         return defer.promise;
     };
 
+      /**
+       *
+       * @param query_string
+       * @param number_per_page
+       * @param page_number
+       * @param order_by
+       * @param sort_reverse
+       * @param filter_params: If filter_params are provided, then project_slug will be ignored.
+       * @param project_id
+       * @param project_slug: Name of the project to constrain the query.
+       * @returns {Promise}
+       */
     building_factory.search_buildings = function(query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id, project_slug) {
         spinner_utility.show();
         var defer = $q.defer();

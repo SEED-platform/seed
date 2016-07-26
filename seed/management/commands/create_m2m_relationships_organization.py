@@ -4,7 +4,7 @@ from django.db import models, migrations
 from django.core.management.base import BaseCommand
 from seed.lib.superperms.orgs.models import Organization
 from django.apps import apps
-from seed.bluesky.models import *
+from seed.models import *
 import pdb
 import copy
 import collections
@@ -15,7 +15,7 @@ import itertools
 import csv
 import StringIO
 from IPython import embed
-import seed.bluesky.models
+import seed.models
 import numpy as np
 from scipy.sparse import dok_matrix
 from scipy.sparse.csgraph import connected_components
@@ -33,14 +33,14 @@ from _localtools import load_organization_property_extra_data_mapping_exclusions
 from _localtools import load_organization_taxlot_extra_data_mapping_exclusions
 from _localtools import load_organization_property_field_mapping
 from _localtools import load_organization_taxlot_field_mapping
-from seed.bluesky.models import TaxLotView
-from seed.bluesky.models import TaxLot
-from seed.bluesky.models import TaxLotState
-from seed.bluesky.models import TaxLotProperty
-from seed.bluesky.models import Property
-from seed.bluesky.models import PropertyView
-from seed.bluesky.models import PropertyState
-from seed.bluesky.models import Cycle
+from seed.models import TaxLotView
+from seed.models import TaxLot
+from seed.models import TaxLotState
+from seed.models import TaxLotProperty
+from seed.models import Property
+from seed.models import PropertyView
+from seed.models import PropertyState
+from seed.models import Cycle
 import re
 
 logging.basicConfig(level=logging.DEBUG)
