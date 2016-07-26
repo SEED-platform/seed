@@ -20,7 +20,7 @@ from seed.models import (
     CanonicalBuilding,
 )
 from seed import tasks
-from seed.data_importer import tasks
+from seed.data_importer import tasks as di_tasks
 from seed.tests import util
 
 logger = logging.getLogger(__name__)
@@ -96,110 +96,110 @@ class TestTasks(TestCase):
             'year_built': u'Year Built'
         }
 
-    # def test_delete_organization_buildings(self):
-    #     """tests the delete buildings for an organization"""
-    #     # start with the normal use case
-    #     bs1_data = {
-    #         'pm_property_id': 123,
-    #         'tax_lot_id': '435/422',
-    #         'property_name': 'Greenfield Complex',
-    #         'custom_id_1': 1243,
-    #         'address_line_1': '555 NorthWest Databaseer Lane.',
-    #         'address_line_2': '',
-    #         'city': 'Gotham City',
-    #         'postal_code': 8999,
-    #     }
-    #     # This building will have a lot less data to identify it.
-    #     bs2_data = {
-    #         'pm_property_id': 1243,
-    #         'custom_id_1': 1243,
-    #         'address_line_1': '555 Database LN.',
-    #         'city': 'Gotham City',
-    #         'postal_code': 8999,
-    #     }
-    #     new_import_file = ImportFile.objects.create(
-    #         import_record=self.import_record,
-    #         mapping_done=True
-    #     )
-    #
-    #     snapshot = util.make_fake_snapshot(
-    #         self.import_file, bs1_data, ASSESSED_BS, is_canon=True
-    #     )
-    #
-    #     snapshot.super_organization = self.fake_org
-    #     snapshot.save()
-    #
-    #     snapshot = util.make_fake_snapshot(
-    #         new_import_file,
-    #         bs2_data, PORTFOLIO_BS
-    #     )
-    #     snapshot.super_organization = self.fake_org
-    #     snapshot.save()
-    #
-    #     # TODO: do not import this data to test the deleting
-    #     tasks.match_buildings(new_import_file.pk, self.fake_user.pk)
-    #
-    #     # make one more building snapshot in a different org
-    #     fake_org_2 = Organization.objects.create()
-    #     snapshot = util.make_fake_snapshot(
-    #         self.import_file, bs1_data, ASSESSED_BS, is_canon=True
-    #     )
-    #     snapshot.super_organization = fake_org_2
-    #     snapshot.save()
-    #
-    #     self.assertGreater(BuildingSnapshot.objects.filter(
-    #         super_organization=self.fake_org
-    #     ).count(), 0)
-    #
-    #     tasks.delete_organization_buildings(self.fake_org.pk,
-    #                                         'fake-progress-key')
-    #
-    #     self.assertEqual(BuildingSnapshot.objects.filter(
-    #         super_organization=self.fake_org
-    #     ).count(), 0)
-    #
-    #     self.assertGreater(BuildingSnapshot.objects.filter(
-    #         super_organization=fake_org_2
-    #     ).count(), 0)
-    #
-    #     # test that the CanonicalBuildings are deleted
-    #     self.assertEqual(CanonicalBuilding.objects.filter(
-    #         canonical_snapshot__super_organization=self.fake_org
-    #     ).count(), 0)
-    #     # test that other orgs CanonicalBuildings are not deleted
-    #     self.assertGreater(CanonicalBuilding.objects.filter(
-    #         canonical_snapshot__super_organization=fake_org_2
-    #     ).count(), 0)
-    #
-    # def test_delete_organization(self):
-    #     self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
-    #     self.assertTrue(
-    #         Organization.objects.filter(pk=self.fake_org.pk).exists())
-    #     self.assertTrue(
-    #         ImportRecord.objects.filter(pk=self.import_record.pk).exists())
-    #     self.assertTrue(
-    #         ImportFile.objects.filter(pk=self.import_file.pk).exists())
-    #
-    #     tasks.delete_organization(self.fake_org.pk, 'fake-progress-key')
-    #
-    #     self.assertFalse(User.objects.filter(pk=self.fake_user.pk).exists())
-    #     self.assertFalse(
-    #         Organization.objects.filter(pk=self.fake_org.pk).exists())
-    #     self.assertFalse(
-    #         ImportRecord.objects.filter(pk=self.import_record.pk).exists())
-    #     self.assertFalse(
-    #         ImportFile.objects.filter(pk=self.import_file.pk).exists())
-    #
-    # def test_delete_organization_doesnt_delete_user_if_multiple_memberships(
-    #         self):
-    #     """
-    #     Deleting an org shouldn't delete the orgs users if the user belongs to many orgs.
-    #     """
-    #     org = Organization.objects.create()
-    #     OrganizationUser.objects.create(organization=org, user=self.fake_user)
-    #
-    #     self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
-    #
-    #     tasks.delete_organization(self.fake_org.pk, 'fake-progress-key')
-    #
-    #     self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
+    def test_delete_organization_buildings(self):
+        """tests the delete buildings for an organization"""
+        # start with the normal use case
+        bs1_data = {
+            'pm_property_id': 123,
+            'tax_lot_id': '435/422',
+            'property_name': 'Greenfield Complex',
+            'custom_id_1': 1243,
+            'address_line_1': '555 NorthWest Databaseer Lane.',
+            'address_line_2': '',
+            'city': 'Gotham City',
+            'postal_code': 8999,
+        }
+        # This building will have a lot less data to identify it.
+        bs2_data = {
+            'pm_property_id': 1243,
+            'custom_id_1': 1243,
+            'address_line_1': '555 Database LN.',
+            'city': 'Gotham City',
+            'postal_code': 8999,
+        }
+        new_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            mapping_done=True
+        )
+
+        snapshot = util.make_fake_snapshot(
+            self.import_file, bs1_data, ASSESSED_BS, is_canon=True
+        )
+
+        snapshot.super_organization = self.fake_org
+        snapshot.save()
+
+        snapshot = util.make_fake_snapshot(
+            new_import_file,
+            bs2_data, PORTFOLIO_BS
+        )
+        snapshot.super_organization = self.fake_org
+        snapshot.save()
+
+        # TODO: do not import this data to test the deleting
+        di_tasks.match_buildings(new_import_file.pk, self.fake_user.pk)
+
+        # make one more building snapshot in a different org
+        fake_org_2 = Organization.objects.create()
+        snapshot = util.make_fake_snapshot(
+            self.import_file, bs1_data, ASSESSED_BS, is_canon=True
+        )
+        snapshot.super_organization = fake_org_2
+        snapshot.save()
+
+        self.assertGreater(BuildingSnapshot.objects.filter(
+            super_organization=self.fake_org
+        ).count(), 0)
+
+        tasks.delete_organization_buildings(self.fake_org.pk,
+                                            'fake-progress-key')
+
+        self.assertEqual(BuildingSnapshot.objects.filter(
+            super_organization=self.fake_org
+        ).count(), 0)
+
+        self.assertGreater(BuildingSnapshot.objects.filter(
+            super_organization=fake_org_2
+        ).count(), 0)
+
+        # test that the CanonicalBuildings are deleted
+        self.assertEqual(CanonicalBuilding.objects.filter(
+            canonical_snapshot__super_organization=self.fake_org
+        ).count(), 0)
+        # test that other orgs CanonicalBuildings are not deleted
+        self.assertGreater(CanonicalBuilding.objects.filter(
+            canonical_snapshot__super_organization=fake_org_2
+        ).count(), 0)
+
+    def test_delete_organization(self):
+        self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
+        self.assertTrue(
+            Organization.objects.filter(pk=self.fake_org.pk).exists())
+        self.assertTrue(
+            ImportRecord.objects.filter(pk=self.import_record.pk).exists())
+        self.assertTrue(
+            ImportFile.objects.filter(pk=self.import_file.pk).exists())
+
+        tasks.delete_organization(self.fake_org.pk, 'fake-progress-key')
+
+        self.assertFalse(User.objects.filter(pk=self.fake_user.pk).exists())
+        self.assertFalse(
+            Organization.objects.filter(pk=self.fake_org.pk).exists())
+        self.assertFalse(
+            ImportRecord.objects.filter(pk=self.import_record.pk).exists())
+        self.assertFalse(
+            ImportFile.objects.filter(pk=self.import_file.pk).exists())
+
+    def test_delete_organization_doesnt_delete_user_if_multiple_memberships(
+            self):
+        """
+        Deleting an org shouldn't delete the orgs users if the user belongs to many orgs.
+        """
+        org = Organization.objects.create()
+        OrganizationUser.objects.create(organization=org, user=self.fake_user)
+
+        self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
+
+        tasks.delete_organization(self.fake_org.pk, 'fake-progress-key')
+
+        self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
