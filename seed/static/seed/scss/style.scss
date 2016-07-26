@@ -461,6 +461,12 @@ a:not([href]) {
   }
 }
 
+@media (max-width: 945px) {
+  .search_bar_container {
+    display: none;
+  }
+}
+
 .page {
   clear: both;
   position: relative;
@@ -517,7 +523,7 @@ a:not([href]) {
         padding: 11px 20px 7px;
         float: left;
         text-align: center;
-        overflow: auto;
+        overflow: hidden;
         text-overflow: ellipsis;
 
         h1 {
@@ -1029,11 +1035,11 @@ a:not([href]) {
           border-right: 1px solid darken($gray_lighter, 10%);
 
           &.ellipsis {
-              max-width: 80px;
-              text-overflow: ellipsis;
-              /* Required for text-overflow to do anything */
-              white-space: nowrap;
-              overflow: hidden;
+            max-width: 80px;
+            text-overflow: ellipsis;
+            /* Required for text-overflow to do anything */
+            white-space: nowrap;
+            overflow: hidden;
           }
           &.ellipsis-resizable {
               /* use in combination with table.fixed-layout
@@ -1664,7 +1670,7 @@ a:not([href]) {
   }
 
   .btn {
-    min-width:90px;
+    min-width: 90px;
   }
 }
 
@@ -1829,8 +1835,6 @@ select {
   }
 }
 
-
-
 .export_radio .radio-inline {
   input[type=radio] {
     margin-top: 2px;
@@ -1879,14 +1883,13 @@ select {
   }
 }
 
-
 /* A more subtle alternative to the above 'tip' class */
 .tip-subtle {
   position: relative;
-  margin-top:5px;
-  margin-left:35px;
-  margin-bottom:0px;
-  color:#999;
+  margin-top: 5px;
+  margin-left: 35px;
+  margin-bottom: 0px;
+  color: #999;
   &:before {
     font-size: 12px;
     font-family: FontAwesome;
@@ -1904,7 +1907,6 @@ select {
     padding-right: 0;
   }
 }
-
 
 .important-tip:before {
   top: -10px;
@@ -2063,9 +2065,6 @@ select {
   box-sizing: border-box;
 }
 
-
-
-
 /* STYLES FOR LABELS AND RELATED */
 
 /* Holds inline form for creating new labels */
@@ -2079,13 +2078,13 @@ select {
 
 #label_admin {
 
-      .table_list_container{
-        border: 1px solid #cdcdcd;
-    }
+  .table_list_container {
+    border: 1px solid #cdcdcd;
+  }
 
-    .sectionLabel {
-         font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    }
+  .sectionLabel {
+    font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
 
     .tableHeader {
         font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -2109,7 +2108,7 @@ select {
 
 .label-edit-section {
 
-  margin:5px 10px 10px 20px;
+  margin: 5px 10px 10px 20px;
 
   .label-action {
     display: inline-block;
@@ -2137,7 +2136,6 @@ select {
     margin-right: 5px;
 }
 
-
 /* Styles for update labels modal */
 
 #update-building-labels-modal {
@@ -2155,8 +2153,8 @@ select {
     margin-bottom: 5px;
   }
 
-  .edit_text{
-    margin-left:10px;
+  .edit_text {
+    margin-left: 10px;
   }
 
   .add-label-row {
@@ -2170,8 +2168,8 @@ select {
 
   .table-list-container {
     border: 1px solid #EEE;
-    overflow-y:auto;
-    max-height:350px;
+    overflow-y: auto;
+    max-height: 350px;
     margin-bottom: 10px;
     table {
 
@@ -2186,7 +2184,7 @@ select {
 /* Styles to override ngInputTags to get correct tag colors */
 
 tags-input .tags {
-    min-width:550px;
+  min-width: 550px;
 }
 
 .tag-primary {
@@ -2210,14 +2208,12 @@ tags-input .tags {
 }
 
 .tag-danger {
-  border-color:  #d43f3a !important;
+  border-color: #d43f3a !important;
   background: #d43f3a !important;
 }
 gs-input .tags .tag-item .remove-button {
   color: #FFF;
 }
-
-
 
 /* NOTIFICATIONS */
 
@@ -2232,24 +2228,23 @@ gs-input .tags .tag-item .remove-button {
     }
     &.error {
     border-left: thick solid $errorBackground;
-    }
-    &.success {
-      border-left: thick solid $successBackground;
-    }
-    &.info {
-      border-left: thick solid $infoBackground;
-    }
-    &:hover {
-        opacity: 0.7;
-    }
+  }
+  &.success {
+    border-left: thick solid $successBackground;
+  }
+  &.info {
+    border-left: thick solid $infoBackground;
+  }
+  &:hover {
+    opacity: 0.7;
+  }
 }
-
 
 /* OTHER */
 
 /* Styles for building list controls and table */
-.buildingListControls{
-    padding: 20px 10px;
+.buildingListControls {
+  padding: 20px 10px;
 
   .form-group {
     margin-right: 20px;
@@ -2257,7 +2252,7 @@ gs-input .tags .tag-item .remove-button {
 }
 
 .building-list-filter-buttons {
-  .btn+.btn {
+  .btn + .btn {
     margin-left: 5px;
   }
 }

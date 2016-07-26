@@ -54,6 +54,9 @@ urlpatterns = [
     url(r'^i18n/', include('django.conf.urls.i18n')),
 
     url(r'^robots\.txt', robots_txt, name='robots_txt'),
+
+    # blue sky api views
+    url(r'^app/bluesky/', include('seed.bluesky.urls', namespace="bluesky", app_name="bluesky")),
 ]
 
 if settings.DEBUG:
