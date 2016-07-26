@@ -67,7 +67,7 @@ def urls_by_namespace(namespace, urlconf=None, args=None, kwargs=None, prefix=No
                 raise NoReverseMatch("%s is not a registered namespace" % key)
     resolver = get_ns_resolver(ns_pattern, resolver)
     return dict((name, iri_to_uri(resolver._reverse_with_prefix(name, prefix, *args, **kwargs)))
-                for name in resolver.reverse_dict.keys() if isinstance(name, six.string_types))
+                for name in resolver.reverse_dict.keys() if (isinstance(name, six.string_types) and 'datasets-detail' not in name and 'swagger' not in name and 'organizations-detail' not in name and 'simple_api_test' not in name))
 
 
 register = template.Library()
