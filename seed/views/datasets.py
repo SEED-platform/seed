@@ -11,11 +11,11 @@ import logging
 from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
 from seed.decorators import ajax_request, get_prog_key, require_organization_id, ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm, has_perm_class
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import BuildingSnapshot
-from seed.utils.api import api_endpoint, api_endpoint_class
+from seed.utils.api import api_endpoint_class
 from seed.utils.time import convert_to_js_timestamp
-from rest_framework import serializers, viewsets
+from rest_framework import viewsets
 from django.http import HttpResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -71,11 +71,7 @@ class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
             datasets:
                 required: true
                 description: The datasets
-                many: true
                 type: object
-                properties:
-                    variable:
-                        type: integer
         """
 
         org_id = request.query_params.get('organization_id', None)
@@ -282,19 +278,19 @@ class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
         """
         Creates a new empty dataset (ImportRecord).
         ---
-            type:
-                status:
-                    required: true
-                    type: string
-                    description: either success or error
-                id:
-                    required: true
-                    type: integer
-                    description: primary key for the newly created dataset
-                name:
-                    required: true
-                    type: string
-                    description: name of the newly created dataset
+        type:
+            status:
+                required: true
+                type: string
+                description: either success or error
+            id:
+                required: true
+                type: integer
+                description: primary key for the newly created dataset
+            name:
+                required: true
+                type: string
+                description: name of the newly created dataset
         parameters:
             - name: name
               description: The name of this dataset

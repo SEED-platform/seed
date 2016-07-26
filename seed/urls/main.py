@@ -24,12 +24,14 @@ from seed.views.main import (
 )
 
 from seed.views.datasets import DatasetViewSet
+from seed.views.accountsv2 import OrganizationViewSet
 from rest_framework import routers
 api_v2_router = routers.DefaultRouter()
-api_v2_router.register(r'dataset', DatasetViewSet, base_name="dataset")
+api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
+api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
 
 # prefix, to revert back to original endpoints, leave this blank
-apiv1 = r'' #r'api/v1/'
+apiv1 = r''  # r'api/v1/'
 
 urlpatterns = [
     # template routes
