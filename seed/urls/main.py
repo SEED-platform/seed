@@ -5,7 +5,7 @@
 :author
 """
 
-from django.conf.urls import url
+from django.conf.urls import url, include
 
 from seed.views.main import (
     home, version, create_pm_mapping, get_total_number_of_buildings_for_user,
@@ -30,137 +30,147 @@ from seed.views.main import (
     delete_buildings, delete_organization
 )
 
+from seed.views.datasets import DatasetViewSet
+from seed.views.accountsv2 import OrganizationViewSet
+from rest_framework import routers
+api_v2_router = routers.DefaultRouter()
+api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
+api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
+
+# prefix, to revert back to original endpoints, leave this blank
+apiv1 = r''  # r'api/v1/'
+
 urlpatterns = [
     # template routes
     url(r'^$', home, name='home'),
 
     # ajax routes
-    url(r'^version/$', version, name='version'),
+    url(r'^' + apiv1 + r'version/$', version, name='version'),
 
-    url(r'^create_pm_mapping/$', create_pm_mapping, name='create_pm_mapping'),
+    url(r'^' + apiv1 + r'create_pm_mapping/$', create_pm_mapping, name='create_pm_mapping'),
 
     url(
-        r'^get_total_number_of_buildings_for_user/$',
+        r'^' + apiv1 + r'get_total_number_of_buildings_for_user/$',
         get_total_number_of_buildings_for_user,
         name='get_total_number_of_buildings_for_user'
     ),
-    url(r'^get_building/$', get_building, name='get_building'),
+    url(r'^' + apiv1 + r'get_building/$', get_building, name='get_building'),
     url(
-        r'^get_datasets_count/$',
+        r'^' + apiv1 + r'get_datasets_count/$',
         get_datasets_count,
         name='get_datasets_count'
     ),
-    url(r'^search_buildings/$', search_buildings, name='search_buildings'),
+    url(r'^' + apiv1 + r'search_buildings/$', search_buildings, name='search_buildings'),
     url(
-        r'^search_building_snapshots/$',
+        r'^' + apiv1 + r'search_building_snapshots/$',
         search_building_snapshots,
         name='search_building_snapshots'
     ),
     url(
-        r'^get_default_columns/$',
+        r'^' + apiv1 + r'get_default_columns/$',
         get_default_columns,
         name='get_default_columns'
     ),
     url(
-        r'^set_default_columns/$',
+        r'^' + apiv1 + r'set_default_columns/$',
         set_default_columns,
         name='set_default_columns'
     ),
     url(
-        r'^get_default_building_detail_columns/$',
+        r'^' + apiv1 + r'get_default_building_detail_columns/$',
         get_default_building_detail_columns,
         name='get_default_building_detail_columns'
     ),
     url(
-        r'^set_default_building_detail_columns/$',
+        r'^' + apiv1 + r'set_default_building_detail_columns/$',
         set_default_building_detail_columns,
         name='set_default_building_detail_columns'
     ),
-    url(r'^get_columns/$', get_columns, name='get_columns'),
-    url(r'^save_match/$', save_match, name='save_match'),
-    url(r'^get_match_tree/$', get_match_tree, name='get_match_tree'),
-    url(r'^get_coparents/$', get_coparents, name='get_coparents'),
-    url(r'^save_raw_data/$', save_raw_data, name='save_raw_data'),
+    url(r'^' + apiv1 + r'get_columns/$', get_columns, name='get_columns'),
+    url(r'^' + apiv1 + r'save_match/$', save_match, name='save_match'),
+    url(r'^' + apiv1 + r'get_match_tree/$', get_match_tree, name='get_match_tree'),
+    url(r'^' + apiv1 + r'get_coparents/$', get_coparents, name='get_coparents'),
+    url(r'^' + apiv1 + r'save_raw_data/$', save_raw_data, name='save_raw_data'),
     url(
-        r'^get_PM_filter_by_counts/$',
+        r'^' + apiv1 + r'get_PM_filter_by_counts/$',
         get_PM_filter_by_counts,
         name='get_PM_filter_by_counts'
     ),
     url(
-        r'^delete_duplicates_from_import_file/$',
+        r'^' + apiv1 + r'delete_duplicates_from_import_file/$',
         delete_duplicates_from_import_file,
         name='delete_duplicates_from_import_file',
     ),
-    url(r'^create_dataset/$', create_dataset, name='create_dataset'),
-    url(r'^get_datasets/$', get_datasets, name='get_datasets'),
-    url(r'^get_dataset/$', get_dataset, name='get_dataset'),
-    url(r'^get_import_file/$', get_import_file, name='get_import_file'),
-    url(r'^delete_file/$', delete_file, name='delete_file'),
-    url(r'^delete_dataset/$', delete_dataset, name='delete_dataset'),
-    url(r'^update_dataset/$', update_dataset, name='update_dataset'),
-    url(r'^update_building/$', update_building, name='update_building'),
+    url(r'^' + apiv1 + r'create_dataset/$', create_dataset, name='create_dataset'),
+    url(r'^' + apiv1 + r'get_datasets/$', get_datasets, name='get_datasets'),
+    url(r'^' + apiv1 + r'get_dataset/$', get_dataset, name='get_dataset'),
+    url(r'^' + apiv1 + r'get_import_file/$', get_import_file, name='get_import_file'),
+    url(r'^' + apiv1 + r'delete_file/$', delete_file, name='delete_file'),
+    url(r'^' + apiv1 + r'delete_dataset/$', delete_dataset, name='delete_dataset'),
+    url(r'^' + apiv1 + r'update_dataset/$', update_dataset, name='update_dataset'),
+    url(r'^' + apiv1 + r'update_building/$', update_building, name='update_building'),
 
     # Building reports
     url(
-        r'^get_building_summary_report_data/$',
+        r'^' + apiv1 + r'get_building_summary_report_data/$',
         get_building_summary_report_data,
         name='get_building_summary_report_data',
     ),
     url(
-        r'^get_building_report_data/$',
+        r'^' + apiv1 + r'get_building_report_data/$',
         get_building_report_data,
         name='get_building_report_data',
     ),
     url(
-        r'^get_aggregated_building_report_data/$',
+        r'^' + apiv1 + r'get_aggregated_building_report_data/$',
         get_aggregated_building_report_data,
         name='get_aggregated_building_report_data',
     ),
 
     # New MCM endpoints
     url(
-        r'^get_column_mapping_suggestions/$',
+        r'^' + apiv1 + r'get_column_mapping_suggestions/$',
         get_column_mapping_suggestions,
         name='get_column_mapping_suggestions'
     ),
     url(
-        r'^get_raw_column_names/$',
+        r'^' + apiv1 + r'get_raw_column_names/$',
         get_raw_column_names,
         name='get_raw_column_names'
     ),
     url(
-        r'^get_first_five_rows/$',
+        r'^' + apiv1 + r'get_first_five_rows/$',
         get_first_five_rows,
         name='get_first_five_rows'
     ),
     url(
-        r'^save_column_mappings/$',
+        r'^' + apiv1 + r'save_column_mappings/$',
         save_column_mappings,
         name='save_column_mappings'
     ),
-    url(r'^start_mapping/$', start_mapping, name='start_mapping'),
-    url(r'^remap_buildings/$', remap_buildings, name='remap_buildings'),
+    url(r'^' + apiv1 + r'start_mapping/$', start_mapping, name='start_mapping'),
+    url(r'^' + apiv1 + r'remap_buildings/$', remap_buildings, name='remap_buildings'),
     url(
-        r'^start_system_matching/$',
+        r'^' + apiv1 + r'start_system_matching/$',
         start_system_matching,
         name='start_system_matching'
     ),
     url(
-        r'^public_search/$',
+        r'^' + apiv1 + r'public_search/$',
         public_search,
         name='public_search'
     ),
-    url(r'^progress/$', progress, name='progress'),
+    url(r'^' + apiv1 + r'progress/$', progress, name='progress'),
 
     # exporter routes
-    url(r'^export_buildings/$', export_buildings, name='export_buildings'),
+    url(r'^' + apiv1 + r'export_buildings/$', export_buildings, name='export_buildings'),
     url(
-        r'^export_buildings/progress/$',
+        r'^' + apiv1 + r'export_buildings/progress/$',
         export_buildings_progress,
         name='export_buildings_progress'
     ),
     url(
-        r'^export_buildings/download/$',
+        r'^' + apiv1 + r'export_buildings/download/$',
         export_buildings_download,
         name='export_buildings_download'
     ),
@@ -170,22 +180,32 @@ urlpatterns = [
 
     # org
     url(
-        r'^delete_organization_buildings/$',
+        r'^' + apiv1 + r'delete_organization_buildings/$',
         delete_organization_buildings,
         name='delete_organization_buildings'
     ),
 
     # delete
     url(
-        r'^delete_buildings/$',
+        r'^' + apiv1 + r'delete_buildings/$',
         delete_buildings,
         name='delete_buildings'
     ),
 
     # delete org
     url(
-        r'^delete_organization/$',
+        r'^' + apiv1 + r'delete_organization/$',
         delete_organization,
         name='delete_organization'
     ),
+    # swagger urls
+    url(
+        r'^api-docs/',
+        include('rest_framework_swagger.urls'),
+        name='swagger'
+    ),
+
+    # v2 api
+    url(r'^api/v2/', include(api_v2_router.urls), name='apiv2'),
+
 ]
