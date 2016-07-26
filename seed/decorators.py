@@ -8,18 +8,18 @@ import json
 from functools import wraps
 
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.utils.cache import make_key, lock_cache, unlock_cache, get_lock
-
 
 SEED_CACHE_PREFIX = 'SEED:{0}'
 LOCK_CACHE_PREFIX = SEED_CACHE_PREFIX + ':LOCK'
 PROGRESS_CACHE_PREFIX = SEED_CACHE_PREFIX + ':PROG'
 
 FORMAT_TYPES = {
-    'application/json': lambda response: json.dumps(response, cls=DjangoJSONEncoder),
+    'application/json': lambda response: json.dumps(response,
+                                                    cls=DjangoJSONEncoder),
     'text/json': lambda response: json.dumps(response, cls=DjangoJSONEncoder),
 }
 
@@ -93,6 +93,7 @@ def ajax_request(func):
             news_titles = [entry.title for entry in news]
             return { 'news_titles': news_titles }
     """
+
     @wraps(func)
     def wrapper(request, *args, **kwargs):
         for accepted_type in request.META.get('HTTP_ACCEPT', '').split(','):
@@ -107,15 +108,18 @@ def ajax_request(func):
         # determine the status code if the object is a dictionary
         status_code = 200
         if isinstance(response, dict):
-            if response.get('status') == 'error' or response.get('success') is False:
+            if response.get('status') == 'error' or response.get(
+                    'success') is False:
                 status_code = 400
 
         # convert the response into an HttpResponse if it is not already.
         if not isinstance(response, HttpResponse):
             data = FORMAT_TYPES[format_type](response)
-            response = HttpResponse(data, content_type=format_type, status=status_code)
+            response = HttpResponse(data, content_type=format_type,
+                                    status=status_code)
             response['content-length'] = len(data)
         return response
+
     return wrapper
 
 
@@ -137,6 +141,7 @@ def ajax_request_class(func):
             news_titles = [entry.title for entry in news]
             return { 'news_titles': news_titles }
     """
+
     @wraps(func)
     def wrapper(self, request, *args, **kwargs):
         for accepted_type in request.META.get('HTTP_ACCEPT', '').split(','):
@@ -151,15 +156,18 @@ def ajax_request_class(func):
         # determine the status code if the object is a dictionary
         status_code = 200
         if isinstance(response, dict):
-            if response.get('status') == 'error' or response.get('success') is False:
+            if response.get('status') == 'error' or response.get(
+                    'success') is False:
                 status_code = 400
 
         # convert the response into an HttpResponse if it is not already.
         if not isinstance(response, HttpResponse):
             data = FORMAT_TYPES[format_type](response)
-            response = HttpResponse(data, content_type=format_type, status=status_code)
+            response = HttpResponse(data, content_type=format_type,
+                                    status=status_code)
             response['content-length'] = len(data)
         return response
+
     return wrapper
 
 
@@ -186,9 +194,11 @@ def require_organization_id(func):
 
             # NL: I think the error code should be 401: unauthorized, not 400: bad request.
             # Leaving as 400 for now in case this breaks something else.
-            return HttpResponse(json.dumps(message), content_type=format_type, status=400)
+            return HttpResponse(json.dumps(message), content_type=format_type,
+                                status=400)
         else:
             return func(request, *args, **kwargs)
+
     return _wrapped
 
 
@@ -196,16 +206,20 @@ def require_organization_id_class(fn):
     """
     Validate that organization_id is in the GET params and it's an int.
     """
+
     @wraps(fn)
     def _wrapped(self, request, *args, **kwargs):
         org_id = request.query_params.get('organization_id', None)
         if org_id is None:
-            return HttpResponseBadRequest('Valid organization_id is required in the query parameters.')
+            return HttpResponseBadRequest(
+                'Valid organization_id is required in the query parameters.')
         try:
-            ord_id = int(org_id)
-        except Exception as e:
-            return HttpResponseBadRequest('Invalid organization_id in the query parameters, must be integer')
+            int(org_id)
+        except Exception:
+            return HttpResponseBadRequest(
+                'Invalid organization_id in the query parameters, must be integer')
         return fn(self, request, *args, **kwargs)
+
     return _wrapped
 
 
@@ -213,15 +227,16 @@ def require_organization_membership(fn):
     """
     Validate that the organization_id passed in GET is valid for request user.
     """
+
     @wraps(fn)
     def _wrapped(request, *args, **kwargs):
-
         if not OrganizationUser.objects.filter(
-                organization_id=request.GET['organization_id'], user=request.user).exists():
-
+                organization_id=request.GET['organization_id'],
+                user=request.user).exists():
             return HttpResponseForbidden()
 
         return fn(request, *args, **kwargs)
+
     return _wrapped
 
 

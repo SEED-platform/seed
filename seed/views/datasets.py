@@ -8,22 +8,23 @@
 import datetime
 import json
 import logging
-from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
-from seed.decorators import ajax_request, get_prog_key, require_organization_id, ajax_request_class, require_organization_id_class
-from seed.lib.superperms.orgs.decorators import has_perm, has_perm_class
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
+from rest_framework import viewsets
+
+from seed.data_importer.models import ImportRecord
+from seed.decorators import ajax_request_class, require_organization_id_class
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import BuildingSnapshot
 from seed.utils.api import api_endpoint_class
 from seed.utils.time import convert_to_js_timestamp
-from rest_framework import viewsets
-from django.http import HttpResponse
-from django.contrib.auth.mixins import LoginRequiredMixin
 
 _log = logging.getLogger(__name__)
 
 
 class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
-
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
@@ -127,7 +128,8 @@ class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
                   paramType: path
         """
 
-        organization_id = int(request.query_params.get('organization_id', None))
+        organization_id = int(
+            request.query_params.get('organization_id', None))
         dataset_id = pk
         name = request.data['new_dataset_name']
 
@@ -190,7 +192,8 @@ class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
                   paramType: path
         """
 
-        organization_id = int(request.query_params.get('organization_id', None))
+        organization_id = int(
+            request.query_params.get('organization_id', None))
         dataset_id = pk
 
         from seed.models import obj_to_dict
@@ -255,7 +258,8 @@ class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
         """
 
         # body = request.data
-        organization_id = int(request.query_params.get('organization_id', None))
+        organization_id = int(
+            request.query_params.get('organization_id', None))
         dataset_id = pk
         # check if user has access to the dataset
         d = ImportRecord.objects.filter(
@@ -306,7 +310,9 @@ class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
         org_id = int(request.query_params.get('organization_id', None))
 
         try:
-            _log.info("create_dataset: getting Organization for id=({})".format(org_id))
+            _log.info(
+                "create_dataset: getting Organization for id=({})".format(
+                    org_id))
             org = Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
             return {"status": 'error',
@@ -321,4 +327,5 @@ class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
             owner=request.user,
         )
 
-        return HttpResponse(json.dumps({'status': 'success', 'id': record.pk, 'name': record.name}))
+        return HttpResponse(json.dumps(
+            {'status': 'success', 'id': record.pk, 'name': record.name}))

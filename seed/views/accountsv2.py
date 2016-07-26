@@ -302,5 +302,5 @@ class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
 
         org, _, _ = create_organization(user, org_name, org_name)
         return HttpResponse(json.dumps({'status': 'success',
-                'message': 'organization created',
-                'organization_id': org.pk}))
+                                        'message': 'organization created',
+                                        'organization_id': org.pk}))
