@@ -43,12 +43,12 @@ def delete_based_on_org(apps, org):
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--org', dest='organizations', default=False, type=str)
+        parser.add_argument('--org', dest='organization', default=False, type=str)
         return
 
     def handle(self, *args, **options):
-        if options['organizations']:
-            orgs_to_delete = options['organizations']
+        if options['organization']:
+            orgs_to_delete = options['organization']
             orgs_to_delete = orgs_to_delete.split(",")
             orgs_to_delete = [int(x) for x in orgs_to_delete]
 

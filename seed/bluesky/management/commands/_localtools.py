@@ -176,7 +176,6 @@ def get_organization_map_custom():
     return org_map_custom
 
 def _load_raw_mapping_data():
-    # pdb.set_trace()
     fl = open(get_static_extradata_mapping_file()).readlines()
 
     fl = filter(lambda x: x.startswith("1,"), fl)

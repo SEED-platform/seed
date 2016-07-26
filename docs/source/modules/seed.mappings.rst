@@ -12,13 +12,13 @@ seed.mappings.mapper module
     :undoc-members:
     :show-inheritance:
 
-seed.mappings.reconcile_mappings module
----------------------------------------
+.. seed.mappings.reconcile_mappings module
+.. ---------------------------------------
 
-.. automodule:: seed.mappings.reconcile_mappings
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. .. automodule:: seed.mappings.reconcile_mappings
+..     :members:
+..     :undoc-members:
+..     :show-inheritance:
 
 seed.mappings.seed_mappings module
 ----------------------------------
