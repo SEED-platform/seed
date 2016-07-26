@@ -1,5 +1,6 @@
 Accessor
 accessor
+ActionChains
 admin
 afterwards
 ajax
@@ -112,6 +113,8 @@ Locator
 locator
 login
 Login
+loggedInFunctionalTestCaseFactory
+loggedOutFunctionalTestCaseFactory
 LoggedInTests
 LoggedOutTests
 loggedout

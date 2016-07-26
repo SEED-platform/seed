@@ -40,7 +40,7 @@ class Home(Page):
         super(Home, self).__init__(test_obj, locator, url=url)
         self.load_page()
 
-..warning:
+.. warning::
     a locator must be defined and passed to super(Class, self).__init__
 
 Calling the page object in a test
@@ -150,6 +150,7 @@ STRATEGIES = {
 
 Locator = collections.namedtuple('Locator', ['strategy', 'search_term'])
 Imports = collections.namedtuple('Imports', ['import_file', 'import_record'])
+Organization = collections.namedtuple('Organization', ['org', 'sub_orgs'])
 
 
 class Page(object):
@@ -165,6 +166,7 @@ class Page(object):
     :type: url: Bool or string, if string append to self.url.
     :type: timeout: int or float
     :type: use_text: string
+
     """
     ensure_table_is_loaded = None               # conditional method
 
@@ -201,7 +203,8 @@ class Page(object):
         Reload the page if the browser has navigated away.
         i.e. another Page instance has been created.
 
-        ..::WARNING
+        .. warning::
+
             This method does not navigate back to the page.
             You will need to do so yourself in your test. e.g. by
             locating and clicking on a suitable link.
@@ -323,8 +326,9 @@ class Page(object):
             if not found:
                 msg = (
                     "Found element using strategy {} with {}"
-                    " but inner text did not match {}".format(
-                        self.locator.strategy, self.locator.search_term, self.use_text
+                    " but inner text {} did not match {}".format(
+                        self.locator.strategy, self.locator.search_term,
+                        locator.text, self.use_text
                     )
                 )
                 raise TimeoutException(msg=msg)
@@ -365,7 +369,9 @@ class Page(object):
         import_file = import_file if isinstance(import_file, dict) else {}
 
         import_record = self.test_obj.create_import_record(**import_record)
-        import_file = self.test_obj.create_import_file(import_record, **import_file)
+        import_file = self.test_obj.create_import_file(
+            import_record, **import_file
+        )
 
         if create_building or building:
             canonical_building = self.test_obj.create_building(
@@ -385,6 +391,7 @@ class Page(object):
 
         :type: name: string
         :type: building: CanonicalBuilding instance
+
         """
         building = building if building else getattr(
             self, 'canonical_building', None
@@ -403,6 +410,7 @@ class Page(object):
         :type: id: int
 
         :returns: CanonicalBuilding instance or None
+
         """
         if id:
             canonical_building = self.test_obj.get_canonical_building(id)
@@ -523,6 +531,7 @@ class Page(object):
         ensure_table_is_loaded in the sub class and this will not be used.
 
         :returns: the table as a Table object.
+
         """
         table_element = self.wait_for_element(
             self.table_locator.strategy,
@@ -543,7 +552,7 @@ class Table(object):
     :type: rows: Sequence of sequences/TableRows/OrderedDicts
     :type: safe: bool
 
-    Example:
+    :Example:
 
     +----------+------+------------+
     | Food     | Cost $ | Quantity |
@@ -652,25 +661,27 @@ class Table(object):
             ]
         )
 
-    ...warning:
-    This is probably not what you want::
+    .. warning::
 
-        Table(
-            ["a", "b]",
-            [[('a', 1), ('b':2)], [('a', 4), ('b':5)]]
-        )
+        This is probably not what you want::
 
-    Equivalent to::
+            Table(
+                ["a", "b]",
+                [[('a', 1), ('b':2)], [('a', 4), ('b':5)]]
+            )
 
-        Table(
-            ["a", "b]",
-            [
-                TableRow(OrderedDict({
-                    'a': [('a', 1), ('b':2)]
-                    'b': [('a', 4), ('b':5)]
-                })
-            ]
-        )
+        Equivalent to::
+
+            Table(
+                ["a", "b]",
+                [
+                    TableRow(OrderedDict({
+                        'a': [('a', 1), ('b':2)]
+                        'b': [('a', 4), ('b':5)]
+                    })
+                ]
+            )
+
     """
     def __init__(self, headers, rows, safe=True):
         self.safe = safe
@@ -695,8 +706,8 @@ class Table(object):
                         "as {}".format(row, self.headers)
                     )
                 types = set([
-                    isinstance(val, collections.Sequence)
-                    and not isinstance(val, basestring) for val in row
+                    isinstance(val, collections.Sequence) and not
+                    isinstance(val, basestring) for val in row
                 ])
                 if len(types) > 1:
                     raise TypeError("{} contains mixed types".format(row))
@@ -793,6 +804,7 @@ class Table(object):
 
         :type: idx: int/string
         :type: value: string
+
         """
         error_msg = "{} is not a column or out of range".format(idx)
         if isinstance(idx, int):
@@ -817,6 +829,7 @@ class Table(object):
 
         :type: idx: int/string
         :type: value: string
+
         """
         error_msg = "{} is not a column or out of range".format(idx)
         if isinstance(idx, int):
@@ -854,6 +867,7 @@ def table_factory(table):
     If it is unable to do so it will instead use Col_0 etc
 
     :returns: instance of Table
+
     """
     safe = True
     table_header = table.find_elements_by_tag_name('thead')
@@ -921,7 +935,8 @@ class TableRow(collections.Mapping):
     TableRow({'a': 1, 'a': 2}) will also throw an error, where creating a dict
     of the same would result in {'a': 2}.
 
-    Example::
+    :Example:
+
     >>> tr = TableRow(OrderedDict({'a': 0, 'b': 1}))
     >>> tr['a']
     0

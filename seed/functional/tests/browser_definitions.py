@@ -39,9 +39,6 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 #   It should be removed when the upstream fix lands. Check if to see          #
 #   if it has landed if your browser version > 47.0                            #
 #                                                                              #
-#   You will also need to remove the get_firefox_webdriver method              #
-#   and update the get_driver method to remove the test there.                 #
-#                                                                              #
 ################################################################################
 
 from distutils.spawn import find_executable
@@ -82,23 +79,26 @@ if not os.getenv('TRAVIS') == 'true':
         errmsg += ': Marionette. See: {}'.format(THIS_FILE)
         raise EnvironmentError(errno.ENOPKG, errmsg)
 
+################################################################################
+#                                    HACK ENDS                                 #
+################################################################################
 
-# This can be removed if hack is not longer needed
-# as long as you update the Firefox browser definitions
+
 def get_firefox_webdriver():
+    # leave this, it disables the reader view popup
+    # which can break tests
+    profile = webdriver.FirefoxProfile()
+    profile.set_preference("browser.reader.detectedFirstArticle", True)
+    profile.update_preferences()
+    # This can be removed if hack is not longer needed
     if FIREFOX_IS_BROKEN and HAS_MARIONETTE:
         caps = DesiredCapabilities.FIREFOX
         caps["marionette"] = True
         caps["binary"] = find_executable('firefox')
-        driver = webdriver.Firefox(capabilities=caps)
-
+        driver = webdriver.Firefox(capabilities=caps, firefox_profile=profile)
     else:
-        driver = webdriver.Firefox()
+        driver = webdriver.Firefox(firefox_profile=profile)
     return driver
-
-################################################################################
-#                                    HACK ENDS                                 #
-################################################################################
 
 
 # N.B. driver must be the name of the webdriver not an instance
@@ -321,7 +321,7 @@ EDGE = BrowserDefinition(
 # tests running on Travis, Sauce Labs and BrowserCapabilities will be used
 if os.getenv('TRAVIS') == 'true':
     # IE removed as set_cookies does not work
-    # see: https://support.saucelabs.com/customer/en/portal/articles/2014444-error---unable-to-add-cookie-to-page-in-ie-
+    # see: https://support.saucelabs.com/customer/en/portal/articles/2014444-error---unable-to-add-cookie-to-page-in-ie-  # NOQA
     BROWSERS = [FIREFOX, CHROME]               # IE,  IE10, SAFARI, EDGE]
 else:
     # tests running locally, we might want to do os detection at some point

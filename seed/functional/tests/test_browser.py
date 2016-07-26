@@ -10,19 +10,24 @@
 """
 from datetime import date
 import inspect
+import time
 import os
 
+from selenium.webdriver.support.select import Select
 
 from seed.functional.tests.browser_definitions import BROWSERS
 from seed.functional.tests.base import eprint
 from seed.functional.tests.base import LOGGED_IN_CLASSES
 from seed.functional.tests.base import LOGGED_OUT_CLASSES
 from seed.functional.tests.base import mock_file_factory
+from seed.functional.tests.pages import AccountsPage
 from seed.functional.tests.pages import BuildingInfo, BuildingLabels
 from seed.functional.tests.pages import BuildingsList, BuildingListSettings
 from seed.functional.tests.pages import BuildingProjects, BuildingReports
 from seed.functional.tests.pages import DataMapping, DataSetInfo, DataSetsList
 from seed.functional.tests.pages import LandingPage, MainPage
+from seed.functional.tests.pages import ProfilePage, ProjectBuildingInfo
+from seed.functional.tests.pages import ProjectsList, ProjectPage
 
 from seed.data_importer.models import ROW_DELIMITER
 # from seed.models import Project, ProjectBuilding, StatusLabel
@@ -47,7 +52,9 @@ def loggedout_tests_generator():
                 username_input.send_keys('test@example.com')
                 password_input = page.find_element_by_id("id_password")
                 password_input.send_keys('password')
-                page.find_element_by_css_selector('input[value="Log In"]').click()
+                page.find_element_by_css_selector(
+                    'input[value="Log In"]'
+                ).click()
                 # should now be on main page
                 main_page = MainPage(self)
                 title_container = main_page.wait_for_element(
@@ -78,6 +85,104 @@ def loggedin_tests_generator():
         # logged in. Add your test methods here
         class LoggedInTests(LOGGED_IN_CLASSES[browser.name]):
 
+            def test_accounts_page(self):
+                """Make sure accounts//organinizations works."""
+                # load imports
+                import_file, _ = self.create_import(name="Test Dataset")
+                self.create_building(import_file=import_file)
+
+                # create sub_org
+                self.create_sub_org(name="Sub Org")
+                other_user_details = {
+                    'username': 'johnh@example.com',
+                    'password': 'password',
+                    'email': 'johnh@example.com',
+                    'first_name': 'John',
+                    'last_name': 'Henry'
+                }
+                # Add another org self.user is member of (not owner)
+                other_user = self.create_user(**other_user_details)
+                other_org, _ = self.create_org(
+                    name='Other Org', user=other_user
+                )
+                self.create_org_user(
+                    user=self.user, org=other_org, role='member'
+                )
+
+                page = MainPage(self, use_url=True)
+                page.find_element_by_id('sidebar-accounts').click()
+
+                accounts = AccountsPage(self)
+                title = accounts.wait_for_element_by_class_name('page_title')
+                assert title.text == 'Organizations'
+
+                managed_orgs = accounts.get_managed_org_tables()
+                # sanity check should have parent and child
+                assert len(managed_orgs) == 2
+                parents = []
+                children = []
+                for org in managed_orgs:
+                    # is parent org
+                    if org.sub_orgs:
+                        parents.append(org)
+                    else:
+                        children.append(org)
+
+                # assert 1 parent/1 child
+                assert len(parents) == len(children) == 1
+
+                parent = parents[0]
+                child = children[0]
+                sub_orgs = parent.sub_orgs
+
+                # assert number of children equal, accounting for header
+                assert len(sub_orgs[1:]) == len(children) == 1
+
+                # check names
+                assert parent.org['ORGANIZATION'].text == 'Org'
+                assert child.org['ORGANIZATION'].text == 'Sub Org'
+
+                # check for Sub-Organizations header
+                assert sub_orgs[0]['ORGANIZATION'].text == 'Sub-Organizations'
+
+                # check sub org and child are the same
+                assert sub_orgs[1]['ORGANIZATION'].text == child.org[
+                    'ORGANIZATION'].text
+
+                # Test ' Organizations I Belong To' table
+                member_orgs = accounts.get_member_orgs_table()
+
+                # check num and name of orgs
+                assert len(member_orgs) == 3
+                org_names = [
+                    org['ORGANIZATION NAME'].text for org in member_orgs
+                ]
+                assert 'Org' in org_names
+                assert 'Sub Org' in org_names
+                assert 'Other Org' in org_names
+
+                # Check details
+                org = member_orgs.find_row_by_field(
+                    'ORGANIZATION NAME', 'Org'
+                )
+                sub_org = member_orgs.find_row_by_field(
+                    'ORGANIZATION NAME', 'Sub Org'
+                )
+                other = member_orgs.find_row_by_field(
+                    'ORGANIZATION NAME', 'Other Org'
+                )
+                assert org['NUMBER OF BUILDINGS'].text == '1'
+                assert org['YOUR ROLE'].text == 'owner'
+                assert org['ORGANIZATION OWNER(S)'].text == 'Jane Doe'
+
+                assert sub_org['NUMBER OF BUILDINGS'].text == '0'
+                assert sub_org['YOUR ROLE'].text == 'owner'
+                assert sub_org['ORGANIZATION OWNER(S)'].text == 'Jane Doe'
+
+                assert sub_org['NUMBER OF BUILDINGS'].text == '0'
+                assert other['YOUR ROLE'].text == 'member'
+                assert other['ORGANIZATION OWNER(S)'].text == 'John Henry'
+
             def test_dataset_list(self):
                 """Make sure dataset list works."""
                 # load imports
@@ -96,7 +201,7 @@ def loggedin_tests_generator():
 
             def test_dataset_detail(self):
                 """
-                Make sure you can click dataset name on dataset list page
+                make sure you can click dataset name on dataset list page
                 and load dataset.
                 """
                 mock_file = mock_file_factory("test.csv")
@@ -104,14 +209,14 @@ def loggedin_tests_generator():
                     self, create_import=True,
                     import_file={'mock_file': mock_file}
                 )
-                # Click a dataset.
+                # click a dataset.
                 datasets.find_element_by_css_selector(
                     'td a.import_name').click()
 
                 # ensure page is loaded
                 dataset = DataSetInfo(self)
 
-                # Make sure import file is there.
+                # make sure import file is there.
                 table = dataset.ensure_table_is_loaded()
                 row = table.first_row
                 data_file_cell = row['DATA FILES']
@@ -159,11 +264,8 @@ def loggedin_tests_generator():
 
                 # click on building in sidebar
                 main_page.find_element_by_id('sidebar-buildings').click()
-                self.wait_for_element_by_css('#building-list')
 
                 # Make sure a building is present.
-                self.browser.find_element_by_css_selector(
-                    '#building-list-table td')
                 buildings_list = BuildingsList(self)
                 table = buildings_list.ensure_table_is_loaded()
                 address = table.first_row['ADDRESS LINE 1']
@@ -192,7 +294,9 @@ def loggedin_tests_generator():
                 reports_link.click()
 
                 reports_page = BuildingReports(self)
-                form = reports_page.wait_for_element_by_class_name('chart-inputs')
+                form = reports_page.wait_for_element_by_class_name(
+                    'chart-inputs'
+                )
                 form_groups = form.find_elements_by_class_name('form-group')
                 button = form_groups[-1].find_element_by_tag_name('button')
                 assert button.text == 'Update Charts'
@@ -206,6 +310,98 @@ def loggedin_tests_generator():
                 labels_page = BuildingLabels(self)
                 button = labels_page.find_element_by_id('btnCreateLabel')
                 assert button.text == 'Create label'
+
+            def test_building_list_buildings_display(self):
+                """
+                Test to make sure user can set number of buildings to display.
+
+                Ensure page loads and settings stick to project.
+                See github issue #1005 pull request#1006
+                """
+                buildings_list = BuildingsList(self, url=True)
+
+                # set up project
+                buildings_list.create_project(name='test')
+
+                # select 100 in dropdown
+                display_count = buildings_list.wait_for_element_by_id(
+                    'number_per_page_select'
+                )
+                drop_down = Select(display_count)
+                # firefox doesn't want to select anything
+                # so send it 1 to select 100
+                if self.browser_type.name == 'Firefox':
+                    display_count.send_keys('1')
+                else:
+                    drop_down.select_by_visible_text('100')
+                assert drop_down.first_selected_option.text == '100'
+
+                # check value persists and page loads
+                buildings_list.reload()
+                display_count = buildings_list.wait_for_element_by_id(
+                    'number_per_page_select'
+                )
+                drop_down = Select(display_count)
+                assert drop_down.first_selected_option.text == '100'
+
+                # click through to last record
+                last_record = buildings_list.wait_for_element_by_class_name(
+                    'pager'
+                ).find_elements_by_tag_name('a')[-1]
+                last_record.click()
+                # check value persists and page loads
+                buildings_list.reload()
+                display_count = buildings_list.wait_for_element_by_id(
+                    'number_per_page_select'
+                )
+                drop_down = Select(display_count)
+                assert drop_down.first_selected_option.text == '100'
+
+                # Navigate to projects page
+                projects_link = buildings_list.find_element_by_id(
+                    'sidebar-projects'
+                )
+                projects_link.click()
+                projects_list = ProjectsList(self)
+
+                # locate project link and navigate to project page
+                table = projects_list.ensure_table_is_loaded()
+                project = table.find_row_by_field('PROJECT NAME', 'test')
+                project_cell = project['PROJECT NAME']
+                project_link = project_cell.find_element_by_class_name(
+                    'table_name_link'
+                )
+                project_link.click()
+
+                # Navigate to project page
+                project_page = ProjectPage(self)
+
+                # select 50 in dropdown
+                display_count = project_page.wait_for_element_by_id(
+                    'number_per_page_select'
+                )
+                drop_down = Select(display_count)
+                # firefox doesn't want to select anything
+                # so send it 1 to select 100
+                if self.browser_type.name == 'Firefox':
+                    display_count.send_keys('5')
+                else:
+                    drop_down.select_by_visible_text('50')
+                assert drop_down.first_selected_option.text == '50'
+
+                # navigate back to building list
+                buildings_link = project_page.find_element_by_id(
+                    'sidebar-buildings'
+                )
+                buildings_link.click()
+
+                # check value persists and page loads
+                buildings_list.reload()
+                display_count = buildings_list.wait_for_element_by_id(
+                    'number_per_page_select'
+                )
+                drop_down = Select(display_count)
+                assert drop_down.first_selected_option.text == '100'
 
             def test_building_detail(self):
                 """Make sure building detail page loads."""
@@ -258,7 +454,9 @@ def loggedin_tests_generator():
                 details_table = details_page.ensure_table_is_loaded()
                 new_year_ending = date(2015, 12, 31)
                 row = details_table.find_row_by_field('FIELD', 'Year Ending')
-                year_ending = row['MASTER'].find_element_by_id('edit_tax_lot_id')
+                year_ending = row['MASTER'].find_element_by_id(
+                    'edit_tax_lot_id'
+                )
                 year_ending.clear()
                 year_ending.send_keys(str(new_year_ending))
                 details_page.find_element_by_link_text('Save Changes').click()
@@ -318,6 +516,355 @@ def loggedin_tests_generator():
                     assert size > fields.size['width']
                     # crude test to test against #982
                     assert fields.size['width'] > 80
+
+            def test_profile_page(self):
+                """
+                Make sure you can click from the menu to the building list
+                page and it loads, as well as the sub tabs.
+                """
+                main_page = MainPage(self, use_url=True)
+                # Firefox intermittenly ignores it profile settings
+                # so the test will intermittently fail to the Reader
+                # first view pop up.
+                # See https://bugzilla.mozilla.org/show_bug.cgi?id=1288551
+                if self.browser_type.name == "Firefox":
+                    time.sleep(0.5)
+                profile_link = main_page.wait_for_element_by_id(
+                    'sidebar-profile'
+                )
+                profile_link.click()
+
+                # Load Profile page
+                profile_page = ProfilePage(self)
+                page_title = profile_page.wait_for_element_by_class_name(
+                    'page_title'
+                )
+                assert page_title.text == 'Jane Doe'
+                section_title = profile_page.find_element_by_class_name(
+                    'section_header'
+                )
+                assert section_title.text == 'Profile Information'
+                # Load security tab
+                link = profile_page.wait_for_element_by_link_text(
+                    'Security'
+                )
+                link.click()
+                profile_page.reload(section='security')
+                section_title = profile_page.find_element_by_class_name(
+                    'section_header'
+                )
+                assert section_title.text == 'Change Password'
+
+                # Load developer tab
+                link = profile_page.wait_for_element_by_link_text(
+                    'Developer'
+                )
+                link.click()
+                profile_page.reload(section='developer')
+                section_title = profile_page.find_element_by_class_name(
+                    'section_header'
+                )
+                assert section_title.text == 'API Key'
+
+                # Reload Profile Info tab
+                link = profile_page.wait_for_element_by_link_text(
+                    'Profile Info'
+                )
+                link.click()
+                profile_page.reload(section='profile')
+                section_title = profile_page.find_element_by_class_name(
+                    'section_header'
+                )
+                assert section_title.text == 'Profile Information'
+
+            def test_profile_information_actions(self):
+                """Test the profile page form actions work."""
+                profile_page = ProfilePage(self, use_url=True)
+
+                first_name = profile_page.find_element_by_id(
+                    'first-name-text'
+                )
+                last_name = profile_page.find_element_by_id(
+                    'last-name-text'
+                )
+                save_changes = profile_page.find_element_by_id(
+                    'update_profile'
+                )
+
+                assert first_name.get_attribute('value') == 'Jane'
+                assert last_name.get_attribute('value') == 'Doe'
+
+                last_name.clear()
+                last_name.send_keys('Ray')
+                save_changes.click()
+
+                profile_page.reload()
+                page_title = profile_page.wait_for_element_by_class_name(
+                    'page_title'
+                )
+                first_name = profile_page.find_element_by_id(
+                    'first-name-text'
+                )
+                last_name = profile_page.find_element_by_id(
+                    'last-name-text'
+                )
+                buttons = profile_page.find_elements_by_class_name(
+                    'btn-default'
+                )
+                for button in buttons:
+                    if button.text == 'Cancel':
+                        cancel = button
+                        break
+
+                assert page_title.text == 'Jane Ray'
+                assert first_name.get_attribute('value') == 'Jane'
+                assert last_name.get_attribute('value') == 'Ray'
+                # check mark appeared
+                save_changes.find_element_by_class_name('fa-check')
+
+                last_name.send_keys('Mee')
+                cancel.click()
+
+                profile_page.reload()
+                page_title = profile_page.wait_for_element_by_class_name(
+                    'page_title'
+                )
+                first_name = profile_page.find_element_by_id(
+                    'first-name-text'
+                )
+                last_name = profile_page.find_element_by_id(
+                    'last-name-text'
+                )
+                assert page_title.text == 'Jane Ray'
+                assert first_name.get_attribute('value') == 'Jane'
+                assert last_name.get_attribute('value') == 'Ray'
+
+            def test_profile_security_actions(self):
+                """test the profile page form actions work."""
+                profile_page = ProfilePage(
+                    self, use_url=True, section='security'
+                )
+
+                new_password = profile_page.wait_for_element_by_id(
+                    'editNewPassword'
+                )
+                confirm_new_password = profile_page.wait_for_element_by_id(
+                    'editConfirmNewPassword'
+                )
+                buttons = profile_page.find_elements_by_class_name('btn')
+                for button in buttons:
+                    if button.text == 'Cancel':
+                        cancel = button
+                        break
+
+                new_password.send_keys('asasdfG123')
+                confirm_new_password.send_keys('asasdfG123')
+                cancel.click()
+
+                menu_toggle = profile_page.find_element_by_class_name(
+                    'menu_toggle'
+                )
+                menu_toggle.click()
+                log_out = profile_page.find_element_by_class_name(
+                    'badge_menu'
+                )
+                log_out.click()
+
+                # load landing page and verify we can log in
+                page = LandingPage(self)
+                username_input = page.find_element_by_id("id_email")
+                username_input.send_keys('test@example.com')
+                password_input = page.find_element_by_id("id_password")
+                password_input.send_keys('password')
+                page.find_element_by_css_selector(
+                    'input[value="Log In"]'
+                ).click()
+                # should now be on main page
+                main_page = MainPage(self)
+                title_container = main_page.wait_for_element(
+                    'CLASS_NAME', 'home_hero_content_container'
+                )
+                title = title_container.find_element_by_tag_name('h1')
+                assert title.text == 'Getting Started'
+
+                # go back to Change Password and change password this time
+                profile_link = main_page.wait_for_element_by_id(
+                    'sidebar-profile'
+                )
+                profile_link.click()
+                profile_page.reload(section='profile')
+
+                # Load security tab
+                link = profile_page.wait_for_element_by_link_text(
+                    'Security'
+                )
+                link.click()
+                profile_page.reload(section='security')
+                current_password = profile_page.wait_for_element_by_id(
+                    'editCurrentPawword'              # sic
+                )
+                new_password = profile_page.wait_for_element_by_id(
+                    'editNewPassword'
+                )
+                confirm_new_password = profile_page.wait_for_element_by_id(
+                    'editConfirmNewPassword'
+                )
+                buttons = profile_page.find_elements_by_class_name('btn')
+                for button in buttons:
+                    if button.text == 'Change Password':
+                        change_password = button
+                        break
+                current_password.clear()
+                current_password.send_keys('password')
+                new_password.clear()
+                new_password.send_keys('asasdfG123')
+                confirm_new_password.clear()
+                confirm_new_password.send_keys('asasdfG123')
+                change_password.click()
+
+                profile_page.reload()
+                menu_toggle = profile_page.find_element_by_class_name(
+                    'menu_toggle'
+                )
+                menu_toggle.click()
+                log_out = profile_page.find_element_by_class_name(
+                    'badge_menu'
+                )
+                log_out.click()
+
+                # load landing page and verify we can log in
+                page = LandingPage(self)
+                username_input = page.find_element_by_id("id_email")
+                username_input.send_keys('test@example.com')
+                password_input = page.find_element_by_id("id_password")
+                password_input.send_keys('asasdfG123')
+                page.find_element_by_css_selector(
+                    'input[value="Log In"]'
+                ).click()
+                # should now be on main page
+                main_page = MainPage(self)
+                title_container = main_page.wait_for_element(
+                    'CLASS_NAME', 'home_hero_content_container'
+                )
+                title = title_container.find_element_by_tag_name('h1')
+                assert title.text == 'Getting Started'
+
+                # go back to Profile Page
+                profile_link = main_page.wait_for_element_by_id(
+                    'sidebar-profile'
+                )
+                profile_link.click()
+                profile_page.reload(section='profile')
+
+                # load developer tag
+                link = profile_page.wait_for_element_by_link_text(
+                    'Developer'
+                )
+                link.click()
+
+                # check for api key
+                profile_page.reload(section='developer')
+                api_key_table = profile_page.get_api_key_table()
+                api_key = api_key_table.first_row['API KEY'].text
+                assert api_key is not None
+
+                # generate a new api key
+                form = profile_page.find_element_by_class_name(
+                    'section_form_container'
+                )
+                form_button = form.find_element_by_tag_name(
+                    'button'
+                )
+                assert form_button.text == 'Get a New API Key'
+                form_button.click()
+
+                # check for api key
+                profile_page.reload(section='developer')
+                api_key_table = profile_page.get_api_key_table()
+                new_api_key = api_key_table.first_row['API KEY'].text
+                assert new_api_key is not None
+
+                # check regenerated
+                assert new_api_key != api_key
+
+                # check check mark appears
+                form = profile_page.find_element_by_class_name(
+                    'section_form_container'
+                )
+                form_button = form.find_element_by_tag_name(
+                    'button'
+                )
+                check_mark = form_button.find_element_by_class_name('fa')
+                check_mark_class = check_mark.get_attribute('class')
+                assert "fa-check" in check_mark_class
+                assert "ng-hide" not in check_mark_class
+
+            def test_project_list(self):
+                """
+                Make sure you can click from the menu to the building list
+                page and it loads.
+                """
+                # load main page and create building snapshot
+                main_page = MainPage(self, use_url=True)
+                main_page.create_record(create_building=True)
+                main_page.create_project()
+
+                # click on projects in sidebar
+                main_page.wait_for_element_by_id('sidebar-projects').click()
+                projects_list = ProjectsList(self)
+
+                # Ensure project is visible
+                table = projects_list.ensure_table_is_loaded()
+                project = table.first_row['PROJECT NAME']
+                assert project.text == 'test'
+
+            def test_project_page(self):
+                """Make sure the project page loads"""
+                projects_list = ProjectsList(
+                    self, use_url=True,
+                    create_building=True, create_project='test'
+                )
+                canonical_building = projects_list.canonical_building
+                building_snapshot = canonical_building.canonical_snapshot
+
+                # locate project link and navigate to project page
+                table = projects_list.ensure_table_is_loaded()
+                project = table.first_row['PROJECT NAME']
+
+                project_link = project.find_element_by_class_name(
+                    'table_name_link'
+                )
+                project_link.click()
+
+                project_page = ProjectPage(self)
+
+                # inspect table to see if building is present
+                table = project_page.ensure_table_is_loaded()
+                address_cell = table[0]['ADDRESS LINE 1']
+                address = building_snapshot.address_line_1
+                assert address_cell.text == address
+
+            def test_project_building_info(self):
+                """Make sure the project bulding info page loads"""
+                project_page = ProjectPage(
+                    self, name='test',
+                    create_building=True, create_project=True
+                )
+                canonical_building = project_page.canonical_building
+                canonical_snapshot = canonical_building.canonical_snapshot
+
+                # locate building and click on link
+                table = project_page.ensure_table_is_loaded()
+                address_cell = table[0]['ADDRESS LINE 1']
+                link = address_cell.find_element_by_tag_name('a')
+                link.click()
+
+                # ensure Building Info page is loaded and building is there
+                building_info = ProjectBuildingInfo(self, name='test')
+                table = building_info.ensure_table_is_loaded()
+                row = table.find_row_by_field('FIELD', 'Address Line 1')
+                assert row[1].text == canonical_snapshot.address_line_1
+
         # ================= TESTS GO ABOVE THIS LINE ======================
 
         # Leave this at the end
@@ -364,7 +911,7 @@ def get_tsts(Test):
                 if hasattr(TestClass, 'setUp'):
                     TestClass.setUp()
                 test()
-            except:
+            except:                                                 # noqa
                 msg = "test: {} failed with browser {}".format(
                     tname, TestClass.browser_type.name
                 )
