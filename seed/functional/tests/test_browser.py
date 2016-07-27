@@ -10,7 +10,6 @@
 """
 from datetime import date
 import inspect
-import time
 import os
 
 from selenium.webdriver.support.select import Select
@@ -403,6 +402,27 @@ def loggedin_tests_generator():
                 drop_down = Select(display_count)
                 assert drop_down.first_selected_option.text == '100'
 
+                # navigate to building details page
+                buildings_link = buildings_list.wait_for_element(
+                    'CSS_SELECTOR', 'td a')
+                buildings_link.click()
+
+                # Wait for details page
+                details_page = BuildingInfo(self)
+
+                # Return to Buildings List
+                details_page.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
+                details_page.find_element_by_partial_link_text(
+                    'Buildings').click()
+
+                # check value persists and page loads
+                buildings_list.reload()
+                display_count = buildings_list.wait_for_element_by_id(
+                    'number_per_page_select'
+                )
+                drop_down = Select(display_count)
+                assert drop_down.first_selected_option.text == '100'
+
             def test_building_detail(self):
                 """Make sure building detail page loads."""
                 # load Buildings List
@@ -522,65 +542,65 @@ def loggedin_tests_generator():
                 Make sure you can click from the menu to the building list
                 page and it loads, as well as the sub tabs.
                 """
-                main_page = MainPage(self, use_url=True)
                 # Firefox intermittenly ignores it profile settings
                 # so the test will intermittently fail to the Reader
                 # first view pop up.
                 # See https://bugzilla.mozilla.org/show_bug.cgi?id=1288551
-                if self.browser_type.name == "Firefox":
-                    time.sleep(0.5)
-                profile_link = main_page.wait_for_element_by_id(
-                    'sidebar-profile'
-                )
-                profile_link.click()
+                if ((os.getenv('TRAVIS') != 'true') and
+                        (self.browser_type.name != 'Firefox')):
+                    main_page = MainPage(self, use_url=True)
+                    link = main_page.wait_for_element_by_id(
+                        'sidebar-profile'
+                    )
+                    link.click()
 
-                # Load Profile page
-                profile_page = ProfilePage(self)
-                page_title = profile_page.wait_for_element_by_class_name(
-                    'page_title'
-                )
-                assert page_title.text == 'Jane Doe'
-                section_title = profile_page.find_element_by_class_name(
-                    'section_header'
-                )
-                assert section_title.text == 'Profile Information'
-                # Load security tab
-                link = profile_page.wait_for_element_by_link_text(
-                    'Security'
-                )
-                link.click()
-                profile_page.reload(section='security')
-                section_title = profile_page.wait_for_element_by_class_name(
-                    'section_header'
-                )
-                assert section_title.text == 'Change Password'
+                    # Load Profile page
+                    profile_page = ProfilePage(self)
+                    page_title = profile_page.wait_for_element_by_class_name(
+                        'page_title'
+                    )
+                    assert page_title.text == 'Jane Doe'
+                    section_title = profile_page.find_element_by_class_name(
+                        'section_header'
+                    )
+                    assert section_title.text == 'Profile Information'
+                    # Load security tab
+                    link = profile_page.wait_for_element_by_link_text(
+                        'Security'
+                    )
+                    link.click()
+                    profile_page.reload(section='security')
+                    section_title =\
+                        profile_page.wait_for_element_by_class_name(
+                            'section_header'
+                        )
+                    assert section_title.text == 'Change Password'
 
-                # Load developer tab
-                link = profile_page.wait_for_element_by_link_text(
-                    'Developer'
-                )
-                link.click()
-                profile_page.reload(section='developer')
-                section_title = profile_page.find_element_by_class_name(
-                    'section_header'
-                )
-                assert section_title.text == 'API Key'
+                    # Load developer tab
+                    link = profile_page.wait_for_element_by_link_text(
+                        'Developer'
+                    )
+                    link.click()
+                    profile_page.reload(section='developer')
+                    section_title = profile_page.find_element_by_class_name(
+                        'section_header'
+                    )
+                    assert section_title.text == 'API Key'
 
-                # Reload Profile Info tab
-                link = profile_page.wait_for_element_by_link_text(
-                    'Profile Info'
-                )
-                link.click()
-                profile_page.reload(section='profile')
-                section_title = profile_page.find_element_by_class_name(
-                    'section_header'
-                )
-                assert section_title.text == 'Profile Information'
+                    # Reload Profile Info tab
+                    link = profile_page.wait_for_element_by_link_text(
+                        'Profile Info'
+                    )
+                    link.click()
+                    profile_page.reload(section='profile')
+                    section_title = profile_page.find_element_by_class_name(
+                        'section_header'
+                    )
+                    assert section_title.text == 'Profile Information'
 
             def test_profile_information_actions(self):
                 """Test the profile page form actions work."""
                 profile_page = ProfilePage(self, use_url=True)
-
                 first_name = profile_page.find_element_by_id(
                     'first-name-text'
                 )
@@ -641,169 +661,182 @@ def loggedin_tests_generator():
 
             def test_profile_security_actions(self):
                 """test the profile page form actions work."""
-                profile_page = ProfilePage(
-                    self, use_url=True, section='security'
-                )
                 # Firefox intermittenly ignores it profile settings
                 # so the test will intermittently fail to the Reader
                 # first view pop up.
                 # See https://bugzilla.mozilla.org/show_bug.cgi?id=1288551
-                if self.browser_type.name == "Firefox":
-                    time.sleep(0.5)
+                if ((os.getenv('TRAVIS') != 'true') and
+                        (self.browser_type.name != 'Firefox')):
+                    profile_page = ProfilePage(
+                        self, use_url=True, section='security'
+                    )
 
-                new_password = profile_page.wait_for_element_by_id(
-                    'editNewPassword'
-                )
-                confirm_new_password = profile_page.wait_for_element_by_id(
-                    'editConfirmNewPassword'
-                )
-                buttons = profile_page.find_elements_by_class_name('btn')
-                for button in buttons:
-                    if button.text == 'Cancel':
-                        cancel = button
-                        break
+                    new_password = profile_page.wait_for_element_by_id(
+                        'editNewPassword'
+                    )
+                    confirm_new_password =\
+                        profile_page.wait_for_element_by_id(
+                            'editConfirmNewPassword'
+                        )
+                    buttons = profile_page.find_elements_by_class_name('btn')
+                    for button in buttons:
+                        if button.text == 'Cancel':
+                            cancel = button
+                            break
 
-                new_password.send_keys('asasdfG123')
-                confirm_new_password.send_keys('asasdfG123')
-                cancel.click()
+                    new_password.send_keys('asasdfG123')
+                    confirm_new_password.send_keys('asasdfG123')
+                    cancel.click()
 
-                menu_toggle = profile_page.find_element_by_class_name(
-                    'menu_toggle'
-                )
-                menu_toggle.click()
-                log_out = profile_page.find_element_by_class_name(
-                    'badge_menu'
-                )
-                log_out.click()
+                    menu_toggle = profile_page.find_element_by_class_name(
+                        'menu_toggle'
+                    )
+                    menu_toggle.click()
+                    log_out = profile_page.find_element_by_class_name(
+                        'badge_menu'
+                    )
+                    log_out.click()
 
-                # load landing page and verify we can log in
-                page = LandingPage(self)
-                username_input = page.find_element_by_id("id_email")
-                username_input.send_keys('test@example.com')
-                password_input = page.find_element_by_id("id_password")
-                password_input.send_keys('password')
-                page.find_element_by_css_selector(
-                    'input[value="Log In"]'
-                ).click()
-                # should now be on main page
-                main_page = MainPage(self)
-                title_container = main_page.wait_for_element(
-                    'CLASS_NAME', 'home_hero_content_container'
-                )
-                title = title_container.find_element_by_tag_name('h1')
-                assert title.text == 'Getting Started'
+                    # load landing page and verify we can log in
+                    page = LandingPage(self)
+                    username_input = page.find_element_by_id("id_email")
+                    username_input.send_keys('test@example.com')
+                    password_input = page.find_element_by_id("id_password")
+                    password_input.send_keys('password')
+                    page.find_element_by_css_selector(
+                        'input[value="Log In"]'
+                    ).click()
+                    # should now be on main page
+                    main_page = MainPage(self)
+                    title_container = main_page.wait_for_element(
+                        'CLASS_NAME', 'home_hero_content_container'
+                    )
+                    title = title_container.find_element_by_tag_name('h1')
+                    assert title.text == 'Getting Started'
 
-                # go back to Change Password and change password this time
-                profile_link = main_page.wait_for_element_by_id(
-                    'sidebar-profile'
-                )
-                profile_link.click()
-                profile_page.reload(section='profile')
+                    # go back to Change Password and change password this time
+                    link = main_page.wait_for_element_by_id(
+                        'sidebar-profile'
+                    )
+                    link.click()
+                    profile_page.reload(section='profile')
 
-                # Load security tab
-                link = profile_page.wait_for_element_by_link_text(
-                    'Security'
-                )
-                link.click()
-                profile_page.reload(section='security')
-                current_password = profile_page.wait_for_element_by_id(
-                    'editCurrentPawword'              # sic
-                )
-                new_password = profile_page.wait_for_element_by_id(
-                    'editNewPassword'
-                )
-                confirm_new_password = profile_page.wait_for_element_by_id(
-                    'editConfirmNewPassword'
-                )
-                buttons = profile_page.find_elements_by_class_name('btn')
-                for button in buttons:
-                    if button.text == 'Change Password':
-                        change_password = button
-                        break
-                current_password.clear()
-                current_password.send_keys('password')
-                new_password.clear()
-                new_password.send_keys('asasdfG123')
-                confirm_new_password.clear()
-                confirm_new_password.send_keys('asasdfG123')
-                change_password.click()
+                    # Load security tab
+                    link = profile_page.wait_for_element_by_link_text(
+                        'Security'
+                    )
+                    link.click()
+                    profile_page.reload(section='security')
+                    current_password = profile_page.wait_for_element_by_id(
+                        'editCurrentPawword'              # sic
+                    )
+                    new_password = profile_page.wait_for_element_by_id(
+                        'editNewPassword'
+                    )
+                    confirm_new_password =\
+                        profile_page.wait_for_element_by_id(
+                            'editConfirmNewPassword'
+                        )
+                    buttons = profile_page.find_elements_by_class_name('btn')
+                    for button in buttons:
+                        if button.text == 'Change Password':
+                            change_password = button
+                            break
+                    current_password.clear()
+                    current_password.send_keys('password')
+                    new_password.clear()
+                    new_password.send_keys('asasdfG123')
+                    confirm_new_password.clear()
+                    confirm_new_password.send_keys('asasdfG123')
+                    change_password.click()
 
-                profile_page.reload()
-                menu_toggle = profile_page.find_element_by_class_name(
-                    'menu_toggle'
-                )
-                menu_toggle.click()
-                log_out = profile_page.find_element_by_class_name(
-                    'badge_menu'
-                )
-                log_out.click()
+                    profile_page.reload()
+                    menu_toggle = profile_page.find_element_by_class_name(
+                        'menu_toggle'
+                    )
+                    menu_toggle.click()
+                    log_out = profile_page.find_element_by_class_name(
+                        'badge_menu'
+                    )
+                    log_out.click()
 
-                # load landing page and verify we can log in
-                page = LandingPage(self)
-                username_input = page.find_element_by_id("id_email")
-                username_input.send_keys('test@example.com')
-                password_input = page.find_element_by_id("id_password")
-                password_input.send_keys('asasdfG123')
-                page.find_element_by_css_selector(
-                    'input[value="Log In"]'
-                ).click()
-                # should now be on main page
-                main_page = MainPage(self)
-                title_container = main_page.wait_for_element(
-                    'CLASS_NAME', 'home_hero_content_container'
-                )
-                title = title_container.find_element_by_tag_name('h1')
-                assert title.text == 'Getting Started'
+                    # load landing page and verify we can log in
+                    page = LandingPage(self)
+                    username_input = page.find_element_by_id("id_email")
+                    username_input.send_keys('test@example.com')
+                    password_input = page.find_element_by_id("id_password")
+                    password_input.send_keys('asasdfG123')
+                    page.find_element_by_css_selector(
+                        'input[value="Log In"]'
+                    ).click()
+                    # should now be on main page
+                    main_page = MainPage(self)
+                    title_container = main_page.wait_for_element(
+                        'CLASS_NAME', 'home_hero_content_container'
+                    )
+                    title = title_container.find_element_by_tag_name('h1')
+                    assert title.text == 'Getting Started'
 
-                # go back to Profile Page
-                profile_link = main_page.wait_for_element_by_id(
-                    'sidebar-profile'
-                )
-                profile_link.click()
-                profile_page.reload(section='profile')
+                    # go back to Profile Page
+                    link = main_page.wait_for_element_by_id(
+                        'sidebar-profile'
+                    )
+                    link.click()
+                    profile_page.reload(section='profile')
 
-                # load developer tag
-                link = profile_page.wait_for_element_by_link_text(
-                    'Developer'
-                )
-                link.click()
+            def test_profile_developer_actions(self):
+                """test the profile page form actions work."""
+                # Firefox intermittenly ignores it profile settings
+                # so the test will intermittently fail to the Reader
+                # first view pop up.
+                # See https://bugzilla.mozilla.org/show_bug.cgi?id=1288551
+                if ((os.getenv('TRAVIS') != 'true') and
+                        (self.browser_type.name != 'Firefox')):
+                    profile_page = ProfilePage(
+                        self, use_url=True, section='security'
+                    )
+                    # load developer tag
+                    link = profile_page.wait_for_element_by_link_text(
+                        'Developer'
+                    )
+                    link.click()
 
-                # check for api key
-                profile_page.reload(section='developer')
-                api_key_table = profile_page.get_api_key_table()
-                api_key = api_key_table.first_row['API KEY'].text
-                assert api_key is not None
+                    # check for api key
+                    profile_page.reload(section='developer')
+                    api_key_table = profile_page.get_api_key_table()
+                    api_key = api_key_table.first_row['API KEY'].text
+                    assert api_key is not None
 
-                # generate a new api key
-                form = profile_page.find_element_by_class_name(
-                    'section_form_container'
-                )
-                form_button = form.find_element_by_tag_name(
-                    'button'
-                )
-                assert form_button.text == 'Get a New API Key'
-                form_button.click()
+                    # generate a new api key
+                    form = profile_page.find_element_by_class_name(
+                        'section_form_container'
+                    )
+                    form_button = form.find_element_by_tag_name(
+                        'button'
+                    )
+                    assert form_button.text == 'Get a New API Key'
+                    form_button.click()
 
-                # check for api key
-                profile_page.reload(section='developer')
-                api_key_table = profile_page.get_api_key_table()
-                new_api_key = api_key_table.first_row['API KEY'].text
-                assert new_api_key is not None
+                    # check for api key
+                    profile_page.reload(section='developer')
+                    api_key_table = profile_page.get_api_key_table()
+                    new_api_key = api_key_table.first_row['API KEY'].text
+                    assert new_api_key is not None
 
-                # check regenerated
-                assert new_api_key != api_key
+                    # check regenerated
+                    assert new_api_key != api_key
 
-                # check check mark appears
-                form = profile_page.find_element_by_class_name(
-                    'section_form_container'
-                )
-                form_button = form.find_element_by_tag_name(
-                    'button'
-                )
-                check_mark = form_button.find_element_by_class_name('fa')
-                check_mark_class = check_mark.get_attribute('class')
-                assert "fa-check" in check_mark_class
-                assert "ng-hide" not in check_mark_class
+                    # check check mark appears
+                    form = profile_page.find_element_by_class_name(
+                        'section_form_container'
+                    )
+                    form_button = form.find_element_by_tag_name(
+                        'button'
+                    )
+                    check_mark = form_button.find_element_by_class_name('fa')
+                    check_mark_class = check_mark.get_attribute('class')
+                    assert "fa-check" in check_mark_class
+                    assert "ng-hide" not in check_mark_class
 
             def test_project_list(self):
                 """
