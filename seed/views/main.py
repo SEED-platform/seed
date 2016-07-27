@@ -20,6 +20,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import DefaultStorage
 from django.db.models import Q
+from django.db.models.expressions import RawSQL
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
@@ -75,6 +76,10 @@ DEFAULT_CUSTOM_COLUMNS = [
     'address_line_1',
     'city',
     'state_province',
+]
+
+BUILDING_SNAPSHOT_FIELDS = [
+    col.name for col in BuildingSnapshot._meta.get_fields()
 ]
 
 _log = logging.getLogger(__name__)
@@ -773,10 +778,22 @@ def search_building_snapshots(request):
         order_by = "-%s" % order_by
 
     # only search in ASSESED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS
-    building_snapshots = BuildingSnapshot.objects.order_by(order_by).filter(
-        import_file__pk=import_file_id,
-        source_type__in=[ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS],
-    )
+    print 'order_by', order_by
+    if order_by not in BUILDING_SNAPSHOT_FIELDS:
+        print 'EXTRA DATA'
+        # for Extra data fieles
+        building_snapshots = BuildingSnapshot.objects.order_by(
+            RawSQL("extra_data->>%s", (order_by,))
+        ).filter(
+            import_file__pk=import_file_id,
+            source_type__in=[ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS],
+        )
+    else:
+        print 'NOT EXTRA DATA'
+        building_snapshots = BuildingSnapshot.objects.order_by(order_by).filter(
+            import_file__pk=import_file_id,
+            source_type__in=[ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS],
+        )
 
     fieldnames = [
         'pm_property_id',
@@ -1300,7 +1317,10 @@ def get_column_mapping_suggestions(request):
         .get(organization_id=org_id, user=request.user)
     organization = membership.organization
 
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'), import_record__super_organization_id=organization.pk)
+    import_file = ImportFile.objects.get(
+        pk=body.get('import_file_id'),
+        import_record__super_organization_id=organization.pk
+    )
 
     # Make a dictionary of the column names and their respective types.
     # Build this dictionary from BEDES fields (the null organization columns,
