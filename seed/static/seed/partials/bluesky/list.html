@@ -26,15 +26,16 @@
     </div>
 </div>
 
-
-<ul class="nav nav-tabs" style="margin-bottom:1px;">
-    <li ng-class="{active: object=='property'}" heading="View by Property">
-        <a href="#/bluesky/properties">View by Property</a>
-    </li>
-    <li ng-class="{active: object=='taxlot'}" heading="View by Tax Lot">
-        <a href="#/bluesky/taxlots">View by Tax Lot</a>
-    </li>
-</ul>
+<div class="building_list_tab_container ">
+    <ul class="nav nav-tabs" style="margin-bottom:1px;">
+        <li ng-class="{active: object=='property'}" heading="View by Property">
+            <a href="#/bluesky/properties">View by Property</a>
+        </li>
+        <li ng-class="{active: object=='taxlot'}" heading="View by Tax Lot">
+            <a href="#/bluesky/taxlots">View by Tax Lot</a>
+        </li>
+    </ul>
+</div>
 
 <div class="section_content_container" ng-cloak style="clear:both;">
     <div class="section_content" ng-include="urls.static_url + 'seed/partials/bluesky/table.html'"></div>
