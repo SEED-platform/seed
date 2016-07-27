@@ -778,9 +778,7 @@ def search_building_snapshots(request):
         order_by = "-%s" % order_by
 
     # only search in ASSESED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS
-    print 'order_by', order_by
     if order_by not in BUILDING_SNAPSHOT_FIELDS:
-        print 'EXTRA DATA'
         # for Extra data fieles
         building_snapshots = BuildingSnapshot.objects.order_by(
             RawSQL("extra_data->>%s", (order_by,))
@@ -789,7 +787,6 @@ def search_building_snapshots(request):
             source_type__in=[ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS],
         )
     else:
-        print 'NOT EXTRA DATA'
         building_snapshots = BuildingSnapshot.objects.order_by(order_by).filter(
             import_file__pk=import_file_id,
             source_type__in=[ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS],
