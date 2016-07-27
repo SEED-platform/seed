@@ -35,7 +35,7 @@ class PropertyState(models.Model):
     import_file = models.ForeignKey(ImportFile, null=True, blank=True)
     # FIXME: source_type needs to be a foreign key or make it import_file.source_type
     source_type = models.IntegerField(null=True, blank=True, db_index=True)
-    organization = models.ForeignKey(Organization, blank=True, null=True)
+    super_organization = models.ForeignKey(Organization, blank=True, null=True)
 
     confidence = models.FloatField(default=0, null=True, blank=True)
 

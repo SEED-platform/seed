@@ -234,7 +234,10 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
     data = PropertyState.objects.filter(id__in=ids).only(
         'extra_data').iterator()
     for row in data:
-        # get the data from the database
+        # TODO: during the mapping the data are saved back in the database
+        # If the user decided to not use the mapped data and go back and remap
+        # then the data will forever be in the property state table for
+        # no reason. FIX THIS!
         property_state = mapper.map_row(
             row.extra_data,
             mapping,
@@ -255,7 +258,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
         property_state.import_file = import_file
         property_state.source_type = save_type
         property_state.clean()
-        property_state.organization = import_file.import_record.super_organization
+        property_state.super_organization = import_file.import_record.super_organization
         property_state.save()
 
     if property_state:
