@@ -1,3 +1,8 @@
 # Local development dependencies go here
 -r test.txt
 django-debug-toolbar==1.4
+
+# required for migration scripts (for new data model) at the moment
+numpy
+scipy
+ipython

@@ -201,3 +201,38 @@ def has_perm(perm_name):
         return _wrapped
 
     return decorator
+
+
+def has_perm_class(perm_name):
+    """Proceed if user from request has ``perm_name``."""
+
+    def decorator(fn):
+        @wraps(fn)
+        def _wrapped(self, request, *args, **kwargs):
+            # Skip perms checks if settings allow super_users to bypass.
+            if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
+                return fn(self, request, *args, **kwargs)
+
+            org_id = _get_org_id(request)
+
+            try:
+                org = Organization.objects.get(pk=org_id)
+            except Organization.DoesNotExist:
+                return _make_resp('org_dne')
+
+            try:
+                org_user = OrganizationUser.objects.get(
+                    user=request.user, organization=org
+                )
+            except OrganizationUser.DoesNotExist:
+                return _make_resp('user_dne')
+
+            if not PERMS.get(perm_name, lambda x: False)(org_user):
+                return _make_resp('perm_denied')
+
+            # Logic to see if person has permission required.
+            return fn(self, request, *args, **kwargs)
+
+        return _wrapped
+
+    return decorator

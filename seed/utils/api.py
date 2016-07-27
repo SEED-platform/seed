@@ -98,6 +98,30 @@ def api_endpoint(fn):
     return _wrapped
 
 
+def api_endpoint_class(fn):
+    """
+    Decorator function to mark a view as allowed to authenticate via API key.
+
+    Decorator must be used before login_required or has_perm to set
+    request.user for those decorators.
+    """
+    # mark this function as an api endpoint for get_api_endpoints to find
+    fn.is_api_endpoint = True
+    global endpoints
+    endpoints.append(fn)
+
+    @wraps(fn)
+    def _wrapped(self, request, *args, **kwargs):
+
+        user = get_api_request_user(request)
+        if user:
+            request.is_api_request = True
+            request.user = user
+
+        return fn(self, request, *args, **kwargs)
+    return _wrapped
+
+
 def drf_api_endpoint(fn):
     """
     Decorator to register a Django Rest Framework view with the list of API

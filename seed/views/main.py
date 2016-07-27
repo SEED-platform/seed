@@ -20,7 +20,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import DefaultStorage
 from django.db.models import Q
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 
@@ -610,10 +610,21 @@ def get_datasets_count(request):
         }
 
     """
-    datasets_count = Organization.objects.get(
-        pk=request.GET['organization_id']).import_records.all().distinct().count()
+    org_id = request.GET['organization_id']
 
-    return {'status': 'success', 'datasets_count': datasets_count}
+    # first make sure that the organization id exists
+    if Organization.objects.filter(pk=request.GET['organization_id']).exists():
+        datasets_count = Organization.objects.get(pk=org_id).import_records.\
+            all().distinct().count()
+        return {'status': 'success', 'datasets_count': datasets_count}
+    else:
+        message = {
+            'status': 'error',
+            'message': 'Could not find organization_id: {}'.format(org_id)
+        }
+        return HttpResponse(json.dumps(message),
+                            content_type='application/json',
+                            status=400)
 
 
 @ajax_request
