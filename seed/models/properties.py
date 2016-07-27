@@ -11,9 +11,11 @@ from django_pgjson.fields import JsonField
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Cycle
+from seed.models import ImportFile
 
 
 class Property(models.Model):
+    "The canonical property"
     organization = models.ForeignKey(Organization)
     campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', blank=True, null=True)
@@ -26,7 +28,13 @@ class Property(models.Model):
 
 
 class PropertyState(models.Model):
+    """Store a single property"""
     # import_record = models.ForeignKey(ImportRecord)
+    # Support finding the property by the import_file and source_type
+    import_file = models.ForeignKey(ImportFile, null=True, blank=True)
+    # FIXME: source_type needs to be a foreign key or make it import_file.source_type
+    source_type = models.IntegerField(null=True, blank=True, db_index=True)
+
     confidence = models.FloatField(default=0, null=True, blank=True)
 
     jurisdiction_property_identifier = models.CharField(max_length=255,

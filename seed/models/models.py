@@ -236,6 +236,8 @@ def get_sourced_attributes(snapshot):
 
 def set_initial_sources(snapshot):
     """Sets the PK for the original sources to self."""
+
+    # TODO: This has been removed in the new data model -- remove here??
     single, plural = get_sourced_attributes(snapshot)
     for attr in single:
         # We set the attribute source to be itself.

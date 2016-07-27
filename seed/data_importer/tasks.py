@@ -60,6 +60,7 @@ from seed.models import (
     save_snapshot_match,
     save_column_names,
     BuildingSnapshot,
+    PropertyState,
 )
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache
@@ -192,7 +193,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
                   **kwargs):
     """Does the work of matching a mapping to a source type and saving
 
-    :param ids: list of BuildingSnapshot IDs to map.
+    :param ids: list of PropertyState IDs to map.
     :param file_pk: int, the PK for an ImportFile obj.
     :param source_type: int, represented by either ASSESSED_RAW, or
         PORTFOLIO_RAW.
@@ -203,6 +204,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
     :param raw_ids: (optional kwarg), the list of ids in chunk order.
 
     """
+
+    logger.debug("Mapping row chunks")
     import_file = ImportFile.objects.get(pk=file_pk)
     save_type = PORTFOLIO_BS
     if source_type == ASSESSED_RAW:
@@ -228,14 +231,14 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
 
     apply_func = apply_data_func(mappable_columns)
 
-    data = BuildingSnapshot.objects.filter(id__in=ids).only(
+    data = PropertyState.objects.filter(id__in=ids).only(
         'extra_data').iterator()
     for row in data:
         # get the data from the database
         model = mapper.map_row(
             row.extra_data,
             mapping,
-            BuildingSnapshot,
+            PropertyState,
             cleaner=map_cleaner,
             concat=concats,
             apply_columns=apply_columns,
@@ -268,6 +271,7 @@ def _map_data(file_pk, *args, **kwargs):
     :param file_pk: int, the id of the import_file we're working with.
 
     """
+    logger.debug("Starting to map the data")
     prog_key = get_prog_key('map_data', file_pk)
     import_file = ImportFile.objects.get(pk=file_pk)
     # Don't perform this task if it's already been completed.
@@ -298,7 +302,7 @@ def _map_data(file_pk, *args, **kwargs):
     }
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
 
-    qs = BuildingSnapshot.objects.filter(
+    qs = PropertyState.objects.filter(
         import_file=import_file,
         source_type=source_type,
     ).only('id').iterator()
@@ -321,7 +325,7 @@ def _cleanse_data(file_pk):
     """
 
     Get the mapped data and run the cleansing class against it in chunks. The
-    mapped data are pulled from the BuildingSnapshot table.
+    mapped data are pulled from the PropertyState table.
 
     @lock_and_track returns a progress_key
 
@@ -339,10 +343,10 @@ def _cleanse_data(file_pk):
     # This is non-ideal, but the source type of the input file is never
     # updated, but the data are stages as if it were.
     #
-    # After the mapping stage occurs, the data end up in the BuildingSnapshot
+    # After the mapping stage occurs, the data end up in the PropertyState
     # table under the *_BS value.
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_BS)
-    qs = BuildingSnapshot.objects.filter(
+    qs = PropertyState.objects.filter(
         import_file=import_file,
         source_type=source_type,
     ).only('id').iterator()
@@ -382,25 +386,27 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
     """Save the raw data to the database."""
     import_file = ImportFile.objects.get(pk=file_pk)
     # Save our "column headers" and sample rows for F/E.
+
     source_type = get_source_type(import_file)
     for c in chunk:
-        raw_bs = BuildingSnapshot()
-        raw_bs.import_file = import_file
-        raw_bs.extra_data = c
-        raw_bs.source_type = source_type
+        raw_property = PropertyState()
+        raw_property.import_file = import_file  # not defined in new data model
+        raw_property.extra_data = c
+        raw_property.source_type = source_type  # not defined in new data model
 
         # We require a save to get our PK
         # We save here to set our initial source PKs.
-        raw_bs.save()
+        raw_property.save()
         super_org = import_file.import_record.super_organization
-        raw_bs.super_organization = super_org
+        raw_property.super_organization = super_org
 
-        set_initial_sources(raw_bs)
-        raw_bs.save()
+        # set_initial_sources(raw_property)
+        raw_property.save()
 
     # Indicate progress
     increment_cache(prog_key, increment)
     logger.debug('Returning from _save_raw_data_chunk')
+
     return True
 
 
@@ -511,7 +517,7 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
 @shared_task
 @lock_and_track
 def _save_raw_data(file_pk, *args, **kwargs):
-    """Chunk up the CSV or XLSX file and save the raw data into the DB BuildingSnapshot table."""
+    """Chunk up the CSV or XLSX file and save the raw data into the DB PropertyState table."""
     prog_key = get_prog_key('save_raw_data', file_pk)
     logger.debug("Current cache state")
     current_cache = get_cache(prog_key)
@@ -616,7 +622,7 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
     :param can_rev_idx: dict, reverse index from match -> canonical PK.
     :param user_pk: user ID, used for AuditLog logging
     :unmatched_list: list of dicts, the result of a values_list query for
-        unmatched BuildingSnapshots.
+        unmatched PropertyState.
 
     """
     match_string, confidence = results[0]  # We always care about closest match
@@ -1064,11 +1070,9 @@ def _remap_data(import_file_pk):
     # Reset mapping progress cache as well.
     import_file = ImportFile.objects.get(pk=import_file_pk)
     # Delete buildings already mapped for this file.
-    BuildingSnapshot.objects.filter(
+    PropertyState.objects.filter(
         import_file=import_file,
-        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS)
-    ).exclude(
-        children__isnull=False
+        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS) # FIXME: make these not hard coded integers
     ).delete()
 
     import_file.mapping_done = False
@@ -1109,6 +1113,7 @@ def remap_data(import_file_pk):
     return result
 
 
+# TODO: delete this method
 def get_canonical_snapshots(org_id):
     """Return all of the BuildingSnapshots that are canonical for an org."""
     snapshots = BuildingSnapshot.objects.filter(
