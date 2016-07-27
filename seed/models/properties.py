@@ -6,12 +6,13 @@
 """
 from __future__ import unicode_literals
 
+import unicodedata
+
 from django.db import models
 from django_pgjson.fields import JsonField
 
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import Cycle
-from seed.models import ImportFile
+from seed.models import (Cycle, ImportFile)
 
 
 class Property(models.Model):
@@ -34,6 +35,7 @@ class PropertyState(models.Model):
     import_file = models.ForeignKey(ImportFile, null=True, blank=True)
     # FIXME: source_type needs to be a foreign key or make it import_file.source_type
     source_type = models.IntegerField(null=True, blank=True, db_index=True)
+    organization = models.ForeignKey(Organization, blank=True, null=True)
 
     confidence = models.FloatField(default=0, null=True, blank=True)
 
@@ -87,6 +89,27 @@ class PropertyState(models.Model):
 
     def __unicode__(self):
         return u'Property State - %s' % (self.pk)
+
+    def clean(self, *args, **kwargs):
+        date_field_names = (
+            'year_ending',
+            'generation_date',
+            'release_date',
+            'recent_sale_date'
+        )
+
+        # TODO: Where to put in the custom_id_1
+        # custom_id_1 = getattr(self, 'custom_id_1')
+        # if isinstance(custom_id_1, unicode):
+        #     custom_id_1 = unicodedata.normalize('NFKD', custom_id_1).encode(
+        #         'ascii', 'ignore'
+        #     )
+        # if custom_id_1 and len(str(custom_id_1)) > 128:
+        #     self.custom_id_1 = custom_id_1[:128]
+        for field in date_field_names:
+            value = getattr(self, field)
+            if value and isinstance(value, basestring):
+                setattr(self, field, convert_datestr(value))
 
 
 class PropertyView(models.Model):

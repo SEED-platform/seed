@@ -235,7 +235,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
         'extra_data').iterator()
     for row in data:
         # get the data from the database
-        model = mapper.map_row(
+        property_state = mapper.map_row(
             row.extra_data,
             mapping,
             PropertyState,
@@ -247,17 +247,20 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
             **kwargs
         )
 
-        if model.tax_lot_id:
-            model.tax_lot_id = _normalize_tax_lot_id(str(model.tax_lot_id))
+        # TODO: Figure out how to handle tax_lot_id's here
 
-        model.import_file = import_file
-        model.source_type = save_type
-        model.clean()
-        model.super_organization = import_file.import_record.super_organization
-        model.save()
-    if model:
+        # if property_state.tax_lot_id:
+        #     property_state.tax_lot_id = _normalize_tax_lot_id(str(model.tax_lot_id))
+
+        property_state.import_file = import_file
+        property_state.source_type = save_type
+        property_state.clean()
+        property_state.organization = import_file.import_record.super_organization
+        property_state.save()
+
+    if property_state:
         # Make sure that we've saved all of the extra_data column names
-        save_column_names(model, mapping=mapping)
+        save_column_names(property_state, mapping=mapping)
 
     increment_cache(prog_key, increment)
 

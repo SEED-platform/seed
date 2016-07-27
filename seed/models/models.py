@@ -667,21 +667,21 @@ def get_column_mappings(organization):
     return mapping, concat_confs
 
 
-def save_column_names(bs, mapping=None):
+def save_column_names(property_state, mapping=None):
     """Save unique column names for extra_data in this organization.
 
     Basically this is a record of all the extra_data keys we've ever seen
     for a particular organization.
 
-    :param bs: BuildingSnapshot instance.
+    :param property_state: PropertyState instance.
     """
     from seed.utils import mapping as mapping_utils
 
-    for key in bs.extra_data:
+    for key in property_state.extra_data:
         # Ascertain if our key is ``extra_data`` or not.
         is_extra_data = key not in mapping_utils.get_mappable_columns()
         Column.objects.get_or_create(
-            organization=bs.super_organization,
+            organization=property_state.organization,
             column_name=key[:511],
             is_extra_data=is_extra_data
         )
