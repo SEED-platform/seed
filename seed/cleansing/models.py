@@ -65,16 +65,16 @@ class Rules(models.Model):
         # Required fields
         missing_matching_field = [
             'address_line_1',
-            'tax_lot_id',
-            'custom_id_1',
-            'pm_property_id'
+            # 'tax_lot_id',
+            # 'custom_id_1',
+            # 'pm_property_id'
         ]
         # Ignored fields
         missing_values = [
             'address_line_1',
-            'tax_lot_id',
-            'custom_id_1',
-            'pm_property_id'
+            # 'tax_lot_id',
+            # 'custom_id_1',
+            # 'pm_property_id'
         ]
         # min/max range checks
         in_range_checking = [{
@@ -326,9 +326,9 @@ class Cleansing(object):
                 self.results[datum.id] = {}
                 self.results[datum.id]['id'] = datum.id
                 self.results[datum.id]['address_line_1'] = datum.address_line_1
-                self.results[datum.id]['pm_property_id'] = datum.pm_property_id
-                self.results[datum.id]['tax_lot_id'] = datum.tax_lot_id
-                self.results[datum.id]['custom_id_1'] = datum.custom_id_1
+                # self.results[datum.id]['pm_property_id'] = datum.pm_property_id
+                # self.results[datum.id]['tax_lot_id'] = datum.tax_lot_id
+                # self.results[datum.id]['custom_id_1'] = datum.custom_id_1
                 self.results[datum.id]['cleansing_results'] = []
 
             # self.missing_matching_field(datum)
@@ -534,6 +534,7 @@ class Cleansing(object):
         z = sorted(existing_results, key=lambda k: k['id'])
         set_cache_raw(Cleansing.cache_key(file_pk), z, 3600)  # save the results for 1 hour
 
+    # TODO: Shouldn't we just use the list from the mappings (from constants.py)
     ASSESSOR_FIELDS = [
         {
             "title": "PM Property ID",

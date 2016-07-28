@@ -292,7 +292,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
         property_state.save()
 
         # set the property view here for now to make sure that the data
-        # show up
+        # show up in the bluesky tables
         property = Property.objects.create(
             organization=org
         )
