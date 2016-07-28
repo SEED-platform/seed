@@ -61,6 +61,12 @@ from seed.models import (
     save_column_names,
     BuildingSnapshot,
     PropertyState,
+    Property,
+    PropertyView,
+    TaxLot,
+    TaxLotState,
+    TaxLotView,
+    Cycle,
 )
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache
@@ -253,13 +259,49 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
         # TODO: Figure out how to handle tax_lot_id's here
 
         # if property_state.tax_lot_id:
-        #     property_state.tax_lot_id = _normalize_tax_lot_id(str(model.tax_lot_id))
+        #      property_state.tax_lot_id = _normalize_tax_lot_id(str(model.tax_lot_id))
+
+        # FIXME: Temp hack to handle the tax_lot_id, until i can figure out where to set this
+        if property_state.jurisdiction_property_identifier:
+            # TODO: we should set the cycle before we iterate over *every* row
+            cycle, _ = Cycle.objects.get_or_create(
+                name=u'Hack Cycle',
+                organization=org,
+                start=datetime.datetime(2015, 1, 1),
+                end=datetime.datetime(2015, 12, 31)
+            )
+            # create 1 to 1 pointless taxlots for now
+            tl = TaxLot.objects.create(
+                organization=org
+            )
+            tls, _ = TaxLotState.objects.get_or_create(
+                jurisdiction_taxlot_identifier=property_state.jurisdiction_property_identifier
+            )
+            logger.debug("the cycle is {}".format(cycle))
+            logger.debug("the taxlotstate is {}".format(tls))
+            tlv, _ = TaxLotView.objects.get_or_create(
+                taxlot=tl,
+                state=tls,
+                cycle=cycle,
+            )
 
         property_state.import_file = import_file
         property_state.source_type = save_type
         property_state.clean()
         property_state.super_organization = import_file.import_record.super_organization
         property_state.save()
+
+        # set the property view here for now to make sure that the data
+        # show up
+        property = Property.objects.create(
+            organization=org
+        )
+        PropertyView.objects.get_or_create(
+            property=property,
+            cycle=cycle,
+            state=property_state
+        )
+
 
     if property_state:
         # Make sure that we've saved all of the extra_data column names

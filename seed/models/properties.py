@@ -16,8 +16,10 @@ from seed.models import (Cycle, ImportFile)
 
 
 class Property(models.Model):
-    "The canonical property"
+    """The canonical property"""
     organization = models.ForeignKey(Organization)
+
+    # Handle properties that may have multiple properties (e.g. buildings)
     campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', blank=True, null=True)
 
@@ -39,6 +41,7 @@ class PropertyState(models.Model):
 
     confidence = models.FloatField(default=0, null=True, blank=True)
 
+    # TODO: hmm, name this jurisdiction_property_id to stay consistent?
     jurisdiction_property_identifier = models.CharField(max_length=255,
                                                         null=True, blank=True)
     pm_parent_property_id = models.CharField(max_length=255, null=True,
@@ -113,7 +116,8 @@ class PropertyState(models.Model):
 
 
 class PropertyView(models.Model):
-    property = models.ForeignKey(Property, related_name='views')
+    """Similar to the old world of canonical building"""
+    property = models.ForeignKey(Property, related_name='views') # different property views can be associated with each other (2012, 2013).
     cycle = models.ForeignKey(Cycle)
     state = models.ForeignKey(PropertyState)
 

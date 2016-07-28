@@ -15,6 +15,8 @@ from seed.models import PropertyView
 
 
 class TaxLot(models.Model):
+    # NOTE: we have been calling this the super_organization. We
+    # should stay consistent although I prefer the name organization (!super_org)
     organization = models.ForeignKey(Organization)
 
     def __unicode__(self):
@@ -46,6 +48,7 @@ class TaxLotState(models.Model):
 
 
 class TaxLotView(models.Model):
+    # TODO: Are all foreignkeys automatically indexed?
     taxlot = models.ForeignKey(TaxLot, related_name='views', null=True)
     state = models.ForeignKey(TaxLotState)
     cycle = models.ForeignKey(Cycle)
@@ -61,7 +64,6 @@ class TaxLotView(models.Model):
 class TaxLotProperty(models.Model):
     property_view = models.ForeignKey(PropertyView)
     taxlot_view = models.ForeignKey(TaxLotView)
-
     cycle = models.ForeignKey(Cycle)
 
     # If there is a complex TaxLot/Property association, this field

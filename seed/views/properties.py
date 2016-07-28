@@ -36,6 +36,7 @@ def get_properties(request):
     page = request.GET.get('page', 1)
     per_page = request.GET.get('per_page', 1)
 
+    # TODO: Need to catch if the cycle does not exist and return nice error
     cycle_id = request.GET.get('cycle')
     if cycle_id:
         cycle = Cycle.objects.get(organization_id=request.GET['organization_id'], pk=cycle_id)
