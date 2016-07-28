@@ -1,5 +1,7 @@
 ## Standard Energy Efficiency Data (SEED) Platform™
-[![Build Status][travis-img]][travis-url] [![Coverage Status][coveralls-img]][coveralls-url] [![read-the-docs-stable-img]][read-the-docs-stable] [![read-the-docs-latest-img]][read-the-docs-latest]
+[![Build Status][travis-img]][travis-url] [![Coverage Status][coveralls-img]][coveralls-url]
+[![](http://readthedocs.org/projects/seed-platform/badge/?version=stable)](http://seed-platform.readthedocs.io/en/stable/)
+[![](http://readthedocs.org/projects/seed-platform/badge/?version=latest)](http://seed-platform.readthedocs.io/en/latest/)
 
 The SEED Platform is a web-based application that helps organizations easily
 manage data on the energy performance of large groups of buildings. Users can
@@ -15,7 +17,9 @@ is required to be PostgreSQL.
 
 The SEED web application provides both a browser-based interface for users to
 upload and manage their building data, as well as a full set of APIs that app
-developers can use to access these same data management functions.
+developers can use to access these same data management functions.  From a
+running server, the Swagger API documentation can be found at `/app/api-docs`
+or from the front end by clicking the API documentation link in the sidebar.
 
 
 ### Installation
