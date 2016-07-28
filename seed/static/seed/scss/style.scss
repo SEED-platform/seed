@@ -1888,7 +1888,7 @@ select {
   position: relative;
   margin-top: 5px;
   margin-left: 35px;
-  margin-bottom: 0px;
+  margin-bottom: 0;
   color: #999;
   &:before {
     font-size: 12px;
@@ -2069,7 +2069,7 @@ select {
 
 /* Holds inline form for creating new labels */
 .newLabelInput{
-    margin: 20px 0px;
+    margin: 20px 0;
     border:1px solid #EEE;
     padding: 10px 10px 5px 10px;
     border-radius: 5px;
@@ -2175,7 +2175,7 @@ select {
 
     }
     th, td {
-      border: 0px;
+      border: 0;
     }
   }
 
@@ -2265,9 +2265,9 @@ gs-input .tags .tag-item .remove-button {
 }
 
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* Styles for mods to blue sky buiding list. /
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* Styles for mods to blue sky building list. /
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /* Placing these style here for initial dev. These should be integrated into styles above once approved */
 
@@ -2307,9 +2307,13 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
+#swagger-frame {
+  height: calc(100vh - 60px);
+  width: 100%;
+}
 
 /* UI Grid modifications */
-/* Remove gradient on top bar. It's distracting and decreases legibilty */
+/* Remove gradient on top bar. It's distracting and decreases legibility */
 .ui-grid-top-panel {
     background: #F1F1F1;
     filter: none;
@@ -2317,4 +2321,3 @@ gs-input .tags .tag-item .remove-button {
 .ui-grid-cell-contents {
     font-weight: normal;
 }
-
