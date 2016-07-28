@@ -379,7 +379,7 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         :param: kw: keywords passed to BuildingSnapshot.objects.create
 
         """
-        for n in num:
+        for _ in range(num):
             canonical_building = CanonicalBuilding.objects.create()
             snapshot_params = {
                 'super_organization': self.org,
