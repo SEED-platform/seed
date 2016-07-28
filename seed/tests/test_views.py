@@ -1555,6 +1555,49 @@ class SearchBuildingSnapshotsViewTests(TestCase):
         )
         self.assertEqual(1, json.loads(response.content)['number_returned'])
 
+def test_search_building_snapshots_extra_data_order_by(self):
+        """
+        Test to ensure search_building_snapshot correctly handles
+        order_by when it is an extra data field.
+        """
+        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record.super_organization = self.org
+        import_record.save()
+        import_file = ImportFile.objects.create(
+            import_record=import_record
+        )
+        cb1 = CanonicalBuilding(active=True)
+        cb1.save()
+        b1 = SEEDFactory.building_snapshot(
+            canonical_building=cb1,
+            address_line_1="test",
+            import_file=import_file,
+            source_type=ASSESSED_BS,
+            extra_data= {'nearest_national_park': 'mt hood'}
+        )
+        cb1.canonical_snapshot = b1
+        cb1.save()
+        b1.super_organization = self.org
+        b1.save()
+        post_data = {
+            'filter_params': {},
+            'number_per_page': 10,
+            'order_by': 'nearest_national_park',
+            'page': 1,
+            'q': '',
+            'sort_reverse': False,
+            'project_id': None,
+            'import_file_id': import_file.pk
+        }
+
+        # act
+        response = self.client.post(
+            reverse_lazy("seed:search_building_snapshots"),
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        self.assertEqual(1, json.loads(response.content)['number_returned'])
+
 
 class GetDatasetsViewsTests(TestCase):
 
