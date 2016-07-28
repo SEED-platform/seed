@@ -47,6 +47,7 @@ from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
+    PropertyState,
 )
 from seed.data_importer.tasks import (
     map_data,
@@ -760,9 +761,10 @@ def search_building_snapshots(request):
     body = json.loads(request.body)
     q = body.get('q', '')
     other_search_params = body.get('filter_params', {})
-    order_by = body.get('order_by', 'pm_property_id')
-    if not order_by or order_by == '':
-        order_by = 'pm_property_id'
+    # order_by = body.get('order_by', 'pm_property_id')
+    # if not order_by or order_by == '':
+    #     order_by = 'pm_property_id'
+    order_by = 'id'
     sort_reverse = body.get('sort_reverse', False)
     page = int(body.get('page', 1))
     number_per_page = int(body.get('number_per_page', 10))
@@ -772,14 +774,16 @@ def search_building_snapshots(request):
     if sort_reverse:
         order_by = "-%s" % order_by
 
-    # only search in ASSESED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS
-    building_snapshots = BuildingSnapshot.objects.order_by(order_by).filter(
+    # TODO: remove the hard coded assessments
+    # only search in ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS
+    # FIXME: changing to PropertyState -- but should probably be PropertyView
+    building_snapshots = PropertyState.objects.order_by(order_by).filter(
         import_file__pk=import_file_id,
-        source_type__in=[ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS],
+        # source_type__in=[ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS],
     )
 
     fieldnames = [
-        'pm_property_id',
+        # 'pm_property_id',
         'address_line_1',
         'property_name',
     ]
@@ -800,6 +804,8 @@ def search_building_snapshots(request):
     buildings, building_count = search.generate_paginated_results(
         buildings_queryset, number_per_page=number_per_page, page=page, matching=True
     )
+
+    _log.debug("I found {} buildings".format(building_count))
 
     return {
         'status': 'success',

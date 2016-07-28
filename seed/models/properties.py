@@ -11,8 +11,9 @@ import unicodedata
 from django.db import models
 from django_pgjson.fields import JsonField
 
+from seed.utils.generic import split_model_fields
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (Cycle, ImportFile)
+from seed.models import (Cycle, ImportFile, obj_to_dict)
 
 
 class Property(models.Model):
@@ -113,6 +114,49 @@ class PropertyState(models.Model):
             value = getattr(self, field)
             if value and isinstance(value, basestring):
                 setattr(self, field, convert_datestr(value))
+
+    def to_dict(self, fields=None, include_related_data=True):
+        """
+        Returns a dict version of the PropertyState, either with all fields
+        or masked to just those requested.
+        """
+        if fields:
+            model_fields, ed_fields = split_model_fields(self, fields)
+            extra_data = self.extra_data
+            ed_fields = filter(lambda f: f in extra_data, ed_fields)
+
+            result = {
+                field: getattr(self, field) for field in model_fields
+                }
+            result['extra_data'] = {
+                field: extra_data[field] for field in ed_fields
+                }
+
+            # always return id's and canonical_building id's
+            result['id'] = result['pk'] = self.pk
+
+            # TODO: I don't think this is needed anymore
+            result['canonical_building'] = (
+                self.canonical_building and self.canonical_building.pk
+            )
+
+            # should probably also return children, parents, and coparent
+            # result['children'] = map(lambda c: c.id, self.children.all())
+            # result['parents'] = map(lambda p: p.id, self.parents.all())
+            # result['co_parent'] = (self.co_parent and self.co_parent.pk)
+            # result['coparent'] = (self.co_parent and {
+            #     field: self.co_parent.pk for field in ['pk', 'id']
+            #     })
+
+            return result
+
+        d = obj_to_dict(self, include_m2m=include_related_data)
+
+        # if include_related_data:
+            # d['parents'] = list(self.parents.values_list('id', flat=True))
+            # d['co_parent'] = self.co_parent.pk if self.co_parent else None
+
+        return d
 
 
 class PropertyView(models.Model):
