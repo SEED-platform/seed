@@ -25,6 +25,8 @@ _log = logging.getLogger(__name__)
 
 
 class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
+    raise_exception = True
+
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
@@ -74,7 +76,6 @@ class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
                 description: The datasets
                 type: object
         """
-
         org_id = request.query_params.get('organization_id', None)
         from seed.models import obj_to_dict
         org = Organization.objects.get(pk=org_id)
