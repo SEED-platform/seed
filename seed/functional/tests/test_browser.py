@@ -366,7 +366,7 @@ def loggedin_tests_generator():
                 # skip test if browser "loses" session store
                 result = self.browser.execute_script(script)
                 if not result:
-                    eprint('SessionStore missing from ', browser_name)
+                    eprint('SessionStore missing from', browser_name)
                     eprint('This is not the bug you are looking for')
                     eprint('skipping assert...')
                 else:
@@ -517,6 +517,80 @@ def loggedin_tests_generator():
                 table = buildings_list.ensure_table_is_loaded()
                 address = table.first_row['ADDRESS LINE 1']
                 assert count.text == 'Showing 31 to 40 of 100 buildings'
+                assert address.text == address_text
+
+                # click through to last record
+                last_record = buildings_list.wait_for_element_by_class_name(
+                    'pager'
+                ).find_elements_by_tag_name('a')[-1]
+                last_record.click()
+
+                buildings_list.reload()
+                count = buildings_list.wait_for_element_by_class_name(
+                    'counts')
+                table = buildings_list.ensure_table_is_loaded()
+                address = table.first_row['ADDRESS LINE 1']
+                address_text = address.text
+                assert count.text == 'Showing 91 to 100 of 100 buildings'
+
+                # Click a building.
+                buildings_link = buildings_list.wait_for_element(
+                    'CSS_SELECTOR', 'td a')
+                buildings_link.click()
+
+                # Wait for details page
+                details_page = BuildingInfo(self)
+                table = details_page.ensure_table_is_loaded()
+                assert table.first_row['FIELD'].text == 'Address Line 1'
+
+                # Return to Buildings List
+                details_page.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
+                details_page.find_element_by_partial_link_text(
+                    'Buildings').click()
+                buildings_list.reload()
+                count = buildings_list.wait_for_element_by_class_name(
+                    'counts')
+
+                table = buildings_list.ensure_table_is_loaded()
+                address = table.first_row['ADDRESS LINE 1']
+                assert count.text == 'Showing 91 to 100 of 100 buildings'
+                assert address.text == address_text
+
+                # click through to first record
+                first_record = buildings_list.wait_for_element_by_class_name(
+                    'pager'
+                ).find_elements_by_tag_name('a')[0]
+                first_record.click()
+
+                buildings_list.reload()
+                count = buildings_list.wait_for_element_by_class_name(
+                    'counts')
+                table = buildings_list.ensure_table_is_loaded()
+                address = table.first_row['ADDRESS LINE 1']
+                address_text = address.text
+                assert count.text == 'Showing 1 to 10 of 100 buildings'
+
+                # Click a building.
+                buildings_link = buildings_list.wait_for_element(
+                    'CSS_SELECTOR', 'td a')
+                buildings_link.click()
+
+                # Wait for details page
+                details_page = BuildingInfo(self)
+                table = details_page.ensure_table_is_loaded()
+                assert table.first_row['FIELD'].text == 'Address Line 1'
+
+                # Return to Buildings List
+                details_page.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
+                details_page.find_element_by_partial_link_text(
+                    'Buildings').click()
+                buildings_list.reload()
+                count = buildings_list.wait_for_element_by_class_name(
+                    'counts')
+
+                table = buildings_list.ensure_table_is_loaded()
+                address = table.first_row['ADDRESS LINE 1']
+                assert count.text == 'Showing 1 to 10 of 100 buildings'
                 assert address.text == address_text
 
             def test_building_detail(self):
