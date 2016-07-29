@@ -223,15 +223,19 @@ class TableRowTests(unittest.TestCase):
         )
 
     def test_constructor(self):
-        ordered_dict = OrderedDict([('a', 0), ('b', 1)])
-        table_row = seed.functional.tests.page.TableRow(ordered_dict)
-        assert table_row == self.table_row
+        table_row_1 = seed.functional.tests.page.TableRow(
+            [('a', 0), ('b', 1)]
+        )
+        table_row_2 = seed.functional.tests.page.TableRow(
+            OrderedDict([('a', 0), ('b', 1)])
+        )
+        assert table_row_1 == table_row_2
 
         with self.assertRaises(SyntaxError):
-            table_row = seed.functional.tests.page.TableRow(1)
+            seed.functional.tests.page.TableRow(1)
 
         with self.assertRaises(KeyError):
-            table_row = seed.functional.tests.page.TableRow(
+            seed.functional.tests.page.TableRow(
                 OrderedDict({'1': 0, 1: 1})
             )
 
@@ -263,20 +267,27 @@ class TableTests(unittest.TestCase):
     """Tests for the Table class"""
 
     def setUp(self):
-        table_row1 = seed.functional.tests.page.TableRow([('a', 0), ('b', 1)])
-        table_row2 = seed.functional.tests.page.TableRow([('a', 2), ('b', 3)])
-        table_row3 = seed.functional.tests.page.TableRow([('a', 2), ('b', 3)])
+        self.table_row1 = seed.functional.tests.page.TableRow(
+            [('a', 0), ('b', 1)]
+        )
+        self.table_row2 = seed.functional.tests.page.TableRow(
+            [('a', 2), ('b', 3)]
+        )
+        self.table_row3 = seed.functional.tests.page.TableRow(
+            [('a', 2), ('b', 3)]
+        )
         self.table = seed.functional.tests.page.Table(
-            ['a', 'b'], [table_row1, table_row2, table_row3]
+            ['a', 'b'], [self.table_row1, self.table_row2, self.table_row3]
         )
 
     def test_constructor(self):
         table_row1 = seed.functional.tests.page.TableRow([('a', 0), ('b', 1)])
-        table_row2 = seed.functional.tests.page.TableRow([('a', 2), ('b', 3)])
-        table_row3 = seed.functional.tests.page.TableRow([('a', 2), ('b', 3)])
 
         assert self.table.headers == ('a', 'b')
-        assert self.table.rows == (table_row1, table_row2, table_row3)
+        assert len(self.table.rows) == 3
+        assert self.table.rows == (
+            self.table_row1, self.table_row2, self.table_row3
+        )
 
         table = seed.functional.tests.page.Table(['a', 'b'], [[0, 1]])
         assert table.headers == ('a', 'b')
@@ -325,8 +336,7 @@ class TableTests(unittest.TestCase):
             )
 
     def test_getitem(self):
-        table_row = seed.functional.tests.page.TableRow([('a', 0), ('b', 1)])
-        assert self.table[0] == table_row
+        assert self.table[0] == self.table_row1
         assert self.table[0][0] == 0
         assert self.table[0]['a'] == 0
 
@@ -359,19 +369,12 @@ class TableTests(unittest.TestCase):
         assert table_row2 not in self.table
 
     def test_iter(self):
-        table_row1 = seed.functional.tests.page.TableRow([('a', 0), ('b', 1)])
-        table_row2 = seed.functional.tests.page.TableRow([('a', 2), ('b', 3)])
-        table_row3 = seed.functional.tests.page.TableRow([('a', 2), ('b', 3)])
-
-        expected = [table_row1, table_row2, table_row3]
+        expected = [self.table_row1, self.table_row2, self.table_row3]
         assert [row for row in self.table] == expected
 
     def test_row_properties(self):
-        table_row1 = seed.functional.tests.page.TableRow([('a', 0), ('b', 1)])
-        table_row2 = seed.functional.tests.page.TableRow([('a', 2), ('b', 3)])
-
-        assert self.table.first_row == table_row1
-        assert self.table.last_row == table_row2
+        assert self.table.first_row == self.table_row1
+        assert self.table.last_row == self.table_row2
 
     def test_column(self):
         column = seed.functional.tests.page.TableColumn('a', [0, 2, 2])

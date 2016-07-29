@@ -734,12 +734,14 @@ class Table(object):
                         "{} does not contain the same number of elements "
                         "as {}".format(row, self.headers)
                     )
+                # check types of row members
                 types = set([
                     isinstance(val, collections.Sequence) and not
                     isinstance(val, basestring) for val in row
                 ])
                 if len(types) > 1:
                     raise TypeError("{} contains mixed types".format(row))
+                # row is a sequence of sequences
                 if True in types:
                     if self.safe:
                         for seq in row:
@@ -757,6 +759,7 @@ class Table(object):
                                 )
                             )
                     _row = TableRow(row)
+                # row is a plain sequence
                 else:
                     _row = TableRow(
                         [
@@ -992,9 +995,9 @@ class TableRow(collections.Mapping):
     def __init__(self, constructor, **kwargs):
         if isinstance(constructor, (TableRow, collections.OrderedDict)):
             key_check = len(constructor)
-            constructor = {
-                str(key): val for key, val in constructor.iteritems()
-            }
+            constructor = [
+                (str(key), constructor[key]) for key in constructor
+            ]
         elif self._check_seq(constructor):
             key_check = len(constructor)
             constructor = [
