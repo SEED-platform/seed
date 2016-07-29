@@ -928,7 +928,7 @@ a:not([href]) {
       height: 400px;
       overflow-y: scroll;
       border-bottom: 1px solid $gray_lighter;
-      background: url('../images/bg_first_td.png') repeat-x top top;
+      background: url('../images/bg_first_td.png') repeat-x top center;
     }
     .table_list_container {
       overflow-x: auto;
@@ -2230,8 +2230,8 @@ gs-input .tags .tag-item .remove-button {
 
   &.warning {
     border-left: thick solid $warningBackground;
-    }
-    &.error {
+  }
+  &.error {
     border-left: thick solid $errorBackground;
   }
   &.success {
