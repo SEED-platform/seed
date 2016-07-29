@@ -79,7 +79,7 @@ DEFAULT_CUSTOM_COLUMNS = [
 ]
 
 BUILDING_SNAPSHOT_FIELDS = [
-        col.name for col in BuildingSnapshot._meta.get_fields()
+    col.name for col in BuildingSnapshot._meta.get_fields()
 ]
 
 _log = logging.getLogger(__name__)
