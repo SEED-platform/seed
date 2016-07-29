@@ -1555,7 +1555,7 @@ class SearchBuildingSnapshotsViewTests(TestCase):
         )
         self.assertEqual(1, json.loads(response.content)['number_returned'])
 
-def test_search_building_snapshots_extra_data_order_by(self):
+    def test_search_building_snapshots_extra_data_order_by(self):
         """
         Test to ensure search_building_snapshot correctly handles
         order_by when it is an extra data field.
