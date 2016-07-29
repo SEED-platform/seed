@@ -30,6 +30,7 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.about',
     'BE.seed.controller.accounts',
     'BE.seed.controller.admin',
+    'BE.seed.controller.api',
     'BE.seed.controller.building_detail',
     'BE.seed.controller.building_detail_update_labels_modal_ctrl',
     'BE.seed.controller.building_list',
@@ -643,6 +644,10 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
         })
         .when('/feedback', {
             templateUrl: static_url + 'seed/partials/feedback.html'
+        })
+        .when('/api-docs', {
+            controller: 'api_controller',
+            templateUrl: static_url + 'seed/partials/api_docs.html'
         })
         .when('/about', {
             controller: 'about_controller',

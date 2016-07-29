@@ -37,6 +37,10 @@
                 <div class="icon"><i class="fa fa-certificate"></i></div>
                 <div ng-show="!is_initial_state" class="item_name">Contact</div>
             </a>
+            <a id="sidebar-api" ng-class="{item: true, active: is_active('/api-docs')}" href="{% url "seed:home" %}#/api-docs">
+                <div class="icon"><i class="fa fa-code"></i></div>
+                <div ng-show="!is_initial_state" class="item_name">API Documentation</div>
+            </a>
             <a id="sidebar-about" ng-class="{item: true, active: is_active('/about')}" href="{% url "seed:home" %}#/about">
                 <div class="icon"><i class="fa fa-info-circle"></i></div>
                 <div ng-show="!is_initial_state" class="item_name">About</div>
