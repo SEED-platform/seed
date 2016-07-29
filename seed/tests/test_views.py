@@ -1573,7 +1573,7 @@ class SearchBuildingSnapshotsViewTests(TestCase):
             address_line_1="test",
             import_file=import_file,
             source_type=ASSESSED_BS,
-            extra_data= {'nearest_national_park': 'mt hood'}
+            extra_data={'nearest_national_park': 'mt hood'}
         )
         cb1.canonical_snapshot = b1
         cb1.save()
