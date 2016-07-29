@@ -154,13 +154,13 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
 
     def tearDown(self):
         """Close browser and delete user."""
-        self.browser.quit()
         # delete all org_users
         OrganizationUser.objects.all().delete()
         # delete all orgs (in case there are sub orgs)
         OrganizationUser.objects.all().delete()
         # delete all users
         SEEDUser.objects.all().delete()
+        self.browser.quit()
         super(FunctionalLiveServerBaseTestCase, self).tearDown()
 
     # Helper methods
