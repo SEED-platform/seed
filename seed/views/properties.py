@@ -126,7 +126,7 @@ def get_properties(request):
                     related_field_map[k].add(v)
                 except KeyError:
                     try:
-                        related_field_map[k] = set([v])
+                        related_field_map[k] = {v}
                     except TypeError:
                         # Extra data field, ignore it
                         pass
@@ -289,7 +289,7 @@ def get_taxlots(request):
                     related_field_map[k].add(v)
                 except KeyError:
                     try:
-                        related_field_map[k] = set([v])
+                        related_field_map[k] = {v}
                     except TypeError:
                         # Extra data field, ignore it
                         pass
@@ -367,7 +367,6 @@ def get_property_columns(request):
         }, {
             'name': 'jurisdiction_property_identifier',
             'displayName': 'Property / Building ID',
-            'type': 'number',
             'related': False
         }, {
             'name': 'jurisdiction_taxlot_identifier',
@@ -416,7 +415,7 @@ def get_property_columns(request):
             # INCOMPLETE, FIELD DOESN'T EXIST
             'name': 'pm_parent_property_id',
             'displayName': 'PM Parent Property ID',
-            'type': 'number',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'gross_floor_area',
@@ -678,7 +677,6 @@ def get_taxlot_columns(request):
         }, {
             'name': 'jurisdiction_property_identifier',
             'displayName': 'Property / Building ID',
-            'type': 'number',
             'related': True
         }, {
             'name': 'building_portfolio_manager_identifier',
@@ -694,7 +692,7 @@ def get_taxlot_columns(request):
             # INCOMPLETE, FIELD DOESN'T EXIST
             'name': 'pm_parent_property_id',
             'displayName': 'PM Parent Property ID',
-            'type': 'number',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'gross_floor_area',
