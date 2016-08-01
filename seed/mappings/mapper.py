@@ -77,7 +77,7 @@ def merge_extra_data(b1, b2, default=None, allow_delete=False):
     ..Note:
 
         If default is neither b1 or b2 b1 becomes the default and b2
-        is silently ignored. Thus you *cannot* supply a diferent default
+        is silently ignored. Thus you *cannot* supply a different default
         and merge b1 and b2 (with the default supplying default values for
         keys not present (or null) in b1 and b2.
 
@@ -92,12 +92,14 @@ def merge_extra_data(b1, b2, default=None, allow_delete=False):
     :type allow_delete: Bool.
 
     :returns tuple of dict:
+
     .. code-block::python
 
         # first dict contains values, second the source pks.
         ({'data': 'value'}, {'data': 23},)
 
     :Example:
+
     >>> b1.extra_data
     {'key1': 1, 'key2': '', 'key3': 3}
     >>> b2.extra_data
