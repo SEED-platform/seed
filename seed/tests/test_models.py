@@ -389,7 +389,9 @@ class TestBuildingSnapshot(TestCase):
             'field_c': self.bs1.pk,
         }
 
-        actual_extra, actual_sources = mapper.merge_extra_data(self.bs1, self.bs2)
+        actual_extra, actual_sources = mapper.merge_extra_data(
+            self.bs1, self.bs2, allow_delete=True
+        )
 
         self.assertDictEqual(actual_extra, expected_extra)
         self.assertDictEqual(actual_sources, expected_sources)
