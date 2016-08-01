@@ -2199,7 +2199,9 @@ def update_building(request):
     canon = CanonicalBuilding.objects.get(pk=building['canonical_building'])
     old_snapshot = canon.canonical_snapshot
 
-    new_building = models.update_building(old_snapshot, building, request.user)
+    new_building = models.update_building(
+        old_snapshot, building, request.user, allow_delete_extra_data=True
+    )
 
     resp = {'status': 'success',
             'child_id': new_building.pk}

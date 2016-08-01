@@ -57,18 +57,62 @@ def get_source_id(source_inst, attr):
     )
 
 
-def merge_extra_data(b1, b2, default=None):
-    """Merge extra_data field between two BuildingSnapshots, return result.
+def merge_extra_data(b1, b2, default=None, allow_delete=False):
+    """
+    Merge extra_data field between two BuildingSnapshots, return result.
+
+    If the 'default' parameter is not specified b1 will be set as the
+    default.
+
+    The merged result contains all keys from both sets. By default the
+    values from the default set will override the values from the
+    non-default set, unless the default values are null (e.g. an
+    empty string).
+
+    Setting allow_delete to True alters this behavior so that null/blank
+    values in the default set will propagate to the merged set if the key
+    is present in the default set. This allows for 'deleting' extra data
+    fields (or rather setting them to null).
+
+    ..Note:
+
+        If default is neither b1 or b2 b1 becomes the default and b2
+        is silently ignored. Thus you *cannot* supply a different default
+        and merge b1 and b2 (with the default supplying default values for
+        keys not present (or null) in b1 and b2.
 
     :param b1: BuildingSnapshot inst.
     :param b2: BuildingSnapshot inst.
     :param default: BuildingSnapshot inst.
+    :param allow_delete: allow the new data to delete field contents.
+
+    :type b1: BuildingSnapshot inst.
+    :type b2: BuildingSnapshot inst.
+    :type default: BuildingSnapshot inst.
+    :type allow_delete: Bool.
+
     :returns tuple of dict:
 
     .. code-block::python
 
         # first dict contains values, second the source pks.
         ({'data': 'value'}, {'data': 23},)
+
+    :Example:
+
+    >>> b1.extra_data
+    {'key1': 1, 'key2': '', 'key3': 3}
+    >>> b2.extra_data
+    {'key1': 0, 'key2': 2, 'key4': 4}
+    >>> extra_data, _ = merge_extra_data(b1, b2)
+    >>> extra_data
+    {'key1': 1, 'key2': 2, 'key3': 3, 'key4': 4}
+    >>> extra_data, _ = merge_extra_data(b1, b2, default=b2)
+    >>> extra_data
+    {'key1': 0, 'key2': 2, 'key3': 3, 'key4': 4}
+    >>> extra_data, _ = merge_extra_data(b1, b2, allow_delete=True)
+    >>> extra_data
+    {'key1': 1, 'key2': '', 'key3': 3, 'key4': 4}
 
     """
     default = default or b1
@@ -81,10 +125,18 @@ def merge_extra_data(b1, b2, default=None):
     non_default_extra_data = getattr(non_default, 'extra_data', {})
 
     all_keys = set(default_extra_data.keys() + non_default_extra_data.keys())
-    extra_data = {
-        k: default_extra_data.get(k) or non_default_extra_data.get(k)
-        for k in all_keys
-    }
+
+    if allow_delete:
+        extra_data = {
+            k: default_extra_data[k] if k in default_extra_data
+            else non_default_extra_data[k]
+            for k in all_keys
+        }
+    else:
+        extra_data = {
+            k: default_extra_data.get(k) or non_default_extra_data.get(k)
+            for k in all_keys
+        }
 
     for item in extra_data:
         if item in default_extra_data and default_extra_data[item]:

@@ -360,6 +360,42 @@ class TestBuildingSnapshot(TestCase):
         self.assertDictEqual(actual_extra, expected_extra)
         self.assertDictEqual(actual_sources, expected_sources)
 
+    def test_merge_extra_data_does_override_with_blank_data(self):
+        """Test that blank fields in extra data does override real data
+        if allow_delete is True.
+        """
+        self.bs1.extra_data = {
+            'field_a': 'data-1a',
+            'field_b': '',
+            'field_c': '',
+        }
+        self.bs1.save()
+
+        self.bs2.extra_data = {
+            'field_a': 'data-2a',
+            'field_b': 'data-2b',
+            'field_c': '',
+        }
+        self.bs2.save()
+
+        expected_extra = {
+            'field_a': 'data-1a',
+            'field_b': '',
+            'field_c': '',
+        }
+        expected_sources = {
+            'field_a': self.bs1.pk,
+            'field_b': self.bs2.pk,
+            'field_c': self.bs1.pk,
+        }
+
+        actual_extra, actual_sources = mapper.merge_extra_data(
+            self.bs1, self.bs2, allow_delete=True
+        )
+
+        self.assertDictEqual(actual_extra, expected_extra)
+        self.assertDictEqual(actual_sources, expected_sources)
+
     def test_update_building(self):
         """Good case for updating a building."""
         fake_building_extra = {

@@ -517,7 +517,9 @@ def _get_diff_sources(mappable, old_snapshot):
     return results
 
 
-def update_building(old_snapshot, updated_values, user, *args, **kwargs):
+def update_building(old_snapshot, updated_values, user,
+                    allow_delete_extra_data=False,
+                    *args, **kwargs):                   # Why?
     """Creates a new snapshot with updated values."""
     from seed.mappings import seed_mappings, mapper as seed_mapper
 
@@ -565,7 +567,8 @@ def update_building(old_snapshot, updated_values, user, *args, **kwargs):
 
     # Update/override anything in extra data.
     extra, sources = seed_mapper.merge_extra_data(
-        new_snapshot, old_snapshot, default=new_snapshot
+        new_snapshot, old_snapshot, default=new_snapshot,
+        allow_delete=allow_delete_extra_data
     )
     new_snapshot.extra_data = extra
     new_snapshot.extra_data_sources = sources
