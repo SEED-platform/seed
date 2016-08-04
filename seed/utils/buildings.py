@@ -43,12 +43,10 @@ def serialize_building_snapshot(b, pm_cb, building):
 
 def get_buildings_for_user_count(user):
     """returns the number of buildings in a user's orgs"""
-    building_snapshots = BuildingSnapshot.objects.filter(
+    return BuildingSnapshot.objects.filter(
         super_organization__in=user.orgs.all(),
         canonicalbuilding__active=True,
-    ).order_by('pk').distinct('pk')
-
-    return building_snapshots.count()
+    ).count()
 
 
 def get_search_query(user, params):
