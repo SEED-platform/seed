@@ -4,9 +4,8 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import json
-
 from datetime import date, datetime, timedelta
+import json
 
 from django.core.cache import cache
 from django.core.urlresolvers import reverse, reverse_lazy
@@ -16,30 +15,41 @@ from seed.audit_logs.models import AuditLog, LOG
 from seed.common import mapper
 from seed.data_importer.models import ROW_DELIMITER, ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
-from seed import decorators
 from seed.factory import SEEDFactory
+from seed import decorators
 from seed.models import (
-    Column,
-    ColumnMapping,
-    CanonicalBuilding,
-    BuildingSnapshot,
-    Unit,
     ASSESSED_RAW,
     ASSESSED_BS,
+    BuildingSnapshot,
+    CanonicalBuilding,
     COMPOSITE_BS,
-    PORTFOLIO_BS,
-    save_snapshot_match,
-    Project,
-    ProjectBuilding,
+    Column,
+    ColumnMapping,
+    Cycle,
     FLOAT,
+    PORTFOLIO_BS,
+    Project,
+    Property,
+    ProjectBuilding,
+    PropertyState,
+    PropertyView,
+    save_snapshot_match,
+    TaxLot,
+    TaxLotProperty,
+    TaxLotState,
+    TaxLotView,
+    Unit,
 )
+from seed.tests import util as test_util
+from seed.test_helpers.fake import (
+    FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory, FakeTaxLotStateFactory
+)
+from seed.utils.cache import set_cache, get_cache
+from seed.utils.mapping import _get_column_names
 from seed.views.main import (
     DEFAULT_CUSTOM_COLUMNS,
     _parent_tree_coparents,
 )
-from seed.utils.cache import set_cache, get_cache
-from seed.utils.mapping import _get_column_names
-from seed.tests import util as test_util
 
 
 class MainViewTests(TestCase):
@@ -1691,7 +1701,10 @@ class ImportFileViewsTests(TestCase):
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_delete_duplicates_from_import_file(self):
-        response = self.client.get(reverse("seed:delete_duplicates_from_import_file"), {'import_file_id': self.import_file.pk})
+        response = self.client.get(
+            reverse("seed:delete_duplicates_from_import_file"),
+            {'import_file_id': self.import_file.pk}
+        )
         self.assertEqual('success', json.loads(response.content)['status'])
 
 
@@ -2805,3 +2818,361 @@ class MatchTreeTests(TestCase):
                                    {'organization_id': self.org.pk,
                                     'building_id': self.cb0.canonical_snapshot.pk})
         self.assertEqual('success', json.loads(response.content)['status'])
+
+
+class BlueSkyViewTests(TestCase):
+
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org = Organization.objects.create()
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory()
+        self.taxlot_state_factory = FakeTaxLotStateFactory()
+        self.org_user = OrganizationUser.objects.create(
+            user=self.user, organization=self.org
+        )
+        self.cycle = self.cycle_factory.get_cycle()
+        self.client.login(**user_details)
+
+    def tearDown(self):
+        self.user.delete()
+        self.org.delete()
+        self.org_user.delete()
+        Cycle.objects.all().delete()
+        Property.objects.all().delete()
+        ProjectBuilding.objects.all().delete()
+        PropertyState.objects.all().delete()
+        PropertyView.objects.all().delete()
+        TaxLot.objects.all().delete()
+        TaxLotProperty.objects.all().delete()
+        TaxLotState.objects.all().delete()
+        TaxLotView.objects.all().delete()
+
+    def test_get_properties(self):
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+        params = {
+            'organization_id': self.org.pk,
+            'page': 1,
+            'per_page': 999999999,
+        }
+        response = self.client.get(reverse("bluesky:properties"), params)
+        result = json.loads(response.content)
+        results = result['results'][0]
+        self.assertEquals(len(result['results']), 1)
+        self.assertEquals(results['address_line_1'], state.address_line_1)
+
+    def test_get_properties_extra_data(self):
+        extra_data = {
+            'is secret lair': True,
+            'paint color': 'pink',
+            'number of secret gadgets': 5
+        }
+        state = self.property_state_factory.get_property_state(
+            extra_data=json.dumps(extra_data)
+        )
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+        params = {
+            'organization_id': self.org.pk,
+            'page': 1,
+            'per_page': 999999999,
+        }
+        response = self.client.get(reverse("bluesky:properties"), params)
+        result = json.loads(response.content)
+        results = result['results'][0]
+        self.assertEquals(len(result['results']), 1)
+        self.assertEquals(results['address_line_1'], state.address_line_1)
+        self.assertTrue(results['is secret lair'])
+        self.assertEquals(results['paint color'], 'pink')
+        self.assertEquals(results['number of secret gadgets'], 5)
+
+    def test_get_properties_with_taxlots(self):
+        property_state = self.property_state_factory.get_property_state()
+        property_property = self.property_factory.get_property(campus=True)
+        property_view = PropertyView.objects.create(
+            property=property_property, cycle=self.cycle, state=property_state
+        )
+        taxlot_state = self.taxlot_state_factory.get_taxlot_state(
+            address=property_state.address_line_1,
+            postal_code=property_state.postal_code
+        )
+        taxlot = TaxLot.objects.create(organization=self.org)
+        taxlot_view = TaxLotView.objects.create(
+            taxlot=taxlot, state=taxlot_state, cycle=self.cycle
+        )
+        TaxLotProperty.objects.create(
+            property_view=property_view, taxlot_view=taxlot_view, cycle=self.cycle
+        )
+        params = {
+            'organization_id': self.org.pk,
+            'page': 1,
+            'per_page': 999999999,
+        }
+        response = self.client.get(reverse("bluesky:properties"), params)
+        results = json.loads(response.content)
+        self.assertEquals(len(results['results']), 1)
+        result = results['results'][0]
+        self.assertTrue(result['campus'])
+        self.assertEquals(len(result['related']), 1)
+        related = result['related'][0]
+        self.assertEquals(related['postal_code'], result['postal_code'])
+        self.assertEquals(related['primary'], 'P')
+        collapsed = result['collapsed']
+        self.assertEquals(
+            collapsed['block_number'][0], related['block_number']
+        )
+
+    def test_get_property(self):
+        property_state = self.property_state_factory.get_property_state()
+        property_property = self.property_factory.get_property()
+        property_view = PropertyView.objects.create(
+            property=property_property, cycle=self.cycle, state=property_state
+        )
+        taxlot_state = self.taxlot_state_factory.get_taxlot_state(
+            postal_code=property_state.postal_code
+        )
+        taxlot = TaxLot.objects.create(organization=self.org)
+        taxlot_view = TaxLotView.objects.create(
+            taxlot=taxlot, state=taxlot_state, cycle=self.cycle
+        )
+        TaxLotProperty.objects.create(
+            property_view=property_view, taxlot_view=taxlot_view, cycle=self.cycle
+        )
+        params = {
+            'organization_id': self.org.pk,
+            'page': 1,
+            'per_page': 999999999,
+        }
+        response = self.client.get(
+            reverse("bluesky:property-detail", args=(property_property.id, )), params
+        )
+        results = json.loads(response.content)
+        self.assertEquals(results['id'], property_view.pk)
+
+        rcycle = results['cycle']
+        self.assertEquals(rcycle['name'], '2010 Annual')
+        self.assertEquals(rcycle['user'], self.user.pk)
+        self.assertEquals(rcycle['organization'], self.org.pk)
+
+        self.assertEquals(len(results['lots']), 1)
+        expected_lot = {
+            'cycle': self.cycle.pk, 'id': taxlot_view.pk,
+            'state': taxlot_state.pk, 'taxlot': taxlot.pk,
+        }
+        self.assertEquals(results['lots'][0], expected_lot)
+
+        expected_property = {
+            'campus': False, 'id': property_property.pk,
+            'organization': self.org.pk, 'parent_property': None,
+        }
+        self.assertEquals(results['property'], expected_property)
+
+        state = results['state']
+        self.assertEquals(state['address_line_1'], property_state.address_line_1)
+        self.assertEquals(state['id'], property_state.pk)
+
+    def test_get_property_multiple_taxlots(self):
+        property_state = self.property_state_factory.get_property_state()
+        property_property = self.property_factory.get_property()
+        property_view = PropertyView.objects.create(
+            property=property_property, cycle=self.cycle, state=property_state
+        )
+        taxlot_state_1 = self.taxlot_state_factory.get_taxlot_state(
+            postal_code=property_state.postal_code
+        )
+        taxlot_1 = TaxLot.objects.create(organization=self.org)
+        taxlot_view_1 = TaxLotView.objects.create(
+            taxlot=taxlot_1, state=taxlot_state_1, cycle=self.cycle
+        )
+        TaxLotProperty.objects.create(
+            property_view=property_view, taxlot_view=taxlot_view_1, cycle=self.cycle
+        )
+        taxlot_state_2 = self.taxlot_state_factory.get_taxlot_state(
+            postal_code=property_state.postal_code
+        )
+        taxlot_2 = TaxLot.objects.create(organization=self.org)
+        taxlot_view_2 = TaxLotView.objects.create(
+            taxlot=taxlot_2, state=taxlot_state_2, cycle=self.cycle
+        )
+        TaxLotProperty.objects.create(
+            property_view=property_view, taxlot_view=taxlot_view_2, cycle=self.cycle
+        )
+        params = {
+            'organization_id': self.org.pk,
+            'page': 1,
+            'per_page': 999999999,
+        }
+        response = self.client.get(
+            reverse("bluesky:property-detail", args=(property_property.id, )), params
+        )
+        results = json.loads(response.content)
+        self.assertEquals(results['id'], property_view.pk)
+
+        rcycle = results['cycle']
+        self.assertEquals(rcycle['name'], '2010 Annual')
+        self.assertEquals(rcycle['user'], self.user.pk)
+        self.assertEquals(rcycle['organization'], self.org.pk)
+
+        self.assertEquals(len(results['lots']), 2)
+        expected_lot_1 = {
+            'cycle': self.cycle.pk, 'id': taxlot_view_1.pk,
+            'state': taxlot_state_1.pk, 'taxlot': taxlot_1.pk,
+        }
+        self.assertEquals(results['lots'][0], expected_lot_1)
+        expected_lot_2 = {
+            'cycle': self.cycle.pk, 'id': taxlot_view_2.pk,
+            'state': taxlot_state_2.pk, 'taxlot': taxlot_2.pk,
+        }
+        self.assertEquals(results['lots'][1], expected_lot_2)
+
+        expected_property = {
+            'campus': False, 'id': property_property.pk,
+            'organization': self.org.pk, 'parent_property': None,
+        }
+        self.assertEquals(results['property'], expected_property)
+
+        state = results['state']
+        self.assertEquals(state['address_line_1'], property_state.address_line_1)
+        self.assertEquals(state['id'], property_state.pk)
+
+    def test_get_taxlots(self):
+        property_state = self.property_state_factory.get_property_state(
+            extra_data=json.dumps({'extra_data_field': 'edfval'})
+        )
+        property_property = self.property_factory.get_property()
+        property_view = PropertyView.objects.create(
+            property=property_property, cycle=self.cycle, state=property_state
+        )
+        taxlot_state = self.taxlot_state_factory.get_taxlot_state(
+            postal_code=property_state.postal_code
+        )
+        taxlot = TaxLot.objects.create(organization=self.org)
+        taxlot_view = TaxLotView.objects.create(
+            taxlot=taxlot, state=taxlot_state, cycle=self.cycle
+        )
+        TaxLotProperty.objects.create(
+            property_view=property_view, taxlot_view=taxlot_view, cycle=self.cycle
+        )
+
+        params = {
+            'organization_id': self.org.pk,
+            'cycle': self.cycle.pk,
+            'page': 1,
+        }
+        response = self.client.get(reverse("bluesky:lots"), params)
+        results = json.loads(response.content)['results']
+
+        self.assertEquals(len(results), 1)
+
+        result = results[0]
+        self.assertEquals(len(result['related']), 1)
+        self.assertEquals(result['address'], taxlot_state.address)
+        self.assertEquals(result['block_number'], taxlot_state.block_number)
+
+        related = result['related'][0]
+        self.assertEquals(related['address_line_1'], property_state.address_line_1)
+        self.assertEquals(
+            related['pm_parent_property_id'], property_state.pm_parent_property_id
+        )
+        self.assertEquals(
+            related['calculated_taxlot_ids'], taxlot_state.jurisdiction_taxlot_identifier
+        )
+        self.assertEquals(
+            related['calculated_taxlot_ids'], result['jurisdiction_taxlot_identifier']
+        )
+        self.assertEquals(related['primary'], 'P')
+        self.assertIn('extra_data_field', related)
+        self.assertEquals(related['extra_data_field'], 'edfval')
+
+    def test_get_taxlots_multiple_taxlots(self):
+        property_state = self.property_state_factory.get_property_state(
+            extra_data=json.dumps({'extra_data_field': 'edfval'})
+        )
+        property_property = self.property_factory.get_property()
+        property_view = PropertyView.objects.create(
+            property=property_property, cycle=self.cycle, state=property_state
+        )
+        taxlot_state_1 = self.taxlot_state_factory.get_taxlot_state(
+            postal_code=property_state.postal_code
+        )
+        taxlot_1 = TaxLot.objects.create(organization=self.org)
+        taxlot_view_1 = TaxLotView.objects.create(
+            taxlot=taxlot_1, state=taxlot_state_1, cycle=self.cycle
+        )
+        TaxLotProperty.objects.create(
+            property_view=property_view, taxlot_view=taxlot_view_1, cycle=self.cycle
+        )
+        taxlot_state_2 = self.taxlot_state_factory.get_taxlot_state(
+            postal_code=property_state.postal_code
+        )
+        taxlot_2 = TaxLot.objects.create(organization=self.org)
+        taxlot_view_2 = TaxLotView.objects.create(
+            taxlot=taxlot_2, state=taxlot_state_2, cycle=self.cycle
+        )
+        TaxLotProperty.objects.create(
+            property_view=property_view, taxlot_view=taxlot_view_2, cycle=self.cycle
+        )
+
+        params = {
+            'organization_id': self.org.pk,
+            'cycle': self.cycle.pk,
+            'page': 1,
+        }
+        response = self.client.get(reverse("bluesky:lots"), params)
+        results = json.loads(response.content)['results']
+
+        self.assertEquals(len(results), 2)
+
+        result = results[0]
+        self.assertEquals(len(result['related']), 1)
+        self.assertEquals(result['address'], taxlot_state_1.address)
+        self.assertEquals(result['block_number'], taxlot_state_1.block_number)
+
+        related = result['related'][0]
+        self.assertEquals(related['address_line_1'], property_state.address_line_1)
+        self.assertEquals(
+            related['pm_parent_property_id'], property_state.pm_parent_property_id
+        )
+        self.assertEquals(
+            related['calculated_taxlot_ids'],
+            "{}; {}".format(
+                taxlot_state_1.jurisdiction_taxlot_identifier,
+                taxlot_state_2.jurisdiction_taxlot_identifier
+            )
+        )
+        self.assertEquals(related['primary'], 'P')
+        self.assertIn('extra_data_field', related)
+        self.assertEquals(related['extra_data_field'], 'edfval')
+
+        result = results[1]
+        self.assertEquals(len(result['related']), 1)
+        self.assertEquals(result['address'], taxlot_state_2.address)
+        self.assertEquals(result['block_number'], taxlot_state_2.block_number)
+
+        related = result['related'][0]
+        self.assertEquals(related['address_line_1'], property_state.address_line_1)
+        self.assertEquals(
+            related['pm_parent_property_id'], property_state.pm_parent_property_id
+        )
+        self.assertEquals(
+            related['calculated_taxlot_ids'],
+            "{}; {}".format(
+                taxlot_state_1.jurisdiction_taxlot_identifier,
+                taxlot_state_2.jurisdiction_taxlot_identifier
+            )
+        )
+        self.assertEquals(related['primary'], 'P')
+        self.assertIn('extra_data_field', related)
+        self.assertEquals(related['extra_data_field'], 'edfval')
