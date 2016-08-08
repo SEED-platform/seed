@@ -89,6 +89,23 @@ class PropertyView(models.Model):
     def __unicode__(self):
         return u'Property View - %s' % (self.pk)
 
-    # FIXME: Add unique constraint on (property, cycle)
     class Meta:
         unique_together = ('property', 'cycle',)
+
+    # FIXME
+    def initialize_audit_log(self, **args):
+        count = PropertyAuditLog.objects.query(child=self.state).count()
+        assert count == 0
+        audit_log = PropertyAuditLog(parent1 = self.state, **args)
+        audit_log.save()
+        return
+
+    def update_state(self, new_state, other_parent_state = None, **args):
+        view_audit_log = TaxLotAuditLog.objects.query(child == self.state).first()
+        new_audit_log = TaxLotAuditLog(parent1 = self.state, parent2 = other_parent_state, new_state, **args)
+
+        self.state = new_state
+
+        self.save()
+        new_audit_log.save()
+        return

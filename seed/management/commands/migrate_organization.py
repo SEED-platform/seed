@@ -557,13 +557,15 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
             query = seed.models.TaxLotView.objects.filter(taxlot=tax_lot, cycle=import_cycle)
             if query.count():
                 taxlotview = query.first()
-                taxlotview.state = tax_lot_state
+                taxlotview.update_state(tax_lot_state, tax_lot_state, name="Merge current state in migration")
                 taxlotview.save()
             else:
                 taxlotview, created = seed.models.TaxLotView.objects.get_or_create(taxlot=tax_lot, cycle=import_cycle, state=tax_lot_state)
                 tax_lot_view_created += int(created)
                 assert created, "Should have created a tax lot."
+                taxlotview.initialize_audit_log(name="initial migration from canonical building.")
                 taxlotview.save()
+
             last_taxlot_view[taxlotview.cycle] = taxlotview
         elif node_type == PROPERTY_IMPORT or node_type == COMBO_IMPORT:
             import_cycle = load_cycle(org, node)
@@ -574,12 +576,13 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
             query = seed.models.PropertyView.objects.filter(property=property_obj, cycle=import_cycle)
             if query.count():
                 propertyview = query.first()
-                propertyview.state = property_state
+                propertyview.update_state(property_state, property_state)
                 propertyview.save()
             else:
                 propertyview, created = seed.models.PropertyView.objects.get_or_create(property=property_obj, cycle=import_cycle, state=property_state)
                 assert created, "Should have created something"
                 property_view_created += int(created)
+                property_view.initialize_audit_log(name="Initial state from migration")
                 propertyview.save()
             last_property_view[propertyview.cycle] = propertyview
 
@@ -619,7 +622,6 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                     tax_lot_state_created += 1
 
                     # Check if there is a TaxLotView Present
-
                     taxlotview, created = seed.models.TaxLotView.objects.update_or_create(taxlot=tax_lot, cycle=import_cycle, defaults={"state": tax_lot_state})
                     tax_lot_view_created += int(created)
 
