@@ -123,7 +123,7 @@ class FakePropertyFactory(BaseFake):
 
     def get_property(self, organization=None, **kw):
         property_details = {
-['0'            'organization': self._get_attr('organization', organization),
+            'organization': self._get_attr('organization', organization),
         }
         property_details.update(kw)
         return Property.objects.create(**property_details)
