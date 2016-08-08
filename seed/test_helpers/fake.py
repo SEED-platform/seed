@@ -22,7 +22,7 @@ import string
 
 from faker import Factory
 
-from seed.models import Cycle, Property, PropertyState, TaxLotState
+from seed.models import Cycle, Column, Property, PropertyState, TaxLotState
 
 
 Owner = namedtuple(
@@ -85,6 +85,40 @@ class BaseFake(object):
                             state if state else self.fake.state_abbr()),
             self.fake.postalcode()
         )
+
+
+class FakeColumnFactory(BaseFake):
+    """
+    Factory Class for producing Column instances.
+    """
+    def __init__(self, organization=None):
+        super(FakeColumnFactory, self).__init__()
+        self.organization = organization
+
+    def get_column(self, name, organization=None, is_extra_data=False,
+                   extra_data_source=None, **kw):
+        source = extra_data_source[0].upper() if extra_data_source else None
+        if is_extra_data and not source or source not in ['P', 'T']:
+            msg = (
+                "extra_data_source must be one of P(property), T(axlot) "
+                "if is_extra_data is True."
+            )
+            raise AttributeError(msg)
+        elif source and not is_extra_data:
+            raise AttributeError(
+                "extra_data_source supplied but is_extra_data is False."
+            )
+        column_details = {
+            'organization': organization if organization else self.organization,
+            'column_name': name,
+        }
+        if is_extra_data:
+            column_details.update({
+                'is_extra_data': is_extra_data,
+                'extra_data_source': source
+            })
+        column_details.update(kw)
+        return Column.objects.create(**column_details)
 
 
 class FakeCycleFactory(BaseFake):
