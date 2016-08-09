@@ -594,24 +594,6 @@ def get_property_columns(request):
             'source': Column.SOURCE_CHOICES_MAP[c.extra_data_source],
         })
 
-    property_extra_data_fields = ["prop_cb_id"]
-    for c in property_extra_data_fields:
-        columns.append({
-            'name': c,
-            'displayName': c,
-            'treeAggregationType': 'uniqueList',
-            'related': False,
-        })
-
-    taxlot_extra_data_fields = ["taxlot_cb_id"]
-    for c in taxlot_extra_data_fields:
-        columns.append({
-            'name': c,
-            'displayName': c,
-            'treeAggregationType': 'uniqueList',
-            'related': True,
-        })
-
     return columns
 
 
@@ -867,24 +849,6 @@ def get_taxlot_columns(request):
             'displayName': '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source]),
             'related': c.extra_data_source == Column.SOURCE_PROPERTY,
             'source': Column.SOURCE_CHOICES_MAP[c.extra_data_source],
-        })
-
-    property_extra_data_fields = ["prop_cb_id"]
-    for c in property_extra_data_fields:
-        columns.append({
-            'name': c,
-            'displayName': c,
-            'treeAggregationType': 'uniqueList',
-            'related': True,
-        })
-
-    taxlot_extra_data_fields = ["taxlot_cb_id"]
-    for c in taxlot_extra_data_fields:
-        columns.append({
-            'name': c,
-            'displayName': c,
-            'treeAggregationType': 'uniqueList',
-            'related': False,
         })
 
     return columns
