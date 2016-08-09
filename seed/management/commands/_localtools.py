@@ -288,7 +288,7 @@ def set_state_value(state, field_string, value):
         state.extra_data[ed_key] = value
         return
     else:
-        assert hasattr(state, field_string), "{} should have an explicit field named {} but does not.".format(field_string)
+        assert hasattr(state, field_string), "{} should have an explicit field named {} but does not.".format(state, field_string)
         setattr(state, field_string, value)
     return
 
@@ -358,3 +358,42 @@ def aggregate_value_from_state_joinstrings(state, string_fields):
         if val: values.append(val)
     else:
         return ";".join(values)
+
+
+
+taxlot_by_byorg = collections.defaultdict(lambda : set())
+def get_taxlot_columns(org):
+    # HOHO TODO - Verify these functions and relocate to _localtools
+    org_id = str(org.pk)
+    global taxlot_by_byorg
+
+    if not org_id in taxlot_by_byorg:
+        fl = open(get_static_extradata_mapping_file()).readlines()
+        fl = filter(lambda x: x.startswith("1,{}".format(org_id)), fl)
+        reader = csv.reader(StringIO.StringIO("".join(fl)))
+
+        for r in reader:
+            org_str, is_explicit_field, key_name, table, field = r[1:6]
+            if table != "Tax": continue
+            taxlot_by_byorg[org_id].add(key_name)
+
+    return  taxlot_by_byorg[org_id]
+
+property_by_byorg = collections.defaultdict(lambda : set())
+def get_property_columns(org):
+    # HOHO TODO - Verify these functions and relocate to _localtools
+    org_id = str(org.pk)
+
+    global property_by_byorg
+
+    if not org in property_by_byorg:
+        fl = open(get_static_extradata_mapping_file()).readlines()
+        fl = filter(lambda x: x.startswith("1,{}".format(org_id)), fl)
+        reader = csv.reader(StringIO.StringIO("".join(fl)))
+
+        for r in reader:
+            org_str, is_explicit_field, key_name, table, field = r[1:6]
+            if table != "Property": continue
+            property_by_byorg[org_id].add(key_name)
+
+    return property_by_byorg[org_id]
