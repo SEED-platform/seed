@@ -4,7 +4,18 @@ import itertools
 import csv
 import StringIO
 import collections
+import re
+from IPython import embed
 import seed.models
+from seed.models import TaxLotView
+
+
+class TaxLotIDValueError(ValueError):
+    def __init__(self, original_string, field = None):
+        super(TaxLotIDValueError, self).__init__("Invalid id string found: {}".format(original_string))
+        self.invalid_field = field
+        self.original_string = original_string
+        return
 
 
 def get_core_organizations():
@@ -65,18 +76,23 @@ def get_node_sinks(tree_label, labelarray, parent_adj_dict, child_adj_dict):
 
 
 def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
+
+    # HOHO-TODO: Trace and document this logic.
     desired_field_mapping = load_organization_taxlot_field_mapping(org)
     reverse_mapping = {y:x for x,y in desired_field_mapping.items()}
 
-    bs_taxlot_val = bs.tax_lot_id
-    if ('jurisdiction_taxlot_identifier' in reverse_mapping and reverse_mapping['jurisdiction_taxlot_identifier'] in bs.extra_data):
-        bs_taxlot_val = bs.extra_data[reverse_mapping['jurisdiction_taxlot_identifier']]
+    resolution_list = []
+    if "jurisdiction_taxlot_identifier" in reverse_mapping: resolution_list.append(reverse_mapping["jurisdiction_taxlot_identifier"])
+    resolution_list.append("tax_lot_id")
+
+    bs_taxlot_val = aggregate_value_from_state(bs, (USE_FIRST_VALUE, resolution_list))
+    ### HOHO: END OF TODO CHANGES.
+
 
     if bs_taxlot_val is None:
         tax_lot = seed.models.TaxLot(organization=org)
         tax_lot.save()
         return tax_lot, True
-
 
     qry = seed.models.TaxLotView.objects.filter(state__jurisdiction_taxlot_identifier=bs_taxlot_val)
 
@@ -91,16 +107,21 @@ def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
         tax_lot.save()
         return tax_lot, True
 
-
 def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
     mapping_field = 'building_portfolio_manager_identifier'
 
+    # HOHO: TODO - Make sure this logic matches the logic in the tax lot code.
+    # FIX ME - This needs to be updated to simply search on the field and be given a rule.
 
     desired_field_mapping = load_organization_property_field_mapping(org)
     reverse_mapping = {y:x for x,y in desired_field_mapping.items()}
-    bs_property_id = bs.pm_property_id
-    if (mapping_field in reverse_mapping and reverse_mapping[mapping_field] in bs.extra_data):
-        bs_property_id = bs.extra_data[reverse_mapping[mapping_field]]
+
+
+    resolution_list = []
+    if mapping_field in reverse_mapping: resolution_list.append(reverse_mapping[mapping_field])
+    resolution_list.append("pm_property_id")
+
+    bs_property_id = aggregate_value_from_state(bs, (USE_FIRST_VALUE, resolution_list))
 
     if bs_property_id is None:
         property = seed.models.Property(organization=org)
@@ -116,17 +137,12 @@ def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
         property.save()
         return property, True
 
-
-
 def load_organization_field_mapping_for_type_exclusions(org, type):
     assert type in ["Tax", "Property"]
 
     data, _ = _load_raw_mapping_data()
 
     remove_from_extra_data_mapping = []
-
-    # custom_not_explicitly_mapped = "custom_id_1" not in data[org]
-
     for key in data[org]:
         (table, column) = data[org][key]
         if (table != type):
@@ -141,18 +157,30 @@ def load_organization_field_mapping_for_type_exclusions(org, type):
     remove_from_extra_data_mapping = filter(lambda x: x != "custom_id_1", remove_from_extra_data_mapping)
     return remove_from_extra_data_mapping
 
-
-def load_organization_field_mapping_for_type(org, type):
+def load_organization_field_mapping_for_type(org_id, type):
     """This returns a list of keys -> (table, attr) to map the key into."""
-    data, _ = _load_raw_mapping_data()
 
-    mapping = {}
-    for column in data[org].keys():
-        table, dest_column = data[org][column]
-        if table == type and dest_column != "extra_data":
-            mapping[column] = dest_column
+    # HOHO: TODO: Trace and document this code and make sure everything makes sense.
 
-    return mapping
+    org_mapping_line = "1,{}".format(org_id)
+
+    fl = open(get_static_extradata_mapping_file()).readlines()
+    fl = filter(lambda x: x.startswith(org_mapping_line), fl)
+    reader = csv.reader(StringIO.StringIO("".join(fl)))
+
+    field_mapping = collections.defaultdict(lambda : collections.defaultdict(lambda : False))
+
+    for r in reader:
+        org_str, is_explicit_field, key_name, table, field = r[1:6]
+        if table != type: continue
+
+        from_field = key_name if is_explicit_field else "extra_data/{}".format(key_name)
+
+        # Note this implies you can remap extra_data->extra data by calling it extra_data/remap"
+        to_field = "extra_data/{}".format(key_name) if field == "extra_data" else field
+        field_mapping[from_field] = to_field
+
+    return field_mapping
 
 
 def load_organization_property_extra_data_mapping_exclusions(org):
@@ -162,11 +190,9 @@ def load_organization_taxlot_extra_data_mapping_exclusions(org):
     return load_organization_field_mapping_for_type_exclusions(org.pk, "Tax")
 
 def load_organization_property_field_mapping(org):
-    """This returns a list of keys -> (table, attr) to map the key into."""
     return load_organization_field_mapping_for_type(org.pk, "Property")
 
 def load_organization_taxlot_field_mapping(org):
-    """This returns a list of keys -> (table, attr) to map the key into."""
     return load_organization_field_mapping_for_type(org.pk, "Tax")
 
 
@@ -175,6 +201,7 @@ def get_organization_map_custom():
     return org_map_custom
 
 def _load_raw_mapping_data():
+    # pdb.set_trace()
     fl = open(get_static_extradata_mapping_file()).readlines()
 
     fl = filter(lambda x: x.startswith("1,"), fl)
@@ -194,3 +221,140 @@ def _load_raw_mapping_data():
             d[int(org_str)][key_name] = (table, field)
 
     return d, is_explicit_field
+
+
+def valid_id(s):
+    #pattern = r"[\w\-\s]+$"
+    if len(s) == 1:
+        #trying to do the case where the string is only one character was too complicated
+        #so just do it separate for now
+        pattern = r"\w"
+    else:
+        #Rules for individual field:
+        #Must start and end with alphanumeric (\w)
+        #May have any combination of whitespace, hyphens ("-") and alphanumerics in the middle
+        pattern = r"\w[\w\-\s]*\w$"
+    return re.match(pattern, s)
+
+def sanitize_delimiters(s, delimiter_to_use, other_delimiters):
+    """Replace all delimiters with preferred delimiter"""
+    for d in other_delimiters:
+        s = s.replace(d, delimiter_to_use)
+    return s
+
+def check_delimiter_sanity(check_str, delimiters):
+    """Ensure that only one kind of delimiter is used."""
+    return map(lambda delim: delim in check_str, delimiters).count(True) <= 1
+
+def get_id_fields(parse_string):
+    """Parse a string into a list of taxlots.
+
+    Raises an exception if string does not match
+    """
+
+    if parse_string is None: raise TaxLotIDValueError(parse_string)
+
+    #The id field can use any of several delimiters so reduce it to just one
+    #delimiter first to make things easier
+    delimiter_to_use = ","
+    other_delimiters = [";", ":"]
+
+    if not check_delimiter_sanity(parse_string, [delimiter_to_use] + other_delimiters):
+        raise TaxLotIDValueError(parse_string)
+
+
+    cleaned_str = sanitize_delimiters(parse_string, delimiter_to_use, other_delimiters)
+
+    #If there is nothing in the string return an empty list
+    if not len(cleaned_str.strip()):
+        return []
+
+    fields = cleaned_str.split(delimiter_to_use)
+    #leading and trailing whitespace is part of the delimiter and not the ids
+    #so remove it here before additional processing
+    fields = [f.strip() for f in fields]
+
+    for field in fields:
+        if not valid_id(field):
+            raise TaxLotIDValueError(parse_string, field)
+
+    return fields
+
+
+def set_state_value(state, field_string, value):
+    ed = "extra_data/"
+    if field_string.startswith(ed):
+        ed_key = field_string[len(ed):]
+        state.extra_data[ed_key] = value
+        return
+    else:
+        assert hasattr(state, field_string), "{} should have an explicit field named {} but does not.".format(field_string)
+        setattr(state, field_string, value)
+    return
+
+
+def get_value_for_key(state, field_string):
+    ed = "extra_data/"
+    if field_string.startswith(ed):
+        key = field_string[len(ed):] if ed in field_string else ""
+
+        if key not in state.extra_data:
+            return None
+        else:
+            value = state.extra_data[key]
+            if value is None: return None
+
+            # FIXME: Gross.
+            if isinstance(value, unicode):
+                value = str(value.encode('ascii', 'ignore')).strip()
+                if not value: return None
+            elif isinstance(value, str):
+                value = value.strip()
+                if not value: return None
+
+            return value
+    else:
+        return getattr(state, field_string)
+
+
+USE_FIRST_VALUE = 1
+JOIN_STRINGS = 2
+UNIQUE_LIST = 3
+
+def aggregate_value_from_state(state, collapse_rules):
+    aggregation_type, collapse_fields = collapse_rules
+
+    if aggregation_type == USE_FIRST_VALUE:
+        return aggregate_value_from_state_usefirstvalue(state, collapse_fields)
+    elif aggregation_type == JOIN_STRINGS:
+        return aggregate_value_from_state_joinstrings(state, collapse_fields)
+    elif aggregation_type == UNIQUE_LIST:
+        return aggregate_value_from_state_uniquelist(state, collapse_fields)
+    else:
+        raise ValueError("Unknown aggregation type: {}".format(aggregation_type))
+
+def aggregate_value_from_state_usefirstvalue(state, use_first_fields):
+    for source_string in use_first_fields:
+        val = get_value_for_key(state, source_string)
+        if val is not None and val != "": return val
+    else:
+        return None
+
+
+def aggregate_value_from_state_uniquelist(state, list_fields):
+    list_of_values = []
+
+    for source_string in list_fields:
+        val = get_value_for_key(state, source_string)
+        if val: list_of_values.extend(get_id_fields(val))
+    else:
+        return set(list_of_values)
+
+def aggregate_value_from_state_joinstrings(state, string_fields):
+    values = []
+
+    for source_string in string_fields:
+        val = get_value_for_key(state, source_string)
+        if val: values.append(val)
+    else:
+        return ";".join(values)
