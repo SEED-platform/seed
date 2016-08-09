@@ -28,9 +28,9 @@ perspective.
    - Organization: Salt Lake City(126): 18141, 2258
    - Organization: City of Houston(6): 43494, 6648
 
-
-
-
 ## The Core User IDS
+
 In prioritized order
-[20, 7, 49, 69, 10, 184, 156, 117, 124, 105, 126, 6]
+
+[20, 184, 49, 69, 10, 184, 156, 117, 124, 105, 126, 6]
+20,184,49,10,181,156,117,124,105,126,6
