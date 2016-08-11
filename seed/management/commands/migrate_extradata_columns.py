@@ -93,7 +93,7 @@ class Command(BaseCommand):
 
             return
 
-        def update_columns(self, org, create_missing = False):
+        def update_columns(self, org, update_columnms = True, create_missing = False):
             print "Updating  columns for org {}".format(org)
             taxlot_columns = get_taxlot_columns(org)
             property_columns = get_property_columns(org)

@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+
 """Migration code for the Seed project from the original tables to the
 new tables.
 """
