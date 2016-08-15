@@ -77,7 +77,6 @@ def get_node_sinks(tree_label, labelarray, parent_adj_dict, child_adj_dict):
 
 def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
 
-    # HOHO-TODO: Trace and document this logic.
     desired_field_mapping = load_organization_taxlot_field_mapping(org)
     reverse_mapping = {y:x for x,y in desired_field_mapping.items()}
 
@@ -86,15 +85,13 @@ def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
     resolution_list.append("tax_lot_id")
 
     bs_taxlot_val = aggregate_value_from_state(bs, (USE_FIRST_VALUE, resolution_list))
-    ### HOHO: END OF TODO CHANGES.
-
 
     if bs_taxlot_val is None:
-        tax_lot = seed.models.TaxLot(organization=org)
+        tax_lot = seed.bluesky.models.TaxLot(organization=org)
         tax_lot.save()
         return tax_lot, True
 
-    qry = seed.models.TaxLotView.objects.filter(state__jurisdiction_taxlot_identifier=bs_taxlot_val)
+    qry = seed.bluesky.models.TaxLotView.objects.filter(state__jurisdiction_taxlot_identifier=bs_taxlot_val)
 
     # See if we have any tax lot views that have tax lot states
     # with that id, if yes, find/return associated property.
@@ -103,14 +100,13 @@ def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
         return qry.first().taxlot, False
 
     else:
-        tax_lot = seed.models.TaxLot(organization=org)
+        tax_lot = seed.bluesky.models.TaxLot(organization=org)
         tax_lot.save()
         return tax_lot, True
 
 def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
     mapping_field = 'building_portfolio_manager_identifier'
 
-    # HOHO: TODO - Make sure this logic matches the logic in the tax lot code.
     # FIX ME - This needs to be updated to simply search on the field and be given a rule.
 
     desired_field_mapping = load_organization_property_field_mapping(org)
@@ -124,16 +120,16 @@ def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
     bs_property_id = aggregate_value_from_state(bs, (USE_FIRST_VALUE, resolution_list))
 
     if bs_property_id is None:
-        property = seed.models.Property(organization=org)
+        property = seed.bluesky.models.Property(organization=org)
         property.save()
         return property, True
 
-    qry = seed.models.PropertyView.objects.filter(state__building_portfolio_manager_identifier=bs_property_id)
+    qry = seed.bluesky.models.PropertyView.objects.filter(state__building_portfolio_manager_identifier=bs_property_id)
 
     if qry.count():
         return qry.first().property, False
     else:
-        property = seed.models.Property(organization=org)
+        property = seed.bluesky.models.Property(organization=org)
         property.save()
         return property, True
 
@@ -159,8 +155,6 @@ def load_organization_field_mapping_for_type_exclusions(org, type):
 
 def load_organization_field_mapping_for_type(org_id, type):
     """This returns a list of keys -> (table, attr) to map the key into."""
-
-    # HOHO: TODO: Trace and document this code and make sure everything makes sense.
 
     org_mapping_line = "1,{}".format(org_id)
 
@@ -288,7 +282,7 @@ def set_state_value(state, field_string, value):
         state.extra_data[ed_key] = value
         return
     else:
-        assert hasattr(state, field_string), "{} should have an explicit field named {} but does not.".format(state, field_string)
+        assert hasattr(state, field_string), "{} should have an explicit field named {} but does not.".format(field_string)
         setattr(state, field_string, value)
     return
 
@@ -358,42 +352,3 @@ def aggregate_value_from_state_joinstrings(state, string_fields):
         if val: values.append(val)
     else:
         return ";".join(values)
-
-
-
-taxlot_by_byorg = collections.defaultdict(lambda : set())
-def get_taxlot_columns(org):
-    # HOHO TODO - Verify these functions and relocate to _localtools
-    org_id = str(org.pk)
-    global taxlot_by_byorg
-
-    if not org_id in taxlot_by_byorg:
-        fl = open(get_static_extradata_mapping_file()).readlines()
-        fl = filter(lambda x: x.startswith("1,{}".format(org_id)), fl)
-        reader = csv.reader(StringIO.StringIO("".join(fl)))
-
-        for r in reader:
-            org_str, is_explicit_field, key_name, table, field = r[1:6]
-            if table != "Tax": continue
-            taxlot_by_byorg[org_id].add(key_name)
-
-    return  taxlot_by_byorg[org_id]
-
-property_by_byorg = collections.defaultdict(lambda : set())
-def get_property_columns(org):
-    # HOHO TODO - Verify these functions and relocate to _localtools
-    org_id = str(org.pk)
-
-    global property_by_byorg
-
-    if not org in property_by_byorg:
-        fl = open(get_static_extradata_mapping_file()).readlines()
-        fl = filter(lambda x: x.startswith("1,{}".format(org_id)), fl)
-        reader = csv.reader(StringIO.StringIO("".join(fl)))
-
-        for r in reader:
-            org_str, is_explicit_field, key_name, table, field = r[1:6]
-            if table != "Property": continue
-            property_by_byorg[org_id].add(key_name)
-
-    return property_by_byorg[org_id]
