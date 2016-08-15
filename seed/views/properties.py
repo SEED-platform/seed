@@ -175,6 +175,20 @@ def get_property(request, property_pk):
 @ajax_request
 @login_required
 @has_perm('requires_viewer')
+def update_property(request, property):
+    #TODO
+
+    response = { "status":"success"}
+
+    return response
+
+
+@require_organization_id
+@require_organization_membership
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('requires_viewer')
 def get_taxlots(request):
     page = request.GET.get('page', 1)
 

@@ -19,7 +19,7 @@ angular.module('BE.seed.service.label',
     /** Label Service:
         --------------------------------------------------
         Provides methods to CRUD labels on the server
-        as well as apply and remove labels to buildings.
+        as well as apply and remove labels to properties.
 
         Note: This is the first service to use proper REST verbs and REST-based
         server APIs (provided by django-rest-framework).
@@ -30,8 +30,8 @@ angular.module('BE.seed.service.label',
 
     /** Returns an array of labels.
 
-        @param {array} selected_buildings       An array of building ids corresponding to
-                                                selected buildings (should be empty if
+        @param {array} selected_properties      An array of properties ids corresponding to
+                                                selected properties (should be empty if
                                                 select_all_checkbox is true).
         @param {boolean} select_all_checkbox    A boolean indicating whether user checked
                                                 'Select all' checkbox.
@@ -48,7 +48,7 @@ angular.module('BE.seed.service.label',
             label {string}          The css class, usually in bootstrap, used to generate
                                     the color style (poorly named, needs refactoring).
             is_applied {boolean}    If a search object was passed in, this boolean
-                                    indicates if buildings in the current filtered
+                                    indicates if properties in the current filtered
                                     set have this label.
 
         For example...
@@ -64,11 +64,11 @@ angular.module('BE.seed.service.label',
         ]
     */
 
-    function get_labels(selected_buildings, select_all_checkbox, search_params) {
+    function get_labels(selected_properties, select_all_checkbox, search_params) {
         var defer = $q.defer();
 
         var searchArgs = _.assignIn({
-            selected_buildings: selected_buildings,
+            selected_properties: selected_properties,
             select_all_checkbox: select_all_checkbox,
             organization_id: user_service.get_organization().id
         }, search_params);
@@ -183,18 +183,18 @@ angular.module('BE.seed.service.label',
     }
 
 
-    /* FUNCTIONS FOR LABELS WITHIN BUILDINGS  */
-    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+    /* FUNCTIONS FOR LABELS WITHIN PROPERTIES  */
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
     /*
 
-    This method updates selected buildings with a group of "add" labels
+    This method updates selected properties with a group of "add" labels
     and a group of "remove" labels.
 
 
-    @param {array} add_label_ids            An array of label ids to apply to selected buildings.
-    @param {array} remove_label_ids         An array of label ids to remove from selected buildings.
-    @param {array} selected_buildings       An array of building ids corresponding to selected buildings
+    @param {array} add_label_ids            An array of label ids to apply to selected properties.
+    @param {array} remove_label_ids         An array of label ids to remove from selected properties.
+    @param {array} selected_properties      An array of property ids corresponding to selected properties
                                             (should be empty if select_all_checkbox is true).
     @param {boolean} select_all_checkbox    A boolean indicating whether user checked 'Select all' checkbox.
     @param {object} search_params           A reference to the Search object, which includes
@@ -204,13 +204,13 @@ angular.module('BE.seed.service.label',
                                             (success or error).
 
     */
-    function update_building_labels(add_label_ids, remove_label_ids, selected_buildings, select_all_checkbox, search_params) {
+    function update_property_labels(add_label_ids, remove_label_ids, selected_properties, select_all_checkbox, search_params) {
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: window.BE.urls.update_building_labels,
+            url: window.BE.urls.update_property_labels,
             params: _.assignIn({
-                selected_buildings: selected_buildings,
+                selected_properties: selected_properties,
                 select_all_checkbox: select_all_checkbox,
                 organization_id: user_service.get_organization().id
             }, search_params),
@@ -225,6 +225,9 @@ angular.module('BE.seed.service.label',
         });
         return defer.promise;
     }
+
+
+
 
     /*  Gets the list of supported colors for labels, based on default bootstrap
         styles for labels. These are defined locally.
@@ -292,7 +295,7 @@ angular.module('BE.seed.service.label',
         create_label : create_label,
         update_label : update_label,
         delete_label : delete_label,
-        update_building_labels : update_building_labels,
+        update_property_labels : update_property_labels,
         get_available_colors : get_available_colors
 
     };

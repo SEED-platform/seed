@@ -63,7 +63,9 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.update_building_labels_modal',
     'BE.seed.controller.security',
     'BE.seed.controller.bluesky_properties_controller',
-    'BE.seed.controller.bluesky_taxlots_controller'
+    'BE.seed.controller.bluesky_taxlots_controller',
+    'BE.seed.controller.property_detail_controller',
+    'BE.seed.controller.property_update_labels_modal_ctrl'
     ]);
 angular.module('BE.seed.filters', [
     'district',
@@ -102,7 +104,8 @@ angular.module('BE.seed.services', [
     'BE.seed.service.search',
     'BE.seed.service.simple_modal',
     'BE.seed.service.httpParamSerializerSeed',
-    'BE.seed.service.bluesky_service'
+    'BE.seed.service.bluesky_service',
+    'BE.seed.service.property'
     ]);
 angular.module('BE.seed.utilities', [
     'BE.seed.utility.spinner'
@@ -845,6 +848,24 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 }],
                 columns: ['bluesky_service', function(bluesky_service){
                     return bluesky_service.get_property_columns();
+                }]
+            }
+        })
+        .when('/bluesky/properties/:property_id', {
+            controller: 'property_detail_controller',
+            templateUrl: static_url + 'seed/partials/bluesky/property_detail_section.html',
+            resolve: {
+                property_payload: ['property_service', '$route', function(property_service, $route){
+                    // load `get_building` before page is loaded to avoid
+                    // page flicker.
+                    var property_id = $route.current.params.property_id;
+                    return property_service.get_property(property_id);
+                }],
+                all_columns: ['property_service', function(property_service) {
+                    return property_service.get_columns();
+                }],
+                default_columns: ['user_service', function(user_service){
+                    return user_service.get_default_building_detail_columns();
                 }]
             }
         })

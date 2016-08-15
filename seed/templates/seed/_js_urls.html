@@ -66,10 +66,17 @@
         window.BE.urls.delete_organization_buildings = '{% url "seed:delete_organization_buildings" %}';
         window.BE.urls.delete_organization = '{% url "seed:delete_organization" %}';
 
+        
+        
         // bluesky  //TODO Remove these methods!
         window.BE.urls.get_properties = '{% url "bluesky:properties" %}';
+        window.BE.urls.delete_properties = '{% url "bluesky:properties" %}';
+        window.BE.urls.get_property = '{% url "bluesky:properties" %}';     // TEMP Change this to bluesky:property (or whatever the appropriate url reverse is) when it exists
+        window.BE.urls.update_property = '{% url "bluesky:properties" %}'; // TEMP Change this to bluesky:property (or whatever the appropriate url reverse is) when it exists
         window.BE.urls.get_taxlots = '{% url "bluesky:lots" %}';
         window.BE.urls.get_cycles = '{% url "bluesky:cycles" %}';
         window.BE.urls.get_property_columns = '{% url "bluesky:property-columns" %}';
         window.BE.urls.get_taxlot_columns = '{% url "bluesky:taxlot-columns" %}';
+        window.BE.urls.update_property_labels = '{% url "labels:update_building_labels" %}'; // TEMP Change this to bluesky:update_property_labels (or whatever the appropriate url reverse is) when it exists
+    
     </script>

@@ -2186,6 +2186,53 @@ select {
 
 }
 
+
+/* DMcQ: Once Bluesky refactoring is complete, remove old #update-building-labels-modal above */
+
+#update-property-labels-modal {
+
+  .labels-status-msg {
+    min-height: 150px;
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .add_text, .edit_text {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .edit_text {
+    margin-left: 10px;
+  }
+
+  .add-label-row {
+    margin-right: -5px;
+    margin-bottom: 20px;
+  }
+
+  .btn-default {
+    min-width: 70px;
+  }
+
+  .table-list-container {
+    border: 1px solid #EEE;
+    overflow-y: auto;
+    max-height: 350px;
+    margin-bottom: 10px;
+    table {
+
+    }
+    th, td {
+      border: 0;
+    }
+  }
+
+}
+
+
 /* Styles to override ngInputTags to get correct tag colors */
 
 tags-input .tags {

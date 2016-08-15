@@ -1,0 +1,113 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a href="#/properties" class="page_action"><i class="fa fa-chevron-left"></i> Properties</a>
+        </div>
+        <div class="page_title"
+             popover-placement="bottom-middle"
+             popover-trigger="outsideClick"
+             uib-popover="{$ property.address_line_1 $}">
+            <h1>{$ property.address_line_1 $}</h1>
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav">
+        <a id="building" ng-href="#/properties/{$ property.id $}" class="active">Property Info</a>
+        <a id="settings" ng-href="#/properties/{$ property.id $}/settings">Settings</a>
+    </div>
+</div>
+<div class="section">
+    <div class="section_header_container">
+        <div class="section_header fixed_height_short has_no_padding">
+            <div class="section_action_container left">
+                <h2><i class="fa fa-building-o"></i> Property Information</h2>
+            </div>
+            <div class="section_action_container right" ng-hide="property.edit_form_showing">
+                <a ng-click="property.edit_form_showing = true; save_property_state()" ng-show="user_role !== 'viewer'"><i class="fa fa-pencil"></i> Edit</a>
+            </div>
+            <div class="section_action_container right section_action_btn" ng-show="property.edit_form_showing">
+                <a roll="button" class="btn btn-default btn-sm" ng-click="property.edit_form_showing = false; restore_property()">Cancel</a>
+                <a roll="button" class="btn btn-primary btn-sm" ng-click="property.edit_form_showing = false; save_property()">Save Changes</a>
+            </div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content">
+            
+            <div style="margin:10px 0px; padding:0px 10px;">
+                <button type="button" class="btn btn-default" ng-click="open_update_property_labels_modal()"><i class="fa fa-tag"></i>Add/Remove Labels</button>
+                <span style="padding-right:5px;"><strong>Labels:</strong></span>
+                <span ng-show="labels.length === 0" style="color:#999">(no labels applied)</span>
+                <span ng-repeat="label in labels" class="label label-{$ label.label $}">{$ label.name $}</span>
+            </div>
+
+            <div class="table_list_container">
+                <table class="table table-striped table_highlight_first fixed-layout">
+                    <thead>
+                        <tr>
+                            <th sd-resizable id="building-fields">Field</th>
+                            <th sd-resizable class="ellipsis-resizable">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="f in data_fields">
+                            <td>{$ f.key | titleCase $}</td>
+                            <td class="ellipsis">
+                                 <span   class="sd-data-content"
+                                         ng-hide="property.edit_form_showing"
+                                         ng-if="f.type === 'extra_data'"
+                                         popover-placement="top-left"
+                                         popover-trigger="outsideClick"
+                                         popover-animation="false"
+                                         uib-popover="{$ property.extra_data[f.key] $}"
+                                         >
+                                     {$ property.extra_data[f.key] $}
+                                 </span>
+                                 <span   class="sd-data-content"
+                                         ng-hide="property.edit_form_showing"
+                                         ng-if="f.type !== 'extra_data'"
+                                         popover-placement="top-left"
+                                         uib-popover="{$ building[f.key] $}"
+                                         popover-animation="false"
+                                         popover-trigger="outsideClick"
+                                         >
+                                     {$ building[f.key] $}
+                                 </span>
+                            </td>
+                            <td class="ellipsis"
+                                 ng-if="f.type === 'extra_data'">
+                                 <span  ng-hide="property.edit_form_showing"
+                                         popover-placement="top-left"
+                                         popover-trigger="outsideClick"
+                                         popover-animation="false"
+                                         uib-popover="{$ property.extra_data[f.key] $}" >
+                                     {$ property.extra_data[f.key] $}
+                                 </span>
+                                 <a  ng-show="property.edit_form_showing && property.extra_data[f.key]"
+                                     ng-click="set_building_attribute(building, f, true)">
+                                     <span>{$ property.extra_data[f.key] $}</span>
+                                </a>
+                            </td>
+                            <td class="ellipsis"
+                                 ng-if="f.type !== 'extra_data'">
+                                 <span   ng-hide="property.edit_form_showing"
+                                          popover-placement="top-left"
+                                          popover-trigger="outsideClick"
+                                          popover-animation="false"
+                                          uib-popover="{$ property[f.key]  $}">
+                                     {$ property[f.key] $}
+                                 </span>
+                                 <a  ng-show="property.edit_form_showing && building[f.key]"
+                                     ng-click="set_building_attribute(property, f.key, false)">
+                                     <span>{$ property[f.key] $}</span>
+                                </a>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
