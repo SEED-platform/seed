@@ -362,8 +362,7 @@ def get_property_columns(request):
             'displayName': 'PM Property ID',
             'pinnedLeft': True,
             'type': 'number',
-            'related': False,
-            'extra_data': False
+            'related': False
         }, {
             'name': 'jurisdiction_property_identifier',
             'displayName': 'Property / Building ID',
@@ -609,7 +608,7 @@ def get_taxlot_columns(request):
             'name': 'jurisdiction_taxlot_identifier',
             'displayName': 'Tax Lot ID',
             'pinnedLeft': True,
-            'type': 'number',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'primary',
