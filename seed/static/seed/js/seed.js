@@ -864,6 +864,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     return property_taxlot_service.get_property_columns();
                 }],
                 default_columns: ['user_service', function(user_service){
+                    //TODO: Change to default Property columns
                     return user_service.get_default_building_detail_columns();
                 }]
             }
@@ -880,6 +881,26 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 }],
                 columns: ['property_taxlot_service', function(property_taxlot_service){
                     return property_taxlot_service.get_taxlot_columns();
+                }]
+            }
+        })
+        .when('/taxlots/:taxlot_id/cycles/:cycle_id', {
+            controller: 'taxlot_detail_controller',
+            templateUrl: static_url + 'seed/partials/taxlot_detail_section.html',
+            resolve: {
+                property_payload: ['property_taxlot_service', '$route', function(property_taxlot_service, $route){
+                    // load `get_building` before page is loaded to avoid
+                    // page flicker.
+                    var taxlot_id = $route.current.params.taxlot_id;
+                    var cycle_id = $route.current.params.cycle_id;
+                    return property_taxlot_service.get_taxlot(property_id, cycle_id);
+                }],
+                all_columns: ['property_taxlot_service', function(property_taxlot_service) {
+                    return property_taxlot_service.get_taxlot_columns();
+                }],
+                default_columns: ['user_service', function(user_service){
+                    //TODO: Change to default TaxLot columns
+                    return user_service.get_default_building_detail_columns();
                 }]
             }
         })
