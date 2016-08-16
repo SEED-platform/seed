@@ -76,6 +76,9 @@ class Command(BaseCommand):
                                                  .exclude(state__pm_parent_property_id="Not Applicable: Standalone Property")\
                                                  .all()
 
+            property_views = list(property_views)
+            property_views.sort(key = lambda pv: pv.cycle.start)
+
             states = map(lambda pv: pv.state, list(property_views))
 
             for (pv, state) in zip(property_views, states):
@@ -96,8 +99,11 @@ class Command(BaseCommand):
 
                     # Create a view and a state for the active cycle.
                     parent_property_state = PropertyState(building_portfolio_manager_identifier=pm_parent_property_id,
+                                                          pm_parent_property_id=pm_parent_property_id,
                                                           property_notes="Created by campus relations migration on {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
                     parent_property_state.save()
+
+
 
                     parent_property_view = PropertyView(property = parent_property, cycle = pv.cycle, state=parent_property_state)
                     parent_property_view.save()
@@ -115,6 +121,27 @@ class Command(BaseCommand):
                     child_property = pv.property
                     child_property.parent_property = parent_property
                     child_property.save()
+
+                    # Make sure the parent has a view for the same
+                    # cycle as the pv in question.
+
+                    if not PropertyView.objects.filter(property=parent_property, cycle=pv.cycle).count():
+
+                        parent_views = PropertyView.objects.filter(property=parent_property).all()
+                        parent_views = [ppv for ppv in parent_views if ppv.cycle.start <= pv.cycle.start]
+                        assert len(parent_views), "This should always be true."
+
+
+
+                        ps = parent_views[-1].state
+                        ps.pk = None
+
+                        ps.save()
+
+                        parent_view = PropertyView(property=parent_property, cycle = pv.cycle, state = ps)
+                        parent_view.save()
+
+
 
 
 

@@ -41,80 +41,16 @@ from seed.models import Property
 from seed.models import PropertyView
 from seed.models import PropertyState
 from seed.models import Cycle
+from _localtools import TaxLotIDValueError
+from _localtools import get_id_fields
+from _localtools import USE_FIRST_VALUE
+from _localtools import JOIN_STRINGS
+from _localtools import UNIQUE_LIST
+from _localtools import aggregate_value_from_state
+
 import re
 
 logging.basicConfig(level=logging.DEBUG)
-
-class TaxLotIDValueError(ValueError):
-    def __init__(self, original_string, field = None):
-        super(TaxLotIDValueError, self).__init__("Invalid id string found: {}".format(original_string))
-        self.invalid_field = field
-        self.original_string = original_string
-        return
-
-def valid_id(s):
-    if not s: return True
-
-    #pattern = r"[\w\-\s]+$"
-    if len(s) == 1:
-        #trying to do the case where the string is only one character was too complicated
-        #so just do it separate for now
-        pattern = r"\w"
-    else:
-        #Rules for individual field:
-        #Must start and end with alphanumeric (\w)
-        #May have any combination of whitespace, hyphens ("-") and alphanumerics in the middle
-        pattern = r"\w[\w\-\s]*\w$"
-    return re.match(pattern, s)
-
-def sanitize_delimiters(s, delimiter_to_use, other_delimiters):
-    """Replace all delimiters with preferred delimiter"""
-    for d in other_delimiters:
-        s = s.replace(d, delimiter_to_use)
-    return s
-
-def check_delimiter_sanity(check_str, delimiters):
-    """Ensure that only one kind of delimiter is used."""
-    return map(lambda delim: delim in check_str, delimiters).count(True) <= 1
-
-def get_id_fields(parse_string):
-    """Parse a string into a list of taxlots.
-
-    Raises an exception if string does not match
-    """
-
-    if parse_string is None: raise TaxLotIDValueError(parse_string)
-
-    #The id field can use any of several delimiters so reduce it to just one
-    #delimiter first to make things easier
-    delimiter_to_use = ","
-    other_delimiters = [";", ":"]
-
-    # if not check_delimiter_sanity(parse_string, [delimiter_to_use] + other_delimiters):
-    #     raise TaxLotIDValueError(parse_string)
-
-
-    cleaned_str = sanitize_delimiters(parse_string, delimiter_to_use, other_delimiters)
-
-    #If there is nothing in the string return an empty list
-    if not len(cleaned_str.strip()):
-        return []
-
-    fields = cleaned_str.split(delimiter_to_use)
-    #leading and trailing whitespace is part of the delimiter and not the ids
-    #so remove it here before additional processing
-    fields = [f.strip() for f in fields]
-
-    # A list like "a;b;" is always interperet as a two element list
-    # A list like a;;b is interpreted as a two element list
-    # A list like a;;b; is interpreted as a two element list
-    if fields and not fields[-1]: fields.pop()
-
-    for field in fields:
-        if not valid_id(field):
-            raise TaxLotIDValueError(parse_string, field)
-
-    return fields
 
 
 class Command(BaseCommand):
@@ -137,16 +73,21 @@ class Command(BaseCommand):
                 self.display_stats(org_id)
                 return
 
+        org_taxlot_splitdata_rules = collections.defaultdict(lambda : (UNIQUE_LIST, ("jurisdiction_taxlot_identifier",)))
+        org_taxlot_splitdata_rules[20] = (UNIQUE_LIST, ("jurisdiction_taxlot_identifier", "extra_data/Philadelphia Building ID",))
+
         for org_id in core_organization:
-            self.split_taxlots_into_m2m_relationships(org_id)
+            self.split_taxlots_into_m2m_relationships(org_id, org_taxlot_splitdata_rules)
 
         # At the end run two checks:
-
 
         # Go through the tax Lots, collect any that are left, make
         # sure they aren't a part of any m2m entities.
         for view in TaxLotView.objects.filter(taxlot__organization_id=org_id).all():
             try:
+                # pdb.set_trace()
+                # aggregate_value_from_state(view.state, org_taxlot_split_extra[org_id])
+
                 taxlot_field_list = get_id_fields(view.state.jurisdiction_taxlot_identifier)
                 if len(taxlot_field_list) > 1:
                     print "Danger - tax lot '{}' still exists.".format(view.state.jurisdiction_taxlot_identifier)
@@ -156,7 +97,7 @@ class Command(BaseCommand):
 
         return
 
-    def split_taxlots_into_m2m_relationships(self, org_id):
+    def split_taxlots_into_m2m_relationships(self, org_id, org_rules_map):
         org = Organization.objects.get(pk=org_id)
         print "==== Splitting for organization {} - {}".format(org_id, org.name)
 
@@ -164,6 +105,8 @@ class Command(BaseCommand):
 
         for m2m in itertools.chain(TaxLotProperty.objects.filter(property_view__property__organization=org).all(),
                                    TaxLotProperty.objects.filter(taxlot_view__taxlot__organization=org).all()):
+            # aggregate_value_from_state(view.state, org_rules_map[org_id])
+
             jurisdiction_taxlot_identifier = m2m.taxlot_view.state.jurisdiction_taxlot_identifier
             taxlot_id_list = []
             try:
@@ -173,10 +116,9 @@ class Command(BaseCommand):
                 print e # HOHO
                 continue
 
-
             if len(taxlot_id_list) <= 1: continue
-
             original_taxlot_view = m2m.taxlot_view
+
             # Some have duplicates
             for taxlot_id in set(taxlot_id_list):
                 print "Break up tax lot {} to {} for cycle {}".format(jurisdiction_taxlot_identifier, taxlot_id_list, m2m.cycle)
