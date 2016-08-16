@@ -12,6 +12,7 @@ from seed.models import Cycle, PropertyView, TaxLotView, TaxLotState, TaxLotProp
 from seed.decorators import ajax_request, require_organization_id, require_organization_membership
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import Column
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.utils.api import api_endpoint
 import itertools
 
@@ -148,27 +149,22 @@ def get_properties(request):
 @ajax_request
 @login_required
 @has_perm('requires_viewer')
-def get_property(request, property_pk):
+def get_property(request):
+
+    property_id = request.GET.get('property_id')
+    organization_id = request.GET.get('organization_id')
+    cycle_id = request.GET.get('cycle_id')
+
     property_view = PropertyView.objects.select_related('property', 'cycle', 'state') \
-        .get(property_id=property_pk, property__organization_id=request.GET['organization_id'])
+        .get(property_id=property_id, cycle_id=cycle_id, property__organization_id=organization_id)
 
-    # Lots this property is on
-    lot_view_pks = TaxLotProperty.objects.filter(property_view_id=property_view.pk).values_list('taxlot_view_id',
-                                                                                                flat=True)
-    lot_views = TaxLotView.objects.filter(pk__in=lot_view_pks).select_related('cycle', 'state')
-
-    p = model_to_dict(property_view)
+    p = model_to_dict(property_view.property)
     p['state'] = model_to_dict(property_view.state)
-    p['property'] = model_to_dict(property_view.property)
-    p['cycle'] = model_to_dict(property_view.cycle)
-    p['lots'] = []
-
-    for lot in lot_views:
-        p['lots'].append(model_to_dict(lot))
+    p['cycle'] = {'id': cycle_id}
 
     return p
 
-
+# DMCQ: Temporary stub, should be replaced by proper implementation
 @require_organization_id
 @require_organization_membership
 @api_endpoint
@@ -176,11 +172,20 @@ def get_property(request, property_pk):
 @login_required
 @has_perm('requires_viewer')
 def update_property(request, property):
-    #TODO
 
-    response = { "status":"success"}
+    return {"status": "success"}
 
-    return response
+
+# DMCQ: Temporary stub, should be replaced by proper implementation
+@require_organization_id
+@require_organization_membership
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('requires_viewer')
+def delete_properties(request, property):
+
+    return {"status": "success"}
 
 
 @require_organization_id
@@ -344,6 +349,44 @@ def get_taxlot(request, taxlot_pk):
         l['properties'].append(model_to_dict(prop))
 
     return l
+
+
+# DMCQ: Temporary stub, should be replaced by proper
+# implementation, probably in a different (TaxLot) view py file.
+@require_organization_id
+@require_organization_membership
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('requires_viewer')
+def update_taxlot(request):
+
+    return {'status': 'success'}
+
+
+# DMCQ: Temporary stub, should be replaced by proper
+# implementation, probably in a different (TaxLot) view py file.
+@require_organization_id
+@require_organization_membership
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('requires_viewer')
+def delete_taxlots(request):
+
+    return {"status": "success"}
+
+# DMCQ: Temporary stub, should be replaced by proper
+# implementation, probably in a different (TaxLot) view py file.
+@require_organization_id
+@require_organization_membership
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('requires_viewer')
+def update_taxlot_labels(request):
+
+    return {"status": "success"}
 
 
 @require_organization_id

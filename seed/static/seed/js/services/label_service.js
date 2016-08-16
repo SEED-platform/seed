@@ -188,13 +188,13 @@ angular.module('BE.seed.service.label',
 
     /*
 
-    This method updates selected properties with a group of "add" labels
-    and a group of "remove" labels.
+    This method updates selected Properties with a group
+    of "add" labels and a group of "remove" labels.
 
 
     @param {array} add_label_ids            An array of label ids to apply to selected properties.
     @param {array} remove_label_ids         An array of label ids to remove from selected properties.
-    @param {array} selected_properties      An array of property ids corresponding to selected properties
+    @param {array} selected_properties      An array of Property ids corresponding to selected properties
                                             (should be empty if select_all_checkbox is true).
     @param {boolean} select_all_checkbox    A boolean indicating whether user checked 'Select all' checkbox.
     @param {object} search_params           A reference to the Search object, which includes
@@ -205,10 +205,11 @@ angular.module('BE.seed.service.label',
 
     */
     function update_property_labels(add_label_ids, remove_label_ids, selected_properties, select_all_checkbox, search_params) {
+
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: window.BE.urls.update_property_labels,
+            url: window.BE.urls.property_labels,
             params: _.assignIn({
                 selected_properties: selected_properties,
                 select_all_checkbox: select_all_checkbox,
@@ -227,6 +228,46 @@ angular.module('BE.seed.service.label',
     }
 
 
+    /*
+    This method updates selected Tax Lots with a group
+    of "add" labels and a group of "remove" labels.
+
+
+    @param {array} add_label_ids            An array of label ids to apply to selected properties.
+    @param {array} remove_label_ids         An array of label ids to remove from selected properties.
+    @param {array} selected_properties      An array of Tax Lot ids corresponding to selected Tax Lots
+                                            (should be empty if select_all_checkbox is true).
+    @param {boolean} select_all_checkbox    A boolean indicating whether user checked 'Select all' checkbox.
+    @param {object} search_params           A reference to the Search object, which includes
+                                            properties for active filters.
+
+    @return {object}                        A promise object that resolves server response
+                                            (success or error).
+
+    */
+    function update_taxlot_labels(add_label_ids, remove_label_ids, selected_taxlots, select_all_checkbox, search_params) {
+
+        var defer = $q.defer();
+        $http({
+            method: 'PUT',
+            url: window.BE.urls.taxlot_labels,
+            params: _.assignIn({
+                selected_taxlots: selected_taxlots,
+                select_all_checkbox: select_all_checkbox,
+                organization_id: user_service.get_organization().id
+            }, search_params),
+            data: {
+                add_label_ids: add_label_ids,
+                remove_label_ids: remove_label_ids
+            }
+        }).success(function(data, status, headers, config) {
+            defer.resolve(data);
+        }).error(function(data, status, headers, config) {
+            defer.reject(data, status);
+        });
+        return defer.promise;
+
+    }
 
 
     /*  Gets the list of supported colors for labels, based on default bootstrap
@@ -275,6 +316,10 @@ angular.module('BE.seed.service.label',
         ];
     }
 
+    /* "PRIVATE" METHODS */
+    /* ~~~~~~~~~~~~~~~~~ */
+
+
     /*  Add a few properties to the label object so that it
         works well with UI components.
     */
@@ -286,6 +331,9 @@ angular.module('BE.seed.service.label',
         return lbl;
     }
 
+
+
+
     /* Public API */
 
     var label_factory = {
@@ -296,6 +344,7 @@ angular.module('BE.seed.service.label',
         update_label : update_label,
         delete_label : delete_label,
         update_property_labels : update_property_labels,
+        update_property_labels : update_taxlot_labels,
         get_available_colors : get_available_colors
 
     };

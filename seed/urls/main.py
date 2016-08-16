@@ -30,6 +30,10 @@ from seed.views.main import (
     delete_buildings, delete_organization
 )
 
+from seed.views.properties import (
+    get_properties, get_property, update_property, delete_properties, get_property_columns,
+    get_taxlots, get_taxlot, update_taxlot, delete_taxlots, get_taxlot_columns, get_cycles)
+
 from seed.views.datasets import DatasetViewSet
 from seed.views.organizations import OrganizationViewSet
 from rest_framework import routers
@@ -204,6 +208,23 @@ urlpatterns = [
         include('rest_framework_swagger.urls'),
         name='swagger'
     ),
+
+    # DMcQ: TEMP
+    # adding these so I can update the routes in _js_urls.html
+    # These should be updated to correct urls when appropriate (although they might be ok as is)
+
+    url(r'^' + apiv1 + r'properties/$', get_properties, name='properties'),
+    url(r'^' + apiv1 + r'get_property/$', get_property, name='get_property'),
+    url(r'^' + apiv1 + r'update_property/$', update_property, name='update_property'),
+    url(r'^' + apiv1 + r'delete_properties/$', delete_properties, name='delete_properties'),
+    url(r'^' + apiv1 + r'get_property_columns/$', get_property_columns, name='get_property_columns'),
+    url(r'^' + apiv1 + r'taxlots/$', get_taxlots, name='taxlots'),
+    url(r'^' + apiv1 + r'get_taxlot/$', get_taxlot, name='get_taxlot'),
+    url(r'^' + apiv1 + r'update_taxlot/$', update_taxlot, name='update_taxlot'),
+    url(r'^' + apiv1 + r'delete_taxlots/$', delete_taxlots, name='delete_taxlots'),
+    url(r'^' + apiv1 + r'get_taxlot_columns/$', get_taxlot_columns, name='get_taxlot_columns'),
+    url(r'^' + apiv1 + r'cycles/$', get_cycles, name='cycles'),
+
 
     # v2 api
     url(r'^api/v2/', include(api_v2_router.urls), name='apiv2'),

@@ -8,6 +8,7 @@
                 <div ng-show="!is_initial_state" class="badge badge_menu" ng-click="href('{% url "landing:logout" %}')">Log Out</div>
             </a>
             <div class="divider"></div>
+            <!--
             <a id="sidebar-projects" ng-class="{item: true, active: is_active('/projects')}" href="{% url "seed:home" %}#/projects">
                 <div class="icon"><i class="fa fa-folder-o"></i></div>
                 <div ng-show="!is_initial_state" class="item_name">Projects</div>
@@ -17,6 +18,11 @@
                 <div class="icon"><i class="fa fa-building-o"></i></div>
                 <div ng-show="!is_initial_state" class="item_name">Buildings</div>
                 <div ng-show="!is_initial_state" class="badge badge_menu">{$ buildings_count | number:0 $}</div>
+            </a>
+            -->
+            <a id="sidebar-inventory" ng-class="{item: true, active: is_active('/properties') || is_active('/taxlots')}" href="{% url "seed:home" %}#/properties">
+                <div class="icon"><i class="fa fa-building-o"></i></div>
+                <div ng-show="!is_initial_state" class="item_name">Inventory</div>
             </a>
             <a id="sidebar-data" ng-class="{item: true, active: is_active('/data')}" href="{% url "seed:home" %}#/data" ng-show="menu.user.organization.user_role !== 'viewer'">
                 <div class="icon"><i class="fa fa-sitemap"></i></div>
@@ -28,10 +34,7 @@
                 <div ng-show="!is_initial_state" class="item_name">Organizations</div>
                 <div ng-show="!is_initial_state" class="badge badge_menu">{$ organizations_count | number:0 $}</div>
             </a>
-            <a id="sidebar-bluesky" ng-class="{item: true, active: is_active('/bluesky')}" href="{% url "seed:home" %}#/bluesky/properties">
-                <div class="icon"><i class="fa fa-flask"></i></div>
-                <div ng-show="!is_initial_state" class="item_name">Blue Sky</div>
-            </a>
+           
             <div class="divider"></div>
             <a id="sidebar-feedback" ng-class="{item: true, active: is_active('/feedback')}" href="{% url "seed:home" %}#/feedback">
                 <div class="icon"><i class="fa fa-certificate"></i></div>
