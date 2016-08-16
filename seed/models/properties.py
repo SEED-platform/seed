@@ -6,14 +6,32 @@
 """
 from __future__ import unicode_literals
 
-import unicodedata
+import logging
 
 from django.db import models
 from django_pgjson.fields import JsonField
 
-from seed.utils.generic import split_model_fields
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (Cycle, ImportFile, obj_to_dict)
+from seed.models import (
+    Cycle,
+    ImportFile,
+    obj_to_dict,
+    TaxLot,
+    TaxLotState,
+    TaxLotView
+)
+from seed.utils.generic import split_model_fields
+
+logger = logging.getLogger(__name__)
+
+# State of the data that was imported. This will be used to flag which
+# rows are orphaned and can be deleted.
+DATA_STATE = (
+    (0, 'Unknown'),
+    (1, 'Post Import'),
+    (2, 'Post Mapping'),
+    (3, 'Post Matching'),
+)
 
 
 class Property(models.Model):
@@ -39,6 +57,7 @@ class PropertyState(models.Model):
     # FIXME: source_type needs to be a foreign key or make it import_file.source_type
     source_type = models.IntegerField(null=True, blank=True, db_index=True)
     super_organization = models.ForeignKey(Organization, blank=True, null=True)
+    data_state = models.IntegerField(choices=DATA_STATE, default=0)
 
     confidence = models.FloatField(default=0, null=True, blank=True)
 
@@ -91,8 +110,88 @@ class PropertyState(models.Model):
 
     extra_data = JsonField(default={}, blank=True)
 
+    def promote_to_view(self, start, end, tax_lot_id):
+        """
+        Helper initializer to add a property and its tax_lot/cycle
+        relationships.
+        """
+
+        cycle, _ = Cycle.objects.get_or_create(
+            name=u'Hack Cycle',
+            organization=self.super_organization,
+            start=start,
+            end=end
+        )
+
+        tls, _ = TaxLotState.objects.get_or_create(
+            jurisdiction_taxlot_identifier=tax_lot_id
+        )
+
+        logger.debug("the cycle is {}".format(cycle))
+        logger.debug("the taxlotstate is {}".format(tls))
+        tlv, _ = TaxLotView.objects.get_or_create(
+            state=tls,
+            cycle=cycle,
+        ).first()
+        #
+        logger.debug("taxlotview is {}".format(tlv))
+
+        return self
+
     def __unicode__(self):
         return u'Property State - %s' % (self.pk)
+
+    def assign_cycle_and_tax_lot(self, org, start_date, end_date, tax_lot_id):
+        """
+
+        Args:
+            org: Organization object
+            start_date: Start date of the property cycle
+            end_date: End date of the property cycle
+            tax_lot_id: Tax lot id
+
+        Returns:
+
+        """
+
+        # TODO: we should set the cycle before we iterate over *every* row
+        cycle, _ = Cycle.objects.get_or_create(
+            name=u'Hack Cycle',
+            organization=org,
+            start=start_date,
+            end=end_date
+        )
+
+        # create 1 to 1 pointless taxlots for now
+        tl = TaxLot.objects.create(
+            organization=org
+        )
+
+        tls, _ = TaxLotState.objects.get_or_create(
+            jurisdiction_taxlot_identifier=tax_lot_id
+        )
+
+        tlv, _ = TaxLotView.objects.get_or_create(
+            taxlot=tl,
+            state=tls,
+            cycle=cycle,
+        )
+
+        self.save()
+
+        # set the property view here for now to make sure that the data
+        # show up in the bluesky tables
+        property = Property.objects.create(
+            organization=org
+        )
+
+        PropertyView.objects.get_or_create(
+            property=property,
+            cycle=cycle,
+            state=self
+        )
+
+        return self
 
     def clean(self, *args, **kwargs):
         date_field_names = (
@@ -153,15 +252,16 @@ class PropertyState(models.Model):
         d = obj_to_dict(self, include_m2m=include_related_data)
 
         # if include_related_data:
-            # d['parents'] = list(self.parents.values_list('id', flat=True))
-            # d['co_parent'] = self.co_parent.pk if self.co_parent else None
+        # d['parents'] = list(self.parents.values_list('id', flat=True))
+        # d['co_parent'] = self.co_parent.pk if self.co_parent else None
 
         return d
 
 
 class PropertyView(models.Model):
     """Similar to the old world of canonical building"""
-    property = models.ForeignKey(Property, related_name='views') # different property views can be associated with each other (2012, 2013).
+    property = models.ForeignKey(Property,
+                                 related_name='views')  # different property views can be associated with each other (2012, 2013).
     cycle = models.ForeignKey(Cycle)
     state = models.ForeignKey(PropertyState)
 

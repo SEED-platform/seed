@@ -357,6 +357,9 @@ def get_cycles(request):
 @login_required
 @has_perm('requires_viewer')
 def get_property_columns(request):
+    """TODO: These property columns should be merged with
+    constants.py:ASSESSOR_FIELDS"""
+
     columns = [
         {
             'name': 'building_portfolio_manager_identifier',

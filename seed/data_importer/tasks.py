@@ -13,6 +13,7 @@ import re
 import string
 import time
 import traceback
+import uuid
 from _csv import Error
 from functools import reduce
 
@@ -235,8 +236,11 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
         if mapping[item] not in mappable_columns:
             apply_columns.append(item)
 
+    logger.debug("apply columns: {}".format(apply_columns))
+
     apply_func = apply_data_func(mappable_columns)
 
+    # All the data live in the extra_data field when the data are imported
     data = PropertyState.objects.filter(id__in=ids).only(
         'extra_data').iterator()
     for row in data:
@@ -261,47 +265,21 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
         # if property_state.tax_lot_id:
         #      property_state.tax_lot_id = _normalize_tax_lot_id(str(model.tax_lot_id))
 
-        # FIXME: Temp hack to handle the tax_lot_id, until i can figure out where to set this
+        tax_lot_id = uuid.uuid4()
         if property_state.jurisdiction_property_identifier:
-            # TODO: we should set the cycle before we iterate over *every* row
-            cycle, _ = Cycle.objects.get_or_create(
-                name=u'Hack Cycle',
-                organization=org,
-                start=datetime.datetime(2015, 1, 1),
-                end=datetime.datetime(2015, 12, 31)
-            )
-            # create 1 to 1 pointless taxlots for now
-            tl = TaxLot.objects.create(
-                organization=org
-            )
-            tls, _ = TaxLotState.objects.get_or_create(
-                jurisdiction_taxlot_identifier=property_state.jurisdiction_property_identifier
-            )
-            logger.debug("the cycle is {}".format(cycle))
-            logger.debug("the taxlotstate is {}".format(tls))
-            tlv, _ = TaxLotView.objects.get_or_create(
-                taxlot=tl,
-                state=tls,
-                cycle=cycle,
-            )
+            tax_lot_id = property_state.jurisdiction_property_identifier
 
+        property_state = property_state.assign_cycle_and_tax_lot(org,
+                                   datetime.datetime(2015, 1, 1),
+                                   datetime.datetime(2015, 12, 31),
+                                   tax_lot_id)
+
+        # Assign some other arguments here
         property_state.import_file = import_file
         property_state.source_type = save_type
         property_state.clean()
         property_state.super_organization = import_file.import_record.super_organization
         property_state.save()
-
-        # set the property view here for now to make sure that the data
-        # show up in the bluesky tables
-        property = Property.objects.create(
-            organization=org
-        )
-        PropertyView.objects.get_or_create(
-            property=property,
-            cycle=cycle,
-            state=property_state
-        )
-
 
     if property_state:
         # Make sure that we've saved all of the extra_data column names

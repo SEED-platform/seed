@@ -10,8 +10,9 @@ from django.db import models
 from django_pgjson.fields import JsonField
 
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import Cycle
-from seed.models import PropertyView
+from seed.models import (
+    Cycle,
+)
 
 
 class TaxLot(models.Model):
@@ -61,19 +62,4 @@ class TaxLotView(models.Model):
         unique_together = ('taxlot', 'cycle',)
 
 
-class TaxLotProperty(models.Model):
-    property_view = models.ForeignKey(PropertyView)
-    taxlot_view = models.ForeignKey(TaxLotView)
-    cycle = models.ForeignKey(Cycle)
 
-    # If there is a complex TaxLot/Property association, this field
-    # lists the "main" tax lot that Properties should be reported under.
-    # User controlled flag.
-    primary = models.BooleanField(default=True)
-
-    def __unicode__(self):
-        return u'M2M Property View %s / TaxLot View %s' % (
-            self.property_view_id, self.taxlot_view_id)
-
-    class Meta:
-        unique_together = ('property_view', 'taxlot_view',)

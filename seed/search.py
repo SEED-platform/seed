@@ -598,6 +598,7 @@ def paginate_results(request, search_results):
 
 def mask_results(search_results):
     """masks (deletes dict keys) for non-shared public fields"""
+
     whitelist_fields = {}
     results = []
     for b in search_results:
