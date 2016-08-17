@@ -60,10 +60,11 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.organization_settings',
     'BE.seed.controller.project',
     'BE.seed.controller.security',
-    'BE.seed.controller.properties_controller',
-    'BE.seed.controller.property_detail_controller',
-    'BE.seed.controller.taxlots_controller',
-    'BE.seed.controller.taxlot_detail_controller',
+    'BE.seed.controller.properties',
+    'BE.seed.controller.taxlots',
+    'BE.seed.controller.base_detail',
+    'BE.seed.controller.property_detail',
+    'BE.seed.controller.taxlot_detail',
     'BE.seed.controller.update_item_labels_modal_ctrl'
     ]);
 angular.module('BE.seed.filters', [
@@ -851,7 +852,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
         })
         .when('/properties/:property_id/cycles/:cycle_id', {
             controller: 'property_detail_controller',
-            templateUrl: static_url + 'seed/partials/property_detail_section.html',
+            templateUrl: static_url + 'seed/partials/item_detail.html',
             resolve: {
                 property_payload: ['property_taxlot_service', '$route', function(property_taxlot_service, $route){
                     // load `get_building` before page is loaded to avoid
@@ -886,14 +887,14 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
         })
         .when('/taxlots/:taxlot_id/cycles/:cycle_id', {
             controller: 'taxlot_detail_controller',
-            templateUrl: static_url + 'seed/partials/taxlot_detail_section.html',
+            templateUrl: static_url + 'seed/partials/item_detail.html',
             resolve: {
-                property_payload: ['property_taxlot_service', '$route', function(property_taxlot_service, $route){
+                taxlot_payload: ['property_taxlot_service', '$route', function(property_taxlot_service, $route){
                     // load `get_building` before page is loaded to avoid
                     // page flicker.
                     var taxlot_id = $route.current.params.taxlot_id;
                     var cycle_id = $route.current.params.cycle_id;
-                    return property_taxlot_service.get_taxlot(property_id, cycle_id);
+                    return property_taxlot_service.get_taxlot(taxlot_id, cycle_id);
                 }],
                 all_columns: ['property_taxlot_service', function(property_taxlot_service) {
                     return property_taxlot_service.get_taxlot_columns();

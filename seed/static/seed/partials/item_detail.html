@@ -1,34 +1,69 @@
 <div class="page_header_container" ng-cloak>
     <div class="page_header">
         <div class="left page_action_container">
-            <a href="#/properties" class="page_action"><i class="fa fa-chevron-left"></i> Properties</a>
+            <a ng-if="item_type==='properties'"
+               href="#/properties"
+               class="page_action">
+                <i class="fa fa-chevron-left"></i> Properties
+            </a>
+            <a ng-if="item_type==='taxlot'"
+               href="#/taxlots"
+               class="page_action">
+                <i class="fa fa-chevron-left"></i> Tax Lots
+            </a>
         </div>
         <div class="page_title"
              popover-placement="bottom-middle"
              popover-trigger="outsideClick"
-             uib-popover="{$ property.state.address_line_1 $}">
-            <h1>{$ property.state.address_line_1 $}</h1>
+             uib-popover="{$ page_title $}">
+            <h1>{$ page_title $}</h1>
         </div>
     </div>
 </div>
 <div class="section_nav_container">
     <div class="section_nav">
-        <a id="building" ng-href="#/properties/{$ property.id $}" class="active">Property Info</a>
-        <a id="settings" ng-href="#/properties/{$ property.id $}/settings">Settings</a>
+        <span ng-if="item_type==='property'">
+            <a id="building"
+               ng-href="#/properties/{$ property.id $}"
+               class="active">
+                Property Info
+            </a>
+            <a id="settings"
+               ng-href="#/properties/{$ property.id $}/settings">
+                Settings
+            </a>
+        </span>
+        <span ng-if="item_type==='taxlot'">
+            <a id="taxlot"
+               ng-href="#/taxlots/{$ taxlot.id $}"
+               class="active">
+                Property Info
+            </a>
+            <a id="settings"
+               ng-href="#/taxlots/{$ taxlot.id $}/settings">
+                Settings
+            </a>
+        </span>
     </div>
 </div>
 <div class="section">
     <div class="section_header_container">
         <div class="section_header fixed_height_short has_no_padding">
             <div class="section_action_container left">
-                <h2><i class="fa fa-building-o"></i> Property Information</h2>
+                <span ng-if="item_type==='property'">
+                    <h2><i class="fa fa-building-o"></i> Property Information</h2>
+                </span>
+                <span ng-if="item_type==='taxlot'">
+                    <h2><i class="fa fa-map-o"></i> Tax Lot Information</h2>
+                </span>
             </div>
-            <div class="section_action_container right" ng-hide="property.edit_form_showing">
-                <a ng-click="property.edit_form_showing = true; save_property_state()" ng-show="user_role !== 'viewer'"><i class="fa fa-pencil"></i> Edit</a>
+            <div class="section_action_container right" ng-hide="edit_form_showing">
+                <a ng-click="edit_form_showing = true; save_property_state()" ng-show="user_role !== 'viewer'">
+                    <i class="fa fa-pencil"></i> Edit</a>
             </div>
-            <div class="section_action_container right section_action_btn" ng-show="property.edit_form_showing">
-                <a roll="button" class="btn btn-default btn-sm" ng-click="property.edit_form_showing = false; on_cancel()">Cancel</a>
-                <a roll="button" class="btn btn-primary btn-sm" ng-click="property.edit_form_showing = false; on_save()">Save Changes</a>
+            <div class="section_action_container right section_action_btn" ng-show="edit_form_showing">
+                <a roll="button" class="btn btn-default btn-sm" ng-click="edit_form_showing = false; on_cancel()">Cancel</a>
+                <a roll="button" class="btn btn-primary btn-sm" ng-click="edit_form_showing = false; on_save()">Save Changes</a>
             </div>
         </div>
     </div>
@@ -36,7 +71,7 @@
         <div class="section_content">
             
             <div style="margin:10px 0px; padding:0px 10px;">
-                <button type="button" class="btn btn-default" ng-click="open_update_property_labels_modal()"><i class="fa fa-tag"></i>Add/Remove Labels</button>
+                <button type="button" class="btn btn-default" ng-click="open_update_labels_modal()"><i class="fa fa-tag"></i>Add/Remove Labels</button>
                 <span style="padding-right:5px;"><strong>Labels:</strong></span>
                 <span ng-show="labels.length === 0" style="color:#999">(no labels applied)</span>
                 <span ng-repeat="label in labels" class="label label-{$ label.label $}">{$ label.name $}</span>
@@ -55,7 +90,7 @@
                             <td>{$ f.key | titleCase $}</td>
                             <td class="ellipsis">
                                 <span   class="sd-data-content"
-                                         ng-hide="property.edit_form_showing"
+                                         ng-hide="edit_form_showing"
                                          ng-if="f.type !== 'extra_data'"
                                          popover-placement="top-left"
                                          uib-popover="{$ property.state[f.key] $}"
@@ -64,7 +99,7 @@
                                     {$ property.state[f.key] $}
                                 </span>
                                 <span   class="sd-data-content"
-                                        ng-hide="property.edit_form_showing"
+                                        ng-hide="edit_form_showing"
                                         ng-if="f.type === 'extra_data'"
                                         popover-placement="top-left"
                                         popover-trigger="outsideClick"
@@ -72,9 +107,9 @@
                                         uib-popover="{$ property.state.extra_data[f.key] $}">
                                     {$ property.state.extra_data[f.key] $}
                                 </span>
-                                <div    ng-show="property.edit_form_showing"
+                                <div    ng-show="edit_form_showing"
                                         ng-if="f.type === 'extra_data'">
-                                    <div  ng-show="property.edit_form_showing"
+                                    <div  ng-show="edit_form_showing"
                                           ng-if="f.type !== 'extra_data'">
                                         <input id="edit_property_attribute_id"
                                                class="form-control input-sm"

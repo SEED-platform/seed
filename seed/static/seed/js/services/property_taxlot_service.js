@@ -52,25 +52,35 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
 
     property_taxlot_service.get_property = function(property_id, cycle_id) {
 
-        var defer = $q.defer();
+      // Error checks
+      if (angular.isUndefined(property_id)){
+        $log.error("#property_taxlot_service.get_property(): property_id is null or empty");
+        throw new Error("Invalid Parameter");
+      }
+      if (angular.isUndefined(cycle_id)){
+        $log.error("#property_taxlot_service.get_property(): 'cycle_id' is null or empty");
+        throw new Error("Invalid Parameter");
+      }
 
-        spinner_utility.show();
-        $http({
-            method: 'GET',
-            url: window.BE.urls.get_property,
-            params: {
-                property_id: property_id,
-                cycle_id: cycle_id,
-                organization_id: user_service.get_organization().id
-            }
-        }).success(function(data, status, headers, config) {
-          defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-          defer.reject(data, status);
-        }).finally(function(){
-          spinner_utility.hide();
-        });
-        return defer.promise;
+      var defer = $q.defer();
+
+      spinner_utility.show();
+      $http({
+          method: 'GET',
+          url: window.BE.urls.get_property,
+          params: {
+              property_id: property_id,
+              cycle_id: cycle_id,
+              organization_id: user_service.get_organization().id
+          }
+      }).success(function(data, status, headers, config) {
+        defer.resolve(data);
+      }).error(function(data, status, headers, config) {
+        defer.reject(data, status);
+      }).finally(function(){
+        spinner_utility.hide();
+      });
+      return defer.promise;
     };
 
     /** Save property state on server.
@@ -175,6 +185,40 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
         defer.resolve(data);
       }).error(function (data, status, headers, config) {
         defer.reject(data, status);
+      });
+      return defer.promise;
+    };
+
+
+    property_taxlot_service.get_taxlot = function(taxlot_id, cycle_id) {
+
+      // Error checks
+      if (angular.isUndefined(taxlot_id)){
+        $log.error("#property_taxlot_service.get_taxlot(): taxlot_id is null or empty");
+        throw new Error("Invalid Parameter");
+      }
+      if (angular.isUndefined(cycle_id)){
+        $log.error("#property_taxlot_service.get_taxlot(): 'cycle_id' is null or empty");
+        throw new Error("Invalid Parameter");
+      }
+
+      var defer = $q.defer();
+
+      spinner_utility.show();
+      $http({
+          method: 'GET',
+          url: window.BE.urls.get_taxlot,
+          params: {
+              taxlot_id: taxlot_id,
+              cycle_id: cycle_id,
+              organization_id: user_service.get_organization().id
+          }
+      }).success(function(data, status, headers, config) {
+        defer.resolve(data);
+      }).error(function(data, status, headers, config) {
+        defer.reject(data, status);
+      }).finally(function(){
+        spinner_utility.hide();
       });
       return defer.promise;
     };

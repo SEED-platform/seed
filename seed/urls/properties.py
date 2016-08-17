@@ -13,12 +13,10 @@ from seed.views.properties import (get_properties, get_property, get_taxlots,
 
 urlpatterns = [
     url(r'^properties/$', get_properties, name='properties'),
-    url(r'^property/(?P<property_pk>\d+)/$', get_property,
-        name='property-detail'),
-    url(r'^lots/$', get_taxlots, name='lots'),
-    url(r'^lot/(?P<taxlot_pk>\d+)/$', get_taxlot, name='lot-detail'),
+    url(r'^properties/(?P<property_pk>\d+)/$', get_property, name='property-detail'),
+    url(r'^taxlots/$', get_taxlots, name='lots'),
+    url(r'^taxlots/(?P<taxlot_pk>\d+)/$', get_taxlot, name='taxlot-detail'),
     url(r'^cycles/$', get_cycles, name='cycles'),
-    url(r'^property-columns/$', get_property_columns,
-        name='property-columns'),
+    url(r'^property-columns/$', get_property_columns, name='property-columns'),
     url(r'^taxlot-columns/$', get_taxlot_columns, name='taxlot-columns'),
 ]

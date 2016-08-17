@@ -339,9 +339,14 @@ def get_taxlots(request):
 @ajax_request
 @login_required
 @has_perm('requires_viewer')
-def get_taxlot(request, taxlot_pk):
+def get_taxlot(request):
+
+    taxlot_id = request.GET.get('taxlot_id')
+    cycle_id = request.GET.get('cycle_id')
+    organization_id = request.GET.get('organization_id')
+
     taxlot_view = TaxLotView.objects.select_related('taxlot', 'cycle', 'state') \
-        .get(taxlot_id=taxlot_pk, taxlot__organization_id=request.GET['organization_id'])
+        .get(taxlot_id=taxlot_id, cycle_id=cycle_id, taxlot__organization_id=organization_id)
 
     # Properties on this lot
     property_view_pks = TaxLotProperty.objects.filter(taxlot_view_id=taxlot_view.pk).values_list('property_view_id',
