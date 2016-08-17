@@ -20,6 +20,7 @@ from seed.utils.generic import split_model_fields
 
 logger = logging.getLogger(__name__)
 
+
 class TaxLotProperty(models.Model):
     property_view = models.ForeignKey(PropertyView)
     taxlot_view = models.ForeignKey(TaxLotView)

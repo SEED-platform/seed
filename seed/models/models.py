@@ -155,9 +155,6 @@ def get_ancestors(building):
     return ancestors
 
 
-
-
-
 def find_canonical_building_values(org):
     """Get all canonical building snapshots' id info for an organization.
 
@@ -374,8 +371,8 @@ def unmatch_snapshot_tree(building_pk):
     # create CanonicalBuilding for coparent that is about to be
     # unmatched
     if (
-                not root_coparent.canonical_building or
-                    root_coparent.canonical_building is root.canonical_building
+        not root_coparent.canonical_building or
+        root_coparent.canonical_building is root.canonical_building
     ):
         new_canon = CanonicalBuilding.objects.create(
             canonical_snapshot=root_coparent
@@ -488,7 +485,7 @@ def update_building(old_snapshot, updated_values, user, *args, **kwargs):
     # Need to hydrate sources
     sources = {
         k: BuildingSnapshot.objects.get(pk=v) for k, v in sources.items() if v
-        }
+    }
 
     # Handle the mapping of "normal" attributes.
     new_snapshot = mapper.map_row(
@@ -912,7 +909,7 @@ class Column(models.Model):
 
     class Meta:
         unique_together = (
-        'organization', 'column_name', 'is_extra_data', 'extra_data_source')
+            'organization', 'column_name', 'is_extra_data', 'extra_data_source')
 
     def __unicode__(self):
         return u'{0}'.format(self.column_name)
@@ -1414,10 +1411,10 @@ class BuildingSnapshot(TimeStampedModel):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-                }
+            }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-                }
+            }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk
@@ -1431,7 +1428,7 @@ class BuildingSnapshot(TimeStampedModel):
             result['co_parent'] = (self.co_parent and self.co_parent.pk)
             result['coparent'] = (self.co_parent and {
                 field: self.co_parent.pk for field in ['pk', 'id']
-                })
+            })
 
             return result
 

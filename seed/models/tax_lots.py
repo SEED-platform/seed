@@ -60,6 +60,3 @@ class TaxLotView(models.Model):
     # FIXME: Add unique constraint on (property, cycle) -- NL: isn't that already below?
     class Meta:
         unique_together = ('taxlot', 'cycle',)
-
-
-

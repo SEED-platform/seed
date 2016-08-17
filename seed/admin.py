@@ -2,8 +2,8 @@ from django.contrib import admin
 
 from seed.models import (
     Column,
-    Property, 
-    PropertyView, 
+    Property,
+    PropertyView,
     PropertyState,
     Cycle,
     TaxLot,

@@ -231,10 +231,10 @@ class PropertyState(models.Model):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-                }
+            }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-                }
+            }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk
@@ -261,7 +261,6 @@ class PropertyState(models.Model):
         # d['co_parent'] = self.co_parent.pk if self.co_parent else None
 
         return d
-
 
     @staticmethod
     def find_unmatched_buildings(import_file):

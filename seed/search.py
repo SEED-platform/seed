@@ -157,7 +157,7 @@ def generate_paginated_results(queryset, number_per_page=25, page=1,
 
         # only add the buildings if it is in an org the user belongs or the
         # query count exceeds the query threshold
-        if not below_threshold: # or not is_not_whitelist_building(parent_org, b, whitelist_orgs)
+        if not below_threshold:  # or not is_not_whitelist_building(parent_org, b, whitelist_orgs)
             building_list.append(building_dict)
 
     return building_list, building_count
