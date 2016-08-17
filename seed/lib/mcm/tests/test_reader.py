@@ -15,7 +15,7 @@ from seed.lib.mcm.tests import utils
 
 class TestCSVParser(TestCase):
     def setUp(self):
-        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm.csv'
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/data/test_espm.csv'
         self.csv_f = open(test_file, 'rb')
         self.parser = reader.CSVParser(self.csv_f)
 
@@ -58,7 +58,7 @@ class TestCSVParser(TestCase):
 
 class TestMCMParserCSV(TestCase):
     def setUp(self):
-        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm.csv'
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/data/test_espm.csv'
         self.csv_f = open(test_file, 'rb')
         self.parser = reader.MCMParser(self.csv_f)
         self.total_callbacks = 0
@@ -107,7 +107,7 @@ class TestMCMParserCSV(TestCase):
 
 class TestMCMParserXLS(TestCase):
     def setUp(self):
-        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm.xls'
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/data/test_espm.xls'
         self.xls_f = open(test_file, 'rb')
         self.parser = reader.MCMParser(self.xls_f)
         self.total_callbacks = 0
@@ -154,7 +154,7 @@ class TestMCMParserXLS(TestCase):
 
     def test_blank_row(self):
         self.xls_f.close()
-        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm_blank_rows.xls'
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/data/test_espm_blank_rows.xls'
         self.xls_f = open(test_file, 'rb')
         self.parser = reader.MCMParser(self.xls_f)
         self.total_callbacks = 0
@@ -170,7 +170,7 @@ class TestMCMParserXLS(TestCase):
 
 class TestMCMParserXLSX(TestCase):
     def setUp(self):
-        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm.xlsx'
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/data/test_espm.xlsx'
         self.xlsx_f = open(test_file, 'rb')
         self.parser = reader.MCMParser(self.xlsx_f)
         self.total_callbacks = 0
@@ -222,7 +222,7 @@ class TestMCMParserXLSX(TestCase):
         under 'Dates in Excel spreadsheets'
         """
         self.xlsx_f.close()
-        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm_date_format.xlsx'
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/data/test_espm_date_format.xlsx'
         self.xlsx_f = open(test_file, 'rb')
         self.parser = reader.MCMParser(self.xlsx_f)
         list(self.parser.reader.excelreader)

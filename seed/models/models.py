@@ -5,25 +5,24 @@
 :author
 """
 import types
-import json
 import unicodedata
 
-from django.db import models
-from django.contrib.contenttypes.fields import GenericRelation
-from django.core import serializers
-from django.utils.translation import ugettext_lazy as _
 from autoslug import AutoSlugField
-from seed.audit_logs.models import AuditLog, LOG
-from seed.landing.models import SEEDUser as User
+from django.contrib.contenttypes.fields import GenericRelation
+from django.db import models
+from django.db.models.fields.related import ManyToManyField
+from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 from django_pgjson.fields import JsonField
+
+from seed.audit_logs.models import AuditLog, LOG
 from seed.data_importer.models import ImportFile, ImportRecord
+from seed.landing.models import SEEDUser as User
 from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.managers.json import JsonManager
-from seed.utils.time import convert_datestr
 from seed.utils.generic import split_model_fields
-from django.db.models.fields.related import ManyToManyField
+from seed.utils.time import convert_datestr
 
 PROJECT_NAME_MAX_LENGTH = 255
 
@@ -64,7 +63,7 @@ SEARCH_CONFIDENCE_RANGES = {
 
 BS_VALUES_LIST = [
     'pk',  # needed for matching not to blow up
-    'tax_lot_id',
+    # 'tax_lot_id', # no longer on the propertystate
     'pm_property_id',
     'custom_id_1',
     'address_line_1',
@@ -125,6 +124,7 @@ ENERGY_UNITS = (
     (WATT_HOURS, 'Wh'),
 )
 
+
 #
 # Used in ``tasks.match_buildings``
 #
@@ -155,23 +155,7 @@ def get_ancestors(building):
     return ancestors
 
 
-def find_unmatched_buildings(import_file):
-    """Get unmatched building snapshots' id info from an import file.
 
-    :param import_file: ImportFile inst.
-    :rtype: list of tuples, field values specified in BS_VALUES_LIST.
-
-    NB: This does not return a queryset!
-
-    """
-    return BuildingSnapshot.objects.filter(
-        ~models.Q(source_type__in=[
-            COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW
-        ]),
-        match_type=None,
-        import_file=import_file,
-        canonical_building=None,
-    )
 
 
 def find_canonical_building_values(org):
@@ -191,34 +175,6 @@ def find_canonical_building_values(org):
             canonical_snapshot__import_file__import_record__owner__in=users
         ).values_list('canonical_snapshot_id')
     ).distinct().values_list(*BS_VALUES_LIST)
-
-
-def obj_to_dict(obj, include_m2m=True):
-    """serializes obj for a JSON friendly version
-        tries to serialize JsonField
-
-    """
-
-    if include_m2m:
-        data = serializers.serialize('json', [obj, ])
-    else:
-        data = serializers.serialize('json', [obj, ], fields=tuple(
-            [f.name for f in obj.__class__._meta.local_fields]
-        ))
-
-    struct = json.loads(data)[0]
-    response = struct['fields']
-    response[u'id'] = response[u'pk'] = struct['pk']
-    response[u'model'] = struct['model']
-    # JsonField doesn't get serialized by `serialize`
-    for f in obj._meta.fields:
-        if isinstance(f, JsonField):
-            e = getattr(obj, f.name)
-            # PostgreSQL < 9.3 support
-            while isinstance(e, unicode):
-                e = json.loads(e)
-            response[unicode(f.name)] = e
-    return response
 
 
 def get_sourced_attributes(snapshot):
@@ -418,8 +374,8 @@ def unmatch_snapshot_tree(building_pk):
     # create CanonicalBuilding for coparent that is about to be
     # unmatched
     if (
-            not root_coparent.canonical_building or
-            root_coparent.canonical_building is root.canonical_building
+                not root_coparent.canonical_building or
+                    root_coparent.canonical_building is root.canonical_building
     ):
         new_canon = CanonicalBuilding.objects.create(
             canonical_snapshot=root_coparent
@@ -532,7 +488,7 @@ def update_building(old_snapshot, updated_values, user, *args, **kwargs):
     # Need to hydrate sources
     sources = {
         k: BuildingSnapshot.objects.get(pk=v) for k, v in sources.items() if v
-    }
+        }
 
     # Handle the mapping of "normal" attributes.
     new_snapshot = mapper.map_row(
@@ -681,7 +637,7 @@ def save_column_names(property_state, mapping=None):
         # Ascertain if our key is ``extra_data`` or not.
         is_extra_data = key not in mapping_utils.get_mappable_columns()
         Column.objects.get_or_create(
-            organization=property_state.organization,
+            organization=property_state.super_organization,
             column_name=key[:511],
             is_extra_data=is_extra_data
         )
@@ -955,7 +911,8 @@ class Column(models.Model):
     )
 
     class Meta:
-        unique_together = ('organization', 'column_name', 'is_extra_data', 'extra_data_source')
+        unique_together = (
+        'organization', 'column_name', 'is_extra_data', 'extra_data_source')
 
     def __unicode__(self):
         return u'{0}'.format(self.column_name)
@@ -1415,7 +1372,8 @@ class BuildingSnapshot(TimeStampedModel):
         if self.state_province and isinstance(
                 self.state_province, types.StringTypes):
             self.state_province = self.state_province[:255]
-        if self.building_certification and isinstance(self.building_certification, types.StringTypes):  # NOQA
+        if self.building_certification and isinstance(
+                self.building_certification, types.StringTypes):  # NOQA
             self.building_certification = self.building_certification[:255]
 
         super(BuildingSnapshot, self).save(*args, **kwargs)
@@ -1456,10 +1414,10 @@ class BuildingSnapshot(TimeStampedModel):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-            }
+                }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-            }
+                }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk
@@ -1473,7 +1431,7 @@ class BuildingSnapshot(TimeStampedModel):
             result['co_parent'] = (self.co_parent and self.co_parent.pk)
             result['coparent'] = (self.co_parent and {
                 field: self.co_parent.pk for field in ['pk', 'id']
-            })
+                })
 
             return result
 

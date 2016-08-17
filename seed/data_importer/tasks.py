@@ -52,7 +52,6 @@ from seed.models import (
     BS_VALUES_LIST,
     Column,
     get_column_mappings,
-    find_unmatched_buildings,
     find_canonical_building_values,
     SYSTEM_MATCH,
     POSSIBLE_MATCH,
@@ -731,7 +730,7 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
     id_matches = get_canonical_id_matches(
         unmatched_bs.super_organization_id,
         unmatched_bs.pm_property_id,
-        unmatched_bs.tax_lot_id,
+        None, # unmatched_bs.tax_lot_id, # TODO: this is now a relationship
         unmatched_bs.custom_id_1
     )
     if not id_matches.exists():
@@ -951,7 +950,7 @@ def _match_buildings(file_pk, user_pk):
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
     org = Organization.objects.filter(users=import_file.import_record.owner)[0]
-    unmatched_buildings = find_unmatched_buildings(import_file)
+    unmatched_buildings = PropertyState.find_unmatched_buildings(import_file)
 
     duplicates = []
 
@@ -1155,15 +1154,15 @@ def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
     can_snapshots = get_canonical_snapshots(org_id)
     if pm_id:
         params.append(Q(pm_property_id=pm_id))
-        params.append(Q(tax_lot_id=pm_id))
+        # params.append(Q(tax_lot_id=pm_id))
         params.append(Q(custom_id_1=pm_id))
     if tax_id:
         params.append(Q(pm_property_id=tax_id))
-        params.append(Q(tax_lot_id=tax_id))
+        # params.append(Q(tax_lot_id=tax_id))
         params.append(Q(custom_id_1=tax_id))
     if custom_id:
         params.append(Q(pm_property_id=custom_id))
-        params.append(Q(tax_lot_id=custom_id))
+        # params.append(Q(tax_lot_id=custom_id))
         params.append(Q(custom_id_1=custom_id))
 
     if not params:
@@ -1177,6 +1176,7 @@ def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
     return canonical_matches
 
 
+# TODO: Move this should be on the PropertyState (or property) class
 def is_same_snapshot(s1, s2):
     fields_to_ignore = ["id",
                         "created",

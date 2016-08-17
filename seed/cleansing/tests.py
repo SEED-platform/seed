@@ -49,7 +49,7 @@ class CleansingDataTestCoveredBuilding(TestCase):
         self.import_file.is_espm = False
         self.import_file.source_type = 'ASSESSED_RAW'
         self.import_file.file = File(
-            open(path.join(path.dirname(__file__), 'test_data', 'covered-buildings-sample-with-errors.csv'))
+            open(path.join(path.dirname(__file__), 'data', 'covered-buildings-sample-with-errors.csv'))
         )
 
         self.import_file.save()
@@ -178,7 +178,7 @@ class CleansingDataTestPM(TestCase):
         self.import_file.is_espm = True
         self.import_file.source_type = 'Portfolio Raw'
         self.import_file.file = File(
-            open(path.join(path.dirname(__file__), 'test_data', 'portfolio-manager-sample-with-errors.csv'))
+            open(path.join(path.dirname(__file__), 'data', 'portfolio-manager-sample-with-errors.csv'))
         )
 
         self.import_file.save()
@@ -277,7 +277,7 @@ class CleansingDataSample(TestCase):
         self.import_file.is_espm = False
         self.import_file.source_type = 'ASSESSED_RAW'
         self.import_file.file = File(
-            open(path.join(path.dirname(__file__), 'test_data', 'data-cleansing-sample.csv'))
+            open(path.join(path.dirname(__file__), 'data', 'data-cleansing-sample.csv'))
         )
 
         self.import_file.save()

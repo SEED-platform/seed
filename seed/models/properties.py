@@ -11,16 +11,16 @@ import logging
 from django.db import models
 from django_pgjson.fields import JsonField
 
+from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
+    COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW,
     Cycle,
-    ImportFile,
-    obj_to_dict,
     TaxLot,
     TaxLotState,
     TaxLotView
 )
-from seed.utils.generic import split_model_fields
+from seed.utils.generic import split_model_fields, obj_to_dict
 
 logger = logging.getLogger(__name__)
 
@@ -59,13 +59,18 @@ class PropertyState(models.Model):
     super_organization = models.ForeignKey(Organization, blank=True, null=True)
     data_state = models.IntegerField(choices=DATA_STATE, default=0)
 
+    # Is this still being used during matching? Apparently so.
     confidence = models.FloatField(default=0, null=True, blank=True)
 
     # TODO: hmm, name this jurisdiction_property_id to stay consistent?
     jurisdiction_property_identifier = models.CharField(max_length=255,
                                                         null=True, blank=True)
+
+    custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
+    # TODO: Check if pm_parent and pm_property are the same (Nathan?)
     pm_parent_property_id = models.CharField(max_length=255, null=True,
                                              blank=True)
+    pm_property_id = models.CharField(max_length=255, null=True, blank=True)
     lot_number = models.CharField(max_length=255, null=True, blank=True)
     property_name = models.CharField(max_length=255, null=True, blank=True)
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
@@ -256,6 +261,28 @@ class PropertyState(models.Model):
         # d['co_parent'] = self.co_parent.pk if self.co_parent else None
 
         return d
+
+
+    @staticmethod
+    def find_unmatched_buildings(import_file):
+        """Get unmatched building snapshots' id info from an import file.
+
+        :param import_file: ImportFile inst.
+        :rtype: list of tuples, field values specified in BS_VALUES_LIST.
+
+        NB: This does not return a queryset!
+
+        """
+
+        # TODO: rewrite this to find the properties that don't have their building in the propertyview
+        return PropertyState.objects.filter(
+            ~models.Q(source_type__in=[
+                COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW
+            ]),
+            # match_type=None,
+            import_file=import_file,
+            # canonical_building=None, # I assume that this was causing the "unmatched building to be defined"
+        )
 
 
 class PropertyView(models.Model):
