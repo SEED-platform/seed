@@ -48,13 +48,28 @@ function($scope, $routeParams, $uibModal, $log, $filter, $location, property_tax
 		$scope.restore_copy();
 	}
 
+	/* User clicked 'edit' link */
+	$scope.on_edit = function () {
+		make_copy_before_edit();
+		$scope.edit_form_showing = true;
+	}
 
 	/**
 	 * save_property_state: saves the property state in case cancel gets clicked
 	 */
-	$scope.make_copy_before_edit = function (item) {
-		$scope.item_copy = angular.copy(item);
+	$scope.make_copy_before_edit = function () {
+		$scope.item_copy = angular.copy($scope.item_state);
 	};
+
+	/**
+	 * restore_property: restores the property from its copy
+	 *   and hides the edit fields
+	 */
+	$scope.restore_copy = function () {
+		$scope.item_state = $scope.item_copy;
+		$scope.edit_form_showing = false;
+	};
+
 
 
 	/**

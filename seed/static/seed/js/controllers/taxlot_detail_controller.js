@@ -24,6 +24,7 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 	// TODO: Decide what value (address_1?) to show at top of tax lot detail page
 	$scope.page_title = "Tax Lot";
 	$scope.taxlot = taxlot_payload;
+	$scope.item_state = $scope.taxlot.state;
 	$scope.user = {};
 	$scope.user_role = taxlot_payload.user_role;
 

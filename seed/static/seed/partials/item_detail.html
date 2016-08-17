@@ -57,13 +57,24 @@
                     <h2><i class="fa fa-map-o"></i> Tax Lot Information</h2>
                 </span>
             </div>
-            <div class="section_action_container right" ng-hide="edit_form_showing">
-                <a ng-click="edit_form_showing = true; save_property_state()" ng-show="user_role !== 'viewer'">
+            <div class="section_action_container right" 
+                 ng-hide="edit_form_showing">
+                <a ng-click="on_edit()"
+                   ng-show="user_role !== 'viewer'">
                     <i class="fa fa-pencil"></i> Edit</a>
             </div>
-            <div class="section_action_container right section_action_btn" ng-show="edit_form_showing">
-                <a roll="button" class="btn btn-default btn-sm" ng-click="edit_form_showing = false; on_cancel()">Cancel</a>
-                <a roll="button" class="btn btn-primary btn-sm" ng-click="edit_form_showing = false; on_save()">Save Changes</a>
+            <div class="section_action_container right section_action_btn" 
+                 ng-show="edit_form_showing">
+                <a roll="button"
+                   class="btn btn-default btn-sm"
+                   ng-click="edit_form_showing = false; on_cancel()">
+                    Cancel
+                </a>
+                <a roll="button"
+                   class="btn btn-primary btn-sm"
+                   ng-click="edit_form_showing = false; on_save()">
+                    Save Changes
+                </a>
             </div>
         </div>
     </div>
@@ -71,7 +82,11 @@
         <div class="section_content">
             
             <div style="margin:10px 0px; padding:0px 10px;">
-                <button type="button" class="btn btn-default" ng-click="open_update_labels_modal()"><i class="fa fa-tag"></i>Add/Remove Labels</button>
+                <button type="button"
+                        class="btn btn-default"
+                        ng-click="open_update_labels_modal()">
+                    <i class="fa fa-tag"></i>Add/Remove Labels
+                </button>
                 <span style="padding-right:5px;"><strong>Labels:</strong></span>
                 <span ng-show="labels.length === 0" style="color:#999">(no labels applied)</span>
                 <span ng-repeat="label in labels" class="label label-{$ label.label $}">{$ label.name $}</span>
@@ -93,10 +108,10 @@
                                          ng-hide="edit_form_showing"
                                          ng-if="f.type !== 'extra_data'"
                                          popover-placement="top-left"
-                                         uib-popover="{$ property.state[f.key] $}"
+                                         uib-popover="{$ item_state[f.key] $}"
                                          popover-animation="false"
                                          popover-trigger="outsideClick">
-                                    {$ property.state[f.key] $}
+                                    {$ item_state[f.key] $}
                                 </span>
                                 <span   class="sd-data-content"
                                         ng-hide="edit_form_showing"
@@ -104,24 +119,24 @@
                                         popover-placement="top-left"
                                         popover-trigger="outsideClick"
                                         popover-animation="false"
-                                        uib-popover="{$ property.state.extra_data[f.key] $}">
-                                    {$ property.state.extra_data[f.key] $}
+                                        uib-popover="{$ item_state.extra_data[f.key] $}">
+                                    {$ item_state.extra_data[f.key] $}
                                 </span>
                                 <div    ng-show="edit_form_showing"
                                         ng-if="f.type === 'extra_data'">
                                     <div  ng-show="edit_form_showing"
                                           ng-if="f.type !== 'extra_data'">
-                                        <input id="edit_property_attribute_id"
+                                        <input id="edit_attribute_id"
                                                class="form-control input-sm"
                                                type="text"
                                                name="tax_lot_id"
-                                               ng-model="property.state.[f.key]"/>
+                                               ng-model="item_state[f.key]"/>
                                     </div>
                                     <input id="edit_property_attribute_id"
                                            class="form-control input-sm"
                                            type="text"
                                            name="tax_lot_id"
-                                           ng-model="property.state.extra_data[f.key]"/>
+                                           ng-model="item_state.extra_data[f.key]"/>
                                 </div>
                             </td>
                         </tr>

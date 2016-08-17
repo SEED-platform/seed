@@ -23,6 +23,7 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 
 	$scope.item_type = "property";
 	$scope.property = property_payload;
+	$scope.item_state = $scope.property.state;
 	$scope.page_title = $scope.property.state.address_line_1
 	$scope.user = {};
 	$scope.user_role = property_payload.user_role;
@@ -37,20 +38,11 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 																															default_columns: default_columns });
 
 
+
 	/* User clicked 'save' button */
 	$scope.on_save = function () {
 		$scope.save_property();
 	}
-
-
-	/**
-	 * restore_property: restores the property from its copy
-	 *   and hides the edit fields
-	 */
-	$scope.restore_copy = function () {
-		$scope.property = $scope.item_copy;
-		$scope.edit_form_showing = false;
-	};
 
 
 	/**
