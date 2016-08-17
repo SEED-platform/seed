@@ -6,10 +6,11 @@
 angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_service', [
   '$http',
   '$q',
+  '$log',
   'urls',
   'user_service',
   'spinner_utility',
-  function ($http, $q, urls, user_service, spinner_utility) {
+  function ($http, $q, $log, urls, user_service, spinner_utility) {
 
     var property_taxlot_service = { total_properties_for_user: 0,
                                     total_taxlots_for_user: 0};
@@ -38,11 +39,11 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
         url: window.BE.urls.get_properties,
         params: params
       }).success(function (data, status, headers, config) {
-        spinner_utility.hide();
         defer.resolve(data);
       }).error(function (data, status, headers, config) {
-        spinner_utility.hide();
         defer.reject(data, status);
+      }).finally(function(){
+        spinner_utility.hide();
       });
       return defer.promise;
     };
@@ -63,17 +64,48 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
                 organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
-            spinner_utility.hide();
-            defer.resolve(data);
+          defer.resolve(data);
         }).error(function(data, status, headers, config) {
-            spinner_utility.hide();
-            defer.reject(data, status);
+          defer.reject(data, status);
+        }).finally(function(){
+          spinner_utility.hide();
         });
         return defer.promise;
     };
 
+    /** Save property state on server.
+     *
+     * @param property_id         A Property object, which should include
+     * @param cycle_id            A Property object, which should include
+     * @param organization_id     The organization id for this Property
+     * @param property            A Property object, which should include
+     *                            - a'state' attribute with an object with key/values for
+     *                              all state values
+     *                            - a 'cycle' attribute with one 'id' key
+     *
+     * @returns {Promise}
+     */
+    property_taxlot_service.update_property = function(property_id, cycle_id, organization_id, property_state) {
 
-    property_taxlot_service.update_property = function(property, organization_id) {
+        // Error checks
+        if (angular.isUndefined(property_id)){
+          $log.error("#property_taxlot_service.update_property(): property_id is null or empty");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(cycle_id)){
+          $log.error("#property_taxlot_service.update_property(): 'cycle_id' is null or empty");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(organization_id)){
+          $log.error("#property_taxlot_service.update_property(): 'organization_id' is null or empty");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(property_state)){
+          $log.error("#property_taxlot_service.update_property(): 'property_state' is null or empty");
+          throw new Error("Invalid Parameter");
+        }
+
+        // Save to server
 
         var defer = $q.defer();
 
@@ -82,15 +114,17 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
             method: 'PUT',
             url: window.BE.urls.update_property,
             data: {
-                property: property,
-                organization_id: organization_id
+                property_id: property_id,
+                cycle_id: cycle_id,
+                organization_id: organization_id,
+                state: property_state,
             },
         }).success(function(data, status, headers, config){
-          spinner_utility.hide();
           defer.resolve(data);
         }).error(function(data, status, headers, config){
-          spinner_utility.hide();
           defer.reject(data, status);
+        }).finally(function(){
+          spinner_utility.hide();
         });
         return defer.promise;
     };
@@ -107,10 +141,11 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
                 search_payload: search_payload
             }
         }).success(function(data, status, headers, config) {
-            spinner_utility.hide();
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
+        }).finally(function(){
+          spinner_utility.hide();
         });
         return defer.promise;
     };

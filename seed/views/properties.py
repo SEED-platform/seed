@@ -173,6 +173,15 @@ def get_property(request):
 @has_perm('requires_viewer')
 def update_property(request, property):
 
+    property_id = request.GET.get('property_id')
+    organization_id = request.GET.get('organization_id')
+    cycle_id = request.GET.get('cycle_id')
+    property_state = request.GET.get('state')
+
+    # Return invalid request if params aren't all ok?
+
+    # TODO : How to update Property ...
+
     return {"status": "success"}
 
 

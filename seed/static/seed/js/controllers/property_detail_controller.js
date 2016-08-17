@@ -51,13 +51,23 @@ function($scope, $routeParams, $uibModal, $log, property_taxlot_service, propert
 	$scope.labels = get_labels($scope.property);
 
 
+	/* User clicked 'cancel' button */
+	$scope.on_cancel = function () {
+		$scope.restore_property();
+	}
+
+	/* User clicked 'save' button */
+	$scope.on_save = function () {
+		$scope.save_property();
+	}
+
+
 	/**
 	 * save_property_state: saves the property state in case cancel gets clicked
 	 */
 	$scope.save_property_state = function () {
 		$scope.property_copy = angular.copy($scope.property);
 	};
-
 
 	/**
 	 * restore_property: restores the property from its copy
@@ -74,15 +84,16 @@ function($scope, $routeParams, $uibModal, $log, property_taxlot_service, propert
 	 */
 	$scope.save_property = function (){
 		$scope.$emit('show_saving');
-		property_taxlot_service.update_property($scope.property, $scope.user_org_id)
-				.then(function (data){
+		property_taxlot_service.update_property($scope.property.id, $scope.property.cycle.id, $scope.user_org_id, $scope.property.state)
+			.then(function (data){
 					$scope.$emit('finished_saving');
 				}, function (data, status){
 					// reject promise
 					$scope.$emit('finished_saving');
-				}).catch(function (data) {
-			console.log( String(data) );
-		});
+				}
+			).catch(function (data){
+				$log.error( String(data) );
+			});
 	};
 
 

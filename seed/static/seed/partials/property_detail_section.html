@@ -27,8 +27,8 @@
                 <a ng-click="property.edit_form_showing = true; save_property_state()" ng-show="user_role !== 'viewer'"><i class="fa fa-pencil"></i> Edit</a>
             </div>
             <div class="section_action_container right section_action_btn" ng-show="property.edit_form_showing">
-                <a roll="button" class="btn btn-default btn-sm" ng-click="property.edit_form_showing = false; restore_property()">Cancel</a>
-                <a roll="button" class="btn btn-primary btn-sm" ng-click="property.edit_form_showing = false; save_property()">Save Changes</a>
+                <a roll="button" class="btn btn-default btn-sm" ng-click="property.edit_form_showing = false; on_cancel()">Cancel</a>
+                <a roll="button" class="btn btn-primary btn-sm" ng-click="property.edit_form_showing = false; on_save()">Save Changes</a>
             </div>
         </div>
     </div>
