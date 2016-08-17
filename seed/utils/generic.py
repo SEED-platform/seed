@@ -5,6 +5,9 @@
 :author
 """
 import math
+import json
+from django.core import serializers
+from django_pgjson.fields import JsonField
 
 
 def split_model_fields(obj, fields):
