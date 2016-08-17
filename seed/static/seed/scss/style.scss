@@ -955,9 +955,8 @@ a:not([href]) {
         }
 
         &.fixed-layout {
-            /* use in combination with th.ellipsis-resizable
-              for resizable columns                         */
-            table-layout: fixed;
+          /* use in combination with th.ellipsis-resizable for resizable columns */
+          table-layout: fixed;
         }
 
         th, td {
@@ -1047,13 +1046,12 @@ a:not([href]) {
             overflow: hidden;
           }
           &.ellipsis-resizable {
-              /* use in combination with table.fixed-layout
-                    for resizable columns                         */
-              min-width: 80px;
-              text-overflow: ellipsis;
-              /* Required for text-overflow to do anything */
-              white-space: nowrap;
-              overflow: hidden;
+            /* use in combination with table.fixed-layout for resizable columns */
+            min-width: 80px;
+            text-overflow: ellipsis;
+            /* Required for text-overflow to do anything */
+            white-space: nowrap;
+            overflow: hidden;
           }
 
           &.sorted {
@@ -2073,12 +2071,12 @@ select {
 /* STYLES FOR LABELS AND RELATED */
 
 /* Holds inline form for creating new labels */
-.newLabelInput{
-    margin: 20px 0;
-    border:1px solid #EEE;
-    padding: 10px 10px 5px 10px;
-    border-radius: 5px;
-    background-color: #F1F1F1;
+.newLabelInput {
+  margin: 20px 0;
+  border: 1px solid #EEE;
+  padding: 10px 10px 5px 10px;
+  border-radius: 5px;
+  background-color: #F1F1F1;
 }
 
 #label_admin {
@@ -2091,23 +2089,23 @@ select {
     font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
 
-    .tableHeader {
-        font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
-        white-space: nowrap;
-        padding: 6px 10px 5px 10px;
-        text-transform: uppercase;
-        background-color: #cdcdcd !important;
-        text-shadow: 0 1px 0 white;
-        border-bottom: 1px solid #b3b3b3;
-    }
+  .tableHeader {
+    font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    white-space: nowrap;
+    padding: 6px 10px 5px 10px;
+    text-transform: uppercase;
+    background-color: #cdcdcd !important;
+    text-shadow: 0 1px 0 white;
+    border-bottom: 1px solid #b3b3b3;
+  }
 
-    /* Get xeditable fields to extend 100% of td */
-    form[editable-form] > div {
-      margin: 10px 0;
-    }
-    .editable-wrap {
-      width: 100%;
-    }
+  /* Get xeditable fields to extend 100% of td */
+  form[editable-form] > div {
+    margin: 10px 0;
+  }
+  .editable-wrap {
+    width: 100%;
+  }
 
 }
 
@@ -2136,9 +2134,8 @@ select {
   }
 }
 
-
 .label {
-    margin-right: 5px;
+  margin-right: 5px;
 }
 
 /* Styles for update labels modal */
@@ -2216,6 +2213,7 @@ tags-input .tags {
   border-color: #d43f3a !important;
   background: #d43f3a !important;
 }
+
 gs-input .tags .tag-item .remove-button {
   color: #FFF;
 }
@@ -2265,25 +2263,32 @@ gs-input .tags .tag-item .remove-button {
 /* Styles for building page */
 
 #building-fields {
-    //  set a min width for the field column
-    min-width: 275px;
+  //  set a min width for the field column
+  min-width: 275px;
 }
 
 .glyphicon.spinning {
-    animation: spin 1s infinite linear;
-    -webkit-animation: spin2 1s infinite linear;
+  animation: spin 1s infinite linear;
+  -webkit-animation: spin2 1s infinite linear;
 }
 
 @keyframes spin {
-    from { transform: scale(1) rotate(0deg); }
-    to { transform: scale(1) rotate(360deg); }
+  from {
+    transform: scale(1) rotate(0deg);
+  }
+  to {
+    transform: scale(1) rotate(360deg);
+  }
 }
 
 @-webkit-keyframes spin2 {
-    from { -webkit-transform: rotate(0deg); }
-    to { -webkit-transform: rotate(360deg); }
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+  }
 }
-
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* Styles for mods to blue sky building list. /
@@ -2305,23 +2310,23 @@ gs-input .tags .tag-item .remove-button {
     margin-bottom: -2px;
     z-index: 99;
   }
-  .nav-tabs>li{
-    margin-right:4px;
+  .nav-tabs > li {
+    margin-right: 4px;
   }
-  .nav-tabs>li>a{
+  .nav-tabs > li > a {
     background-color: #D6D6D6;
     border: 1px solid #bbb;
     color: #222;
     border-radius: 6px 6px 0 0;
   }
-  .nav-tabs>li.active>a, .nav-tabs>li.active>a:hover{
+  .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover {
     background-color: #F1F1F1;
     border: 1px solid #D1D1D1;
     font-weight: bold;
     color: #000;
     border-bottom: 1px solid #F1F1F1;
   }
-  .nav-tabs>li>a:hover {
+  .nav-tabs > li > a:hover {
     background-color: $blue;
     color: #FFF;
   }
@@ -2335,9 +2340,20 @@ gs-input .tags .tag-item .remove-button {
 /* UI Grid modifications */
 /* Remove gradient on top bar. It's distracting and decreases legibility */
 .ui-grid-top-panel {
-    background: #F1F1F1;
-    filter: none;
+  background: #F1F1F1;
+  filter: none;
 }
+
+.ui-grid-row-header-link {
+  background-color: #f0f0ee;
+  border-bottom: solid 1px #d4d4d4;
+  height: 30px;
+  width: 30px;
+  > a {
+    display: block;
+  }
+}
+
 .ui-grid-cell-contents {
-    font-weight: normal;
+  font-weight: normal;
 }

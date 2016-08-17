@@ -86,6 +86,23 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
         if (col.related) aggregation.treeAggregationType = 'uniqueList';
         return _.defaults(col, filter, aggregation, defaults);
       });
+      columns.unshift({
+        name: 'id',
+        displayName: '',
+        cellTemplate: '<div class="ui-grid-row-header-link">' +
+        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/bluesky/properties/{{COL_FIELD}}">' +
+        '    <i class="ui-grid-icon-info-circled"></i>' +
+        '  </a>' +
+        '</div>',
+        enableColumnMenu: false,
+        enableColumnResizing: false,
+        enableFiltering: false,
+        enableHiding: false,
+        enableSorting: false,
+        exporterSuppressExport: true,
+        pinnedLeft: true,
+        width: 30
+      });
 
       var updateHeight = function () {
         var height = 0;
