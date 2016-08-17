@@ -91,16 +91,16 @@ function($scope, $routeParams, $uibModal, $log, property_taxlot_service, propert
 	 *   from data columns
 	 *
 	 *   DMCQ TODO: Remove any of these that no longer apply in BLUESKY
-	 *   I'm assuming most of these are for older snapshot data model
+	 *   Already removed canonical_building and similar...
 	 *
 	 */
 	$scope.is_valid_data_column_key = function (key) {
 		var known_invalid_keys = [
-				'id','cycle','organization_id',
+			'id',
+			'cycle',
+			'organization_id',
 			'best_guess_confidence',
 			'best_guess_canonical_building',
-			'canonical_building',
-			'canonical_for_ds',
 			'children',
 			'confidence',
 			'created',
@@ -118,8 +118,7 @@ function($scope, $routeParams, $uibModal, $log, property_taxlot_service, propert
 			'pk',
 			'super_organization',
 			'source_type',
-			'duplicate',
-			'co_parent'
+			'duplicate'
 		];
 		var no_invalid_key = !_.includes(known_invalid_keys, key);
 
@@ -242,6 +241,25 @@ function($scope, $routeParams, $uibModal, $log, property_taxlot_service, propert
 	};
 
 
+	/**
+	 * Iterate through all object values and format
+	 * those we recognize as a 'date' value
+	 */
+
+	$scope.format_date_values = function(stateObj, date_columns) {
+
+		if (!stateObj || stateObj.length===0) return;
+		if (!date_columns || date_columns.length===0) return;
+
+		// Look for each 'date' type value in all Property State values
+		// and update format accordingly.
+		_.each(date_columns, function(key){
+			if(stateObj[key]){
+				stateObj[key] = $filter('date')(stateObj[key], 'MM/dd/yyyy');
+			}
+		});
+
+	}
 
 
 	/**
@@ -264,6 +282,9 @@ function($scope, $routeParams, $uibModal, $log, property_taxlot_service, propert
 		 $scope.property.modified = $filter('date')($scope.property.modified, 'MM/dd/yyyy');
 		 $scope.property.created = $filter('date')($scope.property.created, 'MM/dd/yyyy');
 		 */
+
+		// format date column values
+		$scope.format_date_values($scope.property.state, property_taxlot_service.property_state_date_columns);
 
 		// build columns for current Property
 		$scope.data_fields = $scope.generate_data_fields();

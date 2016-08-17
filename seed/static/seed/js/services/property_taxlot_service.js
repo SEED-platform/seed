@@ -14,6 +14,7 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
     var property_taxlot_service = { total_properties_for_user: 0,
                                     total_taxlots_for_user: 0};
 
+
     property_taxlot_service.get_properties = function (page, per_page, cycle) {
 
       var params = {
@@ -336,5 +337,23 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
         return defer.promise;
     };
 
+
+    // A list of which fields have date values. This will be used by controller
+    // to format date value correctly. Ideally at some point this should be gathered
+    // from the server rather than hardcoded here.
+
+    var property_state_date_columns = [ "generation_date",
+                                        "release_date",
+                                        "recent_sale_date",
+                                        "year_ending",
+                                        "modified",
+                                        "created"]
+
+    property_taxlot_service.property_state_date_columns = property_state_date_columns;
+
+    // TODO: Identify Tax Lot specific values that have dates.
+    property_taxlot_service.taxlot_state_date_columns = property_state_date_columns;
+
     return property_taxlot_service;
+
   }]);
