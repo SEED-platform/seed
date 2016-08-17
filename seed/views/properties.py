@@ -4,16 +4,33 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import itertools
+
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
 
-from seed.models import Cycle, PropertyView, TaxLotView, TaxLotState, TaxLotProperty
-from seed.decorators import ajax_request, require_organization_id, require_organization_membership
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
+from rest_framework import status
+
+from seed.decorators import (
+    ajax_request, DecoratorMixin,
+    require_organization_id, require_organization_membership,
+)
+
 from seed.lib.superperms.orgs.decorators import has_perm
-from seed.models import Column
-from seed.utils.api import api_endpoint
-import itertools
+from seed.models import (
+    Column, Cycle, PropertyView, TaxLotView, TaxLotState, TaxLotProperty
+)
+from seed.serializers.properties import (
+    PropertyStateSerializer, PropertyViewSerializer
+)
+from seed.serializers.taxlots import TaxLotViewSerializer
+from seed.utils.api import api_endpoint, drf_api_endpoint
+
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -140,33 +157,6 @@ def get_properties(request):
         response['results'].append(p)
 
     return response
-
-
-@require_organization_id
-@require_organization_membership
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def get_property(request, property_pk):
-    property_view = PropertyView.objects.select_related('property', 'cycle', 'state') \
-        .get(property_id=property_pk, property__organization_id=request.GET['organization_id'])
-
-    # Lots this property is on
-    lot_view_pks = TaxLotProperty.objects.filter(property_view_id=property_view.pk).values_list('taxlot_view_id',
-                                                                                                flat=True)
-    lot_views = TaxLotView.objects.filter(pk__in=lot_view_pks).select_related('cycle', 'state')
-
-    p = model_to_dict(property_view)
-    p['state'] = model_to_dict(property_view.state)
-    p['property'] = model_to_dict(property_view.property)
-    p['cycle'] = model_to_dict(property_view.cycle)
-    p['lots'] = []
-
-    for lot in lot_views:
-        p['lots'].append(model_to_dict(lot))
-
-    return p
 
 
 @require_organization_id
@@ -851,3 +841,99 @@ def get_taxlot_columns(request):
         })
 
     return columns
+
+
+class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
+    renderer_classes = (JSONRenderer,)
+    parser_classes = (JSONParser,)
+
+    def get_property_view(self, pk):
+        try:
+            property_view = PropertyView.objects.select_related(
+                'property', 'cycle', 'state'
+            ).get(
+                property_id=pk,
+                property__organization_id=self.request.GET['organization_id']
+            )
+            result = {
+                'status': 'success',
+                'property_view': property_view
+            }
+        except PropertyView.DoesNotExist:
+            result = {
+                'status': 'error',
+                'message': 'property view with id {} does not exist'.format(pk)
+            }
+        except PropertyView.MultipleObjectsReturned:
+            result = {
+                'status': 'error',
+                'message': 'Multiple property views with id {}'.format(pk)
+            }
+        return result
+
+    def get_taxlots(self, property_view_pk):
+        lot_view_pks = TaxLotProperty.objects.filter(
+            property_view_id=property_view_pk
+        ).values_list('taxlot_view_id', flat=True)
+
+        lot_views = TaxLotView.objects.filter(
+            pk__in=lot_view_pks
+        ).select_related('cycle', 'state')
+        lots = []
+        for lot in lot_views:
+            lots.append(TaxLotViewSerializer(lot).data)
+        return lots
+
+    def get_property(self, request, property_pk):
+        result = self.get_property_view(property_pk)
+        if result.get('status', None) != 'error':
+            property_view = result.pop('property_view')
+            result.update(PropertyViewSerializer(property_view).data)
+            result['state'] = PropertyStateSerializer(property_view.state).data
+            result['lots'] = self.get_taxlots(property_view.id)
+            status_code = status.HTTP_200_OK
+        else:
+            status_code = status.HTTP_404_NOT_FOUND
+        return Response(result, status=status_code)
+
+    def put(self, request, property_pk):
+        data = request.data
+        result = self.get_property_view(property_pk)
+        if result.get('status', None) != 'error':
+            property_view = result.pop('property_view')
+            property_state_data = PropertyStateSerializer(property_view.state).data
+            new_property_state_data = data['state']
+
+            changed = True
+            if new_property_state_data == property_state_data:
+                changed = False
+            for key, val in new_property_state_data.iteritems():
+                if val == '':
+                    new_property_state_data[key] = None
+            if new_property_state_data == property_state_data:
+                changed = False
+
+            if not changed:
+                result.update({'status': 'error', 'message': 'Nothing to update'})
+                status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+            else:
+                property_state_data.update(new_property_state_data)
+                property_state_data.pop('id')
+
+                new_property_state_serializer = PropertyStateSerializer(
+                    data=property_state_data
+                )
+
+                if new_property_state_serializer.is_valid():
+                    property_view.state = new_property_state_serializer.save()
+                    property_view.save()
+                    result.update({
+                        'state': new_property_state_serializer.validated_data,
+                    })
+                    status_code = status.HTTP_201_CREATED
+                else:
+                    result.update({'status': 'error', 'message': 'Invalid Data'})
+                    status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+        else:
+            status_code = status.HTTP_404_NOT_FOUND
+        return Response(result, status=status_code)
