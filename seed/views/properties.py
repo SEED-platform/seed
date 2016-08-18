@@ -4,17 +4,35 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import itertools
+
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
 
-from seed.models import Cycle, PropertyView, TaxLotView, TaxLotState, TaxLotProperty
-from seed.decorators import ajax_request, require_organization_id, require_organization_membership
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
+from rest_framework import status
+
+from seed.decorators import (
+    ajax_request, DecoratorMixin,
+    require_organization_id, require_organization_membership,
+)
+
 from seed.lib.superperms.orgs.decorators import has_perm
-from seed.models import Column
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from seed.utils.api import api_endpoint
-import itertools
+from seed.models import (
+    Column, Cycle, PropertyView, TaxLotView, TaxLotState, TaxLotProperty
+)
+from seed.serializers.properties import (
+    PropertyStateSerializer, PropertyViewSerializer
+)
+from seed.serializers.taxlots import (
+    TaxLotViewSerializer, TaxLotStateSerializer
+)
+from seed.utils.api import api_endpoint, drf_api_endpoint
+
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -141,60 +159,6 @@ def get_properties(request):
         response['results'].append(p)
 
     return response
-
-
-@require_organization_id
-@require_organization_membership
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def get_property(request):
-
-    property_id = request.GET.get('property_id')
-    organization_id = request.GET.get('organization_id')
-    cycle_id = request.GET.get('cycle_id')
-
-    property_view = PropertyView.objects.select_related('property', 'cycle', 'state') \
-        .get(property_id=property_id, cycle_id=cycle_id, property__organization_id=organization_id)
-
-    p = model_to_dict(property_view.property)
-    p['state'] = model_to_dict(property_view.state)
-    p['cycle'] = {'id': cycle_id}
-
-    return p
-
-# DMCQ: Temporary stub, should be replaced by proper implementation
-@require_organization_id
-@require_organization_membership
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def update_property(request, property):
-
-    property_id = request.GET.get('property_id')
-    organization_id = request.GET.get('organization_id')
-    cycle_id = request.GET.get('cycle_id')
-    property_state = request.GET.get('state')
-
-    # Return invalid request if params aren't all ok?
-
-    # TODO : How to update Property ...
-
-    return {"status": "success"}
-
-
-# DMCQ: Temporary stub, should be replaced by proper implementation
-@require_organization_id
-@require_organization_membership
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def delete_properties(request, property):
-
-    return {"status": "success"}
 
 
 @require_organization_id
@@ -331,76 +295,6 @@ def get_taxlots(request):
         response['results'].append(l)
 
     return response
-
-
-@require_organization_id
-@require_organization_membership
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def get_taxlot(request):
-
-    taxlot_id = request.GET.get('taxlot_id')
-    cycle_id = request.GET.get('cycle_id')
-    organization_id = request.GET.get('organization_id')
-
-    taxlot_view = TaxLotView.objects.select_related('taxlot', 'cycle', 'state') \
-        .get(taxlot_id=taxlot_id, cycle_id=cycle_id, taxlot__organization_id=organization_id)
-
-    # Properties on this lot
-    property_view_pks = TaxLotProperty.objects.filter(taxlot_view_id=taxlot_view.pk).values_list('property_view_id',
-                                                                                                 flat=True)
-    property_views = PropertyView.objects.filter(pk__in=property_view_pks).select_related('cycle', 'state')
-
-    l = model_to_dict(taxlot_view)
-    l['state'] = model_to_dict(taxlot_view.state)
-    l['taxlot'] = model_to_dict(taxlot_view.taxlot)
-    l['cycle'] = model_to_dict(taxlot_view.cycle)
-    l['properties'] = []
-
-    for prop in property_views:
-        l['properties'].append(model_to_dict(prop))
-
-    return l
-
-
-# DMCQ: Temporary stub, should be replaced by proper
-# implementation, probably in a different (TaxLot) view py file.
-@require_organization_id
-@require_organization_membership
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def update_taxlot(request):
-
-    return {'status': 'success'}
-
-
-# DMCQ: Temporary stub, should be replaced by proper
-# implementation, probably in a different (TaxLot) view py file.
-@require_organization_id
-@require_organization_membership
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def delete_taxlots(request):
-
-    return {"status": "success"}
-
-# DMCQ: Temporary stub, should be replaced by proper
-# implementation, probably in a different (TaxLot) view py file.
-@require_organization_id
-@require_organization_membership
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def update_taxlot_labels(request):
-
-    return {"status": "success"}
 
 
 @require_organization_id
@@ -922,3 +816,199 @@ def get_taxlot_columns(request):
         })
 
     return columns
+
+
+class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
+    renderer_classes = (JSONRenderer,)
+    parser_classes = (JSONParser,)
+
+    def get_property_view(self, property_pk, cycle_pk):
+        try:
+            property_view = PropertyView.objects.select_related(
+                'property', 'cycle', 'state'
+            ).get(
+                property_id=property_pk,
+                cycle_id=cycle_pk,
+                property__organization_id=self.request.GET['organization_id']
+            )
+            result = {
+                'status': 'success',
+                'property_view': property_view
+            }
+        except PropertyView.DoesNotExist:
+            result = {
+                'status': 'error',
+                'message': 'property view with id {} does not exist'.format(pk)
+            }
+        except PropertyView.MultipleObjectsReturned:
+            result = {
+                'status': 'error',
+                'message': 'Multiple property views with id {}'.format(pk)
+            }
+        return result
+
+    def get_taxlots(self, property_view_pk):
+        lot_view_pks = TaxLotProperty.objects.filter(
+            property_view_id=property_view_pk
+        ).values_list('taxlot_view_id', flat=True)
+
+        lot_views = TaxLotView.objects.filter(
+            pk__in=lot_view_pks
+        ).select_related('cycle', 'state')
+        lots = []
+        for lot in lot_views:
+            lots.append(TaxLotViewSerializer(lot).data)
+        return lots
+
+    def get_property(self, request, property_pk, cycle_pk):
+        result = self.get_property_view(property_pk, cycle_pk)
+        if result.get('status', None) != 'error':
+            property_view = result.pop('property_view')
+            result.update(PropertyViewSerializer(property_view).data)
+            result['state'] = PropertyStateSerializer(property_view.state).data
+            result['lots'] = self.get_taxlots(property_view.id)
+            status_code = status.HTTP_200_OK
+        else:
+            status_code = status.HTTP_404_NOT_FOUND
+        return Response(result, status=status_code)
+
+    def put(self, request, property_pk, cycle_pk):
+        data = request.data
+        result = self.get_property_view(property_pk, cycle_pk)
+        if result.get('status', None) != 'error':
+            property_view = result.pop('property_view')
+            property_state_data = PropertyStateSerializer(property_view.state).data
+            new_property_state_data = data['state']
+
+            changed = True
+            if new_property_state_data == property_state_data:
+                changed = False
+            for key, val in new_property_state_data.iteritems():
+                if val == '':
+                    new_property_state_data[key] = None
+            if new_property_state_data == property_state_data:
+                changed = False
+
+            if not changed:
+                result.update({'status': 'error', 'message': 'Nothing to update'})
+                status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+            else:
+                property_state_data.update(new_property_state_data)
+                property_state_data.pop('id')
+
+                new_property_state_serializer = PropertyStateSerializer(
+                    data=property_state_data
+                )
+
+                if new_property_state_serializer.is_valid():
+                    property_view.state = new_property_state_serializer.save()
+                    property_view.save()
+                    result.update({
+                        'state': new_property_state_serializer.validated_data,
+                    })
+                    status_code = status.HTTP_201_CREATED
+                else:
+                    result.update({'status': 'error', 'message': 'Invalid Data'})
+                    status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+        else:
+            status_code = status.HTTP_404_NOT_FOUND
+        return Response(result, status=status_code)
+
+
+class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
+    renderer_classes = (JSONRenderer,)
+    parser_classes = (JSONParser,)
+
+    def get_taxlot_view(self, taxlot_pk, cycle_pk):
+        try:
+            taxlot_view = TaxLotView.objects.select_related(
+                'taxlot', 'cycle', 'state'
+            ).get(
+                taxlot_id=taxlot_pk,
+                cycle=cycle_pk,
+                taxlot__organization_id=self.request.GET['organization_id']
+            )
+            result = {
+                'status': 'success',
+                'taxlot_view': taxlot_view
+            }
+        except TaxLotView.DoesNotExist:
+            result = {
+                'status': 'error',
+                'message': 'taxlot view with id {} does not exist'.format(pk)
+            }
+        except TaxLotView.MultipleObjectsReturned:
+            result = {
+                'status': 'error',
+                'message': 'Multiple taxlot views with id {}'.format(pk)
+            }
+        return result
+
+    def get_properties(self, taxlot_view_pk, cycle_pk):
+        property_view_pks = TaxLotProperty.objects.filter(
+            taxlot_view_id=taxlot_view_pk
+        ).values_list('property_view_id', flat=True)
+
+#     property_views = PropertyView.objects.filter(pk__in=property_view_pks).select_related('cycle', 'state')
+
+        property_views = PropertyView.objects.filter(
+            pk__in=property_view_pks
+        ).select_related('cycle', 'state')
+        properties = []
+        for property_view in property_views:
+            properties.append(PropertyViewSerializer(property_view).data)
+        return properties
+
+    def get_taxlot(self, request, taxlot_pk):
+        result = self.get_taxlot_view(taxlot_pk)
+        if result.get('status', None) != 'error':
+            taxlot_view = result.pop('taxlot_view')
+            result.update(TaxLotViewSerializer(taxlot_view).data)
+            result['state'] = TaxLotStateSerializer(taxlot_view.state).data
+            result['properties'] = self.get_taxlots(taxlot_view.id)
+            status_code = status.HTTP_200_OK
+        else:
+            status_code = status.HTTP_404_NOT_FOUND
+        return Response(result, status=status_code)
+
+    def put(self, request, taxlot_pk, cycle_pk):
+        data = request.data
+        result = self.get_taxlot_view(taxlot_pk, cycle_pk)
+        if result.get('status', None) != 'error':
+            taxlot_view = result.pop('taxlot_view')
+            taxlot_state_data = TaxLotStateSerializer(taxlot_view.state).data
+            new_taxlot_state_data = data['state']
+
+            changed = True
+            if new_taxlot_state_data == taxlot_state_data:
+                changed = False
+            for key, val in new_taxlot_state_data.iteritems():
+                if val == '':
+                    new_taxlot_state_data[key] = None
+            if new_taxlot_state_data == taxlot_state_data:
+                changed = False
+
+            if not changed:
+                result.update({'status': 'error', 'message': 'Nothing to update'})
+                status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+            else:
+                taxlot_state_data.update(new_taxlot_state_data)
+                taxlot_state_data.pop('id')
+
+                new_taxlot_state_serializer = TaxLotStateSerializer(
+                    data=taxlot_state_data
+                )
+
+                if new_taxlot_state_serializer.is_valid():
+                    taxlot_view.state = new_taxlot_state_serializer.save()
+                    taxlot_view.save()
+                    result.update({
+                        'state': new_taxlot_state_serializer.validated_data,
+                    })
+                    status_code = status.HTTP_201_CREATED
+                else:
+                    result.update({'status': 'error', 'message': 'Invalid Data'})
+                    status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+        else:
+            status_code = status.HTTP_404_NOT_FOUND
+        return Response(result, status=status_code)
