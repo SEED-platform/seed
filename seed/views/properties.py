@@ -366,6 +366,7 @@ def get_property_columns(request):
         }, {
             'name': 'jurisdiction_property_identifier',
             'displayName': 'Property / Building ID',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'jurisdiction_taxlot_identifier',
@@ -509,6 +510,7 @@ def get_property_columns(request):
         }, {
             'name': 'building_home_energy_score_identifier',
             'displayName': 'Home Energy Score ID',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'generation_date',
@@ -658,6 +660,7 @@ def get_taxlot_columns(request):
         }, {
             'name': 'jurisdiction_property_identifier',
             'displayName': 'Property / Building ID',
+            'type': 'numberStr',
             'related': True
         }, {
             'name': 'building_portfolio_manager_identifier',
@@ -770,7 +773,7 @@ def get_taxlot_columns(request):
         }, {
             'name': 'building_home_energy_score_identifier',
             'displayName': 'Home Energy Score ID',
-            'type': 'number',
+            'type': 'numberStr',
             'related': True
         }, {
             'name': 'generation_date',
