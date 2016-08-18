@@ -876,7 +876,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     var cycle_id = $route.current.params.cycle_id;
                     return property_taxlot_service.get_property(property_id, cycle_id);
                 }],
-                all_columns: ['property_taxlot_service', function(property_taxlot_service) {
+                all_property_columns: ['property_taxlot_service', function(property_taxlot_service) {
                     return property_taxlot_service.get_property_columns();
                 }],
                 default_columns: ['user_service', function(user_service){
@@ -896,7 +896,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     var cycle_id = $route.current.params.cycle_id;
                     return property_taxlot_service.get_taxlot(taxlot_id, cycle_id);
                 }],
-                all_columns: ['property_taxlot_service', function(property_taxlot_service) {
+                all_taxlot_columns: ['property_taxlot_service', function(property_taxlot_service) {
                     return property_taxlot_service.get_taxlot_columns();
                 }],
                 default_columns: ['user_service', function(user_service){

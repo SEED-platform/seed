@@ -11,19 +11,18 @@ angular.module('BE.seed.controller.taxlot_detail', [])
 			'$log',
 			'$filter',
 			'$location',
-			'property_taxlot_service',
-			'taxlot_payload',
-			'all_columns',
 			'urls',
 			'label_helper_service',
+			'property_taxlot_service',
+			'taxlot_payload',
+			'all_taxlot_columns',
 			'default_columns',
-function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
-				 	property_taxlot_service, taxlot_payload, all_columns, urls,  label_helper_service, default_columns) {
+function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location, urls, label_helper_service,
+				 	property_taxlot_service, taxlot_payload, all_taxlot_columns, default_columns ) {
 
 	$scope.taxlot = taxlot_payload;
 	$scope.item_type = "taxlot";
-	$scope.item_title = "Tax Lot";
-	$scope.item_info= $scope.taxlot.state.address_line_1 // TODO: Decide what value (address_1?) to show at top of tax lot detail page
+	$scope.item_title = "Tax Lot :" + $scope.taxlot.state.address_line_1 // TODO: Decide what value (address_line_1?) to show as identifying label in tax lot detail view?
 	$scope.item_state = $scope.taxlot.state;
 	$scope.user = {};
 	$scope.user_role = taxlot_payload.user_role;
@@ -33,33 +32,24 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 	 *  (Methods in this child class are more specific to a 'Property' detail item.) */
 	$controller('base_detail_controller', { $scope: $scope, $routeParams: $routeParams, $uibModal: $uibModal,
 																									$log: $log, property_taxlot_service: property_taxlot_service,
-																									all_columns: all_columns, urls: urls, $filter: $filter,
+																									all_columns: all_taxlot_columns, urls: urls, $filter: $filter,
 																									$location: $location, label_helper_service: label_helper_service,
 																									default_columns: default_columns });
 
 
 	/* User clicked 'save' button */
 	$scope.on_save = function () {
-		$scope.save_property();
+		$scope.save_taxlot();
 	}
 
 
-	/**
-	 * restore_property: restores the property from its copy
-	 *   and hides the edit fields
-	 */
-	$scope.restore_copy = function () {
-		$scope.property = $scope.item_copy;
-		$scope.edit_form_showing = false;
-	};
-
 
 	/**
-	 * save_property: saves the property's updates
+	 * save_taxlot: saves the user's changes to the TaxLot State object.
 	 */
 	$scope.save_taxlot = function (){
 		$scope.$emit('show_saving');
-		property_taxlot_service.update_property($scope.taxlot.id, $scope.taxlot.cycle.id, $scope.user_org_id, $scope.taxlot.state)
+		property_taxlot_service.update_taxlot($scope.taxlot.id, $scope.taxlot.cycle.id, $scope.user_org_id, $scope.taxlot.state)
 			.then(function (data){
 					$scope.$emit('finished_saving');
 				}, function (data, status){
@@ -70,6 +60,16 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 				$log.error( String(data) );
 			});
 	};
+
+	/**
+	 * restore_property: restores the property from its copy
+	 *   and hides the edit fields
+	 */
+	$scope.restore_copy = function () {
+		$scope.taxlot = $scope.item_copy;
+		$scope.edit_form_showing = false;
+	};
+
 
 	/**
 	 * init: sets default state of property detail page,

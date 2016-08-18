@@ -89,7 +89,7 @@ angular.module('BE.seed.controller.properties', [])
 
       var updateHeight = function () {
         var height = 0;
-        _.forEach(['.header', '.page_header_container', '.buildingListControls', 'ul.nav'], function (selector) {
+        _.forEach(['.header', '.page_header_container', '.inventory-list-tab-container', 'ul.nav'], function (selector) {
           height += angular.element(selector)[0].offsetHeight;
         });
         angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');

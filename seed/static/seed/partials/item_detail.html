@@ -22,18 +22,18 @@
            ng-if="item_type==='property'"
            ng-href="#/properties/{$ property.id $}"
            class="active">
-            {$ item_title $} Info
+            Property Info
         </a>
         <a id="item_title"
            ng-if="item_type==='taxlot'"
-           ng-href="#/properties/detail_settings"
+           ng-href="#/taxlots/{$ taxlot.id $}"
            class="active">
-            {$ item_title $} Info
+            Tax Lot Info
         </a>
         
         <a id="settings"
            ng-if="item_type==='property'"
-           ng-href="#/properties/{$ property.id $}/settings">
+           ng-href="#/properties/detail_settings">
             Settings
         </a>
         <a id="settings"
@@ -41,6 +41,7 @@
            ng-href="#/taxlots/detail_settings">
             Settings
         </a>
+        
     </div>
 </div>
 <div class="section">
@@ -48,7 +49,11 @@
         <div class="section_header fixed_height_short has_no_padding">
             <div class="section_action_container left">
                 <span>
-                    <h2><i class="fa fa-building-o"></i> {$ item_title $} : {$ item_info $}</h2>
+                    <h2>
+                        <i ng-if="item_type==='property'" class="fa fa-building-o"></i>
+                        <i ng-if="item_type==='taxlot'" class="fa fa-map-o"></i>
+                        {$ item_title $}
+                    </h2>
                 </span>
             </div>
             <div class="section_action_container right" 
@@ -62,12 +67,12 @@
                  ng-show="edit_form_showing">
                 <a roll="button"
                    class="btn btn-default btn-sm"
-                   ng-click="edit_form_showing = false; on_cancel()">
+                   ng-click="on_cancel()">
                     Cancel
                 </a>
                 <a roll="button"
                    class="btn btn-primary btn-sm"
-                   ng-click="edit_form_showing = false; on_save()">
+                   ng-click="on_save()">
                     Save Changes
                 </a>
             </div>

@@ -11,20 +11,18 @@ angular.module('BE.seed.controller.property_detail', [])
 			'$log',
 			'$filter',
 			'$location',
-			'property_taxlot_service',
-			'property_payload',
-			'all_columns',
 			'urls',
 			'label_helper_service',
+			'property_taxlot_service',
+			'property_payload',
+			'all_property_columns',
 			'default_columns',
-function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
-				 	property_taxlot_service, property_payload, all_columns, urls,  label_helper_service, default_columns) {
-
+function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location, urls, label_helper_service,
+				 	property_taxlot_service, property_payload, all_property_columns, default_columns ) {
 
 	$scope.property = property_payload;
 	$scope.item_type = "property";
-	$scope.item_title = "Property";
-	$scope.item_info = $scope.property.state.address_line_1
+	$scope.item_title = "Property : " + $scope.property.state.address_line_1;
 	$scope.item_state = $scope.property.state;
 	$scope.user = {};
 	$scope.user_role = property_payload.user_role;
@@ -34,7 +32,7 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 	 *  (Methods in this child class are more specific to a 'Property' detail item.) */
 	$controller('base_detail_controller', { $scope: $scope, $routeParams: $routeParams, $uibModal: $uibModal,
 																					$log: $log, property_taxlot_service: property_taxlot_service,
-																					all_columns: all_columns, urls: urls, $filter: $filter,
+																					all_columns: all_property_columns, urls: urls, $filter: $filter,
 																					$location: $location, label_helper_service: label_helper_service,
 																					default_columns: default_columns });
 
@@ -47,7 +45,7 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 
 
 	/**
-	 * save_property: saves the property's updates
+	 * save_property: saves the user's changes to the Property State object.
 	 */
 	$scope.save_property = function (){
 		$scope.$emit('show_saving');
