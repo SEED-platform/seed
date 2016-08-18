@@ -822,12 +822,13 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
 
-    def get_property_view(self, pk):
+    def get_property_view(self, property_pk, cycle_pk):
         try:
             property_view = PropertyView.objects.select_related(
                 'property', 'cycle', 'state'
             ).get(
-                property_id=pk,
+                property_id=property_pk,
+                cycle_id=cycle_pk,
                 property__organization_id=self.request.GET['organization_id']
             )
             result = {
@@ -859,8 +860,8 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
             lots.append(TaxLotViewSerializer(lot).data)
         return lots
 
-    def get_property(self, request, property_pk):
-        result = self.get_property_view(property_pk)
+    def get_property(self, request, property_pk, cycle_pk):
+        result = self.get_property_view(property_pk, cycle_pk)
         if result.get('status', None) != 'error':
             property_view = result.pop('property_view')
             result.update(PropertyViewSerializer(property_view).data)
@@ -871,9 +872,9 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
             status_code = status.HTTP_404_NOT_FOUND
         return Response(result, status=status_code)
 
-    def put(self, request, property_pk):
+    def put(self, request, property_pk, cycle_pk):
         data = request.data
-        result = self.get_property_view(property_pk)
+        result = self.get_property_view(property_pk, cycle_pk)
         if result.get('status', None) != 'error':
             property_view = result.pop('property_view')
             property_state_data = PropertyStateSerializer(property_view.state).data
@@ -914,16 +915,17 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
         return Response(result, status=status_code)
 
 
-class Taxlot(DecoratorMixin(drf_api_endpoint), ViewSet):
+class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
 
-    def get_taxlot_view(self, pk):
+    def get_taxlot_view(self, taxlot_pk, cycle_pk):
         try:
             taxlot_view = TaxLotView.objects.select_related(
                 'taxlot', 'cycle', 'state'
             ).get(
-                taxlot_id=pk,
+                taxlot_id=taxlot_pk,
+                cycle=cycle_pk,
                 taxlot__organization_id=self.request.GET['organization_id']
             )
             result = {
@@ -942,7 +944,7 @@ class Taxlot(DecoratorMixin(drf_api_endpoint), ViewSet):
             }
         return result
 
-    def get_properties(self, taxlot_view_pk):
+    def get_properties(self, taxlot_view_pk, cycle_pk):
         property_view_pks = TaxLotProperty.objects.filter(
             taxlot_view_id=taxlot_view_pk
         ).values_list('property_view_id', flat=True)
@@ -969,9 +971,9 @@ class Taxlot(DecoratorMixin(drf_api_endpoint), ViewSet):
             status_code = status.HTTP_404_NOT_FOUND
         return Response(result, status=status_code)
 
-    def put(self, request, taxlot_pk):
+    def put(self, request, taxlot_pk, cycle_pk):
         data = request.data
-        result = self.get_taxlot_view(taxlot_pk)
+        result = self.get_taxlot_view(taxlot_pk, cycle_pk)
         if result.get('status', None) != 'error':
             taxlot_view = result.pop('taxlot_view')
             taxlot_state_data = TaxLotStateSerializer(taxlot_view.state).data
