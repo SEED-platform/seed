@@ -3586,25 +3586,8 @@ class BlueSkyViewTests(TestCase):
             'pinnedLeft': True,
             'type': 'number',
             'related': False,
-            'extra_data': False
         }
         self.assertEqual(results[0], building_portfolio_manager_identifier_col)
-
-        prop_cb_id_col = {
-            'name': 'prop_cb_id',
-            'displayName': 'prop_cb_id',
-            'treeAggregationType': 'uniqueList',
-            'related': False,
-        }
-        self.assertIn(prop_cb_id_col, results)
-
-        taxlot_cb_id_col = {
-            'name': 'taxlot_cb_id',
-            'displayName': 'taxlot_cb_id',
-            'treeAggregationType': 'uniqueList',
-            'related': True,
-        }
-        self.assertIn(taxlot_cb_id_col, results)
 
         expected_property_extra_data_column = {
             'name': 'property_extra_data_column',
@@ -3647,26 +3630,10 @@ class BlueSkyViewTests(TestCase):
             'name': 'jurisdiction_taxlot_identifier',
             'displayName': 'Tax Lot ID',
             'pinnedLeft': True,
-            'type': 'number',
+            'type': 'numberStr',
             'related': False,
         }
         self.assertEqual(results[0], jurisdiction_taxlot_identifier_col)
-
-        prop_cb_id_col = {
-            'name': 'prop_cb_id',
-            'displayName': 'prop_cb_id',
-            'treeAggregationType': 'uniqueList',
-            'related': True,
-        }
-        self.assertIn(prop_cb_id_col, results)
-
-        taxlot_cb_id_col = {
-            'name': 'taxlot_cb_id',
-            'displayName': 'taxlot_cb_id',
-            'treeAggregationType': 'uniqueList',
-            'related': False,
-        }
-        self.assertIn(taxlot_cb_id_col, results)
 
         expected_property_extra_data_column = {
             'name': 'property_extra_data_column',
