@@ -26,8 +26,9 @@ import mock
 
 from django.db.models.fields.files import FieldFile
 
-from seed.models import Cycle, Column, Property, PropertyState, TaxLotState
-
+from seed.models import (
+    BuildingSnapshot, Cycle, Column, Property, PropertyState, TaxLotState
+)
 
 Owner = namedtuple(
     'Owner',
@@ -89,6 +90,50 @@ class BaseFake(object):
                             state if state else self.fake.state_abbr()),
             self.fake.postalcode()
         )
+
+
+class FakeBuildingSnapshotFactory(BaseFake):
+    """
+    Factory Class for producing Building Snaphots.
+    """
+
+    def __init__(self, super_organization=None, num_owners=5):
+        super(FakeBuildingSnapshotFactory, self).__init__()
+        self.super_organization = super_organization
+        # pre-generate a list of owners so they occur more than once.
+        self.owners = [self.owner() for i in range(num_owners)]
+
+    def building_details(self):
+        """Return a dict of pseudo random data for use with Building Snapshot"""
+        owner = self.fake.random_element(elements=self.owners)
+        return {
+            'tax_lot_id': self.fake.numerify(text='#####'),
+            'address_line_1': self.address_line_1(),
+            'city': 'Boring',
+            'state_province': 'Oregon',
+            'postal_code': "970{}".format(self.fake.numerify(text='##')),
+            'year_built': self.fake.random_int(min=1880, max=2015),
+            'site_eui': self.fake.random_int(min=50, max=600),
+            'owner': owner.name,
+            'owner_email': owner.email,
+            'owner_telephone': owner.telephone,
+            'owner_address': owner.address,
+            'owner_city_state': owner.city_state,
+            'owner_postal_code': owner.postal_code,
+        }
+
+    def building_snapshot(self, import_file, canonical_building,
+                          super_organization=None, **kw):
+        """Return a building snapshot populated with pseudo random data"""
+        building_details = {
+            'super_organization': self._get_attr('super_organization',
+                                                 super_organization),
+            'import_file': import_file,
+            'canonical_building': canonical_building,
+        }
+        building_details.update(self.building_details())
+        building_details.update(kw)
+        return BuildingSnapshot.objects.create(**building_details)
 
 
 class FakeColumnFactory(BaseFake):

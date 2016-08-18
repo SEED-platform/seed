@@ -30,7 +30,7 @@ from django.test.client import Client
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.functional.tests.browser_definitions import BROWSERS
-from seed.functional.tests.fake import FakeBuildingSnapshotFactory
+from seed.test_helpers.fake import FakeBuildingSnapshotFactory
 from seed.landing.models import SEEDUser
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.lib.superperms.orgs.models import ROLE_LEVEL_CHOICES
