@@ -712,10 +712,9 @@ def loggedin_tests_generator():
                 Make sure you can click from the menu to the building list
                 page and it loads, as well as the sub tabs.
                 """
-                # Firefox intermittenly ignores it profile settings
+                # Firefox intermittenly ignores its profile settings
                 # so the test will intermittently fail to the Reader
                 # first view pop up.
-                # See https://bugzilla.mozilla.org/show_bug.cgi?id=1288551
                 if ((os.getenv('TRAVIS') != 'true') and
                         (self.browser_type.name != 'Firefox')):
                     main_page = MainPage(self, use_url=True)
@@ -770,71 +769,74 @@ def loggedin_tests_generator():
 
             def test_profile_information_actions(self):
                 """Test the profile page form actions work."""
-                profile_page = ProfilePage(self, use_url=True)
-                first_name = profile_page.find_element_by_id(
-                    'first-name-text'
-                )
-                last_name = profile_page.find_element_by_id(
-                    'last-name-text'
-                )
-                save_changes = profile_page.find_element_by_id(
-                    'update_profile'
-                )
+                # Firefox intermittenly ignores its profile settings
+                # so the test will intermittently fail to the Reader
+                # first view pop up.
+                if ((os.getenv('TRAVIS') != 'true') and
+                        (self.browser_type.name != 'Firefox')):
+                    profile_page = ProfilePage(self, use_url=True)
+                    first_name = profile_page.wait_for_element_by_id(
+                        'first-name-text'
+                    )
+                    last_name = profile_page.wait_for_element_by_id(
+                        'last-name-text'
+                    )
+                    save_changes = profile_page.wait_for_element_by_id(
+                        'update_profile'
+                    )
+                    assert first_name.get_attribute('value') == 'Jane'
+                    assert last_name.get_attribute('value') == 'Doe'
 
-                assert first_name.get_attribute('value') == 'Jane'
-                assert last_name.get_attribute('value') == 'Doe'
+                    last_name.clear()
+                    last_name.send_keys('Ray')
+                    save_changes.click()
 
-                last_name.clear()
-                last_name.send_keys('Ray')
-                save_changes.click()
+                    profile_page.reload()
+                    page_title = profile_page.wait_for_element_by_class_name(
+                        'page_title'
+                    )
+                    first_name = profile_page.find_element_by_id(
+                        'first-name-text'
+                    )
+                    last_name = profile_page.find_element_by_id(
+                        'last-name-text'
+                    )
+                    buttons = profile_page.find_elements_by_class_name(
+                        'btn-default'
+                    )
+                    for button in buttons:
+                        if button.text == 'Cancel':
+                            cancel = button
+                            break
 
-                profile_page.reload()
-                page_title = profile_page.wait_for_element_by_class_name(
-                    'page_title'
-                )
-                first_name = profile_page.find_element_by_id(
-                    'first-name-text'
-                )
-                last_name = profile_page.find_element_by_id(
-                    'last-name-text'
-                )
-                buttons = profile_page.find_elements_by_class_name(
-                    'btn-default'
-                )
-                for button in buttons:
-                    if button.text == 'Cancel':
-                        cancel = button
-                        break
+                    assert page_title.text == 'Jane Ray'
+                    assert first_name.get_attribute('value') == 'Jane'
+                    assert last_name.get_attribute('value') == 'Ray'
+                    # check mark appeared
+                    save_changes.find_element_by_class_name('fa-check')
 
-                assert page_title.text == 'Jane Ray'
-                assert first_name.get_attribute('value') == 'Jane'
-                assert last_name.get_attribute('value') == 'Ray'
-                # check mark appeared
-                save_changes.find_element_by_class_name('fa-check')
+                    last_name.send_keys('Mee')
+                    cancel.click()
 
-                last_name.send_keys('Mee')
-                cancel.click()
-
-                profile_page.reload()
-                page_title = profile_page.wait_for_element_by_class_name(
-                    'page_title'
-                )
-                first_name = profile_page.find_element_by_id(
-                    'first-name-text'
-                )
-                last_name = profile_page.find_element_by_id(
-                    'last-name-text'
-                )
-                assert page_title.text == 'Jane Ray'
-                assert first_name.get_attribute('value') == 'Jane'
-                assert last_name.get_attribute('value') == 'Ray'
+                    profile_page.reload()
+                    page_title = profile_page.wait_for_element_by_class_name(
+                        'page_title'
+                    )
+                    first_name = profile_page.find_element_by_id(
+                        'first-name-text'
+                    )
+                    last_name = profile_page.find_element_by_id(
+                        'last-name-text'
+                    )
+                    assert page_title.text == 'Jane Ray'
+                    assert first_name.get_attribute('value') == 'Jane'
+                    assert last_name.get_attribute('value') == 'Ray'
 
             def test_profile_security_actions(self):
                 """test the profile page form actions work."""
-                # Firefox intermittenly ignores it profile settings
+                # Firefox intermittenly ignores its profile settings
                 # so the test will intermittently fail to the Reader
                 # first view pop up.
-                # See https://bugzilla.mozilla.org/show_bug.cgi?id=1288551
                 if ((os.getenv('TRAVIS') != 'true') and
                         (self.browser_type.name != 'Firefox')):
                     profile_page = ProfilePage(
@@ -959,7 +961,6 @@ def loggedin_tests_generator():
                 # Firefox intermittenly ignores it profile settings
                 # so the test will intermittently fail to the Reader
                 # first view pop up.
-                # See https://bugzilla.mozilla.org/show_bug.cgi?id=1288551
                 if ((os.getenv('TRAVIS') != 'true') and
                         (self.browser_type.name != 'Firefox')):
                     profile_page = ProfilePage(
