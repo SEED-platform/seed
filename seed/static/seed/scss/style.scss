@@ -2295,19 +2295,15 @@ gs-input .tags .tag-item .remove-button {
 /* OTHER */
 
 /* Styles for building list controls and table */
-.buildingListControls {
+.inventory-list-controls {
   padding: 20px 10px;
 
   .form-group {
     margin-right: 20px;
+    margin-bottom: 0px;
   }
 }
 
-.building-list-filter-buttons {
-  .btn + .btn {
-    margin-left: 5px;
-  }
-}
 
 /* Styles for building page */
 
@@ -2342,10 +2338,16 @@ gs-input .tags .tag-item .remove-button {
          appear in the building list. So defining a style here that can hopefully be refactored into
          the styles above at a later point. */
 
-.building_list_tab_container {
+.inventory-list-tab-container {
 
   margin-left: 10px;
   margin-bottom: -2px;
+
+  .item-count {
+    float: right:
+    margin-right: 20px;
+    margin-top: 10px;
+  }
 
   .nav-tabs {
     position: relative;

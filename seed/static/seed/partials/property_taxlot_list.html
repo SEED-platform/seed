@@ -5,17 +5,14 @@
         </div>
         <div class="page_title">
             <h1>
-                <i class="fa fa-building-o"></i>
-                {$ pagination.total | number:0 $}
-                <span ng-show="object == 'property'"><ng-pluralize count="pagination.total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize></span>
-                <span ng-show="object == 'taxlot'"><ng-pluralize count="pagination.total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
+                Inventory
             </h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
 </div>
 
-<div class="buildingListControls">
+<div class="inventory-list-controls">
     <div class="form-group">
         <label>Cycle:</label>
         <div class="btn-group">
@@ -26,7 +23,13 @@
     </div>
 </div>
 
-<div class="building_list_tab_container ">
+<div class="inventory-list-tab-container">
+    <div class="item-count">
+        <i class="fa fa-building-o"></i>
+        {$ pagination.total | number:0 $}
+        <span ng-show="object == 'property'"><ng-pluralize count="pagination.total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize></span>
+        <span ng-show="object == 'taxlot'"><ng-pluralize count="pagination.total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
+    </div>
     <ul class="nav nav-tabs" style="margin-bottom:1px;">
         <li ng-class="{active: object=='property'}" heading="View by Property">
             <a href="#/properties">View by Property</a>
