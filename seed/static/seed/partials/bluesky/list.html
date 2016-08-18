@@ -15,6 +15,16 @@
     </div>
 </div>
 
+<div class="section_nav_container">
+    <div class="section_nav">
+        <a id="building-list" ng-if="object=='property'" href="#/bluesky/properties" class="active">Properties List</a>
+        <a id="building-list" ng-if="object=='taxlot'" href="#/bluesky/taxlots" class="active">Tax Lots List</a>
+        <a id="list-settings" href="#/bluesky/properties/settings">List Settings</a>
+        <a id="reports" href="#/bluesky/properties/reports">Reports</a>
+        <a id="labels" href="#/bluesky/properties/labels">Labels</a>
+    </div>
+</div>
+
 <div class="buildingListControls">
     <div class="form-group">
         <label>Cycle:</label>
@@ -38,5 +48,9 @@
 </div>
 
 <div class="section_content_container" ng-cloak style="clear:both;">
-    <div class="section_content" ng-include="urls.static_url + 'seed/partials/bluesky/table.html'"></div>
+    <div class="section_content">
+        <div id="grid-container">
+            <div ui-grid="gridOptions" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-save-state ui-grid-tree-view></div>
+        </div>
+    </div>
 </div>
