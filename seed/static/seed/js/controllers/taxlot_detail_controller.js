@@ -29,7 +29,7 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 
 	/** Instantiate 'parent' controller class,
 	 *  where the more generic methods for a detail item are located.
-	 *  (Methods in this child class are more specific to a 'Property' detail item.) */
+	 *  (Methods in this child class are more specific to a 'Tax Lot' detail item.) */
 	$controller('base_detail_controller', { $scope: $scope, $routeParams: $routeParams, $uibModal: $uibModal,
 																									$log: $log, property_taxlot_service: property_taxlot_service,
 																									all_columns: all_taxlot_columns, urls: urls, $filter: $filter,
@@ -62,7 +62,7 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 	};
 
 	/**
-	 * restore_property: restores the property from its copy
+	 * restore_copy: restores the Tax Lot from its copy
 	 *   and hides the edit fields
 	 */
 	$scope.restore_copy = function () {
@@ -72,7 +72,7 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 
 
 	/**
-	 * init: sets default state of property detail page,
+	 * init: sets default state of Tax Lot Detail page,
 	 *   sets the field arrays for each section, performs
 	 *   some date string manipulation for better display rendering,
 	 *   and gets all the extra_data fields
@@ -80,10 +80,8 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 	 */
 	var init = function() {
 
-		// format date column values
 		$scope.format_date_values($scope.taxlot.state, property_taxlot_service.taxlot_state_date_columns);
 
-		// build columns for current Property
 		$scope.data_fields = $scope.generate_data_fields($scope.taxlot.state, $scope.default_columns);
 
 		$scope.labels = $scope.init_labels($scope.taxlot);
