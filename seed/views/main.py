@@ -1334,6 +1334,7 @@ def get_column_mapping_suggestions(request):
         column_types[c.column_name] = {
             'unit_type': unit.lower(),
             'schema': '',
+            'table': 'PropertyState'
         }
 
     db_columns = copy.deepcopy(mappable_types)
@@ -1341,6 +1342,7 @@ def get_column_mapping_suggestions(request):
         db_columns[k] = {
             'unit_type': v if v else 'string',
             'schema': 'BEDES',
+            'table': 'PropertyState'
         }
     column_types.update(db_columns)
 
@@ -1382,7 +1384,7 @@ def get_column_mapping_suggestions(request):
     building_columns = set(sorted(field_names))
 
     # Only columns from Column table. Notice we're removing any db columns
-    # from this list. TODO nicholasserra this should probably happen above.
+    # from this list. TODO: nicholasserra this should probably happen above.
     extra_data_columns = set(sorted(column_types.keys())) - building_columns
 
     result['suggested_column_mappings'] = suggested_mappings

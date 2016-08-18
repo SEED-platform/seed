@@ -18,6 +18,7 @@ def get_mappable_types(exclude_fields=None):
     if not exclude_fields:
         exclude_fields = constants.EXCLUDE_FIELDS
 
+    # So bedes compliant fields are defined in the database? That is strange
     results = {}
     for f in PropertyState._meta.fields:
         # _source have been removed from new data model
