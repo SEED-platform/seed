@@ -215,7 +215,7 @@ def require_organization_id_class(fn):
                 'Valid organization_id is required in the query parameters.')
         try:
             int(org_id)
-        except Exception:
+        except (TypeError, ValueError):
             return HttpResponseBadRequest(
                 'Invalid organization_id in the query parameters, must be integer')
         return fn(self, request, *args, **kwargs)
