@@ -914,33 +914,6 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
         return Response(result, status=status_code)
 
 
-# @require_organization_id
-# @require_organization_membership
-# @api_endpoint
-# @ajax_request
-# @login_required
-# @has_perm('requires_viewer')
-# def get_taxlot(request, taxlot_pk):
-#     taxlot_view = TaxLotView.objects.select_related('taxlot', 'cycle', 'state') \
-#         .get(taxlot_id=taxlot_pk, taxlot__organization_id=request.GET['organization_id'])
-
-#     # Properties on this lot
-#     property_view_pks = TaxLotProperty.objects.filter(taxlot_view_id=taxlot_view.pk).values_list('property_view_id',
-#                                                                                                  flat=True)
-#     property_views = PropertyView.objects.filter(pk__in=property_view_pks).select_related('cycle', 'state')
-
-#     l = model_to_dict(taxlot_view)
-#     l['state'] = model_to_dict(taxlot_view.state)
-#     l['taxlot'] = model_to_dict(taxlot_view.taxlot)
-#     l['cycle'] = model_to_dict(taxlot_view.cycle)
-#     l['properties'] = []
-
-#     for prop in property_views:
-#         l['properties'].append(model_to_dict(prop))
-
-#     return l
-
-
 class Taxlot(DecoratorMixin(drf_api_endpoint), ViewSet):
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
