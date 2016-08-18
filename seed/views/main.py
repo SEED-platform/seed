@@ -1339,43 +1339,41 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
             .exclude(column_name__in=field_names)
         )
 
-        for c in columns:
-            if c.unit:
-                unit = c.unit.get_unit_type_display()
-            else:
-                unit = 'string'
-            column_types[c.column_name] = {
-                'unit_type': unit.lower(),
-                'schema': '',
-            }
+		for c in columns:
+			if c.unit:
+				unit = c.unit.get_unit_type_display()
+			else:
+				unit = 'string'
+			column_types[c.column_name] = {
+				'unit_type': unit.lower(),
+				'schema': '',
+				'table': 'PropertyState'
+			}
 
-        db_columns = copy.deepcopy(mappable_types)
-        for k, v in db_columns.items():
-            db_columns[k] = {
-                'unit_type': v if v else 'string',
-                'schema': 'BEDES',
-            }
-        column_types.update(db_columns)
+		db_columns = copy.deepcopy(mappable_types)
+		for k, v in db_columns.items():
+			db_columns[k] = {
+				'unit_type': v if v else 'string',
+				'schema': 'BEDES',
+				'table': 'PropertyState'
+			}
+		column_types.update(db_columns)
 
-        # Portfolio manager files have their own mapping scheme
-        if import_file.from_portfolio_manager:
-            _log.info("map Portfolio Manager input file")
-            suggested_mappings = {}
-            ver = import_file.source_program_version
+		# Portfolio manager files have their own mapping scheme
+		if import_file.from_portfolio_manager:
+			_log.info("map Portfolio Manager input file")
+			suggested_mappings = {}
+			ver = import_file.source_program_version
 
-            # if there is no pm mapping found but the file has already been matched
-            # then effectively the mappings are already known with a confidence of 100
-            no_pm_mappings_confience = 100 if import_file.matching_done else 0
+			# if there is no pm mapping found but the file has already been matched
+			# then effectively the mappings are already known with a confidence of 100
+			no_pm_mappings_confience = 100 if import_file.matching_done else 0
 
-            for col, item in simple_mapper.get_pm_mapping(
-                    ver, import_file.first_row_columns,
-                    include_none=True).items():
-                if item is None:
-                    suggested_mappings[col] = (col, no_pm_mappings_confience)
-                else:
-                    cleaned_field = item.field
-                    suggested_mappings[col] = (cleaned_field, 100)
-
+			for col, item in simple_mapper.get_pm_mapping(
+					ver, import_file.first_row_columns,
+					include_none=True).items():
+				if item is None:
+					suggested_mappings[col] = (col, no_pm_mappings_confience)
         else:
             # All other input types
             suggested_mappings = mapper.build_column_mapping(

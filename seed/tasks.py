@@ -49,13 +49,13 @@ logger = get_task_logger(__name__)
 MAX_SEARCH = 5
 # Minimum confidence of two buildings being related.
 MIN_CONF = .80
+
 # Knows how to clean floats for ESPM data.
 ASSESSED_CLEANER = cleaners.Cleaner(seed_schema.schema)
 PORTFOLIO_CLEANER = cleaners.Cleaner(espm_schema.schema)
 PUNCT_REGEX = re.compile('[{0}]'.format(
     re.escape(string.punctuation)
 ))
-
 
 @shared_task
 def export_buildings(export_id, export_name, export_type,
