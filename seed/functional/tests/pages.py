@@ -287,13 +287,16 @@ class BuildingsList(Page):
     :param: url: if True load by url, if False assume page is loaded
     :param import_file: define additional attributes of the import file
     :param building: define additional attributes of the building snapshot
+    :num_buildings: number of additional buildings to create (assumes use_url)
 
     :type: url: bool or string, if string append to self.url.
     :type: import_file: dict
     :type: building: dict
+    :type: num_buildings: int
 
     """
-    def __init__(self, test_obj, url=None, import_file=None, building=None):
+    def __init__(self, test_obj, url=None, import_file=None, building=None,
+                 num_buildings=0):
         locator = Locator('ID', 'btnBuildingActions')
         # will cause ensure_table_is_loaded method to be added
         self.table_locator = Locator('XPATH', '//table')
@@ -316,6 +319,8 @@ class BuildingsList(Page):
             self.building_id = self.canonical_building.id
             self.import_file = imports.import_file
             self.import_record = imports.import_record
+            if num_buildings > 0:
+                self.generate_buildings(99, building_details=building)
 
         self.load_page()
 

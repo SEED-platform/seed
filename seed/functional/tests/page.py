@@ -418,6 +418,14 @@ class Page(object):
             canonical_building = getattr(self, 'canonical_building', None)
         return canonical_building
 
+    def generate_buildings(self, num, import_file=None, building_details=None):
+        """Create multiple buildings."""
+        import_file = import_file if import_file else getattr(
+            self, 'import_file')
+        building_details = building_details if isinstance(
+            building_details, dict) else {}
+        self.test_obj.generate_buildings(num, import_file, **building_details)
+
     # Find element convenience methods
     # these just reflect the underlying browser methods
     def find_element_by_id(self, idstr):
@@ -519,6 +527,27 @@ class Page(object):
 
     def send_keys_to_element(self, element, *keys_to_send):
         self.action.send_keys_to_element(element, *keys_to_send)
+
+    # Scipt etc convenience methods
+    # these just reflect the underlying browser methods
+
+    def execute_async_script(self, script, *args):
+        return self.browser.execute_async_script(script, *args)
+
+    def execute_script(self, script, *args):
+        return self.browser.execute_script(script, *args)
+
+    def set_script_timeout(self, time_to_wait):
+        self.browser.set_script_timeout(time_to_wait)
+
+    def delete_all_cookies(self):
+        self.browser.delete_all_cookies()
+
+    def delete__cookie(self, name):
+        self.browser.delete_cookie(name)
+
+    def refresh(self):
+        self.browser.refresh()
 
     def __ensure_table_is_loaded(self):
         """
@@ -705,12 +734,14 @@ class Table(object):
                         "{} does not contain the same number of elements "
                         "as {}".format(row, self.headers)
                     )
+                # check types of row members
                 types = set([
                     isinstance(val, collections.Sequence) and not
                     isinstance(val, basestring) for val in row
                 ])
                 if len(types) > 1:
                     raise TypeError("{} contains mixed types".format(row))
+                # row is a sequence of sequences
                 if True in types:
                     if self.safe:
                         for seq in row:
@@ -728,6 +759,7 @@ class Table(object):
                                 )
                             )
                     _row = TableRow(row)
+                # row is a plain sequence
                 else:
                     _row = TableRow(
                         [
@@ -963,9 +995,9 @@ class TableRow(collections.Mapping):
     def __init__(self, constructor, **kwargs):
         if isinstance(constructor, (TableRow, collections.OrderedDict)):
             key_check = len(constructor)
-            constructor = {
-                str(key): val for key, val in constructor.iteritems()
-            }
+            constructor = [
+                (str(key), constructor[key]) for key in constructor
+            ]
         elif self._check_seq(constructor):
             key_check = len(constructor)
             constructor = [
