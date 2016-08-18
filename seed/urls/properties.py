@@ -8,7 +8,7 @@
 from django.conf.urls import url
 
 from seed.views.properties import (get_properties, get_property_columns,
-                                   get_taxlot, get_taxlots, get_taxlot_columns,
+                                   get_taxlots, get_taxlot_columns,
                                    get_cycles, Property, TaxLot)
 
 urlpatterns = [
