@@ -21,10 +21,11 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 				 	property_taxlot_service, property_payload, all_columns, urls,  label_helper_service, default_columns) {
 
 
-	$scope.item_type = "property";
 	$scope.property = property_payload;
+	$scope.item_type = "property";
+	$scope.item_title = "Property";
+	$scope.item_info = $scope.property.state.address_line_1
 	$scope.item_state = $scope.property.state;
-	$scope.page_title = $scope.property.state.address_line_1
 	$scope.user = {};
 	$scope.user_role = property_payload.user_role;
 
@@ -32,10 +33,10 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 	 *  where the more generic methods for a detail item are located.
 	 *  (Methods in this child class are more specific to a 'Property' detail item.) */
 	$controller('base_detail_controller', { $scope: $scope, $routeParams: $routeParams, $uibModal: $uibModal,
-																															$log: $log, property_taxlot_service: property_taxlot_service,
-																															all_columns: all_columns, urls: urls, $filter: $filter,
-																															$location: $location, label_helper_service: label_helper_service,
-																															default_columns: default_columns });
+																					$log: $log, property_taxlot_service: property_taxlot_service,
+																					all_columns: all_columns, urls: urls, $filter: $filter,
+																					$location: $location, label_helper_service: label_helper_service,
+																					default_columns: default_columns });
 
 
 

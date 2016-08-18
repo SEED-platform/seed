@@ -850,6 +850,21 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 }]
             }
         })
+        .when('/taxlots', {
+            controller: 'taxlots_controller',
+            templateUrl: static_url + 'seed/partials/property_taxlot_list.html',
+            resolve: {
+                taxlots: ['property_taxlot_service', function(property_taxlot_service){
+                    return property_taxlot_service.get_taxlots(1);
+                }],
+                cycles: ['property_taxlot_service', function(property_taxlot_service){
+                    return property_taxlot_service.get_cycles();
+                }],
+                columns: ['property_taxlot_service', function(property_taxlot_service){
+                    return property_taxlot_service.get_taxlot_columns();
+                }]
+            }
+        })
         .when('/properties/:property_id/cycles/:cycle_id', {
             controller: 'property_detail_controller',
             templateUrl: static_url + 'seed/partials/item_detail.html',
@@ -867,21 +882,6 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 default_columns: ['user_service', function(user_service){
                     //TODO: Change to default Property columns
                     return user_service.get_default_building_detail_columns();
-                }]
-            }
-        })
-        .when('/taxlots', {
-            controller: 'taxlots_controller',
-            templateUrl: static_url + 'seed/partials/propery_taxlot_list.html',
-            resolve: {
-                taxlots: ['property_taxlot_service', function(property_taxlot_service){
-                    return property_taxlot_service.get_taxlots(1);
-                }],
-                cycles: ['property_taxlot_service', function(property_taxlot_service){
-                    return property_taxlot_service.get_cycles();
-                }],
-                columns: ['property_taxlot_service', function(property_taxlot_service){
-                    return property_taxlot_service.get_taxlot_columns();
                 }]
             }
         })

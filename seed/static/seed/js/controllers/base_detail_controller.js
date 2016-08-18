@@ -20,6 +20,7 @@ function($scope, $routeParams, $uibModal, $log, $filter, $location, property_tax
 
 	$scope.fields = all_columns.fields;
 	$scope.default_columns = default_columns.columns;
+	$scope.edit_form_showing = false;
 
 	/** Holds a copy of original state of detail item.
 	 *  Used when 'Cancel' is selected and item should be
@@ -50,7 +51,7 @@ function($scope, $routeParams, $uibModal, $log, $filter, $location, property_tax
 
 	/* User clicked 'edit' link */
 	$scope.on_edit = function () {
-		make_copy_before_edit();
+		$scope.make_copy_before_edit();
 		$scope.edit_form_showing = true;
 	}
 

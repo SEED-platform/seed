@@ -1,7 +1,7 @@
 <div class="page_header_container" ng-cloak>
     <div class="page_header">
         <div class="left page_action_container">
-            <a ng-if="item_type==='properties'"
+            <a ng-if="item_type==='property'"
                href="#/properties"
                class="page_action">
                 <i class="fa fa-chevron-left"></i> Properties
@@ -12,56 +12,51 @@
                 <i class="fa fa-chevron-left"></i> Tax Lots
             </a>
         </div>
-        <div class="page_title"
-             popover-placement="bottom-middle"
-             popover-trigger="outsideClick"
-             uib-popover="{$ page_title $}">
-            <h1>{$ page_title $}</h1>
-        </div>
+      
     </div>
 </div>
 <div class="section_nav_container">
     <div class="section_nav">
-        <span ng-if="item_type==='property'">
-            <a id="building"
-               ng-href="#/properties/{$ property.id $}"
-               class="active">
-                Property Info
-            </a>
-            <a id="settings"
-               ng-href="#/properties/{$ property.id $}/settings">
-                Settings
-            </a>
-        </span>
-        <span ng-if="item_type==='taxlot'">
-            <a id="taxlot"
-               ng-href="#/taxlots/{$ taxlot.id $}"
-               class="active">
-                Property Info
-            </a>
-            <a id="settings"
-               ng-href="#/taxlots/{$ taxlot.id $}/settings">
-                Settings
-            </a>
-        </span>
+        
+        <a id="item_title"
+           ng-if="item_type==='property'"
+           ng-href="#/properties/{$ property.id $}"
+           class="active">
+            {$ item_title $} Info
+        </a>
+        <a id="item_title"
+           ng-if="item_type==='taxlot'"
+           ng-href="#/properties/detail_settings"
+           class="active">
+            {$ item_title $} Info
+        </a>
+        
+        <a id="settings"
+           ng-if="item_type==='property'"
+           ng-href="#/properties/{$ property.id $}/settings">
+            Settings
+        </a>
+        <a id="settings"
+           ng-if="item_type==='taxlot'"
+           ng-href="#/taxlots/detail_settings">
+            Settings
+        </a>
     </div>
 </div>
 <div class="section">
     <div class="section_header_container">
         <div class="section_header fixed_height_short has_no_padding">
             <div class="section_action_container left">
-                <span ng-if="item_type==='property'">
-                    <h2><i class="fa fa-building-o"></i> Property Information</h2>
-                </span>
-                <span ng-if="item_type==='taxlot'">
-                    <h2><i class="fa fa-map-o"></i> Tax Lot Information</h2>
+                <span>
+                    <h2><i class="fa fa-building-o"></i> {$ item_title $} : {$ item_info $}</h2>
                 </span>
             </div>
             <div class="section_action_container right" 
                  ng-hide="edit_form_showing">
                 <a ng-click="on_edit()"
                    ng-show="user_role !== 'viewer'">
-                    <i class="fa fa-pencil"></i> Edit</a>
+                    <i class="fa fa-pencil"></i> Edit
+                </a>
             </div>
             <div class="section_action_container right section_action_btn" 
                  ng-show="edit_form_showing">
@@ -92,7 +87,7 @@
                 <span ng-repeat="label in labels" class="label label-{$ label.label $}">{$ label.name $}</span>
             </div>
             
-            <div class="table_list_container">
+            <div class="table_list_container table_item_detail">
                 <table class="table table-striped table_highlight_first fixed-layout">
                     <thead>
                         <tr>

@@ -115,8 +115,6 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
           throw new Error("Invalid Parameter");
         }
 
-        // Save to server
-
         var defer = $q.defer();
 
         spinner_utility.show();
@@ -141,8 +139,10 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
 
 
 		property_taxlot_service.delete_properties = function(search_payload) {
-        spinner_utility.show();
+
         var defer = $q.defer();
+
+        spinner_utility.show();
         $http({
             method: 'DELETE',
             url: generated_urls.seed.delete_properties,
@@ -177,6 +177,8 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
       }
 
       var defer = $q.defer();
+
+      spinner_utility.show();
       $http({
         method: 'GET',
         url: window.BE.urls.get_taxlots,
@@ -185,6 +187,8 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
         defer.resolve(data);
       }).error(function (data, status, headers, config) {
         defer.reject(data, status);
+      }).finally(function(){
+        spinner_utility.hide();
       });
       return defer.promise;
     };

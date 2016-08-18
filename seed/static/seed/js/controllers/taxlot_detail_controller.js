@@ -20,10 +20,10 @@ angular.module('BE.seed.controller.taxlot_detail', [])
 function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 				 	property_taxlot_service, taxlot_payload, all_columns, urls,  label_helper_service, default_columns) {
 
-	$scope.item_type = "taxlot";
-	// TODO: Decide what value (address_1?) to show at top of tax lot detail page
-	$scope.page_title = "Tax Lot";
 	$scope.taxlot = taxlot_payload;
+	$scope.item_type = "taxlot";
+	$scope.item_title = "Tax Lot";
+	$scope.item_info= $scope.taxlot.state.address_line_1 // TODO: Decide what value (address_1?) to show at top of tax lot detail page
 	$scope.item_state = $scope.taxlot.state;
 	$scope.user = {};
 	$scope.user_role = taxlot_payload.user_role;
