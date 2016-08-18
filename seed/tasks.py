@@ -57,6 +57,7 @@ PUNCT_REGEX = re.compile('[{0}]'.format(
     re.escape(string.punctuation)
 ))
 
+
 @shared_task
 def export_buildings(export_id, export_name, export_type,
                      building_ids, export_model='seed.BuildingSnapshot',

@@ -20,7 +20,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import DefaultStorage
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 
@@ -29,6 +29,12 @@ from seed.audit_logs.models import AuditLog
 from seed.common import mapper as simple_mapper
 from seed.common import views as vutil
 from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
+from seed.data_importer.tasks import (
+    map_data,
+    remap_data,
+    match_buildings,
+    save_raw_data as task_save_raw,
+)
 from seed.decorators import ajax_request, get_prog_key, require_organization_id
 from seed.lib.exporter import Exporter
 from seed.lib.mcm import mapper
@@ -48,12 +54,6 @@ from seed.models import (
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
     PropertyState,
-)
-from seed.data_importer.tasks import (
-    map_data,
-    remap_data,
-    match_buildings,
-    save_raw_data as task_save_raw,
 )
 from seed.utils.api import api_endpoint
 from seed.utils.buildings import (
@@ -149,17 +149,20 @@ def home(request):
         locals(), context_instance=RequestContext(request),
     )
 
+
 @api_endpoint
 @ajax_request
 def version(request):
     """
     Returns the SEED version and current git sha
     """
-    manifest_path = os.path.dirname(os.path.realpath(__file__)) + '/../../package.json'
+    manifest_path = os.path.dirname(
+        os.path.realpath(__file__)) + '/../../package.json'
     with open(manifest_path) as package_json:
         manifest = json.load(package_json)
 
-    sha = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).strip()
+    sha = subprocess.check_output(
+        ['git', 'rev-parse', '--short', 'HEAD']).strip()
 
     return {
         'version': manifest['version'],
@@ -614,7 +617,7 @@ def get_datasets_count(request):
 
     # first make sure that the organization id exists
     if Organization.objects.filter(pk=request.GET['organization_id']).exists():
-        datasets_count = Organization.objects.get(pk=org_id).import_records.\
+        datasets_count = Organization.objects.get(pk=org_id).import_records. \
             all().distinct().count()
         return {'status': 'success', 'datasets_count': datasets_count}
     else:
@@ -801,7 +804,8 @@ def search_building_snapshots(request):
         buildings_queryset, other_search_params, db_columns
     )
     buildings, building_count = search.generate_paginated_results(
-        buildings_queryset, number_per_page=number_per_page, page=page, matching=True
+        buildings_queryset, number_per_page=number_per_page, page=page,
+        matching=True
     )
 
     _log.debug("I found {} buildings".format(building_count))
@@ -882,14 +886,16 @@ def _set_default_columns_by_request(body, user, field):
 @login_required
 def set_default_columns(request):
     body = json.loads(request.body)
-    return _set_default_columns_by_request(body, request.user, 'default_custom_columns')
+    return _set_default_columns_by_request(body, request.user,
+                                           'default_custom_columns')
 
 
 @ajax_request
 @login_required
 def set_default_building_detail_columns(request):
     body = json.loads(request.body)
-    return _set_default_columns_by_request(body, request.user, 'default_building_detail_custom_columns')
+    return _set_default_columns_by_request(body, request.user,
+                                           'default_building_detail_custom_columns')
 
 
 @require_organization_id
@@ -1270,6 +1276,7 @@ def delete_duplicates_from_import_file(request):
 def get_column_mapping_suggestions(request):
     pass
 
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from rest_framework import viewsets
@@ -1312,7 +1319,6 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
         """
         result = {'status': 'success'}
 
-        body = request.data
         org_id = request.query_params.get('organization_id', None)
 
         membership = OrganizationUser.objects.select_related('organization') \
@@ -1335,45 +1341,47 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
         # so don't include them here
         columns = list(
             Column.objects.select_related('unit')
-            .filter(Q(mapped_mappings__super_organization_id=org_id) | Q(organization__isnull=True))
+            .filter(Q(mapped_mappings__super_organization_id=org_id) | Q(
+                    organization__isnull=True))
             .exclude(column_name__in=field_names)
         )
 
-		for c in columns:
-			if c.unit:
-				unit = c.unit.get_unit_type_display()
-			else:
-				unit = 'string'
-			column_types[c.column_name] = {
-				'unit_type': unit.lower(),
-				'schema': '',
-				'table': 'PropertyState'
-			}
+        for c in columns:
+            if c.unit:
+                unit = c.unit.get_unit_type_display()
+            else:
+                unit = 'string'
 
-		db_columns = copy.deepcopy(mappable_types)
-		for k, v in db_columns.items():
-			db_columns[k] = {
-				'unit_type': v if v else 'string',
-				'schema': 'BEDES',
-				'table': 'PropertyState'
-			}
-		column_types.update(db_columns)
+            column_types[c.column_name] = {
+                'unit_type': unit.lower(),
+                'schema': '',
+                'table': 'PropertyState'
+            }
 
-		# Portfolio manager files have their own mapping scheme
-		if import_file.from_portfolio_manager:
-			_log.info("map Portfolio Manager input file")
-			suggested_mappings = {}
-			ver = import_file.source_program_version
+        db_columns = copy.deepcopy(mappable_types)
+        for k, v in db_columns.items():
+            db_columns[k] = {
+                'unit_type': v if v else 'string',
+                'schema': 'BEDES',
+                'table': 'PropertyState'
+            }
+        column_types.update(db_columns)
 
-			# if there is no pm mapping found but the file has already been matched
-			# then effectively the mappings are already known with a confidence of 100
-			no_pm_mappings_confience = 100 if import_file.matching_done else 0
+        # Portfolio manager files have their own mapping scheme
+        if import_file.from_portfolio_manager:
+            _log.info("map Portfolio Manager input file")
+            suggested_mappings = {}
+            ver = import_file.source_program_version
 
-			for col, item in simple_mapper.get_pm_mapping(
-					ver, import_file.first_row_columns,
-					include_none=True).items():
-				if item is None:
-					suggested_mappings[col] = (col, no_pm_mappings_confience)
+            # if there is no pm mapping found but the file has already been matched
+            # then effectively the mappings are already known with a confidence of 100
+            no_pm_mappings_confience = 100 if import_file.matching_done else 0
+
+            for col, item in simple_mapper.get_pm_mapping(ver,
+                                                          import_file.first_row_columns,
+                                                          include_none=True).items():
+                if item is None:
+                    suggested_mappings[col] = (col, no_pm_mappings_confience)
         else:
             # All other input types
             suggested_mappings = mapper.build_column_mapping(
@@ -1394,14 +1402,17 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
 
         # Only columns from Column table. Notice we're removing any db columns
         # from this list. TODO nicholasserra this should probably happen above.
-        extra_data_columns = set(sorted(column_types.keys())) - building_columns
+        extra_data_columns = set(
+            sorted(column_types.keys())) - building_columns
 
         result['suggested_column_mappings'] = suggested_mappings
         result['building_columns'] = list(building_columns)
         result['extra_data_columns'] = list(extra_data_columns)
         result['building_column_types'] = column_types
 
-        return HttpResponse(json.dumps(result))
+        return HttpResponse(json.dumps(result),
+                            content_type='application/json',
+                            )
 
 
 @api_endpoint
@@ -1662,7 +1673,8 @@ def create_dataset(request):
     org_id = int(body['organization_id'])
 
     try:
-        _log.info("create_dataset: getting Organization for id=({})".format(org_id))
+        _log.info(
+            "create_dataset: getting Organization for id=({})".format(org_id))
         org = Organization.objects.get(pk=org_id)
     except Organization.DoesNotExist:
         return {"status": 'error',
@@ -2564,16 +2576,18 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
         # The data is meaningless here aside if there is no valid year_ending value
         # even though the query at the beginning specifies a date range since this is using the tree
         # some other records without a year_ending may have snuck back in.  Ignore them here.
-        if not hasattr(snapshot, "year_ending") or not isinstance(snapshot.year_ending, datetime.date):
+        if not hasattr(snapshot, "year_ending") or not isinstance(
+                snapshot.year_ending, datetime.date):
             return
         # if the snapshot is not in the date range then don't process it
-        if not(from_date <= snapshot.year_ending <= end_date):
+        if not (from_date <= snapshot.year_ending <= end_date):
             return
 
         year_ending_year = snapshot.year_ending
 
         if year_ending_year not in bldg_counts:
-            bldg_counts[year_ending_year] = {"buildings": set(), "buildings_w_data": set()}
+            bldg_counts[year_ending_year] = {"buildings": set(),
+                                             "buildings_w_data": set()}
         release_date = get_attr_f(snapshot, "release_date")
 
         # if there is no release_date then we have no way of priotizing vs
@@ -2585,9 +2599,11 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
         bldg_counts[year_ending_year]["buildings"].add(canonical_building_id)
 
         if (
-                (year_ending_year not in data[canonical_building_id]) or
-                (not data[canonical_building_id][year_ending_year]) or
-                (data[canonical_building_id][year_ending_year]["release_date"] < release_date)
+            (year_ending_year not in data[
+                canonical_building_id]) or
+            (not data[canonical_building_id][year_ending_year]) or
+            (data[canonical_building_id][year_ending_year][
+                "release_date"] < release_date)
         ):
             bldg_x = get_attr_f(snapshot, x_var)
             bldg_y = get_attr_f(snapshot, y_var)
@@ -2595,7 +2611,8 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
             # it must have values for both x and y fields.  Change "and" to
             # "or" to make it either and "True" to return everything
             if bldg_x and bldg_y:
-                bldg_counts[year_ending_year]["buildings_w_data"].add(canonical_building_id)
+                bldg_counts[year_ending_year]["buildings_w_data"].add(
+                    canonical_building_id)
 
                 data[canonical_building_id][year_ending_year] = {
                     "building_snapshot_id": snapshot.id,
@@ -2605,7 +2622,8 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
                 }
             else:
                 try:
-                    bldg_counts[year_ending_year]["buildings_w_data"].remove(canonical_building_id)
+                    bldg_counts[year_ending_year]["buildings_w_data"].remove(
+                        canonical_building_id)
                 except:
                     pass
 
@@ -2645,7 +2663,8 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
 
                 if previous_canonical_bldg.count():
                     current_canonical_bldg = previous_canonical_bldg[0]
-                    process_snapshot(canonical_building_id, current_canonical_bldg)
+                    process_snapshot(canonical_building_id,
+                                     current_canonical_bldg)
                 else:
                     # There are no parents who have non-null parents themselves
                     # meaning the parent must be the first record imported and
@@ -2656,7 +2675,8 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
                     # hopefully the record is always in index 1.  Otherwise I'm
                     # not sure how to pick the right one.
                     current_canonical_bldg = current_canonical_bldg.all()[1]
-                    process_snapshot(canonical_building_id, current_canonical_bldg)
+                    process_snapshot(canonical_building_id,
+                                     current_canonical_bldg)
                     current_canonical_bldg = None
 
     return bldg_counts, data
@@ -2790,7 +2810,8 @@ def get_building_report_data(request):
     try:
         x_var = request.GET['x_var']
         y_var = request.GET['y_var']
-        orgs = [request.GET['organization_id']]  # How should we capture user orgs here?
+        orgs = [request.GET[
+            'organization_id']]  # How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
 
@@ -2818,7 +2839,8 @@ def get_building_report_data(request):
         _log.exception(str(e))
         return HttpResponseBadRequest(msg)
 
-    bldg_counts, data = get_raw_report_data(from_date, end_date, orgs, x_var, y_var)
+    bldg_counts, data = get_raw_report_data(from_date, end_date, orgs, x_var,
+                                            y_var)
     # now we have data as nested dictionaries like:
     #
     # canonical_building_id -> year_ending -> {building_snapshot_id, address_line_1, x, y}
@@ -2995,7 +3017,8 @@ def get_aggregated_building_report_data(request):
     try:
         x_var = request.GET['x_var']
         y_var = request.GET['y_var']
-        orgs = [request.GET['organization_id']]  # How should we capture user orgs here?
+        orgs = [request.GET[
+            'organization_id']]  # How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
     except KeyError as e:
