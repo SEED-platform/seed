@@ -32,10 +32,13 @@ from seed.views.main import (
 
 from seed.views.datasets import DatasetViewSet
 from seed.views.organizations import OrganizationViewSet
+from seed.views.main import DataFileViewSet
 from rest_framework import routers
+
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
+api_v2_router.register(r'data_files', DataFileViewSet, base_name="data_files")
 
 # prefix, to revert back to original endpoints, leave this blank
 apiv1 = r''  # r'api/v1/'

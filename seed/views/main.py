@@ -149,7 +149,6 @@ def home(request):
         locals(), context_instance=RequestContext(request),
     )
 
-
 @api_endpoint
 @ajax_request
 def version(request):
@@ -1268,129 +1267,143 @@ def delete_duplicates_from_import_file(request):
     }
 
 
-@api_endpoint
-@ajax_request
-@login_required
 def get_column_mapping_suggestions(request):
-    """
-    Returns suggested mappings from an uploaded file's headers to known
-    data fields.
+    pass
 
-    Payload::
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
+from rest_framework import viewsets
+from seed.decorators import ajax_request_class
+from seed.utils.api import api_endpoint_class
+from rest_framework.decorators import detail_route
 
-        {
-            'import_file_id': The ID of the ImportRecord to examine,
-            'org_id': The ID of the user's organization
-        }
 
-    Returns::
+class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
 
-        {
-            'status': 'success',
-            'suggested_column_mappings': {
-                column header from file: [ (destination_column, score) ...]
-                ...
-            },
-            'building_columns': [ a list of all possible columns ],
-            'building_column_types': [a list of column types corresponding to building_columns],
-        }
+    @api_endpoint_class
+    @ajax_request_class
+    @detail_route(methods=['get'])
+    def mapping_suggestions(self, request, pk):
+        """
+        Returns suggested mappings from an uploaded file's headers to known
+        data fields.
 
-    ..todo: The response of this method may not be correct. verify.
-    """
-    result = {'status': 'success'}
+        Returns::
+            {
+                'status': 'success',
+                'suggested_column_mappings': {
+                    column header from file: [ (destination_column, score) ...]
+                    ...
+                },
+                'building_columns': [ a list of all possible columns ],
+                'building_column_types': [a list of column types corresponding to building_columns],
+            }
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: import_file_id
+              required: true
+              paramType: query
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+        result = {'status': 'success'}
 
-    body = json.loads(request.body)
-    org_id = body.get('org_id')
+        body = request.data
+        org_id = request.query_params.get('organization_id', None)
 
-    membership = OrganizationUser.objects.select_related('organization') \
-        .get(organization_id=org_id, user=request.user)
-    organization = membership.organization
+        membership = OrganizationUser.objects.select_related('organization') \
+            .get(organization_id=org_id, user=request.user)
+        organization = membership.organization
 
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'),
-                                         import_record__super_organization_id=organization.pk)
+        import_file = ImportFile.objects.get(pk=pk,
+                                             import_record__super_organization_id=organization.pk)
 
-    # Make a dictionary of the column names and their respective types.
-    # Build this dictionary from BEDES fields (the null organization columns,
-    # and all of the column mappings that this organization has previously
-    # saved.
-    mappable_types = get_mappable_types()
-    field_names = mappable_types.keys()
-    column_types = {}
+        # Make a dictionary of the column names and their respective types.
+        # Build this dictionary from BEDES fields (the null organization columns,
+        # and all of the column mappings that this organization has previously
+        # saved.
+        mappable_types = get_mappable_types()
+        field_names = mappable_types.keys()
+        column_types = {}
 
-    # Note on exclude:
-    # mappings get created to mappable types but we deal with them manually
-    # so don't include them here
-    columns = list(
-        Column.objects.select_related('unit')
-        .filter(Q(mapped_mappings__super_organization_id=org_id) | Q(organization__isnull=True))
-        .exclude(column_name__in=field_names)
-    )
-
-    for c in columns:
-        if c.unit:
-            unit = c.unit.get_unit_type_display()
-        else:
-            unit = 'string'
-        column_types[c.column_name] = {
-            'unit_type': unit.lower(),
-            'schema': '',
-        }
-
-    db_columns = copy.deepcopy(mappable_types)
-    for k, v in db_columns.items():
-        db_columns[k] = {
-            'unit_type': v if v else 'string',
-            'schema': 'BEDES',
-        }
-    column_types.update(db_columns)
-
-    # Portfolio manager files have their own mapping scheme
-    if import_file.from_portfolio_manager:
-        _log.info("map Portfolio Manager input file")
-        suggested_mappings = {}
-        ver = import_file.source_program_version
-
-        # if there is no pm mapping found but the file has already been matched
-        # then effectively the mappings are already known with a confidence of 100
-        no_pm_mappings_confience = 100 if import_file.matching_done else 0
-
-        for col, item in simple_mapper.get_pm_mapping(
-                ver, import_file.first_row_columns,
-                include_none=True).items():
-            if item is None:
-                suggested_mappings[col] = (col, no_pm_mappings_confience)
-            else:
-                cleaned_field = item.field
-                suggested_mappings[col] = (cleaned_field, 100)
-
-    else:
-        # All other input types
-        suggested_mappings = mapper.build_column_mapping(
-            import_file.first_row_columns,
-            column_types.keys(),
-            previous_mapping=get_column_mapping,
-            map_args=[organization],
-            thresh=20  # percentage match we require
+        # Note on exclude:
+        # mappings get created to mappable types but we deal with them manually
+        # so don't include them here
+        columns = list(
+            Column.objects.select_related('unit')
+            .filter(Q(mapped_mappings__super_organization_id=org_id) | Q(organization__isnull=True))
+            .exclude(column_name__in=field_names)
         )
-        # replace None with empty string for column names
-        for m in suggested_mappings:
-            dest, conf = suggested_mappings[m]
-            if dest is None:
-                suggested_mappings[m][0] = u''
 
-    # Only db columns on BuildingSnapshot
-    building_columns = set(sorted(field_names))
+        for c in columns:
+            if c.unit:
+                unit = c.unit.get_unit_type_display()
+            else:
+                unit = 'string'
+            column_types[c.column_name] = {
+                'unit_type': unit.lower(),
+                'schema': '',
+            }
 
-    # Only columns from Column table. Notice we're removing any db columns
-    # from this list. TODO nicholasserra this should probably happen above.
-    extra_data_columns = set(sorted(column_types.keys())) - building_columns
+        db_columns = copy.deepcopy(mappable_types)
+        for k, v in db_columns.items():
+            db_columns[k] = {
+                'unit_type': v if v else 'string',
+                'schema': 'BEDES',
+            }
+        column_types.update(db_columns)
 
-    result['suggested_column_mappings'] = suggested_mappings
-    result['building_columns'] = list(building_columns)
-    result['extra_data_columns'] = list(extra_data_columns)
-    result['building_column_types'] = column_types
+        # Portfolio manager files have their own mapping scheme
+        if import_file.from_portfolio_manager:
+            _log.info("map Portfolio Manager input file")
+            suggested_mappings = {}
+            ver = import_file.source_program_version
 
-    return result
+            # if there is no pm mapping found but the file has already been matched
+            # then effectively the mappings are already known with a confidence of 100
+            no_pm_mappings_confience = 100 if import_file.matching_done else 0
+
+            for col, item in simple_mapper.get_pm_mapping(
+                    ver, import_file.first_row_columns,
+                    include_none=True).items():
+                if item is None:
+                    suggested_mappings[col] = (col, no_pm_mappings_confience)
+                else:
+                    cleaned_field = item.field
+                    suggested_mappings[col] = (cleaned_field, 100)
+
+        else:
+            # All other input types
+            suggested_mappings = mapper.build_column_mapping(
+                import_file.first_row_columns,
+                column_types.keys(),
+                previous_mapping=get_column_mapping,
+                map_args=[organization],
+                thresh=20  # percentage match we require
+            )
+            # replace None with empty string for column names
+            for m in suggested_mappings:
+                dest, conf = suggested_mappings[m]
+                if dest is None:
+                    suggested_mappings[m][0] = u''
+
+        # Only db columns on BuildingSnapshot
+        building_columns = set(sorted(field_names))
+
+        # Only columns from Column table. Notice we're removing any db columns
+        # from this list. TODO nicholasserra this should probably happen above.
+        extra_data_columns = set(sorted(column_types.keys())) - building_columns
+
+        result['suggested_column_mappings'] = suggested_mappings
+        result['building_columns'] = list(building_columns)
+        result['extra_data_columns'] = list(extra_data_columns)
+        result['building_column_types'] = column_types
+
+        return HttpResponse(json.dumps(result))
 
 
 @api_endpoint
