@@ -9,12 +9,11 @@ from django.conf.urls import url
 
 from seed.views.properties import (get_properties, get_property_columns,
                                    get_taxlot, get_taxlots, get_taxlot_columns,
-                                   get_cycles, Property)
+                                   get_cycles, Property, TaxLot)
 
 urlpatterns = [
     url(r'^properties/$', get_properties, name='properties'),
     url(r'^lots/$', get_taxlots, name='lots'),
-    url(r'^lot/(?P<taxlot_pk>\d+)/$', get_taxlot, name='lot-detail'),
     url(r'^cycles/$', get_cycles, name='cycles'),
     url(r'^property-columns/$', get_property_columns,
         name='property-columns'),
@@ -23,4 +22,8 @@ urlpatterns = [
         Property.as_view({'get': 'get_property'}), name='property-details'),
     url(r'^update-property/(?P<property_pk>\d+)/$',
         Property.as_view({'put': 'put'}), name='update-property-details'),
+    url(r'^lot/(?P<taxlot_pk>\d+)/$',
+        TaxLot.as_view({'get': 'get_taxlot'}), name='lot-detail'),
+    url(r'^update-taxlot/(?P<taxlot_pk>\d+)/$',
+        TaxLot.as_view({'put': 'put'}), name='update-taxlot-details'),
 ]
