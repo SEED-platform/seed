@@ -1306,7 +1306,8 @@ def get_column_mapping_suggestions(request):
         .get(organization_id=org_id, user=request.user)
     organization = membership.organization
 
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'), import_record__super_organization_id=organization.pk)
+    import_file = ImportFile.objects.get(pk=body.get('import_file_id'),
+                                         import_record__super_organization_id=organization.pk)
 
     # Make a dictionary of the column names and their respective types.
     # Build this dictionary from BEDES fields (the null organization columns,
