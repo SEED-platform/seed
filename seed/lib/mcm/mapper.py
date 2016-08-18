@@ -10,13 +10,8 @@ import matchers
 from cleaners import default_cleaner
 
 
-def build_column_mapping(
-    raw_columns,
-    dest_columns,
-    previous_mapping=None,
-    map_args=None,
-    thresh=None
-):
+def build_column_mapping(raw_columns, dest_columns, previous_mapping=None,
+                         map_args=None, thresh=None):
     """Build a probabalistic mapping structure for mapping raw to dest.
 
     :param raw_columns: list of str. The column names we're trying to map.
@@ -78,7 +73,8 @@ def apply_initial_data(model, initial_data):
         if hasattr(model, item):
             setattr(model, item, value)
         elif (
-            hasattr(model, 'extra_data') and isinstance(model.extra_data, dict)
+            hasattr(model, 'extra_data') and isinstance(
+                model.extra_data, dict)
         ):
             model.extra_data[item] = value
 
@@ -186,7 +182,7 @@ def map_row(row, mapping, model_class, cleaner=None, concat=None, **kwargs):
         send_apply_func = apply_func if item in apply_columns else None
 
         # Save the value if is is not None, keep empty fields.
-        if value != None:
+        if value is not None:
             model = apply_column_value(
                 item, value, model, mapping, cleaner,
                 apply_func=send_apply_func

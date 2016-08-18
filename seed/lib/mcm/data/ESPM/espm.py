@@ -1383,7 +1383,7 @@ schema = {u'flat_schema': {
     u'eGRID Output Emissions Rate': u'kgCO2e/MBtu',
     u'eGRID Region': u''
 },
-u'types':{
+    u'types': {
     u'Adult Education - Computer Density': u'float',
     u'Adult Education - Gross Floor Area': u'float',
     u'Adult Education - Percent That Can Be Cooled ': u'float',

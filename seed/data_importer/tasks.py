@@ -269,9 +269,9 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
             tax_lot_id = property_state.jurisdiction_property_identifier
 
         property_state = property_state.assign_cycle_and_tax_lot(org,
-                                   datetime.datetime(2015, 1, 1),
-                                   datetime.datetime(2015, 12, 31),
-                                   tax_lot_id)
+                                                                 datetime.datetime(2015, 1, 1),
+                                                                 datetime.datetime(2015, 12, 31),
+                                                                 tax_lot_id)
 
         # Assign some other arguments here
         property_state.import_file = import_file
@@ -730,7 +730,7 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
     id_matches = get_canonical_id_matches(
         unmatched_bs.super_organization_id,
         unmatched_bs.pm_property_id,
-        None, # unmatched_bs.tax_lot_id, # TODO: this is now a relationship
+        None,  # unmatched_bs.tax_lot_id, # TODO: this is now a relationship
         unmatched_bs.custom_id_1
     )
     if not id_matches.exists():
@@ -1097,7 +1097,7 @@ def _remap_data(import_file_pk):
     # Delete buildings already mapped for this file.
     PropertyState.objects.filter(
         import_file=import_file,
-        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS) # FIXME: make these not hard coded integers
+        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS)  # FIXME: make these not hard coded integers
     ).delete()
 
     import_file.mapping_done = False
@@ -1207,6 +1207,7 @@ def is_same_snapshot(s1, s2):
 
 # TODO: Move this to the models
 class DuplicateDataError(RuntimeError):
+
     def __init__(self, id):
         super(DuplicateDataError, self).__init__()
         self.id = id

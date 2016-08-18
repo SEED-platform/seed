@@ -35,7 +35,6 @@ from seed.data_importer.tests import util as test_util
 logger = logging.getLogger(__name__)
 
 
-
 class TestCleaner(TestCase):
     """Tests that our logic for constructing cleaners works."""
 
@@ -198,6 +197,7 @@ class TestMapping(TestCase):
         self.assertEqual(
             mapped_bs.address_line_1, u'1600 Pennsylvania Ave. Someplace Nice'
         )
+
 
 @skip("Matching is still broken")
 class TestMatching(TestMapping):
@@ -639,4 +639,3 @@ class TestTasksXLSX(TestMapping):
         test_util.load_test_data(self, 'portfolio-manager-sample.xlsx')
         # Make the field match on an integer because XLS mapping handles casting
         self.fake_extra_data['Property Id'] = 101125
-

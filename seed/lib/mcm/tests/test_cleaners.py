@@ -12,6 +12,7 @@ from seed.lib.mcm import cleaners
 
 
 class TestCleaners(TestCase):
+
     def setUp(self):
         self.cleaner = cleaners.Cleaner({
             'flat_schema': {

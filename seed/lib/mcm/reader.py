@@ -93,7 +93,7 @@ class ExcelParser(object):
                 return xldate.xldate_as_datetime(item.value, self._workbook.datemode)
             except XLDateAmbiguous:
                 raise Exception('Date fields are not in a format that SEED can interpret. '
-                'A possible solution is to save as a CSV file and reimport.')
+                                'A possible solution is to save as a CSV file and reimport.')
 
         if item.ctype == XL_CELL_NUMBER:
             if item.value % 1 == 0:  # integers
@@ -141,7 +141,7 @@ class ExcelParser(object):
 
     def next(self):
         """generator to match CSVReader"""
-        while 1:
+        while True:
             try:
                 yield self.excelreader.next()
             except StopIteration:
@@ -237,7 +237,7 @@ class CSVParser(object):
 
     def next(self):
         """Wouldn't it be nice to get iterables form csvreader?"""
-        while 1:
+        while True:
             try:
                 yield self.csvreader.next()
             except StopIteration:

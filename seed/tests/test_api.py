@@ -105,6 +105,7 @@ class SchemaGenerationTests(TestCase):
 
 
 class TestApi(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',  # the username needs to be in the form of an email.

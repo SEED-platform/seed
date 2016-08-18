@@ -12,8 +12,8 @@ from seed.lib.mcm import reader
 from seed.lib.mcm.tests import utils
 
 
-
 class TestCSVParser(TestCase):
+
     def setUp(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + '/data/test_espm.csv'
         self.csv_f = open(test_file, 'rb')
@@ -57,6 +57,7 @@ class TestCSVParser(TestCase):
 
 
 class TestMCMParserCSV(TestCase):
+
     def setUp(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + '/data/test_espm.csv'
         self.csv_f = open(test_file, 'rb')
@@ -106,6 +107,7 @@ class TestMCMParserCSV(TestCase):
 
 
 class TestMCMParserXLS(TestCase):
+
     def setUp(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + '/data/test_espm.xls'
         self.xls_f = open(test_file, 'rb')
@@ -169,6 +171,7 @@ class TestMCMParserXLS(TestCase):
 
 
 class TestMCMParserXLSX(TestCase):
+
     def setUp(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + '/data/test_espm.xlsx'
         self.xlsx_f = open(test_file, 'rb')

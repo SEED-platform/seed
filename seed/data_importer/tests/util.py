@@ -15,6 +15,7 @@ from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 
 logger = logging.getLogger(__name__)
 
+
 def load_test_data(test_obj, filename):
     """
     Load some test data for running tests

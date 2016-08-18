@@ -17,6 +17,7 @@ from seed.models import (
     set_initial_sources,
 )
 
+
 def make_fake_mappings(mappings, org):
     """Takes a dict and saves a ColumnMapping object for each key"""
     for mapped, raw in mappings.items():
