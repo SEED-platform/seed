@@ -2840,7 +2840,7 @@ class BlueSkyViewTests(TestCase):
         self.org_user = OrganizationUser.objects.create(
             user=self.user, organization=self.org
         )
-        self.cycle = self.cycle_factory.get_cycle()
+        self.cycle = self.cycle_factory.get_cycle(datetime(2010, 10, 10))
         self.client.login(**user_details)
 
     def tearDown(self):
