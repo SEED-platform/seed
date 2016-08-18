@@ -45,9 +45,6 @@ class Command(BaseCommand):
         parser.add_argument('--create-missing-columns', dest='create_missing_columns', default=False, action="store_true")
 
         # Labels arguments
-        parser.add_argument('--clear-bluesky-labels', dest='clear_bluesky_labels', default=False, action="store_true",
-                            help="Delete all labels associated with all View objects")
-
         parser.add_argument('--labels-add-property-labels', dest='add_property_labels', default=True, action="store_true",
                             help="Create labels for PropertyView Objects")
         parser.add_argument('--labels-no-add-property-labels', dest='add_property_labels', default=True, action="store_false",
