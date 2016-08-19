@@ -10,7 +10,9 @@ from django.db import models
 from django_pgjson.fields import JsonField
 
 from seed.lib.superperms.orgs.models import Organization
+from django.db.models.fields.related import ManyToManyField
 from seed.models import Cycle
+from seed.models import StatusLabel
 
 
 class Property(models.Model):
@@ -85,6 +87,8 @@ class PropertyView(models.Model):
     property = models.ForeignKey(Property, related_name='views')
     cycle = models.ForeignKey(Cycle)
     state = models.ForeignKey(PropertyState)
+
+    labels = ManyToManyField(StatusLabel)
 
     def __unicode__(self):
         return u'Property View - %s' % (self.pk)

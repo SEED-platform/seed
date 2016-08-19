@@ -4,6 +4,7 @@ from create_campus_relationships_organization import Command as CreateCampusComm
 from create_m2m_relationships_organization import Command as CreateM2MCommand
 from create_primarysecondary_taxlots import Command as CreatePrimarySecondaryCommand
 from migrate_extradata_columns import Command as MigrateColumnsCommand
+from migrate_labels import Command as MigrateLabelsCommand
 from django.core.management.base import BaseCommand
 from seed.models import CanonicalBuilding
 
@@ -17,6 +18,7 @@ class Command(BaseCommand):
         parser.add_argument('--m2m', dest='m2m', default=False, action="store_true")
         parser.add_argument('--primarysecondary', dest='primarysecondary', default=False, action="store_true")
         parser.add_argument('--columns', dest='migrate_columns', default=False, action="store_true")
+        parser.add_argument('--labels', dest='migrate_labels', default=False, action="store_true")
 
         # Global search parameters
         parser.add_argument('--pm', dest='pm', default=False)
@@ -42,6 +44,19 @@ class Command(BaseCommand):
         parser.add_argument('--no-create-missing-columns', dest='create_missing_columns', default=False, action="store_true")
         parser.add_argument('--create-missing-columns', dest='create_missing_columns', default=False, action="store_true")
 
+        # Labels arguments
+        parser.add_argument('--labels-add-property-labels', dest='add_property_labels', default=True, action="store_true",
+                            help="Create labels for PropertyView Objects")
+        parser.add_argument('--labels-no-add-property-labels', dest='add_property_labels', default=True, action="store_false",
+                            help="Do not create Labels to Property View Objects")
+
+        parser.add_argument('--labels-add-taxlot-labels', dest='add_taxlot_labels', default=True, action="store_true",
+                            help="Create labels on TaxLotView objects")
+
+        parser.add_argument('--labels-no-add-taxlot-labels', dest='add_taxlot_labels', default=True, action="store_false",
+                            help="Do not create labels on TaxLotView objects")
+
+
         return
 
 
@@ -60,10 +75,10 @@ class Command(BaseCommand):
             else:
                 options['cb_whitelist_string'] = options['cb_whitelist_string'] + "," + cbs
 
-        destroy, migrate, campus, m2m, primarysecondary, migrate_columns = map(lambda x: options[x], ("destroy", "migrate", "campus", "m2m", "primarysecondary", "migrate_columns"))
+        destroy, migrate, campus, m2m, primarysecondary, migrate_columns, migrate_labels = map(lambda x: options[x], ("destroy", "migrate", "campus", "m2m", "primarysecondary", "migrate_columns", "migrate_labels"))
 
-        if not destroy and not migrate and not campus and not m2m and not primarysecondary and not migrate_columns:
-            destroy, migrate, campus, m2m, primarysecondary, migrate_columns = [True] * 6
+        if not destroy and not migrate and not campus and not m2m and not primarysecondary and not migrate_columns and not migrate_labels:
+            destroy, migrate, campus, m2m, primarysecondary, migrate_columns, migrate_labels = [True] * 7
 
         if destroy:
             ddc = DestroyDataCommand()
@@ -88,5 +103,10 @@ class Command(BaseCommand):
         if migrate_columns:
             migrate_columns_command = MigrateColumnsCommand()
             migrate_columns_command.handle(*args, **options)
+
+
+        if migrate_labels:
+            migrate_labels_command = MigrateLabelsCommand()
+            migrate_labels_command.handle(*args, **options)
 
         return
