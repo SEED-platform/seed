@@ -15,6 +15,7 @@ def get_mappable_columns(exclude_fields=None):
 
 def get_mappable_types(exclude_fields=None):
     """Like get_mappable_columns, but with type information."""
+    # TODO: delete this method once everything is moved over to the new method below
     if not exclude_fields:
         exclude_fields = constants.EXCLUDE_FIELDS
 
@@ -47,6 +48,4 @@ def _get_column_names(column_mapping, attr_name='column_raw'):
     attr = getattr(column_mapping, attr_name, None)
     if not attr:
         return attr
-    return [
-        t for t in attr.all().values_list('column_name', flat=True)
-    ]
+    return [t for t in attr.all().values_list('column_name', flat=True)]

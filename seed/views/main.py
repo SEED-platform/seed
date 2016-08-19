@@ -26,7 +26,6 @@ from django.template.context import RequestContext
 
 from seed import models, tasks
 from seed.audit_logs.models import AuditLog
-from seed.common import mapper as simple_mapper
 from seed.common import views as vutil
 from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
 from seed.data_importer.tasks import (
@@ -37,9 +36,11 @@ from seed.data_importer.tasks import (
 )
 from seed.decorators import ajax_request, get_prog_key, require_organization_id
 from seed.lib.exporter import Exporter
+from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.mappings import mapping_data
 from seed.models import (
     get_column_mapping,
     save_snapshot_match,
@@ -1328,44 +1329,22 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
         import_file = ImportFile.objects.get(pk=pk,
                                              import_record__super_organization_id=organization.pk)
 
-        # Make a dictionary of the column names and their respective types.
-        # Build this dictionary from BEDES fields (the null organization columns,
-        # and all of the column mappings that this organization has previously
-        # saved.
-        mappable_types = get_mappable_types()
-        field_names = mappable_types.keys()
+        # Get a list of the database fields in a list
+        md = mapping_data.MappingData()
         column_types = {}
 
-        # Note on exclude:
-        # mappings get created to mappable types but we deal with them manually
-        # so don't include them here
+        # Check if there are any DB columns that are not defined in the
+        # list of mapping data.
         columns = list(
             Column.objects.select_related('unit')
             .filter(Q(mapped_mappings__super_organization_id=org_id) | Q(
                     organization__isnull=True))
-            .exclude(column_name__in=field_names)
+            .exclude(column_name__in=md.keys())
         )
 
-        for c in columns:
-            if c.unit:
-                unit = c.unit.get_unit_type_display()
-            else:
-                unit = 'string'
+        md.add_database_columns(columns)
 
-            column_types[c.column_name] = {
-                'unit_type': unit.lower(),
-                'schema': '',
-                'table': 'PropertyState'
-            }
-
-        db_columns = copy.deepcopy(mappable_types)
-        for k, v in db_columns.items():
-            db_columns[k] = {
-                'unit_type': v if v else 'string',
-                'schema': 'BEDES',
-                'table': 'PropertyState'
-            }
-        column_types.update(db_columns)
+        # TODO: clean up the rest of this method!
 
         # Portfolio manager files have their own mapping scheme
         if import_file.from_portfolio_manager:
@@ -1375,18 +1354,18 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
 
             # if there is no pm mapping found but the file has already been matched
             # then effectively the mappings are already known with a confidence of 100
-            no_pm_mappings_confience = 100 if import_file.matching_done else 0
+            no_pm_mappings_confidence = 100 if import_file.matching_done else 0
 
             for col, item in simple_mapper.get_pm_mapping(ver,
                                                           import_file.first_row_columns,
                                                           include_none=True).items():
                 if item is None:
-                    suggested_mappings[col] = (col, no_pm_mappings_confience)
+                    suggested_mappings[col] = (col, no_pm_mappings_confidence)
         else:
             # All other input types
             suggested_mappings = mapper.build_column_mapping(
                 import_file.first_row_columns,
-                column_types.keys(),
+                md.keys(),  # column_types.keys(),
                 previous_mapping=get_column_mapping,
                 map_args=[organization],
                 thresh=20  # percentage match we require
@@ -1398,7 +1377,7 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
                     suggested_mappings[m][0] = u''
 
         # Only db columns on BuildingSnapshot
-        building_columns = set(sorted(field_names))
+        building_columns = set(sorted(md.keys()))
 
         # Only columns from Column table. Notice we're removing any db columns
         # from this list. TODO nicholasserra this should probably happen above.
@@ -1411,8 +1390,7 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
         result['building_column_types'] = column_types
 
         return HttpResponse(json.dumps(result),
-                            content_type='application/json',
-                            )
+                            content_type='application/json')
 
 
 @api_endpoint

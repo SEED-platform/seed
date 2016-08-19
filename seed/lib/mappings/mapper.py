@@ -4,11 +4,11 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Dan Gunter <dkgunter@lbl.gov>
 """
-from fnmatch import fnmatchcase
 import json
 import logging
 import os
 import re
+from fnmatch import fnmatchcase
 
 from config.settings.dev import SEED_DATADIR
 
@@ -43,7 +43,8 @@ def get_pm_mapping(version, columns, include_none=False):
         else:
             pass  # nothing added to result
     _log.debug("get_pm_mapping: result={}".format(
-        '\n'.join(['{:40s} => {}'.format(k[:40], v) for k, v in result.iteritems()])))
+        '\n'.join(['{:40s} => {}'.format(k[:40], v) for k, v in
+                   result.iteritems()])))
 
     return result
 
@@ -98,7 +99,8 @@ class Mapping(object):
     META_TYPE = 'type'  # Type value
     META_NUMERIC = 'numeric'  # Is-numeric
 
-    def __init__(self, fileobj, encoding=None, regex=False, spc_or_underscore=True,
+    def __init__(self, fileobj, encoding=None, regex=False,
+                 spc_or_underscore=True,
                  ignore_case=True, normalize_units=True):
         """Initialize/create mapping from an input file-like object.
         Format of the file must be JSON, specifically:
@@ -217,7 +219,8 @@ class Mapping(object):
 
     @staticmethod
     def _re_escape(key):
-        for special in ('\\', '(', ')', '?', '*', '+', '.', '{', '}', '^', '$'):
+        for special in (
+        '\\', '(', ')', '?', '*', '+', '.', '{', '}', '^', '$'):
             key = key.replace(special, '\\' + special)
         return key
 

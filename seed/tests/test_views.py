@@ -5,19 +5,19 @@
 :author
 """
 import json
-
 from datetime import date, datetime, timedelta
 
 from django.core.cache import cache
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.test import TestCase
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from seed.audit_logs.models import AuditLog, LOG
-from seed.common import mapper
-from seed.data_importer.models import ROW_DELIMITER, ImportFile, ImportRecord
-from seed.landing.models import SEEDUser as User
+
 from seed import decorators
+from seed.audit_logs.models import AuditLog, LOG
+from seed.data_importer.models import ROW_DELIMITER, ImportFile, ImportRecord
 from seed.factory import SEEDFactory
+from seed.landing.models import SEEDUser as User
+from seed.lib.mappings import mapper
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     Column,
     ColumnMapping,
@@ -33,13 +33,13 @@ from seed.models import (
     ProjectBuilding,
     FLOAT,
 )
+from seed.tests import util as test_util
+from seed.utils.cache import set_cache, get_cache
+from seed.utils.mapping import _get_column_names
 from seed.views.main import (
     DEFAULT_CUSTOM_COLUMNS,
     _parent_tree_coparents,
 )
-from seed.utils.cache import set_cache, get_cache
-from seed.utils.mapping import _get_column_names
-from seed.tests import util as test_util
 
 
 class MainViewTests(TestCase):

@@ -25,7 +25,7 @@ LOGGING = {
         'loggers': {
             # the name of the logger, if empty, then this is the default logger
             '': {
-                'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+                'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
                 'handlers': ['console', 'file'],
             }
         },

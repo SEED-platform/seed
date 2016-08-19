@@ -24,8 +24,8 @@ from django.utils.timesince import timesince
 from django_extensions.db.models import TimeStampedModel
 
 from config.utils import de_camel_case
-from seed.common import mapper
 from seed.data_importer.managers import NotDeletedManager
+from seed.lib.mappings import mapper
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.utils.cache import set_cache_raw, set_cache_state, get_cache, get_cache_raw, get_cache_state, delete_cache
 
