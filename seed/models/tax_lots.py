@@ -8,10 +8,12 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django_pgjson.fields import JsonField
+from django.db.models.fields.related import ManyToManyField
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
-    Cycle,
+    StatusLabel,
+    Cycle
 )
 
 
@@ -53,6 +55,8 @@ class TaxLotView(models.Model):
     taxlot = models.ForeignKey(TaxLot, related_name='views', null=True)
     state = models.ForeignKey(TaxLotState)
     cycle = models.ForeignKey(Cycle)
+
+    labels = ManyToManyField(StatusLabel)
 
     def __unicode__(self):
         return u'TaxLot View - %s' % (self.pk)

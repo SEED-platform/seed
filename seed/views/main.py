@@ -1388,6 +1388,7 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
         result['building_columns'] = list(building_columns)
         result['extra_data_columns'] = list(extra_data_columns)
         result['building_column_types'] = column_types
+        result['tmp_all_data'] = md.data
 
         return HttpResponse(json.dumps(result),
                             content_type='application/json')

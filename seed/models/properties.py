@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import logging
 
 from django.db import models
+from django.db.models.fields.related import ManyToManyField
 from django_pgjson.fields import JsonField
 
 from seed.data_importer.models import ImportFile
@@ -18,7 +19,8 @@ from seed.models import (
     Cycle,
     TaxLot,
     TaxLotState,
-    TaxLotView
+    TaxLotView,
+    StatusLabel
 )
 from seed.utils.generic import split_model_fields, obj_to_dict
 
@@ -231,10 +233,10 @@ class PropertyState(models.Model):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-            }
+                }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-            }
+                }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk
@@ -290,6 +292,8 @@ class PropertyView(models.Model):
                                  related_name='views')  # different property views can be associated with each other (2012, 2013).
     cycle = models.ForeignKey(Cycle)
     state = models.ForeignKey(PropertyState)
+
+    labels = ManyToManyField(StatusLabel)
 
     def __unicode__(self):
         return u'Property View - %s' % (self.pk)
