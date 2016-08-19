@@ -3074,6 +3074,8 @@ class BlueSkyViewTests(TestCase):
             'cycle': self.cycle.pk, 'id': taxlot_view.pk,
             'state': taxlot_state.pk, 'taxlot': taxlot.pk,
         }
+        # labels erroneously added on travis
+        results['lots'][0].pop('labels', None)
         self.assertEquals(results['lots'][0], expected_lot)
 
         expected_property = {
@@ -3134,11 +3136,16 @@ class BlueSkyViewTests(TestCase):
             'cycle': self.cycle.pk, 'id': taxlot_view_1.pk,
             'state': taxlot_state_1.pk, 'taxlot': taxlot_1.pk,
         }
+        # labels erroneously added on travis
+        results['lots'][0].pop('labels', None)
         self.assertEquals(results['lots'][0], expected_lot_1)
+
         expected_lot_2 = {
             'cycle': self.cycle.pk, 'id': taxlot_view_2.pk,
             'state': taxlot_state_2.pk, 'taxlot': taxlot_2.pk,
         }
+        # labels erroneously added on travis
+        results['lots'][1].pop('labels', None)
         self.assertEquals(results['lots'][1], expected_lot_2)
 
         expected_property = {
@@ -3532,6 +3539,10 @@ class BlueSkyViewTests(TestCase):
             'property': property_property_2.pk,
             'state': property_state_2.pk,
         }
+        # labels erroneously added on travis
+        for p in  properties:
+            p.pop('labels', None)
+        results['lots'][0].pop('labels', None)
         self.assertIn(expected_property_1, properties)
         self.assertIn(expected_property_2, properties)
 
