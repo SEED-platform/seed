@@ -181,9 +181,16 @@ class FakeCycleFactory(BaseFake):
         self.user = user
 
     def get_cycle(self, organization=None, user=None, **kw):
-        start = self.fake.date_time_this_decade()
-        start = datetime.datetime(start.year, 01, 01)
-        end = start + datetime.timedelta(365)
+        if 'start' in kw:
+            start = kw.pop('start')
+        else:
+            start = self.fake.date_time_this_decade()
+            start = datetime.datetime(start.year, 01, 01)
+        print 'start', start
+        if 'end' in kw:
+            end = kw.pop('end')
+        else:
+            end = start + datetime.timedelta(365)
         cycle_details = {
             'organization': getattr(self, 'organization', None),
             'user': getattr(self, 'user', None),
