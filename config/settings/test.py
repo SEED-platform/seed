@@ -3,27 +3,33 @@
 :author
 """
 from __future__ import absolute_import
-from config.settings.common import *  # noqa
+
 from celery.utils import LOG_LEVELS
 
+from config.settings.common import *  # noqa
+
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'log/test.log'
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler'
+            },
+            'file': {
+                'level': 'DEBUG',
+                'class': 'logging.FileHandler',
+                'filename': 'log/test.log'
+            },
         },
-    },
-    'loggers': {
-        'django.request': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
+        'loggers': {
+            # the name of the logger, if empty, then this is the default logger
+            '': {
+                'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+                'handlers': ['console', 'file'],
+            }
         },
-    },
-}
+    }
 
 PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',
