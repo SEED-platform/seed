@@ -186,7 +186,6 @@ class FakeCycleFactory(BaseFake):
         else:
             start = self.fake.date_time_this_decade()
             start = datetime.datetime(start.year, 01, 01)
-        print 'start', start
         if 'end' in kw:
             end = kw.pop('end')
         else:
