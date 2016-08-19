@@ -32,11 +32,13 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
         params.cycle = lastCycleId;
       }
 
+      var get_properties_url = "/app/properties";
+
       spinner_utility.show();
       var defer = $q.defer();
       $http({
         method: 'GET',
-        url: window.BE.urls.get_properties,
+        url: get_properties_url,
         params: params
       }).success(function (data, status, headers, config) {
         defer.resolve(data);
@@ -49,29 +51,40 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
     };
 
 
+    /** Get Property information from server for a specified Property and Cycle and Organization.
+     *
+     *  The returned Property object should have at minimum a 'state' key with
+     *  object containing all key/values for Property State (including 'extra_data')
+     *  and a 'cycle' key with an object with at least the "id" key for that Cycle.
+     *
+     * @param property_id         A Property object, which should include
+     * @param cycle_id            A Property object, which should include
+     *
+     * @returns {Promise}
+     */
 
     property_taxlot_service.get_property = function(property_id, cycle_id) {
 
       // Error checks
       if (angular.isUndefined(property_id)){
-        $log.error("#property_taxlot_service.get_property(): property_id is null or empty");
+        $log.error("#property_taxlot_service.get_property(): property_id is undefined");
         throw new Error("Invalid Parameter");
       }
       if (angular.isUndefined(cycle_id)){
-        $log.error("#property_taxlot_service.get_property(): 'cycle_id' is null or empty");
+        $log.error("#property_taxlot_service.get_property(): cycle_id : is undefined");
         throw new Error("Invalid Parameter");
       }
 
       var defer = $q.defer();
+      var organization_id = user_service.get_organization().id;
+      var get_property_url = "/app/properties/" + property_id + "/cycles/" + cycle_id;
 
       spinner_utility.show();
       $http({
           method: 'GET',
-          url: window.BE.urls.get_property,
+          url: get_property_url,
           params: {
-              property_id: property_id,
-              cycle_id: cycle_id,
-              organization_id: user_service.get_organization().id
+              organization_id: organization_id
           }
       }).success(function(data, status, headers, config) {
         defer.resolve(data);
@@ -83,47 +96,40 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
       return defer.promise;
     };
 
-    /** Save property state on server.
+    /** Update Property State on server for a specified Property, Cycle and Organization.
      *
-     * @param property_id         A Property object, which should include
-     * @param cycle_id            A Property object, which should include
-     * @param organization_id     The organization id for this Property
-     * @param property            A Property object, which should include
-     *                            - a'state' attribute with an object with key/values for
+     * @param property_id         Property ID of the property
+     * @param cycle_id            Cycle ID for the cycle
+     * @param property_state      A Property state object, which should include key/values for
      *                              all state values
-     *                            - a 'cycle' attribute with one 'id' key
      *
      * @returns {Promise}
      */
-    property_taxlot_service.update_property = function(property_id, cycle_id, organization_id, property_state) {
+    property_taxlot_service.update_property = function(property_id, cycle_id, property_state) {
 
         // Error checks
-        if (angular.isUndefined(property_id)){
-          $log.error("#property_taxlot_service.update_property(): property_id is null or empty");
+        if (angular.isUndefined(taxlot_id)){
+          $log.error("#property_taxlot_service.get_taxlot(): property_id is undefined");
           throw new Error("Invalid Parameter");
         }
         if (angular.isUndefined(cycle_id)){
-          $log.error("#property_taxlot_service.update_property(): 'cycle_id' is null or empty");
-          throw new Error("Invalid Parameter");
-        }
-        if (angular.isUndefined(organization_id)){
-          $log.error("#property_taxlot_service.update_property(): 'organization_id' is null or empty");
+          $log.error("#property_taxlot_service.get_taxlot(): null cycle_id is undefined");
           throw new Error("Invalid Parameter");
         }
         if (angular.isUndefined(property_state)){
-          $log.error("#property_taxlot_service.update_property(): 'property_state' is null or empty");
+          $log.error("#property_taxlot_service.update_property(): 'property_state' is undefined");
           throw new Error("Invalid Parameter");
         }
 
         var defer = $q.defer();
+        var organization_id = user_service.get_organization().id;
+        var update_property_url = "/app/properties/" + String(property_id) + "/cycles/" + String(cycle_id);
 
         spinner_utility.show();
         $http({
             method: 'PUT',
-            url: window.BE.urls.update_property,
+            url: update_property_url,
             data: {
-                property_id: property_id,
-                cycle_id: cycle_id,
                 organization_id: organization_id,
                 state: property_state,
             },
@@ -141,13 +147,15 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
 		property_taxlot_service.delete_properties = function(search_payload) {
 
         var defer = $q.defer();
+        var delete_properties_url = "/app/properties"
+        var organization_id = user_service.get_organization().id
 
         spinner_utility.show();
         $http({
             method: 'DELETE',
-            url: generated_urls.seed.delete_properties,
+            url: delete_properties_url,
             data: {
-                organization_id: user_service.get_organization().id,
+                organization_id: organization_id,
                 search_payload: search_payload
             }
         }).success(function(data, status, headers, config) {
@@ -162,6 +170,7 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
 
 
     property_taxlot_service.get_taxlots = function (page, per_page, cycle) {
+
       var params = {
         organization_id: user_service.get_organization().id,
         page: page,
@@ -169,6 +178,7 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
       };
 
       var lastCycleId = property_taxlot_service.get_last_cycle();
+
       if (cycle) {
         params.cycle = cycle.pk;
         property_taxlot_service.save_last_cycle(cycle.pk);
@@ -177,11 +187,12 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
       }
 
       var defer = $q.defer();
+      var get_taxlots_url = "/app/taxlots";
 
       spinner_utility.show();
       $http({
         method: 'GET',
-        url: window.BE.urls.get_taxlots,
+        url: get_taxlots_url,
         params: params
       }).success(function (data, status, headers, config) {
         defer.resolve(data);
@@ -198,23 +209,22 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
 
       // Error checks
       if (angular.isUndefined(taxlot_id)){
-        $log.error("#property_taxlot_service.get_taxlot(): taxlot_id is null or empty");
+        $log.error("#property_taxlot_service.get_taxlot(): null taxlot_id parameter");
         throw new Error("Invalid Parameter");
       }
       if (angular.isUndefined(cycle_id)){
-        $log.error("#property_taxlot_service.get_taxlot(): 'cycle_id' is null or empty");
+        $log.error("#property_taxlot_service.get_taxlot(): null cycle_id parameter");
         throw new Error("Invalid Parameter");
       }
 
       var defer = $q.defer();
+      var get_taxlot_url = "/app/taxlots/" + String(taxlot_id) + "/cycles/" + String(cycle_id);
 
       spinner_utility.show();
       $http({
           method: 'GET',
-          url: window.BE.urls.get_taxlot,
+          url: get_taxlot_url,
           params: {
-              taxlot_id: taxlot_id,
-              cycle_id: cycle_id,
               organization_id: user_service.get_organization().id
           }
       }).success(function(data, status, headers, config) {
@@ -227,11 +237,67 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
       return defer.promise;
     };
 
+     /** Save TaxLot State for a specified Property and Cycle and Organization.
+     *
+     * @param taxlot_id           A Property object, which should include
+     * @param cycle_id            A Property object, which should include
+     * @param taxlot              A TaxLot State object, which should include key/values for
+     *                            all TaxLot State properties
+     *
+     * @returns {Promise}
+     */
+    property_taxlot_service.update_taxlot = function(taxlot_id, cycle_id, taxlot_state) {
+
+        // Error checks
+        if (angular.isUndefined(taxlot_id)){
+          $log.error("#property_taxlot_service.update_taxlot(): null taxlot_id parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(cycle_id)){
+          $log.error("#property_taxlot_service.update_taxlot(): null cycle_id parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(organization_id)){
+          $log.error("#property_taxlot_service.update_taxlot(): null organization_id parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(taxlot_state)){
+          $log.error("#property_taxlot_service.update_taxlot(): null 'taxlot_state' parameter");
+          throw new Error("Invalid Parameter");
+        }
+
+        var defer = $q.defer();
+        var update_taxlot_url = "/app/properties/" + String(taxlot_id) + "/cycles/" + String(cycle_id);
+        var organization_id = user_service.get_organization().id;
+
+        spinner_utility.show();
+        $http({
+            method: 'PUT',
+            url: update_taxlot_url,
+            data: {
+                organization_id: organization_id,
+                state: taxlot_state,
+            },
+        }).success(function(data, status, headers, config){
+          defer.resolve(data);
+        }).error(function(data, status, headers, config){
+          defer.reject(data, status);
+        }).finally(function(){
+          spinner_utility.hide();
+        });
+        return defer.promise;
+    };
+
+
+
     property_taxlot_service.get_cycles = function () {
+
       var defer = $q.defer();
+      var get_cycles_url = "/app/cycles";
+
       $http({
         method: 'GET',
-        url: window.BE.urls.get_cycles,
+        url: get_cycles_url,
         params: {
           organization_id: user_service.get_organization().id
         }
@@ -256,13 +322,18 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
       sessionStorage.setItem('cycles', JSON.stringify(cycles));
     };
 
+
     property_taxlot_service.get_property_columns = function () {
+
       var defer = $q.defer();
+      var get_property_columns_url = "/app/property-columns";
+      var organization_id = user_service.get_organization().id;
+
       $http({
         method: 'GET',
-        url: window.BE.urls.get_property_columns,
+        url: get_property_columns_url,
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: organization_id
         }
       }).success(function (data, status, headers, config) {
         defer.resolve(data);
@@ -272,13 +343,18 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
       return defer.promise;
     };
 
+
     property_taxlot_service.get_taxlot_columns = function () {
+
       var defer = $q.defer();
+      var get_taxlot_columns_url = "/app/taxlot-columns";
+      var organization_id = user_service.get_organization().id;
+
       $http({
         method: 'GET',
-        url: window.BE.urls.get_taxlot_columns,
+        url: get_taxlot_columns_url,
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: organization_id
         }
       }).success(function (data, status, headers, config) {
         defer.resolve(data);
@@ -307,6 +383,7 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
         }
       };
     };
+
 
     var numRegex = /^(==?|!=?|<>)?\s*(null|-?\d+)|(<=?|>=?)\s*(-?\d+)$/;
     property_taxlot_service.numFilter = function () {
@@ -365,6 +442,7 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
       };
     };
 
+
     property_taxlot_service.aggregations = function () {
       return {
         sum: {
@@ -405,6 +483,7 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
         return defer.promise;
     };
 
+
     property_taxlot_service.get_total_taxlots_for_user = function() {
         // django uses request.user for user information
         var defer = $q.defer();
@@ -425,6 +504,7 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
     // to format date value correctly. Ideally at some point this should be gathered
     // from the server rather than hardcoded here.
 
+    // TODO: Identify Tax Lot specific values that have dates.
     var property_state_date_columns = [ "generation_date",
                                         "release_date",
                                         "recent_sale_date",
@@ -435,6 +515,12 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
     property_taxlot_service.property_state_date_columns = property_state_date_columns;
 
     // TODO: Identify Tax Lot specific values that have dates.
+    var property_state_date_columns = [ "generation_date",
+                                        "release_date",
+                                        "recent_sale_date",
+                                        "year_ending",
+                                        "modified",
+                                        "created"]
     property_taxlot_service.taxlot_state_date_columns = property_state_date_columns;
 
     return property_taxlot_service;
