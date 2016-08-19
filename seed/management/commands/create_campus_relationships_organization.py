@@ -129,9 +129,9 @@ class Command(BaseCommand):
 
                         parent_views = PropertyView.objects.filter(property=parent_property).all()
                         parent_views = [ppv for ppv in parent_views if ppv.cycle.start <= pv.cycle.start]
-                        assert len(parent_views), "This should always be true."
-
-
+                        if not len(parent_views):
+                            print "Warning: view for parent property {} does not exist".format(parent_property.pk)
+                            continue
 
                         ps = parent_views[-1].state
                         ps.pk = None
