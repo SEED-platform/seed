@@ -6,35 +6,38 @@ angular.module('BE.seed.controller.property_detail', [])
 		.controller('property_detail_controller', [
 			'$controller',
 			'$scope',
-			'$routeParams',
 			'$uibModal',
 			'$log',
 			'$filter',
-			'$location',
 			'urls',
 			'label_helper_service',
 			'property_taxlot_service',
 			'property_payload',
 			'all_property_columns',
-			'default_columns',
-function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location, urls, label_helper_service,
-				 	property_taxlot_service, property_payload, all_property_columns, default_columns ) {
+			'default_property_columns',
+function($controller, $scope, $uibModal, $log, $filter, urls, label_helper_service,
+				 	property_taxlot_service, property_payload, all_property_columns, default_property_columns ) {
 
 	$scope.property = property_payload;
+
+	/** Property state is managed in this base scope property. */
+	$scope.item_state = property_payload.state;
+
 	$scope.item_type = "property";
 	$scope.item_title = "Property : " + $scope.property.state.address_line_1;
-	$scope.item_state = $scope.property.state;
 	$scope.user = {};
 	$scope.user_role = property_payload.user_role;
+
+
 
 	/** Instantiate 'parent' controller class,
 	 *  where the more generic methods for editing a detail item are located.
 	 *  (Methods in this child class are more specific to a 'Property' detail item.) */
-	$controller('base_detail_controller', { $scope: $scope, $routeParams: $routeParams, $uibModal: $uibModal,
+	$controller('base_detail_controller', { $scope: $scope, $uibModal: $uibModal,
 																					$log: $log, property_taxlot_service: property_taxlot_service,
 																					all_columns: all_property_columns, urls: urls, $filter: $filter,
-																					$location: $location, label_helper_service: label_helper_service,
-																					default_columns: default_columns });
+																					label_helper_service: label_helper_service,
+																					default_columns: default_property_columns });
 
 
 
@@ -49,7 +52,7 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 	 */
 	$scope.save_property = function (){
 		$scope.$emit('show_saving');
-		property_taxlot_service.update_property($scope.property.id, $scope.property.cycle.id, $scope.user_org_id, $scope.property.state)
+		property_taxlot_service.update_property($scope.property.id, $scope.property.cycle.id, $scope.item_state)
 			.then(function (data){
 					$scope.$emit('finished_saving');
 				}, function (data, status){
@@ -70,9 +73,9 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 	 */
 	var init = function() {
 
-		$scope.format_date_values($scope.property.state, property_taxlot_service.property_state_date_columns);
+		$scope.format_date_values($scope.item_state, property_taxlot_service.property_state_date_columns);
 
-		$scope.data_fields = $scope.generate_data_fields($scope.property.state, $scope.default_columns);
+		$scope.data_fields = $scope.generate_data_fields($scope.item_state, $scope.default_property_columns);
 
 		$scope.labels = $scope.init_labels($scope.property);
 

@@ -5,24 +5,22 @@
 angular.module('BE.seed.controller.base_detail', [])
 		.controller('base_detail_controller', [
 			'$scope',
-			'$routeParams',
 			'$uibModal',
 			'$log',
 			'$filter',
-			'$location',
 			'property_taxlot_service',
 			'all_columns',
 			'urls',
 			'label_helper_service',
 			'default_columns',
-function($scope, $routeParams, $uibModal, $log, $filter, $location, property_taxlot_service,
+function($scope, $uibModal, $log, $filter, property_taxlot_service,
 				 all_columns, urls, label_helper_service, default_columns) {
 
 	$scope.fields = all_columns.fields;
 	$scope.default_columns = default_columns.columns;
 	$scope.edit_form_showing = false;
 
-	/** Holds a copy of original state of detail item.
+	/** Holds a copy of original state of item_state.
 	 *  Used when 'Cancel' is selected and item should be
 	 *  returned to original state. */
 	$scope.item_copy = {};
@@ -32,7 +30,6 @@ function($scope, $routeParams, $uibModal, $log, $filter, $location, property_tax
 	$scope.data_fields = [];
 
 
-	$scope.section = $location.hash();
 	$scope.status = {
 		isopen: false
 	};
@@ -47,6 +44,7 @@ function($scope, $routeParams, $uibModal, $log, $filter, $location, property_tax
 	/* User clicked 'cancel' button */
 	$scope.on_cancel = function () {
 		$scope.restore_copy();
+		$scope.edit_form_showing = false;
 	}
 
 	/* User clicked 'edit' link */
@@ -63,12 +61,10 @@ function($scope, $routeParams, $uibModal, $log, $filter, $location, property_tax
 	};
 
 	/**
-	 * restore_property: restores the property from its copy
-	 *   and hides the edit fields
+	 * restore_property: restores the property state from its copy
 	 */
 	$scope.restore_copy = function () {
 		$scope.item_state = $scope.item_copy;
-		$scope.edit_form_showing = false;
 	};
 
 
@@ -91,7 +87,7 @@ function($scope, $routeParams, $uibModal, $log, $filter, $location, property_tax
 
 		var data_fields = [];
 		var key_list = [];
-		var check_defaults = !!default_columns.length;
+		var check_defaults = (default_columns && default_columns.length > 0);
 
 		// add fixed_column property properties to data_fields
 		angular.forEach(stateObj, function ( val, key ) {
@@ -173,17 +169,6 @@ function($scope, $routeParams, $uibModal, $log, $filter, $location, property_tax
 
         return (!_.includes(key, '_source') && !_.includes(key, 'extra_data') && !_.includes(key, '$$') && no_invalid_key);
     };
-
-
-
-	/**
-	 * sets the ``$scope.section`` var to show the proper tab/section of the
-	 * page.
-	 * @param {string} section
-	 */
-	$scope.set_location = function (section) {
-		$scope.section = section;
-	};
 
 	/**
 	 * returns a number

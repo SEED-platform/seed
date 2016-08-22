@@ -879,9 +879,9 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 all_property_columns: ['property_taxlot_service', function(property_taxlot_service) {
                     return property_taxlot_service.get_property_columns();
                 }],
-                default_columns: ['user_service', function(user_service){
-                    //TODO: Change to default Property columns
-                    return user_service.get_default_building_detail_columns();
+                default_property_columns: ['user_service', function(user_service){
+                    //TODO: Return default Property columns
+                    return []
                 }]
             }
         })
@@ -899,9 +899,9 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                 all_taxlot_columns: ['property_taxlot_service', function(property_taxlot_service) {
                     return property_taxlot_service.get_taxlot_columns();
                 }],
-                default_columns: ['user_service', function(user_service){
-                    //TODO: Change to default TaxLot columns
-                    return user_service.get_default_building_detail_columns();
+                default_taxlot_columns: ['user_service', function(user_service){
+                    //TODO: Return default TaxLot columns
+                    return []
                 }]
             }
         })

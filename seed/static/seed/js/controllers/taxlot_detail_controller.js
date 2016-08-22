@@ -6,35 +6,37 @@ angular.module('BE.seed.controller.taxlot_detail', [])
 		.controller('taxlot_detail_controller', [
 			'$controller',
 			'$scope',
-			'$routeParams',
 			'$uibModal',
 			'$log',
 			'$filter',
-			'$location',
 			'urls',
 			'label_helper_service',
 			'property_taxlot_service',
 			'taxlot_payload',
 			'all_taxlot_columns',
-			'default_columns',
-function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location, urls, label_helper_service,
-				 	property_taxlot_service, taxlot_payload, all_taxlot_columns, default_columns ) {
+			'default_taxlot_columns',
+function($controller, $scope,  $uibModal, $log, $filter, urls, label_helper_service,
+				 	property_taxlot_service, taxlot_payload, all_taxlot_columns, default_taxlot_columns ) {
 
 	$scope.taxlot = taxlot_payload;
+
+	/** TaxLot state is managed in this base scope property. */
+	$scope.item_state = taxlot_payload.state;
+
 	$scope.item_type = "taxlot";
 	$scope.item_title = "Tax Lot :" + $scope.taxlot.state.address_line_1 // TODO: Decide what value (address_line_1?) to show as identifying label in tax lot detail view?
-	$scope.item_state = $scope.taxlot.state;
 	$scope.user = {};
 	$scope.user_role = taxlot_payload.user_role;
+
 
 	/** Instantiate 'parent' controller class,
 	 *  where the more generic methods for a detail item are located.
 	 *  (Methods in this child class are more specific to a 'Tax Lot' detail item.) */
-	$controller('base_detail_controller', { $scope: $scope, $routeParams: $routeParams, $uibModal: $uibModal,
-																									$log: $log, property_taxlot_service: property_taxlot_service,
-																									all_columns: all_taxlot_columns, urls: urls, $filter: $filter,
-																									$location: $location, label_helper_service: label_helper_service,
-																									default_columns: default_columns });
+	$controller('base_detail_controller', { $scope: $scope, $uibModal: $uibModal,
+																					$log: $log, property_taxlot_service: property_taxlot_service,
+																					all_columns: all_taxlot_columns, urls: urls, $filter: $filter,
+																					label_helper_service: label_helper_service,
+																					default_columns: default_taxlot_columns });
 
 
 	/* User clicked 'save' button */
@@ -49,7 +51,7 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 	 */
 	$scope.save_taxlot = function (){
 		$scope.$emit('show_saving');
-		property_taxlot_service.update_taxlot($scope.taxlot.id, $scope.taxlot.cycle.id, $scope.user_org_id, $scope.taxlot.state)
+		property_taxlot_service.update_taxlot($scope.taxlot.id, $scope.taxlot.cycle.id, $scope.item_state)
 			.then(function (data){
 					$scope.$emit('finished_saving');
 				}, function (data, status){
@@ -59,15 +61,6 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 			).catch(function (data){
 				$log.error( String(data) );
 			});
-	};
-
-	/**
-	 * restore_copy: restores the Tax Lot from its copy
-	 *   and hides the edit fields
-	 */
-	$scope.restore_copy = function () {
-		$scope.taxlot = $scope.item_copy;
-		$scope.edit_form_showing = false;
 	};
 
 
@@ -80,9 +73,9 @@ function($controller, $scope, $routeParams, $uibModal, $log, $filter, $location,
 	 */
 	var init = function() {
 
-		$scope.format_date_values($scope.taxlot.state, property_taxlot_service.taxlot_state_date_columns);
+		$scope.format_date_values($scope.item_state, property_taxlot_service.taxlot_state_date_columns);
 
-		$scope.data_fields = $scope.generate_data_fields($scope.taxlot.state, $scope.default_columns);
+		$scope.data_fields = $scope.generate_data_fields($scope.item_state, $scope.default_taxlot_columns);
 
 		$scope.labels = $scope.init_labels($scope.taxlot);
 	};
