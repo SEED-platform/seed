@@ -867,7 +867,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
         })
         .when('/properties/:property_id/cycles/:cycle_id', {
             controller: 'property_detail_controller',
-            templateUrl: static_url + 'seed/partials/item_detail.html',
+            templateUrl: static_url + 'seed/partials/inventory_item_detail.html',
             resolve: {
                 property_payload: ['property_taxlot_service', '$route', function(property_taxlot_service, $route){
                     // load `get_building` before page is loaded to avoid
@@ -887,7 +887,7 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
         })
         .when('/taxlots/:taxlot_id/cycles/:cycle_id', {
             controller: 'taxlot_detail_controller',
-            templateUrl: static_url + 'seed/partials/item_detail.html',
+            templateUrl: static_url + 'seed/partials/inventory_item_detail.html',
             resolve: {
                 taxlot_payload: ['property_taxlot_service', '$route', function(property_taxlot_service, $route){
                     // load `get_building` before page is loaded to avoid
