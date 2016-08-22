@@ -20,7 +20,9 @@
     <script src="{{STATIC_URL}}vendors/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
     <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.js"></script>
     <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-sortable/sortable.min.js"></script>
-
+    
+    <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-grid/ui-grid.min.js"></script>
+        
     <script src="{{STATIC_URL}}vendors/bower_components/fine-uploader/_build/s3.fineuploader.js" ></script>
     <script src="{{STATIC_URL}}vendors/bower_components/moment/min/moment.min.js"></script>
 
@@ -36,6 +38,8 @@
     {# all SEED js files #}
     {% include "seed/_scripts.html" %}
 
+    
+    
     <script src="{{STATIC_URL}}seed/tests/admin_controller.spec.js"></script>
     <script src="{{STATIC_URL}}seed/tests/sdLabel.spec.js"></script>
     <script src="{{STATIC_URL}}seed/tests/sdUploader.spec.js"></script>
@@ -62,6 +66,7 @@
     <script src="{{STATIC_URL}}seed/tests/concat_ctrl.spec.js"></script>
     <script src="{{STATIC_URL}}seed/tests/buildings_reports_controller.spec.js"></script>
     <script src="{{STATIC_URL}}seed/tests/update_building_labels_controller.spec.js"></script>
+    <script src="{{STATIC_URL}}seed/tests/property_detail_controller.spec.js"></script>
 
     <script src="{{STATIC_URL}}seed/tests/run_jasmine.js"></script>
 
