@@ -88,10 +88,6 @@ describe('controller: property_detail_controller', function(){
                     'some other key': 12344,
                     'some other key that is not in a parent': 223
                 },
-                extra_data_sources: {
-                    'some other key': 2,
-                    'some other key that is not in a parent': 3
-                },
                 created: 'at some point'
             }
         };
@@ -133,9 +129,6 @@ describe('controller: property_detail_controller', function(){
             default_property_columns: mock_default_property_columns,
             all_property_columns: {
                 fields: fake_all_property_columns
-            },
-            audit_payload: {
-                audit_logs: []
             }
         });
     }
@@ -156,7 +149,7 @@ describe('controller: property_detail_controller', function(){
         // assertions
         expect(property_detail_ctrl_scope.property.id).toBe(511);
         expect(property_detail_ctrl_scope.property.cycle.id).toBe(2);
-        expect(property_detail_ctrl_scope.property.state.address_line_1).toBe("123 Main St.");
+        expect(property_detail_ctrl_scope.item_state.address_line_1).toBe("123 Main St.");
 
     });
 
@@ -169,7 +162,7 @@ describe('controller: property_detail_controller', function(){
         // act
         property_detail_ctrl_scope.$digest();
         property_detail_ctrl_scope.on_edit();
-        property_detail_ctrl_scope.property.state.address_line_1 = "ABC Main St.";
+        property_detail_ctrl_scope.item_state.address_line_1 = "ABC Main St.";
 
         // assertions
         expect(property_detail_ctrl_scope.item_copy.address_line_1).toBe("123 Main St.");
@@ -192,7 +185,7 @@ describe('controller: property_detail_controller', function(){
 
 
 
-    it('should restore the copy of building if a user clicks cancel', function() {
+    it('should restore the copy of Property state if a user clicks cancel', function() {
 
         // arrange
         create_property_detail_controller();
@@ -229,7 +222,7 @@ describe('controller: property_detail_controller', function(){
     });
 
 
-    it('should hide certain Property attributes, including ids and extra_data', function() {
+    it('should hide certain Property properties, including ids and extra_data', function() {
 
         // arrange
         create_property_detail_controller();
