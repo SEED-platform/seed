@@ -271,6 +271,9 @@ angular.module('BE.seed.service.search', [])
     */
     search_service.first_page = function() {
       this.current_page = 1;
+        if (!_.isUndefined(Storage)) {
+            sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
+        }
       this.search_buildings();
     };
 
@@ -290,6 +293,9 @@ angular.module('BE.seed.service.search', [])
     */
     search_service.last_page = function() {
       this.current_page = this.num_pages();
+        if (!_.isUndefined(Storage)) {
+            sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
+        }
       this.search_buildings();
     };
 
