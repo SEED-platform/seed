@@ -5,14 +5,12 @@ angular.module('BE.seed.service.label',
                                     '$log',
                                     'user_service',
                                     'label_helper_service',
-                                    'urls',
                         function ( $http,
                                     $q,
                                     $timeout,
                                     $log,
                                     user_service,
-                                    label_helper_service,
-                                    urls
+                                    label_helper_service
                                     ) {
 
 
@@ -76,7 +74,7 @@ angular.module('BE.seed.service.label',
         $http({
             method: 'GET',
             url: window.BE.urls.label_list,
-            params: searchArgs,
+            params: searchArgs
         }).success(function(data, status, headers, config) {
 
             if (_.isEmpty(data.results)) {

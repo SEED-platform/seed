@@ -6,21 +6,117 @@ angular.module('BE.seed.controller.bluesky_taxlots_controller', [])
   .controller('bluesky_taxlots_controller', [
     '$scope',
     '$window',
+    '$log',
+    '$uibModal',
     'bluesky_service',
+    'label_service',
     'taxlots',
     'cycles',
     'columns',
+    'urls',
     function ($scope,
               $window,
+              $log,
+              $uibModal,
               bluesky_service,
+              label_service,
               taxlots,
               cycles,
-              columns) {
+              columns,
+              urls) {
       $scope.object = 'taxlot';
       $scope.objects = taxlots.results;
       $scope.pagination = taxlots.pagination;
       $scope.number_per_page = 999999999;
       $scope.restoring = false;
+
+      $scope.labels = [];
+      $scope.selected_labels = [];
+
+      // Matching dropdown values
+      var SHOW_ALL = 'Show All';
+      var SHOW_MATCHED = 'Show Matched';
+      var SHOW_UNMATCHED = 'Show Unmatched';
+
+      $scope.clear_labels = function () {
+        $scope.selected_labels = [];
+      };
+
+      $scope.update_show_matching_filter = function (optionValue) {
+        switch (optionValue) {
+          case SHOW_ALL:
+            $scope.search.filter_params.parents__isnull = undefined;
+            break;
+          case SHOW_MATCHED:
+            $scope.search.filter_params.parents__isnull = false;  //has parents therefore is matched
+            break;
+          case SHOW_UNMATCHED:
+            $scope.search.filter_params.parents__isnull = true;   //does not have parents therefore is unmatched
+            break;
+          default:
+            $log.error('#matching_controller: unexpected filter value: ', optionValue);
+            return;
+        }
+        //$scope.do_update_buildings_filters();
+      };
+
+      $scope.loadLabelsForFilter = function (query) {
+        console.debug('loadLabelsForFilter query:', query);
+        return _.filter($scope.labels, function (lbl) {
+          if (_.isEmpty(query)) {
+            // Empty query so return the whole list.
+            return true;
+          } else {
+            // Only include element if it's name contains the query string.
+            return _.includes(_.toLower(lbl.name), _.toLower(query));
+          }
+        });
+      };
+
+      $scope.$watchCollection('selected_labels', function () {
+        // Only submit the `id` of the label to the API.
+        console.debug('selected_labels:', $scope.selected_labels);
+        // if ($scope.selected_labels.length) {
+        //   $scope.search.filter_params.canonical_building__labels = _.map($scope.selected_labels, 'id');
+        // } else {
+        //   delete $scope.search.filter_params.canonical_building__labels;
+        // }
+        _.delay($scope.updateHeight, 150);
+      });
+
+      /**
+       Opens the update building labels modal.
+       All further actions for labels happen with that modal and its related controller,
+       including creating a new label or applying to/removing from a building.
+       When the modal is closed, refresh labels and search.
+       */
+      $scope.open_update_building_labels_modal = function () {
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/update_building_labels_modal.html',
+          controller: 'update_building_labels_modal_ctrl',
+          resolve: {
+            search: function () {
+              return $scope.search;
+            }
+          }
+        });
+        modalInstance.result.then(function () {
+          //dialog was closed with 'Done' button.
+          get_labels();
+          //refresh_search();
+        });
+      };
+
+      var init_matching_dropdown = function () {
+        $scope.matching_filter_options = [
+          {id: SHOW_ALL, value: SHOW_ALL},
+          {id: SHOW_MATCHED, value: SHOW_MATCHED},
+          {id: SHOW_UNMATCHED, value: SHOW_UNMATCHED}
+        ];
+        $scope.matching_filter_options_init = SHOW_ALL;
+      };
+
 
       var lastCycleId = bluesky_service.get_last_cycle();
       $scope.cycle = {
@@ -74,26 +170,94 @@ angular.module('BE.seed.controller.bluesky_taxlots_controller', [])
 
       processData();
 
+      var get_labels = function () {
+        label_service.get_labels().then(function (data) {
+          $scope.labels = data.results;
+          console.debug(data.results);
+        });
+      };
+
+      $scope.open_delete_modal = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/delete_modal.html',
+          controller: 'delete_modal_controller',
+          resolve: {
+            search: function () {
+              return $scope.search;
+            }
+          }
+        });
+
+        modalInstance.result.then(function () {
+          $scope.search.selected_buildings = [];
+          refresh_search();
+        }, function (message) {
+          refresh_search();
+        });
+      };
+
+      get_labels();
+      init_matching_dropdown();
+
       var defaults = {
         minWidth: 75,
         width: 150
         //type: 'string'
       };
       _.map(columns, function (col) {
-        var filter = aggregation = {};
+        var filter = {}, aggregation = {};
         if (col.type == 'number') filter = {filter: bluesky_service.numFilter()};
         else filter = {filter: bluesky_service.textFilter()};
         if (col.related) aggregation.treeAggregationType = 'uniqueList';
         return _.defaults(col, filter, aggregation, defaults);
       });
+      columns.unshift({
+        name: 'id',
+        displayName: '',
+        cellTemplate: '<div class="ui-grid-row-header-link">' +
+        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/bluesky/{{grid.appScope.object == \'property\' ? \'properties\' : \'taxlots\'}}/{{COL_FIELD}}">' +
+        '    <i class="ui-grid-icon-info-circled"></i>' +
+        '  </a>' +
+        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/bluesky/{{grid.appScope.object == \'taxlot\' ? \'taxlots\' : \'properties\'}}/{{COL_FIELD}}">' +
+        '    <i class="ui-grid-icon-info-circled"></i>' +
+        '  </a>' +
+        '</div>',
+        enableColumnMenu: false,
+        enableColumnResizing: false,
+        enableFiltering: false,
+        enableHiding: false,
+        enableSorting: false,
+        exporterSuppressExport: true,
+        pinnedLeft: true,
+        width: 30
+      });
 
-      var updateHeight = function () {
+      $scope.updateHeight = function () {
         var height = 0;
-        _.forEach(['.header', '.page_header_container', '.buildingListControls', 'ul.nav'], function (selector) {
+        _.forEach(['.header', '.page_header_container', '.section_nav_container', '.buildingListControls', 'ul.nav'], function (selector) {
           height += angular.element(selector)[0].offsetHeight;
         });
         angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
         angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');
+        $scope.gridApi.core.handleWindowResize();
+      };
+
+      $scope.open_export_modal = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/export_inventory_modal.html',
+          controller: 'export_inventory_modal_controller',
+          resolve: {
+            gridApi: function () {
+              return $scope.gridApi;
+            }
+          }
+        });
+
+        modalInstance.result.then(function () {
+        }, function (message) {
+          console.info(message);
+          console.info('Modal dismissed at: ' + new Date());
+        });
       };
 
       var saveState = function () {
@@ -123,7 +287,6 @@ angular.module('BE.seed.controller.bluesky_taxlots_controller', [])
         enableFiltering: true,
         enableGridMenu: true,
         enableSorting: true,
-        exporterCsvFilename: 'Taxlot Data.csv',
         exporterMenuPdf: false,
         fastWatch: true,
         flatEntityAccess: true,
@@ -142,8 +305,9 @@ angular.module('BE.seed.controller.bluesky_taxlots_controller', [])
         treeCustomAggregations: bluesky_service.aggregations(),
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
-          updateHeight();
-          angular.element($window).on('resize', _.debounce(updateHeight, 150));
+
+          $scope.updateHeight();
+          angular.element($window).on('resize', _.debounce($scope.updateHeight, 150));
 
           gridApi.colMovable.on.columnPositionChanged($scope, saveState);
           gridApi.colResizable.on.columnSizeChanged($scope, saveState);

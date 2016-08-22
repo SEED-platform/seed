@@ -51,6 +51,7 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.developer',
     'BE.seed.controller.edit_project_modal',
     'BE.seed.controller.existing_members_modal',
+    'BE.seed.controller.export_inventory_modal',
     'BE.seed.controller.export_modal',
     'BE.seed.controller.label_admin',
     'BE.seed.controller.mapping',

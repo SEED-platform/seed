@@ -2250,7 +2250,12 @@ gs-input .tags .tag-item .remove-button {
   padding: 20px 10px;
 
   .form-group {
+    margin-bottom: 0;
     margin-right: 20px;
+  }
+
+  & + .buildingListControls {
+    padding-top: 0;
   }
 }
 
@@ -2354,6 +2359,23 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
+.ui-grid-row.ui-grid-row-selected > [ui-grid-row] > .ui-grid-cell > .ui-grid-row-header-link {
+  background-color: #c9dde1;
+}
+
 .ui-grid-cell-contents {
   font-weight: normal;
+}
+
+// Nested rows
+.ui-grid-row:not(.ui-grid-tree-header-row) {
+  /*.ui-grid-cell-contents {
+    color: #444;
+  }*/
+  /*&:nth-child(odd) .ui-grid-cell {
+    background-color: #fbfbf3;
+  }
+  &:nth-child(even) .ui-grid-cell {
+    background-color: #f8f6e7;
+  }*/
 }
