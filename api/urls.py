@@ -21,12 +21,7 @@ api_v2_router.register(r'reverse_test', TestReverseViewSet, base_name="reverse_t
 urlpatterns = [
     # v2 api
     url(r'^', include(api_v2_router.urls)),  # , namespace='ap')),
-    # swagger urls
-    url(
-        r'^swagger/',
-        include('rest_framework_swagger.urls'),
-        name='swagger'
-    ),
+
     url(
         r'^test_view_with_arg/([0-9]{1})/$',
         test_view_with_arg,
