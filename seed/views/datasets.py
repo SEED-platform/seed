@@ -25,6 +25,7 @@ _log = logging.getLogger(__name__)
 
 
 class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
+    raise_exception = True
 
     @require_organization_id_class
     @api_endpoint_class

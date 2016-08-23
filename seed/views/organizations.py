@@ -152,6 +152,7 @@ _log = logging.getLogger(__name__)
 
 
 class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
+    raise_exception = True
 
     @api_endpoint_class
     @ajax_request_class

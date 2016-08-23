@@ -191,11 +191,5 @@ urlpatterns = [
         delete_organization,
         name='delete_organization'
     ),
-    # swagger urls
-    url(
-        r'^api-docs/',
-        include('rest_framework_swagger.urls'),
-        name='swagger'
-    ),
 
 ]

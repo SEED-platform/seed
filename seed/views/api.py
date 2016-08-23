@@ -49,7 +49,7 @@ def get_api_schema(request):
     i = {}
     i['api:testviewarg'] = reverse('api:testviewarg', args=[1])
     i['seed:get_column_mapping_suggestions'] = reverse('seed:get_column_mapping_suggestions')
-    i['find_datasets_get'] = reverse('api:datasets-list')
+    i['apiv2:datasets-list'] = reverse('apiv2:datasets-list')
     # i = reverse('seed:get_building', args=['pk'])
     return str(i)
 
