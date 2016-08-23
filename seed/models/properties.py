@@ -13,7 +13,8 @@ from seed.lib.superperms.orgs.models import Organization
 from django.db.models.fields.related import ManyToManyField
 from seed.models import Cycle
 from seed.models import StatusLabel
-
+from auditlog import AUDIT_IMPORT
+from auditlog import DATA_UPDATE_TYPE
 
 class Property(models.Model):
     organization = models.ForeignKey(Organization)
@@ -96,20 +97,34 @@ class PropertyView(models.Model):
     class Meta:
         unique_together = ('property', 'cycle',)
 
-    # FIXME
-    def initialize_audit_log(self, **args):
-        count = PropertyAuditLog.objects.query(child=self.state).count()
-        assert count == 0
-        audit_log = PropertyAuditLog(parent1 = self.state, **args)
-        audit_log.save()
+    def ensure_audit_logs_initialized(self):
+        count = PropertyAuditLog.objects.filter(state=self.state).count()
+        if count == 0:
+            audit_log = PropertyAuditLog(organization=self.property.organization, state = self.state, record_type = AUDIT_IMPORT)
+            audit_log.save()
+
         return
 
-    def update_state(self, new_state, other_parent_state = None, **args):
-        view_audit_log = TaxLotAuditLog.objects.query(child == self.state).first()
-        new_audit_log = TaxLotAuditLog(parent1 = self.state, parent2 = other_parent_state, new_state, **args)
+    def update_state(self, new_state, **kwds):
+        self.ensure_audit_logs_initialized()
 
+        view_audit_log = PropertyAuditLog.objects.filter(state = self.state).first()
+        new_audit_log = PropertyAuditLog(organization=self.property.organization, parent1 = view_audit_log, state=new_state, **kwds)
         self.state = new_state
-
         self.save()
         new_audit_log.save()
         return
+
+
+class PropertyAuditLog(models.Model):
+    organization = models.ForeignKey(Organization)
+    parent1 = models.ForeignKey('PropertyAuditLog', blank=True, null=True, related_name='propertyauditlog__parent1')
+    parent2 = models.ForeignKey('PropertyAuditLog', blank=True, null=True, related_name='propertyauditlog__parent2')
+
+    state = models.ForeignKey('PropertyState', related_name='propertyauditlog__state')
+
+    name = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    import_filename = models.CharField(max_length=255, null=True, blank=True)
+    record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True, blank=True)
