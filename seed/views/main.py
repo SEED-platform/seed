@@ -1402,6 +1402,7 @@ from rest_framework.decorators import detail_route
 
 
 class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
+    raise_exception = True
 
     @api_endpoint_class
     @ajax_request_class

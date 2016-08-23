@@ -5,7 +5,7 @@
 :author
 """
 
-from django.conf.urls import url, include
+from django.conf.urls import url
 
 from seed.views.main import (
     home, version, create_pm_mapping, get_total_number_of_buildings_for_user,
@@ -29,16 +29,6 @@ from seed.views.main import (
     export_buildings_download, angular_js_tests, delete_organization_buildings,
     delete_buildings, delete_organization
 )
-
-from seed.views.datasets import DatasetViewSet
-from seed.views.organizations import OrganizationViewSet
-from seed.views.main import DataFileViewSet
-from rest_framework import routers
-
-api_v2_router = routers.DefaultRouter()
-api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
-api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
-api_v2_router.register(r'data_files', DataFileViewSet, base_name="data_files")
 
 # prefix, to revert back to original endpoints, leave this blank
 apiv1 = r''  # r'api/v1/'
@@ -201,14 +191,5 @@ urlpatterns = [
         delete_organization,
         name='delete_organization'
     ),
-    # swagger urls
-    url(
-        r'^api-docs/',
-        include('rest_framework_swagger.urls'),
-        name='swagger'
-    ),
-
-    # v2 api
-    url(r'^api/v2/', include(api_v2_router.urls), name='apiv2'),
 
 ]
