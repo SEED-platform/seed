@@ -1,5 +1,6 @@
 Accessor
 accessor
+ActionChains
 admin
 afterwards
 ajax
@@ -21,11 +22,13 @@ backend
 bashrc
 bedes
 boolean
+Bool
 BrowserDefinition
 buildingsnapshot
 BuildingSnapshot
 BuildingSnapshots
 canonicalbuilding
+CanonicalBuilding
 cb
 checkbox
 Chomsky
@@ -38,6 +41,7 @@ cond
 config
 coparents
 coparent
+css
 csv
 Ctrl
 dataset
@@ -60,6 +64,7 @@ Drozdyuk
 edgecase
 eui
 eula
+FileField
 fieldname
 fieldnames
 filename
@@ -80,15 +85,20 @@ graphviz
 gte
 Gzip
 Homebrew
+href
+html
 iand
+idx
 importfile
 ImportFile
 Indices
+init
 initializer
 ior
 ip
 iterable
 Iterable
+iteritems
 js
 jshint
 json
@@ -99,8 +109,12 @@ Landgraf
 len
 Linux
 localhost
+Locator
+locator
 login
 Login
+loggedInFunctionalTestCaseFactory
+loggedOutFunctionalTestCaseFactory
 LoggedInTests
 LoggedOutTests
 loggedout
@@ -122,6 +136,9 @@ noncanonicalprojectbuildings
 noqa
 npm
 num
+onload
+OrderedDict
+OrderedDicts
 org
 orgs
 os
@@ -171,6 +188,7 @@ tastypie
 td
 tearDown
 templatetags
+TableRows
 TestCaseFactory
 TestCaseFactoryBrowser
 Thusly
@@ -210,3 +228,6 @@ workflow
 wsgi
 xml
 xmltodict
+xpath
+XPath
+XPATH
