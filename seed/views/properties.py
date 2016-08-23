@@ -865,8 +865,10 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
         if result.get('status', None) != 'error':
             property_view = result.pop('property_view')
             result.update(PropertyViewSerializer(property_view).data)
+            # remove PropertyView id from result
+            result.pop('id')
             result['state'] = PropertyStateSerializer(property_view.state).data
-            result['lots'] = self.get_taxlots(property_view.id)
+            result['taxlots'] = self.get_taxlots(property_view.id)
             status_code = status.HTTP_200_OK
         else:
             status_code = status.HTTP_404_NOT_FOUND
@@ -964,6 +966,8 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
         if result.get('status', None) != 'error':
             taxlot_view = result.pop('taxlot_view')
             result.update(TaxLotViewSerializer(taxlot_view).data)
+            # remove TaxLotView id from result
+            result.pop('id')
             result['state'] = TaxLotStateSerializer(taxlot_view.state).data
             result['properties'] = self.get_taxlots(taxlot_view.id)
             status_code = status.HTTP_200_OK
