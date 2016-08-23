@@ -5,7 +5,7 @@
 :author
 """
 
-from django.conf.urls import url, include
+from django.conf.urls import url
 
 from seed.views.main import (
     home, version, create_pm_mapping, get_total_number_of_buildings_for_user,

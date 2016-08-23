@@ -6,7 +6,7 @@
 """
 from django.conf.urls import url
 
-from seed.views.api import get_api_schema, test_view_with_arg
+from seed.views.api import get_api_schema
 
 urlpatterns = [
     # api schema
@@ -14,10 +14,5 @@ urlpatterns = [
         r'^get_api_schema/$',
         get_api_schema,
         name='get_api_schema'
-    ),
-    url(
-        r'^test_view_with_arg/([0-9]{1})/$',
-        test_view_with_arg,
-        name='testviewarg'
     ),
 ]

@@ -9,7 +9,7 @@ from django.conf.urls import url, include
 from seed.views.datasets import DatasetViewSet
 from seed.views.organizations import OrganizationViewSet
 from seed.views.main import DataFileViewSet
-from api.views import TestReverseViewSet
+from api.views import TestReverseViewSet, test_view_with_arg
 from rest_framework import routers
 
 api_v2_router = routers.DefaultRouter()
@@ -26,5 +26,10 @@ urlpatterns = [
         r'^swagger/',
         include('rest_framework_swagger.urls'),
         name='swagger'
+    ),
+    url(
+        r'^test_view_with_arg/([0-9]{1})/$',
+        test_view_with_arg,
+        name='testviewarg'
     ),
 ]
