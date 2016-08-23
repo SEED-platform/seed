@@ -9,6 +9,22 @@ from seed.utils.api import (
     get_api_endpoints, format_api_docstring, api_endpoint
 )
 
+from django.core.urlresolvers import reverse_lazy
+
+from rest_framework.reverse import reverse
+
+
+@api_endpoint
+@ajax_request
+def test_view_with_arg(request, pk=None):
+    """
+    Hi
+    :param request: some stuff
+    :param pk: more stuff
+    :return: nothing
+    """
+    return {'value of pk': pk}
+
 
 @api_endpoint
 @ajax_request
@@ -30,6 +46,13 @@ def get_api_schema(request):
 
     .. todo:: Format docstrings better.
     """
+    i = {}
+    i['api:testviewarg'] = reverse('api:testviewarg', args=[1])
+    i['seed:get_column_mapping_suggestions'] = reverse('seed:get_column_mapping_suggestions')
+    i['find_datasets_get'] = reverse('api:datasets-list')
+    # i = reverse('seed:get_building', args=['pk'])
+    return str(i)
+
     endpoints = get_api_endpoints()
 
     resp = {}
