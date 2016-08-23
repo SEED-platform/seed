@@ -8,11 +8,14 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django_pgjson.fields import JsonField
+from django.db.models.fields.related import ManyToManyField
 
 from seed.lib.superperms.orgs.models import Organization
+from seed.models import StatusLabel
 from seed.models import Cycle
 from seed.models import PropertyView
-
+from auditlog import AUDIT_IMPORT
+from auditlog import DATA_UPDATE_TYPE
 
 class TaxLot(models.Model):
     organization = models.ForeignKey(Organization)
@@ -50,12 +53,30 @@ class TaxLotView(models.Model):
     state = models.ForeignKey(TaxLotState)
     cycle = models.ForeignKey(Cycle)
 
+    labels = ManyToManyField(StatusLabel)
+
     def __unicode__(self):
         return u'TaxLot View - %s' % (self.pk)
 
-    # FIXME: Add unique constraint on (property, cycle)
     class Meta:
         unique_together = ('taxlot', 'cycle',)
+
+    def ensure_audit_logs_initialized(self):
+        count = TaxLotAuditLog.objects.filter(state=self.state).count()
+        if count == 0:
+            return
+        audit_log = TaxLotAuditLog(organization=self.taxlot.organization, state = self.state, record_type = AUDIT_IMPORT)
+        audit_log.save()
+        return
+
+    def update_state(self, new_state, **args):
+        self.ensure_audit_logs_initialized()
+        view_audit_log = TaxLotAuditLog.objects.filter(state=self.state).first()
+        new_audit_log = TaxLotAuditLog(organization=self.taxlot.organization, parent1 = view_audit_log, state = new_state, **args)
+        self.state = new_state
+        self.save()
+        new_audit_log.save()
+        return
 
 
 class TaxLotProperty(models.Model):
@@ -75,3 +96,16 @@ class TaxLotProperty(models.Model):
 
     class Meta:
         unique_together = ('property_view', 'taxlot_view',)
+
+
+
+class TaxLotAuditLog(models.Model):
+    organization = models.ForeignKey(Organization)
+    parent1 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True, related_name='taxlotauditlog__parent1')
+    parent2 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True, related_name='taxlotauditlog__parent2')
+    state = models.ForeignKey('TaxLotState', related_name='taxlotauditlog__state')
+    name = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    import_filename = models.CharField(max_length=255, null=True, blank=True)
+    record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True, blank=True)

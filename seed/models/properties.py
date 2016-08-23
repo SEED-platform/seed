@@ -10,8 +10,11 @@ from django.db import models
 from django_pgjson.fields import JsonField
 
 from seed.lib.superperms.orgs.models import Organization
+from django.db.models.fields.related import ManyToManyField
 from seed.models import Cycle
-
+from seed.models import StatusLabel
+from auditlog import AUDIT_IMPORT
+from auditlog import DATA_UPDATE_TYPE
 
 class Property(models.Model):
     organization = models.ForeignKey(Organization)
@@ -86,9 +89,42 @@ class PropertyView(models.Model):
     cycle = models.ForeignKey(Cycle)
     state = models.ForeignKey(PropertyState)
 
+    labels = ManyToManyField(StatusLabel)
+
     def __unicode__(self):
         return u'Property View - %s' % (self.pk)
 
-    # FIXME: Add unique constraint on (property, cycle)
     class Meta:
         unique_together = ('property', 'cycle',)
+
+    def ensure_audit_logs_initialized(self):
+        count = PropertyAuditLog.objects.filter(state=self.state).count()
+        if count == 0:
+            audit_log = PropertyAuditLog(organization=self.property.organization, state = self.state, record_type = AUDIT_IMPORT)
+            audit_log.save()
+
+        return
+
+    def update_state(self, new_state, **kwds):
+        self.ensure_audit_logs_initialized()
+
+        view_audit_log = PropertyAuditLog.objects.filter(state = self.state).first()
+        new_audit_log = PropertyAuditLog(organization=self.property.organization, parent1 = view_audit_log, state=new_state, **kwds)
+        self.state = new_state
+        self.save()
+        new_audit_log.save()
+        return
+
+
+class PropertyAuditLog(models.Model):
+    organization = models.ForeignKey(Organization)
+    parent1 = models.ForeignKey('PropertyAuditLog', blank=True, null=True, related_name='propertyauditlog__parent1')
+    parent2 = models.ForeignKey('PropertyAuditLog', blank=True, null=True, related_name='propertyauditlog__parent2')
+
+    state = models.ForeignKey('PropertyState', related_name='propertyauditlog__state')
+
+    name = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    import_filename = models.CharField(max_length=255, null=True, blank=True)
+    record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True, blank=True)
