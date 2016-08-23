@@ -18,13 +18,21 @@ angular.module('BE.seed.controller.taxlot_detail', [])
 function($controller, $scope,  $uibModal, $log, $filter, urls, label_helper_service,
 				 	property_taxlot_service, taxlot_payload, all_taxlot_columns, default_taxlot_columns ) {
 
-	$scope.taxlot = taxlot_payload;
+	$scope.taxlot = taxlot_payload.taxlot;
+	$scope.cycle = taxlot_payload.cycle;
+	$scope.related_properties = taxlot_payload.properties;
+	$scope.historical_items = taxlot_payload.history;
 
 	/** TaxLot state is managed in this base scope property. */
 	$scope.item_state = taxlot_payload.state;
+	$scope.fields_changed = taxlot_payload.fields_changed;
+
+	// Remember the list of *all* extra_data keys (current state or historical state)
+	// as provided by the server.
+	$scope.all_extra_data_keys = taxlot_payload.extra_data_keys;
 
 	$scope.item_type = "taxlot";
-	$scope.item_title = "Tax Lot :" + $scope.taxlot.state.address_line_1 // TODO: Decide what value (address_line_1?) to show as identifying label in tax lot detail view?
+	$scope.item_title = "Tax Lot : " + $scope.item_state.address_line_1 // TODO: Decide what value (address_line_1?) to show as identifying label in tax lot detail view?
 	$scope.user = {};
 	$scope.user_role = taxlot_payload.user_role;
 
@@ -75,7 +83,7 @@ function($controller, $scope,  $uibModal, $log, $filter, urls, label_helper_serv
 
 		$scope.format_date_values($scope.item_state, property_taxlot_service.taxlot_state_date_columns);
 
-		$scope.data_fields = $scope.generate_data_fields($scope.item_state, $scope.default_taxlot_columns);
+		$scope.data_fields = $scope.generate_data_fields($scope.item_state, $scope.default_taxlot_columns, $scope.all_extra_data_keys);
 
 		$scope.labels = $scope.init_labels($scope.taxlot);
 	};

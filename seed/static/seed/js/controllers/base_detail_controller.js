@@ -78,19 +78,25 @@ function($scope, $uibModal, $log, $filter, property_taxlot_service,
 	 * Also, it only adds columns that are in the
 	 * default_columns property (if any exist).
 	 *
-	 * @param {Object}	stateObj: A 'state' object (for a Property or TaxLot) of key/value pairs
+	 * @param {Object}	state_obj  						A 'state' object (for a Property or TaxLot) of key/value pairs
+	 * @param {Array}   default_columns 			An array of key names for columns selected by user for display
+	 * @param {Array}   extra_data_keys 			An array of key names for all extra_data fields
+	 *                  											(in current state or past states)
 	 *
 	 * @returns {Array} data_fields: A list of data_field objects
 	 *
 	 */
-	$scope.generate_data_fields = function(stateObj, default_columns) {
+	$scope.generate_data_fields = function(state_obj, default_columns, extra_data_keys) {
 
 		var data_fields = [];
 		var key_list = [];
 		var check_defaults = (default_columns && default_columns.length > 0);
+		if (!extra_data_keys) {
+			extra_data_keys = [];
+		}
 
-		// add fixed_column property properties to data_fields
-		angular.forEach(stateObj, function ( val, key ) {
+		// add Property fixed_column properties to data_fields
+		angular.forEach(state_obj, function ( val, key ) {
 			// Duplicate check and check if default_columns is used and if field in columns
 			if ( !_.isUndefined(val) && $scope.is_valid_data_column_key(key) && !_.includes(key_list, key) &&
 					(!check_defaults || (check_defaults && _.includes(default_columns, key)))) {
@@ -102,10 +108,10 @@ function($scope, $uibModal, $log, $filter, property_taxlot_service,
 			}
 		});
 
-		// add extra_data properties for property to data_fields
-		angular.forEach(stateObj.extra_data, function (val, key){
+		// add Property extra_data from all states to data_fields
+		angular.forEach(extra_data_keys, function (key) {
 			// Duplicate check and check if default_columns is used and if field in columns
-			if (!_.isUndefined(val) && $scope.is_valid_data_column_key(key) && !_.includes(key_list, key) &&
+			if ($scope.is_valid_data_column_key(key) && !_.includes(key_list, key) &&
 					(!check_defaults || (check_defaults && _.includes(default_columns, key)))) {
 				key_list.push(key);
 				data_fields.push({
@@ -219,16 +225,16 @@ function($scope, $uibModal, $log, $filter, property_taxlot_service,
 	 * those we recognize as a 'date' value
 	 */
 
-	$scope.format_date_values = function(stateObj, date_columns) {
+	$scope.format_date_values = function(state_obj, date_columns) {
 
-		if (!stateObj || stateObj.length===0) return;
+		if (!state_obj || state_obj.length===0) return;
 		if (!date_columns || date_columns.length===0) return;
 
 		// Look for each 'date' type value in all Property State values
 		// and update format accordingly.
 		_.each(date_columns, function(key){
-			if(stateObj[key]){
-				stateObj[key] = $filter('date')(stateObj[key], 'MM/dd/yyyy');
+			if(state_obj[key]){
+				state_obj[key] = $filter('date')(state_obj[key], 'MM/dd/yyyy');
 			}
 		});
 

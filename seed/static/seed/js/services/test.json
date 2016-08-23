@@ -1,0 +1,98 @@
+{
+  "property": {
+    "campus": "False",
+    "id": 4,
+    "organization": 24,
+    "parent_property": ""
+  },
+  "cycle": {
+    "created": "2016-08-02T16:38:22.925258Z",
+    "end": "2011-01-01T07:59:59Z",
+    "id": 1,
+    "name": "2010 Calendar Year",
+    "organization": 24,
+    "start": "2010-01-01T08:00:00Z",
+    "user": ""
+  },
+  "lots": [],
+  "state": {
+    "address_line_1": "95864 SW Cottonwood Court",
+    "address_line_2": "",
+    "building_certification": "",
+    "building_count": "",
+    "building_home_energy_score_identifier": "",
+    "building_portfolio_manager_identifier": "477198",
+    "city": "EnergyTown",
+    "conditioned_floor_area": "",
+    "confidence": "",
+    "energy_alerts": "",
+    "energy_score": 74,
+    "extra_data": {"National Median Site EUI (kBtu/ft2)": "120.3",
+      "National Median Source EUI (kBtu/ft2)": "282.3",
+      "Organization": "Acme Inc",
+      "Parking - Gross Floor Area (ft2)": "89041",
+      "Property Floor Area (Buildings And Parking) (ft2)": "139,835",
+      "Total GHG Emissions (MtCO2e)": "2114.3",
+      "custom_id_1": "",
+      "prop_bs_id": 87941,
+      "prop_cb_id": 33315,
+      "record_created": "2016-07-27T15:52:11.879Z",
+      "record_modified": "2016-07-27T15:55:10.180Z",
+      "record_year_ending": "2010-12-31"},
+    "generation_date": "2013-09-27T18:41:00Z",
+    "gross_floor_area": "",
+    "id": 1048,
+    "jurisdiction_property_identifier": "",
+    "lot_number": "",
+    "occupied_floor_area": "",
+    "owner": "",
+    "owner_address": "",
+    "owner_city_state": "",
+    "owner_email": "",
+    "owner_postal_code": "",
+    "owner_telephone": "",
+    "pm_parent_property_id": "",
+    "postal_code": "10106-7162",
+    "property_name": "",
+    "property_notes": "",
+    "recent_sale_date": "",
+    "release_date": "2013-09-27T18:42:00Z",
+    "site_eui": 91.8,
+    "site_eui_weather_normalized": 89.0,
+    "source_eui": 215.5,
+    "source_eui_weather_normalized": "",
+    "space_alerts": "",
+    "state": "Illinois",
+    "use_description": "",
+    "year_built": 1964,
+    "year_ending": ""
+  },
+  "history": [
+    {
+      "state": {
+        "address_line_1": "95864 SW Cottonwood Court",
+        "site_eui": 21,
+        "source_eui" : 22
+      },
+      "fields_changed": [
+        "site_eui",
+        "source_eui"
+      ],
+      "date_edited": "2016-07-26T15:55:10.180Z"
+    },
+    {
+      "state": {
+        "address_line_1": "95864 SW Cottonwood Court",
+        "site_eui": 19,
+        "source_eui" : 18
+      },
+      "fields_changed": [
+        "site_eui",
+        "source_eui"
+      ],
+      "date_edited": "2016-07-25T15:55:10.180Z"
+    }
+
+  ],
+  "status": "success"
+}

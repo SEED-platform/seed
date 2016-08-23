@@ -96,49 +96,101 @@
                 <table class="table table-striped table_highlight_first fixed-layout">
                     <thead>
                         <tr>
-                            <th sd-resizable id="building-fields">Field</th>
-                            <th sd-resizable class="ellipsis-resizable">Value</th>
+                            <th sd-resizable
+                                id="building-fields">
+                                Field
+                            </th>
+                            <th sd-resizable
+                                class="ellipsis-resizable">
+                                Current Value
+                            </th>
+                            <!-- Historical values -->
+                            <th ng-repeat ="historical_item in historical_items"
+                                class="ellipsis">
+                                <div ng-if="historical_item.source=='ImportFile'"
+                                     uib-popover="{$ historical_item.filename $}">
+                                    {$ historical_item.filename $}
+                                </div>
+                                <div ng-if="historical_item.source=='UserEdit'">
+                                    (User Edit)
+                                </div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="f in data_fields">
-                            <td>{$ f.key | titleCase $}</td>
-                            <td class="ellipsis">
-                                <span   class="sd-data-content"
-                                         ng-hide="edit_form_showing"
-                                         ng-if="f.type !== 'extra_data'"
-                                         popover-placement="top-left"
-                                         uib-popover="{$ item_state[f.key] $}"
-                                         popover-animation="false"
-                                         popover-trigger="outsideClick">
-                                    {$ item_state[f.key] $}
-                                </span>
-                                <span   class="sd-data-content"
-                                        ng-hide="edit_form_showing"
-                                        ng-if="f.type === 'extra_data'"
-                                        popover-placement="top-left"
-                                        popover-trigger="outsideClick"
-                                        popover-animation="false"
-                                        uib-popover="{$ item_state.extra_data[f.key] $}">
-                                    {$ item_state.extra_data[f.key] $}
-                                </span>
-                                <div    ng-show="edit_form_showing"
-                                        ng-if="f.type === 'extra_data'">
+                        <tr ng-repeat="field in data_fields">
+                            
+                            <!-- Field name -->
+                            <td>{$ field.key | titleCase $}</td>
+                            
+                            <!-- Current field value -->
+                            <td class="ellipsis"
+                                ng-class="edit_form_showing == false && fields_changed.indexOf(field.key)>=0 ? 'highlight' : ''">
+                                    <span   class="sd-data-content"
+                                            ng-hide="edit_form_showing"
+                                            ng-if="field.type !== 'extra_data'"
+                                            popover-placement="top-left"
+                                            popover-animation="false"
+                                            popover-trigger="outsideClick"
+                                            uib-popover="{$ item_state[field.key] $}">
+                                        {$ item_state[field.key] $}
+                                    </span>
+                                    <span   class="sd-data-content"
+                                            ng-class="fields_changed.indexOf(field.key)>=0 ? 'highlight' : ''"
+                                            ng-hide="edit_form_showing"
+                                            ng-if="field.type === 'extra_data'"
+                                            popover-placement="top-left"
+                                            popover-trigger="outsideClick"
+                                            popover-animation="false"
+                                            uib-popover="{$ item_state.extra_data[field.key] $}">
+                                        {$ item_state.extra_data[field.key] $}
+                                    </span>
+                                </div>
+                                
+                                <div ng-show="edit_form_showing">
                                     <div  ng-show="edit_form_showing"
-                                          ng-if="f.type !== 'extra_data'">
+                                          ng-if="current_state_field.type !== 'extra_data'">
                                         <input id="edit_attribute_id"
                                                class="form-control input-sm"
                                                type="text"
                                                name="tax_lot_id"
-                                               ng-model="item_state[f.key]"/>
+                                               ng-model="item_state[field.key]"/>
                                     </div>
-                                    <input id="edit_property_attribute_id"
-                                           class="form-control input-sm"
-                                           type="text"
-                                           name="tax_lot_id"
-                                           ng-model="item_state.extra_data[f.key]"/>
+                                    <div  ng-show="edit_form_showing"
+                                          ng-if="current_state_field.type === 'extra_data'">
+                                    
+                                        <input id="edit_property_attribute_id"
+                                               class="form-control input-sm"
+                                               type="text"
+                                               name="tax_lot_id"
+                                               ng-model="item_state.extra_data[field.key]"/>
+                                    </div>
                                 </div>
+                                
                             </td>
+                            
+                            <!-- Historical values -->
+                            <td ng-repeat="historical_item in historical_items"
+                                ng-class="historical_item.fields_changed.indexOf(field.key)>=0 ? 'highlight' : ''"
+                                class="ellipsis">
+                                <span  class="sd-data-content"
+                                        ng-if="field.type !== 'extra_data'"
+                                        popover-placement="top-left"
+                                        popover-trigger="outsideClick"
+                                        popover-animation="false"
+                                        uib-popover="{$ historical_item.state[field.key] $}">
+                                    {$ historical_item.state[field.key] $}
+                                </span>
+                                 <span  class="sd-data-content"
+                                        ng-if="field.type === 'extra_data'"
+                                        popover-placement="top-left"
+                                        popover-trigger="outsideClick"
+                                        popover-animation="false"
+                                        uib-popover="{$ historical_item.state.extra_data[field.key] $}">
+                                    {$ historical_item.state.extra_data[field.key] $}
+                                </span>
+                            </td>
+                            
                         </tr>
                     </tbody>
                 </table>

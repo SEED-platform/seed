@@ -18,13 +18,22 @@ angular.module('BE.seed.controller.property_detail', [])
 function($controller, $scope, $uibModal, $log, $filter, urls, label_helper_service,
 				 	property_taxlot_service, property_payload, all_property_columns, default_property_columns ) {
 
-	$scope.property = property_payload;
+	/** See service for structure of returned payload */
+	$scope.property = 					property_payload.property;
+	$scope.cycle = 							property_payload.cycle;
+	$scope.related_taxlots = 		property_payload.taxlots;
+	$scope.historical_items = 	property_payload.history;
 
 	/** Property state is managed in this base scope property. */
 	$scope.item_state = property_payload.state;
+	$scope.fields_changed = property_payload.fields_changed;
+
+	// Remember the list of *all* extra_data keys (current state or historical state)
+	// as provided by the server.
+	$scope.all_extra_data_keys = property_payload.extra_data_keys;
 
 	$scope.item_type = "property";
-	$scope.item_title = "Property : " + $scope.property.state.address_line_1;
+	$scope.item_title = "Property : " + $scope.item_state.address_line_1;
 	$scope.user = {};
 	$scope.user_role = property_payload.user_role;
 
@@ -41,7 +50,9 @@ function($controller, $scope, $uibModal, $log, $filter, urls, label_helper_servi
 
 
 
-	/* User clicked 'save' button */
+	/**
+	 * User clicked 'save' button
+	 */
 	$scope.on_save = function () {
 		$scope.save_property();
 	}
@@ -52,7 +63,7 @@ function($controller, $scope, $uibModal, $log, $filter, urls, label_helper_servi
 	 */
 	$scope.save_property = function (){
 		$scope.$emit('show_saving');
-		property_taxlot_service.update_property($scope.property.id, $scope.property.cycle.id, $scope.item_state)
+		property_taxlot_service.update_property($scope.property.id, $scope.cycle.id, $scope.item_state)
 			.then(function (data){
 					$scope.$emit('finished_saving');
 				}, function (data, status){
@@ -75,7 +86,7 @@ function($controller, $scope, $uibModal, $log, $filter, urls, label_helper_servi
 
 		$scope.format_date_values($scope.item_state, property_taxlot_service.property_state_date_columns);
 
-		$scope.data_fields = $scope.generate_data_fields($scope.item_state, $scope.default_property_columns);
+		$scope.data_fields = $scope.generate_data_fields($scope.item_state, $scope.default_property_columns, $scope.all_extra_data_keys);
 
 		$scope.labels = $scope.init_labels($scope.property);
 

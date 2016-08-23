@@ -2381,6 +2381,10 @@ gs-input .tags .tag-item .remove-button {
   border: 1px solid #F1F1F1
 }
 
+.highlight {
+  background-color: $highlighter;
+}
+
 #swagger-frame {
   height: calc(100vh - 60px);
   width: 100%;

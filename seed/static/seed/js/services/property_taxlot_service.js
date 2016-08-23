@@ -53,14 +53,59 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
 
     /** Get Property information from server for a specified Property and Cycle and Organization.
      *
-     *  The returned Property object should have at minimum a 'state' key with
+     *  The returned Property object will have a 'state' key with
      *  object containing all key/values for Property State (including 'extra_data')
      *  and a 'cycle' key with an object with at least the "id" key for that Cycle.
      *
-     * @param property_id         A Property object, which should include
-     * @param cycle_id            A Property object, which should include
+     * @param property_id         The id of the requested Property
+     * @param cycle_id            The id of the requested Cycle for the requested Property
      *
      * @returns {Promise}
+     *
+     *
+     *  An example of structure of the returned JSON is...
+     *
+     *  {
+     *    'property' {
+     *      'id': 4,
+     *      ..other Property fields...
+     *     },
+     *    'cycle': {
+     *      'id': 1,
+     *      ...other Cycle fields...
+     *     },
+     *     'taxlots': [
+     *      ...array of objects with related Lot information...
+     *     ],
+     *     'state': {
+     *        ...various key/values for Property state...
+     *        extra_data : {
+     *          ..various key/values for extra data...
+     *        }
+     *     }
+     *     'fields_changed' : [
+     *        ..list of keys for fields that have changed since last state
+     *     ]
+     *     'history' : [
+     *        {
+     *          'state': {
+     *            ...various key/values for Property state...
+     *              extra_data : {
+     *                ..various key/values for extra data...
+     *              }
+     *           },
+     *           'fields_changed': [
+     *               ..list of keys for fields that have changed since last state
+     *           ],
+     *           'date_edited': '2016-07-26T15:55:10.180Z'
+     *           'source' : source of edit (ImportFile or UserEdit)
+     *           'filename' : name of file if source=ImportFile
+     *        },
+     *        ... more history state objects...
+     *     ]
+     *     'success' : True/False
+     *  }
+     *
      */
 
     property_taxlot_service.get_property = function(property_id, cycle_id) {
@@ -205,6 +250,67 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
     };
 
 
+
+
+
+    /** Get TaxLot information from server for a specified TaxLot and Cycle and Organization.
+     *
+     *  The returned TaxLot object will have a 'state' key with
+     *  object containing all key/values for TaxLot State (including 'extra_data')
+     *  and a 'cycle' key with an object with at least the "id" key for that Cycle.
+     *
+     * @param taxlot_id         The id of the TaxLot object to retrieve
+     * @param cycle_id          The id of the particular cycle for the requested TaxLot
+     *
+     * @returns {Promise}
+     *
+     *
+     *  An example of structure of the returned JSON is...
+     *
+     *  {
+     *    'taxlot' {
+     *      'id': 4,
+     *      ..other Property fields...
+     *     },
+     *    'cycle': {
+     *      'id': 1,
+     *      ...other Cycle fields...
+     *     },
+     *     'properties': [
+     *      ...array of objects with related Property information...
+     *     ],
+     *     'state': {
+     *        ...various key/values for TaxLot state...
+     *        extra_data : {
+     *          ..various key/values for extra data...
+     *        }
+     *     }
+     *     'fields_changed' : [
+     *        ..list of keys for fields that have changed since last state
+     *     ]
+     *     'history' : [
+     *        {
+     *          'state': {
+     *            ...various key/values for TaxLot state...
+     *              extra_data : {
+     *                ..various key/values for extra data...
+     *              }
+     *           },
+     *           'fields_changed': [
+     *               ..list of keys for fields that have changed since last state
+     *           ],
+     *           'date_edited': '2016-07-26T15:55:10.180Z'
+     *           'source' : source of edit (ImportFile or UserEdit)
+     *           'filename' : name of file if source=ImportFile
+     *        },
+     *        ... more history state objects...
+     *     ]
+     *     'success' : True/False
+     *  }
+     *
+     */
+
+
     property_taxlot_service.get_taxlot = function(taxlot_id, cycle_id) {
 
       // Error checks
@@ -236,6 +342,8 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
       });
       return defer.promise;
     };
+
+
 
      /** Save TaxLot State for a specified Property and Cycle and Organization.
      *
