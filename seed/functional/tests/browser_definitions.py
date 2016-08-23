@@ -39,14 +39,16 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 #   It should be removed when the upstream fix lands. Check if to see          #
 #   if it has landed if your browser version > 47.0                            #
 #                                                                              #
-#   You will also need to remove the get_firefox_webdriver method              #
-#   and update the get_driver method to remove the test there.                 #
-#                                                                              #
 ################################################################################
 
 from distutils.spawn import find_executable
 import errno
 import subprocess
+
+try:
+    ENOPKG = errno.ENOPKG
+except AttributeError:
+    errno.ENOPKG = 65
 
 FIREFOX_IS_BROKEN = False
 HAS_MARIONETTE = False
@@ -55,42 +57,55 @@ HAS_MARIONETTE = False
 if not os.getenv('TRAVIS') == 'true':
     HAS_MARIONETTE = find_executable('wires')
     THIS_PATH = os.path.dirname(os.path.realpath(__file__))
-    THIS_FILE = os.path.join(THIS_PATH, 'base.py')
+    THIS_FILE = os.path.join(THIS_PATH, 'browser_definitions.py')
 
-    try:
-        FIREFOX_VERSION = subprocess.check_output(
-            ['firefox', '--version']).rstrip().split()[-1]
-        FIREFOX_IS_BROKEN = FIREFOX_VERSION >= '47.0'
-    except OSError as err:
+    FIREFOX_BINARY = find_executable('firefox')
+    if not FIREFOX_BINARY:
         print "Can't find Firefox!"
-        errmsg = os.strerror(errno.ENOPKG)
-        errmsg += 'Firefox See: {}'.format(THIS_FILE)
+        errmsg = (
+            "Can't find Firefox! Please ensure it is on $PATH"
+            "or somewhere it can be found.See: {}".format(THIS_FILE)
+        )
         raise EnvironmentError(errno.ENOPKG, errmsg)
+    FIREFOX_VERSION = subprocess.check_output(
+        [FIREFOX_BINARY, '--version']).rstrip().split()[-1]
+
+    FIREFOX_IS_BROKEN = FIREFOX_VERSION >= '47.0'
+    print "HAS MARIONETTE: {}".format(HAS_MARIONETTE)
+    print "FIREFOX VERSION is: {}".format(FIREFOX_VERSION)
 
     if FIREFOX_IS_BROKEN and not HAS_MARIONETTE:
         errmsg = os.strerror(errno.ENOPKG)
         errmsg += ': Marionette. See: {}'.format(THIS_FILE)
         raise EnvironmentError(errno.ENOPKG, errmsg)
 
-
-# This can be removed if hack is not longer needed
-# as long as you update the Firefox browser definitions
-def get_firefox_webdriver():
-    if FIREFOX_IS_BROKEN and HAS_MARIONETTE:
-        caps = DesiredCapabilities.FIREFOX
-        caps["marionette"] = True
-        caps["binary"] = find_executable('firefox')
-        driver = webdriver.Firefox(capabilities=caps)
-    else:
-        driver = webdriver.Firefox()
-    return driver
-
 ################################################################################
 #                                    HACK ENDS                                 #
 ################################################################################
 
 
-# N.B. driver must be the name of the websirver not an instance
+def get_firefox_webdriver():
+    # leave this, it disables the reader view popup
+    # which can break tests
+    profile = webdriver.FirefoxProfile()
+    profile.set_preference("browser.reader.detectedFirstArticle", True)
+    profile.set_preference("browser.reader.parse-on-load.enabled", False)
+    profile.set_preference("browser.startup.homepage_override.mstone", "ignore")
+    profile.set_preference("startup.homepage_welcome_url.additional",
+                           "about:blank")
+    profile.update_preferences()
+    # This can be removed if hack is not longer needed
+    if FIREFOX_IS_BROKEN and HAS_MARIONETTE:
+        caps = DesiredCapabilities.FIREFOX
+        caps["marionette"] = True
+        caps["binary"] = find_executable('firefox')
+        driver = webdriver.Firefox(capabilities=caps, firefox_profile=profile)
+    else:
+        driver = webdriver.Firefox(firefox_profile=profile)
+    return driver
+
+
+# N.B. driver must be the name of the webdriver not an instance
 # e.g. webdriver.Chrome *not* webdriver.Chrome()
 BrowserDefinition = namedtuple(
     'BrowserDefinition', ['name', 'capabilities', 'driver'])
@@ -310,7 +325,7 @@ EDGE = BrowserDefinition(
 # tests running on Travis, Sauce Labs and BrowserCapabilities will be used
 if os.getenv('TRAVIS') == 'true':
     # IE removed as set_cookies does not work
-    # see: https://support.saucelabs.com/customer/en/portal/articles/2014444-error---unable-to-add-cookie-to-page-in-ie-
+    # see: https://support.saucelabs.com/customer/en/portal/articles/2014444-error---unable-to-add-cookie-to-page-in-ie-  # NOQA
     BROWSERS = [FIREFOX, CHROME]               # IE,  IE10, SAFARI, EDGE]
 else:
     # tests running locally, we might want to do os detection at some point

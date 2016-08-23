@@ -220,7 +220,7 @@ class Mapping(object):
     @staticmethod
     def _re_escape(key):
         for special in (
-        '\\', '(', ')', '?', '*', '+', '.', '{', '}', '^', '$'):
+                '\\', '(', ')', '?', '*', '+', '.', '{', '}', '^', '$'):
             key = key.replace(special, '\\' + special)
         return key
 

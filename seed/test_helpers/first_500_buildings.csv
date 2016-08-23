@@ -1,0 +1,501 @@
+tax_lot_id,address_line_1,city,state,postal_code,year_built,site_eui,owner,owner_email,owner_telephone,owner_adress,owner_city_state,owner_postal_code
+11588,1151 Lambert Street,Boring,Oregon,97039,2002,216,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+48810,1071 Jones Street,Boring,Oregon,97017,1907,437,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+54953,611 Ortega Avenue,Boring,Oregon,97020,1882,64,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+38880,1181 Robbins Loop,Boring,Oregon,97078,1936,578,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+96237,1381 James Road,Boring,Oregon,97086,1927,159,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+23719,681 Faulkner Boulevard,Boring,Oregon,97054,1924,307,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+54476,821 Brown Street,Boring,Oregon,97057,1944,215,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+86298,1341 Gallagher Street,Boring,Oregon,97005,1931,283,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+18796,841 Patton Street,Boring,Oregon,97064,1933,218,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+39345,1091 Hawkins Street,Boring,Oregon,97058,1951,397,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+41157,1171 Boyd Avenue,Boring,Oregon,97011,1961,224,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+57559,1371 Collins Lane,Boring,Oregon,97030,1893,469,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+94399,911 Cline Avenue,Boring,Oregon,97004,1955,196,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+61752,771 Smith Lane,Boring,Oregon,97021,1943,427,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+96486,1251 Khan Road,Boring,Oregon,97000,1950,274,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+69492,981 Dennis Boulevard,Boring,Oregon,97040,1895,268,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+62284,1311 Stokes Avenue,Boring,Oregon,97003,1953,505,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+68724,1021 Holmes Avenue,Boring,Oregon,97069,1885,480,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+87972,1321 Ortega Avenue,Boring,Oregon,97014,1934,162,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+40539,911 Miller Road,Boring,Oregon,97012,1958,312,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+10286,651 Nicholson Road,Boring,Oregon,97063,1881,285,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+97775,1091 Boyd Avenue,Boring,Oregon,97077,1980,357,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+93844,631 Petersen Avenue,Boring,Oregon,97039,1926,521,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+64551,841 Jones Street,Boring,Oregon,97042,1957,101,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+74882,911 Lopez Road,Boring,Oregon,97028,1998,507,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+29810,721 Perry Avenue,Boring,Oregon,97024,1979,161,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+67950,631 Wagner Avenue,Boring,Oregon,97010,2006,590,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+52734,651 Williams Street,Boring,Oregon,97029,1884,208,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+81631,991 Sanders Road,Boring,Oregon,97087,1913,318,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+71886,731 Powell Loop,Boring,Oregon,97087,1884,412,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+20707,1211 Henson Avenue,Boring,Oregon,97091,1994,358,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+49211,1071 Cross Loop,Boring,Oregon,97065,1945,97,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+15146,1181 Allen Avenue,Boring,Oregon,97056,1894,97,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+36133,741 Smith Avenue,Boring,Oregon,97040,1889,257,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+28369,801 Kennedy Street,Boring,Oregon,97084,1951,451,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+71809,1371 Morris Road,Boring,Oregon,97047,2007,394,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+14400,961 Brooks Avenue,Boring,Oregon,97097,2006,374,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+41976,1231 White Street,Boring,Oregon,97073,1887,578,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+13610,911 Roberts Street,Boring,Oregon,97029,1926,328,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+05327,771 Levine Boulevard,Boring,Oregon,97044,2014,184,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+62237,921 Martin Avenue,Boring,Oregon,97095,1925,149,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+84125,1181 Pittman Road,Boring,Oregon,97003,1999,316,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+56910,781 Smith Road,Boring,Oregon,97088,1967,563,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+78682,811 Garrett Boulevard,Boring,Oregon,97003,1992,114,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+80416,1271 Conley Road,Boring,Oregon,97077,2015,444,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+34635,1291 Summers Street,Boring,Oregon,97093,1893,421,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+84953,1331 Howell Street,Boring,Oregon,97058,1937,451,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+26801,821 Hensley Street,Boring,Oregon,97097,1969,50,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+96671,1261 Roy Boulevard,Boring,Oregon,97020,1916,589,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+54908,731 Hartman Street,Boring,Oregon,97023,1889,367,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+58424,741 Scott Avenue,Boring,Oregon,97061,1923,352,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+06667,1381 Delgado Loop,Boring,Oregon,97013,1961,462,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+35389,1341 Carson Street,Boring,Oregon,97003,1986,247,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+31741,651 Gutierrez Boulevard,Boring,Oregon,97024,1903,465,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+35153,1181 Cole Road,Boring,Oregon,97047,1962,248,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+23055,751 Hunter Loop,Boring,Oregon,97088,2004,544,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+15814,731 Jones Road,Boring,Oregon,97010,1985,96,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+63346,711 Jones Street,Boring,Oregon,97007,1890,398,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+89498,821 Wallace Street,Boring,Oregon,97081,1886,220,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+84785,641 Smith Avenue,Boring,Oregon,97011,1928,73,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+92901,1361 Salazar Avenue,Boring,Oregon,97017,1881,106,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+67598,681 Shaw Avenue,Boring,Oregon,97023,1997,223,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+25460,1341 Robinson Avenue,Boring,Oregon,97024,2009,107,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+01286,691 Chung Lane,Boring,Oregon,97039,1945,468,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+55193,701 Ellis Avenue,Boring,Oregon,97028,2001,279,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+29649,1011 Brown Loop,Boring,Oregon,97017,1938,417,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+38218,611 Burgess Lane,Boring,Oregon,97041,1962,363,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+12922,1181 Peterson Avenue,Boring,Oregon,97035,1911,529,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+32854,741 Chung Boulevard,Boring,Oregon,97042,1909,114,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+08790,871 Stewart Loop,Boring,Oregon,97074,1900,527,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+96836,1091 Skinner Avenue,Boring,Oregon,97087,2012,166,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+55532,751 Kim Loop,Boring,Oregon,97089,1934,519,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+85801,1231 Casey Loop,Boring,Oregon,97056,1936,248,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+19931,681 Moran Avenue,Boring,Oregon,97040,1993,395,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+37273,1371 Dalton Boulevard,Boring,Oregon,97054,1934,573,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+94099,971 Bryant Street,Boring,Oregon,97042,1904,600,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+00458,1011 Chang Road,Boring,Oregon,97074,1937,563,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+89836,1371 Combs Avenue,Boring,Oregon,97010,1932,214,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+12424,1181 King Road,Boring,Oregon,97016,1961,272,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+90436,1191 Johnson Street,Boring,Oregon,97026,1953,526,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+55489,941 Mcfarland Street,Boring,Oregon,97062,1961,430,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+47708,1131 Ross Street,Boring,Oregon,97008,1975,165,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+89349,631 Lopez Road,Boring,Oregon,97014,1986,473,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+96233,661 Tran Loop,Boring,Oregon,97044,1993,248,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+85233,1221 Santiago Street,Boring,Oregon,97024,1940,386,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+97609,1391 Lamb Street,Boring,Oregon,97010,1959,375,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+13006,691 Franklin Avenue,Boring,Oregon,97002,1947,437,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+89893,891 Schultz Boulevard,Boring,Oregon,97099,1910,133,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+09100,811 Johnson Road,Boring,Oregon,97029,1939,413,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+45935,731 Smith Street,Boring,Oregon,97046,1980,200,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+64436,1101 Taylor Avenue,Boring,Oregon,97013,1891,163,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+85535,1191 Kelly Loop,Boring,Oregon,97016,1890,302,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+75023,881 Myers Street,Boring,Oregon,97022,1923,490,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+98816,1211 Oliver Street,Boring,Oregon,97011,1943,177,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+38317,1331 Hernandez Road,Boring,Oregon,97012,1931,160,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+88378,1101 Jones Road,Boring,Oregon,97007,1933,254,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+80771,611 Allen Street,Boring,Oregon,97037,1957,497,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+69429,1191 Kelley Street,Boring,Oregon,97017,1985,206,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+49436,1181 Jones Boulevard,Boring,Oregon,97048,1977,327,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+88322,1021 Benjamin Road,Boring,Oregon,97024,1895,379,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+45722,1171 Porter Lane,Boring,Oregon,97038,1978,208,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+02833,621 Rich Lane,Boring,Oregon,97002,2005,583,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+21470,681 Frank Loop,Boring,Oregon,97068,1899,533,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+84835,1171 Pitts Road,Boring,Oregon,97059,1938,94,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+65288,881 Morrow Avenue,Boring,Oregon,97048,2013,501,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+57234,1331 Brown Street,Boring,Oregon,97069,2015,336,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+49232,1021 King Loop,Boring,Oregon,97033,1962,347,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+61399,1151 Fletcher Lane,Boring,Oregon,97021,1884,128,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+93551,1201 Rodriguez Boulevard,Boring,Oregon,97007,2006,407,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+64229,951 Lambert Road,Boring,Oregon,97099,1881,516,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+23455,901 Jones Avenue,Boring,Oregon,97009,1897,500,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+02202,1401 Brown Boulevard,Boring,Oregon,97017,1962,510,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+94511,1181 Chase Road,Boring,Oregon,97017,1885,174,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+65188,1031 Curtis Street,Boring,Oregon,97006,1885,402,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+14652,1031 Perez Road,Boring,Oregon,97032,2012,272,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+09177,941 Turner Street,Boring,Oregon,97036,1984,102,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+44140,971 Ewing Street,Boring,Oregon,97013,1962,279,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+92108,1381 Morales Road,Boring,Oregon,97085,1987,585,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+35469,871 Pope Street,Boring,Oregon,97080,1920,464,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+77029,701 Graham Lane,Boring,Oregon,97091,1882,144,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+12204,1021 Walker Street,Boring,Oregon,97015,2008,239,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+63682,951 Simmons Loop,Boring,Oregon,97027,1987,294,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+83142,1101 Howell Avenue,Boring,Oregon,97010,2008,423,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+64662,841 Barnes Road,Boring,Oregon,97011,1895,371,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+20654,601 Jenkins Road,Boring,Oregon,97067,1930,104,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+22827,1011 Boone Boulevard,Boring,Oregon,97014,2015,531,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+12913,831 Romero Street,Boring,Oregon,97030,1976,589,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+25292,1231 Wade Street,Boring,Oregon,97033,1954,473,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+50740,741 Strong Avenue,Boring,Oregon,97036,1984,580,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+35761,981 Davis Loop,Boring,Oregon,97098,1895,265,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+79274,1291 Burch Road,Boring,Oregon,97010,1944,583,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+54360,701 Long Street,Boring,Oregon,97015,2015,112,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+48871,1221 Phillips Road,Boring,Oregon,97087,1901,396,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+70048,1091 Henry Street,Boring,Oregon,97033,1961,468,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+54378,981 Barker Avenue,Boring,Oregon,97062,1908,473,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+32217,721 Meyer Road,Boring,Oregon,97024,1992,492,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+51263,1251 Johnson Boulevard,Boring,Oregon,97067,1907,508,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+30387,661 Rogers Loop,Boring,Oregon,97069,1890,309,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+40888,1201 Jackson Avenue,Boring,Oregon,97016,1968,429,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+95270,791 Jones Street,Boring,Oregon,97065,1990,368,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+95739,661 Rogers Boulevard,Boring,Oregon,97010,1992,377,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+95725,961 Day Street,Boring,Oregon,97039,1908,450,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+27613,1331 Phillips Street,Boring,Oregon,97010,1994,568,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+82841,681 Holloway Street,Boring,Oregon,97079,1984,189,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+59187,1101 Williams Avenue,Boring,Oregon,97084,1922,186,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+44685,701 Torres Avenue,Boring,Oregon,97047,1882,100,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+57212,1381 Campbell Lane,Boring,Oregon,97045,1973,549,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+46063,811 Sampson Lane,Boring,Oregon,97055,1934,494,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+41147,821 Good Lane,Boring,Oregon,97038,1977,597,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+90612,731 Henry Lane,Boring,Oregon,97026,1995,221,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+30975,851 Rodgers Road,Boring,Oregon,97085,2015,598,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+32100,1211 Carey Road,Boring,Oregon,97071,1886,521,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+06267,701 Morales Lane,Boring,Oregon,97045,1963,400,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+86981,771 Bates Street,Boring,Oregon,97071,1970,92,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+10581,1301 Campbell Lane,Boring,Oregon,97025,1973,76,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+72491,641 Stevens Street,Boring,Oregon,97059,1960,381,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+13638,1141 Robinson Street,Boring,Oregon,97096,1893,431,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+05319,701 Williams Street,Boring,Oregon,97048,1930,123,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+10887,711 Roberts Avenue,Boring,Oregon,97087,1974,174,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+57488,1171 Franco Loop,Boring,Oregon,97014,2015,383,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+58434,991 Lloyd Street,Boring,Oregon,97024,1886,129,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+13301,1101 Osborn Avenue,Boring,Oregon,97037,1924,437,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+84078,841 Robinson Avenue,Boring,Oregon,97018,1929,480,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+39164,1251 Scott Boulevard,Boring,Oregon,97016,1954,451,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+18769,1121 Harrison Boulevard,Boring,Oregon,97097,1915,369,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+73542,771 Sutton Lane,Boring,Oregon,97069,1900,290,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+36336,1251 Knight Road,Boring,Oregon,97079,1927,357,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+10095,721 White Road,Boring,Oregon,97044,1933,92,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+12257,1181 Hall Street,Boring,Oregon,97004,1937,178,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+37217,1011 Johnson Avenue,Boring,Oregon,97003,1972,347,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+23147,1171 Frey Loop,Boring,Oregon,97086,1893,331,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+60497,1101 Patterson Road,Boring,Oregon,97023,1941,513,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+54710,821 Long Avenue,Boring,Oregon,97002,1887,89,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+12777,1111 Aguirre Boulevard,Boring,Oregon,97076,1934,572,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+41649,1021 Russell Street,Boring,Oregon,97073,1891,480,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+79769,901 Orozco Avenue,Boring,Oregon,97009,1972,586,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+38183,1131 Simon Street,Boring,Oregon,97015,1897,469,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+81460,1071 Johnson Boulevard,Boring,Oregon,97016,1978,136,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+20034,701 Lyons Road,Boring,Oregon,97045,1907,174,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+45151,621 Bailey Street,Boring,Oregon,97059,1907,199,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+54430,1191 Nelson Boulevard,Boring,Oregon,97012,1943,126,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+56847,1371 Bell Loop,Boring,Oregon,97044,1933,219,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+84991,971 Butler Boulevard,Boring,Oregon,97046,1989,102,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+16681,1341 Bowers Road,Boring,Oregon,97052,1974,385,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+41938,601 Thompson Loop,Boring,Oregon,97041,1940,519,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+95427,691 Patel Road,Boring,Oregon,97068,1884,491,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+85867,1311 Ford Street,Boring,Oregon,97098,2005,533,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+89998,1391 Harding Avenue,Boring,Oregon,97099,1884,246,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+91592,1161 Murphy Avenue,Boring,Oregon,97060,1896,160,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+85800,1331 Hoffman Lane,Boring,Oregon,97032,1985,265,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+52004,791 Randolph Road,Boring,Oregon,97080,1999,50,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+20915,1021 Weiss Road,Boring,Oregon,97061,1923,52,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+13919,1281 Martinez Street,Boring,Oregon,97079,2008,349,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+38507,1151 Ingram Avenue,Boring,Oregon,97013,1897,405,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+42651,721 Buckley Street,Boring,Oregon,97080,2011,482,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+70824,891 Sullivan Avenue,Boring,Oregon,97001,1897,545,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+36092,1351 Dennis Street,Boring,Oregon,97024,1990,503,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+90619,1361 Castillo Road,Boring,Oregon,97047,1937,296,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+01864,1101 Smith Avenue,Boring,Oregon,97016,1964,286,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+57504,1171 Wells Street,Boring,Oregon,97022,2013,352,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+54828,891 Jensen Street,Boring,Oregon,97006,1928,472,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+80353,731 Williams Avenue,Boring,Oregon,97093,1964,232,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+59011,1011 Smith Avenue,Boring,Oregon,97094,1905,545,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+43996,1041 Reid Avenue,Boring,Oregon,97081,1945,133,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+47849,1261 Ruiz Avenue,Boring,Oregon,97050,1995,377,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+72483,1081 Simpson Street,Boring,Oregon,97072,1916,429,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+07825,1031 Ramos Avenue,Boring,Oregon,97059,1923,515,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+55217,1311 Galloway Street,Boring,Oregon,97001,2000,169,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+23230,1351 Smith Street,Boring,Oregon,97069,1901,95,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+20577,1331 Rowe Street,Boring,Oregon,97028,1906,305,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+19850,1301 Mitchell Lane,Boring,Oregon,97036,1883,239,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+13420,751 Lambert Boulevard,Boring,Oregon,97057,1887,92,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+12460,611 Leonard Boulevard,Boring,Oregon,97094,1894,146,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+12316,751 Butler Lane,Boring,Oregon,97022,1996,87,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+56343,1091 Roberts Street,Boring,Oregon,97010,1970,590,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+02482,1271 Perez Avenue,Boring,Oregon,97069,1900,521,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+19400,961 Baldwin Loop,Boring,Oregon,97026,1953,130,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+66771,1261 Moore Avenue,Boring,Oregon,97024,1938,71,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+95830,1141 Mcfarland Street,Boring,Oregon,97021,1921,148,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+98363,851 Smith Avenue,Boring,Oregon,97090,1943,313,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+14355,991 Harrison Avenue,Boring,Oregon,97023,2015,263,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+01495,631 Price Street,Boring,Oregon,97027,1901,566,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+00621,1281 Nielsen Road,Boring,Oregon,97013,1924,526,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+46056,1351 Howard Avenue,Boring,Oregon,97063,1925,358,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+18437,841 Strickland Avenue,Boring,Oregon,97036,1938,143,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+77554,661 Anderson Avenue,Boring,Oregon,97068,1972,328,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+73785,931 Good Loop,Boring,Oregon,97033,1891,537,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+77976,861 Moore Lane,Boring,Oregon,97049,1973,480,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+54266,1001 Soto Road,Boring,Oregon,97061,2006,236,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+43132,621 Carter Avenue,Boring,Oregon,97049,1915,302,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+41204,1401 Ramirez Boulevard,Boring,Oregon,97084,1932,299,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+33868,1231 Moran Avenue,Boring,Oregon,97062,1936,139,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+38662,791 Beasley Avenue,Boring,Oregon,97084,1922,64,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+99294,771 Clark Street,Boring,Oregon,97008,1985,528,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+97502,731 Hill Road,Boring,Oregon,97099,1908,457,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+36303,1121 King Street,Boring,Oregon,97080,2003,586,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+39047,821 Barker Avenue,Boring,Oregon,97095,1947,333,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+03158,1291 Williams Avenue,Boring,Oregon,97093,1912,342,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+04192,641 Roberts Boulevard,Boring,Oregon,97096,1930,569,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+34512,671 Chang Street,Boring,Oregon,97053,1885,541,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+82998,671 Lewis Street,Boring,Oregon,97012,1938,303,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+87537,761 Duran Lane,Boring,Oregon,97071,1956,545,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+80331,1041 Thompson Boulevard,Boring,Oregon,97089,1952,334,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+76595,741 Newman Lane,Boring,Oregon,97030,1892,554,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+66148,651 Spencer Loop,Boring,Oregon,97082,1898,271,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+75331,1371 Byrd Street,Boring,Oregon,97070,1965,179,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+09298,741 Anderson Loop,Boring,Oregon,97099,1884,327,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+26936,611 Jimenez Street,Boring,Oregon,97074,1909,377,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+11517,1291 James Avenue,Boring,Oregon,97027,1927,578,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+95276,691 Nelson Road,Boring,Oregon,97004,2003,259,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+17207,911 Scott Road,Boring,Oregon,97076,1991,293,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+79538,1341 Ruiz Street,Boring,Oregon,97006,1880,501,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+62198,921 Jenkins Avenue,Boring,Oregon,97003,1998,313,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+15107,901 Williams Street,Boring,Oregon,97032,1885,50,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+15016,861 Cervantes Avenue,Boring,Oregon,97051,1881,404,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+04569,971 Jenkins Avenue,Boring,Oregon,97090,1893,113,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+31057,881 Boyd Street,Boring,Oregon,97000,1927,77,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+59369,991 Leblanc Boulevard,Boring,Oregon,97000,1934,427,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+55287,901 Gonzalez Street,Boring,Oregon,97083,1964,206,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+90078,961 Hansen Street,Boring,Oregon,97014,1940,505,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+51171,1231 Murphy Lane,Boring,Oregon,97031,1894,413,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+54948,961 Alexander Street,Boring,Oregon,97095,1992,567,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+28922,1361 Hernandez Avenue,Boring,Oregon,97030,1918,493,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+53071,1171 Ford Lane,Boring,Oregon,97001,1935,428,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+61814,891 Washington Avenue,Boring,Oregon,97039,1924,148,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+87584,611 Edwards Loop,Boring,Oregon,97037,1977,572,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+26728,1261 Arellano Street,Boring,Oregon,97084,1919,176,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+82562,1081 Russell Avenue,Boring,Oregon,97048,1897,477,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+28957,1101 Wilkins Boulevard,Boring,Oregon,97041,2008,419,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+30372,1091 Haley Road,Boring,Oregon,97021,1963,376,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+45099,1231 Gibson Street,Boring,Oregon,97098,1935,202,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+74029,651 Miles Lane,Boring,Oregon,97024,1966,578,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+47794,1291 Kramer Street,Boring,Oregon,97025,1924,379,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+33855,1391 Page Road,Boring,Oregon,97083,1982,401,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+57822,1131 Rodriguez Boulevard,Boring,Oregon,97073,1916,175,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+22107,821 Harrison Street,Boring,Oregon,97087,1971,526,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+62353,781 Beasley Avenue,Boring,Oregon,97035,1977,423,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+85273,1201 Thomas Road,Boring,Oregon,97012,1918,542,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+91413,661 Stafford Road,Boring,Oregon,97045,1997,462,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+84319,961 Allen Lane,Boring,Oregon,97091,1954,563,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+62549,1171 White Avenue,Boring,Oregon,97069,1880,270,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+82242,901 Leonard Street,Boring,Oregon,97021,1916,472,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+16956,1191 Adams Street,Boring,Oregon,97091,1943,254,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+56315,1031 Cannon Road,Boring,Oregon,97011,1958,540,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+69926,1211 Church Street,Boring,Oregon,97024,1937,119,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+81896,1051 Moran Lane,Boring,Oregon,97037,2009,90,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+49493,1301 Stone Loop,Boring,Oregon,97013,1964,579,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+60695,1001 Jenkins Street,Boring,Oregon,97073,1941,291,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+64711,681 Turner Street,Boring,Oregon,97095,1949,376,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+13506,1341 Riley Street,Boring,Oregon,97055,1907,390,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+53952,1141 Sparks Avenue,Boring,Oregon,97029,1927,384,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+06879,831 Murray Road,Boring,Oregon,97088,1880,230,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+94379,971 Ochoa Avenue,Boring,Oregon,97087,1889,471,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+57987,691 Snyder Loop,Boring,Oregon,97042,1937,589,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+31081,911 Keller Street,Boring,Oregon,97042,1893,440,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+15540,621 Jones Avenue,Boring,Oregon,97042,1917,412,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+11509,831 Sanchez Avenue,Boring,Oregon,97010,1980,248,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+18280,1241 Adams Street,Boring,Oregon,97096,1893,333,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+13283,651 Brown Boulevard,Boring,Oregon,97079,1988,297,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+51846,901 Powell Road,Boring,Oregon,97091,1937,150,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+95853,711 Jones Road,Boring,Oregon,97048,1976,398,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+42454,1251 Randall Street,Boring,Oregon,97033,1959,431,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+99415,1021 Grimes Street,Boring,Oregon,97066,1935,481,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+48847,741 Diaz Avenue,Boring,Oregon,97030,1981,88,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+87164,781 Charles Street,Boring,Oregon,97097,2005,455,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+42854,981 Vega Avenue,Boring,Oregon,97038,1886,244,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+30723,1341 Sullivan Street,Boring,Oregon,97087,1967,390,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+24014,1171 Day Avenue,Boring,Oregon,97068,1924,197,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+26842,1331 Davis Avenue,Boring,Oregon,97045,1887,178,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+56274,881 Romero Street,Boring,Oregon,97004,1976,542,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+73164,901 Sanchez Lane,Boring,Oregon,97093,1885,310,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+83282,651 Hoffman Avenue,Boring,Oregon,97028,2010,429,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+89299,831 Coleman Avenue,Boring,Oregon,97066,1964,90,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+26227,1121 Anderson Street,Boring,Oregon,97071,1999,294,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+55371,661 Mendez Lane,Boring,Oregon,97033,1912,57,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+09023,1171 Branch Street,Boring,Oregon,97077,1969,136,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+31946,601 Lee Avenue,Boring,Oregon,97034,1964,530,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+19173,1031 Farley Avenue,Boring,Oregon,97044,1959,262,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+11470,1201 Mcguire Boulevard,Boring,Oregon,97023,1931,68,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+39689,1061 Smith Street,Boring,Oregon,97030,2007,337,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+92313,651 Mann Loop,Boring,Oregon,97083,1942,409,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+45799,1281 Campbell Boulevard,Boring,Oregon,97025,2002,89,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+46906,1311 Hanson Avenue,Boring,Oregon,97030,1959,423,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+33903,741 Buck Road,Boring,Oregon,97099,1903,165,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+58464,601 Weaver Avenue,Boring,Oregon,97044,1904,253,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+05774,911 Holmes Road,Boring,Oregon,97026,1959,135,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+06236,1361 Lee Road,Boring,Oregon,97069,1885,525,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+69394,1281 Wilson Road,Boring,Oregon,97006,1995,366,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+34820,601 Lambert Road,Boring,Oregon,97082,2015,112,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+41908,871 Rodriguez Street,Boring,Oregon,97034,1974,382,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+09835,1291 Farmer Street,Boring,Oregon,97046,1904,515,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+15330,1181 Gonzalez Street,Boring,Oregon,97075,1937,81,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+21102,1241 Anderson Street,Boring,Oregon,97030,1958,425,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+88731,1151 Reyes Street,Boring,Oregon,97014,2005,188,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+18581,1221 Young Avenue,Boring,Oregon,97083,1971,472,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+02743,1351 Parker Loop,Boring,Oregon,97016,1988,289,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+35400,691 Ford Avenue,Boring,Oregon,97033,1929,334,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+99431,631 Carson Street,Boring,Oregon,97017,1900,300,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+86057,1031 Clark Avenue,Boring,Oregon,97032,1976,371,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+21471,801 Jensen Street,Boring,Oregon,97032,1952,384,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+08299,1271 Meyer Avenue,Boring,Oregon,97038,1903,149,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+10431,631 Taylor Lane,Boring,Oregon,97030,1984,598,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+20331,1041 Morrow Street,Boring,Oregon,97000,1902,216,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+59601,1121 Kelley Street,Boring,Oregon,97010,1911,159,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+61131,791 Brady Street,Boring,Oregon,97031,1947,406,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+07922,1221 Cole Road,Boring,Oregon,97025,1908,471,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+77280,931 James Street,Boring,Oregon,97002,1917,55,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+94330,1261 Johnson Loop,Boring,Oregon,97082,1997,433,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+25378,1281 Moore Avenue,Boring,Oregon,97037,1922,88,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+86474,761 Brown Road,Boring,Oregon,97087,1985,190,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+86002,1251 Mccullough Street,Boring,Oregon,97015,1908,449,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+07692,1331 Stewart Road,Boring,Oregon,97037,1977,97,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+44137,611 Rodriguez Loop,Boring,Oregon,97088,1977,103,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+12871,1181 James Lane,Boring,Oregon,97099,1947,436,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+30261,671 Rodriguez Loop,Boring,Oregon,97024,1950,265,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+07911,761 Murillo Loop,Boring,Oregon,97070,1965,228,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+08657,1341 Moore Street,Boring,Oregon,97056,1994,477,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+85551,731 Vincent Avenue,Boring,Oregon,97053,1883,466,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+94613,1271 Brown Avenue,Boring,Oregon,97044,1976,123,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+84969,731 Velez Boulevard,Boring,Oregon,97029,1901,561,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+59225,1131 Hicks Street,Boring,Oregon,97012,1986,502,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+64808,761 Wagner Road,Boring,Oregon,97039,1890,155,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+55115,601 Turner Lane,Boring,Oregon,97034,1924,68,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+90168,1111 George Street,Boring,Oregon,97075,1939,194,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+78492,811 Johnson Street,Boring,Oregon,97070,1955,230,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+31299,1051 Jones Road,Boring,Oregon,97045,2011,151,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+23781,1331 Proctor Street,Boring,Oregon,97076,1939,55,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+45422,761 Dean Lane,Boring,Oregon,97045,1929,538,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+63250,1121 Hudson Lane,Boring,Oregon,97072,1924,445,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+17958,881 Mcintyre Street,Boring,Oregon,97035,1986,586,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+68857,1261 Garcia Street,Boring,Oregon,97071,1945,338,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+84343,1251 Ward Avenue,Boring,Oregon,97053,1965,67,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+06096,1031 Walker Boulevard,Boring,Oregon,97009,2004,562,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+41958,651 Miller Avenue,Boring,Oregon,97021,1951,221,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+69482,1331 Harris Street,Boring,Oregon,97023,1946,138,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+32333,631 Paul Street,Boring,Oregon,97096,1921,373,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+90495,1261 Haley Street,Boring,Oregon,97069,1884,124,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+44244,1281 Banks Boulevard,Boring,Oregon,97027,1985,314,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+18174,811 Turner Street,Boring,Oregon,97036,1926,231,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+61552,891 Nelson Avenue,Boring,Oregon,97042,2008,577,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+75454,1041 Anderson Boulevard,Boring,Oregon,97031,1901,496,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+28573,1131 Johnson Avenue,Boring,Oregon,97048,1977,573,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+85026,891 Thomas Street,Boring,Oregon,97047,1999,143,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+37616,1221 Jones Street,Boring,Oregon,97082,1939,585,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+61242,611 Navarro Lane,Boring,Oregon,97036,1983,367,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+05031,1031 Kim Avenue,Boring,Oregon,97098,1898,511,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+69482,611 Dickerson Avenue,Boring,Oregon,97068,2000,137,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+45528,931 Hernandez Road,Boring,Oregon,97051,1976,229,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+89854,651 Moreno Loop,Boring,Oregon,97061,1905,416,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+75909,1311 Palmer Boulevard,Boring,Oregon,97065,1892,126,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+27443,651 Stephens Street,Boring,Oregon,97021,1957,237,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+81126,621 Fields Avenue,Boring,Oregon,97038,1964,551,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+32291,1191 Simpson Avenue,Boring,Oregon,97057,1980,61,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+63511,1171 Gray Avenue,Boring,Oregon,97091,1991,76,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+67623,1051 Cain Street,Boring,Oregon,97028,1946,391,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+84997,881 Watson Lane,Boring,Oregon,97044,1903,474,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+34015,1031 Smith Street,Boring,Oregon,97056,1989,287,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+67068,961 Weaver Road,Boring,Oregon,97019,1941,346,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+41250,881 Everett Avenue,Boring,Oregon,97028,1932,370,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+05056,681 Krause Road,Boring,Oregon,97045,1984,187,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+21287,1281 Schaefer Lane,Boring,Oregon,97060,1882,433,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+97435,891 Martin Street,Boring,Oregon,97032,1971,301,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+61167,1111 Estrada Lane,Boring,Oregon,97099,1917,235,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+29502,1321 Arnold Road,Boring,Oregon,97073,1881,65,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+35771,1271 Riley Boulevard,Boring,Oregon,97018,2001,397,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+64305,951 Erickson Road,Boring,Oregon,97027,1979,180,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+30556,681 Bentley Avenue,Boring,Oregon,97004,1898,286,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+03638,741 Wright Street,Boring,Oregon,97084,2015,587,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+65605,901 Gonzalez Avenue,Boring,Oregon,97019,2005,306,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+36557,1261 Palmer Avenue,Boring,Oregon,97017,2007,546,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+84034,1181 Smith Lane,Boring,Oregon,97049,1887,71,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+06819,741 Carter Street,Boring,Oregon,97018,1919,561,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+16668,1061 Rivers Avenue,Boring,Oregon,97081,1895,579,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+99168,881 Ortiz Street,Boring,Oregon,97079,1956,520,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+35527,681 Taylor Street,Boring,Oregon,97036,1898,220,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+01837,1341 Kelly Street,Boring,Oregon,97073,1977,410,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+38832,741 Hurley Avenue,Boring,Oregon,97024,1896,75,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+69701,1371 Campbell Street,Boring,Oregon,97046,1992,386,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+19223,1161 Pierce Street,Boring,Oregon,97002,1997,262,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+66247,981 Miller Road,Boring,Oregon,97034,1911,286,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+01090,1201 Anderson Avenue,Boring,Oregon,97003,1901,185,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+45322,861 Mitchell Avenue,Boring,Oregon,97039,1893,386,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+80704,1221 Blevins Road,Boring,Oregon,97065,1985,380,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+15989,601 Waters Road,Boring,Oregon,97099,1910,319,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+99557,751 Ramos Boulevard,Boring,Oregon,97034,1987,250,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+89911,861 Vaughn Street,Boring,Oregon,97019,1888,63,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+92124,1341 Alexander Street,Boring,Oregon,97026,1919,531,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+64601,1081 Johnson Lane,Boring,Oregon,97040,1895,352,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+95745,1071 Johnson Avenue,Boring,Oregon,97014,1934,244,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+05467,651 Pittman Avenue,Boring,Oregon,97081,2011,536,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+61091,1251 Fisher Lane,Boring,Oregon,97012,1897,567,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+61123,1141 Mitchell Street,Boring,Oregon,97049,1976,117,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+55945,1231 Butler Loop,Boring,Oregon,97098,1881,312,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+26412,1061 Arnold Avenue,Boring,Oregon,97032,1957,129,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+09974,1231 Fowler Avenue,Boring,Oregon,97041,1917,459,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+77722,1001 Fischer Lane,Boring,Oregon,97068,1958,385,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+99500,771 Trevino Lane,Boring,Oregon,97034,1897,71,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+19290,1321 Holmes Street,Boring,Oregon,97032,1934,301,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+08823,701 Henry Avenue,Boring,Oregon,97071,1985,448,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+12542,661 Ortiz Loop,Boring,Oregon,97015,1921,75,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+07651,841 Baker Boulevard,Boring,Oregon,97037,1998,229,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+54664,1021 Gonzalez Avenue,Boring,Oregon,97015,1916,596,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+28860,771 Johnson Avenue,Boring,Oregon,97042,1912,523,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+57971,1211 Riley Street,Boring,Oregon,97094,1998,552,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+85014,1191 Macias Street,Boring,Oregon,97080,1983,571,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+16993,1221 Williams Avenue,Boring,Oregon,97019,1938,245,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+03069,861 Delacruz Street,Boring,Oregon,97063,1925,299,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+29195,1261 Taylor Avenue,Boring,Oregon,97009,1918,364,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+70635,1081 Weaver Avenue,Boring,Oregon,97052,1970,226,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+87873,1351 Wilson Street,Boring,Oregon,97008,1946,279,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+43970,681 Matthews Street,Boring,Oregon,97030,1931,442,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+18758,971 Morris Boulevard,Boring,Oregon,97000,2005,373,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+82808,661 Russell Avenue,Boring,Oregon,97028,1948,370,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+66604,611 Welch Avenue,Boring,Oregon,97034,2011,537,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+90521,831 Tucker Street,Boring,Oregon,97014,1889,430,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+17043,1401 White Street,Boring,Oregon,97039,2004,183,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+77800,1001 Krause Street,Boring,Oregon,97031,1911,325,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+62347,1121 Tate Road,Boring,Oregon,97042,2015,60,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+43858,961 Horne Avenue,Boring,Oregon,97085,1893,366,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+78212,651 Schneider Street,Boring,Oregon,97031,1887,371,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+93111,1201 Mcintosh Avenue,Boring,Oregon,97088,1944,267,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+78460,1401 Richardson Avenue,Boring,Oregon,97081,1992,556,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+80606,1321 Cain Lane,Boring,Oregon,97072,1965,405,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+10795,801 Williams Loop,Boring,Oregon,97088,2003,227,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+97832,1271 Nguyen Road,Boring,Oregon,97030,1950,62,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+69802,861 Walker Road,Boring,Oregon,97016,1914,386,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+04951,921 Hubbard Avenue,Boring,Oregon,97072,1953,292,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+88880,1191 Mckinney Street,Boring,Oregon,97010,1918,108,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+34686,741 Dunn Lane,Boring,Oregon,97095,1890,429,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+14686,861 Allen Street,Boring,Oregon,97065,1986,162,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+46699,1281 Castillo Street,Boring,Oregon,97085,2003,456,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+40303,611 Roberts Street,Boring,Oregon,97027,1940,472,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+94719,761 Richards Avenue,Boring,Oregon,97034,2003,166,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+66435,1261 Cobb Loop,Boring,Oregon,97053,1886,303,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+49507,1381 Lang Avenue,Boring,Oregon,97058,1981,98,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+56558,1361 Ramirez Street,Boring,Oregon,97049,1969,190,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+42483,841 Tran Avenue,Boring,Oregon,97016,1970,303,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+27632,791 Reynolds Street,Boring,Oregon,97056,1982,186,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+24514,1271 Jacobs Street,Boring,Oregon,97052,2000,180,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+95704,931 Forbes Avenue,Boring,Oregon,97042,1992,481,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+72128,981 Salazar Street,Boring,Oregon,97053,1892,61,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+07495,851 Wise Lane,Boring,Oregon,97033,1942,591,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+44465,1241 Mora Avenue,Boring,Oregon,97089,1982,368,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+41409,821 Ellis Lane,Boring,Oregon,97057,1893,370,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+09423,1111 Lloyd Road,Boring,Oregon,97001,1965,475,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+04908,1021 Young Street,Boring,Oregon,97034,1977,287,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877
+20096,631 Drake Road,Boring,Oregon,97020,1972,527,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+85903,981 Roberts Lane,Boring,Oregon,97046,1974,71,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+60105,881 Banks Avenue,Boring,Oregon,97071,1970,488,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+04966,1111 Wilson Street,Boring,Oregon,97050,1956,112,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+40914,751 Chavez Road,Boring,Oregon,97095,1910,71,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+82159,1281 Sweeney Lane,Boring,Oregon,97023,1917,304,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
+95681,631 Salinas Street,Boring,Oregon,97082,1985,86,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+70920,1011 Peterson Loop,Boring,Oregon,97016,1983,521,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+89694,941 Barnett Loop,Boring,Oregon,97075,1949,327,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+91490,1081 Swanson Loop,Boring,Oregon,97050,1951,121,Tucker and Sons,duartetracey@tucker.com,556.006.3148x627,641 Jones Avenue,"South Jessica, MT",60406
+81591,681 Rice Avenue,Boring,Oregon,97070,1955,384,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+54079,721 Robinson Avenue,Boring,Oregon,97032,2003,458,Hunt Ltd,ashleyjohnson@hunt.com,862.994.8898,1231 Roberts Street,"Spencerside, TX",75614
+52466,821 Martin Street,Boring,Oregon,97038,1908,382,Thompson Phillips LLC,troberts@thompson-phillips.info,(169)538-7880,691 Moran Loop,"Anthonyshire, IA",34479
+21981,871 Johnson Road,Boring,Oregon,97089,1986,441,Sanders Sanchez PLC,jerryball@sanders-sanchez.org,192.332.4246x60466,1251 Pierce Street,"Bryanland, PA",83877

@@ -103,7 +103,6 @@ class TestMappingData(TestCase):
         c = self.obj.find_column(expect_0['table'], expect_0['name'])
         self.assertDictEqual(c, expect_0)
 
-
     def test_column_addition(self):
         # load up a bunch of columns
         Column.objects.get_or_create(column_name="a_column")
