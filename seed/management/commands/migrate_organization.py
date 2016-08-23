@@ -1,10 +1,18 @@
 from __future__ import unicode_literals
 
+"""Migration code for the Seed project from the original tables to the
+new tables.
+"""
+
+import collections
+import sys
 from django.db import models, migrations
 from django.core.management.base import BaseCommand
 from seed.lib.superperms.orgs.models import Organization
+import subprocess
 from django.apps import apps
 import pdb
+import random
 import copy
 import collections
 import os
@@ -13,7 +21,7 @@ import logging
 import itertools
 import csv
 import StringIO
-# from IPython import embed
+from IPython import embed
 import seed.models
 import numpy as np
 from scipy.sparse import dok_matrix
@@ -33,6 +41,16 @@ from _localtools import load_organization_taxlot_extra_data_mapping_exclusions
 from _localtools import load_organization_property_field_mapping
 from _localtools import load_organization_taxlot_field_mapping
 from _localtools import _load_raw_mapping_data
+from _localtools import get_value_for_key
+from _localtools import aggregate_value_from_state
+from _localtools import set_state_value
+
+from _localtools import get_taxlot_columns
+from _localtools import get_property_columns
+
+from _localtools import USE_FIRST_VALUE
+from _localtools import JOIN_STRINGS
+from _localtools import UNIQUE_LIST
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -51,35 +69,12 @@ def logging_debug(msg):
 
 # These encode rules for how final values
 tax_collapse_rules = collections.defaultdict(lambda : {})
-tax_collapse_rules[10] = { 'jurisdiction_taxlot_identifier': ['jurisdiction_taxlot_identifier', "extra_data/custom_id_1", "extra_data/CS_TaxID2"] }
+tax_collapse_rules[10] = { 'jurisdiction_taxlot_identifier': (USE_FIRST_VALUE, ['jurisdiction_taxlot_identifier', "extra_data/custom_id_1", "extra_data/CS_TaxID2"])}
 
 property_collapse_rules = collections.defaultdict(lambda : {})
 
-
-def get_value_for_key(state, field_string):
-    if "/" in field_string:
-        initial, key = field_string.split("/")
-        assert initial == "extra_data"
-        if key not in state.extra_data:
-            return None
-        else:
-            # FIXME: This will work for now, because a "tax_lot" type in
-            # SEED is always a str.  But ultimately this should be cast to
-            # the type of the underlying Column.
-            return state.extra_data[key]
-    else:
-
-        return getattr(state, field_string)
-
-def aggregate_value_from_state(state, field, collapse_rules):
-    if field not in collapse_rules:
-        return getattr(state, field)
-
-    for source_string in collapse_rules[field]:
-        val = get_value_for_key(state, source_string)
-        if val is not None and val != "": return val
-    else:
-        return None
+def get_code_version():
+    return subprocess.check_output(["git", "describe"]).strip()
 
 def copy_extra_data_excluding(extra_data, bad_fields):
     bad_fields = set(bad_fields)
@@ -87,29 +82,41 @@ def copy_extra_data_excluding(extra_data, bad_fields):
 
 
 def create_property_state_for_node(node, org, cb):
-    node.extra_data['custom_id_1'] = node.custom_id_1
+    property_columns = get_property_columns(org)
+    taxlot_columns = get_taxlot_columns(org)
 
-    dont_include_fields = load_organization_property_extra_data_mapping_exclusions(org)
+    # Check every key is mapped at least once.
+    for key in node.extra_data:
+        if key.strip()=='':
+            if node.extra_data[key].strip() != '':
+                print "WARNING: key '{}' for organization={} has value={} (cb={})".format(key, org, node.extra_data[key], cb.pk)
+            continue
 
-    extra_data_copy = copy_extra_data_excluding(node.extra_data, dont_include_fields)
+        try:
+            assert (key in taxlot_columns or key in property_columns)
+        except AssertionError:
+            raise KeyError("Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key, node.extra_data[key], org))
 
-    extra_data_copy["record_created"] = node.created
-    extra_data_copy["record_modified"] = node.modified
-    extra_data_copy["record_year_ending"] = node.year_ending
+    property_state_extra_data = {x:y for (x,y) in node.extra_data.items() if y in property_columns}
+    mapping = load_organization_property_field_mapping(org)
 
-    desired_field_mapping = load_organization_property_field_mapping(org)
-    premapped_data = {}
+    if ADD_METADATA:
+        property_state_extra_data["prop_cb_id"] = cb.pk
+        property_state_extra_data["prop_bs_id"] = node.pk
 
-    for key in desired_field_mapping:
-        if key in extra_data_copy:
-            if extra_data_copy[key]:
-                premapped_data[key] = extra_data_copy[key]
-            extra_data_copy.pop(key)
+        property_state_extra_data["record_created"] = node.created
+        property_state_extra_data["record_modified"] = node.modified
+        property_state_extra_data["record_year_ending"] = node.year_ending
+        property_state_extra_data["random"] = str(random.random())
+
+        property_state_extra_data["migration_version"] = get_code_version()
+
+
 
 
     if ADD_METADATA:
-        extra_data_copy["prop_cb_id"] = cb.pk
-        extra_data_copy["prop_bs_id"] = node.pk
+        property_state_extra_data["prop_cb_id"] = cb.pk
+        property_state_extra_data["prop_bs_id"] = node.pk
 
     property_state = seed.models.PropertyState(confidence = node.confidence,
                                                        jurisdiction_property_identifier = None,
@@ -145,45 +152,50 @@ def create_property_state_for_node(node, org, cb):
                                                        energy_alerts = node.energy_alerts,
                                                        space_alerts = node.space_alerts,
                                                        building_certification = node.building_certification,
-                                                       extra_data = extra_data_copy)
+                                                       extra_data = property_state_extra_data)
 
-
-    for (field_to_move, value) in premapped_data.items():
-        setattr(property_state, desired_field_mapping[field_to_move], value)
-
-    # If we want to aggregate a value in an organization specific way,
-    # this is where we should do it.
-    # for field in property_collapse_rules[org.id]:
-    #     value = aggregate_value_from_state(property_state, field, property_collapse_rules[org.id])
+    for (field_origin, field_dest) in mapping.items():
+        value = get_value_for_key(node, field_origin)
+        set_state_value(property_state, field_dest, value)
 
     property_state.save()
-
     return property_state
 
 def create_tax_lot_state_for_node(node, org, cb):
-    node.extra_data['custom_id_1'] = node.custom_id_1
+    property_columns = get_property_columns(org)
+    taxlot_columns = get_taxlot_columns(org)
 
-    dont_include_fields = load_organization_taxlot_extra_data_mapping_exclusions(org)
+    # Check every key is mapped at least once.
+    for key in node.extra_data:
+        if key.strip()=='':
+            if node.extra_data[key]:
+                print "WARNING: key '{}' for organization={} has value={} (cb={})".format(key, org, node.extra_data[key], cb.pk)
+            continue
 
-    extra_data_copy = copy_extra_data_excluding(node.extra_data, dont_include_fields)
+        try:
+            assert (key in taxlot_columns or key in property_columns)
+        except AssertionError:
+            print "WARNING: Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key, node.extra_data[key], org)
+            #raise KeyError("Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key, node.extra_data[key], org))
 
-    extra_data_copy["record_created"] = node.created
-    extra_data_copy["record_modified"] = node.modified
-    extra_data_copy["record_year_ending"] = node.year_ending
 
+    taxlot_extra_data = {x:y for (x,y) in node.extra_data.items() if y in taxlot_columns}
+    mapping = load_organization_taxlot_field_mapping(org)
 
-    desired_field_mapping = load_organization_taxlot_field_mapping(org)
-    premapped_data = {}
+    if ADD_METADATA:
+        taxlot_extra_data["taxlot_cb_id"] = cb.pk
+        taxlot_extra_data["taxlot_bs_id"] = node.pk
 
-    for key in desired_field_mapping:
-        if key in extra_data_copy:
-            premapped_data[key] = extra_data_copy[key]
-            extra_data_copy.pop(key)
+        taxlot_extra_data["record_created"] = node.created
+        taxlot_extra_data["record_modified"] = node.modified
+        taxlot_extra_data["record_year_ending"] = node.year_ending
+        taxlot_extra_data["random"] = str(random.random())
+
 
 
     if ADD_METADATA:
-        extra_data_copy["taxlot_cb_id"] = cb.pk
-        extra_data_copy["taxlot_bs_id"] = node.pk
+        taxlot_extra_data["taxlot_cb_id"] = cb.pk
+        taxlot_extra_data["taxlot_bs_id"] = node.pk
 
 
     taxlotstate = seed.models.TaxLotState.objects.create(confidence = node.confidence,
@@ -195,13 +207,11 @@ def create_tax_lot_state_for_node(node, org, cb):
                                                                  state = node.state_province,
                                                                  postal_code = node.postal_code,
                                                                  number_properties = node.building_count,
-                                                                 extra_data = extra_data_copy)
+                                                                 extra_data = taxlot_extra_data)
 
-    for (field_to_move, value) in premapped_data.items():
-        setattr(taxlotstate, desired_field_mapping[field_to_move], value)
 
-    for field in tax_collapse_rules[org.id]:
-        value = aggregate_value_from_state(taxlotstate, field, tax_collapse_rules[org.id])
+    for (field_origin, field_dest) in mapping.items():
+        set_state_value(taxlotstate, field_dest, get_value_for_key(node, field_origin))
 
     taxlotstate.save()
     return taxlotstate
@@ -258,11 +268,17 @@ def load_cycle(org, node, year_ending = True, fallback = True):
         if not fallback:
             assert time is not None, "Got no time!"
         elif time is None:
-            logging_debug("Node does not have 'year ending' field.")
+            # logging_debug("Node does not have 'year ending' field.")
             time = node.modified
     else:
         time = node.modified
 
+    # FIXME: Refactor.
+
+    # Only Berkeley is allowed
+    orgs_allowing_2016 = set([117])
+    if org.pk not in orgs_allowing_2016 and time.year == 2016:
+        time = datetime.date(2015,12,31)
 
     time = datetime.datetime(year = time.year, month=time.month, day = time.day)
 
@@ -326,14 +342,7 @@ class Command(BaseCommand):
         assert not (starting_on_canonical_following and starting_from_canonical), "Can only specify one of --starting_on_canonical and --starting_following_canonical"
 
         canonical_buildings_whitelist = map(int, options['cb_whitelist_string'].split(",")) if options['cb_whitelist_string'] else False
-
-
-
         # End Processing
-
-
-
-
 
         tree_file = get_static_building_snapshot_tree_file()
         m2m = read_building_snapshot_tree_structure(tree_file)
@@ -367,7 +376,8 @@ class Command(BaseCommand):
         for org_id in core_organization:
             # Writing loop over organizations
 
-            org = Organization.objects.filter(pk=org_id).first()
+            org = Organization.objects.get(pk=org_id)
+
             logging_info("Processing organization {}".format(org))
 
             assert org, "Organization {} not found".format(org_id)
@@ -378,17 +388,36 @@ class Command(BaseCommand):
             # FIXME: Turns out the ids are on Building
             # Snapshot. Leaving it this way because the other code
             # should be displaying canonical building indexes.
-            if starting_from_canonical:
+            if starting_from_canonical or starting_on_canonical_following:
                 # org_canonical_ids = map(lambda x: x.pk, org_canonical_buildings)
                 org_canonical_ids = map(lambda x: x.pk, org_canonical_snapshots)
                 try:
-                    canonical_index = org_canonical_ids.index(starting_from_canonical)
-                    logging_info("Restricting to canonical starting {}, was {} now {}.".format(canonical_index, len(org_canonical_ids), len(org_canonical_ids) - canonical_index))
+                    canonical_index = max(starting_from_canonical, starting_on_canonical_following)
+                    canonical_index = org_canonical_ids.index(canonical_index)
+                    if starting_on_canonical_following: canonical_index += 1
 
                     org_canonical_buildings = list(org_canonical_buildings)[canonical_index:]
                     org_canonical_snapshots = list(org_canonical_snapshots)[canonical_index:]
+
+                    ref_str = "starting" if starting_from_canonical else "following"
+
+                    logging_info("Restricting to canonical starting ndx={} (id={}), was {} now {}.".format(canonical_index, len(org_canonical_ids), len(org_canonical_ids), len(org_canonical_buildings)))
+
+
+
                 except ValueError:
-                    raise RuntimeError("Requested to start from canonical {} which was not found.".format(starting_from_canonical))
+                    raise RuntimeError("Requested to start referencing canonical building id={} which was not found.".format(starting_from_canonical))
+
+
+
+            if canonical_buildings_whitelist:
+                good_canonical_building_indexes = [ndx for (ndx, cb) in enumerate(org_canonical_buildings) if cb.pk in canonical_buildings_whitelist]
+                org_canonical_buildings = [org_canonical_buildings[ndx] for ndx in good_canonical_building_indexes]
+                org_canonical_snapshots = [org_canonical_snapshots[ndx] for ndx in good_canonical_building_indexes]
+
+                logging_info("Restricted to {} elements in whitelist.".format(len(org_canonical_buildings)))
+                logging_info("IDS: {}".format(", ".join(map(lambda cs: str(cs.pk), org_canonical_buildings))))
+
 
             if canonical_buildings_whitelist:
                 good_canonical_building_indexes = [ndx for (ndx, cb) in enumerate(org_canonical_buildings) if cb.pk in canonical_buildings_whitelist]
@@ -432,11 +461,15 @@ class Command(BaseCommand):
 
                 import_buildingsnapshots = [building_dict[bs_id] for bs_id in import_nodes]
                 leaf_buildingsnapshots = [building_dict[bs_id] for bs_id in leaf_nodes]
+                assert len(leaf_buildingsnapshots), ("Expected only one leaf of the canonical building family of "
+                                                     "buildings.  Found {}").format(len(leaf_buildingsnapshots))
+                leaf = leaf_buildingsnapshots[0]
+
                 other_buildingsnapshots = [building_dict[bs_id] for bs_id in other_nodes]
 
                 logging_info("Creating Blue Sky Data for for CanonicalBuilding={}".format(cb.pk))
 
-                create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix, cb)
+                create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix, cb)
         return
 
 def is_descendant_of(node_1_id, node_2_id, child_dictionary):
@@ -490,11 +523,11 @@ def calculate_migration_order(node_list, child_dictionary):
 
     node_id_list.sort(key = lambda node_id: calculate_generation(node_id, child_dictionary))
 
-    migration_order = [seed.models.BuildingSnapshot.get(pk=id) for id in node_id_list]
+    migration_order = [seed.models.BuildingSnapshot.objects.get(pk=id) for id in node_id_list]
 
     return migration_order
 
-def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix, cb):
+def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf_building, other_buildingsnapshots, child_dictionary, parent_dictionary, adj_matrix, cb):
 
     """Take tree structure describing a single Property/TaxLot over time and create the entities."""
     logging_info("Populating new blue sky entities for canonical snapshot tree!")
@@ -507,23 +540,20 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     property_state_created = 0
     m2m_created =  0
 
-    logging_info("Creating Property/TaxLot from {} nodes".format( sum(map(len, (leaf_buildingsnapshots, other_buildingsnapshots, import_buildingsnapshots)))))
-
-    all_nodes = list(itertools.chain(import_buildingsnapshots, leaf_buildingsnapshots, other_buildingsnapshots))
-    all_nodes.sort(key = lambda rec: rec.created)
+    logging_info("Creating Property/TaxLot from {} nodes".format( sum(map(len, ([leaf_building], other_buildingsnapshots, import_buildingsnapshots)))))
 
     tax_lot = None
     property_obj = None
 
-    if node_has_tax_lot_info(leaf_buildingsnapshots[0], org):
-        tax_lot, created = find_or_create_bluesky_taxlot_associated_with_building_snapshot(leaf_buildingsnapshots[0], org)
+    if node_has_tax_lot_info(leaf_building, org):
+        tax_lot, created = find_or_create_bluesky_taxlot_associated_with_building_snapshot(leaf_building, org)
         # tax_lot = seed.models.TaxLot(organization=org)
 
         tax_lot.save()
         tax_lot_created += int(created)
 
-    if node_has_property_info(leaf_buildingsnapshots[0], org):
-        property_obj, created = find_or_create_bluesky_property_associated_with_building_snapshot(leaf_buildingsnapshots[0], org)
+    if node_has_property_info(leaf_building, org):
+        property_obj, created = find_or_create_bluesky_property_associated_with_building_snapshot(leaf_building, org)
         # property_obj = seed.models.Property(organization=org)
         property_obj.save()
         property_created += int(created)
@@ -537,11 +567,12 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     last_property_view = collections.defaultdict(lambda : False)
 
 
-    # FIXME: Make sure the nodes are all ordered here.
-    # node_process_order = all_nodes
-    # calculate_migration_order(node_process_order, child_dictionary)
+    # HOHO: TODO: The original code had these in reverse creation
+    # order but that definitely seems wrong.
+    all_nodes = list(itertools.chain(import_buildingsnapshots, [leaf_building], other_buildingsnapshots))
+    all_nodes.sort(key = lambda rec: rec.created) # Sort from first to last
+    # all_nodes = list(reversed(all_nodes)) # FIXME: Test this thoroughly.
 
-    all_nodes = reversed(all_nodes)
 
     for node in all_nodes:
         node_type = classify_node(node, org)
@@ -550,7 +581,6 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
             # Get the cycle associated with the node
 
             import_cycle = load_cycle(org, node)
-
             tax_lot_state = create_tax_lot_state_for_node(node, org, cb)
             tax_lot_state_created += 1
 
@@ -600,9 +630,9 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                     # # FIXME - bad logic
                     # if m2m_cycle != last_property_view[cycle].cycle:
                     #     # Ultimately Copy the state over to a new state
-                    #     last_property_view, _ = seed.bluesky.models.PropertyView.objects.get_or_create(property=property_obj, cycle=m2m_cycle, state=last_property_view.state)
+                    #     last_property_view, _ = seed.models.PropertyView.objects.get_or_create(property=property_obj, cycle=m2m_cycle, state=last_property_view.state)
                     # if m2m_cycle != last_taxlot_view.cycle:
-                    #     last_taxlot_view, _ = seed.bluesky.models.TaxLotView.objects.get_or_create(taxlot=tax_lot, cycle=m2m_cycle, state=last_taxlot_view.state)
+                    #     last_taxlot_view, _ = seed.models.TaxLotView.objects.get_or_create(taxlot=tax_lot, cycle=m2m_cycle, state=last_taxlot_view.state)
 
                     # assert m2m_cycle == last_taxlot_view.cycle == last_property_view.cycle, "Why aren't all these equal?!"
 
