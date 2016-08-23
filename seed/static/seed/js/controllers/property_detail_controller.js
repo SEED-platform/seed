@@ -19,14 +19,14 @@ function($controller, $scope, $uibModal, $log, $filter, urls, label_helper_servi
 				 	property_taxlot_service, property_payload, all_property_columns, default_property_columns ) {
 
 	/** See service for structure of returned payload */
-	$scope.property = 					property_payload.property;
-	$scope.cycle = 							property_payload.cycle;
-	$scope.related_taxlots = 		property_payload.taxlots;
-	$scope.historical_items = 	property_payload.history;
+	$scope.property = property_payload.property;
+	$scope.cycle = property_payload.cycle;
+	$scope.related_taxlots = property_payload.taxlots;
+	$scope.historical_items = property_payload.history;
 
 	/** Property state is managed in this base scope property. */
 	$scope.item_state = property_payload.state;
-	$scope.fields_changed = property_payload.fields_changed;
+	$scope.changed_fields = property_payload.changed_fields;
 
 	// Remember the list of *all* extra_data keys (current state or historical state)
 	// as provided by the server.
@@ -76,7 +76,7 @@ function($controller, $scope, $uibModal, $log, $filter, urls, label_helper_servi
 	};
 
 	/**
-	 * init: sets default state of property detail page,
+	 *   init: sets default state of property detail page,
 	 *   sets the field arrays for each section, performs
 	 *   some date string manipulation for better display rendering,
 	 *   and gets all the extra_data fields

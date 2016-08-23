@@ -53,15 +53,14 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
 
     /** Get Property information from server for a specified Property and Cycle and Organization.
      *
-     *  The returned Property object will have a 'state' key with
+     *  @param property_id         The id of the requested Property
+     *  @param cycle_id            The id of the requested Cycle for the requested Property
+     *
+     *  @returns {Promise}
+     *
+     *  The returned Property object (if the promise resolves successfully) will have a 'state' key with
      *  object containing all key/values for Property State (including 'extra_data')
      *  and a 'cycle' key with an object with at least the "id" key for that Cycle.
-     *
-     * @param property_id         The id of the requested Property
-     * @param cycle_id            The id of the requested Cycle for the requested Property
-     *
-     * @returns {Promise}
-     *
      *
      *  An example of structure of the returned JSON is...
      *
@@ -75,7 +74,7 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
      *      ...other Cycle fields...
      *     },
      *     'taxlots': [
-     *      ...array of objects with related Lot information...
+     *      ...array of objects with related TaxLot information...
      *     ],
      *     'state': {
      *        ...various key/values for Property state...
@@ -83,9 +82,14 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
      *          ..various key/values for extra data...
      *        }
      *     }
-     *     'fields_changed' : [
-     *        ..list of keys for fields that have changed since last state
-     *     ]
+     *     'changed_fields': {
+     *        'regular_fields' : [
+     *          ..list of keys for regular fields that have changed since last state
+     *         ],
+     *        'extra_data_fields' : [
+     *          ..list of keys for extra_data fields that have changed since last state
+     *         ]
+     *      },
      *     'history' : [
      *        {
      *          'state': {
@@ -94,16 +98,22 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
      *                ..various key/values for extra data...
      *              }
      *           },
-     *           'fields_changed': [
-     *               ..list of keys for fields that have changed since last state
-     *           ],
+     *           'changed_fields': {
+     *               'regular_fields' : [
+     *                  ..list of keys for regular fields that have changed since last state
+     *                ],
+     *                'extra_data_fields' : [
+     *                  ..list of keys for extra_data fields that have changed since last state
+     *                ]
+     *           },
      *           'date_edited': '2016-07-26T15:55:10.180Z'
      *           'source' : source of edit (ImportFile or UserEdit)
      *           'filename' : name of file if source=ImportFile
      *        },
      *        ... more history state objects...
      *     ]
-     *     'success' : True/False
+     *     'status' : ('success' or 'error')
+     *     'message' : (error message or empty string)
      *  }
      *
      */
@@ -255,14 +265,15 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
 
     /** Get TaxLot information from server for a specified TaxLot and Cycle and Organization.
      *
-     *  The returned TaxLot object will have a 'state' key with
-     *  object containing all key/values for TaxLot State (including 'extra_data')
-     *  and a 'cycle' key with an object with at least the "id" key for that Cycle.
      *
      * @param taxlot_id         The id of the TaxLot object to retrieve
      * @param cycle_id          The id of the particular cycle for the requested TaxLot
      *
      * @returns {Promise}
+     *
+     * The returned TaxLot object (if the promise resolves successfully) will have a 'state' key with
+     * object containing all key/values for TaxLot State (including 'extra_data')
+     * and a 'cycle' key with an object with at least the "id" key for that Cycle.
      *
      *
      *  An example of structure of the returned JSON is...
@@ -285,27 +296,38 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
      *          ..various key/values for extra data...
      *        }
      *     }
-     *     'fields_changed' : [
-     *        ..list of keys for fields that have changed since last state
-     *     ]
+     *     'changed_fields': {
+     *        'regular_fields' : [
+     *          ..list of keys for regular fields that have changed since last state
+     *         ],
+     *        'extra_data_fields' : [
+     *          ..list of keys for extra_data fields that have changed since last state
+     *         ]
+     *      },
      *     'history' : [
      *        {
      *          'state': {
-     *            ...various key/values for TaxLot state...
+     *              ...various key/values for TaxLot state...
      *              extra_data : {
      *                ..various key/values for extra data...
      *              }
      *           },
-     *           'fields_changed': [
-     *               ..list of keys for fields that have changed since last state
-     *           ],
+     *           'changed_fields': {
+     *               'regular_fields' : [
+     *                  ..list of keys for regular fields that have changed since last state
+     *                ],
+     *                'extra_data_fields' : [
+     *                  ..list of keys for extra_data fields that have changed since last state
+     *                ]
+     *           },
      *           'date_edited': '2016-07-26T15:55:10.180Z'
      *           'source' : source of edit (ImportFile or UserEdit)
      *           'filename' : name of file if source=ImportFile
      *        },
      *        ... more history state objects...
      *     ]
-     *     'success' : True/False
+     *     'status' : ('success' or 'error')
+     *     'message' : (error message or empty string)
      *  }
      *
      */

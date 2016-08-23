@@ -18,6 +18,7 @@ angular.module('BE.seed.controller.taxlot_detail', [])
 function($controller, $scope,  $uibModal, $log, $filter, urls, label_helper_service,
 				 	property_taxlot_service, taxlot_payload, all_taxlot_columns, default_taxlot_columns ) {
 
+	/** See service for structure of returned payload */
 	$scope.taxlot = taxlot_payload.taxlot;
 	$scope.cycle = taxlot_payload.cycle;
 	$scope.related_properties = taxlot_payload.properties;
@@ -25,7 +26,7 @@ function($controller, $scope,  $uibModal, $log, $filter, urls, label_helper_serv
 
 	/** TaxLot state is managed in this base scope property. */
 	$scope.item_state = taxlot_payload.state;
-	$scope.fields_changed = taxlot_payload.fields_changed;
+	$scope.changed_fields = taxlot_payload.changed_fields;
 
 	// Remember the list of *all* extra_data keys (current state or historical state)
 	// as provided by the server.
