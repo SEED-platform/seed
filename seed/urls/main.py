@@ -30,6 +30,10 @@ from seed.views.main import (
     delete_buildings, delete_organization
 )
 
+from seed.views.properties import (get_properties, get_property_columns,
+                                   get_taxlots, get_taxlot_columns,
+                                   get_cycles, Property, TaxLot)
+
 from seed.views.datasets import DatasetViewSet
 from seed.views.organizations import OrganizationViewSet
 from rest_framework import routers
@@ -43,6 +47,7 @@ apiv1 = r''  # r'api/v1/'
 urlpatterns = [
     # template routes
     url(r'^$', home, name='home'),
+    url(r'^properties/$', get_properties, name='properties'),
 
     # ajax routes
     url(r'^' + apiv1 + r'version/$', version, name='version'),

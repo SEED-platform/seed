@@ -4,16 +4,35 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import itertools
+
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
 
-from seed.models import Cycle, PropertyView, TaxLotView, TaxLotState, TaxLotProperty
-from seed.decorators import ajax_request, require_organization_id, require_organization_membership
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
+from rest_framework import status
+
+from seed.decorators import (
+    ajax_request, DecoratorMixin,
+    require_organization_id, require_organization_membership,
+)
+
 from seed.lib.superperms.orgs.decorators import has_perm
-from seed.models import Column
-from seed.utils.api import api_endpoint
-import itertools
+from seed.models import (
+    Column, Cycle, PropertyView, TaxLotView, TaxLotState, TaxLotProperty
+)
+from seed.serializers.properties import (
+    PropertyStateSerializer, PropertyViewSerializer
+)
+from seed.serializers.taxlots import (
+    TaxLotViewSerializer, TaxLotStateSerializer
+)
+from seed.utils.api import api_endpoint, drf_api_endpoint
+
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -140,33 +159,6 @@ def get_properties(request):
         response['results'].append(p)
 
     return response
-
-
-@require_organization_id
-@require_organization_membership
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def get_property(request, property_pk):
-    property_view = PropertyView.objects.select_related('property', 'cycle', 'state') \
-        .get(property_id=property_pk, property__organization_id=request.GET['organization_id'])
-
-    # Lots this property is on
-    lot_view_pks = TaxLotProperty.objects.filter(property_view_id=property_view.pk).values_list('taxlot_view_id',
-                                                                                                flat=True)
-    lot_views = TaxLotView.objects.filter(pk__in=lot_view_pks).select_related('cycle', 'state')
-
-    p = model_to_dict(property_view)
-    p['state'] = model_to_dict(property_view.state)
-    p['property'] = model_to_dict(property_view.property)
-    p['cycle'] = model_to_dict(property_view.cycle)
-    p['lots'] = []
-
-    for lot in lot_views:
-        p['lots'].append(model_to_dict(lot))
-
-    return p
 
 
 @require_organization_id
@@ -303,33 +295,6 @@ def get_taxlots(request):
         response['results'].append(l)
 
     return response
-
-
-@require_organization_id
-@require_organization_membership
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def get_taxlot(request, taxlot_pk):
-    taxlot_view = TaxLotView.objects.select_related('taxlot', 'cycle', 'state') \
-        .get(taxlot_id=taxlot_pk, taxlot__organization_id=request.GET['organization_id'])
-
-    # Properties on this lot
-    property_view_pks = TaxLotProperty.objects.filter(taxlot_view_id=taxlot_view.pk).values_list('property_view_id',
-                                                                                                 flat=True)
-    property_views = PropertyView.objects.filter(pk__in=property_view_pks).select_related('cycle', 'state')
-
-    l = model_to_dict(taxlot_view)
-    l['state'] = model_to_dict(taxlot_view.state)
-    l['taxlot'] = model_to_dict(taxlot_view.taxlot)
-    l['cycle'] = model_to_dict(taxlot_view.cycle)
-    l['properties'] = []
-
-    for prop in property_views:
-        l['properties'].append(model_to_dict(prop))
-
-    return l
 
 
 @require_organization_id
@@ -854,3 +819,473 @@ def get_taxlot_columns(request):
         })
 
     return columns
+
+
+class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
+    renderer_classes = (JSONRenderer,)
+    parser_classes = (JSONParser,)
+
+    def get_property_view(self, property_pk, cycle_pk):
+        try:
+            property_view = PropertyView.objects.select_related(
+                'property', 'cycle', 'state'
+            ).get(
+                property_id=property_pk,
+                cycle_id=cycle_pk,
+                property__organization_id=self.request.GET['organization_id']
+            )
+            result = {
+                'status': 'success',
+                'property_view': property_view
+            }
+        except PropertyView.DoesNotExist:
+            result = {
+                'status': 'error',
+                'message': 'property view with id {} does not exist'.format(pk)
+            }
+        except PropertyView.MultipleObjectsReturned:
+            result = {
+                'status': 'error',
+                'message': 'Multiple property views with id {}'.format(pk)
+            }
+        return result
+
+    def get_taxlots(self, property_view_pk):
+        lot_view_pks = TaxLotProperty.objects.filter(
+            property_view_id=property_view_pk
+        ).values_list('taxlot_view_id', flat=True)
+
+        lot_views = TaxLotView.objects.filter(
+            pk__in=lot_view_pks
+        ).select_related('cycle', 'state')
+        lots = []
+        for lot in lot_views:
+            lots.append(TaxLotViewSerializer(lot).data)
+        return lots
+
+    def get_property(self, request, property_pk, cycle_pk):
+        result = self.get_property_view(property_pk, cycle_pk)
+        if result.get('status', None) != 'error':
+            property_view = result.pop('property_view')
+            result.update(PropertyViewSerializer(property_view).data)
+            result['state'] = PropertyStateSerializer(property_view.state).data
+            result['lots'] = self.get_taxlots(property_view.id)
+            status_code = status.HTTP_200_OK
+        else:
+            status_code = status.HTTP_404_NOT_FOUND
+
+        # TEMP
+        # DMCQ: This is temporary dummy data. Paul is working on implementation...
+        temp = """
+ {
+  "property": {
+    "campus": "False",
+    "id": 4,
+    "organization": 24,
+    "parent_property": ""
+  },
+  "cycle": {
+    "created": "2016-08-02T16:38:22.925258Z",
+    "end": "2011-01-01T07:59:59Z",
+    "id": 1,
+    "name": "2010 Calendar Year",
+    "organization": 24,
+    "start": "2010-01-01T08:00:00Z",
+    "user": ""
+  },
+  "taxlots": [{
+        "taxlot": { "id": 2 },
+        "cycle" : { "id": 1 },
+        "state" : { "address_line_1": "95864 SW Cottonwood Court LOT A" }
+    },
+    {
+        "taxlot": { "id": 3 },
+        "cycle" : { "id": 1 },
+        "state" : { "address_line_1": "95864 SW Cottonwood Court LOT B" }
+    }],
+  "state": {
+    "address_line_1": "95864 SW Cottonwood Court",
+    "address_line_2": "Top floor!",
+    "building_certification": "",
+    "building_count": "",
+    "building_home_energy_score_identifier": "",
+    "building_portfolio_manager_identifier": "477198",
+    "city": "EnergyTown",
+    "conditioned_floor_area": "",
+    "confidence": "",
+    "energy_alerts": "",
+    "energy_score": 74,
+    "extra_data": {"National Median Site EUI (kBtu/ft2)": "120.3",
+      "National Median Source EUI (kBtu/ft2)": "282.3",
+      "Organization": "Acme Inc",
+      "Parking - Gross Floor Area (ft2)": "89041",
+      "Property Floor Area (Buildings And Parking) (ft2)": "139,835",
+      "Total GHG Emissions (MtCO2e)": "2114.3",
+      "custom_id_1": "",
+      "prop_bs_id": 87941,
+      "prop_cb_id": 33315,
+      "record_created": "2016-07-27T15:52:11.879Z",
+      "record_modified": "2016-07-27T15:55:10.180Z",
+      "record_year_ending": "2010-12-31"},
+    "generation_date": "2013-09-27T18:41:00Z",
+    "gross_floor_area": "",
+    "id": 1048,
+    "jurisdiction_property_identifier": "",
+    "lot_number": "",
+    "occupied_floor_area": "",
+    "owner": "",
+    "owner_address": "",
+    "owner_city_state": "",
+    "owner_email": "",
+    "owner_postal_code": "",
+    "owner_telephone": "",
+    "pm_parent_property_id": "",
+    "postal_code": "10106-7162",
+    "property_name": "",
+    "property_notes": "",
+    "recent_sale_date": "",
+    "release_date": "2013-09-27T18:42:00Z",
+    "site_eui": 91.8,
+    "site_eui_weather_normalized": 89.0,
+    "source_eui": 215.5,
+    "source_eui_weather_normalized": "",
+    "space_alerts": "",
+    "state": "Illinois",
+    "use_description": "",
+    "year_built": 1964,
+    "year_ending": ""
+  },
+  "extra_data_keys" : [
+        "National Median Site EUI (kBtu/ft2)",
+        "National Median Source EUI (kBtu/ft2)",
+        "Organization",
+        "Parking - Gross Floor Area (ft2)",
+        "Property Floor Area (Buildings And Parking) (ft2)",
+        "Total GHG Emissions (MtCO2e)",
+        "custom_id_1",
+        "prop_bs_id",
+        "prop_cb_id",
+        "record_created",
+        "record_modified",
+        "record_year_ending"
+  ],
+  "changed_fields": {
+    "regular_fields": [
+        "address_line_2",
+        "site_eui",
+        "source_eui"
+    ],
+    "extra_data_fields" : []
+  },
+  "history": [
+    {
+      "state": {
+        "address_line_1": "95864 SW Cottonwood Court",
+        "address_line_2": "Second floor",
+        "site_eui": 21,
+        "source_eui" : 22,
+        "extra_data" : {
+            "National Median Site EUI (kBtu/ft2)": "120.3",
+          "National Median Source EUI (kBtu/ft2)": "282.3",
+          "Organization": "Acme Inc",
+          "Parking - Gross Floor Area (ft2)": "89041",
+          "Property Floor Area (Buildings And Parking) (ft2)": "139,835",
+          "Total GHG Emissions (MtCO2e)": "2114.3",
+          "custom_id_1": "",
+          "prop_bs_id": 87941,
+          "prop_cb_id": 33315,
+          "record_created": "2016-07-27T15:52:11.879Z",
+          "record_modified": "2016-07-27T15:55:10.180Z",
+          "record_year_ending": "2010-12-31"
+        }
+      },
+      "changed_fields": {
+        "regular_fields": [
+            "address_line_2",
+            "site_eui",
+            "source_eui"
+        ],
+        "extra_data_fields" : []
+      },
+      "date_edited": "2016-07-26T15:55:10.180Z",
+      "source" : "UserEdit"
+    },
+    {
+      "state": {
+        "address_line_1": "95864 SW Cottonwood Court",
+        "address_line_2": "Third floor",
+        "site_eui": 19,
+        "source_eui" : 18,
+        "extra_data" : {
+            "National Median Site EUI (kBtu/ft2)": "120.3",
+          "National Median Source EUI (kBtu/ft2)": "282.3",
+          "Organization": "Acme Inc",
+          "Parking - Gross Floor Area (ft2)": "89041",
+          "Property Floor Area (Buildings And Parking) (ft2)": "139,835",
+          "Total GHG Emissions (MtCO2e)": "2114.3",
+          "custom_id_1": "",
+          "prop_bs_id": 87941,
+          "prop_cb_id": 33315,
+          "record_created": "2016-07-27T15:52:11.879Z",
+          "record_modified": "2016-07-27T15:55:10.180Z",
+          "record_year_ending": "2010-12-31"
+        }
+      },
+      "changed_fields": {
+        "regular_fields": [],
+        "extra_data_fields": []
+      },
+      "date_edited": "2016-07-25T15:55:10.180Z",
+      "source" : "ImportFile",
+      "filename" : "myfile.csv"
+    }
+
+  ],
+  "status": "success",
+  "message": ""
+}
+        """
+        import json
+        result = json.loads(temp)
+        return Response(result, status=status_code)
+
+    def put(self, request, property_pk, cycle_pk):
+        data = request.data
+        result = self.get_property_view(property_pk, cycle_pk)
+        if result.get('status', None) != 'error':
+            property_view = result.pop('property_view')
+            property_state_data = PropertyStateSerializer(property_view.state).data
+            new_property_state_data = data['state']
+
+            changed = True
+            if new_property_state_data == property_state_data:
+                changed = False
+            for key, val in new_property_state_data.iteritems():
+                if val == '':
+                    new_property_state_data[key] = None
+            if new_property_state_data == property_state_data:
+                changed = False
+
+            if not changed:
+                result.update({'status': 'error', 'message': 'Nothing to update'})
+                status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+            else:
+                property_state_data.update(new_property_state_data)
+                property_state_data.pop('id')
+
+                new_property_state_serializer = PropertyStateSerializer(
+                    data=property_state_data
+                )
+
+                if new_property_state_serializer.is_valid():
+                    property_view.state = new_property_state_serializer.save()
+                    property_view.save()
+                    result.update({
+                        'state': new_property_state_serializer.validated_data,
+                    })
+                    status_code = status.HTTP_201_CREATED
+                else:
+                    result.update({'status': 'error', 'message': 'Invalid Data'})
+                    status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+        else:
+            status_code = status.HTTP_404_NOT_FOUND
+        return Response(result, status=status_code)
+
+
+class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
+    renderer_classes = (JSONRenderer,)
+    parser_classes = (JSONParser,)
+
+    def get_taxlot_view(self, taxlot_pk, cycle_pk):
+        try:
+            taxlot_view = TaxLotView.objects.select_related(
+                'taxlot', 'cycle', 'state'
+            ).get(
+                taxlot_id=taxlot_pk,
+                cycle=cycle_pk,
+                taxlot__organization_id=self.request.GET['organization_id']
+            )
+            result = {
+                'status': 'success',
+                'taxlot_view': taxlot_view
+            }
+        except TaxLotView.DoesNotExist:
+            result = {
+                'status': 'error',
+                'message': 'taxlot view with id {} does not exist'.format(pk)
+            }
+        except TaxLotView.MultipleObjectsReturned:
+            result = {
+                'status': 'error',
+                'message': 'Multiple taxlot views with id {}'.format(pk)
+            }
+        return result
+
+    def get_properties(self, taxlot_view_pk, cycle_pk):
+        property_view_pks = TaxLotProperty.objects.filter(
+            taxlot_view_id=taxlot_view_pk
+        ).values_list('property_view_id', flat=True)
+
+        #     property_views = PropertyView.objects.filter(pk__in=property_view_pks).select_related('cycle', 'state')
+
+        property_views = PropertyView.objects.filter(
+            pk__in=property_view_pks
+        ).select_related('cycle', 'state')
+        properties = []
+        for property_view in property_views:
+            properties.append(PropertyViewSerializer(property_view).data)
+        return properties
+
+    def get_taxlot(self, request, taxlot_pk, cycle_pk):
+        #result = self.get_taxlot_view(taxlot_pk)
+        #if result.get('status', None) != 'error':
+        #    taxlot_view = result.pop('taxlot_view')
+        #    result.update(TaxLotViewSerializer(taxlot_view).data)
+        #    result['state'] = TaxLotStateSerializer(taxlot_view.state).data
+        #    result['properties'] = self.get_taxlots(taxlot_view.id)
+        #    status_code = status.HTTP_200_OK
+        #else:
+        #    status_code = status.HTTP_404_NOT_FOUND
+
+            # TEMP
+            # DMCQ: This is temporary dummy data. Paul is working on implementation...
+        temp = """
+         {
+          "taxlot": {
+            "id": 4,
+            "organization": 24
+          },
+          "cycle": {
+            "created": "2016-08-02T16:38:22.925258Z",
+            "end": "2011-01-01T07:59:59Z",
+            "id": 1,
+            "name": "2010 Calendar Year",
+            "organization": 24,
+            "start": "2010-01-01T08:00:00Z",
+            "user": ""
+          },
+          "properties": [
+            {
+                "property": { "id": 2 },
+                "cycle" : { "id": 1 },
+                "state" : { "address_line_1": "95864 SW Cottonwood Court Bldg 1" }
+            },
+            {
+                "property": { "id": 3 },
+                "cycle" : { "id": 1 },
+                "state" : { "address_line_1": "95864 SW Cottonwood Court Bldg 2" }
+            }
+          ],
+          "state": {
+            "address_line_1": "95864 SW Cottonwood Court",
+            "address_line_2": "the newest value!",
+            "state": "Illinois",
+            "extra_data": {
+              "some_extra_data_field_1": "1",
+              "some_extra_data_field_2": "2",
+              "some_extra_data_field_3": "3",
+              "some_extra_data_field_4": "4"
+            }
+          },
+          "extra_data_keys" : [
+            "some_extra_data_field_1",
+            "some_extra_data_field_2",
+            "some_extra_data_field_3",
+            "some_extra_data_field_4"
+          ],
+          "changed_fields": {
+                "regular_fields": ["address_line_2"],
+                "extra_data_fields" : []
+           },
+           "history": [
+             {
+              "state": {
+                "address_line_1": "95864 SW Cottonwood Court",
+                "address_line_2": "newer value",
+                "state": "Illinois",
+                "extra_data": {
+                  "some_extra_data_field_1": "1",
+                  "some_extra_data_field_2": "2",
+                  "some_extra_data_field_3": "3",
+                  "some_extra_data_field_4": "4"
+                }
+              },
+              "changed_fields": {
+                "regular_fields": ["address_line_2"],
+                "extra_data_fields": []
+              },
+              "date_edited": "2016-07-26T15:55:10.180Z",
+              "source" : "UserEdit"
+            },
+            {
+              "state": {
+                "address_line_1": "95864 SW Cottonwood Court",
+                "address_line_2": "old value",
+                "state": "Illinois",
+                "extra_data": {
+                  "some_extra_data_field_1": "1",
+                  "some_extra_data_field_2": "2",
+                  "some_extra_data_field_3": "3",
+                  "some_extra_data_field_4": "4"
+                }
+              },
+              "changed_fields": {
+                "regular_fields": [],
+                "extra_data_fields": []
+              },
+              "date_edited": "2016-07-25T15:55:10.180Z",
+              "source" : "ImportFile",
+              "filename" : "myfile.csv"
+            }
+          ],
+          "status": "success",
+          "message": ""
+        }
+                """
+        import json
+        result = json.loads(temp)
+        status_code = status.HTTP_200_OK
+
+        return Response(result, status=status_code)
+
+    def put(self, request, taxlot_pk, cycle_pk):
+        data = request.data
+        result = self.get_taxlot_view(taxlot_pk, cycle_pk)
+        if result.get('status', None) != 'error':
+            taxlot_view = result.pop('taxlot_view')
+            taxlot_state_data = TaxLotStateSerializer(taxlot_view.state).data
+            new_taxlot_state_data = data['state']
+
+            changed = True
+            if new_taxlot_state_data == taxlot_state_data:
+                changed = False
+            for key, val in new_taxlot_state_data.iteritems():
+                if val == '':
+                    new_taxlot_state_data[key] = None
+            if new_taxlot_state_data == taxlot_state_data:
+                changed = False
+
+            if not changed:
+                result.update({'status': 'error', 'message': 'Nothing to update'})
+                status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+            else:
+                taxlot_state_data.update(new_taxlot_state_data)
+                taxlot_state_data.pop('id')
+
+                new_taxlot_state_serializer = TaxLotStateSerializer(
+                    data=taxlot_state_data
+                )
+
+                if new_taxlot_state_serializer.is_valid():
+                    taxlot_view.state = new_taxlot_state_serializer.save()
+                    taxlot_view.save()
+                    result.update({
+                        'state': new_taxlot_state_serializer.validated_data,
+                    })
+                    status_code = status.HTTP_201_CREATED
+                else:
+                    result.update({'status': 'error', 'message': 'Invalid Data'})
+                    status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+        else:
+            status_code = status.HTTP_404_NOT_FOUND
+        return Response(result, status=status_code)

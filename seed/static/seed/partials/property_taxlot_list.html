@@ -4,12 +4,7 @@
 
         </div>
         <div class="page_title">
-            <h1>
-                <i class="fa fa-building-o"></i>
-                {$ pagination.total | number:0 $}
-                <span ng-show="object == 'property'"><ng-pluralize count="pagination.total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize></span>
-                <span ng-show="object == 'taxlot'"><ng-pluralize count="pagination.total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
-            </h1>
+            <h1>Inventory</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
@@ -17,15 +12,15 @@
 
 <div class="section_nav_container">
     <div class="section_nav">
-        <a id="building-list" ng-if="object=='property'" href="#/bluesky/properties" class="active">Properties List</a>
-        <a id="building-list" ng-if="object=='taxlot'" href="#/bluesky/taxlots" class="active">Tax Lots List</a>
-        <a id="list-settings" href="#/bluesky/properties/settings">List Settings</a>
-        <a id="reports" href="#/bluesky/properties/reports">Reports</a>
-        <a id="labels" href="#/bluesky/properties/labels">Labels</a>
+        <a id="building-list" ng-if="object=='property'" href="#/properties" class="active">Properties List</a>
+        <a id="building-list" ng-if="object=='taxlot'" href="#/taxlots" class="active">Tax Lots List</a>
+        <a id="list-settings" href="#/inventory/settings">List Settings</a>
+        <a id="reports" href="#/inventory/reports">Reports</a>
+        <a id="labels" href="#/inventory/labels">Labels</a>
     </div>
 </div>
 
-<div class="buildingListControls">
+<div class="inventory-list-controls">
     <form name="listControlsForm"
           class="form-inline"
           role="form"
@@ -95,13 +90,19 @@
     </div>
 </div>
 
-<div class="building_list_tab_container ">
+<div class="inventory-list-tab-container">
+    <div class="item-count">
+        <i class="fa fa-building-o"></i>
+        {$ pagination.total | number:0 $}
+        <span ng-show="object == 'property'"><ng-pluralize count="pagination.total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize></span>
+        <span ng-show="object == 'taxlot'"><ng-pluralize count="pagination.total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
+    </div>
     <ul class="nav nav-tabs" style="margin-bottom:1px;">
         <li ng-class="{active: object=='property'}" heading="View by Property">
-            <a href="#/bluesky/properties">View by Property</a>
+            <a href="#/properties">View by Property</a>
         </li>
         <li ng-class="{active: object=='taxlot'}" heading="View by Tax Lot">
-            <a href="#/bluesky/taxlots">View by Tax Lot</a>
+            <a href="#/taxlots">View by Tax Lot</a>
         </li>
     </ul>
 </div>

@@ -2183,6 +2183,53 @@ select {
 
 }
 
+
+/* DMcQ: Once Bluesky refactoring is complete, remove old #update-building-labels-modal above */
+
+#update-property-labels-modal {
+
+  .labels-status-msg {
+    min-height: 150px;
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .add_text, .edit_text {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .edit_text {
+    margin-left: 10px;
+  }
+
+  .add-label-row {
+    margin-right: -5px;
+    margin-bottom: 20px;
+  }
+
+  .btn-default {
+    min-width: 70px;
+  }
+
+  .table-list-container {
+    border: 1px solid #EEE;
+    overflow-y: auto;
+    max-height: 350px;
+    margin-bottom: 10px;
+    table {
+
+    }
+    th, td {
+      border: 0;
+    }
+  }
+
+}
+
+
 /* Styles to override ngInputTags to get correct tag colors */
 
 tags-input .tags {
@@ -2246,12 +2293,13 @@ gs-input .tags .tag-item .remove-button {
 /* OTHER */
 
 /* Styles for building list controls and table */
-.buildingListControls {
+.inventory-list-controls {
   padding: 20px 10px;
 
   .form-group {
     margin-bottom: 0;
     margin-right: 20px;
+    margin-bottom: 0px;
   }
 
   & + .buildingListControls {
@@ -2259,11 +2307,6 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
-.building-list-filter-buttons {
-  .btn + .btn {
-    margin-left: 5px;
-  }
-}
 
 /* Styles for building page */
 
@@ -2305,10 +2348,16 @@ gs-input .tags .tag-item .remove-button {
          appear in the building list. So defining a style here that can hopefully be refactored into
          the styles above at a later point. */
 
-.building_list_tab_container {
+.inventory-list-tab-container {
 
   margin-left: 10px;
   margin-bottom: -2px;
+
+  .item-count {
+    float: right;
+    margin-right: 20px;
+    margin-top: 10px;
+  }
 
   .nav-tabs {
     position: relative;
@@ -2335,6 +2384,15 @@ gs-input .tags .tag-item .remove-button {
     background-color: $blue;
     color: #FFF;
   }
+}
+
+.table_item_detail {
+  margin: 0px 10px;
+  border: 1px solid #F1F1F1
+}
+
+.highlight {
+  background-color: $highlighter;
 }
 
 #swagger-frame {

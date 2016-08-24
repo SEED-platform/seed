@@ -10,6 +10,8 @@ angular.module('BE.seed.angular_dependencies', [
     'ngCookies'
     ]);
 angular.module('BE.seed.vendor_dependencies', [
+    'ngTagsInput',
+    'ui-notification',
     'ui.bootstrap',
     'ui.grid',
     'ui.grid.draggable-rows',
@@ -25,17 +27,14 @@ angular.module('BE.seed.vendor_dependencies', [
     'ui.router.stateHelper',
     'ui.sortable',
     'ui.tree',
-    'xeditable',
-    'ngTagsInput',
-    'ui-notification'
+    'xeditable'
     ]);
 angular.module('BE.seed.controllers', [
     'BE.seed.controller.about',
     'BE.seed.controller.accounts',
     'BE.seed.controller.admin',
     'BE.seed.controller.api',
-    'BE.seed.controller.building_detail',
-    'BE.seed.controller.building_detail_update_labels_modal_ctrl',
+    'BE.seed.controller.base_detail',
     'BE.seed.controller.building_list',
     'BE.seed.controller.buildings_reports',
     'BE.seed.controller.buildings_settings',
@@ -64,10 +63,12 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.organization',
     'BE.seed.controller.organization_settings',
     'BE.seed.controller.project',
-    'BE.seed.controller.update_building_labels_modal',
+    'BE.seed.controller.properties',
+    'BE.seed.controller.property_detail',
     'BE.seed.controller.security',
-    'BE.seed.controller.bluesky_properties_controller',
-    'BE.seed.controller.bluesky_taxlots_controller'
+    'BE.seed.controller.taxlots',
+    'BE.seed.controller.taxlot_detail',
+    'BE.seed.controller.update_item_labels_modal_ctrl'
     ]);
 angular.module('BE.seed.filters', [
     'district',
@@ -78,13 +79,13 @@ angular.module('BE.seed.filters', [
     'typedNumber'
     ]);
 angular.module('BE.seed.directives', [
+    'sdBasicBuildingInfoChart',
+    'sdCheckLabelExists',
+    'sdDropdown',
     'sdEnter',
-    'sdUploader',
     'sdLabel',
     'sdResizable',
-    'sdBasicBuildingInfoChart',
-    'sdDropdown',
-    'sdCheckLabelExists'
+    'sdUploader'
     ]);
 angular.module('BE.seed.services', [
     'BE.seed.service.audit',
@@ -94,19 +95,19 @@ angular.module('BE.seed.services', [
     'BE.seed.service.cleansing',
     'BE.seed.service.dataset',
     'BE.seed.service.export',
+    'BE.seed.service.httpParamSerializerSeed',
     'BE.seed.service.label',
     'BE.seed.service.main',
     'BE.seed.service.mapping',
     'BE.seed.service.matching',
     'BE.seed.service.organization',
     'BE.seed.service.project',
-    'BE.seed.service.uploader',
-    'BE.seed.service.user',
-    'mappingValidatorService',
+    'BE.seed.service.property_taxlot',
     'BE.seed.service.search',
     'BE.seed.service.simple_modal',
-    'BE.seed.service.httpParamSerializerSeed',
-    'BE.seed.service.bluesky_service'
+    'BE.seed.service.uploader',
+    'BE.seed.service.user',
+    'mappingValidatorService'
     ]);
 angular.module('BE.seed.utilities', [
     'BE.seed.utility.spinner'
@@ -898,40 +899,88 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           }
       })
       .state({
+          name: 'labels',
+          url: '/labels',
+          templateUrl: static_url + 'seed/partials/labels.html'
+      })
+      .state({
           name: 'properties',
-          url: '/bluesky/properties',
-          templateUrl: static_url + 'seed/partials/bluesky/list.html',
-          controller: 'bluesky_properties_controller',
+          url: '/properties',
+          templateUrl: static_url + 'seed/partials/property_taxlot_list.html',
+          controller: 'properties_controller',
           resolve: {
-              properties: ['bluesky_service', function (bluesky_service) {
-                  return bluesky_service.get_properties(1);
+              properties: ['property_taxlot_service', function (property_taxlot_service) {
+                  return property_taxlot_service.get_properties(1);
               }],
-              cycles: ['bluesky_service', function (bluesky_service) {
-                  return bluesky_service.get_cycles();
+              cycles: ['property_taxlot_service', function (property_taxlot_service) {
+                  return property_taxlot_service.get_cycles();
               }],
-              columns: ['bluesky_service', function (bluesky_service) {
-                  return bluesky_service.get_property_columns();
+              columns: ['property_taxlot_service', function (property_taxlot_service) {
+                  return property_taxlot_service.get_property_columns();
               }]
           }
       })
       .state({
           name: 'taxlots',
-          url: '/bluesky/taxlots',
-          templateUrl: static_url + 'seed/partials/bluesky/list.html',
-          controller: 'bluesky_taxlots_controller',
+          url: '/taxlots',
+          templateUrl: static_url + 'seed/partials/property_taxlot_list.html',
+          controller: 'taxlots_controller',
           resolve: {
-              taxlots: ['bluesky_service', function (bluesky_service) {
-                  return bluesky_service.get_taxlots(1);
+              taxlots: ['property_taxlot_service', function (property_taxlot_service) {
+                  return property_taxlot_service.get_taxlots(1);
               }],
-              cycles: ['bluesky_service', function (bluesky_service) {
-                  return bluesky_service.get_cycles();
+              cycles: ['property_taxlot_service', function (property_taxlot_service) {
+                  return property_taxlot_service.get_cycles();
               }],
-              columns: ['bluesky_service', function (bluesky_service) {
-                  return bluesky_service.get_taxlot_columns();
+              columns: ['property_taxlot_service', function (property_taxlot_service) {
+                  return property_taxlot_service.get_taxlot_columns();
+              }]
+          }
+      })
+      .state({
+          name: 'property',
+          url: '/properties/:property_id/cycles/:cycle_id',
+          templateUrl: static_url + 'seed/partials/inventory_item_detail.html',
+          controller: 'property_detail_controller',
+          resolve: {
+              property_payload: ['property_taxlot_service', '$stateParams', function (property_taxlot_service, $stateParams) {
+                  // load `get_building` before page is loaded to avoid
+                  // page flicker.
+                  var property_id = $stateParams.property_id;
+                  var cycle_id = $stateParams.cycle_id;
+                  return property_taxlot_service.get_property(property_id, cycle_id);
+              }],
+              all_property_columns: ['property_taxlot_service', function (property_taxlot_service) {
+                  return property_taxlot_service.get_property_columns();
+              }],
+              default_property_columns: ['user_service', function (user_service) {
+                  //TODO: Return default Property columns
+                  return []
+              }]
+          }
+      })
+      .state({
+          name: 'taxlot',
+          url: '/taxlots/:taxlot_id/cycles/:cycle_id',
+          templateUrl: static_url + 'seed/partials/inventory_item_detail.html',
+          controller: 'taxlot_detail_controller',
+          resolve: {
+              taxlot_payload: ['property_taxlot_service', '$stateParams', function (property_taxlot_service, $stateParams) {
+                  // load `get_building` before page is loaded to avoid
+                  // page flicker.
+                  var taxlot_id = $stateParams.taxlot_id;
+                  var cycle_id = $stateParams.cycle_id;
+                  return property_taxlot_service.get_taxlot(taxlot_id, cycle_id);
+              }],
+              all_taxlot_columns: ['property_taxlot_service', function (property_taxlot_service) {
+                  return property_taxlot_service.get_taxlot_columns();
+              }],
+              default_taxlot_columns: ['user_service', function (user_service) {
+                  //TODO: Return default TaxLot columns
+                  return [];
               }]
           }
       });
-
 }]);
 
 /**

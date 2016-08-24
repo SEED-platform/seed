@@ -2,15 +2,15 @@
  * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-angular.module('BE.seed.controller.bluesky_properties_controller', [])
-  .controller('bluesky_properties_controller', [
+angular.module('BE.seed.controller.taxlots', [])
+  .controller('taxlots_controller', [
     '$scope',
     '$window',
     '$log',
     '$uibModal',
-    'bluesky_service',
+    'property_taxlot_service',
     'label_service',
-    'properties',
+    'taxlots',
     'cycles',
     'columns',
     'urls',
@@ -18,15 +18,15 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
               $window,
               $log,
               $uibModal,
-              bluesky_service,
+              property_taxlot_service,
               label_service,
-              properties,
+              taxlots,
               cycles,
               columns,
               urls) {
-      $scope.object = 'property';
-      $scope.objects = properties.results;
-      $scope.pagination = properties.pagination;
+      $scope.object = 'taxlot';
+      $scope.objects = taxlots.results;
+      $scope.pagination = taxlots.pagination;
       $scope.number_per_page = 999999999;
       $scope.restoring = false;
 
@@ -118,7 +118,7 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
       };
 
 
-      var lastCycleId = bluesky_service.get_last_cycle();
+      var lastCycleId = property_taxlot_service.get_last_cycle();
       $scope.cycle = {
         selected_cycle: lastCycleId ? _.find(cycles, {pk: lastCycleId}) : cycles[0],
         cycles: cycles
@@ -134,9 +134,9 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
           for (var j = 0; j < related.length; ++j) {
             // Rename nested keys
             var map = {
-              city: 'tax_city',
-              state: 'tax_state',
-              postal_code: 'tax_postal_code'
+              city: 'property_city',
+              state: 'property_state',
+              postal_code: 'property_postal_code'
             };
             var updated = _.reduce(related[j], function (result, value, key) {
               key = map[key] || key;
@@ -155,15 +155,15 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
       };
 
       var refresh_objects = function () {
-        bluesky_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle).then(function (properties) {
-          $scope.objects = properties.results;
-          $scope.pagination = properties.pagination;
+        property_taxlot_service.get_taxlots($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle).then(function (taxlots) {
+          $scope.objects = taxlots.results;
+          $scope.pagination = taxlots.pagination;
           processData();
         });
       };
 
       $scope.update_cycle = function (cycle) {
-        bluesky_service.save_last_cycle(cycle.pk);
+        property_taxlot_service.save_last_cycle(cycle.pk);
         $scope.cycle.selected_cycle = cycle;
         refresh_objects();
       };
@@ -206,8 +206,8 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
       };
       _.map(columns, function (col) {
         var filter = {}, aggregation = {};
-        if (col.type == 'number') filter = {filter: bluesky_service.numFilter()};
-        else filter = {filter: bluesky_service.textFilter()};
+        if (col.type == 'number') filter = {filter: property_taxlot_service.numFilter()};
+        else filter = {filter: property_taxlot_service.textFilter()};
         if (col.related) aggregation.treeAggregationType = 'uniqueList';
         return _.defaults(col, filter, aggregation, defaults);
       });
@@ -215,10 +215,10 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
         name: 'id',
         displayName: '',
         cellTemplate: '<div class="ui-grid-row-header-link">' +
-        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/bluesky/{{grid.appScope.object == \'property\' ? \'properties\' : \'taxlots\'}}/{{COL_FIELD}}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{{grid.appScope.object == \'property\' ? \'properties\' : \'taxlots\'}}/{{COL_FIELD}}/cycles/{{grid.appScope.cycle.selected_cycle.pk}}">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
-        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/bluesky/{{grid.appScope.object == \'taxlot\' ? \'taxlots\' : \'properties\'}}/{{COL_FIELD}}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{{grid.appScope.object == \'taxlot\' ? \'taxlots\' : \'properties\'}}/{{COL_FIELD}}/cycles/{{grid.appScope.cycle.selected_cycle.pk}}">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
         '</div>',
@@ -234,7 +234,7 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
 
       $scope.updateHeight = function () {
         var height = 0;
-        _.forEach(['.header', '.page_header_container', '.section_nav_container', '.buildingListControls', 'ul.nav'], function (selector) {
+        _.forEach(['.header', '.page_header_container', '.section_nav_container', '.inventory-list-controls', '.inventory-list-tab-container'], function (selector) {
           height += angular.element(selector)[0].offsetHeight;
         });
         angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
@@ -262,13 +262,13 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
 
       var saveState = function () {
         if (!$scope.restoring) {
-          localStorage.setItem('grid.properties', JSON.stringify($scope.gridApi.saveState.save()));
+          localStorage.setItem('grid.taxlots', JSON.stringify($scope.gridApi.saveState.save()));
         }
       };
 
       var restoreState = function () {
         $scope.restoring = true;
-        var state = localStorage.getItem('grid.properties');
+        var state = localStorage.getItem('grid.taxlots');
         if (!_.isNull(state)) {
           state = JSON.parse(state);
           $scope.gridApi.saveState.restore($scope, state);
@@ -302,7 +302,7 @@ angular.module('BE.seed.controller.bluesky_properties_controller', [])
         saveTreeView: false,
         showTreeExpandNoChildren: false,
         columnDefs: columns,
-        treeCustomAggregations: bluesky_service.aggregations(),
+        treeCustomAggregations: property_taxlot_service.aggregations(),
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
 
