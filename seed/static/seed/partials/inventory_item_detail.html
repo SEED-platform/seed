@@ -81,13 +81,23 @@
     <div class="section_content_container">
         <div class="section_content">
             
-            <div style="margin:10px 0px; padding:0px 10px;">
+             <div style="float:right; width:330px; text-align:right; margin: 10px 10px 0px 0px;" class="ellipsis">
+                 <span style="color:#777"
+                       popover-placement="top-left"
+                       popover-animation="false"
+                       popover-trigger="outsideClick"
+                       uib-popover="{$  cycle.name $}">
+                     Cycle: {$ cycle.name $}
+                 </span>
+            </div>
+            
+            <div style="margin:10px 350px 10px 0px; padding:0px 10px;">
                 <button type="button"
                         class="btn btn-default"
                         ng-click="open_update_labels_modal()">
                     <i class="fa fa-tag"></i>Add/Remove Labels
                 </button>
-                <span style="padding-right:5px;"><strong>Labels:</strong></span>
+                <span style="padding:0px 0px 0px 15px;"><strong>Labels:</strong></span>
                 <span ng-show="labels.length === 0" style="color:#999">(no labels applied)</span>
                 <span ng-repeat="label in labels" class="label label-{$ label.label $}">{$ label.name $}</span>
             </div>

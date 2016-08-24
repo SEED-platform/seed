@@ -34,7 +34,7 @@ function($controller, $scope, $uibModal, $location, $log, $filter, urls, label_h
 	$scope.all_extra_data_keys = property_payload.extra_data_keys;
 
 	$scope.item_type = "property";
-	$scope.item_title = "Property : " + $scope.item_state.address_line_1;
+	$scope.item_title = "Property : " + $scope.item_state.address_line_1 ;
 	$scope.user = {};
 	$scope.user_role = property_payload.user_role;
 
