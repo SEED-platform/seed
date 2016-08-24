@@ -128,6 +128,9 @@ def get_properties(request):
         for extra_data_field, extra_data_value in prop.state.extra_data.items():
             p[extra_data_field] = extra_data_value
 
+        # Use property_id instead of default (state_id)
+        p['id'] = prop.property_id
+
         p['campus'] = prop.property.campus
 
         # All the related tax lot states.
