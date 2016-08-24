@@ -21,9 +21,9 @@
         window.BE.urls.delete_duplicates_from_import_file_url = '{% url "seed:delete_duplicates_from_import_file" %}';
         window.BE.urls.seed_home = '{% url "seed:home" %}';
 
-        window.BE.urls.create_dataset   = '{% url "seed:create_dataset" %}';
-        window.BE.urls.get_datasets     = '{% url "seed:get_datasets" %}';
-        window.BE.urls.get_dataset      = '{% url "seed:get_dataset" %}';
+        window.BE.urls.create_dataset   = '{% url "apiv2:datasets-list" %}';
+        window.BE.urls.get_datasets     = '{% url "apiv2:datasets-list" %}';
+        window.BE.urls.get_dataset      = '{% url "apiv2:datasets-list" %}';
         window.BE.urls.get_import_file  = '{% url "seed:get_import_file" %}';
         window.BE.urls.delete_file      = '{% url "seed:delete_file" %}';
         window.BE.urls.delete_dataset   = '{% url "seed:delete_dataset" %}';

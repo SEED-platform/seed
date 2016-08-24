@@ -184,25 +184,20 @@ class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
             ---
             parameter_strategy: replace
             parameters:
-                - name: organization_id
-                  description: The organization_id
-                  required: true
-                  paramType: query
                 - name: pk
                   description: "Primary Key"
                   required: true
                   paramType: path
         """
 
-        organization_id = int(
-            request.query_params.get('organization_id', None))
+        orgs = request.user.orgs.all()
         dataset_id = pk
 
         from seed.models import obj_to_dict
 
         # check if user has access to the dataset
         d = ImportRecord.objects.filter(
-            super_organization_id=organization_id, pk=dataset_id
+            super_organization__in=orgs, pk=dataset_id
         )
         if d.exists():
             d = d[0]

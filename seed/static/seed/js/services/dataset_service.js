@@ -35,10 +35,8 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
         var defer = $q.defer();
         $http({
             method: 'GET',
-            url: window.BE.urls.get_dataset,
-            params: {
-                dataset_id: dataset_id
-            }
+            url: window.BE.urls.get_dataset + dataset_id,
+            params: {}
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
