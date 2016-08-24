@@ -1791,67 +1791,6 @@ def create_dataset(request):
     }
 
 
-@require_organization_id
-@api_endpoint
-@ajax_request
-@login_required
-def get_datasets(request):
-    """
-    Retrieves all datasets for the user's organization.
-
-    :GET: Expects 'organization_id' of org to retrieve datasets from
-        in query string.
-
-    Returns::
-
-        {
-            'status': 'success',
-            'datasets':  [
-                {
-                    'name': Name of ImportRecord,
-                    'number_of_buildings': Total number of buildings in all ImportFiles,
-                    'id': ID of ImportRecord,
-                    'updated_at': Timestamp of when ImportRecord was last modified,
-                    'last_modified_by': Email address of user making last change,
-                    'importfiles': [
-                        {
-                            'name': Name of associated ImportFile, e.g. 'buildings.csv',
-                            'number_of_buildings': Count of buildings in this file,
-                            'number_of_mappings': Number of mapped headers to fields,
-                            'number_of_cleanings': Number of fields cleaned,
-                            'source_type': Type of file (see source_types),
-                            'id': ID of ImportFile (needed for most operations)
-                        }
-                    ],
-                    ...
-                },
-                ...
-            ]
-        }
-    """
-    from seed.models import obj_to_dict
-
-    org = Organization.objects.get(pk=request.GET['organization_id'])
-    datasets = []
-    for d in ImportRecord.objects.filter(super_organization=org):
-        importfiles = [obj_to_dict(f) for f in d.files]
-        dataset = obj_to_dict(d)
-        dataset['importfiles'] = importfiles
-        if d.last_modified_by:
-            dataset['last_modified_by'] = d.last_modified_by.email
-        dataset['number_of_buildings'] = BuildingSnapshot.objects.filter(
-            import_file__in=d.files,
-            canonicalbuilding__active=True,
-        ).count()
-        dataset['updated_at'] = convert_to_js_timestamp(d.updated_at)
-        datasets.append(dataset)
-
-    return {
-        'status': 'success',
-        'datasets': datasets,
-    }
-
-
 @api_endpoint
 @ajax_request
 @login_required

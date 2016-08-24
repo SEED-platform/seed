@@ -1595,7 +1595,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse("seed:get_datasets"),
+        response = self.client.get(reverse("apiv2:datasets-list"),
                                    {'organization_id': self.org.pk})
         self.assertEqual(1, len(json.loads(response.content)['datasets']))
 
