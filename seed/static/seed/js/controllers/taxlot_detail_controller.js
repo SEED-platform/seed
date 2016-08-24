@@ -69,7 +69,7 @@ function($controller, $state, $scope,  $uibModal, $location, $log, $filter, urls
 			.then(function (data){
 					// In the short term, we're just refreshing the page after a save so the table
 					// shows new history.
-					// TODO: Refactor so that table is dyanmically updated with new information
+					// TODO: Refactor so that table is dynamically updated with new information
 					$scope.$emit('finished_saving');
 					$state.reload();
 				}, function (data, status){
