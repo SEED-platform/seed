@@ -639,8 +639,9 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
                                         "release_date",
                                         "recent_sale_date",
                                         "year_ending",
-                                        "modified",
-                                        "created"]
+                                        "record_created",
+                                        "record_modified",
+                                        "record_year_ending"]
 
     property_taxlot_service.property_state_date_columns = property_state_date_columns;
 
@@ -649,8 +650,9 @@ angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_s
                                         "release_date",
                                         "recent_sale_date",
                                         "year_ending",
-                                        "modified",
-                                        "created"]
+                                        "record_created",
+                                        "record_modified",
+                                        "record_year_ending"]
     property_taxlot_service.taxlot_state_date_columns = property_state_date_columns;
 
     return property_taxlot_service;
