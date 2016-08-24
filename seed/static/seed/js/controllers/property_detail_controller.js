@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.property_detail', [])
 			'$controller',
 			'$scope',
 			'$uibModal',
+			'$location',
 			'$log',
 			'$filter',
 			'urls',
@@ -15,7 +16,7 @@ angular.module('BE.seed.controller.property_detail', [])
 			'property_payload',
 			'all_property_columns',
 			'default_property_columns',
-function($controller, $scope, $uibModal, $log, $filter, urls, label_helper_service,
+function($controller, $scope, $uibModal, $location, $log, $filter, urls, label_helper_service,
 				 	property_taxlot_service, property_payload, all_property_columns, default_property_columns ) {
 
 	/** See service for structure of returned payload */
@@ -28,8 +29,8 @@ function($controller, $scope, $uibModal, $log, $filter, urls, label_helper_servi
 	$scope.item_state = property_payload.state;
 	$scope.changed_fields = property_payload.changed_fields;
 
-	// Remember the list of *all* extra_data keys (current state or historical state)
-	// as provided by the server.
+	// The server provides of *all* extra_data keys (across current state and all historical state)
+	// Let's remember this.
 	$scope.all_extra_data_keys = property_payload.extra_data_keys;
 
 	$scope.item_type = "property";
@@ -55,6 +56,10 @@ function($controller, $scope, $uibModal, $log, $filter, urls, label_helper_servi
 	 */
 	$scope.on_save = function () {
 		$scope.save_property();
+	}
+
+	$scope.on_show_related_taxlot = function(taxlot) {
+		$location.path('/taxlots/' + taxlot.taxlot.id + '/cycles/' + taxlot.cycle.id);
 	}
 
 

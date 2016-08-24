@@ -873,6 +873,180 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
             status_code = status.HTTP_200_OK
         else:
             status_code = status.HTTP_404_NOT_FOUND
+
+        # TEMP
+        # DMCQ: This is temporary dummy data. Paul is working on implementation...
+        temp = """
+ {
+  "property": {
+    "campus": "False",
+    "id": 4,
+    "organization": 24,
+    "parent_property": ""
+  },
+  "cycle": {
+    "created": "2016-08-02T16:38:22.925258Z",
+    "end": "2011-01-01T07:59:59Z",
+    "id": 1,
+    "name": "2010 Calendar Year",
+    "organization": 24,
+    "start": "2010-01-01T08:00:00Z",
+    "user": ""
+  },
+  "taxlots": [{
+        "taxlot": { "id": 2 },
+        "cycle" : { "id": 1 },
+        "state" : { "address_line_1": "95864 SW Cottonwood Court LOT A" }
+    },
+    {
+        "taxlot": { "id": 3 },
+        "cycle" : { "id": 1 },
+        "state" : { "address_line_1": "95864 SW Cottonwood Court LOT B" }
+    }],
+  "state": {
+    "address_line_1": "95864 SW Cottonwood Court",
+    "address_line_2": "Top floor!",
+    "building_certification": "",
+    "building_count": "",
+    "building_home_energy_score_identifier": "",
+    "building_portfolio_manager_identifier": "477198",
+    "city": "EnergyTown",
+    "conditioned_floor_area": "",
+    "confidence": "",
+    "energy_alerts": "",
+    "energy_score": 74,
+    "extra_data": {"National Median Site EUI (kBtu/ft2)": "120.3",
+      "National Median Source EUI (kBtu/ft2)": "282.3",
+      "Organization": "Acme Inc",
+      "Parking - Gross Floor Area (ft2)": "89041",
+      "Property Floor Area (Buildings And Parking) (ft2)": "139,835",
+      "Total GHG Emissions (MtCO2e)": "2114.3",
+      "custom_id_1": "",
+      "prop_bs_id": 87941,
+      "prop_cb_id": 33315,
+      "record_created": "2016-07-27T15:52:11.879Z",
+      "record_modified": "2016-07-27T15:55:10.180Z",
+      "record_year_ending": "2010-12-31"},
+    "generation_date": "2013-09-27T18:41:00Z",
+    "gross_floor_area": "",
+    "id": 1048,
+    "jurisdiction_property_identifier": "",
+    "lot_number": "",
+    "occupied_floor_area": "",
+    "owner": "",
+    "owner_address": "",
+    "owner_city_state": "",
+    "owner_email": "",
+    "owner_postal_code": "",
+    "owner_telephone": "",
+    "pm_parent_property_id": "",
+    "postal_code": "10106-7162",
+    "property_name": "",
+    "property_notes": "",
+    "recent_sale_date": "",
+    "release_date": "2013-09-27T18:42:00Z",
+    "site_eui": 91.8,
+    "site_eui_weather_normalized": 89.0,
+    "source_eui": 215.5,
+    "source_eui_weather_normalized": "",
+    "space_alerts": "",
+    "state": "Illinois",
+    "use_description": "",
+    "year_built": 1964,
+    "year_ending": ""
+  },
+  "extra_data_keys" : [
+        "National Median Site EUI (kBtu/ft2)",
+        "National Median Source EUI (kBtu/ft2)",
+        "Organization",
+        "Parking - Gross Floor Area (ft2)",
+        "Property Floor Area (Buildings And Parking) (ft2)",
+        "Total GHG Emissions (MtCO2e)",
+        "custom_id_1",
+        "prop_bs_id",
+        "prop_cb_id",
+        "record_created",
+        "record_modified",
+        "record_year_ending"
+  ],
+  "changed_fields": {
+    "regular_fields": [
+        "address_line_2",
+        "site_eui",
+        "source_eui"
+    ],
+    "extra_data_fields" : []
+  },
+  "history": [
+    {
+      "state": {
+        "address_line_1": "95864 SW Cottonwood Court",
+        "address_line_2": "Second floor",
+        "site_eui": 21,
+        "source_eui" : 22,
+        "extra_data" : {
+            "National Median Site EUI (kBtu/ft2)": "120.3",
+          "National Median Source EUI (kBtu/ft2)": "282.3",
+          "Organization": "Acme Inc",
+          "Parking - Gross Floor Area (ft2)": "89041",
+          "Property Floor Area (Buildings And Parking) (ft2)": "139,835",
+          "Total GHG Emissions (MtCO2e)": "2114.3",
+          "custom_id_1": "",
+          "prop_bs_id": 87941,
+          "prop_cb_id": 33315,
+          "record_created": "2016-07-27T15:52:11.879Z",
+          "record_modified": "2016-07-27T15:55:10.180Z",
+          "record_year_ending": "2010-12-31"
+        }
+      },
+      "changed_fields": {
+        "regular_fields": [
+            "address_line_2",
+            "site_eui",
+            "source_eui"
+        ],
+        "extra_data_fields" : []
+      },
+      "date_edited": "2016-07-26T15:55:10.180Z",
+      "source" : "UserEdit"
+    },
+    {
+      "state": {
+        "address_line_1": "95864 SW Cottonwood Court",
+        "address_line_2": "Third floor",
+        "site_eui": 19,
+        "source_eui" : 18,
+        "extra_data" : {
+            "National Median Site EUI (kBtu/ft2)": "120.3",
+          "National Median Source EUI (kBtu/ft2)": "282.3",
+          "Organization": "Acme Inc",
+          "Parking - Gross Floor Area (ft2)": "89041",
+          "Property Floor Area (Buildings And Parking) (ft2)": "139,835",
+          "Total GHG Emissions (MtCO2e)": "2114.3",
+          "custom_id_1": "",
+          "prop_bs_id": 87941,
+          "prop_cb_id": 33315,
+          "record_created": "2016-07-27T15:52:11.879Z",
+          "record_modified": "2016-07-27T15:55:10.180Z",
+          "record_year_ending": "2010-12-31"
+        }
+      },
+      "changed_fields": {
+        "regular_fields": [],
+        "extra_data_fields": []
+      },
+      "date_edited": "2016-07-25T15:55:10.180Z",
+      "source" : "ImportFile",
+      "filename" : "myfile.csv"
+    }
+
+  ],
+  "status": "success",
+  "message": ""
+}
+        """
+        import json
+        result = json.loads(temp)
         return Response(result, status=status_code)
 
     def put(self, request, property_pk, cycle_pk):
@@ -952,7 +1126,7 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
             taxlot_view_id=taxlot_view_pk
         ).values_list('property_view_id', flat=True)
 
-#     property_views = PropertyView.objects.filter(pk__in=property_view_pks).select_related('cycle', 'state')
+        #     property_views = PropertyView.objects.filter(pk__in=property_view_pks).select_related('cycle', 'state')
 
         property_views = PropertyView.objects.filter(
             pk__in=property_view_pks
@@ -962,16 +1136,116 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
             properties.append(PropertyViewSerializer(property_view).data)
         return properties
 
-    def get_taxlot(self, request, taxlot_pk):
-        result = self.get_taxlot_view(taxlot_pk)
-        if result.get('status', None) != 'error':
-            taxlot_view = result.pop('taxlot_view')
-            result.update(TaxLotViewSerializer(taxlot_view).data)
-            result['state'] = TaxLotStateSerializer(taxlot_view.state).data
-            result['properties'] = self.get_taxlots(taxlot_view.id)
-            status_code = status.HTTP_200_OK
-        else:
-            status_code = status.HTTP_404_NOT_FOUND
+    def get_taxlot(self, request, taxlot_pk, cycle_pk):
+        #result = self.get_taxlot_view(taxlot_pk)
+        #if result.get('status', None) != 'error':
+        #    taxlot_view = result.pop('taxlot_view')
+        #    result.update(TaxLotViewSerializer(taxlot_view).data)
+        #    result['state'] = TaxLotStateSerializer(taxlot_view.state).data
+        #    result['properties'] = self.get_taxlots(taxlot_view.id)
+        #    status_code = status.HTTP_200_OK
+        #else:
+        #    status_code = status.HTTP_404_NOT_FOUND
+
+            # TEMP
+            # DMCQ: This is temporary dummy data. Paul is working on implementation...
+        temp = """
+         {
+          "taxlot": {
+            "id": 4,
+            "organization": 24
+          },
+          "cycle": {
+            "created": "2016-08-02T16:38:22.925258Z",
+            "end": "2011-01-01T07:59:59Z",
+            "id": 1,
+            "name": "2010 Calendar Year",
+            "organization": 24,
+            "start": "2010-01-01T08:00:00Z",
+            "user": ""
+          },
+          "properties": [
+            {
+                "property": { "id": 2 },
+                "cycle" : { "id": 1 },
+                "state" : { "address_line_1": "95864 SW Cottonwood Court Bldg 1" }
+            },
+            {
+                "property": { "id": 3 },
+                "cycle" : { "id": 1 },
+                "state" : { "address_line_1": "95864 SW Cottonwood Court Bldg 2" }
+            }
+          ],
+          "state": {
+            "address_line_1": "95864 SW Cottonwood Court",
+            "address_line_2": "the newest value!",
+            "state": "Illinois",
+            "extra_data": {
+              "some_extra_data_field_1": "1",
+              "some_extra_data_field_2": "2",
+              "some_extra_data_field_3": "3",
+              "some_extra_data_field_4": "4"
+            }
+          },
+          "extra_data_keys" : [
+            "some_extra_data_field_1",
+            "some_extra_data_field_2",
+            "some_extra_data_field_3",
+            "some_extra_data_field_4"
+          ],
+          "changed_fields": {
+                "regular_fields": ["address_line_2"],
+                "extra_data_fields" : []
+           },
+           "history": [
+             {
+              "state": {
+                "address_line_1": "95864 SW Cottonwood Court",
+                "address_line_2": "newer value",
+                "state": "Illinois",
+                "extra_data": {
+                  "some_extra_data_field_1": "1",
+                  "some_extra_data_field_2": "2",
+                  "some_extra_data_field_3": "3",
+                  "some_extra_data_field_4": "4"
+                }
+              },
+              "changed_fields": {
+                "regular_fields": ["address_line_2"],
+                "extra_data_fields": []
+              },
+              "date_edited": "2016-07-26T15:55:10.180Z",
+              "source" : "UserEdit"
+            },
+            {
+              "state": {
+                "address_line_1": "95864 SW Cottonwood Court",
+                "address_line_2": "old value",
+                "state": "Illinois",
+                "extra_data": {
+                  "some_extra_data_field_1": "1",
+                  "some_extra_data_field_2": "2",
+                  "some_extra_data_field_3": "3",
+                  "some_extra_data_field_4": "4"
+                }
+              },
+              "changed_fields": {
+                "regular_fields": [],
+                "extra_data_fields": []
+              },
+              "date_edited": "2016-07-25T15:55:10.180Z",
+              "source" : "ImportFile",
+              "filename" : "myfile.csv"
+            }
+          ],
+          "status": "success",
+          "message": ""
+        }
+                """
+        import json
+        result = json.loads(temp)
+        status_code = status.HTTP_200_OK
+
         return Response(result, status=status_code)
 
     def put(self, request, taxlot_pk, cycle_pk):

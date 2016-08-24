@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.taxlot_detail', [])
 			'$controller',
 			'$scope',
 			'$uibModal',
+			'$location',
 			'$log',
 			'$filter',
 			'urls',
@@ -15,7 +16,7 @@ angular.module('BE.seed.controller.taxlot_detail', [])
 			'taxlot_payload',
 			'all_taxlot_columns',
 			'default_taxlot_columns',
-function($controller, $scope,  $uibModal, $log, $filter, urls, label_helper_service,
+function($controller, $scope,  $uibModal, $location, $log, $filter, urls, label_helper_service,
 				 	property_taxlot_service, taxlot_payload, all_taxlot_columns, default_taxlot_columns ) {
 
 	/** See service for structure of returned payload */
@@ -54,13 +55,16 @@ function($controller, $scope,  $uibModal, $log, $filter, urls, label_helper_serv
 	}
 
 
+	$scope.on_show_related_property = function(property) {
+		$location.path('/properties/' + property.property.id + '/cycles/' + property.cycle.id);
+	}
 
 	/**
 	 * save_taxlot: saves the user's changes to the TaxLot State object.
 	 */
 	$scope.save_taxlot = function (){
 		$scope.$emit('show_saving');
-		property_taxlot_service.update_taxlot($scope.taxlot.id, $scope.taxlot.cycle.id, $scope.item_state)
+		property_taxlot_service.update_taxlot($scope.taxlot.id, $scope.cycle.id, $scope.item_state)
 			.then(function (data){
 					$scope.$emit('finished_saving');
 				}, function (data, status){

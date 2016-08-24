@@ -5,9 +5,9 @@
 describe('controller: taxlot_detail_controller', function(){
 
     // globals set up and used in each test scenario
-    var scope, controller, ngFilter, delete_called, ngLog, ngUrls;
+    var scope, controller, ngFilter, ngLocation, delete_called, ngLog, ngUrls;
     var taxlot_detail_ctrl, taxlot_detail_ctrl_scope;
-    var mock_property_taxlot_service, mock_taxlot, mock_default_taxlot_columns;
+    var mock_property_taxlot_service, mock_default_taxlot_columns;
     var mock_uib_modal, mock_label_helper_service;
 
     beforeEach(function() {
@@ -28,6 +28,7 @@ describe('controller: taxlot_detail_controller', function(){
           $controller,
           $rootScope,
           $uibModal,
+          $location,
           $log,
           $filter,
           urls,
@@ -39,6 +40,7 @@ describe('controller: taxlot_detail_controller', function(){
             controller = $controller;
             scope = $rootScope;
             ngFilter = $filter;
+            ngLocation = $location;
             ngLog = $log;
             ngUrls = urls;
             mock_uib_modal = $uibModal;
@@ -71,23 +73,95 @@ describe('controller: taxlot_detail_controller', function(){
     // this is outside the beforeEach so it can be configured by each unit test
     function create_taxlot_detail_controller(){
 
-        var fake_taxlot = {
-            id: 123,
-            cycle: {
-                id: 2
+        var fake_taxlot_payload =  {
+          "taxlot": {
+            "id": 4,
+            "organization": 24
+          },
+          "cycle": {
+            "created": "2016-08-02T16:38:22.925258Z",
+            "end": "2011-01-01T07:59:59Z",
+            "id": 1,
+            "name": "2010 Calendar Year",
+            "organization": 24,
+            "start": "2010-01-01T08:00:00Z",
+            "user": ""
+          },
+          "properties": [
+            {
+                "property": { "id": 2 },
+                "cycle" : { "id": 1 },
+                "state" : { "address_line_1": "123 Main St. Bldg 1" }
             },
-            state: {
-                address_line_1: "123 Main St.",
-                city: 'DC',
-                city_source: 4,
-                tax_lot_id: '11/22',
-                tax_lot_id_source: 3,
-                extra_data: {
-                    'some other key': 12344,
-                    'some other key that is not in a parent': 223
-                },
-                created: 'at some point'
+            {
+                "property": { "id": 3 },
+                "cycle" : { "id": 1 },
+                "state" : { "address_line_1": "123 Main St. Bldg 2" }
             }
+          ],
+          "state": {
+            "address_line_1": "123 Main St.",
+            "address_line_2": "the newest value!",
+            "state": "Illinois",
+            "extra_data": {
+              "some_extra_data_field_1": "1",
+              "some_extra_data_field_2": "2",
+              "some_extra_data_field_3": "3",
+              "some_extra_data_field_4": "4"
+            }
+          },
+          "extra_data_keys" : [
+            "some_extra_data_field_1",
+            "some_extra_data_field_2",
+            "some_extra_data_field_3",
+            "some_extra_data_field_4"
+          ],
+          "changed_fields": {
+                "regular_fields": ["address_line_2"],
+                "extra_data_fields" : []
+           },
+           "history": [
+             {
+              "state": {
+                "address_line_1": "123 Main St.",
+                "address_line_2": "newer value",
+                "state": "Illinois",
+                "extra_data": {
+                  "some_extra_data_field_1": "1",
+                  "some_extra_data_field_2": "2",
+                  "some_extra_data_field_3": "3",
+                  "some_extra_data_field_4": "4"
+                }
+              },
+              "changed_fields": {
+                "regular_fields": ["address_line_2"],
+                "extra_data_fields": []
+              },
+              "date_edited": "2016-07-26T15:55:10.180Z",
+              "source" : "UserEdit"
+            },
+            {
+              "state": {
+                "address_line_1": "123 Main St.",
+                "address_line_2": "old value",
+                "state": "Illinois",
+                "extra_data": {
+                  "some_extra_data_field_1": "1",
+                  "some_extra_data_field_2": "2",
+                  "some_extra_data_field_3": "3",
+                  "some_extra_data_field_4": "4"
+                }
+              },
+              "changed_fields": {
+                "regular_fields": [],
+                "extra_data_fields": []
+              },
+              "date_edited": "2016-07-25T15:55:10.180Z",
+              "source" : "ImportFile",
+              "filename" : "myfile.csv"
+            }
+          ],
+          "status": "success"
         };
 
         var fake_all_taxlot_columns = [
@@ -107,12 +181,13 @@ describe('controller: taxlot_detail_controller', function(){
             $controller: controller,
             $scope: taxlot_detail_ctrl_scope,
             $uibModal: mock_uib_modal,
+            $location: ngLocation,
             $log : ngLog,
             $filter: ngFilter,
             urls: ngUrls,
             label_helper_service: mock_label_helper_service,
             property_taxlot_service: mock_property_taxlot_service,
-            taxlot_payload: fake_taxlot,
+            taxlot_payload: fake_taxlot_payload,
             default_taxlot_columns: mock_default_taxlot_columns,
             all_taxlot_columns: {
                 fields: fake_all_taxlot_columns
@@ -134,8 +209,8 @@ describe('controller: taxlot_detail_controller', function(){
         taxlot_detail_ctrl_scope.$digest();
 
         // assertions
-        expect(taxlot_detail_ctrl_scope.taxlot.id).toBe(123);
-        expect(taxlot_detail_ctrl_scope.taxlot.cycle.id).toBe(2);
+        expect(taxlot_detail_ctrl_scope.taxlot.id).toBe(4);
+        expect(taxlot_detail_ctrl_scope.cycle.id).toBe(1);
         expect(taxlot_detail_ctrl_scope.item_state.address_line_1).toBe("123 Main St.");
 
     });
@@ -203,7 +278,7 @@ describe('controller: taxlot_detail_controller', function(){
         // assertions
         expect(mock_property_taxlot_service.update_taxlot)
         .toHaveBeenCalledWith(  taxlot_detail_ctrl_scope.taxlot.id,
-                                taxlot_detail_ctrl_scope.taxlot.cycle.id,
+                                taxlot_detail_ctrl_scope.cycle.id,
                                 taxlot_detail_ctrl_scope.item_state);
         expect(taxlot_detail_ctrl_scope.item_state.address_line_1).toEqual("ABC Main St.");
     });
