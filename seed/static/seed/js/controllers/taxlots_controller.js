@@ -147,7 +147,6 @@ angular.module('BE.seed.controller.taxlots', [])
             data.splice(++trueIndex, 0, updated);
           }
           // Remove unnecessary data
-          delete data[relatedIndex].collapsed;
           delete data[relatedIndex].related;
           ++trueIndex;
         }
@@ -189,10 +188,9 @@ angular.module('BE.seed.controller.taxlots', [])
         });
 
         modalInstance.result.then(function () {
-          $scope.search.selected_buildings = [];
-          refresh_search();
+          // TODO
         }, function (message) {
-          refresh_search();
+          // TODO
         });
       };
 

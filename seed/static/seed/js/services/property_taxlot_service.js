@@ -2,7 +2,7 @@
  * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-// building services
+// inventory services
 angular.module('BE.seed.service.property_taxlot', []).factory('property_taxlot_service', [
   '$http',
   '$q',

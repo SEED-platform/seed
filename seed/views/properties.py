@@ -114,6 +114,7 @@ def get_properties(request):
     for join in joins:
         join_dict = taxlot_map[join.taxlot_view_id].copy()
         join_dict.update({
+            'id': join.taxlot_view.taxlot_id,
             'primary': 'P' if join.primary else 'S'
         })
         try:
@@ -138,25 +139,25 @@ def get_properties(request):
 
         # Start collapsed field data
         # Map of fields in related model to unique list of values
-        related_field_map = {}
-
-        # Iterate over related dicts and gather field values.
-        # Basically get a unique list off all related values for each field.
-        for related in p['related']:
-            for k, v in related.items():
-                try:
-                    related_field_map[k].add(v)
-                except KeyError:
-                    try:
-                        related_field_map[k] = {v}
-                    except TypeError:
-                        # Extra data field, ignore it
-                        pass
-
-        for k, v in related_field_map.items():
-            related_field_map[k] = list(v)
-
-        p['collapsed'] = related_field_map
+        # related_field_map = {}
+        #
+        # # Iterate over related dicts and gather field values.
+        # # Basically get a unique list off all related values for each field.
+        # for related in p['related']:
+        #     for k, v in related.items():
+        #         try:
+        #             related_field_map[k].add(v)
+        #         except KeyError:
+        #             try:
+        #                 related_field_map[k] = {v}
+        #             except TypeError:
+        #                 # Extra data field, ignore it
+        #                 pass
+        #
+        # for k, v in related_field_map.items():
+        #     related_field_map[k] = list(v)
+        #
+        # p['collapsed'] = related_field_map
         # End collapsed field data
 
         response['results'].append(p)
@@ -246,16 +247,17 @@ def get_taxlots(request):
             .values_list('jurisdiction_taxlot_identifier', flat=True)
 
         # Filter out associated tax lots that are present but which do not have preferred
-        none_in_juridiction_tax_lot_ids = None in jurisdiction_taxlot_identifiers
+        none_in_jurisdiction_tax_lot_ids = None in jurisdiction_taxlot_identifiers
         jurisdiction_taxlot_identifiers = filter(lambda x: x is not None, jurisdiction_taxlot_identifiers)
 
-        if none_in_juridiction_tax_lot_ids:
-            jurisdiction_taxlot_identifiers.append("Missing")
+        if none_in_jurisdiction_tax_lot_ids:
+            jurisdiction_taxlot_identifiers.append('Missing')
 
         # jurisdiction_taxlot_identifiers = [""]
 
         join_dict = property_map[join.property_view_id].copy()
         join_dict.update({
+            'id': join.property_view.property_id,
             'primary': 'P' if join.primary else 'S',
             'calculated_taxlot_ids': '; '.join(jurisdiction_taxlot_identifiers)
         })
@@ -268,6 +270,9 @@ def get_taxlots(request):
         # Each object in the response is built from the state data, with related data added on.
         l = model_to_dict(lot.state, exclude=['extra_data'])
 
+        # Use taxlot_id instead of default (state_id)
+        l['id'] = lot.taxlot_id
+
         for extra_data_field, extra_data_value in lot.state.extra_data.items():
             l[extra_data_field] = extra_data_value
 
@@ -275,24 +280,24 @@ def get_taxlots(request):
 
         # Start collapsed field data
         # Map of fields in related model to unique list of values
-        related_field_map = {}
-
-        # Iterate over related dicts and gather field values
-        for related in l['related']:
-            for k, v in related.items():
-                try:
-                    related_field_map[k].add(v)
-                except KeyError:
-                    try:
-                        related_field_map[k] = {v}
-                    except TypeError:
-                        # Extra data field, ignore it
-                        pass
-
-        for k, v in related_field_map.items():
-            related_field_map[k] = list(v)
-
-        l['collapsed'] = related_field_map
+        # related_field_map = {}
+        #
+        # # Iterate over related dicts and gather field values
+        # for related in l['related']:
+        #     for k, v in related.items():
+        #         try:
+        #             related_field_map[k].add(v)
+        #         except KeyError:
+        #             try:
+        #                 related_field_map[k] = {v}
+        #             except TypeError:
+        #                 # Extra data field, ignore it
+        #                 pass
+        #
+        # for k, v in related_field_map.items():
+        #     related_field_map[k] = list(v)
+        #
+        # l['collapsed'] = related_field_map
         # End collapsed field data
 
         response['results'].append(l)

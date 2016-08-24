@@ -53,7 +53,8 @@
                     ng-init="matching_filter_options.selected = matching_filter_options_init"
                     ng-model="matching_filter_options.selected"
                     ng-options="option.id as option.value for option in matching_filter_options"
-                    ng-change="update_show_matching_filter(matching_filter_options.selected)">
+                    ng-change="update_show_matching_filter(matching_filter_options.selected)"
+                    ng-disabled="true">
             </select>
 
         </div>

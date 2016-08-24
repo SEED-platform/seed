@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
   'shared_fields_payload',
   'user_service',
   '$filter',
+  '$state',
   '$stateParams',
   'project_payload',
   'building_payload',
@@ -22,6 +23,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
     shared_fields_payload,
     user_service,
     $filter,
+    $state,
     $stateParams,
     project_payload,
     building_payload
@@ -112,7 +114,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
             //resolve promise
             $scope.settings_updated = true;
             $uibModalInstance.close(columns);
-            location.reload();
+            $state.reload();
         });
     };
 
