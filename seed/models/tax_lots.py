@@ -109,9 +109,11 @@ class TaxLotView(models.Model):
     @property
     def import_filename(self):
         """Get the import file name form the audit logs"""
-        audit_log = TaxLotAuditLog.objects.filter(
-            view_id=self.pk).order_by('created').first()
-        return audit_log.import_filename
+        if not getattr(self, '_import_filename', None):
+            audit_log = TaxLotAuditLog.objects.filter(
+                view_id=self.pk).order_by('created').first()
+            self._import_filename = audit_log.import_filename
+        return self._import_filename
 
 
 class TaxLotProperty(models.Model):
