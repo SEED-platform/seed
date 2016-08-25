@@ -55,6 +55,7 @@ def build_column_mapping(raw_columns, dest_columns, previous_mapping=None,
                 result = None
                 conf = 0
 
+
         probable_mapping[raw] = [result, conf]
 
     return probable_mapping

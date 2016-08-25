@@ -33,6 +33,7 @@ class MappingData(object):
 
         # So bedes compliant fields are defined in the database? That is strange
         self.data = []
+
         for f in PropertyState._meta.fields:
             # _source have been removed from new data model
             if f.name not in exclude_fields:  # and '_source' not in f.name:
@@ -40,12 +41,11 @@ class MappingData(object):
                     {
                         'table': 'PropertyState',
                         'name': f.name,
-                        'type': f.get_internal_type(),
+                        'type': f.get_internal_type() if f.get_internal_type else 'string',
                         'js_type': self.normalize_mappable_type(
                             f.get_internal_type()),
                         'schema': 'BEDES',
-                        'unit': ''
-
+                        'extra_data': False,
                     }
                 )
 
@@ -56,11 +56,11 @@ class MappingData(object):
                     {
                         'table': 'TaxLotState',
                         'name': f.name,
-                        'type': f.get_internal_type(),
+                        'type': f.get_internal_type() if f.get_internal_type else 'string',
                         'js_type': self.normalize_mappable_type(
                             f.get_internal_type()),
                         'schema': 'BEDES',
-                        'unit': ''
+                        'extra_data': False,
                     }
                 )
 
@@ -78,12 +78,15 @@ class MappingData(object):
 
         """
 
-        return in_str.lower().replace('field', '').replace('integer',
-                                                           'float').replace(
-            'time', '').replace('text', '').replace('char', '')
+        return in_str.lower().replace('field', ''). \
+            replace('integer', 'float'). \
+            replace('time', ''). \
+            replace('text', ''). \
+            replace('char', '')
 
-    def add_database_columns(self, columns):
+    def add_extra_data(self, columns):
         """
+        Add in the unit types from a columns queryset
 
         Args:
             columns: list of columns from the Column table
@@ -96,9 +99,11 @@ class MappingData(object):
             self.data.append(
                 {
                     'name': c.column_name,
-                    'unit': unit,
-                    'schema': 'ExtraData',
-                    'table': 'PropertyState'
+                    'type': unit,
+                    'js_type': self.normalize_mappable_type(unit),
+                    'schema': 'BEDES',
+                    'table': 'PropertyState',
+                    'extra_data': True,
                 }
             )
 
@@ -117,6 +122,34 @@ class MappingData(object):
             result.add(d['name'])
 
         return list(sorted(result))
+
+
+    def building_columns(self):
+        """
+        Return a set of the sorted keys which are the possible columns
+
+        Returns: set of keys
+
+        """
+
+        return list(set(sorted(self.keys())))
+
+    def extra_data(self):
+        """
+        List only the extra_data columns, that is the columns that are not
+        database fields.
+
+        Returns: set of keys of the extra_data columns
+
+        """
+
+        f = None
+        try:
+            f = [item for item in self.data if item['extra_data']]
+        except StopIteration:
+            pass
+
+        return f
 
     def sort_data(self):
         """
@@ -145,7 +178,8 @@ class MappingData(object):
         f = None
         try:
             f = (item for item in self.data if
-                 item['name'].lower() == column_name and item['table'].lower() == table_name).next()
+                 item['name'].lower() == column_name and
+                 item['table'].lower() == table_name).next()
         except StopIteration:
             pass
 

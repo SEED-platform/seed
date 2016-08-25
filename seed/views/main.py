@@ -5,7 +5,6 @@
 :author
 """
 
-import copy
 import datetime
 import json
 import logging
@@ -37,10 +36,10 @@ from seed.data_importer.tasks import (
 from seed.decorators import ajax_request, get_prog_key, require_organization_id
 from seed.lib.exporter import Exporter
 from seed.lib.mappings import mapper as simple_mapper
+from seed.lib.mappings import mapping_data
 from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from seed.lib.mappings import mapping_data
 from seed.models import (
     get_column_mapping,
     save_snapshot_match,
@@ -308,7 +307,7 @@ def export_buildings(request):
         for field in selected_fields:
             components = field.split("__", 1)
             if (components[0] == 'project_building_snapshots'
-                    and len(components) > 1):
+                and len(components) > 1):
                 _selected_fields.append(components[1])
             else:
                 _selected_fields.append("building_snapshot__%s" % field)
@@ -1274,6 +1273,84 @@ def delete_duplicates_from_import_file(request):
     }
 
 
+def tmp_mapping_suggestions(import_file_id, org_id, user):
+    """
+    Temp function for allowing both api version fo mapping suggestions to
+    return the same data. Move this to the mapping_suggestions once we can
+    deprecate the old get_column_mapping_suggestion method.
+
+    Args:
+        import_id_pk: import file id
+        org_id: organization id of user
+        user: user object from request
+
+    Returns:
+        dictionary
+
+    """
+
+    result = {'status': 'success'}
+
+    membership = OrganizationUser.objects.select_related('organization') \
+        .get(organization_id=org_id, user=user)
+    organization = membership.organization
+
+    import_file = ImportFile.objects.get(pk=import_file_id,
+                                         import_record__super_organization_id=organization.pk)
+
+    # Get a list of the database fields in a list
+    md = mapping_data.MappingData()
+    column_types = {}
+
+    # TODO: Move this to the MappingData class and remove calling
+    # add_extra_data
+
+    # Check if there are any DB columns that are not defined in the
+    # list of mapping data.
+    columns = list(Column.objects.select_related('unit').filter(
+        Q(mapped_mappings__super_organization_id=org_id) |
+        Q(organization__isnull=True)).exclude(column_name__in=md.keys())
+                   )
+
+    md.add_extra_data(columns)
+
+    # Portfolio manager files have their own mapping scheme
+    if import_file.from_portfolio_manager:
+        _log.info("map Portfolio Manager input file")
+        suggested_mappings = {}
+        ver = import_file.source_program_version
+
+        # if there is no pm mapping found but the file has already been matched
+        # then effectively the mappings are already known with a confidence of 100
+        no_pm_mappings_confidence = 100 if import_file.matching_done else 0
+
+        for col, item in simple_mapper.get_pm_mapping(ver,
+                                                      import_file.first_row_columns,
+                                                      include_none=True).items():
+            if item is None:
+                suggested_mappings[col] = (col, no_pm_mappings_confidence)
+    else:
+        # All other input types
+        suggested_mappings = mapper.build_column_mapping(
+            import_file.first_row_columns,
+            md.keys(),  # column_types.keys(),
+            previous_mapping=get_column_mapping,
+            map_args=[organization],
+            thresh=20  # percentage match we require
+        )
+        # replace None with empty string for column names
+        for m in suggested_mappings:
+            dest, conf = suggested_mappings[m]
+            if dest is None:
+                suggested_mappings[m][0] = u''
+
+    result['suggested_column_mappings'] = suggested_mappings
+    result['column_names'] = md.building_columns()
+    result['columns'] = md.data
+
+    return result
+
+
 @api_endpoint
 @ajax_request
 @login_required
@@ -1302,95 +1379,9 @@ def get_column_mapping_suggestions(request):
 
     body = json.loads(request.body)
     org_id = body.get('org_id')
+    import_file_id = body.get('import_file_id')
 
-    membership = OrganizationUser.objects.select_related('organization') \
-        .get(organization_id=org_id, user=request.user)
-    organization = membership.organization
-
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'), import_record__super_organization_id=organization.pk)
-
-    # Make a dictionary of the column names and their respective types.
-    # Build this dictionary from BEDES fields (the null organization columns,
-    # and all of the column mappings that this organization has previously
-    # saved.
-    mappable_types = get_mappable_types()
-    field_names = mappable_types.keys()
-    column_types = {}
-
-    # Note on exclude:
-    # mappings get created to mappable types but we deal with them manually
-    # so don't include them here
-    columns = list(
-        Column.objects.select_related('unit')
-        .filter(Q(mapped_mappings__super_organization_id=org_id) | Q(organization__isnull=True))
-        .exclude(column_name__in=field_names)
-    )
-
-    for c in columns:
-        if c.unit:
-            unit = c.unit.get_unit_type_display()
-        else:
-            unit = 'string'
-        column_types[c.column_name] = {
-            'unit_type': unit.lower(),
-            'schema': '',
-        }
-
-    db_columns = copy.deepcopy(mappable_types)
-    for k, v in db_columns.items():
-        db_columns[k] = {
-            'unit_type': v if v else 'string',
-            'schema': 'BEDES',
-        }
-    column_types.update(db_columns)
-
-    # Portfolio manager files have their own mapping scheme
-    if import_file.from_portfolio_manager:
-        _log.info("map Portfolio Manager input file")
-        suggested_mappings = {}
-        ver = import_file.source_program_version
-
-        # if there is no pm mapping found but the file has already been matched
-        # then effectively the mappings are already known with a confidence of 100
-        no_pm_mappings_confience = 100 if import_file.matching_done else 0
-
-        for col, item in simple_mapper.get_pm_mapping(
-                ver, import_file.first_row_columns,
-                include_none=True).items():
-            if item is None:
-                suggested_mappings[col] = (col, no_pm_mappings_confience)
-            else:
-                cleaned_field = item.field
-                suggested_mappings[col] = (cleaned_field, 100)
-
-    else:
-        # All other input types
-        suggested_mappings = mapper.build_column_mapping(
-            import_file.first_row_columns,
-            column_types.keys(),
-            previous_mapping=get_column_mapping,
-            map_args=[organization],
-            thresh=20  # percentage match we require
-        )
-        # replace None with empty string for column names
-        for m in suggested_mappings:
-            dest, conf = suggested_mappings[m]
-            if dest is None:
-                suggested_mappings[m][0] = u''
-
-    # Only db columns on BuildingSnapshot
-    building_columns = set(sorted(field_names))
-
-    # Only columns from Column table. Notice we're removing any db columns
-    # from this list. TODO nicholasserra this should probably happen above.
-    extra_data_columns = set(sorted(column_types.keys())) - building_columns
-
-    result['suggested_column_mappings'] = suggested_mappings
-    result['building_columns'] = list(building_columns)
-    result['extra_data_columns'] = list(extra_data_columns)
-    result['building_column_types'] = column_types
-
-    return result
+    return tmp_mapping_suggestions(import_file_id, org_id, request.user)
 
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -1438,73 +1429,7 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
 
         org_id = request.query_params.get('organization_id', None)
 
-        membership = OrganizationUser.objects.select_related('organization') \
-            .get(organization_id=org_id, user=request.user)
-        organization = membership.organization
-
-        import_file = ImportFile.objects.get(pk=pk,
-                                             import_record__super_organization_id=organization.pk)
-
-        # Get a list of the database fields in a list
-        md = mapping_data.MappingData()
-        column_types = {}
-
-        # Check if there are any DB columns that are not defined in the
-        # list of mapping data.
-        columns = list(
-            Column.objects.select_related('unit')
-            .filter(Q(mapped_mappings__super_organization_id=org_id) | Q(
-                    organization__isnull=True))
-            .exclude(column_name__in=md.keys())
-        )
-
-        md.add_database_columns(columns)
-
-        # TODO: clean up the rest of this method!
-
-        # Portfolio manager files have their own mapping scheme
-        if import_file.from_portfolio_manager:
-            _log.info("map Portfolio Manager input file")
-            suggested_mappings = {}
-            ver = import_file.source_program_version
-
-            # if there is no pm mapping found but the file has already been matched
-            # then effectively the mappings are already known with a confidence of 100
-            no_pm_mappings_confidence = 100 if import_file.matching_done else 0
-
-            for col, item in simple_mapper.get_pm_mapping(ver,
-                                                          import_file.first_row_columns,
-                                                          include_none=True).items():
-                if item is None:
-                    suggested_mappings[col] = (col, no_pm_mappings_confidence)
-        else:
-            # All other input types
-            suggested_mappings = mapper.build_column_mapping(
-                import_file.first_row_columns,
-                md.keys(),  # column_types.keys(),
-                previous_mapping=get_column_mapping,
-                map_args=[organization],
-                thresh=20  # percentage match we require
-            )
-            # replace None with empty string for column names
-            for m in suggested_mappings:
-                dest, conf = suggested_mappings[m]
-                if dest is None:
-                    suggested_mappings[m][0] = u''
-
-        # Only db columns on BuildingSnapshot
-        building_columns = set(sorted(md.keys()))
-
-        # Only columns from Column table. Notice we're removing any db columns
-        # from this list. TODO nicholasserra this should probably happen above.
-        extra_data_columns = set(
-            sorted(column_types.keys())) - building_columns
-
-        result['suggested_column_mappings'] = suggested_mappings
-        result['building_columns'] = list(building_columns)
-        result['extra_data_columns'] = list(extra_data_columns)
-        result['building_column_types'] = column_types
-        result['tmp_all_data'] = md.data
+        result = tmp_mapping_suggestions(pk, org_id, request.user)
 
         return HttpResponse(json.dumps(result),
                             content_type='application/json')
@@ -1592,7 +1517,7 @@ def get_first_five_rows(request):
             dict(
                 zip(import_file.first_row_columns, row)
             ) for row in rows
-        ]
+            ]
     }
 
 
@@ -1724,7 +1649,7 @@ def save_column_mappings(request):
             [
                 column_mapping.column_mapped.add(dest_col)
                 for dest_col in dest_cols
-            ]
+                ]
 
         column_mapping.user = request.user
         column_mapping.save()
@@ -2550,7 +2475,8 @@ def get_building_summary_report_data(request):
 
     # Read in x and y vars requested by client
     try:
-        orgs = [request.GET['organization_id']]  # How should we capture user orgs here?
+        orgs = [request.GET[
+                    'organization_id']]  # How should we capture user orgs here?
     except Exception as e:
         msg = "Error while calling the API function get_scatter_data_series, missing parameter"
         _log.error(msg)
@@ -2694,11 +2620,11 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
         bldg_counts[year_ending_year]["buildings"].add(canonical_building_id)
 
         if (
-            (year_ending_year not in data[
-                canonical_building_id]) or
-            (not data[canonical_building_id][year_ending_year]) or
-            (data[canonical_building_id][year_ending_year][
-                "release_date"] < release_date)
+                        (year_ending_year not in data[
+                            canonical_building_id]) or
+                        (not data[canonical_building_id][year_ending_year]) or
+                    (data[canonical_building_id][year_ending_year][
+                         "release_date"] < release_date)
         ):
             bldg_x = get_attr_f(snapshot, x_var)
             bldg_y = get_attr_f(snapshot, y_var)
@@ -2906,7 +2832,7 @@ def get_building_report_data(request):
         x_var = request.GET['x_var']
         y_var = request.GET['y_var']
         orgs = [request.GET[
-            'organization_id']]  # How should we capture user orgs here?
+                    'organization_id']]  # How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
 
@@ -3113,7 +3039,7 @@ def get_aggregated_building_report_data(request):
         x_var = request.GET['x_var']
         y_var = request.GET['y_var']
         orgs = [request.GET[
-            'organization_id']]  # How should we capture user orgs here?
+                    'organization_id']]  # How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
     except KeyError as e:
@@ -3195,9 +3121,10 @@ def get_aggregated_building_report_data(request):
                 chart_data.append({
                     'yr_e': yr_e,
                     'x': median([
-                        getattr(b, x_var)
-                        for b in buildings_in_uses if getattr(b, x_var)
-                    ]),
+                                    getattr(b, x_var)
+                                    for b in buildings_in_uses if
+                                    getattr(b, x_var)
+                                    ]),
                     'y': use.capitalize()
                 })
 
@@ -3215,10 +3142,12 @@ def get_aggregated_building_report_data(request):
                 chart_data.append({
                     'yr_e': yr_e,
                     'x': median([
-                        getattr(b, x_var)
-                        for b in buildings_in_decade if getattr(b, x_var)
-                    ]),
-                    'y': '%s-%s' % (decade, '%s9' % str(decade)[:-1])  # 1990-1999
+                                    getattr(b, x_var)
+                                    for b in buildings_in_decade if
+                                    getattr(b, x_var)
+                                    ]),
+                    'y': '%s-%s' % (decade, '%s9' % str(decade)[:-1])
+                # 1990-1999
                 })
 
         elif y_var == 'gross_floor_area':
@@ -3253,9 +3182,10 @@ def get_aggregated_building_report_data(request):
                 chart_data.append({
                     'yr_e': yr_e,
                     'x': median([
-                        getattr(b, x_var)
-                        for b in buildings_in_range if getattr(b, x_var)
-                    ]),
+                                    getattr(b, x_var)
+                                    for b in buildings_in_range if
+                                    getattr(b, x_var)
+                                    ]),
                     'y': y_display_map[range_floor]
                 })
 

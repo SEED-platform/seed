@@ -8,11 +8,13 @@ from seed.models import PropertyState
 from seed.utils import constants
 
 
+# TODO: deprecate method - use MappingData class
 def get_mappable_columns(exclude_fields=None):
     """Get a list of all the columns we're able to map to."""
     return get_mappable_types(exclude_fields).keys()
 
 
+# TODO: deprecate method - use MappingData class
 def get_mappable_types(exclude_fields=None):
     """Like get_mappable_columns, but with type information."""
     # TODO: delete this method once everything is moved over to the new method below

@@ -17,6 +17,7 @@ from seed.utils.mapping import get_mappable_columns
 # Values are expected data types so we can present reasonable approximations
 # of validation in the frontend.
 
+# TODO: This appears to be deprecated... confirm and delete
 PortfolioRaw_to_BuildingSnapshot = (
     (u'property_id', u'pm_property_id'),
     (u'custom_property_id_1_-_id', u'custom_id_1'),

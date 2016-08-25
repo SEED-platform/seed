@@ -1097,7 +1097,7 @@ def _remap_data(import_file_pk):
     # Delete buildings already mapped for this file.
     PropertyState.objects.filter(
         import_file=import_file,
-        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS)  # FIXME: make these not hard coded integers
+        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS)  # TODO: make these not hard coded integers
     ).delete()
 
     import_file.mapping_done = False

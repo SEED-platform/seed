@@ -455,6 +455,7 @@ def _get_filtered_values(updated_values):
             source_values[item] = value
         elif item in META_FIELDS:
             meta_values[item] = value
+        # TODO: Clean up the use of these constants
         elif item not in EXCLUDE_FIELDS:
             mappable_values[item] = value
 
