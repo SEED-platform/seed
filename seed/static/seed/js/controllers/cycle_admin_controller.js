@@ -8,12 +8,13 @@ angular.module('BE.seed.controller.cycle_admin', [])
     '$scope',
     '$log',
     'urls',
-    'cycle_service',
     'simple_modal_service',
     'Notification',
-function ($scope, $log, urls, cycle_service, simple_modal_service, notification) {
+    'cycle_service',
+    'cycles_payload',
+function ($scope, $log, urls, simple_modal_service, notification, cycle_service, cycles_payload) {
 
-    $scope.cycles = [];
+    $scope.cycles = cycles_payload.cycles;
 
     function initialize_new_cycle() {
         $scope.new_cycle = { from_date:'', to_date:'', name:'' };
@@ -123,7 +124,7 @@ function ($scope, $log, urls, cycle_service, simple_modal_service, notification)
         // gets all cycles for an org user
         cycle_service.get_cycles().then(function(data) {
             // resolve promise
-            $scope.cycles = data.results;
+            $scope.cycles = data.cycles;
         });
     }
 
@@ -135,7 +136,6 @@ function ($scope, $log, urls, cycle_service, simple_modal_service, notification)
     }
 
     function init(){
-       get_cycles();
        initialize_new_cycle();
     }
     init();

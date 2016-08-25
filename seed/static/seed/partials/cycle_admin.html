@@ -13,10 +13,10 @@
 </div>
 <div class="section_nav_container">
     <div class="section_nav">
-        <a ng-href="#/accounts/{$ org.id $}" class="active">Settings</a>
+        <a ng-href="#/accounts/{$ org.id $}">Settings</a>
         <a ng-href="#/accounts/{$ org.id $}/sharing" ng-if="org.is_parent && auth.requires_owner">Sharing</a>
         <a ng-href="#/accounts/{$ org.id $}/data_cleansing" ng-if="org.is_parent && auth.requires_owner">Data Cleansing</a>
-        <a ng-href="#/accounts/{$ org.id $}/cycle_admin" ng-if="org.is_parent && auth.requires_owner" class="active">Cycles</a>
+        <a ng-href="#/accounts/{$ org.id $}/cycle_admin"  class="active">Cycles</a>
         <a ng-href="#/accounts/{$ org.id $}/sub_org" ng-if="org.is_parent && auth.requires_owner">Sub-Organizations</a>
         <a ng-href="#/accounts/{$ org.id $}/members">Members</a>
     </div>
@@ -50,6 +50,44 @@
                             required>
                     
                 </div>
+                <div class="form-group" ng-class="{'has-error' : invalidDates }">
+                <label for="from-date">From date:</label>
+
+                <div class="input-group date-input" style="padding-right:20px;">
+                    <input  id="from-date"
+                            type="text"
+                            class="form-control"
+                            uib-datepicker-popup="MM-dd-yyyy"
+                            is-open="startDatePickerOpen"
+                            ng-model="startDate"
+                            uib-tooltip="'From Date' must be before 'To Date'"
+                            tooltip-placement="top"
+                            tooltip-trigger="mouseenter"
+                            tooltip-enable="invalidDates"
+                            />
+                    <span class="input-group-btn">
+                        <button type="button"
+                                class="btn btn-default"
+                                ng-click="openStartDatePicker($event)"><i class="fa fa-calendar"></i></button>
+                    </span>
+                </div>
+            </div>
+            <div class="form-group" >
+                <label for="to-date">To date:</label>
+                <div class="input-group date-input" style="padding-right:20px;">
+                    <input  id="to-date"
+                            type="text"
+                            class="form-control"
+                            uib-datepicker-popup="MM-dd-yyyy"
+                            is-open="endDatePickerOpen"
+                            ng-model="endDate"/>
+                    <span class="input-group-btn">
+                        <button type="button"
+                                class="btn btn-default"
+                                ng-click="openEndDatePicker($event)"><i class="fa fa-calendar"></i></button>
+                    </span>
+                </div>
+            </div>
                 <button id="btnCreateCycle"
                         class="btn btn-primary"
                         ng-disabled="newCycleForm.$invalid">
@@ -73,8 +111,9 @@
         <table class="table table-striped table-hover table-condensed">
 
             <tr class="tableHeader">
-              <td style="width:80%;padding-left:10px;">Name</td>
-              <td style="width:10%"></td> <!-- color selector will appear in this column -->
+              <td style="width:40%;padding-left:10px;">Name</td>
+              <td style="width:25%">From Date</td>
+              <td style="width:25%">To Date</td>
               <td width="width:10%" align="right"></td>
             </tr>
 
@@ -91,8 +130,19 @@
                             e-required>
                         {$ cycle.name $}
                     </span>
+                    <span   ng-show="!rowform.$visible">
+                        {$ cycle.name $}
+                    </span>
+                </td>
+                
+                <td style="border:0px; padding-left:10px; vertical-align:middle;">
+                    {$ cycle.from_date $}
                 </td>
 
+                <td style="border:0px; padding-left:10px; vertical-align:middle;">
+                    {$ cycle.to_date $}
+                </td>
+                
                 <td style="white-space: nowrap; border:0px;" align="right">
 
                     <!-- form -->

@@ -2187,6 +2187,14 @@ select {
 
 #cycle_admin {
 
+  .newCycleInput {
+    margin: 20px 0;
+    border: 1px solid #EEE;
+    padding: 10px 10px 5px 10px;
+    border-radius: 5px;
+    background-color: #F1F1F1;
+  }
+
   .table_list_container {
     border: 1px solid #cdcdcd;
   }

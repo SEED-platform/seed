@@ -905,6 +905,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           url: '/accounts/:organization_id/cycle_admin',
           templateUrl: static_url + 'seed/partials/cycle_admin.html',
           controller: 'cycle_admin_controller',
+          resolve: {
+              cycles_payload: ['cycle_service', function (cycle_service) {
+                  return cycle_service.get_cycles();
+              }],
+          }
       })
       .state({
           name: 'labels',

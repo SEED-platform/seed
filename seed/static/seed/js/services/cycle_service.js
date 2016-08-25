@@ -42,9 +42,6 @@ angular.module('BE.seed.service.cycle',
             url: window.BE.urls.cycle_list,
             params: searchArgs
         }).success(function(data, status, headers, config) {
-            if (_.isEmpty(data.results)) {
-                data.results = [];
-            }
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
             defer.reject(data, status);
