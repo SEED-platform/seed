@@ -52,6 +52,7 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.existing_members_modal',
     'BE.seed.controller.export_inventory_modal',
     'BE.seed.controller.export_modal',
+    'BE.seed.controller.inventory_reports',
     'BE.seed.controller.label_admin',
     'BE.seed.controller.mapping',
     'BE.seed.controller.matching',
@@ -80,6 +81,7 @@ angular.module('BE.seed.filters', [
     ]);
 angular.module('BE.seed.directives', [
     'sdBasicBuildingInfoChart',
+    'sdBasicPropertyInfoChart',
     'sdCheckLabelExists',
     'sdDropdown',
     'sdEnter',
@@ -96,6 +98,7 @@ angular.module('BE.seed.services', [
     'BE.seed.service.dataset',
     'BE.seed.service.export',
     'BE.seed.service.httpParamSerializerSeed',
+    'BE.seed.service.inventory_reports',
     'BE.seed.service.label',
     'BE.seed.service.main',
     'BE.seed.service.mapping',
@@ -433,6 +436,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           url: '/buildings/reports',
           templateUrl: static_url + 'seed/partials/buildings_reports.html',
           controller: 'buildings_reports_controller'
+      })
+      .state({
+          name: 'inventory_reports',
+          url: '/inventory/reports',
+          templateUrl: static_url + 'seed/partials/inventory_reports.html',
+          controller: 'inventory_reports_controller'
       })
       .state({
           name: 'buildings_labels',
