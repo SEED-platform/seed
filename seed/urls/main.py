@@ -45,6 +45,11 @@ api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organiz
 apiv1 = r''  # r'api/v1/'
 
 urlpatterns = [
+
+    #DMcQ Temp
+    # TEMP : dummy data method for implementing cycles on FE
+    url(r'^' + apiv1 + r'get_cycles/$', get_cycles, name='get_cycles'),
+
     # template routes
     url(r'^$', home, name='home'),
     url(r'^properties/$', get_properties, name='properties'),
