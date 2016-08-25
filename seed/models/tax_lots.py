@@ -62,6 +62,10 @@ class TaxLotView(models.Model):
     class Meta:
         unique_together = ('taxlot', 'cycle',)
 
+    def __init__(self, *args, **kwargs):
+        self._import_filename = kwargs.pop('import_filename', None)
+        super(TaxLotView, self).__init__(*args, **kwargs)
+
     def initialize_audit_logs(self, **kwargs):
         kwargs.update({
             'organization': self.taxlot.organization,
@@ -75,7 +79,8 @@ class TaxLotView(models.Model):
         view_audit_log = TaxLotAuditLog.objects.filter(state=self.state).first()
         if not view_audit_log:
             view_audit_log = self.initialize_audit_logs(
-                description="Initial audit log added on update."
+                description="Initial audit log added on update.",
+                record_type=AUDIT_IMPORT,
             )
         new_audit_log = TaxLotAuditLog(
             organization=self.taxlot.organization,
@@ -92,11 +97,21 @@ class TaxLotView(models.Model):
     def save(self, *args, **kwargs):
         # create audit log on creation
         audit_log_initialized = True if self.id else False
+        import_filename = kwargs.pop('import_filename', self._import_filename)
         super(TaxLotView, self).save(*args, **kwargs)
         if not audit_log_initialized:
             self.initialize_audit_logs(
-                description="Initial audit log added on creation/save."
+                description="Initial audit log added on creation/save.",
+                record_type=AUDIT_IMPORT,
+                import_filename=import_filename
             )
+
+    @property
+    def import_filename(self):
+        """Get the import file name form the audit logs"""
+        audit_log = TaxLotAuditLog.objects.filter(
+            view_id=self.pk).order_by('created').first()
+        return audit_log.import_filename
 
 
 class TaxLotProperty(models.Model):

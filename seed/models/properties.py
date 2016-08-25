@@ -16,6 +16,9 @@ from seed.models import StatusLabel
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 
+# Oops! we override a builtin in some of the models
+property_decorator = property
+
 
 class Property(models.Model):
     organization = models.ForeignKey(Organization)
@@ -102,6 +105,10 @@ class PropertyView(models.Model):
     class Meta:
         unique_together = ('property', 'cycle',)
 
+    def __init__(self, *args, **kwargs):
+        self._import_filename = kwargs.pop('import_filename', None)
+        super(PropertyView, self).__init__(*args, **kwargs)
+
     def initialize_audit_logs(self, **kwargs):
         kwargs.update({
             'organization': self.property.organization,
@@ -118,7 +125,7 @@ class PropertyView(models.Model):
         if not view_audit_log:
             view_audit_log = self.initialize_audit_logs(
                 description="Initial audit log added on update.",
-                
+                record_type=AUDIT_IMPORT,
             )
         new_audit_log = PropertyAuditLog(
             organization=self.property.organization,
@@ -135,12 +142,21 @@ class PropertyView(models.Model):
     def save(self, *args, **kwargs):
         # create audit log on creation
         audit_log_initialized = True if self.id else False
+        import_filename = kwargs.pop('import_filename', self._import_filename)
         super(PropertyView, self).save(*args, **kwargs)
         if not audit_log_initialized:
             self.initialize_audit_logs(
                 description="Initial audit log added on creation/save.",
-                record_type=AUDIT_IMPORT
+                record_type=AUDIT_IMPORT,
+                import_filename=import_filename
             )
+
+    @property_decorator
+    def import_filename(self):
+        """Get the import file name form the audit logs"""
+        audit_log = PropertyAuditLog.objects.filter(
+            view_id=self.pk).order_by('created').first()
+        return audit_log.import_filename
 
 
 class PropertyAuditLog(models.Model):
