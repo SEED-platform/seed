@@ -117,7 +117,8 @@ class PropertyView(models.Model):
         ).first()
         if not view_audit_log:
             view_audit_log = self.initialize_audit_logs(
-                description="Initial audit log added on update."
+                description="Initial audit log added on update.",
+                
             )
         new_audit_log = PropertyAuditLog(
             organization=self.property.organization,
@@ -137,7 +138,8 @@ class PropertyView(models.Model):
         super(PropertyView, self).save(*args, **kwargs)
         if not audit_log_initialized:
             self.initialize_audit_logs(
-                description="Initial audit log added on creation/save."
+                description="Initial audit log added on creation/save.",
+                record_type=AUDIT_IMPORT
             )
 
 
