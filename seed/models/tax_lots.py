@@ -17,6 +17,7 @@ from seed.models import PropertyView
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 
+
 class TaxLot(models.Model):
     organization = models.ForeignKey(Organization)
 
@@ -61,22 +62,41 @@ class TaxLotView(models.Model):
     class Meta:
         unique_together = ('taxlot', 'cycle',)
 
-    def ensure_audit_logs_initialized(self):
-        count = TaxLotAuditLog.objects.filter(state=self.state).count()
-        if count == 0:
-            return
-        audit_log = TaxLotAuditLog(organization=self.taxlot.organization, state = self.state, record_type = AUDIT_IMPORT)
-        audit_log.save()
-        return
+    def initialize_audit_logs(self, **kwargs):
+        kwargs.update({
+            'organization': self.taxlot.organization,
+            'state': self.state,
+            'view': self,
+            'record_type': AUDIT_IMPORT
+        })
+        return TaxLotAuditLog.objects.create(**kwargs)
 
-    def update_state(self, new_state, **args):
-        self.ensure_audit_logs_initialized()
+    def update_state(self, new_state, **kwargs):
         view_audit_log = TaxLotAuditLog.objects.filter(state=self.state).first()
-        new_audit_log = TaxLotAuditLog(organization=self.taxlot.organization, parent1 = view_audit_log, state = new_state, **args)
+        if not view_audit_log:
+            view_audit_log = self.initialize_audit_logs(
+                description="Initial audit log added on update."
+            )
+        new_audit_log = TaxLotAuditLog(
+            organization=self.taxlot.organization,
+            parent1=view_audit_log,
+            state=new_state,
+            view=self,
+            **kwargs
+        )
         self.state = new_state
         self.save()
         new_audit_log.save()
         return
+
+    def save(self, *args, **kwargs):
+        # create audit log on creation
+        audit_log_initialized = True if self.id else False
+        super(TaxLotView, self).save(*args, **kwargs)
+        if not audit_log_initialized:
+            self.initialize_audit_logs(
+                description="Initial audit log added on creation/save."
+            )
 
 
 class TaxLotProperty(models.Model):
@@ -98,14 +118,15 @@ class TaxLotProperty(models.Model):
         unique_together = ('property_view', 'taxlot_view',)
 
 
-
 class TaxLotAuditLog(models.Model):
     organization = models.ForeignKey(Organization)
     parent1 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True, related_name='taxlotauditlog__parent1')
     parent2 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True, related_name='taxlotauditlog__parent2')
     state = models.ForeignKey('TaxLotState', related_name='taxlotauditlog__state')
+    view = models.ForeignKey('TaxLotView', related_name='taxlotauditlog__view', null=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
     import_filename = models.CharField(max_length=255, null=True, blank=True)
     record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True, null=True)

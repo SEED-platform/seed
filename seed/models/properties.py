@@ -16,6 +16,7 @@ from seed.models import StatusLabel
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 
+
 class Property(models.Model):
     organization = models.ForeignKey(Organization)
     campus = models.BooleanField(default=False)
@@ -43,12 +44,16 @@ class PropertyState(models.Model):
     city = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
     postal_code = models.CharField(max_length=255, null=True, blank=True)
-    building_count = models.IntegerField(null=True,
-                                         blank=True)  # Only spot where it's 'building' in the app, b/c this is a PortMgr field.
+
+    # Only spot where it's 'building' in the app, b/c this is a PortMgr field.
+    building_count = models.IntegerField(null=True, blank=True)
+
     property_notes = models.TextField(null=True, blank=True)
     year_ending = models.DateField(null=True, blank=True)
-    use_description = models.CharField(max_length=255, null=True,
-                                       blank=True)  # Tax IDs are often stuck in here.
+
+    # Tax IDs are often stuck here.
+    use_description = models.CharField(max_length=255, null=True, blank=True)
+
     gross_floor_area = models.FloatField(null=True, blank=True)
     year_built = models.IntegerField(null=True, blank=True)
     recent_sale_date = models.DateTimeField(null=True, blank=True)
@@ -97,23 +102,43 @@ class PropertyView(models.Model):
     class Meta:
         unique_together = ('property', 'cycle',)
 
-    def ensure_audit_logs_initialized(self):
-        count = PropertyAuditLog.objects.filter(state=self.state).count()
-        if count == 0:
-            audit_log = PropertyAuditLog(organization=self.property.organization, state = self.state, record_type = AUDIT_IMPORT)
-            audit_log.save()
-
-        return
+    def initialize_audit_logs(self, **kwargs):
+        kwargs.update({
+            'organization': self.property.organization,
+            'state': self.state,
+            'view': self,
+            'record_type': AUDIT_IMPORT
+        })
+        return PropertyAuditLog.objects.create(**kwargs)
 
     def update_state(self, new_state, **kwds):
-        self.ensure_audit_logs_initialized()
-
-        view_audit_log = PropertyAuditLog.objects.filter(state = self.state).first()
-        new_audit_log = PropertyAuditLog(organization=self.property.organization, parent1 = view_audit_log, state=new_state, **kwds)
+        view_audit_log = PropertyAuditLog.objects.filter(
+            state=self.state
+        ).first()
+        if not view_audit_log:
+            view_audit_log = self.initialize_audit_logs(
+                description="Initial audit log added on update."
+            )
+        new_audit_log = PropertyAuditLog(
+            organization=self.property.organization,
+            parent1=view_audit_log,
+            state=new_state,
+            view=self,
+            **kwds
+        )
         self.state = new_state
         self.save()
         new_audit_log.save()
         return
+
+    def save(self, *args, **kwargs):
+        # create audit log on creation
+        audit_log_initialized = True if self.id else False
+        super(PropertyView, self).save(*args, **kwargs)
+        if not audit_log_initialized:
+            self.initialize_audit_logs(
+                description="Initial audit log added on creation/save."
+            )
 
 
 class PropertyAuditLog(models.Model):
@@ -122,9 +147,11 @@ class PropertyAuditLog(models.Model):
     parent2 = models.ForeignKey('PropertyAuditLog', blank=True, null=True, related_name='propertyauditlog__parent2')
 
     state = models.ForeignKey('PropertyState', related_name='propertyauditlog__state')
+    view = models.ForeignKey('PropertyView', related_name='propertyauditlog__view', null=True)
 
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
     import_filename = models.CharField(max_length=255, null=True, blank=True)
     record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True, null=True)
