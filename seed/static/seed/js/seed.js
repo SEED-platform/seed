@@ -924,7 +924,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           }
       })
       .state({
-<<<<<<< HEAD
           name: 'cycle_admin',
           url: '/accounts/:organization_id/cycle_admin',
           templateUrl: static_url + 'seed/partials/cycle_admin.html',
@@ -936,13 +935,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           }
       })
       .state({
-          name: 'labels',
-          url: '/labels',
-          templateUrl: static_url + 'seed/partials/labels.html'
-      })
-      .state({
-=======
->>>>>>> list-views
           name: 'properties',
           url: '/properties',
           templateUrl: static_url + 'seed/partials/property_taxlot_list.html',
