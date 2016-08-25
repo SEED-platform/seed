@@ -1,8 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a href="#/accounts" class="page_action"><i class="fa fa-chevron-left"></i> Organizations</a>
-          
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> Organizations</a>
         </div>
         <div class="page_title">
             <h1>{$ org.name $}</h1>
@@ -11,6 +10,7 @@
         </div>
     </div>
 </div>
+<<<<<<< HEAD
 <div class="section_nav_container">
     <div class="section_nav">
         <a ng-href="#/accounts/{$ org.id $}" class="active">Settings</a>
@@ -21,6 +21,9 @@
         <a ng-href="#/accounts/{$ org.id $}/members">Members</a>
     </div>
 </div>
+=======
+<div class="section_nav_container" ng-include="urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+>>>>>>> list-views
 <div class="section">
     <div class="section_header_container">
         <div class="section_header has_no_padding fixed_height_short">
@@ -31,7 +34,7 @@
                 <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">Save Changes<i class="fa fa-check" ng-show="settings_updated"></i></button>
             </div>
         </div>
-    </div> 
+    </div>
     <div class="section_content_container">
         <div class="section_content with_padding">
             <h3>Organization Name</h3>

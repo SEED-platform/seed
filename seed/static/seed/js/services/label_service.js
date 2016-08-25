@@ -63,12 +63,16 @@ angular.module('BE.seed.service.label',
     */
 
     function get_labels(selected_properties, select_all_checkbox, search_params) {
+        return get_labels_for_org(user_service.get_organization().id);
+    }
+
+    function get_labels_for_org(org_id, selected_properties, select_all_checkbox, search_params) {
         var defer = $q.defer();
 
         var searchArgs = _.assignIn({
             selected_properties: selected_properties,
             select_all_checkbox: select_all_checkbox,
-            organization_id: user_service.get_organization().id
+            organization_id: org_id
         }, search_params);
 
         $http({
@@ -104,13 +108,17 @@ angular.module('BE.seed.service.label',
                                     to the newly created label object.
     */
     function create_label(label){
+        return create_label_for_org(user_service.get_organization().id, label);
+    }
+
+    function create_label_for_org(org_id, label){
         var defer = $q.defer();
         $http({
             method: 'POST',
             url: window.BE.urls.label_list,
             data: label,
             params: {
-                organization_id: user_service.get_organization().id
+                organization_id: org_id
             }
         }).success(function(data, status, headers, config) {
             if(data){
@@ -136,13 +144,17 @@ angular.module('BE.seed.service.label',
                                 to the updated label object.
     */
     function update_label(label){
+        return update_label_for_org(user_service.get_organization().id, label);
+    }
+
+    function update_label_for_org(org_id, label){
         var defer = $q.defer();
         $http({
             method: 'PUT',
             url: window.BE.urls.label_list + label.id + '/',
             data: label,
             params: {
-                organization_id: user_service.get_organization().id
+                organization_id: org_id
             }
         }).success(function(data, status, headers, config) {
             if(data){
@@ -165,12 +177,16 @@ angular.module('BE.seed.service.label',
                                     or an error if not.
     */
     function delete_label(label){
+        return delete_label_for_org(user_service.get_organization().id, label);
+    }
+
+    function delete_label_for_org(org_id, label){
         var defer = $q.defer();
         $http({
             method: 'DELETE',
             url: window.BE.urls.label_list + label.id + '/',
             params: {
-                organization_id: user_service.get_organization().id
+                organization_id: org_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -338,11 +354,15 @@ angular.module('BE.seed.service.label',
 
         //functions
         get_labels : get_labels,
+        get_labels_for_org : get_labels_for_org,
         create_label : create_label,
+        create_label_for_org : create_label_for_org,
         update_label : update_label,
+        update_label_for_org : update_label_for_org,
         delete_label : delete_label,
+        delete_label_for_org : delete_label_for_org,
         update_property_labels : update_property_labels,
-        update_property_labels : update_taxlot_labels,
+        update_taxlot_labels : update_taxlot_labels,
         get_available_colors : get_available_colors
 
     };

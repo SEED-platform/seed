@@ -9,11 +9,7 @@
         </div>
     </div>
 </div>
-<div class="section_nav_container">
-    <div class="section_nav">
-        <a href="#/profile">Profile Info</a><a href="#/profile/security" class="active">Security</a><a href="#/profile/admin" ng-show="auth.requires_superuser">Admin</a><a href="#/profile/developer">Developer</a>
-    </div>
-</div>
+<div class="section_nav_container" ng-include="urls.static_url + 'seed/partials/profile_nav.html'"></div>
 <div class="section">
     <div class="section_header_container">
         <div class="section_header">
@@ -21,7 +17,7 @@
         </div>
     </div>
     <div class="section_content_container">
-        <div class="section_content with_padding">          
+        <div class="section_content with_padding">
             <div class="row">
                 <div class="section_form_container col-sm-3">
                     <form role="form">
