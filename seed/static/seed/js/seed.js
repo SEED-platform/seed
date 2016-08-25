@@ -40,6 +40,7 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.buildings_settings',
     'BE.seed.controller.cleansing',
     'BE.seed.controller.cleansing_admin',
+    'BE.seed.controller.cycle_admin',
     'BE.seed.controller.concat_modal',
     'BE.seed.controller.create_note_modal',
     'BE.seed.controller.create_organization_modal',
@@ -93,6 +94,7 @@ angular.module('BE.seed.services', [
     'BE.seed.service.building',
     'BE.seed.service.buildings_reports',
     'BE.seed.service.cleansing',
+    'BE.seed.service.cycle',
     'BE.seed.service.dataset',
     'BE.seed.service.export',
     'BE.seed.service.httpParamSerializerSeed',
@@ -897,6 +899,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
                   return user_service.get_user_profile();
               }]
           }
+      })
+      .state({
+          name: 'cycle_admin',
+          url: '/accounts/:organization_id/cycle_admin',
+          templateUrl: static_url + 'seed/partials/cycle_admin.html',
+          controller: 'cycle_admin_controller',
       })
       .state({
           name: 'labels',

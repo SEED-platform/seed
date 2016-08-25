@@ -16,6 +16,7 @@
         <a ng-href="#/accounts/{$ org.id $}">Settings</a>
         <a ng-href="#/accounts/{$ org.id $}/sharing" ng-if="org.is_parent && auth.requires_owner">Sharing</a>
         <a ng-href="#/accounts/{$ org.id $}/data_cleansing" ng-if="org.is_parent && auth.requires_owner">Data Cleansing</a>
+        <a ng-href="#/accounts/{$ org.id $}/cycle_admin" ng-if="org.is_parent && auth.requires_owner">Cycles</a>
         <a ng-href="#/accounts/{$ org.id $}/sub_org" ng-if="org.is_parent && auth.requires_owner" class="active">Sub-Organizations</a>
         <a ng-href="#/accounts/{$ org.id $}/members">Members</a>
     </div>
