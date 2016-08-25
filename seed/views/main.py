@@ -1300,18 +1300,14 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
 
     # Get a list of the database fields in a list
     md = mapping_data.MappingData()
-    column_types = {}
 
-    # TODO: Move this to the MappingData class and remove calling
-    # add_extra_data
-
+    # TODO: Move this to the MappingData class and remove calling add_extra_data
     # Check if there are any DB columns that are not defined in the
     # list of mapping data.
     columns = list(Column.objects.select_related('unit').filter(
         Q(mapped_mappings__super_organization_id=org_id) |
         Q(organization__isnull=True)).exclude(column_name__in=md.keys())
                    )
-
     md.add_extra_data(columns)
 
     # Portfolio manager files have their own mapping scheme
@@ -1375,8 +1371,6 @@ def get_column_mapping_suggestions(request):
         }
     ..todo: The response of this method may not be correct. verify.
     """
-    result = {'status': 'success'}
-
     body = json.loads(request.body)
     org_id = body.get('org_id')
     import_file_id = body.get('import_file_id')
@@ -1425,8 +1419,6 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
               required: true
               paramType: query
         """
-        result = {'status': 'success'}
-
         org_id = request.query_params.get('organization_id', None)
 
         result = tmp_mapping_suggestions(pk, org_id, request.user)
