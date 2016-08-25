@@ -231,7 +231,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
               }]
           }
       })
-      .state({
+      /*.state({
           name: 'projects',
           url: '/projects',
           templateUrl: static_url + 'seed/partials/projects.html',
@@ -347,7 +347,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
                   return user_service.get_default_building_detail_columns();
               }]
           }
-      })
+      })*/
       .state({
           name: 'buildings',
           url: '/buildings',
@@ -429,16 +429,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           }
       })
       .state({
-          name: 'buildings_reports',
-          url: '/buildings/reports',
+          name: 'reports',
+          url: '/inventory/reports',
           templateUrl: static_url + 'seed/partials/buildings_reports.html',
           controller: 'buildings_reports_controller'
-      })
-      .state({
-          name: 'buildings_labels',
-          url: '/buildings/labels',
-          templateUrl: static_url + 'seed/partials/buildings_label_admin.html',
-          controller: 'label_admin_controller'
       })
       .state({
           name: 'building_detail',
@@ -831,6 +825,35 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           }
       })
       .state({
+          name: 'organization_labels',
+          url: '/accounts/:organization_id/labels',
+          templateUrl: static_url + 'seed/partials/label_admin.html',
+          controller: 'label_admin_controller',
+          resolve: {
+              organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+                  var organization_id = $stateParams.organization_id;
+                  return organization_service.get_organization(organization_id);
+              }],
+              labels_payload: ['label_service', '$stateParams', function (label_service, $stateParams) {
+                  var organization_id = $stateParams.organization_id;
+                  return label_service.get_labels_for_org(organization_id);
+              }],
+              auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+                  var organization_id = $stateParams.organization_id;
+                  return auth_service.is_authorized(organization_id, ['requires_owner'])
+                    .then(function (data) {
+                        if (data.auth.requires_owner) {
+                            return data;
+                        } else {
+                            return $q.reject('not authorized');
+                        }
+                    }, function (data) {
+                        return $q.reject(data.message);
+                    });
+              }]
+          }
+      })
+      .state({
           name: 'organization_sub_orgs',
           url: '/accounts/:organization_id/sub_org',
           templateUrl: static_url + 'seed/partials/sub_org.html',
@@ -897,11 +920,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
                   return user_service.get_user_profile();
               }]
           }
-      })
-      .state({
-          name: 'labels',
-          url: '/labels',
-          templateUrl: static_url + 'seed/partials/labels.html'
       })
       .state({
           name: 'properties',
