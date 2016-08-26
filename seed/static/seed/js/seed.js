@@ -828,12 +828,29 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       })
       .state({
           name: 'organization_cycles',
-          url: '/accounts/:organization_id/organization_cycles',
+          url: '/accounts/:organization_id/cycles',
           templateUrl: static_url + 'seed/partials/cycle_admin.html',
           controller: 'cycle_admin_controller',
           resolve: {
+              organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+                  var organization_id = $stateParams.organization_id;
+                  return organization_service.get_organization(organization_id);
+              }],
               cycles_payload: ['cycle_service', function (cycle_service) {
                   return cycle_service.get_cycles();
+              }],
+              auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+                  var organization_id = $stateParams.organization_id;
+                  return auth_service.is_authorized(organization_id, ['requires_owner'])
+                    .then(function (data) {
+                        if (data.auth.requires_owner) {
+                            return data;
+                        } else {
+                            return $q.reject('not authorized');
+                        }
+                    }, function (data) {
+                        return $q.reject(data.message);
+                    });
               }]
           }
       })

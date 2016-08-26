@@ -12,8 +12,12 @@ angular.module('BE.seed.controller.cycle_admin', [])
     'Notification',
     'cycle_service',
     'cycles_payload',
-function ($scope, $log, urls, simple_modal_service, notification, cycle_service, cycles_payload) {
+    'organization_payload',
+    'auth_payload',
+function ($scope, $log, urls, simple_modal_service, notification, cycle_service, cycles_payload, organization_payload, auth_payload) {
 
+    $scope.org = organization_payload.organization;
+    $scope.auth = auth_payload.auth;
     $scope.cycles = cycles_payload.cycles;
 
     function initialize_new_cycle() {
