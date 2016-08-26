@@ -9,16 +9,17 @@ from celery.utils.log import get_task_logger
 from models import Cleansing
 from seed.data_importer.models import ImportFile
 from seed.decorators import get_prog_key
-from seed.models import PropertyState
+from seed.models import PropertyState, TaxLotState
 from seed.utils.cache import set_cache
 
 logger = get_task_logger(__name__)
 
 
 @shared_task
-def cleanse_data_chunk(ids, file_pk, increment):
+def cleanse_data_chunk(record_type, ids, file_pk, increment):
     """
 
+    :param record_type: one of 'property' or 'taxlot'
     :param ids: list of primary key ids to process
     :param file_pk: import file primary key
     :param increment: currently unused, but needed because of the special method that appends this onto the function  # NOQA
@@ -26,13 +27,15 @@ def cleanse_data_chunk(ids, file_pk, increment):
     """
 
     # get the db objects based on the ids
-    qs = PropertyState.objects.filter(id__in=ids).iterator()
+    model = {'property': PropertyState, 'taxlot': TaxLotState}.get(record_type)
+
+    qs = model.objects.filter(id__in=ids).iterator()
 
     import_file = ImportFile.objects.get(pk=file_pk)
     super_org = import_file.import_record.super_organization
 
     c = Cleansing(super_org.get_parent())
-    c.cleanse(qs)
+    c.cleanse(qs, record_type)
     c.save_to_cache(file_pk)
 
 
