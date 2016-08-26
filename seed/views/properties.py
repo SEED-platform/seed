@@ -313,13 +313,16 @@ def get_taxlots(request):
 @has_perm('requires_viewer')
 def get_cycles(request):
     cycles = Cycle.objects.filter(organization_id=request.GET['organization_id'])
-    response = []
+    return_cycles = []
     for cycle in cycles:
-        response.append({
+        return_cycles.append({
             'pk': cycle.pk,
-            'name': cycle.name
+            'name': cycle.name,
+            'from_date': "",
+            'to_date': ""
         })
-    return response
+
+    return { 'status': 'success', 'cycles': return_cycles}
 
 
 @require_organization_id

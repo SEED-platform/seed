@@ -39,7 +39,11 @@
         window.BE.urls.label_list               = '{% url "labels:label-list" %}';
         window.BE.urls.taxlot_labels            = '{% url "labels:taxlot_labels" %}';
         window.BE.urls.property_labels          = '{% url "labels:property_labels" %}';
-
+        
+        // TODO: Make propert urls for cycles. This is temp
+        //cycle management URLs
+        window.BE.urls.cycle_list               = '{% url "seed:get_cycles" %}';
+        
         // uploader URLs
         window.BE.urls.uploader_signature_endpoint  = '{% url "data_importer:sign_policy_document" %}';
         window.BE.urls.uploader_success_endpoint    = '{% url "data_importer:s3_upload_complete" %}';

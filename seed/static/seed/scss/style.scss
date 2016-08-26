@@ -2183,6 +2183,73 @@ select {
 
 }
 
+/* Cycle admin */
+
+#cycle_admin {
+
+  .newCycleInput {
+    margin: 20px 0;
+    border: 1px solid #EEE;
+    padding: 10px 10px 5px 10px;
+    border-radius: 5px;
+    background-color: #F1F1F1;
+  }
+
+  .table_list_container {
+    border: 1px solid #cdcdcd;
+  }
+
+  .sectionCycle {
+    font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  .tableHeader {
+    font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    white-space: nowrap;
+    padding: 6px 10px 5px 10px;
+    text-transform: uppercase;
+    background-color: #cdcdcd !important;
+    text-shadow: 0 1px 0 white;
+    border-bottom: 1px solid #b3b3b3;
+  }
+
+  /* Get xeditable fields to extend 100% of td */
+  form[editable-form] > div {
+    margin: 10px 0;
+  }
+  .editable-wrap {
+    width: 100%;
+  }
+
+}
+
+.cycle-edit-section {
+
+  margin: 5px 10px 10px 20px;
+
+  .cycle-action {
+    display: inline-block;
+    .label-edit-text {
+      margin-right: 20px;
+    }
+    a {
+      margin-right: 20px;
+    }
+  }
+
+  .cycle-container {
+    display: inline-block;
+  }
+
+  .cycle {
+    padding: .6em .6em .5em .6em;
+    display: inline-block;
+    margin-bottom: 5px;
+  }
+}
+
+
+
 
 /* DMcQ: Once Bluesky refactoring is complete, remove old #update-building-labels-modal above */
 

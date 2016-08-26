@@ -40,6 +40,7 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.buildings_settings',
     'BE.seed.controller.cleansing',
     'BE.seed.controller.cleansing_admin',
+    'BE.seed.controller.cycle_admin',
     'BE.seed.controller.concat_modal',
     'BE.seed.controller.create_note_modal',
     'BE.seed.controller.create_organization_modal',
@@ -93,6 +94,7 @@ angular.module('BE.seed.services', [
     'BE.seed.service.building',
     'BE.seed.service.buildings_reports',
     'BE.seed.service.cleansing',
+    'BE.seed.service.cycle',
     'BE.seed.service.dataset',
     'BE.seed.service.export',
     'BE.seed.service.httpParamSerializerSeed',
@@ -825,6 +827,34 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           }
       })
       .state({
+          name: 'organization_cycles',
+          url: '/accounts/:organization_id/cycles',
+          templateUrl: static_url + 'seed/partials/cycle_admin.html',
+          controller: 'cycle_admin_controller',
+          resolve: {
+              organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+                  var organization_id = $stateParams.organization_id;
+                  return organization_service.get_organization(organization_id);
+              }],
+              cycles_payload: ['cycle_service', function (cycle_service) {
+                  return cycle_service.get_cycles();
+              }],
+              auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+                  var organization_id = $stateParams.organization_id;
+                  return auth_service.is_authorized(organization_id, ['requires_owner'])
+                    .then(function (data) {
+                        if (data.auth.requires_owner) {
+                            return data;
+                        } else {
+                            return $q.reject('not authorized');
+                        }
+                    }, function (data) {
+                        return $q.reject(data.message);
+                    });
+              }]
+          }
+      })
+      .state({
           name: 'organization_labels',
           url: '/accounts/:organization_id/labels',
           templateUrl: static_url + 'seed/partials/label_admin.html',
@@ -919,6 +949,17 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
               user_profile_payload: ['user_service', function (user_service) {
                   return user_service.get_user_profile();
               }]
+          }
+      })
+      .state({
+          name: 'cycle_admin',
+          url: '/accounts/:organization_id/cycle_admin',
+          templateUrl: static_url + 'seed/partials/cycle_admin.html',
+          controller: 'cycle_admin_controller',
+          resolve: {
+              cycles_payload: ['cycle_service', function (cycle_service) {
+                  return cycle_service.get_cycles();
+              }],
           }
       })
       .state({
