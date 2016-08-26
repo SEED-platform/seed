@@ -570,6 +570,7 @@ a:not([href]) {
 }
 
 .section_nav_container {
+  min-height: 38px;
   position: relative;
   border-bottom: 1px solid $gray_lighter;
   .section_nav {

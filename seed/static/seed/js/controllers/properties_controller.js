@@ -8,7 +8,7 @@ angular.module('BE.seed.controller.properties', [])
     '$window',
     '$log',
     '$uibModal',
-    'property_taxlot_service',
+    'inventory_service',
     'label_service',
     'properties',
     'cycles',
@@ -18,7 +18,7 @@ angular.module('BE.seed.controller.properties', [])
               $window,
               $log,
               $uibModal,
-              property_taxlot_service,
+              inventory_service,
               label_service,
               properties,
               cycles,
@@ -118,7 +118,7 @@ angular.module('BE.seed.controller.properties', [])
       };
 
 
-      var lastCycleId = property_taxlot_service.get_last_cycle();
+      var lastCycleId = inventory_service.get_last_cycle();
       $scope.cycle = {
         selected_cycle: lastCycleId ? _.find(cycles, {pk: lastCycleId}) : cycles[0],
         cycles: cycles
@@ -154,7 +154,7 @@ angular.module('BE.seed.controller.properties', [])
       };
 
       var refresh_objects = function () {
-        property_taxlot_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle).then(function (properties) {
+        inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle).then(function (properties) {
           $scope.objects = properties.results;
           $scope.pagination = properties.pagination;
           processData();
@@ -162,7 +162,7 @@ angular.module('BE.seed.controller.properties', [])
       };
 
       $scope.update_cycle = function (cycle) {
-        property_taxlot_service.save_last_cycle(cycle.pk);
+        inventory_service.save_last_cycle(cycle.pk);
         $scope.cycle.selected_cycle = cycle;
         refresh_objects();
       };
@@ -204,8 +204,8 @@ angular.module('BE.seed.controller.properties', [])
       };
       _.map(columns, function (col) {
         var filter = {}, aggregation = {};
-        if (col.type == 'number') filter = {filter: property_taxlot_service.numFilter()};
-        else filter = {filter: property_taxlot_service.textFilter()};
+        if (col.type == 'number') filter = {filter: inventory_service.numFilter()};
+        else filter = {filter: inventory_service.textFilter()};
         if (col.related) aggregation.treeAggregationType = 'uniqueList';
         return _.defaults(col, filter, aggregation, defaults);
       });
@@ -300,7 +300,7 @@ angular.module('BE.seed.controller.properties', [])
         saveTreeView: false,
         showTreeExpandNoChildren: false,
         columnDefs: columns,
-        treeCustomAggregations: property_taxlot_service.aggregations(),
+        treeCustomAggregations: inventory_service.aggregations(),
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
 

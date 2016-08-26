@@ -36,7 +36,6 @@ angular.module('BE.seed.controllers', [
     'BE.seed.controller.api',
     'BE.seed.controller.base_detail',
     'BE.seed.controller.building_list',
-    'BE.seed.controller.buildings_reports',
     'BE.seed.controller.buildings_settings',
     'BE.seed.controller.cleansing',
     'BE.seed.controller.cleansing_admin',
@@ -94,12 +93,12 @@ angular.module('BE.seed.services', [
     'BE.seed.service.audit',
     'BE.seed.service.auth',
     'BE.seed.service.building',
-    'BE.seed.service.buildings_reports',
     'BE.seed.service.cleansing',
     'BE.seed.service.cycle',
     'BE.seed.service.dataset',
     'BE.seed.service.export',
     'BE.seed.service.httpParamSerializerSeed',
+    'BE.seed.service.inventory',
     'BE.seed.service.inventory_reports',
     'BE.seed.service.label',
     'BE.seed.service.main',
@@ -107,7 +106,6 @@ angular.module('BE.seed.services', [
     'BE.seed.service.matching',
     'BE.seed.service.organization',
     'BE.seed.service.project',
-    'BE.seed.service.property_taxlot',
     'BE.seed.service.search',
     'BE.seed.service.simple_modal',
     'BE.seed.service.uploader',
@@ -439,8 +437,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           templateUrl: static_url + 'seed/partials/inventory_reports.html',
           controller: 'inventory_reports_controller',
           resolve : {
-              cycles: ['property_taxlot_service', function (property_taxlot_service) {
-                  return property_taxlot_service.get_cycles();
+              cycles: ['inventory_service', function (inventory_service) {
+                  return inventory_service.get_cycles();
               }]
           }
       })
@@ -967,40 +965,40 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           resolve: {
               cycles_payload: ['cycle_service', function (cycle_service) {
                   return cycle_service.get_cycles();
-              }],
+              }]
           }
       })
       .state({
           name: 'properties',
           url: '/properties',
-          templateUrl: static_url + 'seed/partials/property_taxlot_list.html',
+          templateUrl: static_url + 'seed/partials/inventory_list.html',
           controller: 'properties_controller',
           resolve: {
-              properties: ['property_taxlot_service', function (property_taxlot_service) {
-                  return property_taxlot_service.get_properties(1);
+              properties: ['inventory_service', function (inventory_service) {
+                  return inventory_service.get_properties(1);
               }],
-              cycles: ['property_taxlot_service', function (property_taxlot_service) {
-                  return property_taxlot_service.get_cycles();
+              cycles: ['inventory_service', function (inventory_service) {
+                  return inventory_service.get_cycles();
               }],
-              columns: ['property_taxlot_service', function (property_taxlot_service) {
-                  return property_taxlot_service.get_property_columns();
+              columns: ['inventory_service', function (inventory_service) {
+                  return inventory_service.get_property_columns();
               }]
           }
       })
       .state({
           name: 'taxlots',
           url: '/taxlots',
-          templateUrl: static_url + 'seed/partials/property_taxlot_list.html',
+          templateUrl: static_url + 'seed/partials/inventory_list.html',
           controller: 'taxlots_controller',
           resolve: {
-              taxlots: ['property_taxlot_service', function (property_taxlot_service) {
-                  return property_taxlot_service.get_taxlots(1);
+              taxlots: ['inventory_service', function (inventory_service) {
+                  return inventory_service.get_taxlots(1);
               }],
-              cycles: ['property_taxlot_service', function (property_taxlot_service) {
-                  return property_taxlot_service.get_cycles();
+              cycles: ['inventory_service', function (inventory_service) {
+                  return inventory_service.get_cycles();
               }],
-              columns: ['property_taxlot_service', function (property_taxlot_service) {
-                  return property_taxlot_service.get_taxlot_columns();
+              columns: ['inventory_service', function (inventory_service) {
+                  return inventory_service.get_taxlot_columns();
               }]
           }
       })
@@ -1010,15 +1008,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           templateUrl: static_url + 'seed/partials/inventory_item_detail.html',
           controller: 'property_detail_controller',
           resolve: {
-              property_payload: ['property_taxlot_service', '$stateParams', function (property_taxlot_service, $stateParams) {
+              property_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
                   // load `get_building` before page is loaded to avoid
                   // page flicker.
                   var property_id = $stateParams.property_id;
                   var cycle_id = $stateParams.cycle_id;
-                  return property_taxlot_service.get_property(property_id, cycle_id);
+                  return inventory_service.get_property(property_id, cycle_id);
               }],
-              all_property_columns: ['property_taxlot_service', function (property_taxlot_service) {
-                  return property_taxlot_service.get_property_columns();
+              all_property_columns: ['inventory_service', function (inventory_service) {
+                  return inventory_service.get_property_columns();
               }],
               default_property_columns: ['user_service', function (user_service) {
                   //TODO: Return default Property columns
@@ -1032,15 +1030,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           templateUrl: static_url + 'seed/partials/inventory_item_detail.html',
           controller: 'taxlot_detail_controller',
           resolve: {
-              taxlot_payload: ['property_taxlot_service', '$stateParams', function (property_taxlot_service, $stateParams) {
+              taxlot_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
                   // load `get_building` before page is loaded to avoid
                   // page flicker.
                   var taxlot_id = $stateParams.taxlot_id;
                   var cycle_id = $stateParams.cycle_id;
-                  return property_taxlot_service.get_taxlot(taxlot_id, cycle_id);
+                  return inventory_service.get_taxlot(taxlot_id, cycle_id);
               }],
-              all_taxlot_columns: ['property_taxlot_service', function (property_taxlot_service) {
-                  return property_taxlot_service.get_taxlot_columns();
+              all_taxlot_columns: ['inventory_service', function (inventory_service) {
+                  return inventory_service.get_taxlot_columns();
               }],
               default_taxlot_columns: ['user_service', function (user_service) {
                   //TODO: Return default TaxLot columns

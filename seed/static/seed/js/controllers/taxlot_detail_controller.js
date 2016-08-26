@@ -13,12 +13,12 @@ angular.module('BE.seed.controller.taxlot_detail', [])
 			'$filter',
 			'urls',
 			'label_helper_service',
-			'property_taxlot_service',
+			'inventory_service',
 			'taxlot_payload',
 			'all_taxlot_columns',
 			'default_taxlot_columns',
 function($controller, $state, $scope,  $uibModal, $location, $log, $filter, urls, label_helper_service,
-				 	property_taxlot_service, taxlot_payload, all_taxlot_columns, default_taxlot_columns ) {
+				 	inventory_service, taxlot_payload, all_taxlot_columns, default_taxlot_columns ) {
 
 	/** See service for structure of returned payload */
 	$scope.taxlot = taxlot_payload.taxlot;
@@ -44,7 +44,7 @@ function($controller, $state, $scope,  $uibModal, $location, $log, $filter, urls
 	 *  where the more generic methods for a detail item are located.
 	 *  (Methods in this child class are more specific to a 'Tax Lot' detail item.) */
 	$controller('base_detail_controller', { $scope: $scope, $uibModal: $uibModal,
-																					$log: $log, property_taxlot_service: property_taxlot_service,
+																					$log: $log, inventory_service: inventory_service,
 																					all_columns: all_taxlot_columns, urls: urls, $filter: $filter,
 																					label_helper_service: label_helper_service,
 																					default_columns: default_taxlot_columns });
@@ -65,7 +65,7 @@ function($controller, $state, $scope,  $uibModal, $location, $log, $filter, urls
 	 */
 	$scope.save_taxlot = function (){
 		$scope.$emit('show_saving');
-		property_taxlot_service.update_taxlot($scope.taxlot.id, $scope.cycle.id, $scope.item_state)
+		inventory_service.update_taxlot($scope.taxlot.id, $scope.cycle.id, $scope.item_state)
 			.then(function (data){
 					// In the short term, we're just refreshing the page after a save so the table
 					// shows new history.
@@ -91,7 +91,7 @@ function($controller, $state, $scope,  $uibModal, $location, $log, $filter, urls
 	 */
 	var init = function() {
 
-		$scope.format_date_values($scope.item_state, property_taxlot_service.taxlot_state_date_columns);
+		$scope.format_date_values($scope.item_state, inventory_service.taxlot_state_date_columns);
 
 		$scope.data_fields = $scope.generate_data_fields($scope.item_state, $scope.default_taxlot_columns, $scope.all_extra_data_keys);
 

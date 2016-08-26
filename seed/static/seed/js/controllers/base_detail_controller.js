@@ -8,12 +8,12 @@ angular.module('BE.seed.controller.base_detail', [])
 			'$uibModal',
 			'$log',
 			'$filter',
-			'property_taxlot_service',
+			'inventory_service',
 			'all_columns',
 			'urls',
 			'label_helper_service',
 			'default_columns',
-function($scope, $uibModal, $log, $filter, property_taxlot_service,
+function($scope, $uibModal, $log, $filter, inventory_service,
 				 all_columns, urls, label_helper_service, default_columns) {
 
 	$scope.fields = all_columns.fields;
@@ -209,7 +209,7 @@ function($scope, $uibModal, $log, $filter, property_taxlot_service,
 				function () {
 					// TODO: Update this code based on old building objects to fresh labels after applied
 					// Grab fresh property data for get_labels()
-					//property_taxlot_service.get_property($scope.property.id).then(function(property_refresh) {
+					//inventory_service.get_property($scope.property.id).then(function(property_refresh) {
 					//	$scope.labels = get_labels(property_refresh);
 					//});
 				},

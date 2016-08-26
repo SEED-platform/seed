@@ -7,7 +7,7 @@ describe('controller: property_detail_controller', function(){
     // globals set up and used in each test scenario
     var scope, controller, ngFilter, ngLocation, delete_called, ngLog, ngUrls;
     var property_detail_ctrl, property_detail_ctrl_scope;
-    var mock_property_taxlot_service, mock_default_property_columns;
+    var mock_inventory_service, mock_default_property_columns;
     var mock_uib_modal, mock_label_helper_service;
 
     beforeEach(function() {
@@ -34,7 +34,7 @@ describe('controller: property_detail_controller', function(){
           urls,
           $q,
           label_helper_service,
-          property_taxlot_service,
+          inventory_service,
           default_property_columns
           ) {
             controller = $controller;
@@ -53,11 +53,11 @@ describe('controller: property_detail_controller', function(){
             // Start with no default property columns
             mock_default_property_columns = default_property_columns;
 
-            // mock the property_taxlot_service factory methods used in the controller
+            // mock the inventory_service factory methods used in the controller
             // and return their promises
-            mock_property_taxlot_service = property_taxlot_service;
+            mock_inventory_service = inventory_service;
 
-            spyOn(mock_property_taxlot_service, 'update_property')
+            spyOn(mock_inventory_service, 'update_property')
                 .andCallFake(function (property_id, cycle_id, property_state){
                     property_detail_ctrl_scope.item_state = property_state;
                     return $q.when(
@@ -273,7 +273,7 @@ describe('controller: property_detail_controller', function(){
             $filter: ngFilter,
             urls: ngUrls,
             label_helper_service: mock_label_helper_service,
-            property_taxlot_service: mock_property_taxlot_service,
+            inventory_service: mock_inventory_service,
             property_payload: fake_property_payload,
             default_property_columns: mock_default_property_columns,
             all_property_columns: {
@@ -363,7 +363,7 @@ describe('controller: property_detail_controller', function(){
         property_detail_ctrl_scope.on_save();
 
         // assertions
-        expect(mock_property_taxlot_service.update_property)
+        expect(mock_inventory_service.update_property)
         .toHaveBeenCalledWith(  property_detail_ctrl_scope.property.id,
                                 property_detail_ctrl_scope.cycle.id,
                                 property_detail_ctrl_scope.item_state);

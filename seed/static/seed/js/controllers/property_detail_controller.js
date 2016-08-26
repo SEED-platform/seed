@@ -13,12 +13,12 @@ angular.module('BE.seed.controller.property_detail', [])
 			'$filter',
 			'urls',
 			'label_helper_service',
-			'property_taxlot_service',
+			'inventory_service',
 			'property_payload',
 			'all_property_columns',
 			'default_property_columns',
 function($controller, $state, $scope, $uibModal, $location, $log, $filter, urls, label_helper_service,
-				 	property_taxlot_service, property_payload, all_property_columns, default_property_columns ) {
+				 	inventory_service, property_payload, all_property_columns, default_property_columns ) {
 
 	/** See service for structure of returned payload */
 	$scope.property = property_payload.property;
@@ -45,7 +45,7 @@ function($controller, $state, $scope, $uibModal, $location, $log, $filter, urls,
 	 *  where the more generic methods for editing a detail item are located.
 	 *  (Methods in this child class are more specific to a 'Property' detail item.) */
 	$controller('base_detail_controller', { $scope: $scope, $uibModal: $uibModal,
-																					$log: $log, property_taxlot_service: property_taxlot_service,
+																					$log: $log, inventory_service: inventory_service,
 																					all_columns: all_property_columns, urls: urls, $filter: $filter,
 																					label_helper_service: label_helper_service,
 																					default_columns: default_property_columns });
@@ -69,7 +69,7 @@ function($controller, $state, $scope, $uibModal, $location, $log, $filter, urls,
 	 */
 	$scope.save_property = function (){
 		$scope.$emit('show_saving');
-		property_taxlot_service.update_property($scope.property.id, $scope.cycle.id, $scope.item_state)
+		inventory_service.update_property($scope.property.id, $scope.cycle.id, $scope.item_state)
 			.then(function (data){
 					// In the short term, we're just refreshing the page after a save so the table
 					// shows new history.
@@ -94,7 +94,7 @@ function($controller, $state, $scope, $uibModal, $location, $log, $filter, urls,
 	 */
 	var init = function() {
 
-		$scope.format_date_values($scope.item_state, property_taxlot_service.property_state_date_columns);
+		$scope.format_date_values($scope.item_state, inventory_service.property_state_date_columns);
 
 		$scope.data_fields = $scope.generate_data_fields($scope.item_state, $scope.default_property_columns, $scope.all_extra_data_keys);
 

@@ -7,7 +7,7 @@ describe('controller: taxlot_detail_controller', function(){
     // globals set up and used in each test scenario
     var scope, controller, ngFilter, ngLocation, delete_called, ngLog, ngUrls;
     var taxlot_detail_ctrl, taxlot_detail_ctrl_scope;
-    var mock_property_taxlot_service, mock_default_taxlot_columns;
+    var mock_inventory_service, mock_default_taxlot_columns;
     var mock_uib_modal, mock_label_helper_service;
 
     beforeEach(function() {
@@ -34,7 +34,7 @@ describe('controller: taxlot_detail_controller', function(){
           urls,
           $q,
           label_helper_service,
-          property_taxlot_service,
+          inventory_service,
           default_taxlot_columns
           ) {
             controller = $controller;
@@ -53,11 +53,11 @@ describe('controller: taxlot_detail_controller', function(){
             // Start with no default taxlot columns
             mock_default_taxlot_columns = default_taxlot_columns;
 
-            // mock the property_taxlot_service factory methods used in the controller
+            // mock the inventory_service factory methods used in the controller
             // and return their promises
-            mock_property_taxlot_service = property_taxlot_service;
+            mock_inventory_service = inventory_service;
 
-            spyOn(mock_property_taxlot_service, 'update_taxlot')
+            spyOn(mock_inventory_service, 'update_taxlot')
                 .andCallFake(function (taxlot_id, cycle_id, taxlot_state){
                     taxlot_detail_ctrl_scope.item_state = taxlot_state;
                     return $q.when(
@@ -186,7 +186,7 @@ describe('controller: taxlot_detail_controller', function(){
             $filter: ngFilter,
             urls: ngUrls,
             label_helper_service: mock_label_helper_service,
-            property_taxlot_service: mock_property_taxlot_service,
+            inventory_service: mock_inventory_service,
             taxlot_payload: fake_taxlot_payload,
             default_taxlot_columns: mock_default_taxlot_columns,
             all_taxlot_columns: {
@@ -276,7 +276,7 @@ describe('controller: taxlot_detail_controller', function(){
         taxlot_detail_ctrl_scope.on_save();
 
         // assertions
-        expect(mock_property_taxlot_service.update_taxlot)
+        expect(mock_inventory_service.update_taxlot)
         .toHaveBeenCalledWith(  taxlot_detail_ctrl_scope.taxlot.id,
                                 taxlot_detail_ctrl_scope.cycle.id,
                                 taxlot_detail_ctrl_scope.item_state);
