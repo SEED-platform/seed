@@ -5,6 +5,7 @@
 :author
 """
 import itertools
+import json
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -23,8 +24,10 @@ from seed.decorators import (
 
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import (
-    Column, Cycle, PropertyView, TaxLotView, TaxLotState, TaxLotProperty
+    Column, Cycle, AUDIT_USER_EDIT, PropertyAuditLog, PropertyView,
+    TaxLotAuditLog, TaxLotView, TaxLotState, TaxLotProperty
 )
+
 from seed.serializers.properties import (
     PropertyStateSerializer, PropertyViewSerializer
 )
@@ -834,6 +837,7 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
     parser_classes = (JSONParser,)
 
     def get_property_view(self, property_pk, cycle_pk):
+        """Get the property view"""
         try:
             property_view = PropertyView.objects.select_related(
                 'property', 'cycle', 'state'
@@ -849,16 +853,19 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
         except PropertyView.DoesNotExist:
             result = {
                 'status': 'error',
-                'message': 'property view with id {} does not exist'.format(pk)
+                'message': 'property view with id {} does not exist'.format(
+                    property_pk)
             }
         except PropertyView.MultipleObjectsReturned:
             result = {
                 'status': 'error',
-                'message': 'Multiple property views with id {}'.format(pk)
+                'message': 'Multiple property views with id {}'.format(
+                    property_pk)
             }
         return result
 
     def get_taxlots(self, property_view_pk):
+        """Get related taxlots"""
         lot_view_pks = TaxLotProperty.objects.filter(
             property_view_id=property_view_pk
         ).values_list('taxlot_view_id', flat=True)
@@ -871,13 +878,41 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
             lots.append(TaxLotViewSerializer(lot).data)
         return lots
 
+    def get_history(self, property_view):
+        """Return history in reverse order."""
+        history = []
+        current = None
+        audit_logs = PropertyAuditLog.objects.select_related('state').filter(
+            view=property_view
+        ).order_by('-created', '-state_id')
+        for log in audit_logs:
+            changed_fields = json.loads(log.description)\
+                if log.record_type == AUDIT_USER_EDIT else None
+            record = {
+                'state': PropertyStateSerializer(log.state),
+                'date_edited': log.created.ctime(),
+                'source': log.get_record_type_display(),
+                'filename': log.import_filename,
+                'changed_fields': changed_fields
+            }
+            if log.state_id == property_view.state_id:
+                current = record
+            else:
+                history.append(record)
+        return history, current
+
     def get_property(self, request, property_pk, cycle_pk):
+        """GET view that returns property details."""
         result = self.get_property_view(property_pk, cycle_pk)
         if result.get('status', None) != 'error':
             property_view = result.pop('property_view')
             result.update(PropertyViewSerializer(property_view).data)
+            # remove PropertyView id from result
+            result.pop('id')
             result['state'] = PropertyStateSerializer(property_view.state).data
-            result['lots'] = self.get_taxlots(property_view.id)
+            result['taxlots'] = self.get_taxlots(property_view.pk)
+            result['history'], current = self.get_history(property_view)
+            result = update_result_with_current(result, current)
             status_code = status.HTTP_200_OK
         else:
             status_code = status.HTTP_404_NOT_FOUND
@@ -1058,6 +1093,7 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
         return Response(result, status=status_code)
 
     def put(self, request, property_pk, cycle_pk):
+        """View called by update."""
         data = request.data
         result = self.get_property_view(property_pk, cycle_pk)
         if result.get('status', None) != 'error':
@@ -1071,11 +1107,15 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
             for key, val in new_property_state_data.iteritems():
                 if val == '':
                     new_property_state_data[key] = None
-            if new_property_state_data == property_state_data:
+            changed_fields = get_changed_fields(
+                property_state_data, new_property_state_data
+            )
+            if not changed_fields:
                 changed = False
-
             if not changed:
-                result.update({'status': 'error', 'message': 'Nothing to update'})
+                result.update(
+                    {'status': 'error', 'message': 'Nothing to update'}
+                )
                 status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
             else:
                 property_state_data.update(new_property_state_data)
@@ -1086,14 +1126,18 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
                 )
 
                 if new_property_state_serializer.is_valid():
-                    property_view.state = new_property_state_serializer.save()
-                    property_view.save()
-                    result.update({
-                        'state': new_property_state_serializer.validated_data,
-                    })
+                    new_state = new_property_state_serializer.save()
+                    property_view.update_state(
+                        self, new_state, description=changed_fields
+                    )
+                    result.update(
+                        {'state': new_property_state_serializer.validated_data}
+                    )
                     status_code = status.HTTP_201_CREATED
                 else:
-                    result.update({'status': 'error', 'message': 'Invalid Data'})
+                    result.update(
+                        {'status': 'error', 'message': 'Invalid Data'}
+                    )
                     status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
         else:
             status_code = status.HTTP_404_NOT_FOUND
@@ -1120,22 +1164,44 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
         except TaxLotView.DoesNotExist:
             result = {
                 'status': 'error',
-                'message': 'taxlot view with id {} does not exist'.format(pk)
+                'message': 'taxlot view with id {} does not exist'.format(
+                    taxlot_pk)
             }
         except TaxLotView.MultipleObjectsReturned:
             result = {
                 'status': 'error',
-                'message': 'Multiple taxlot views with id {}'.format(pk)
+                'message': 'Multiple taxlot views with id {}'.format(
+                    taxlot_pk)
             }
         return result
+
+    def get_history(self, taxlot_view):
+        """Return history in reverse order."""
+        history = []
+        current = None
+        audit_logs = TaxLotAuditLog.objects.select_related('state').filter(
+            view=taxlot_view
+        ).order_by('-created', '-state_id')
+        for log in audit_logs:
+            changed_fields = json.loads(log.description)\
+                if log.record_type == AUDIT_USER_EDIT else None
+            record = {
+                'state': TaxLotStateSerializer(log.state),
+                'date_edited': log.created.ctime(),
+                'source': log.get_record_type_display(),
+                'filename': log.import_filename,
+                'changed_fields': changed_fields
+            }
+            if log.state_id == taxlot_view.state_id:
+                current = record
+            else:
+                history.append(record)
+        return history, current
 
     def get_properties(self, taxlot_view_pk, cycle_pk):
         property_view_pks = TaxLotProperty.objects.filter(
             taxlot_view_id=taxlot_view_pk
         ).values_list('property_view_id', flat=True)
-
-        #     property_views = PropertyView.objects.filter(pk__in=property_view_pks).select_related('cycle', 'state')
-
         property_views = PropertyView.objects.filter(
             pk__in=property_view_pks
         ).select_related('cycle', 'state')
@@ -1143,6 +1209,7 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
         for property_view in property_views:
             properties.append(PropertyViewSerializer(property_view).data)
         return properties
+
 
     def get_taxlot(self, request, taxlot_pk, cycle_pk):
         #result = self.get_taxlot_view(taxlot_pk)
@@ -1254,6 +1321,22 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
         result = json.loads(temp)
         status_code = status.HTTP_200_OK
 
+=======
+    def get_taxlot(self, request, taxlot_pk):
+        result = self.get_taxlot_view(taxlot_pk)
+        if result.get('status', None) != 'error':
+            taxlot_view = result.pop('taxlot_view')
+            result.update(TaxLotViewSerializer(taxlot_view).data)
+            # remove TaxLotView id from result
+            result.pop('id')
+            result['state'] = TaxLotStateSerializer(taxlot_view.state).data
+            result['properties'] = self.get_taxlots(taxlot_view.pk)
+            result['history'], current = self.get_history(taxlot_view)
+            result = update_result_with_current(result, current)
+            status_code = status.HTTP_200_OK
+        else:
+            status_code = status.HTTP_404_NOT_FOUND
+>>>>>>> tallus-api-views
         return Response(result, status=status_code)
 
     def put(self, request, taxlot_pk, cycle_pk):
@@ -1270,11 +1353,15 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
             for key, val in new_taxlot_state_data.iteritems():
                 if val == '':
                     new_taxlot_state_data[key] = None
-            if new_taxlot_state_data == taxlot_state_data:
+            changed_fields = get_changed_fields(
+                taxlot_state_data, new_taxlot_state_data
+            )
+            if not changed_fields:
                 changed = False
-
             if not changed:
-                result.update({'status': 'error', 'message': 'Nothing to update'})
+                result.update(
+                    {'status': 'error', 'message': 'Nothing to update'}
+                )
                 status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
             else:
                 taxlot_state_data.update(new_taxlot_state_data)
@@ -1285,15 +1372,56 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
                 )
 
                 if new_taxlot_state_serializer.is_valid():
-                    taxlot_view.state = new_taxlot_state_serializer.save()
-                    taxlot_view.save()
-                    result.update({
-                        'state': new_taxlot_state_serializer.validated_data,
-                    })
+                    new_state = new_taxlot_state_serializer.save()
+                    taxlot_view.update_state(
+                        self, new_state, description=changed_fields
+                    )
+                    result.update(
+                        {'state': new_taxlot_state_serializer.validated_data}
+                    )
                     status_code = status.HTTP_201_CREATED
                 else:
-                    result.update({'status': 'error', 'message': 'Invalid Data'})
+                    result.update(
+                        {'status': 'error', 'message': 'Invalid Data'}
+                    )
                     status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
         else:
             status_code = status.HTTP_404_NOT_FOUND
         return Response(result, status=status_code)
+
+
+def get_changed_fields(old, new):
+    """Return changed fields as json string"""
+    changed_fields, changed_extra_data = diffupdate(old, new)
+    if 'id' in changed_fields:
+        changed_fields.remove('id')
+    if 'pk' in changed_fields:
+        changed_fields.remove('pk')
+    if not (changed_fields or changed_extra_data):
+        return None
+    else:
+        return json.dumps({
+            'regular_fields': changed_fields,
+            'extra_data_fields': changed_extra_data
+        })
+
+
+def diffupdate(old, new):
+    """Returns lists of fields changed"""
+    changed_fields = []
+    changed_extra_data = []
+    for k, v in new.iteritems():
+        if old.get(k, None) != v or k not in old:
+            changed_fields.append(k)
+    if 'extra_data' in changed_fields:
+        changed_fields.remove('extra_data')
+        changed_extra_data, _ = diffupdate(old['extra_data'], new['extra_data'])
+    return changed_fields, changed_extra_data
+
+
+def update_result_with_current(result, cur):
+    result['changed_fields'] = cur.get('changed_fields', None) if cur else None
+    result['date_edited'] = cur.get('date_edited', None) if cur else None
+    result['source'] = cur.get('source', None) if cur else None
+    result['filename'] = cur.get('filename', None) if cur else None
+    return result
