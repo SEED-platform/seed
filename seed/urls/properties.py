@@ -24,7 +24,7 @@ urlpatterns = [
     url(r'^update-properties/(?P<property_pk>\d+)/cycles/(?P<cycle_pk>\d+)/$',
         Property.as_view({'put': 'put'}), name='update-property-details'),
     url(r'^taxlots/(?P<taxlot_pk>\d+)/cycles/(?P<cycle_pk>\d+)/$',
-        TaxLot.as_view({'get': 'get_taxlot'}), name='lot-detail'),
+        TaxLot.as_view({'get': 'get_taxlot'}), name='taxlot-details'),
     url(r'^update-taxlots/(?P<taxlots_pk>\d+)/cycles/(?P<cycle_pk>\d+)/$',
         TaxLot.as_view({'put': 'put'}), name='update-taxlot-details'),
     url(r'^get_property_report_data/$',

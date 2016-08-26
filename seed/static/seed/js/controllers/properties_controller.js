@@ -121,8 +121,8 @@ angular.module('BE.seed.controller.properties', [])
 
       var lastCycleId = inventory_service.get_last_cycle();
       $scope.cycle = {
-        selected_cycle: lastCycleId ? _.find(cycles, {pk: lastCycleId}) : cycles[0],
-        cycles: cycles
+        selected_cycle: lastCycleId ? _.find(cycles.cycles, {pk: lastCycleId}) : cycles.cycles[0],
+        cycles: cycles.cycles
       };
 
       var processData = function () {

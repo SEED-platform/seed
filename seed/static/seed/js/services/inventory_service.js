@@ -406,8 +406,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
             url: update_taxlot_url,
             data: {
                 organization_id: organization_id,
-                state: taxlot_state,
-            },
+                state: taxlot_state
+            }
         }).success(function(data, status, headers, config){
           defer.resolve(data);
         }).error(function(data, status, headers, config){
@@ -423,7 +423,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.get_cycles = function () {
 
       var defer = $q.defer();
-      var get_cycles_url = "/app/cycles";
+      var get_cycles_url = window.BE.urls.cycle_list;
 
       $http({
         method: 'GET',

@@ -983,7 +983,7 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
                 'taxlot', 'cycle', 'state'
             ).get(
                 taxlot_id=taxlot_pk,
-                cycle=cycle_pk,
+                cycle_id=cycle_pk,
                 taxlot__organization_id=self.request.GET['organization_id']
             )
             result = {
@@ -1027,7 +1027,7 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
                 history.append(record)
         return history, current
 
-    def get_properties(self, taxlot_view_pk, cycle_pk):
+    def get_properties(self, taxlot_view_pk):
         property_view_pks = TaxLotProperty.objects.filter(
             taxlot_view_id=taxlot_view_pk
         ).values_list('property_view_id', flat=True)
@@ -1039,15 +1039,15 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
             properties.append(PropertyViewSerializer(property_view).data)
         return properties
 
-    def get_taxlot(self, request, taxlot_pk):
-        result = self.get_taxlot_view(taxlot_pk)
+    def get_taxlot(self, request, taxlot_pk, cycle_pk):
+        result = self.get_taxlot_view(taxlot_pk, cycle_pk)
         if result.get('status', None) != 'error':
             taxlot_view = result.pop('taxlot_view')
             result.update(TaxLotViewSerializer(taxlot_view).data)
             # remove TaxLotView id from result
             result.pop('id')
             result['state'] = TaxLotStateSerializer(taxlot_view.state).data
-            result['properties'] = self.get_taxlots(taxlot_view.pk)
+            result['properties'] = self.get_properties(taxlot_view.pk)
             result['history'], current = self.get_history(taxlot_view)
             result = update_result_with_current(result, current)
             status_code = status.HTTP_200_OK
