@@ -30,36 +30,28 @@
                         <div class="col-md-10">
                             <form class="form-inline pull-right chart-inputs" role="form">
 
-                                <div class="form-group" ng-class="{'has-error' : invalidDates }">
-                                  
+                                <div class="form-group" >
                                     <label for="fromCycleSelector">From first date of:</label>
-                                    <div class="input-group">
-                                       <div class="btn-group">
-                                          <select id="fromCycleSelector"
-                                                  class="form-control input-sm col-xs-2"
-                                                  ng-model="fromCycle.selected_cycle"
-                                                  ng-change="updateFromCycle(fromCycle.selected_cycle)"
-                                                  ng-options="option.name for option in cycles track by option.pk">
-                                          </select>
-                                      </div>
-                                    </div>
-                                  
+                                    <select id="fromCycleSelector"
+                                            class="form-control"
+                                            ng-model="fromCycle.selected_cycle"
+                                            style="min-width:180px;"
+                                            ng-change="updateFromCycle(fromCycle.selected_cycle)"
+                                            ng-options="option.name for option in cycles track by option.pk">
+                                    </select>
                                 </div>
+                              
                                 <div class="form-group">
-                                    
                                     <label for="toCycleSelector">Until last date of:</label>
-                                    <div class="input-group" >
-                                       <div class="btn-group">
-                                          <select id="toCycleSelector"
-                                                  class="form-control input-sm col-xs-2"
-                                                  ng-model="toCycle.selected_cycle"
-                                                  ng-change="updateToCycle(toCycle.selected_cycle)"
-                                                  ng-options="option.name for option in cycles track by option.pk">
-                                          </select>
-                                      </div>
-                                    </div>
-                                  
+                                    <select id="toCycleSelector"
+                                            class="form-control"
+                                            style="min-width:180px;"
+                                            ng-model="toCycle.selected_cycle"
+                                            ng-change="updateToCycle(toCycle.selected_cycle)"
+                                            ng-options="option.name for option in cycles track by option.pk">
+                                    </select>
                                 </div>
+                              
                                 <div class="form-group">
                                     <label for="xAxisSelector">X Axis:</label>
                                     <sd-dropdown is-button
@@ -68,6 +60,7 @@
                                                  items="xAxisVars">
                                     </sd-dropdown>
                                 </div>
+                              
                                 <div class="form-group">
                                     <label for="yAxisSelector">Y Axis:</label>
                                     <sd-dropdown is-button
@@ -76,6 +69,7 @@
                                                  items="yAxisVars">
                                     </sd-dropdown>
                                 </div>
+                              
                                 <div class="form-group">
                                     <button type="submit"
                                             class="btn btn-primary"
