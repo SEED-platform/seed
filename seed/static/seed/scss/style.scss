@@ -2437,3 +2437,27 @@ gs-input .tags .tag-item .remove-button {
     background-color: #f8f6e7;
   }*/
 }
+
+#sidebar-projects, #nav-projects {
+  &[disabled] {
+    color: gray;
+    pointer-events: none;
+  }
+}
+
+#nav-inventory {
+  span {
+    padding-right: 12px;
+    > svg {
+      height: 18px;
+      path {
+        fill: #337ab7;
+      }
+    }
+  }
+  &:hover {
+    span > svg path {
+      fill: #23527c;
+    }
+  }
+}

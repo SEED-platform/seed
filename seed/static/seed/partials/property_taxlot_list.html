@@ -10,15 +10,7 @@
     </div>
 </div>
 
-<div class="section_nav_container">
-    <div class="section_nav">
-        <a id="building-list" ng-if="object=='property'" href="#/properties" class="active">Properties List</a>
-        <a id="building-list" ng-if="object=='taxlot'" href="#/taxlots" class="active">Tax Lots List</a>
-        <a id="list-settings" href="#/inventory/settings">List Settings</a>
-        <a id="reports" href="#/inventory/reports">Reports</a>
-        <a id="labels" href="#/inventory/labels">Labels</a>
-    </div>
-</div>
+<div class="section_nav_container" ng-include="urls.static_url + 'seed/partials/inventory_nav.html'"></div>
 
 <div class="inventory-list-controls">
     <form name="listControlsForm"

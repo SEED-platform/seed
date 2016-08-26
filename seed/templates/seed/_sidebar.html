@@ -8,12 +8,12 @@
                 <div ng-show="!is_initial_state" class="badge badge_menu" ng-click="href('{% url "landing:logout" %}')">Log Out</div>
             </a>
             <div class="divider"></div>
-            <!--
-            <a id="sidebar-projects" ng-class="{item: true, active: is_active('/projects')}" href="{% url "seed:home" %}#/projects">
+            <a id="sidebar-projects" ng-class="{item: true, active: is_active('/projects')}" href="{% url "seed:home" %}#/projects" disabled>
                 <div class="icon"><i class="fa fa-folder-o"></i></div>
                 <div ng-show="!is_initial_state" class="item_name">Projects</div>
-                <div ng-show="!is_initial_state" class="badge badge_menu">{$ projects_count | number:0 $}</div>
+                <!--<div ng-show="!is_initial_state" class="badge badge_menu">{$ projects_count | number:0 $}</div>-->
             </a>
+            <!--
             <a id="sidebar-buildings" ng-class="{item: true, active: is_active('/buildings')}" href="{% url "seed:home" %}#/buildings">
                 <div class="icon"><i class="fa fa-building-o"></i></div>
                 <div ng-show="!is_initial_state" class="item_name">Buildings</div>
@@ -37,7 +37,7 @@
                 <div ng-show="!is_initial_state" class="item_name">Organizations</div>
                 <div ng-show="!is_initial_state" class="badge badge_menu">{$ organizations_count | number:0 $}</div>
             </a>
-           
+
             <div class="divider"></div>
             <a id="sidebar-feedback" ng-class="{item: true, active: is_active('/feedback')}" title="Contact" href="{% url "seed:home" %}#/feedback">
                 <div class="icon"><i class="fa fa-certificate"></i></div>

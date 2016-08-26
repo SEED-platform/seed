@@ -66,6 +66,7 @@ angular.module('BE.seed.controller.menu', [])
     $rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error) {
         $scope.menu.loading = false;
         $scope.menu.route_load_error = true;
+        console.error(error);
         if (error === 'not authorized' || error === 'Your page could not be located!') {
             $scope.menu.error_message = error;
         }
