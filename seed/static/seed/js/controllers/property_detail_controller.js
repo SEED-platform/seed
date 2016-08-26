@@ -35,7 +35,7 @@ function($controller, $state, $scope, $uibModal, $location, $log, $filter, urls,
 	$scope.all_extra_data_keys = property_payload.extra_data_keys;
 
 	$scope.item_type = "property";
-	$scope.item_title = "Property : " + $scope.item_state.address_line_1 ;
+	$scope.item_title = "Property : " + ($scope.item_state.address_line_1 ? $scope.item_state.address_line_1 : '(no address 1)');
 	$scope.user = {};
 	$scope.user_role = property_payload.user_role;
 
@@ -57,11 +57,11 @@ function($controller, $state, $scope, $uibModal, $location, $log, $filter, urls,
 	 */
 	$scope.on_save = function () {
 		$scope.save_property();
-	}
+	};
 
 	$scope.on_show_related_taxlot = function(taxlot) {
 		$location.path('/taxlots/' + taxlot.taxlot.id + '/cycles/' + taxlot.cycle.id);
-	}
+	};
 
 
 	/**

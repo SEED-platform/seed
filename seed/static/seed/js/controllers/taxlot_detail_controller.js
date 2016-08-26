@@ -35,7 +35,7 @@ function($controller, $state, $scope,  $uibModal, $location, $log, $filter, urls
 	$scope.all_extra_data_keys = taxlot_payload.extra_data_keys;
 
 	$scope.item_type = "taxlot";
-	$scope.item_title = "Tax Lot : " + $scope.item_state.address_line_1 // TODO: Decide what value (address_line_1?) to show as identifying label in tax lot detail view?
+	$scope.item_title = "Tax Lot : " + ($scope.item_state.address ? $scope.item_state.address : '(no address)'); // TODO: Decide what value (address_line_1?) to show as identifying label in tax lot detail view?
 	$scope.user = {};
 	$scope.user_role = taxlot_payload.user_role;
 

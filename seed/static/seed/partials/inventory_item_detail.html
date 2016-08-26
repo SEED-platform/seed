@@ -81,7 +81,7 @@
     <div class="section_content_container">
         <div class="section_content">
 
-             <div style="float:right; width:330px; text-align:right; margin: 10px 10px 0px 0px;" class="ellipsis">
+             <div style="float:right; width:330px; text-align:right; margin: 10px 10px 0 0;" class="ellipsis">
                  <span style="color:#777"
                        popover-placement="top-left"
                        popover-animation="false"
@@ -241,7 +241,7 @@
                             </th>
                             <th sd-resizable
                                 class="ellipsis-resizable">
-                                Address Line 1
+                                Address
                             </th>
                         </tr>
                     </thead>
@@ -250,7 +250,7 @@
                             <td> {$ taxlot.taxlot.id $}</td>
                             <td>
                                 <a ng-click="on_show_related_taxlot(taxlot)">
-                                    {$ (taxlot.state.address_line_1) ? taxlot.state.address_line_1 : '(no address 1)'$}
+                                    {$ (taxlot.state.address) ? taxlot.state.address : '(no address)'$}
                                 </a>
                             </td>
                         </tr>
