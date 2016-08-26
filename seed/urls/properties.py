@@ -11,6 +11,8 @@ from seed.views.properties import (get_properties, get_property_columns,
                                    get_taxlots, get_taxlot_columns,
                                    get_cycles, Property, TaxLot)
 
+from seed.views.reports import Report
+
 urlpatterns = [
     url(r'^properties/$', get_properties, name='properties'),
     url(r'^lots/$', get_taxlots, name='lots'),
@@ -26,4 +28,10 @@ urlpatterns = [
         TaxLot.as_view({'get': 'get_taxlot'}), name='lot-detail'),
     url(r'^update-taxlots/(?P<taxlots_pk>\d+)/cycles/(?P<cycle_pk>\d+)/$',
         TaxLot.as_view({'put': 'put'}), name='update-taxlot-details'),
+    url(r'^get_property_report_data/$',
+        Report.as_view({'get': 'get_property_report_data'}),
+        name='property_report_data'),
+    url(r'^get_aggregated_property_report_data/$',
+        Report.as_view({'get': 'get_aggregated_property_report_data'}),
+        name='aggregated_property_report_data'),
 ]
