@@ -286,6 +286,7 @@ angular.module('BE.seed.controller.taxlots', [])
         enableFiltering: true,
         enableGridMenu: true,
         enableSorting: true,
+        exporterCsvFilename: window.BE.initial_org_name + ' Tax Lot Data.csv',
         exporterMenuPdf: false,
         fastWatch: true,
         flatEntityAccess: true,

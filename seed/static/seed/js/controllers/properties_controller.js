@@ -286,6 +286,7 @@ angular.module('BE.seed.controller.properties', [])
         enableFiltering: true,
         enableGridMenu: true,
         enableSorting: true,
+        exporterCsvFilename: window.BE.initial_org_name + ' Property Data.csv',
         exporterMenuPdf: false,
         fastWatch: true,
         flatEntityAccess: true,
