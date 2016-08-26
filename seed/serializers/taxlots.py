@@ -9,6 +9,8 @@ from rest_framework import serializers
 from seed.models import (
     TaxLotView, TaxLotState, TaxLotProperty
 )
+
+
 class TaxLotPropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = TaxLotProperty

@@ -10,6 +10,7 @@ from seed.models import (
     Property, PropertyState, PropertyView,
 )
 
+
 class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = Property

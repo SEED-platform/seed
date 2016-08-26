@@ -142,8 +142,8 @@ def get_properties(request):
 
         # Start collapsed field data
         # Map of fields in related model to unique list of values
-        related_field_map = {}
-
+        # related_field_map = {}
+        #
         # Iterate over related dicts and gather field values.
         # Basically get a unique list off all related values for each field.
         # for related in p['related']:
@@ -325,7 +325,7 @@ def get_cycles(request):
             'to_date': ""
         })
 
-    return { 'status': 'success', 'cycles': return_cycles}
+    return {'status': 'success', 'cycles': return_cycles}
 
 
 @require_organization_id
