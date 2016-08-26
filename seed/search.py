@@ -65,9 +65,8 @@ def search_buildings(q, fieldnames=None, queryset=None):
     return queryset.filter(qgroup)
 
 
-def _search(model, q, fieldnames, queryset):
+def _search(q, fieldnames, queryset):
     """returns a queryset for matching objects
-    :param model: to search against
     :param str or unicode q: search string
     :param list fieldnames: list of model fieldnames
     :param queryset: "optional" queryset to filter from, will all return an empty queryset if missing.
@@ -91,7 +90,7 @@ def search_properties(q, fieldnames=None, queryset=None):
             'address_line_1',
             'property_name',
         ]
-    return _search(PropertyState, q, fieldnames, queryset)
+    return _search(q, fieldnames, queryset)
 
 
 def search_taxlots(q, fieldnames=None, queryset=None):
@@ -103,7 +102,7 @@ def search_taxlots(q, fieldnames=None, queryset=None):
             'address'
             'block_number'
         ]
-    return _search(TaxLotState, q, fieldnames, queryset)
+    return _search(q, fieldnames, queryset)
 
 
 def generate_paginated_results(queryset, number_per_page=25, page=1,
