@@ -54,10 +54,10 @@ return queryset.filter(qgroup)
 
 def _search(model, q, fieldnames, queryset):
     """returns a queryset for matching objects
-    :param: model to search against
-    :param: str or unicode q: search string
-    :param: list fieldnames: list of model fieldnames
-    :param: queryset: "optional" queryset to filter from, will all return an empty queryset if missing.
+    :param model: to search against
+    :param str or unicode q: search string
+    :param list fieldnames: list of model fieldnames
+    :param queryset: "optional" queryset to filter from, will all return an empty queryset if missing.
     :returns: :queryset: queryset of matching buildings
     """
     if q == '':
