@@ -54,6 +54,27 @@ class TestReverseViewSet(viewsets.ViewSet):
         # report it out prettified
         return HttpResponse(json.dumps(i, indent=4, sort_keys=True))
 
+    @list_route(methods=['GET'])
+    def one_arg_reverse(self, request):
+        """
+        Test a one arg reverse call easily
+        ---
+        parameters:
+            - name: reverse_string
+              description: The string to test a reverse on
+              type: string
+              required: true
+              paramType: query
+            - name: argument
+              description: the single argument to pass in to try to reverse on
+              type: string
+              required: true
+              paramType: query
+        """
+        reverse_string = request.query_params.get('reverse_string', None)
+        argument = request.query_params.get('argument', None)
+        reversed_url = reverse(reverse_string, args = [argument])
+        return HttpResponse(json.dumps({reverse_string: reversed_url}))
 
 @api_endpoint
 @ajax_request

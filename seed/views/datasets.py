@@ -120,7 +120,7 @@ class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
                   description: "The organization_id"
                   required: true
                   paramType: query
-                - name: new_dataset_name
+                - name: dataset
                   description: "The new name for this dataset"
                   required: true
                   paramType: string
@@ -130,15 +130,15 @@ class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
                   paramType: path
         """
 
-        organization_id = int(
-            request.query_params.get('organization_id', None))
         dataset_id = pk
-        name = request.data['new_dataset_name']
+        orgs = request.user.orgs.all()
+        name = request.data['dataset']
 
         # check if user has access to the dataset
         d = ImportRecord.objects.filter(
-            super_organization_id=organization_id, pk=dataset_id
+            super_organization__in=orgs, pk=dataset_id
         )
+
         if not d.exists():
             return HttpResponse(json.dumps({
                 'status': 'error',
@@ -191,6 +191,11 @@ class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
         """
 
         orgs = request.user.orgs.all()
+
+
+        # organization_id = 1
+        organization_id = int(
+            request.query_params.get('organization_id', None))
         dataset_id = pk
 
         from seed.models import obj_to_dict

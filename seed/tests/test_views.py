@@ -1626,8 +1626,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse("seed:get_dataset"),
-                                   {'dataset_id': import_record.pk})
+        response = self.client.get(reverse("apiv2:datasets-detail", args=[import_record.pk]))
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_delete_dataset(self):
@@ -1636,12 +1635,11 @@ class GetDatasetsViewsTests(TestCase):
         import_record.save()
 
         post_data = {
-            'dataset_id': import_record.pk,
             'organization_id': self.org.pk
         }
 
         response = self.client.delete(
-            reverse_lazy("seed:delete_dataset"),
+            reverse_lazy("seed:delete_dataset", args=[dataset_id]),
             content_type='application/json',
             data=json.dumps(post_data)
         )
@@ -1655,14 +1653,11 @@ class GetDatasetsViewsTests(TestCase):
         import_record.save()
 
         post_data = {
-            'dataset': {
-                'id': import_record.pk,
-                'name': 'new'
-            }
+            'dataset': 'new'
         }
 
         response = self.client.post(
-            reverse_lazy("seed:update_dataset"),
+            reverse_lazy("seed:update_dataset", args=[import_record.pk]),
             content_type='application/json',
             data=json.dumps(post_data)
         )
@@ -2663,22 +2658,23 @@ class TestMCMViews(TestCase):
         DATASET_NAME_1 = 'test_name 1'
         DATASET_NAME_2 = 'city compliance dataset 2014'
         resp = self.client.post(
-            reverse_lazy("seed:create_dataset"),
+            reverse_lazy("apiv2:dataset-list"),
             data=json.dumps({
-                'organization_id': self.org.pk,
                 'name': DATASET_NAME_1,
             }),
+            params={'organization_id': self.org.pk},
             content_type='application/json',
         )
         data = json.loads(resp.content)
         self.assertEqual(data['name'], DATASET_NAME_1)
 
         resp = self.client.post(
-            reverse_lazy("seed:create_dataset"),
+            reverse_lazy("apiv2:dataset-list"),
             data=json.dumps({
-                'organization_id': self.org.pk,
                 'name': DATASET_NAME_2,
             }),
+            params={'organization_id': self.org.pk},
+
             content_type='application/json',
         )
         data = json.loads(resp.content)
@@ -2695,11 +2691,11 @@ class TestMCMViews(TestCase):
 
         # test duplicate name
         resp = self.client.post(
-            reverse_lazy("seed:create_dataset"),
+            reverse_lazy("apiv2:dataset-list"),
             data=json.dumps({
-                'organization_id': self.org.pk,
                 'name': DATASET_NAME_1,
             }),
+            params={'organization_id': self.org.pk},
             content_type='application/json',
         )
         data_3 = json.loads(resp.content)
