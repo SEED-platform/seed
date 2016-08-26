@@ -88,9 +88,9 @@
 <div class="inventory-list-tab-container">
     <div class="item-count">
         <i class="fa fa-building-o"></i>
-        {$ pagination.total | number:0 $}
-        <span ng-show="object == 'property'"><ng-pluralize count="pagination.total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize></span>
-        <span ng-show="object == 'taxlot'"><ng-pluralize count="pagination.total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
+        {$ total | number:0 $}
+        <span ng-show="object == 'property'"><ng-pluralize count="total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize></span>
+        <span ng-show="object == 'taxlot'"><ng-pluralize count="total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
     </div>
     <ul class="nav nav-tabs" style="margin-bottom:1px;">
         <li ng-class="{active: object=='property'}" heading="View by Property">

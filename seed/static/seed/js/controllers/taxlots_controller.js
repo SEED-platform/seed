@@ -27,6 +27,7 @@ angular.module('BE.seed.controller.taxlots', [])
       $scope.object = 'taxlot';
       $scope.objects = taxlots.results;
       $scope.pagination = taxlots.pagination;
+      $scope.total = $scope.pagination.total;
       $scope.number_per_page = 999999999;
       $scope.restoring = false;
 
@@ -313,6 +314,12 @@ angular.module('BE.seed.controller.taxlots', [])
           gridApi.core.on.filterChanged($scope, saveState);
           gridApi.core.on.sortChanged($scope, saveState);
           gridApi.pinning.on.columnPinned($scope, saveState);
+
+          gridApi.core.on.rowsRendered($scope, _.debounce(function () {
+            $scope.$apply(function () {
+              $scope.total = _.filter($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), {treeLevel: 0}).length;
+            });
+          }, 150));
 
           _.defer(function () {
             $scope.defaultState = $scope.gridApi.saveState.save();
