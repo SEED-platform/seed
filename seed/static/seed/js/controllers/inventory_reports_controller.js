@@ -13,10 +13,12 @@ angular.module('BE.seed.controller.inventory_reports', [])
                                               '$log',
                                               'inventory_reports_service',
                                               'simple_modal_service',
+                                              'cycles',
                                     function( $scope,
                                               $log,
                                               inventory_reports_service,
-                                              simple_modal_service
+                                              simple_modal_service,
+                                              cycles
                                             ){
 
 
@@ -24,6 +26,13 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
   /* Define the first five colors. After that, rely on Dimple's default colors. */
   $scope.defaultColors = ['#458cc8', '#779e1c', '#f2c41d', '#939495', '#c83737', '#f18630'];
+
+  /* Setup models from "From" and "To" selectors */
+  $scope.cycles = cycles;
+
+  /* Model for pulldowns, initialized in init below */
+  $scope.fromCycle = {}
+  $scope.toCycle = {}
 
   /* SCOPE VARS */
   /* ~~~~~~~~~~ */
@@ -117,15 +126,6 @@ angular.module('BE.seed.controller.inventory_reports', [])
   $scope.chart1Title = '';
   $scope.chart2Title = '';
 
-  // Datepickers
-  var initStartDate = new Date();
-  initStartDate.setYear(initStartDate.getFullYear()-1);
-  $scope.startDate = initStartDate;
-  $scope.startDatePickerOpen = false;
-  $scope.endDate = new Date();
-  $scope.endDatePickerOpen = false;
-  $scope.invalidDates = false; // set this to true when startDate >= endDate;
-
   // Series
   // the following variable keeps track of which
   // series will be sent to the graphs when data is updated
@@ -154,33 +154,12 @@ angular.module('BE.seed.controller.inventory_reports', [])
   /* UI HANDLERS */
   /* ~~~~~~~~~~~ */
 
-  // Handle datepicker open/close events
-  $scope.openStartDatePicker = function ($event) {
-    $event.preventDefault();
-    $event.stopPropagation();
-    $scope.startDatePickerOpen = !$scope.startDatePickerOpen;
-  };
-  $scope.openEndDatePicker = function ($event) {
-    $event.preventDefault();
-    $event.stopPropagation();
-    $scope.endDatePickerOpen = !$scope.endDatePickerOpen;
-  };
-
-  $scope.$watch('startDate', function(newval, oldval){
-    $scope.checkInvalidDate();
-  });
-
-  $scope.$watch('endDate', function(newval, oldval){
-    $scope.checkInvalidDate();
-  });
-
-  $scope.checkInvalidDate = function() {
-     $scope.invalidDates = ($scope.endDate < $scope.startDate);
-  };
-
-
   /* Update data used by the chart. This will force the charts to re-render*/
   $scope.updateChartData = function(){
+
+    // TODO Form check, although at the moment it's just four selects so user shouldn't be able to get form into an invalid state. */
+
+    /*
     if ($scope.invalidDates){
       //Show a basic error modal
       var modalOptions = {
@@ -198,7 +177,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
       });
       return;
     }
-
+    */
     clearChartData();
     $scope.chartStatusMessage = 'Loading data...';
     $scope.aggChartStatusMessage = 'Loading data...';
@@ -266,7 +245,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
     var yVar = $scope.yAxisSelectedItem.varName;
     $scope.chartIsLoading = true;
 
-    inventory_reports_service.get_report_data(xVar, yVar, $scope.startDate, $scope.endDate)
+    inventory_reports_service.get_report_data(xVar, yVar, $scope.fromCycle.selected_cycle.pk, $scope.toCycle.selected_cycle.pk)
       .then(function(data) {
           var yAxisType = ( yVar === 'use_description' ? 'Category' : 'Measure');
           var propertyCounts = data.property_counts;
@@ -315,7 +294,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
     var xVar = $scope.xAxisSelectedItem.varName;
     var yVar = $scope.yAxisSelectedItem.varName;
     $scope.aggChartIsLoading = true;
-    inventory_reports_service.get_aggregated_report_data(xVar, yVar, $scope.startDate, $scope.endDate)
+    inventory_reports_service.get_aggregated_report_data(xVar, yVar, $scope.fromCycle.selected_cycle.pk, $scope.toCycle.selected_cycle.pk)
       .then(function(data) {
           $scope.aggPropertyCounts = data.property_counts;
           var propertyCounts = data.property_counts;
@@ -372,7 +351,15 @@ angular.module('BE.seed.controller.inventory_reports', [])
   /* Call the update method so the page initializes
      with the values set in the scope */
   function init(){
-    //$scope.updateChartData();
+
+    // Initialize pulldowns
+    $scope.fromCycle = {
+      selected_cycle: cycles[0]
+    };
+    $scope.toCycle = {
+      selected_cycle: cycles[0]
+    };
+
   }
 
   init();

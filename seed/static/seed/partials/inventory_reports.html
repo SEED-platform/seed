@@ -31,55 +31,49 @@
                             <form class="form-inline pull-right chart-inputs" role="form">
 
                                 <div class="form-group" ng-class="{'has-error' : invalidDates }">
-                                    <label for="from-date">From date:</label>
-
-                                    <div class="input-group date-input">
-                                        <input  id="from-date"
-                                                type="text"
-                                                class="form-control"
-                                                uib-datepicker-popup="MM-dd-yyyy"
-                                                is-open="startDatePickerOpen"
-                                                ng-model="startDate"
-                                                uib-tooltip="'From Date' must be before 'To Date'"
-                                                tooltip-placement="top"
-                                                tooltip-trigger="mouseenter"
-                                                tooltip-enable="invalidDates"
-                                                />
-                                        <span class="input-group-btn">
-                                            <button type="button"
-                                                    class="btn btn-default"
-                                                    ng-click="openStartDatePicker($event)"><i class="fa fa-calendar"></i></button>
-                                        </span>
+                                  
+                                    <label for="fromCycleSelector">From first date of:</label>
+                                    <div class="input-group">
+                                       <div class="btn-group">
+                                          <select id="fromCycleSelector"
+                                                  class="form-control input-sm col-xs-2"
+                                                  ng-model="fromCycle.selected_cycle"
+                                                  ng-change="updateFromCycle(fromCycle.selected_cycle)"
+                                                  ng-options="option.name for option in cycles track by option.pk">
+                                          </select>
+                                      </div>
                                     </div>
+                                  
                                 </div>
                                 <div class="form-group">
-                                    <label for="to-date">To date:</label>
-                                    <div class="input-group date-input">
-                                        <input  id="to-date"
-                                                type="text"
-                                                class="form-control"
-                                                uib-datepicker-popup="MM-dd-yyyy"
-                                                is-open="endDatePickerOpen"
-                                                ng-model="endDate"/>
-                                        <span class="input-group-btn">
-                                            <button type="button"
-                                                    class="btn btn-default"
-                                                    ng-click="openEndDatePicker($event)"><i class="fa fa-calendar"></i></button>
-                                        </span>
+                                    
+                                    <label for="toCycleSelector">Until last date of:</label>
+                                    <div class="input-group" >
+                                       <div class="btn-group">
+                                          <select id="toCycleSelector"
+                                                  class="form-control input-sm col-xs-2"
+                                                  ng-model="toCycle.selected_cycle"
+                                                  ng-change="updateToCycle(toCycle.selected_cycle)"
+                                                  ng-options="option.name for option in cycles track by option.pk">
+                                          </select>
+                                      </div>
                                     </div>
+                                  
                                 </div>
                                 <div class="form-group">
-                                    <label for="to-date">X Axis:</label>
+                                    <label for="xAxisSelector">X Axis:</label>
                                     <sd-dropdown is-button
-                                              ng-model="xAxisSelectedItem"
-                                              items="xAxisVars">
+                                                 id="xAxisSelector"
+                                                 ng-model="xAxisSelectedItem"
+                                                 items="xAxisVars">
                                     </sd-dropdown>
                                 </div>
                                 <div class="form-group">
-                                    <label for="to-date">Y Axis:</label>
+                                    <label for="yAxisSelector">Y Axis:</label>
                                     <sd-dropdown is-button
-                                              ng-model="yAxisSelectedItem"
-                                              items="yAxisVars">
+                                                 id="yAxisSelector"
+                                                 ng-model="yAxisSelectedItem"
+                                                 items="yAxisVars">
                                     </sd-dropdown>
                                 </div>
                                 <div class="form-group">

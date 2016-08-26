@@ -5,10 +5,12 @@
 angular.module('BE.seed.service.inventory_reports',
     []).factory('inventory_reports_service', ['$http',
                                                 '$q',
+                                                '$log',
                                                 '$timeout',
                                                 'user_service',
                                     function ( $http,
                                                 $q,
+                                                $log,
                                                 $timeout,
                                                 user_service) {
 
@@ -39,14 +41,33 @@ angular.module('BE.seed.service.inventory_reports',
                 ]
             }
     */
-    function get_report_data(xVar, yVar, startDate, endDate) {
+    function get_report_data(xVar, yVar, startCycleID, endCycleID) {
+
+        // Error checks (should be able to collapse this...)
+        if (angular.isUndefined(xVar)){
+          $log.error("#inventory_reports_service.get_report_data(): null 'xVar' parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(yVar)){
+          $log.error("#inventory_reports_service.get_report_data(): null 'yVar' parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(startCycleID)){
+          $log.error("#inventory_reports_service.get_report_data(): null 'startCycleID' parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(endCycleID)){
+          $log.error("#inventory_reports_service.get_report_data(): null 'endCycleID' parameter");
+          throw new Error("Invalid Parameter");
+        }
+
         var defer = $q.defer();
         var args = {
                         organization_id: user_service.get_organization().id,
                         x_var: xVar,
                         y_var: yVar,
-                        start_date: getDateString(startDate),
-                        end_date: getDateString(endDate)
+                        start_cycle_id: startCycleID,
+                        end_cycle_id: endCycleID
                     };
         $http({
                 method: 'GET',
@@ -88,14 +109,34 @@ angular.module('BE.seed.service.inventory_reports',
                 ]
             }
     */
-    function get_aggregated_report_data(xVar, yVar, startDate, endDate) {
+    function get_aggregated_report_data(xVar, yVar, startCycleID, endCycleID) {
+
+       // Error checks (should be able to collapse this...)
+        if (angular.isUndefined(xVar)){
+          $log.error("#inventory_reports_service.get_aggregated_report_data(): null 'xVar' parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(yVar)){
+          $log.error("#inventory_reports_service.get_aggregated_report_data(): null 'yVar' parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(startCycleID)){
+          $log.error("#inventory_reports_service.get_aggregated_report_data(): null 'startCycleID' parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(endCycleID)){
+          $log.error("#inventory_reports_service.get_aggregated_report_data(): null 'endCycleID' parameter");
+          throw new Error("Invalid Parameter");
+        }
+
+
         var defer = $q.defer();
         var args = {
                         organization_id: user_service.get_organization().id,
                         x_var: xVar,
                         y_var: yVar,
-                        start_date: getDateString(startDate),
-                        end_date: getDateString(endDate)
+                        start_cycle_id: startCycleID,
+                        end_cycle_id: endCycleID
                     };
         $http({
                 method: 'GET',
@@ -111,7 +152,7 @@ angular.module('BE.seed.service.inventory_reports',
         return defer.promise;
     }
 
-    /*  This method is not current used in the first verion of the building reports page.
+    /*  This method is not current used in the first version of the building reports page.
         Uncomment this method when the back end endpoint ahas been implemented.*/
     /*
     function get_summary_data(xVar, yVar, startDate, endDate) {
@@ -137,14 +178,6 @@ angular.module('BE.seed.service.inventory_reports',
         return defer.promise;
     };
     */
-
-    /* Take a date object and return a string in the format YYYY-MM-DD */
-    function getDateString(dateObj){
-       var yyyy = dateObj.getFullYear().toString();
-       var mm = (dateObj.getMonth()+1).toString(); // getMonth() is zero-based
-       var dd = dateObj.getDate().toString();
-       return yyyy + '-' + (mm[1]?mm:'0'+mm[0]) + '-' + (dd[1]?dd:'0'+dd[0]); // padding
-    }
 
     /* Public API */
 

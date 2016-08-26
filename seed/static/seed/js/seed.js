@@ -434,14 +434,13 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       .state({
           name: 'reports',
           url: '/inventory/reports',
-          templateUrl: static_url + 'seed/partials/buildings_reports.html',
-          controller: 'buildings_reports_controller'
-      })
-      .state({
-          name: 'inventory_reports',
-          url: '/inventory/reports',
           templateUrl: static_url + 'seed/partials/inventory_reports.html',
-          controller: 'inventory_reports_controller'
+          controller: 'inventory_reports_controller',
+          resolve : {
+              cycles: ['property_taxlot_service', function (property_taxlot_service) {
+                  return property_taxlot_service.get_cycles();
+              }],
+          }
       })
       .state({
           name: 'building_detail',
