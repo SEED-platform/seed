@@ -438,21 +438,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           controller: 'buildings_reports_controller'
       })
       .state({
-<<<<<<< HEAD
           name: 'inventory_reports',
           url: '/inventory/reports',
           templateUrl: static_url + 'seed/partials/inventory_reports.html',
           controller: 'inventory_reports_controller'
       })
       .state({
-          name: 'buildings_labels',
-          url: '/buildings/labels',
-          templateUrl: static_url + 'seed/partials/buildings_label_admin.html',
-          controller: 'label_admin_controller'
-      })
-      .state({
-=======
->>>>>>> list-views
           name: 'building_detail',
           url: '/buildings/:building_id',
           templateUrl: static_url + 'seed/partials/building_detail_section.html',
