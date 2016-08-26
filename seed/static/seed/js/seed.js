@@ -827,6 +827,17 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           }
       })
       .state({
+          name: 'organization_cycles',
+          url: '/accounts/:organization_id/organization_cycles',
+          templateUrl: static_url + 'seed/partials/cycle_admin.html',
+          controller: 'cycle_admin_controller',
+          resolve: {
+              cycles_payload: ['cycle_service', function (cycle_service) {
+                  return cycle_service.get_cycles();
+              }]
+          }
+      })
+      .state({
           name: 'organization_labels',
           url: '/accounts/:organization_id/labels',
           templateUrl: static_url + 'seed/partials/label_admin.html',
