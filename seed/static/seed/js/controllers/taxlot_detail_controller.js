@@ -5,6 +5,7 @@
 angular.module('BE.seed.controller.taxlot_detail', [])
 		.controller('taxlot_detail_controller', [
 			'$controller',
+			'$state',
 			'$scope',
 			'$uibModal',
 			'$location',
@@ -16,7 +17,7 @@ angular.module('BE.seed.controller.taxlot_detail', [])
 			'taxlot_payload',
 			'all_taxlot_columns',
 			'default_taxlot_columns',
-function($controller, $scope,  $uibModal, $location, $log, $filter, urls, label_helper_service,
+function($controller, $state, $scope,  $uibModal, $location, $log, $filter, urls, label_helper_service,
 				 	property_taxlot_service, taxlot_payload, all_taxlot_columns, default_taxlot_columns ) {
 
 	/** See service for structure of returned payload */
@@ -66,7 +67,11 @@ function($controller, $scope,  $uibModal, $location, $log, $filter, urls, label_
 		$scope.$emit('show_saving');
 		property_taxlot_service.update_taxlot($scope.taxlot.id, $scope.cycle.id, $scope.item_state)
 			.then(function (data){
+					// In the short term, we're just refreshing the page after a save so the table
+					// shows new history.
+					// TODO: Refactor so that table is dynamically updated with new information
 					$scope.$emit('finished_saving');
+					$state.reload();
 				}, function (data, status){
 					// reject promise
 					$scope.$emit('finished_saving');
