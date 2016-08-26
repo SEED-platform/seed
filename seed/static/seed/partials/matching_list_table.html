@@ -76,25 +76,25 @@
                             <td ng-repeat="c in columns">
                                 <span ng-switch on="c.type">
                                   <span ng-switch-when="string">
-                                    <a ng-if="c.is_extra_data" ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b)">{$ b.extra_data[c.sort_column] $}</a>
-                                    <a ng-if="!c.is_extra_data" ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b)">{$ b[c.sort_column] $}</a>
+                                    <a ng-if="c.is_extra_data" ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b)">{$ b.extra_data[c.sort_column] $}</a>
+                                    <a ng-if="!c.is_extra_data" ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b)">{$ b[c.sort_column] $}</a>
                                   </span>
                                   <span ng-switch-when="floor_area" class="is_aligned_right">
-                                    <a ng-if="c.is_extra_data" ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b)">{$ b.extra_data[c.sort_column] | number:0 $}</a>
-                                    <a ng-if="!c.is_extra_data" ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b)">{$ b[c.sort_column] | number:0 $}</a>
+                                    <a ng-if="c.is_extra_data" ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b)">{$ b.extra_data[c.sort_column] | number:0 $}</a>
+                                    <a ng-if="!c.is_extra_data" ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b)">{$ b[c.sort_column] | number:0 $}</a>
                                   </span>
                                   <span ng-switch-when="number" class="is_aligned_right">
-                                    <a ng-if="c.is_extra_data" ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b)">{$ b.extra_data[c.sort_column] | number:0 $}</a>
-                                    <a ng-if="!c.is_extra_data" ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b)">{$ b[c.sort_column] | number:0 $}</a>
+                                    <a ng-if="c.is_extra_data" ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b)">{$ b.extra_data[c.sort_column] | number:0 $}</a>
+                                    <a ng-if="!c.is_extra_data" ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b)">{$ b[c.sort_column] | number:0 $}</a>
                                   </span>
                                   <span ng-switch-when="link" class="is_aligned_right">
-                                    <a ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b)">{$ b[c.sort_column] | stripImportPrefix $}</a>
+                                    <a ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b)">{$ b[c.sort_column] | stripImportPrefix $}</a>
                                   </span>
                                   <span ng-switch-when="label">
                                     <sd-label name="{$ b[c.sort_column].name $}" color="{$ b[c.sort_column].color $}"></sd-label>
                                   </span>
                                   <span ng-switch-default class="is_aligned_right">
-                                    <a ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b)">{$ b[c.sort_column] | date:'shortDate' $}</a>
+                                    <a ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b)">{$ b[c.sort_column] | date:'shortDate' $}</a>
                                   </span>
                                 </span>
                             </td>
@@ -109,25 +109,25 @@
                             <td ng-repeat="c in columns" ng-hide="filter_params.children__isnull">
                                 <span ng-switch on="c.type">
                                   <span ng-switch-when="string">
-                                    <a ng-if="c.is_extra_data" ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b.coparent)">{$ b.coparent.extra_data[c.sort_column] $}</a>
-                                    <a ng-if="!c.is_extra_data" ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b.coparent)">{$ b.coparent[c.sort_column] $}</a>
+                                    <a ng-if="c.is_extra_data" ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b.coparent)">{$ b.coparent.extra_data[c.sort_column] $}</a>
+                                    <a ng-if="!c.is_extra_data" ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b.coparent)">{$ b.coparent[c.sort_column] $}</a>
                                   </span>
                                   <span ng-switch-when="floor_area" class="is_aligned_right">
-                                    <a ng-if="c.is_extra_data" ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b.coparent)">{$ b.coparent.extra_data[c.sort_column] | number:0 $}</a>
-                                    <a ng-if="!c.is_extra_data" ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b.coparent)">{$ b.coparent[c.sort_column] | number:0 $}</a>
+                                    <a ng-if="c.is_extra_data" ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b.coparent)">{$ b.coparent.extra_data[c.sort_column] | number:0 $}</a>
+                                    <a ng-if="!c.is_extra_data" ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b.coparent)">{$ b.coparent[c.sort_column] | number:0 $}</a>
                                   </span>
                                   <span ng-switch-when="number" class="is_aligned_right">
-                                    <a ng-if="c.is_extra_data" ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b.coparent)">{$ b.coparent.extra_data[c.sort_column] | number:0 $}</a>
-                                    <a ng-if="!c.is_extra_data" ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b.coparent)">{$ b.coparent[c.sort_column] | number:0 $}</a>
+                                    <a ng-if="c.is_extra_data" ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b.coparent)">{$ b.coparent.extra_data[c.sort_column] | number:0 $}</a>
+                                    <a ng-if="!c.is_extra_data" ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b.coparent)">{$ b.coparent[c.sort_column] | number:0 $}</a>
                                   </span>
                                   <span ng-switch-when="link" class="is_aligned_right">
-                                    <a ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b.coparent)">{$ b.coparent[c.sort_column] | stripImportPrefix $}</a>
+                                    <a ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b.coparent)">{$ b.coparent[c.sort_column] | stripImportPrefix $}</a>
                                   </span>
                                   <span ng-switch-when="label">
                                     <sd-label name="{$ b.coparent[c.sort_column].name $}" color="{$ b.coparent[c.sort_column].color $}"></sd-label>
                                   </span>
                                   <span ng-switch-default class="is_aligned_right">
-                                    <a ng-href="#/data/matching/{$ import_file.id $}" ng-click="match_building(b.coparent)">{$ b.coparent[c.sort_column] | date:'shortDate' $}</a>
+                                    <a ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b.coparent)">{$ b.coparent[c.sort_column] | date:'shortDate' $}</a>
                                   </span>
                                 </span>
                             </td>
