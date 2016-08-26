@@ -12,11 +12,12 @@ import json
 import re
 
 from django.db.models import Q
-from django.db.models.query import QuerySet
 from seed.lib.superperms.orgs.models import Organization
 from .models import (
     BuildingSnapshot,
     ColumnMapping,
+    PropertyState,
+    TaxLotState,
 )
 from .utils.mapping import get_mappable_types
 from .utils import search as search_utils
@@ -29,6 +30,18 @@ def convert_to_js_timestamp(timestamp):
         duplicated code with seed utils due to circular imports
     """
     return int(timestamp.strftime("%s")) * 1000
+
+
+def get_building_fieldnames():
+    """returns a list of field names for the BuildingSnapshot class/model that
+    will be searched against
+    """
+    return [
+        'pm_property_id',
+        'tax_lot_id',
+        'address_line_1',
+        'property_name',
+    ]
 
 
 def search_buildings(q, fieldnames=None, queryset=None):
@@ -49,7 +62,7 @@ def search_buildings(q, fieldnames=None, queryset=None):
     qgroup = reduce(operator.or_, (
         Q(**{fieldname + '__icontains': q}) for fieldname in fieldnames
     ))
-return queryset.filter(qgroup)
+    return queryset.filter(qgroup)
 
 
 def _search(model, q, fieldnames, queryset):
@@ -70,27 +83,27 @@ def _search(model, q, fieldnames, queryset):
 
 def search_properties(q, fieldnames=None, queryset=None):
     if queryset is None:
-        return PropertySnapshot.objects.none()
+        return PropertyState.objects.none()
     if fieldnames is None:
         fieldnames = [
             'pm_parent_property_id'
             'jurisdiction_property_identifier'
-            'address_line_0',
+            'address_line_1',
             'property_name',
         ]
-    return _search(PropertySnapshot, q, fieldnames, queryset)
+    return _search(PropertyState, q, fieldnames, queryset)
 
 
 def search_taxlots(q, fieldnames=None, queryset=None):
     if queryset is None:
-        return TaxLotSnapshot.objects.none()
+        return TaxLotState.objects.none()
     if fieldnames is None:
         fieldnames = [
             'jurisdiction_taxlot_identifier',
             'address'
             'block_number'
         ]
-    return _search(TaxlotSnapshot, q, fieldnames, queryset)
+    return _search(TaxLotState, q, fieldnames, queryset)
 
 
 def generate_paginated_results(queryset, number_per_page=25, page=1,
