@@ -12,7 +12,12 @@
     </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+    <div class="section_nav">
+        <a id="building-list" href="#/buildings">Buildings List</a>
+        <a id="list-settings" href="#/buildings/settings">List Settings</a>
+        <a id="reports" href="#/buildings/reports" class="active">Reports</a>
+        <a id="labels" href="#/buildings/labels">Labels</a>
+    </div>
 </div>
 <div class="section building-reports">
     <div class="section_content_container">

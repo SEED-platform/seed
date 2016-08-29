@@ -4,7 +4,6 @@
  */
 angular.module('BE.seed.controller.menu', [])
 .controller('seed_menu_controller', [
-  '$rootScope',
   '$scope',
   '$http',
   '$location',
@@ -19,10 +18,9 @@ angular.module('BE.seed.controller.menu', [])
   'user_service',
   'dataset_service',
   '$timeout',
-  '$state',
+  '$route',
   '$cookies',
   function(
-    $rootScope,
     $scope,
     $http,
     $location,
@@ -37,7 +35,7 @@ angular.module('BE.seed.controller.menu', [])
     user_service,
     dataset_service,
     $timeout,
-    $state,
+    $route,
     $cookies) {
 
     // initial state of css classes for menu and sidebar
@@ -63,23 +61,19 @@ angular.module('BE.seed.controller.menu', [])
     $scope.menu.user = {};
     $scope.is_initial_state = $scope.expanded_controller === $scope.collapsed_controller;
 
-    $rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error) {
+    $scope.$on('$routeChangeError', function(event, current, previous, rejection) {
         $scope.menu.loading = false;
         $scope.menu.route_load_error = true;
-        console.error(error);
-        if (error === 'not authorized' || error === 'Your page could not be located!') {
-            $scope.menu.error_message = error;
+        if (rejection === 'not authorized' || rejection === 'Your page could not be located!') {
+            $scope.menu.error_message = rejection;
         }
     });
-    $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams, options) {
-        $scope.menu.loading = toState.controller === 'mapping_controller';
+    $scope.$on('$routeChangeStart', function($event, next, current) {
+        $scope.menu.loading = next.controller === 'mapping_controller';
     });
-    $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+    $scope.$on('$routeChangeSuccess', function() {
         $scope.menu.loading = false;
         $scope.menu.route_load_error = false;
-    });
-    $rootScope.$on('$stateNotFound', function (event, unfoundState, fromState, fromParams) {
-        $log.error('State not found:', unfoundState.to);
     });
     $scope.$on('app_error', function(event, data){
         $scope.menu.route_load_error = true;
@@ -286,7 +280,7 @@ angular.module('BE.seed.controller.menu', [])
     $scope.set_user_org = function (org) {
         user_service.set_organization(org);
         $scope.menu.user.organization = org;
-        $state.reload();
+        $route.reload();
         init();
     };
 

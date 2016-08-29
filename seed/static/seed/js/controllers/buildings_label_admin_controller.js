@@ -8,18 +8,13 @@ angular.module('BE.seed.controller.label_admin', [])
     '$scope',
     '$log',
     'urls',
-    'organization_payload',
-    'labels_payload',
-    'auth_payload',
     'label_service',
     'simple_modal_service',
     'Notification',
-function ($scope, $log, urls, organization_payload, labels_payload, auth_payload, label_service, simple_modal_service, notification) {
-    $scope.org = organization_payload.organization;
-    $scope.auth = auth_payload.auth;
+function ($scope, $log, urls, label_service, simple_modal_service, notification) {
 
     $scope.available_colors = label_service.get_available_colors();
-    $scope.labels = labels_payload.results;
+    $scope.labels = [];
 
     function initialize_new_label() {
         $scope.new_label = {color:'gray', label:'default', name:''};
@@ -42,7 +37,7 @@ function ($scope, $log, urls, organization_payload, labels_payload, auth_payload
         if (form.$invalid) {
             return;
         }
-        label_service.create_label_for_org($scope.org.id, $scope.new_label).then(
+        label_service.create_label($scope.new_label).then(
             function(result){
                 get_labels();
                 var msg = 'Created label ' + getTruncatedName($scope.new_label.name);
@@ -94,7 +89,7 @@ function ($scope, $log, urls, organization_payload, labels_payload, auth_payload
     $scope.saveLabel = function(label, id, index) {
         //Don't update $scope.label until a 'success' from server
         angular.extend(label, {id: id});
-        label_service.update_label_for_org($scope.org.id, label).then(
+        label_service.update_label(label).then(
             function(data){
                 var msg = 'Label updated.';
                 notification.primary(msg);
@@ -119,7 +114,7 @@ function ($scope, $log, urls, organization_payload, labels_payload, auth_payload
         simple_modal_service.showModal(modalOptions).then(
             function(result){
                 //user confirmed delete, so go ahead and do it.
-                label_service.delete_label_for_org($scope.org.id, label).then(
+                label_service.delete_label(label).then(
                     function(result){
                         //server deleted label, so remove it locally
                         $scope.labels.splice(index, 1);
@@ -139,21 +134,26 @@ function ($scope, $log, urls, organization_payload, labels_payload, auth_payload
 
 
 
-   function get_labels() {
-       // gets all labels for an org user
-       label_service.get_labels_for_org($scope.org.id).then(function(data) {
-           // resolve promise
-           $scope.labels = data.results;
-       });
-   }
+   function get_labels(building) {
+        // gets all labels for an org user
+        label_service.get_labels().then(function(data) {
+            // resolve promise
+            $scope.labels = data.results;
+        });
+    }
 
-   function getTruncatedName(name) {
-       if (name && name.length>20){
-            name = name.substr(0, 20) + '...';
-       }
-       return name;
-   }
+    function getTruncatedName(name) {
+        if (name && name.length>20){
+             name = name.substr(0, 20) + '...';
+        }
+        return name;
+    }
 
-   initialize_new_label();
+    function init(){
+       get_labels();
+       initialize_new_label();
+    }
+    init();
 
-}]);
+}
+]);

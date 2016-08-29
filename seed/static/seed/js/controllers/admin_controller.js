@@ -5,12 +5,11 @@
 angular.module('BE.seed.controller.admin', [])
 .controller('seed_admin_controller', [
   '$scope',
-  '$state',
   'user_service',
   'organization_service',
   'uploader_service',
   'user_profile_payload',
-  function($scope, $state, user_service, organization_service, uploader_service, user_profile_payload) {
+  function($scope, user_service, organization_service, uploader_service, user_profile_payload) {
     $scope.user = {};
     $scope.temp_users = [];
     $scope.org = {};
@@ -195,7 +194,7 @@ angular.module('BE.seed.controller.admin', [])
                     org.remove_message = 'success';
                     if (parseInt(org.id) === parseInt(user_service.get_organization().id)) {
                         // Reload page if deleting current org.
-                        $state.reload();
+                        window.location.reload();
                     } else {
                         get_organizations();
                         $scope.$emit('organization_deleted');

@@ -1,7 +1,8 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a class="page_action" ui-sref="dataset_list"><i class="fa fa-chevron-left"></i> Data Sets</a>
+            <a class="page_action" href="#/data"><i class="fa fa-chevron-left"></i> Data Sets</a>
+          
         </div>
         <div class="page_title">
             <h1>{$ dataset.name $}</h1>
@@ -29,12 +30,12 @@
                         <tbody>
                             <tr ng-repeat="f in dataset.importfiles" class="file_to_import " ng-class="f.status_classes">
                                 <td class="data_file_name">{$ f.name $}</td>
-                                <td>
+                                <td>    
                                     <a class="delete_link" ng-click="confirm_delete(f)"><i class="fa fa-trash-o"></i></a>
                                 </td>
                                 <td class="is_aligned_right">{$ f.num_rows || 0 $}</td>
-                                <td><a id="data-mapping-{$ $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="mapping({importfile_id: f.id})" ng-disabled="!f.num_rows">{$ f.number_of_mappings $} Data Mapping</a></td>
-                                <td><a id="data-matching-{$ $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="matching({importfile_id: f.id})" ng-disabled="!f.num_rows">{$ f.number_of_matchings $} Data Matching</a></td>
+                                <td><a id="data-mapping-{$ $index $}" role="button" class="btn btn-sm btn-primary" ng-href="#/data/mapping/{$ f.id $}" ng-disabled="!f.num_rows">{$ f.number_of_mappings $} Data Mapping</a></td>
+                                <td><a id="data-matching-{$ $index $}" role="button" class="btn btn-sm btn-primary" ng-href="#/data/matching/{$ f.id $}" ng-disabled="!f.num_rows">{$ f.number_of_matchings $} Data Matching</a></td>
                             </tr>
                         </tbody>
                     </table>
