@@ -13,9 +13,10 @@ from django_pgjson.fields import JsonField
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import Cycle
-from seed.models import PropertyView
-from seed.models import StatusLabel
+from seed.models import (
+    Cycle,
+    StatusLabel,
+)
 
 
 class TaxLot(models.Model):
@@ -80,7 +81,8 @@ class TaxLotView(models.Model):
         return TaxLotAuditLog.objects.create(**kwargs)
 
     def update_state(self, new_state, **kwargs):
-        view_audit_log = TaxLotAuditLog.objects.filter(state=self.state).first()
+        view_audit_log = TaxLotAuditLog.objects.filter(
+            state=self.state).first()
         if not view_audit_log:
             view_audit_log = self.initialize_audit_logs(
                 description="Initial audit log added on update.",
@@ -120,34 +122,20 @@ class TaxLotView(models.Model):
         return self._import_filename
 
 
-class TaxLotProperty(models.Model):
-    property_view = models.ForeignKey(PropertyView)
-    taxlot_view = models.ForeignKey(TaxLotView)
-
-    cycle = models.ForeignKey(Cycle)
-
-    # If there is a complex TaxLot/Property association, this field
-    # lists the "main" tax lot that Properties should be reported under.
-    # User controlled flag.
-    primary = models.BooleanField(default=True)
-
-    def __unicode__(self):
-        return u'M2M Property View %s / TaxLot View %s' % (
-            self.property_view_id, self.taxlot_view_id)
-
-    class Meta:
-        unique_together = ('property_view', 'taxlot_view',)
-
-
 class TaxLotAuditLog(models.Model):
     organization = models.ForeignKey(Organization)
-    parent1 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True, related_name='taxlotauditlog__parent1')
-    parent2 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True, related_name='taxlotauditlog__parent2')
-    state = models.ForeignKey('TaxLotState', related_name='taxlotauditlog__state')
-    view = models.ForeignKey('TaxLotView', related_name='taxlotauditlog__view', null=True)
+    parent1 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True,
+                                related_name='taxlotauditlog__parent1')
+    parent2 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True,
+                                related_name='taxlotauditlog__parent2')
+    state = models.ForeignKey('TaxLotState',
+                              related_name='taxlotauditlog__state')
+    view = models.ForeignKey('TaxLotView', related_name='taxlotauditlog__view',
+                             null=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
     import_filename = models.CharField(max_length=255, null=True, blank=True)
-    record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True, blank=True)
+    record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True,
+                                      blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True)

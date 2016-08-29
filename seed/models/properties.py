@@ -14,10 +14,7 @@ from django_pgjson.fields import JsonField
 from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
-    COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW,
-    TaxLot,
-    TaxLotState,
-    TaxLotView
+    COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW
 )
 from seed.utils.generic import split_model_fields, obj_to_dict
 
@@ -139,16 +136,16 @@ class PropertyState(models.Model):
             end=end
         )
 
-        tls, _ = TaxLotState.objects.get_or_create(
-            jurisdiction_taxlot_identifier=tax_lot_id
-        )
+        # tls, _ = TaxLotState.objects.get_or_create(
+        #     jurisdiction_taxlot_identifier=tax_lot_id
+        # )
 
         logger.debug("the cycle is {}".format(cycle))
         logger.debug("the taxlotstate is {}".format(tls))
-        tlv, _ = TaxLotView.objects.get_or_create(
-            state=tls,
-            cycle=cycle,
-        ).first()
+        # tlv, _ = TaxLotView.objects.get_or_create(
+        #     state=tls,
+        #     cycle=cycle,
+        # ).first()
         #
         logger.debug("taxlotview is {}".format(tlv))
 
@@ -179,19 +176,19 @@ class PropertyState(models.Model):
         )
 
         # create 1 to 1 pointless taxlots for now
-        tl = TaxLot.objects.create(
-            organization=org
-        )
-
-        tls, _ = TaxLotState.objects.get_or_create(
-            jurisdiction_taxlot_identifier=tax_lot_id
-        )
-
-        tlv, _ = TaxLotView.objects.get_or_create(
-            taxlot=tl,
-            state=tls,
-            cycle=cycle,
-        )
+        # tl = TaxLot.objects.create(
+        #     organization=org
+        # )
+        #
+        # tls, _ = TaxLotState.objects.get_or_create(
+        #     jurisdiction_taxlot_identifier=tax_lot_id
+        # )
+        #
+        # tlv, _ = TaxLotView.objects.get_or_create(
+        #     taxlot=tl,
+        #     state=tls,
+        #     cycle=cycle,
+        # )
 
         self.save()
 
@@ -242,10 +239,10 @@ class PropertyState(models.Model):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-            }
+                }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-            }
+                }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk
@@ -368,15 +365,20 @@ class PropertyView(models.Model):
 
 class PropertyAuditLog(models.Model):
     organization = models.ForeignKey(Organization)
-    parent1 = models.ForeignKey('PropertyAuditLog', blank=True, null=True, related_name='propertyauditlog__parent1')
-    parent2 = models.ForeignKey('PropertyAuditLog', blank=True, null=True, related_name='propertyauditlog__parent2')
+    parent1 = models.ForeignKey('PropertyAuditLog', blank=True, null=True,
+                                related_name='propertyauditlog__parent1')
+    parent2 = models.ForeignKey('PropertyAuditLog', blank=True, null=True,
+                                related_name='propertyauditlog__parent2')
 
-    state = models.ForeignKey('PropertyState', related_name='propertyauditlog__state')
-    view = models.ForeignKey('PropertyView', related_name='propertyauditlog__view', null=True)
+    state = models.ForeignKey('PropertyState',
+                              related_name='propertyauditlog__state')
+    view = models.ForeignKey('PropertyView',
+                             related_name='propertyauditlog__view', null=True)
 
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
     import_filename = models.CharField(max_length=255, null=True, blank=True)
-    record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True, blank=True)
+    record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True,
+                                      blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True)
