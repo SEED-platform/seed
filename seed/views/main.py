@@ -307,7 +307,7 @@ def export_buildings(request):
         for field in selected_fields:
             components = field.split("__", 1)
             if (components[0] == 'project_building_snapshots'
-                and len(components) > 1):
+                    and len(components) > 1):
                 _selected_fields.append(components[1])
             else:
                 _selected_fields.append("building_snapshot__%s" % field)
@@ -1307,7 +1307,7 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
     columns = list(Column.objects.select_related('unit').filter(
         Q(mapped_mappings__super_organization_id=org_id) |
         Q(organization__isnull=True)).exclude(column_name__in=md.keys())
-                   )
+    )
     md.add_extra_data(columns)
 
     # Portfolio manager files have their own mapping scheme
@@ -1341,7 +1341,6 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
                 suggested_mappings[m][0] = u''
             if dest is None:
                 suggested_mappings[m][1] = u''
-
 
     result['suggested_column_mappings'] = suggested_mappings
     result['column_names'] = md.building_columns()
@@ -1512,7 +1511,7 @@ def get_first_five_rows(request):
             dict(
                 zip(import_file.first_row_columns, row)
             ) for row in rows
-            ]
+        ]
     }
 
 
@@ -1644,7 +1643,7 @@ def save_column_mappings(request):
             [
                 column_mapping.column_mapped.add(dest_col)
                 for dest_col in dest_cols
-                ]
+            ]
 
         column_mapping.user = request.user
         column_mapping.save()
@@ -2471,7 +2470,7 @@ def get_building_summary_report_data(request):
     # Read in x and y vars requested by client
     try:
         orgs = [request.GET[
-                    'organization_id']]  # How should we capture user orgs here?
+            'organization_id']]  # How should we capture user orgs here?
     except Exception as e:
         msg = "Error while calling the API function get_scatter_data_series, missing parameter"
         _log.error(msg)
@@ -2615,11 +2614,11 @@ def get_raw_report_data(from_date, end_date, orgs, x_var, y_var):
         bldg_counts[year_ending_year]["buildings"].add(canonical_building_id)
 
         if (
-                        (year_ending_year not in data[
-                            canonical_building_id]) or
-                        (not data[canonical_building_id][year_ending_year]) or
-                    (data[canonical_building_id][year_ending_year][
-                         "release_date"] < release_date)
+            (year_ending_year not in data[
+                canonical_building_id]) or
+            (not data[canonical_building_id][year_ending_year]) or
+            (data[canonical_building_id][year_ending_year][
+                "release_date"] < release_date)
         ):
             bldg_x = get_attr_f(snapshot, x_var)
             bldg_y = get_attr_f(snapshot, y_var)
@@ -2827,7 +2826,7 @@ def get_building_report_data(request):
         x_var = request.GET['x_var']
         y_var = request.GET['y_var']
         orgs = [request.GET[
-                    'organization_id']]  # How should we capture user orgs here?
+            'organization_id']]  # How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
 
@@ -3034,7 +3033,7 @@ def get_aggregated_building_report_data(request):
         x_var = request.GET['x_var']
         y_var = request.GET['y_var']
         orgs = [request.GET[
-                    'organization_id']]  # How should we capture user orgs here?
+            'organization_id']]  # How should we capture user orgs here?
         from_date = request.GET['start_date']
         end_date = request.GET['end_date']
     except KeyError as e:
@@ -3116,10 +3115,10 @@ def get_aggregated_building_report_data(request):
                 chart_data.append({
                     'yr_e': yr_e,
                     'x': median([
-                                    getattr(b, x_var)
-                                    for b in buildings_in_uses if
-                                    getattr(b, x_var)
-                                    ]),
+                        getattr(b, x_var)
+                        for b in buildings_in_uses if
+                        getattr(b, x_var)
+                    ]),
                     'y': use.capitalize()
                 })
 
@@ -3137,12 +3136,12 @@ def get_aggregated_building_report_data(request):
                 chart_data.append({
                     'yr_e': yr_e,
                     'x': median([
-                                    getattr(b, x_var)
-                                    for b in buildings_in_decade if
-                                    getattr(b, x_var)
-                                    ]),
+                        getattr(b, x_var)
+                        for b in buildings_in_decade if
+                        getattr(b, x_var)
+                    ]),
                     'y': '%s-%s' % (decade, '%s9' % str(decade)[:-1])
-                # 1990-1999
+                    # 1990-1999
                 })
 
         elif y_var == 'gross_floor_area':
@@ -3177,10 +3176,10 @@ def get_aggregated_building_report_data(request):
                 chart_data.append({
                     'yr_e': yr_e,
                     'x': median([
-                                    getattr(b, x_var)
-                                    for b in buildings_in_range if
-                                    getattr(b, x_var)
-                                    ]),
+                        getattr(b, x_var)
+                        for b in buildings_in_range if
+                        getattr(b, x_var)
+                    ]),
                     'y': y_display_map[range_floor]
                 })
 
