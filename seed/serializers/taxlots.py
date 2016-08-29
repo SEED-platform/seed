@@ -12,17 +12,20 @@ from seed.models import (
 
 
 class TaxLotPropertySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = TaxLotProperty
 
 
 class TaxLotViewSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = TaxLotView
         depth = 1
 
 
 class TaxLotStateSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = TaxLotState
     extra_data = serializers.JSONField()
