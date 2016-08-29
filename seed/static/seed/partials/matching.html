@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a class="page_action" ng-href="#/data/{$ import_file.dataset.id $}"><i class="fa fa-chevron-left"></i> {$ import_file.dataset.name $}</a>
+            <a class="page_action" ui-sref="dataset_detail({dataset_id: import_file.dataset.id})"><i class="fa fa-chevron-left"></i> {$ import_file.dataset.name $}</a>
         </div>
         <div class="page_title">
             <h1>Data Matching ({$ import_file.dataset.name $})</h1>
@@ -48,39 +48,39 @@
     </div>
     <div class="section_header_container has_no_border">
         <div class="section_header fixed_height">
-            <div    class="left section_action_container row matching_toggle" 
+            <div    class="left section_action_container row matching_toggle"
                     style="margin-left:0px;">
-         
-                <button type="button" 
+
+                <button type="button"
                         ng-hide="show_building_list"
-                        class="btn btn-primary btn-sm" 
-                        ng-disabled="duplicates_present()" 
+                        class="btn btn-primary btn-sm"
+                        ng-disabled="duplicates_present()"
                         ng-click="back_to_list()"
                         style="margin-right:10px;"
                         >
                     <i class="fa fa-chevron-left"></i>Back to List
                 </button>
-                <button type="button" 
+                <button type="button"
                         class="btn btn-primary btn-sm"
                         ng-click="do_update_filters()">
                     Update Filters
                 </button>
-                
+
             </div>
             <div class="right section_action_container section_action_btn">
-                <button type="button" 
-                        class="btn btn-default btn-sm" 
+                <button type="button"
+                        class="btn btn-default btn-sm"
                         ng-click="open_edit_columns_modal()">
                     <i class="fa fa-columns"></i>View/Hide Columns
                 </button>
             </div>
         </div>
     </div>
-    
+
     <!-- matching list container -->
     <ng-include src="urls.static_url + 'seed/partials/matching_list_table.html'" ng-show="show_building_list">
     </ng-include>
-    
+
     <!-- matching detail container -->
     <ng-include src="urls.static_url + 'seed/partials/matching_detail_table.html'" ng-hide="show_building_list">
         <!-- matching detail table loads here -->

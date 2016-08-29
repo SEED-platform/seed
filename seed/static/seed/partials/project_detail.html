@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a href="#/projects" class="page_action"><i class="fa fa-chevron-left"></i> Projects</a>
+            <a ui-sref="projects" class="page_action"><i class="fa fa-chevron-left"></i> Projects</a>
         </div>
         <div class="page_title">
             <h1><i class="fa fa-folder-o"></i>
@@ -12,9 +12,7 @@
     </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav">
-        <a ng-href="#/projects/{$ user.project_id $}" class="active">Project Buildings</a><a ng-href="#/projects/{$ user.project_id $}/settings">List Settings</a>
-    </div>
+    <div class="section_nav" ng-include="urls.static_url + 'seed/partials/project_nav.html'"></div>
 </div>
 <div class="section">
     <div class="alert_container" ng-show="show_alert">
@@ -48,14 +46,14 @@
                     </div>
                 </div>
                 <div class="btn-group" style="margin-left:20px;">
-                    <button type="button" 
+                    <button type="button"
                             class="btn btn-primary btn-sm"
                             ng-click="do_update_project_buildings_filters()">
                         Update Filters
                     </button>
-                </div>   
+                </div>
             </div>
-            <div class="center section_action_container"><span class="field_title">Type of Submittal:</span> {$ project.compliance_type || "None" $} 
+            <div class="center section_action_container"><span class="field_title">Type of Submittal:</span> {$ project.compliance_type || "None" $}
                 <span ng-show="project.is_compliance">
                     <span class="field_title">Year Ending:</span> {$ project.end_date | date:'MM/dd/yyyy' $} <span class="field_title">Deadline:</span> {$ project.deadline_date | date:'MM/dd/yyyy' $}
                 </span>

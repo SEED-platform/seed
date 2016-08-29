@@ -200,7 +200,7 @@ describe('controller: building_detail_controller', function(){
         }];
         building_detail_ctrl = controller('building_detail_controller', {
             $scope: building_detail_ctrl_scope,
-            $routeParams: {
+            $stateParams: {
                 building_id: 1,
                 project_id: 2
             },

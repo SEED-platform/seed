@@ -5,21 +5,19 @@ angular.module('BE.seed.service.label',
                                     '$log',
                                     'user_service',
                                     'label_helper_service',
-                                    'urls',
                         function ( $http,
                                     $q,
                                     $timeout,
                                     $log,
                                     user_service,
-                                    label_helper_service,
-                                    urls
+                                    label_helper_service
                                     ) {
 
 
     /** Label Service:
         --------------------------------------------------
         Provides methods to CRUD labels on the server
-        as well as apply and remove labels to buildings.
+        as well as apply and remove labels to properties.
 
         Note: This is the first service to use proper REST verbs and REST-based
         server APIs (provided by django-rest-framework).
@@ -30,8 +28,8 @@ angular.module('BE.seed.service.label',
 
     /** Returns an array of labels.
 
-        @param {array} selected_buildings       An array of building ids corresponding to
-                                                selected buildings (should be empty if
+        @param {array} selected_properties      An array of properties ids corresponding to
+                                                selected properties (should be empty if
                                                 select_all_checkbox is true).
         @param {boolean} select_all_checkbox    A boolean indicating whether user checked
                                                 'Select all' checkbox.
@@ -48,7 +46,7 @@ angular.module('BE.seed.service.label',
             label {string}          The css class, usually in bootstrap, used to generate
                                     the color style (poorly named, needs refactoring).
             is_applied {boolean}    If a search object was passed in, this boolean
-                                    indicates if buildings in the current filtered
+                                    indicates if properties in the current filtered
                                     set have this label.
 
         For example...
@@ -64,19 +62,23 @@ angular.module('BE.seed.service.label',
         ]
     */
 
-    function get_labels(selected_buildings, select_all_checkbox, search_params) {
+    function get_labels(selected_properties, select_all_checkbox, search_params) {
+        return get_labels_for_org(user_service.get_organization().id);
+    }
+
+    function get_labels_for_org(org_id, selected_properties, select_all_checkbox, search_params) {
         var defer = $q.defer();
 
         var searchArgs = _.assignIn({
-            selected_buildings: selected_buildings,
+            selected_properties: selected_properties,
             select_all_checkbox: select_all_checkbox,
-            organization_id: user_service.get_organization().id
+            organization_id: org_id
         }, search_params);
 
         $http({
             method: 'GET',
             url: window.BE.urls.label_list,
-            params: searchArgs,
+            params: searchArgs
         }).success(function(data, status, headers, config) {
 
             if (_.isEmpty(data.results)) {
@@ -106,13 +108,17 @@ angular.module('BE.seed.service.label',
                                     to the newly created label object.
     */
     function create_label(label){
+        return create_label_for_org(user_service.get_organization().id, label);
+    }
+
+    function create_label_for_org(org_id, label){
         var defer = $q.defer();
         $http({
             method: 'POST',
             url: window.BE.urls.label_list,
             data: label,
             params: {
-                organization_id: user_service.get_organization().id
+                organization_id: org_id
             }
         }).success(function(data, status, headers, config) {
             if(data){
@@ -138,13 +144,17 @@ angular.module('BE.seed.service.label',
                                 to the updated label object.
     */
     function update_label(label){
+        return update_label_for_org(user_service.get_organization().id, label);
+    }
+
+    function update_label_for_org(org_id, label){
         var defer = $q.defer();
         $http({
             method: 'PUT',
             url: window.BE.urls.label_list + label.id + '/',
             data: label,
             params: {
-                organization_id: user_service.get_organization().id
+                organization_id: org_id
             }
         }).success(function(data, status, headers, config) {
             if(data){
@@ -167,12 +177,16 @@ angular.module('BE.seed.service.label',
                                     or an error if not.
     */
     function delete_label(label){
+        return delete_label_for_org(user_service.get_organization().id, label);
+    }
+
+    function delete_label_for_org(org_id, label){
         var defer = $q.defer();
         $http({
             method: 'DELETE',
             url: window.BE.urls.label_list + label.id + '/',
             params: {
-                organization_id: user_service.get_organization().id
+                organization_id: org_id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -183,18 +197,18 @@ angular.module('BE.seed.service.label',
     }
 
 
-    /* FUNCTIONS FOR LABELS WITHIN BUILDINGS  */
-    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+    /* FUNCTIONS FOR LABELS WITHIN PROPERTIES  */
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
     /*
 
-    This method updates selected buildings with a group of "add" labels
-    and a group of "remove" labels.
+    This method updates selected Properties with a group
+    of "add" labels and a group of "remove" labels.
 
 
-    @param {array} add_label_ids            An array of label ids to apply to selected buildings.
-    @param {array} remove_label_ids         An array of label ids to remove from selected buildings.
-    @param {array} selected_buildings       An array of building ids corresponding to selected buildings
+    @param {array} add_label_ids            An array of label ids to apply to selected properties.
+    @param {array} remove_label_ids         An array of label ids to remove from selected properties.
+    @param {array} selected_properties      An array of Property ids corresponding to selected properties
                                             (should be empty if select_all_checkbox is true).
     @param {boolean} select_all_checkbox    A boolean indicating whether user checked 'Select all' checkbox.
     @param {object} search_params           A reference to the Search object, which includes
@@ -204,13 +218,14 @@ angular.module('BE.seed.service.label',
                                             (success or error).
 
     */
-    function update_building_labels(add_label_ids, remove_label_ids, selected_buildings, select_all_checkbox, search_params) {
+    function update_property_labels(add_label_ids, remove_label_ids, selected_properties, select_all_checkbox, search_params) {
+
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: window.BE.urls.update_building_labels,
+            url: window.BE.urls.property_labels,
             params: _.assignIn({
-                selected_buildings: selected_buildings,
+                selected_properties: selected_properties,
                 select_all_checkbox: select_all_checkbox,
                 organization_id: user_service.get_organization().id
             }, search_params),
@@ -225,6 +240,49 @@ angular.module('BE.seed.service.label',
         });
         return defer.promise;
     }
+
+
+    /*
+    This method updates selected Tax Lots with a group
+    of "add" labels and a group of "remove" labels.
+
+
+    @param {array} add_label_ids            An array of label ids to apply to selected properties.
+    @param {array} remove_label_ids         An array of label ids to remove from selected properties.
+    @param {array} selected_properties      An array of Tax Lot ids corresponding to selected Tax Lots
+                                            (should be empty if select_all_checkbox is true).
+    @param {boolean} select_all_checkbox    A boolean indicating whether user checked 'Select all' checkbox.
+    @param {object} search_params           A reference to the Search object, which includes
+                                            properties for active filters.
+
+    @return {object}                        A promise object that resolves server response
+                                            (success or error).
+
+    */
+    function update_taxlot_labels(add_label_ids, remove_label_ids, selected_taxlots, select_all_checkbox, search_params) {
+
+        var defer = $q.defer();
+        $http({
+            method: 'PUT',
+            url: window.BE.urls.taxlot_labels,
+            params: _.assignIn({
+                selected_taxlots: selected_taxlots,
+                select_all_checkbox: select_all_checkbox,
+                organization_id: user_service.get_organization().id
+            }, search_params),
+            data: {
+                add_label_ids: add_label_ids,
+                remove_label_ids: remove_label_ids
+            }
+        }).success(function(data, status, headers, config) {
+            defer.resolve(data);
+        }).error(function(data, status, headers, config) {
+            defer.reject(data, status);
+        });
+        return defer.promise;
+
+    }
+
 
     /*  Gets the list of supported colors for labels, based on default bootstrap
         styles for labels. These are defined locally.
@@ -272,6 +330,10 @@ angular.module('BE.seed.service.label',
         ];
     }
 
+    /* "PRIVATE" METHODS */
+    /* ~~~~~~~~~~~~~~~~~ */
+
+
     /*  Add a few properties to the label object so that it
         works well with UI components.
     */
@@ -283,16 +345,24 @@ angular.module('BE.seed.service.label',
         return lbl;
     }
 
+
+
+
     /* Public API */
 
     var label_factory = {
 
         //functions
         get_labels : get_labels,
+        get_labels_for_org : get_labels_for_org,
         create_label : create_label,
+        create_label_for_org : create_label_for_org,
         update_label : update_label,
+        update_label_for_org : update_label_for_org,
         delete_label : delete_label,
-        update_building_labels : update_building_labels,
+        delete_label_for_org : delete_label_for_org,
+        update_property_labels : update_property_labels,
+        update_taxlot_labels : update_taxlot_labels,
         get_available_colors : get_available_colors
 
     };

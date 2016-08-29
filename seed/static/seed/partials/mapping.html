@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a class="page_action" ng-href="#/data/{$ import_file.dataset.id $}"><i class="fa fa-chevron-left"></i> {$ import_file.dataset.name $}</a>
+            <a class="page_action" ui-sref="dataset_detail({dataset_id: import_file.dataset.id})"><i class="fa fa-chevron-left"></i> {$ import_file.dataset.name $}</a>
 
         </div>
         <div class="page_title">
@@ -115,7 +115,7 @@
                             </td>
                         </tr>
                     </tbody>
-                    
+
                     <tbody>
                         <tr>
                             <td></td>
@@ -174,16 +174,16 @@
             <div class="left_40 section_action_container">
                 <button type="button" class="btn btn-primary" ng-click="review_mappings=false; show_mapped_buildings=false"><i class="fa fa-chevron-left"></i> Back to Mapping</button>
                 <div class="btn-group" style="margin-left:20px;">
-                    <button type="button" 
+                    <button type="button"
                             class="btn btn-primary btn-sm"
                             ng-click="do_update_filters()">
                         Update Filters
                     </button>
-                </div>   
+                </div>
             </div>
             <div class="right_60 section_action_container section_action_btn">
                 <button type="button" class="btn btn-default" ng-click="open_cleansing_modal()"><i class="fa fa-exclamation-triangle"></i>Data Cleansing Results</button>
-                <a ng-href="#/data/mapping/{$ import_file.id $}"><button id="save-mapping" type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button></a>
+                <a ui-sref="mapping({importfile_id: import_file.id})"><button id="save-mapping" type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button></a>
             </div>
         </div>
     </div>
@@ -202,7 +202,7 @@
                 <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done">Review Mapped Data</button>
         </div>
         <div class="col-lg-6 col-sm-6" ng-show="show_mapped_buildings">
-            <a ng-href="#/data/mapping/{$ import_file.id $}"><button type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button></a>
+            <a ui-sref="mapping({importfile_id: import_file.id})"><button type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button></a>
         </div>
     </div>
 </div>

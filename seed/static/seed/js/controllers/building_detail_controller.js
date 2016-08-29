@@ -5,7 +5,7 @@
 angular.module('BE.seed.controller.building_detail', [])
 .controller('building_detail_controller', [
   '$scope',
-  '$routeParams',
+  '$stateParams',
   '$uibModal',
   '$log',
   'building_services',
@@ -19,10 +19,10 @@ angular.module('BE.seed.controller.building_detail', [])
   'audit_service',
   'label_helper_service',
   'default_columns',
-  function($scope, $routeParams, $uibModal, $log, building_services, project_service, building_payload, all_columns, audit_payload, urls, $filter, $location, audit_service, label_helper_service, default_columns) {
+  function($scope, $stateParams, $uibModal, $log, building_services, project_service, building_payload, all_columns, audit_payload, urls, $filter, $location, audit_service, label_helper_service, default_columns) {
     $scope.user = {};
-    $scope.user.building_id = $routeParams.building_id;
-    $scope.user.project_slug = $routeParams.project_id;
+    $scope.user.building_id = $stateParams.building_id;
+    $scope.user.project_slug = $stateParams.project_id;
     $scope.projects = [];
     $scope.building = building_payload.building;
     $scope.user_role = building_payload.user_role;
