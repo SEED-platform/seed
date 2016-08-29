@@ -582,7 +582,7 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
     if previous_mapping.is_direct():
         column_names = column_names[0]
 
-    return column_names, 100
+    return 'Unknown', column_names, 100
 
 
 def get_column_mappings(organization):

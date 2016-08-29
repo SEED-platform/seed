@@ -1329,16 +1329,19 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
         # All other input types
         suggested_mappings = mapper.build_column_mapping(
             import_file.first_row_columns,
-            md.keys(),  # column_types.keys(),
+            md.keys_with_table_names(),
             previous_mapping=get_column_mapping,
             map_args=[organization],
             thresh=20  # percentage match we require
         )
-        # replace None with empty string for column names
+        # replace None with empty string for column names and tables
         for m in suggested_mappings:
-            dest, conf = suggested_mappings[m]
-            if dest is None:
+            table, dest, conf = suggested_mappings[m]
+            if table is None:
                 suggested_mappings[m][0] = u''
+            if dest is None:
+                suggested_mappings[m][1] = u''
+
 
     result['suggested_column_mappings'] = suggested_mappings
     result['column_names'] = md.building_columns()

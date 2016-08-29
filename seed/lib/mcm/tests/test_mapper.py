@@ -8,8 +8,7 @@ import copy
 from unittest import TestCase
 
 from seed.lib.mcm import cleaners, mapper
-from mcm import mapper
-from mcm.tests.utils import FakeModel
+from seed.lib.mcm.tests.utils import FakeModel
 
 
 class TestMapper(TestCase):
@@ -131,8 +130,9 @@ class TestMapper(TestCase):
         self.assertDictEqual(dyn_mapping, expected)
 
     def test_build_column_mapping_w_callable_and_ignored_column(self):
-        """tests that an ignored column (`['', 100]`) should not return a
-        suggetion.
+        """
+        tests that an ignored column (`['', 100]`) should not return a
+        suggestion.
         """
         expected = copy.deepcopy(self.expected)
         # This should be the result of our "previous_mapping" call.

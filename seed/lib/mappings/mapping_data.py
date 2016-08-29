@@ -124,6 +124,20 @@ class MappingData(object):
         return list(sorted(result))
 
 
+    def keys_with_table_names(self):
+        """
+        Similar to keys, except it returns a list of tuples
+
+        Returns:
+
+        """
+        result = set()
+        for d in self.data:
+            result.add((d['table'], d['name']))
+
+        return list(sorted(result))
+
+
     def building_columns(self):
         """
         Return a set of the sorted keys which are the possible columns

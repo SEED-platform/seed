@@ -11,52 +11,58 @@ from cleaners import default_cleaner
 
 
 def build_column_mapping(raw_columns, dest_columns, previous_mapping=None,
-                         map_args=None, thresh=None):
-    """Build a probabalistic mapping structure for mapping raw to dest.
+                         map_args=None, thresh=0):
+    """
+    Build a probabalistic mapping structure for mapping raw to dest.
 
-    :param raw_columns: list of str. The column names we're trying to map.
-    :param dest_columns: list of str. The columns we're mapping to.
-    :param previous_mapping: callable. Used to return the previous mapping
-        for a given field.
+    Args:
+        raw_columns: list of str. The column names we're trying to map.
+        dest_columns: list of str. The columns we're mapping to.
+        previous_mapping:  callable. Used to return the previous mapping
+            for a given field.
 
-        Example:
-        ``
-        # The expectation is that our callable always gets passed a
-        # raw key. If it finds a match, it returns the raw_column and score.
-        previous_mapping('example field', *map_args) ->
-            ('field_1', 0.93)
-        ``
+            .. code:
 
-    :returns dict: {'raw_column': [('dest_column', score)...],...}
+                # The expectation is that our callable always gets passed a
+                # raw key. If it finds a match, it returns the raw_column and score.
+                previous_mapping('example field', *map_args) ->
+                    ('field_1', 0.93)
+
+        map_args: .. todo: document
+        thresh: .. todo: document
+
+    Returns:
+        dict: {'raw_column': [('dest_column', score)...],...}
 
     """
+
     probable_mapping = {}
-    thresh = thresh or 0
     for raw in raw_columns:
         result = []
+        result_table = None
         conf = 0
         # We want previous mappings to be at the top of the list.
         if previous_mapping and callable(previous_mapping):
             args = map_args or []
             mapping = previous_mapping(raw, *args)
             if mapping:
-                result, conf = mapping
+                result_table, result, conf = mapping
 
         # Only enter this flow if we haven't already selected a result. Ignore
         # blank columns with conf of 100 since a conf of 100 signifies the user
         # has saved that mapping.
         if not result and result is not None and conf != 100:
-            best_match, conf = matchers.best_match(
+            table, best_match, conf = matchers.best_match(
                 raw, dest_columns, top_n=1
             )[0]
             if conf > thresh:
                 result = best_match
+                result_table = table
             else:
                 result = None
                 conf = 0
 
-
-        probable_mapping[raw] = [result, conf]
+        probable_mapping[raw] = [result_table, result, conf]
 
     return probable_mapping
 

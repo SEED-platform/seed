@@ -8,27 +8,40 @@ import jellyfish
 
 
 def best_match(s, categories, top_n=5):
-    """Return the top N best matches from your categories with the best match
+    """
+    Return the top N best matches from your categories with the best match
     in the 0th position of the return list.
+
     Usage:
             >>> best_match('illinois', ['Michigan', 'Ohio', 'Illinois'], 2)
             [('Illinois', 96), ('Michigan', 22)]
 
-    :param s: str value to find best match
-    :param categories: list values to compare against
-    :param top_n: number of matches to return
-    :returns: list of tuples (guess, percentage)
+    Args:
+        s: str value to find best match
+        categories: list values to compare against
+        top_n: number of matches to return
+
+    Returns:
+        list of tuples (guess, percentage)
+
     """
     scores = []
     for cat in categories:
-        scores.append((cat, jellyfish.jaro_winkler(
-            s.encode('ascii', 'replace').upper(),
-            cat.encode('ascii', 'replace').upper()
-        )))
+        # test_cat = cat[0] + '.' + cat[1]
+        scores.append(
+            (
+                cat[0],
+                cat[1],
+                jellyfish.jaro_winkler(
+                    s.encode('ascii', 'replace').upper(),
+                    cat[1].encode('ascii', 'replace').upper()
+                )
+            )
+        )
 
-    scores = sorted(scores, key=lambda x: x[1])
+    scores = sorted(scores, key=lambda x: x[2])
     scores = scores[-top_n:]
-    scores = [(score[0], int(score[1] * 100)) for score in scores]
+    scores = [(score[0], score[1], int(score[2] * 100)) for score in scores]
     scores.reverse()
 
     return scores
@@ -36,8 +49,6 @@ def best_match(s, categories, top_n=5):
 
 def fuzzy_in_set(column_name, ontology, percent_confidence=95):
     """Return True if column_name is in the ontology."""
-    match, percent = best_match(
-        column_name, ontology, top_n=1
-    )[0]
+    match, percent = best_match(column_name, ontology, top_n=1)[0]
 
     return percent > percent_confidence
