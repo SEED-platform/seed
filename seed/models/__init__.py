@@ -14,3 +14,4 @@ from .models import *  # noqa
 from .tax_lots import *  # noqa
 from .properties import *  # noqa
 from .joins import *  # noqa
+from .auditlog import *  # noqa

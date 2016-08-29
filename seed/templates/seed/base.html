@@ -83,7 +83,8 @@
 
             <script src="{{STATIC_URL}}vendors/bower_components/angular/angular.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/angular-cookies/angular-cookies.min.js"></script>
-            <script src="{{STATIC_URL}}vendors/bower_components/angular-route/angular-route.min.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-router.stateHelper/statehelper.min.js"></script>
 
             {% if not debug and SENTRY_JS_DSN %}
             <script src="https://cdn.ravenjs.com/2.1.0/angular/raven.min.js"></script>
@@ -92,6 +93,7 @@
 
             <script src="{{STATIC_URL}}vendors/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-grid/ui-grid.min.js"></script>
+            <script src="{{STATIC_URL}}vendors/bower_components/ui-grid-draggable-rows/js/draggable-rows.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-sortable/sortable.min.js"></script>
 
@@ -123,7 +125,7 @@
 
     {% block body %}
     <body>
-        <div class="app" ng-app="BE.seed" ng-strict-di>
+        <div class="app" ng-app="BE.seed">
         {% block content %}{% endblock %}
         </div>
     </body>

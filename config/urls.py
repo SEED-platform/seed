@@ -56,7 +56,6 @@ urlpatterns = [
     url(r'^robots\.txt', robots_txt, name='robots_txt'),
 
     # bluesky api views
-    url(r'^app/bluesky/', include('seed.urls.properties', namespace="bluesky", app_name="bluesky")),
     url(r'^app/', include('seed.urls.properties', namespace="api")),
     url(r'^api/v2/', include('api.urls', namespace="apiv2"))
 ]

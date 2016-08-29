@@ -570,6 +570,7 @@ a:not([href]) {
 }
 
 .section_nav_container {
+  min-height: 38px;
   position: relative;
   border-bottom: 1px solid $gray_lighter;
   .section_nav {
@@ -827,6 +828,7 @@ a:not([href]) {
           display: block;
           padding: 20px;
           font-size: 18px;
+          text-decoration: none;
 
           i {
             padding-right: 12px;
@@ -955,9 +957,8 @@ a:not([href]) {
         }
 
         &.fixed-layout {
-            /* use in combination with th.ellipsis-resizable
-              for resizable columns                         */
-            table-layout: fixed;
+          /* use in combination with th.ellipsis-resizable for resizable columns */
+          table-layout: fixed;
         }
 
         th, td {
@@ -1047,13 +1048,12 @@ a:not([href]) {
             overflow: hidden;
           }
           &.ellipsis-resizable {
-              /* use in combination with table.fixed-layout
-                    for resizable columns                         */
-              min-width: 80px;
-              text-overflow: ellipsis;
-              /* Required for text-overflow to do anything */
-              white-space: nowrap;
-              overflow: hidden;
+            /* use in combination with table.fixed-layout for resizable columns */
+            min-width: 80px;
+            text-overflow: ellipsis;
+            /* Required for text-overflow to do anything */
+            white-space: nowrap;
+            overflow: hidden;
           }
 
           &.sorted {
@@ -2073,12 +2073,12 @@ select {
 /* STYLES FOR LABELS AND RELATED */
 
 /* Holds inline form for creating new labels */
-.newLabelInput{
-    margin: 20px 0;
-    border:1px solid #EEE;
-    padding: 10px 10px 5px 10px;
-    border-radius: 5px;
-    background-color: #F1F1F1;
+.newLabelInput {
+  margin: 20px 0;
+  border: 1px solid #EEE;
+  padding: 10px 10px 5px 10px;
+  border-radius: 5px;
+  background-color: #F1F1F1;
 }
 
 #label_admin {
@@ -2091,23 +2091,23 @@ select {
     font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
 
-    .tableHeader {
-        font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
-        white-space: nowrap;
-        padding: 6px 10px 5px 10px;
-        text-transform: uppercase;
-        background-color: #cdcdcd !important;
-        text-shadow: 0 1px 0 white;
-        border-bottom: 1px solid #b3b3b3;
-    }
+  .tableHeader {
+    font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    white-space: nowrap;
+    padding: 6px 10px 5px 10px;
+    text-transform: uppercase;
+    background-color: #cdcdcd !important;
+    text-shadow: 0 1px 0 white;
+    border-bottom: 1px solid #b3b3b3;
+  }
 
-    /* Get xeditable fields to extend 100% of td */
-    form[editable-form] > div {
-      margin: 10px 0;
-    }
-    .editable-wrap {
-      width: 100%;
-    }
+  /* Get xeditable fields to extend 100% of td */
+  form[editable-form] > div {
+    margin: 10px 0;
+  }
+  .editable-wrap {
+    width: 100%;
+  }
 
 }
 
@@ -2136,14 +2136,123 @@ select {
   }
 }
 
-
 .label {
-    margin-right: 5px;
+  margin-right: 5px;
 }
 
 /* Styles for update labels modal */
 
 #update-building-labels-modal {
+
+  .labels-status-msg {
+    min-height: 150px;
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .add_text, .edit_text {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .edit_text {
+    margin-left: 10px;
+  }
+
+  .add-label-row {
+    margin-right: -5px;
+    margin-bottom: 20px;
+  }
+
+  .btn-default {
+    min-width: 70px;
+  }
+
+  .table-list-container {
+    border: 1px solid #EEE;
+    overflow-y: auto;
+    max-height: 350px;
+    margin-bottom: 10px;
+    table {
+
+    }
+    th, td {
+      border: 0;
+    }
+  }
+
+}
+
+/* Cycle admin */
+
+#cycle_admin {
+
+  .newCycleInput {
+    margin: 20px 0;
+    border: 1px solid #EEE;
+    padding: 10px 10px 5px 10px;
+    border-radius: 5px;
+    background-color: #F1F1F1;
+  }
+
+  .table_list_container {
+    border: 1px solid #cdcdcd;
+  }
+
+  .sectionCycle {
+    font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  .tableHeader {
+    font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    white-space: nowrap;
+    padding: 6px 10px 5px 10px;
+    text-transform: uppercase;
+    background-color: #cdcdcd !important;
+    text-shadow: 0 1px 0 white;
+    border-bottom: 1px solid #b3b3b3;
+  }
+
+  /* Get xeditable fields to extend 100% of td */
+  form[editable-form] > div {
+    margin: 10px 0;
+  }
+  .editable-wrap {
+    width: 100%;
+  }
+
+}
+
+.cycle-edit-section {
+
+  margin: 5px 10px 10px 20px;
+
+  .cycle-action {
+    display: inline-block;
+    .label-edit-text {
+      margin-right: 20px;
+    }
+    a {
+      margin-right: 20px;
+    }
+  }
+
+  .cycle-container {
+    display: inline-block;
+  }
+
+  .cycle {
+    padding: .6em .6em .5em .6em;
+    display: inline-block;
+    margin-bottom: 5px;
+  }
+}
+
+/* DMcQ: Once Bluesky refactoring is complete, remove old #update-building-labels-modal above */
+
+#update-property-labels-modal {
 
   .labels-status-msg {
     min-height: 150px;
@@ -2216,6 +2325,7 @@ tags-input .tags {
   border-color: #d43f3a !important;
   background: #d43f3a !important;
 }
+
 gs-input .tags .tag-item .remove-button {
   color: #FFF;
 }
@@ -2248,42 +2358,49 @@ gs-input .tags .tag-item .remove-button {
 /* OTHER */
 
 /* Styles for building list controls and table */
-.buildingListControls {
+.inventory-list-controls {
   padding: 20px 10px;
 
   .form-group {
+    margin-bottom: 0;
     margin-right: 20px;
+    margin-bottom: 0px;
   }
-}
 
-.building-list-filter-buttons {
-  .btn + .btn {
-    margin-left: 5px;
+  & + .buildingListControls {
+    padding-top: 0;
   }
 }
 
 /* Styles for building page */
 
 #building-fields {
-    //  set a min width for the field column
-    min-width: 275px;
+  //  set a min width for the field column
+  min-width: 275px;
 }
 
 .glyphicon.spinning {
-    animation: spin 1s infinite linear;
-    -webkit-animation: spin2 1s infinite linear;
+  animation: spin 1s infinite linear;
+  -webkit-animation: spin2 1s infinite linear;
 }
 
 @keyframes spin {
-    from { transform: scale(1) rotate(0deg); }
-    to { transform: scale(1) rotate(360deg); }
+  from {
+    transform: scale(1) rotate(0deg);
+  }
+  to {
+    transform: scale(1) rotate(360deg);
+  }
 }
 
 @-webkit-keyframes spin2 {
-    from { -webkit-transform: rotate(0deg); }
-    to { -webkit-transform: rotate(360deg); }
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+  }
 }
-
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* Styles for mods to blue sky building list. /
@@ -2295,36 +2412,51 @@ gs-input .tags .tag-item .remove-button {
          appear in the building list. So defining a style here that can hopefully be refactored into
          the styles above at a later point. */
 
-.building_list_tab_container {
+.inventory-list-tab-container {
 
   margin-left: 10px;
   margin-bottom: -2px;
+
+  .item-count {
+    float: right;
+    margin-right: 20px;
+    margin-top: 10px;
+  }
 
   .nav-tabs {
     position: relative;
     margin-bottom: -2px;
     z-index: 99;
   }
-  .nav-tabs>li{
-    margin-right:4px;
+  .nav-tabs > li {
+    margin-right: 4px;
   }
-  .nav-tabs>li>a{
+  .nav-tabs > li > a {
     background-color: #D6D6D6;
     border: 1px solid #bbb;
     color: #222;
     border-radius: 6px 6px 0 0;
   }
-  .nav-tabs>li.active>a, .nav-tabs>li.active>a:hover{
+  .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover {
     background-color: #F1F1F1;
     border: 1px solid #D1D1D1;
     font-weight: bold;
     color: #000;
     border-bottom: 1px solid #F1F1F1;
   }
-  .nav-tabs>li>a:hover {
+  .nav-tabs > li > a:hover {
     background-color: $blue;
     color: #FFF;
   }
+}
+
+.table_item_detail {
+  margin: 0px 10px;
+  border: 1px solid #F1F1F1
+}
+
+.highlight {
+  background-color: $highlighter;
 }
 
 #swagger-frame {
@@ -2335,9 +2467,61 @@ gs-input .tags .tag-item .remove-button {
 /* UI Grid modifications */
 /* Remove gradient on top bar. It's distracting and decreases legibility */
 .ui-grid-top-panel {
-    background: #F1F1F1;
-    filter: none;
+  background: #F1F1F1;
+  filter: none;
 }
+
+.ui-grid-row-header-link {
+  background-color: #f0f0ee;
+  border-bottom: solid 1px #d4d4d4;
+  height: 30px;
+  width: 30px;
+  > a {
+    display: block;
+  }
+}
+
+.ui-grid-row.ui-grid-row-selected > [ui-grid-row] > .ui-grid-cell > .ui-grid-row-header-link {
+  background-color: #c9dde1;
+}
+
 .ui-grid-cell-contents {
-    font-weight: normal;
+  font-weight: normal;
+}
+
+// Nested rows
+.ui-grid-row:not(.ui-grid-tree-header-row) {
+  /*.ui-grid-cell-contents {
+    color: #444;
+  }*/
+  /*&:nth-child(odd) .ui-grid-cell {
+    background-color: #fbfbf3;
+  }
+  &:nth-child(even) .ui-grid-cell {
+    background-color: #f8f6e7;
+  }*/
+}
+
+#sidebar-projects, #nav-projects {
+  &[disabled] {
+    color: gray;
+    pointer-events: none;
+  }
+}
+
+#nav-inventory {
+  span {
+    padding-right: 12px;
+    > svg {
+      height: 18px;
+      path {
+        fill: #337ab7;
+      }
+    }
+  }
+  &:hover {
+    span > svg path {
+      fill: #23527c;
+    }
+  }
 }
