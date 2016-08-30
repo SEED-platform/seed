@@ -33,6 +33,7 @@ from seed.models import Cycle
 from seed.models import StatusLabel
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
+from seed.utils.time import convert_datestr
 
 # Oops! we override a builtin in some of the models
 property_decorator = property
@@ -139,15 +140,15 @@ class PropertyState(models.Model):
         # tls, _ = TaxLotState.objects.get_or_create(
         #     jurisdiction_taxlot_identifier=tax_lot_id
         # )
-
-        logger.debug("the cycle is {}".format(cycle))
-        logger.debug("the taxlotstate is {}".format(tls))
+        #
+        # logger.debug("the cycle is {}".format(cycle))
+        # logger.debug("the taxlotstate is {}".format(tls))
         # tlv, _ = TaxLotView.objects.get_or_create(
         #     state=tls,
         #     cycle=cycle,
         # ).first()
         #
-        logger.debug("taxlotview is {}".format(tlv))
+        # logger.debug("taxlotview is {}".format(tlv))
 
         return self
 

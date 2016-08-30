@@ -178,7 +178,7 @@ class TestMapping(TestCase):
             raw_save_done=True
         )
         self.fake_row['City'] = 'Someplace Nice'
-        ps = PropertyState.objects.create(
+        PropertyState.objects.create(
             import_file=fake_import_file,
             source_type=ASSESSED_RAW,
             extra_data=self.fake_row

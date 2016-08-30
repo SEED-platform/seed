@@ -56,17 +56,10 @@ from seed.models import (
     SYSTEM_MATCH,
     POSSIBLE_MATCH,
     initialize_canonical_building,
-    set_initial_sources,
     save_snapshot_match,
     save_column_names,
     BuildingSnapshot,
     PropertyState,
-    Property,
-    PropertyView,
-    TaxLot,
-    TaxLotState,
-    TaxLotView,
-    Cycle,
 )
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache
@@ -269,8 +262,12 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
             tax_lot_id = property_state.jurisdiction_property_identifier
 
         property_state = property_state.assign_cycle_and_tax_lot(org,
-                                                                 datetime.datetime(2015, 1, 1),
-                                                                 datetime.datetime(2015, 12, 31),
+                                                                 datetime.datetime(
+                                                                     2015, 1,
+                                                                     1),
+                                                                 datetime.datetime(
+                                                                     2015, 12,
+                                                                     31),
                                                                  tax_lot_id)
 
         # Assign some other arguments here
@@ -907,19 +904,22 @@ def _normalize_address_str(address_val):
             normalized_address = _normalize_address_number(
                 addr['AddressNumber'])
 
-        if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
+        if 'StreetNamePreDirectional' in addr and addr[
+                'StreetNamePreDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
                 addr['StreetNamePreDirectional'])  # NOQA
 
         if 'StreetName' in addr and addr['StreetName'] is not None:
             normalized_address = normalized_address + ' ' + addr['StreetName']
 
-        if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
+        if 'StreetNamePostType' in addr and addr[
+                'StreetNamePostType'] is not None:
             # remove any periods from abbreviations
             normalized_address = normalized_address + ' ' + _normalize_address_post_type(
                 addr['StreetNamePostType'])  # NOQA
 
-        if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
+        if 'StreetNamePostDirectional' in addr and addr[
+                'StreetNamePostDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
                 addr['StreetNamePostDirectional'])  # NOQA
 
@@ -1097,7 +1097,8 @@ def _remap_data(import_file_pk):
     # Delete buildings already mapped for this file.
     PropertyState.objects.filter(
         import_file=import_file,
-        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS)  # TODO: make these not hard coded integers
+        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS)
+        # TODO: make these not hard coded integers
     ).delete()
 
     import_file.mapping_done = False
