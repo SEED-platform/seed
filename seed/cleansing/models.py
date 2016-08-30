@@ -327,6 +327,8 @@ class Cleansing(object):
                 self.results[datum.id] = {}
                 self.results[datum.id]['id'] = datum.id
                 self.results[datum.id]['address_line_1'] = datum.address_line_1
+
+                # TODO: Hook up these other fields again now that they have moved
                 # self.results[datum.id]['pm_property_id'] = datum.pm_property_id
                 # self.results[datum.id]['tax_lot_id'] = datum.tax_lot_id
                 # self.results[datum.id]['custom_id_1'] = datum.custom_id_1
