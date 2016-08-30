@@ -1275,7 +1275,7 @@ def delete_duplicates_from_import_file(request):
 
 def tmp_mapping_suggestions(import_file_id, org_id, user):
     """
-    Temp function for allowing both api version fo mapping suggestions to
+    Temp function for allowing both api version for mapping suggestions to
     return the same data. Move this to the mapping_suggestions once we can
     deprecate the old get_column_mapping_suggestion method.
 
