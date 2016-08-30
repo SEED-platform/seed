@@ -9,7 +9,7 @@ from django.conf.urls import url
 
 from seed.views.main import (
     home, version, create_pm_mapping, get_total_number_of_buildings_for_user,
-    get_building, get_datasets_count, search_buildings,
+    get_building, search_buildings,
     search_building_snapshots,
     get_default_columns, set_default_columns,
     get_default_building_detail_columns,
@@ -26,7 +26,7 @@ from seed.views.main import (
     start_system_matching, public_search, progress, export_buildings,
     export_buildings_progress,
     export_buildings_download, angular_js_tests, delete_organization_buildings,
-    delete_buildings, delete_organization
+    delete_buildings
 )
 
 # prefix, to revert back to original endpoints, leave this blank
@@ -47,11 +47,6 @@ urlpatterns = [
         name='get_total_number_of_buildings_for_user'
     ),
     url(r'^' + apiv1 + r'get_building/$', get_building, name='get_building'),
-    url(
-        r'^' + apiv1 + r'get_datasets_count/$',
-        get_datasets_count,
-        name='get_datasets_count'
-    ),
     url(r'^' + apiv1 + r'search_buildings/$', search_buildings, name='search_buildings'),
     url(
         r'^' + apiv1 + r'search_building_snapshots/$',
@@ -177,13 +172,6 @@ urlpatterns = [
         r'^' + apiv1 + r'delete_buildings/$',
         delete_buildings,
         name='delete_buildings'
-    ),
-
-    # delete org
-    url(
-        r'^' + apiv1 + r'delete_organization/$',
-        delete_organization,
-        name='delete_organization'
     ),
 
 ]

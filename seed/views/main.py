@@ -595,42 +595,6 @@ def get_building(request):
     }
 
 
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-@require_organization_id
-def get_datasets_count(request):
-    """
-    Retrieves the number of datasets for an org.
-
-    :GET: Expects organization_id in the query string.
-
-    Returns::
-
-        {
-            'status': 'success',
-            'datasets_count': Number of datasets belonging to this org.
-        }
-
-    """
-    org_id = request.GET['organization_id']
-
-    # first make sure that the organization id exists
-    if Organization.objects.filter(pk=request.GET['organization_id']).exists():
-        datasets_count = Organization.objects.get(pk=org_id).import_records. \
-            all().distinct().count()
-        return {'status': 'success', 'datasets_count': datasets_count}
-    else:
-        message = {
-            'status': 'error',
-            'message': 'Could not find organization_id: {}'.format(org_id)
-        }
-        return HttpResponse(json.dumps(message),
-                            content_type='application/json',
-                            status=400)
-
-
 @ajax_request
 def public_search(request):
     """the public API unauthenticated endpoint
@@ -2080,36 +2044,6 @@ def delete_organization_buildings(request):
         org_id
     )
     tasks.delete_organization_buildings.delay(org_id, deleting_cache_key)
-    return {
-        'status': 'success',
-        'progress': 0,
-        'progress_key': deleting_cache_key
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@permission_required('seed.can_access_admin')
-def delete_organization(request):
-    """
-    Starts a background task to delete an organization and all related data.
-
-    :GET: Expects 'org_id' for the organization.
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    org_id = request.GET.get('org_id', '')
-    deleting_cache_key = get_prog_key(
-        'delete_organization_buildings',
-        org_id
-    )
-    tasks.delete_organization.delay(org_id, deleting_cache_key)
     return {
         'status': 'success',
         'progress': 0,
