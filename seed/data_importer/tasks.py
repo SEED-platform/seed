@@ -60,6 +60,8 @@ from seed.models import (
     save_column_names,
     BuildingSnapshot,
     PropertyState,
+    DATA_STATE_IMPORT,
+    DATA_STATE_MAPPING,
 )
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache
@@ -273,6 +275,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
         # Assign some other arguments here
         property_state.import_file = import_file
         property_state.source_type = save_type
+        property_state.data_state = DATA_STATE_MAPPING
         property_state.clean()
         property_state.super_organization = import_file.import_record.super_organization
         property_state.save()
@@ -327,6 +330,7 @@ def _map_data(file_pk, *args, **kwargs):
     qs = PropertyState.objects.filter(
         import_file=import_file,
         source_type=source_type,
+        data_state=DATA_STATE_IMPORT,
     ).only('id').iterator()
 
     id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
@@ -415,6 +419,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
         raw_property.import_file = import_file  # not defined in new data model
         raw_property.extra_data = c
         raw_property.source_type = source_type  # not defined in new data model
+        raw_property.data_state = DATA_STATE_IMPORT
 
         # We require a save to get our PK
         # We save here to set our initial source PKs.

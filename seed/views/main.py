@@ -781,7 +781,7 @@ def search_building_snapshots(request):
     # FIXME: changing to PropertyState -- but should probably be PropertyView
     building_snapshots = PropertyState.objects.order_by(order_by).filter(
         import_file__pk=import_file_id,
-        # source_type__in=[ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS],
+        source_type__in=[ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS],
     )
 
     fieldnames = [

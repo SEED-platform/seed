@@ -22,11 +22,15 @@ logger = logging.getLogger(__name__)
 
 # State of the data that was imported. This will be used to flag which
 # rows are orphaned and can be deleted.
+DATA_STATE_UNKNOWN = 0
+DATA_STATE_IMPORT = 1
+DATA_STATE_MAPPING = 2
+DATA_STATE_MATCHING = 3
 DATA_STATE = (
-    (0, 'Unknown'),
-    (1, 'Post Import'),
-    (2, 'Post Mapping'),
-    (3, 'Post Matching'),
+    (DATA_STATE_UNKNOWN, 'Unknown'),
+    (DATA_STATE_IMPORT, 'Post Import'),
+    (DATA_STATE_MAPPING, 'Post Mapping'),
+    (DATA_STATE_MATCHING, 'Post Matching'),
 )
 from django.db.models.fields.related import ManyToManyField
 from seed.models import Cycle
