@@ -10,21 +10,27 @@ import jellyfish
 def best_match(s, categories, top_n=5):
     """
     Return the top N best matches from your categories with the best match
-    in the 0th position of the return list.
+    in the 0th position of the return list. The comparison does not check
+    the first element of the category name, only the second element.
 
     Usage:
-            >>> best_match('illinois', ['Michigan', 'Ohio', 'Illinois'], 2)
+            >>> best_match('illinois', [ ('_', 'Michigan'),
+                                         ('_', 'Ohio',
+                                         ('_', 'Illinois') ],
+                                        2)
             [('Illinois', 96), ('Michigan', 22)]
 
     Args:
         s: str value to find best match
-        categories: list values to compare against
+        categories: list of tuples to compare against. needs to be
+        [('table1', 'value1'), ('table2', 'value2')]
         top_n: number of matches to return
 
     Returns:
-        list of tuples (guess, percentage)
+        list of tuples (table, guess, percentage)
 
     """
+
     scores = []
     for cat in categories:
         # test_cat = cat[0] + '.' + cat[1]
