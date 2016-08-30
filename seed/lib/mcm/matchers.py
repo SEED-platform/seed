@@ -33,14 +33,23 @@ def best_match(s, categories, top_n=5):
 
     scores = []
     for cat in categories:
-        # test_cat = cat[0] + '.' + cat[1]
+        # verify that the category has two elements, if not, then just
+        # return _ for the first category
+        table_name = '_'
+        category = None
+        if isinstance(cat, tuple):
+            table_name = cat[0]
+            category = cat[1]
+        else:
+            category = cat
+
         scores.append(
             (
-                cat[0],
-                cat[1],
+                table_name,
+                category,
                 jellyfish.jaro_winkler(
                     s.encode('ascii', 'replace').upper(),
-                    cat[1].encode('ascii', 'replace').upper()
+                    category.encode('ascii', 'replace').upper()
                 )
             )
         )
