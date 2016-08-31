@@ -63,11 +63,11 @@ class DataImporterViewTests(TestCase):
 
         expected = [
             dict(zip(expected_raw_columns, row)) for row in expected_raw_rows
-            ]
+        ]
         expected_saved_format = '\n'.join([
-                                              ROW_DELIMITER.join(row) for row
-                                              in expected_raw_rows
-                                              ])
+            ROW_DELIMITER.join(row) for row
+            in expected_raw_rows
+        ])
         import_file = ImportFile.objects.create(
             import_record=import_record,
             cached_first_row=ROW_DELIMITER.join(expected_raw_columns),
@@ -100,7 +100,7 @@ class DataImporterViewTests(TestCase):
 
         expected = [
             dict(zip(expected_raw_columns, row)) for row in expected_raw_rows
-            ]
+        ]
         expected_saved_format = "1%stest%snew\nline\n2%stest%ssingle".replace(
             '%s', ROW_DELIMITER)
 
