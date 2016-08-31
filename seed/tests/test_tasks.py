@@ -6,11 +6,13 @@
 """
 import logging
 from os import path
+from unittest import skip
 
 from django.core.files import File
 from django.test import TestCase
-from unittest import skip
 
+from seed import tasks
+from seed.data_importer import tasks as di_tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
@@ -20,8 +22,6 @@ from seed.models import (
     BuildingSnapshot,
     CanonicalBuilding,
 )
-from seed import tasks
-from seed.data_importer import tasks as di_tasks
 from seed.tests import util
 
 logger = logging.getLogger(__name__)

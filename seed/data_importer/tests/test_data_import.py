@@ -557,6 +557,7 @@ class TestMatching(TestMapping):
             1
         )
 
+    # Will be obsolete
     def test_get_ancestors(self):
         """Tests get_ancestors(building), returns all non-composite, non-raw
             PropertyState instances.

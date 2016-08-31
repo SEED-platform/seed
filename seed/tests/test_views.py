@@ -7,10 +7,11 @@
 import json
 from datetime import date, datetime, timedelta
 
+from unittest import skip
+
 from django.core.cache import cache
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.test import TestCase
-from unittest import skip
 
 from seed import decorators
 from seed.audit_logs.models import AuditLog, LOG
@@ -1668,6 +1669,8 @@ class ReportViewsTests(TestCase):
             reverse("seed:get_building_summary_report_data"), params)
         self.assertEqual('success', json.loads(response.content)['status'])
 
+    # TODO replace with test for inventory report
+    @skip("Fix for new data model")
     def test_get_building_report_data(self):
         params = {
             'start_date': (datetime.now() - timedelta(days=30)).strftime(
@@ -1682,6 +1685,12 @@ class ReportViewsTests(TestCase):
                                    params)
         self.assertEqual('success', json.loads(response.content)['status'])
 
+    @skip("Fix for new data model")
+    def test_get_inventory_report_data(self):
+        pass    # TODO
+
+    # TODO replace with test for inventory report
+    @skip("Fix for new data model")
     def test_get_aggregated_building_report_data(self):
         params = {
             'start_date': (datetime.now() - timedelta(days=30)).strftime(
@@ -1695,6 +1704,10 @@ class ReportViewsTests(TestCase):
         response = self.client.get(
             reverse("seed:get_aggregated_building_report_data"), params)
         self.assertEqual('success', json.loads(response.content)['status'])
+
+    @skip("Fix for new data model")
+    def test_get_aggregated_inventory_report_data(self):
+        pass    # TODO
 
 
 @skip("Fix for new data model")
@@ -1752,6 +1765,8 @@ class BuildingDetailViewTests(TestCase):
         self.parent_1 = parent_1
         self.parent_2 = parent_2
 
+    # TODO Replace with test_get_property, test_get_taxlot
+    @skip("Fix for new data model")
     def test_get_building(self):
         """ tests the get_building view which returns building detail and source
             information from parent buildings.
@@ -1811,6 +1826,17 @@ class BuildingDetailViewTests(TestCase):
             self.parent_2.pk
         )
 
+    # TODO
+    @skip("Fix for new data model")
+    def test_get_property(self):
+        pass
+
+    # TODO
+    @skip("Fix for new data model")
+    def test_get_taxlot(self):
+        pass
+
+    # TODO replace with test for inventory report
     @skip("Fix for new data model")
     def test_get_building_with_project(self):
         """ tests get_building projects payload"""
@@ -1851,6 +1877,7 @@ class BuildingDetailViewTests(TestCase):
             'test project'
         )
 
+    # TODO replace with test for inventory report
     @skip("Fix for new data model")
     def test_get_building_with_deleted_dataset(self):
         """ tests the get_building view where the dataset has been deleted and
@@ -1900,6 +1927,8 @@ class BuildingDetailViewTests(TestCase):
             places=1,
         )
 
+    # TODO replace with test for inventory report
+    @skip("Fix for new data model")
     def test_get_building_imported_buildings_includes_green_button(self):
         # arrange
         self.parent_2.source_type = 6
@@ -1934,6 +1963,7 @@ class BuildingDetailViewTests(TestCase):
             self.import_file_2.pk
         )
 
+    # TODO replace with test for inventory
     @skip("Fix for new data model")
     def test_update_building_audit_log(self):
         """tests that a building update logs an audit_log"""
@@ -2769,7 +2799,7 @@ class MatchTreeTests(TestCase):
         self.assertEqual('success', json.loads(response.content)['status'])
 
 
-class BlueSkyViewTests(TestCase):
+class InventoryViewTests(TestCase):
 
     def setUp(self):
         user_details = {
@@ -2817,7 +2847,7 @@ class BlueSkyViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:properties"), params)
+        response = self.client.get(reverse("app:properties"), params)
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -2835,7 +2865,7 @@ class BlueSkyViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:properties"), params)
+        response = self.client.get(reverse("app:properties"), params)
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -2859,7 +2889,7 @@ class BlueSkyViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:properties"), params)
+        response = self.client.get(reverse("app:properties"), params)
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -2891,7 +2921,7 @@ class BlueSkyViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:properties"), params)
+        response = self.client.get(reverse("app:properties"), params)
         results = json.loads(response.content)
         self.assertEquals(len(results['results']), 1)
         result = results['results'][0]
@@ -2900,10 +2930,6 @@ class BlueSkyViewTests(TestCase):
         related = result['related'][0]
         self.assertEquals(related['postal_code'], result['postal_code'])
         self.assertEquals(related['primary'], 'P')
-        collapsed = result['collapsed']
-        self.assertEquals(
-            collapsed['block_number'][0], related['block_number']
-        )
 
     def test_get_properties_taxlot_extra_data(self):
         extra_data = {
@@ -2935,7 +2961,7 @@ class BlueSkyViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:properties"), params)
+        response = self.client.get(reverse("app:properties"), params)
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -2956,7 +2982,7 @@ class BlueSkyViewTests(TestCase):
             'page': 'one',
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:properties"), params)
+        response = self.client.get(reverse("app:properties"), params)
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 1)
         pagination = result['pagination']
@@ -2974,7 +3000,7 @@ class BlueSkyViewTests(TestCase):
             'page': 10,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:properties"), params)
+        response = self.client.get(reverse("app:properties"), params)
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 0)
         pagination = result['pagination']
@@ -3009,23 +3035,17 @@ class BlueSkyViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("bluesky:property-detail", args=(property_property.id,)),
+            reverse("app:property-details",
+                    args=(property_property.id, self.cycle.pk)),
             params
         )
         results = json.loads(response.content)
-        self.assertEquals(results['id'], property_view.pk)
 
-        rcycle = results['cycle']
-        self.assertEquals(rcycle['name'], '2010 Annual')
-        self.assertEquals(rcycle['user'], self.user.pk)
-        self.assertEquals(rcycle['organization'], self.org.pk)
-
-        self.assertEquals(len(results['lots']), 1)
-        expected_lot = {
-            'cycle': self.cycle.pk, 'id': taxlot_view.pk,
-            'state': taxlot_state.pk, 'taxlot': taxlot.pk, 'labels': []
-        }
-        self.assertEquals(results['lots'][0], expected_lot)
+        self.assertEqual(results['status'], 'success')
+        self.assertEqual(results['history'], [])
+        self.assertEqual(results['labels'], [])
+        self.assertEqual(results['source'], 'ImportFile')
+        self.assertEqual(results['changed_fields'], None)
 
         expected_property = {
             'campus': False, 'id': property_property.pk,
@@ -3034,9 +3054,35 @@ class BlueSkyViewTests(TestCase):
         self.assertEquals(results['property'], expected_property)
 
         state = results['state']
-        self.assertEquals(state['address_line_1'],
-                          property_state.address_line_1)
         self.assertEquals(state['id'], property_state.pk)
+        self.assertEquals(state['address_line_1'], property_state.address_line_1)
+
+        rcycle = results['cycle']
+        self.assertEquals(rcycle['name'], '2010 Annual')
+        self.assertEquals(rcycle['user'], self.user.pk)
+        self.assertEquals(rcycle['organization'], self.org.pk)
+
+        self.assertEquals(len(results['taxlots']), 1)
+
+        rtaxlot = results['taxlots'][0]
+        self.assertEqual(rtaxlot['id'], taxlot.pk)
+        self.assertEqual(rtaxlot['labels'], [])
+        self.assertEqual(
+            rtaxlot['taxlot'],
+            {'id': taxlot.pk, 'organization': self.org.pk}
+        )
+
+        tcycle = rtaxlot['cycle']
+        self.assertEquals(tcycle['name'], '2010 Annual')
+        self.assertEquals(tcycle['user'], self.user.pk)
+        self.assertEquals(tcycle['organization'], self.org.pk)
+
+        tstate = rtaxlot['state']
+        self.assertEqual(tstate['id'], taxlot_state.pk)
+        self.assertEqual(tstate['address'], taxlot_state.address)
+
+    def test_get_property_history(self):
+        pass    # TODO
 
     def test_get_property_multiple_taxlots(self):
         property_state = self.property_state_factory.get_property_state()
@@ -3072,29 +3118,52 @@ class BlueSkyViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("bluesky:property-detail", args=(property_property.id,)),
+            reverse("app:property-details",
+                    args=(property_property.id, self.cycle.pk)),
             params
         )
         results = json.loads(response.content)
-        self.assertEquals(results['id'], property_view.pk)
 
         rcycle = results['cycle']
         self.assertEquals(rcycle['name'], '2010 Annual')
         self.assertEquals(rcycle['user'], self.user.pk)
         self.assertEquals(rcycle['organization'], self.org.pk)
 
-        self.assertEquals(len(results['lots']), 2)
-        expected_lot_1 = {
-            'cycle': self.cycle.pk, 'id': taxlot_view_1.pk,
-            'state': taxlot_state_1.pk, 'taxlot': taxlot_1.pk, 'labels': []
-        }
-        self.assertEquals(results['lots'][0], expected_lot_1)
+        self.assertEquals(len(results['taxlots']), 2)
 
-        expected_lot_2 = {
-            'cycle': self.cycle.pk, 'id': taxlot_view_2.pk,
-            'state': taxlot_state_2.pk, 'taxlot': taxlot_2.pk, 'labels': []
-        }
-        self.assertEquals(results['lots'][1], expected_lot_2)
+        rtaxlot_1 = results['taxlots'][0]
+        self.assertEqual(rtaxlot_1['id'], taxlot_1.pk)
+        self.assertEqual(rtaxlot_1['labels'], [])
+        self.assertEqual(
+            rtaxlot_1['taxlot'],
+            {'id': taxlot_1.pk, 'organization': self.org.pk}
+        )
+
+        tcycle_1 = rtaxlot_1['cycle']
+        self.assertEquals(tcycle_1['name'], '2010 Annual')
+        self.assertEquals(tcycle_1['user'], self.user.pk)
+        self.assertEquals(tcycle_1['organization'], self.org.pk)
+
+        tstate_1 = rtaxlot_1['state']
+        self.assertEqual(tstate_1['id'], taxlot_state_1.pk)
+        self.assertEqual(tstate_1['address'], taxlot_state_1.address)
+
+        rtaxlot_2 = results['taxlots'][1]
+        self.assertEqual(rtaxlot_2['id'], taxlot_2.pk)
+        self.assertEqual(rtaxlot_2['labels'], [])
+        self.assertEqual(
+            rtaxlot_2['taxlot'],
+            {'id': taxlot_2.pk, 'organization': self.org.pk}
+        )
+
+        tcycle_2 = rtaxlot_2['cycle']
+        self.assertEquals(tcycle_2['name'], '2010 Annual')
+        self.assertEquals(tcycle_2['user'], self.user.pk)
+        self.assertEquals(tcycle_2['organization'], self.org.pk)
+
+        tstate_2 = rtaxlot_2['state']
+        self.assertEqual(tstate_2['id'], taxlot_state_2.pk)
+        self.assertEqual(tstate_2['address'], taxlot_state_2.address)
 
         expected_property = {
             'campus': False, 'id': property_property.pk,
@@ -3132,7 +3201,7 @@ class BlueSkyViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 1,
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 1)
@@ -3184,7 +3253,7 @@ class BlueSkyViewTests(TestCase):
             'organization_id': self.org.pk,
             'page': 1,
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 1)
@@ -3203,18 +3272,23 @@ class BlueSkyViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
+
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 1)
         self.assertEquals(len(result['results'][0]['related']), 2)
-        collapsed = result['results'][0]['collapsed']
-        self.assertIn(property_state.address_line_1,
-                      collapsed['address_line_1'])
-        self.assertIn(property_state_1.address_line_1,
-                      collapsed['address_line_1'])
-        self.assertIn(
+
+        related_1 = result['results'][0]['related'][0]
+        related_2 = result['results'][0]['related'][1]
+        self.assertEqual(
+            property_state.address_line_1, related_1['address_line_1']
+        )
+        self.assertEqual(
+            property_state_1.address_line_1, related_2['address_line_1']
+        )
+        self.assertEqual(
             taxlot_state.jurisdiction_taxlot_identifier,
-            collapsed['calculated_taxlot_ids']
+            related_1['calculated_taxlot_ids']
         )
 
     def test_get_taxlots_multiple_taxlots(self):
@@ -3253,7 +3327,7 @@ class BlueSkyViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 1,
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 2)
@@ -3333,7 +3407,7 @@ class BlueSkyViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 1,
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 1)
@@ -3369,7 +3443,7 @@ class BlueSkyViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 'bad',
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
         result = json.loads(response.content)
 
         self.assertEquals(len(result['results']), 1)
@@ -3407,7 +3481,7 @@ class BlueSkyViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 'bad',
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
         result = json.loads(response.content)
 
         self.assertEquals(len(result['results']), 1)
@@ -3446,7 +3520,7 @@ class BlueSkyViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 'bad',
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
         related = json.loads(response.content)['results'][0]['related'][0]
         self.assertEqual(related['calculated_taxlot_ids'], 'Missing')
 
@@ -3486,11 +3560,9 @@ class BlueSkyViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("bluesky:lot-detail", args=(taxlot.id,)), params
-        )
+            reverse("app:taxlot-details",
+                    args=(taxlot.id, self.cycle.pk)), params)
         result = json.loads(response.content)
-
-        self.assertEqual(result['id'], taxlot.id)
 
         cycle = result['cycle']
         self.assertEqual(cycle['id'], self.cycle.pk)
@@ -3499,22 +3571,23 @@ class BlueSkyViewTests(TestCase):
         self.assertEqual(cycle['user'], self.user.pk)
 
         properties = result['properties']
-        expected_property_1 = {
-            'cycle': self.cycle.pk,
-            'id': property_view_1.pk,
-            'property': property_property_1.pk,
-            'state': property_state_1.pk,
-            'labels': []
-        }
-        expected_property_2 = {
-            'cycle': self.cycle.pk,
-            'id': property_view_2.pk,
-            'property': property_property_2.pk,
-            'state': property_state_2.pk,
-            'labels': []
-        }
-        self.assertIn(expected_property_1, properties)
-        self.assertIn(expected_property_2, properties)
+        self.assertEqual(len(properties), 2)
+        self.assertEqual(properties[0]['cycle']['name'], self.cycle.name)
+        self.assertEqual(properties[1]['cycle']['name'], self.cycle.name)
+        self.assertEqual(
+            properties[0]['property']['id'], property_property_1.pk
+        )
+        self.assertEqual(
+            properties[1]['property']['id'], property_property_2.pk
+        )
+        self.assertEqual(
+            properties[0]['state']['address_line_1'],
+            property_state_1.address_line_1
+        )
+        self.assertEqual(
+            properties[1]['state']['address_line_1'],
+            property_state_2.address_line_1
+        )
 
         state = result['state']
         self.assertEqual(state['id'], taxlot_state.pk)
@@ -3531,14 +3604,15 @@ class BlueSkyViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("bluesky:cycles"), params
+            reverse("app:cycles"), params
         )
         results = json.loads(response.content)
+        self.assertEqual(results['status'], 'success')
 
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result['pk'], self.cycle.pk)
-        self.assertEqual(result['name'], self.cycle.name)
+        self.assertEqual(len(results['cycles']), 1)
+        cycle = results['cycles'][0]
+        self.assertEqual(cycle['pk'], self.cycle.pk)
+        self.assertEqual(cycle['name'], self.cycle.name)
 
     def test_get_property_columns(self):
         self.column_factory.get_column(
@@ -3557,7 +3631,7 @@ class BlueSkyViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("bluesky:property-columns"), params
+            reverse("app:property-columns"), params
         )
         results = json.loads(response.content)
 
@@ -3603,7 +3677,7 @@ class BlueSkyViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("bluesky:taxlot-columns"), params
+            reverse("app:taxlot-columns"), params
         )
         results = json.loads(response.content)
 
