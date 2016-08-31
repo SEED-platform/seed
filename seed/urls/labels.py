@@ -22,14 +22,9 @@ router.register(r'', LabelViewSet, base_name="label")
 
 urlpatterns = [
     url(
-        r'^property-labels/$',
+        r'^update-building-labels/$',
         UpdateBuildingLabelsAPIView.as_view(),
-        name="property_labels",
-    ),
-    url(
-        r'^taxlot-labels/$',
-        UpdateBuildingLabelsAPIView.as_view(),
-        name="taxlot_labels",
+        name="update_building_labels",
     ),
 ]
 

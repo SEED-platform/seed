@@ -36,14 +36,9 @@
         window.BE.urls.get_aggregated_building_report_data  = '{% url "seed:get_aggregated_building_report_data" %}';
 
         //label management URLs
-        window.BE.urls.label_list               = '{% url "labels:label-list" %}';
-        window.BE.urls.taxlot_labels            = '{% url "labels:taxlot_labels" %}';
-        window.BE.urls.property_labels          = '{% url "labels:property_labels" %}';
-        
-        // TODO: Make propert urls for cycles. This is temp
-        //cycle management URLs
-        window.BE.urls.cycle_list               = '{% url "seed:get_cycles" %}';
-        
+        window.BE.urls.label_list             = '{% url "labels:label-list" %}';
+        window.BE.urls.update_building_labels = '{% url "labels:update_building_labels" %}';
+
         // uploader URLs
         window.BE.urls.uploader_signature_endpoint  = '{% url "data_importer:sign_policy_document" %}';
         window.BE.urls.uploader_success_endpoint    = '{% url "data_importer:s3_upload_complete" %}';
@@ -70,7 +65,11 @@
         // org
         window.BE.urls.delete_organization_buildings = '{% url "seed:delete_organization_buildings" %}';
         window.BE.urls.delete_organization = '{% url "seed:delete_organization" %}';
-                       
-        
-    
+
+        // bluesky  //TODO Remove these methods!
+        window.BE.urls.get_properties = '{% url "bluesky:properties" %}';
+        window.BE.urls.get_taxlots = '{% url "bluesky:lots" %}';
+        window.BE.urls.get_cycles = '{% url "bluesky:cycles" %}';
+        window.BE.urls.get_property_columns = '{% url "bluesky:property-columns" %}';
+        window.BE.urls.get_taxlot_columns = '{% url "bluesky:taxlot-columns" %}';
     </script>

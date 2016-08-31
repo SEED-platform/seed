@@ -31,6 +31,6 @@ angular.module('sdLabel', []).directive('sdLabel', function () {
             scope.label = lookup_label(attrs.color);
         },
         replace: true,
-        template: '<span class="label label-{$ label $}">{$ name $}</span>'
+        template: '<span class="label label-{{ label }}">{{ name }}</span>'
     };
 });

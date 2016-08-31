@@ -13,7 +13,7 @@
             </h1>
         </div>
         <div class="right page_action_container">
-            <a ui-sref="dataset_list" data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" ng-show="menu.user.organization.user_role !== 'viewer'">Create new data set</a>
+            <a href="#/data" data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" ng-show="menu.user.organization.user_role !== 'viewer'">Create new data set</a>
         </div>
     </div>
 </div>
@@ -31,7 +31,7 @@
                     <tr ng-repeat="d in datasets" class="import_row">
                         <td ng-class="d.column_class('name')" class="name">
                             <span class="view" id="data-link-{$ $index $}">
-                                <a ui-sref="dataset_detail({dataset_id: d.id})" class="import_name" ng-show="!d.edit_form_showing">{$d.name$}</a>
+                                <a ng-href="#/data/{$d.id$}" class="import_name" ng-show="!d.edit_form_showing">{$d.name$}</a>
                                 <a href="" class="delete_link" ng-click="confirm_delete(d)" ng-show="!d.edit_form_showing"><i class='fa fa-trash-o'></i></a>
                                 <a href="" class="replace_file_button edit_file_name" ng-click="edit_dataset_name(d)" ng-show="!d.edit_form_showing"><i class="fa fa-pencil"></i></a>
                             </span>

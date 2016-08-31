@@ -11,8 +11,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
   'shared_fields_payload',
   'user_service',
   '$filter',
-  '$state',
-  '$stateParams',
+  '$routeParams',
   'project_payload',
   'building_payload',
     function(
@@ -23,13 +22,12 @@ angular.module('BE.seed.controller.buildings_settings', [])
     shared_fields_payload,
     user_service,
     $filter,
-    $state,
-    $stateParams,
+    $routeParams,
     project_payload,
     building_payload
   ) {
     $scope.user = {};
-    $scope.user.project_slug = $stateParams.project_id;
+    $scope.user.project_slug = $routeParams.project_id;
     $scope.filter_params = {};
     $scope.controls = {
       select_all: false
@@ -114,7 +112,7 @@ angular.module('BE.seed.controller.buildings_settings', [])
             //resolve promise
             $scope.settings_updated = true;
             $uibModalInstance.close(columns);
-            $state.reload();
+            location.reload();
         });
     };
 

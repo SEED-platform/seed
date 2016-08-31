@@ -6,9 +6,7 @@
 """
 
 from django.conf.urls import url, include
-from rest_framework import routers
 
-from seed.views.datasets import DatasetViewSet
 from seed.views.main import (
     home, version, create_pm_mapping, get_total_number_of_buildings_for_user,
     get_building, get_datasets_count, search_buildings,
@@ -31,8 +29,10 @@ from seed.views.main import (
     export_buildings_download, angular_js_tests, delete_organization_buildings,
     delete_buildings, delete_organization
 )
+
+from seed.views.datasets import DatasetViewSet
 from seed.views.organizations import OrganizationViewSet
-from seed.views.properties import (get_properties, get_cycles)
+from rest_framework import routers
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
@@ -41,14 +41,8 @@ api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organiz
 apiv1 = r''  # r'api/v1/'
 
 urlpatterns = [
-
-    # DMcQ Temp
-    # TEMP : dummy data method for implementing cycles on FE
-    url(r'^' + apiv1 + r'get_cycles/$', get_cycles, name='get_cycles'),
-
     # template routes
     url(r'^$', home, name='home'),
-    url(r'^properties/$', get_properties, name='properties'),
 
     # ajax routes
     url(r'^' + apiv1 + r'version/$', version, name='version'),

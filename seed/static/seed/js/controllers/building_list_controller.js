@@ -5,7 +5,7 @@
 angular.module('BE.seed.controller.building_list', [])
 .controller('building_list_controller', [
   '$scope',
-  '$stateParams',
+  '$routeParams',
   '$timeout',
   '$http',
   '$log',
@@ -23,7 +23,7 @@ angular.module('BE.seed.controller.building_list', [])
   'label_service',
   function(
     $scope,
-    $stateParams,
+    $routeParams,
     $timeout,
     $http,
     $log,
@@ -45,7 +45,7 @@ angular.module('BE.seed.controller.building_list', [])
     $scope.search.url = urls.search_buildings;
 
     $scope.user = {};
-    $scope.user.project_id = $stateParams.project_id;
+    $scope.user.project_id = $routeParams.project_id;
     $scope.columns = [];
     $scope.labels = [];
     $scope.selected_labels = [];
