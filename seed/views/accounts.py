@@ -534,7 +534,7 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
         }
 
     @ajax_request_class
-    @detail_route(methods=['GET'])
+    @detail_route(methods=['POST'])
     def is_authorized(self, request, pk=None):
         """
         Checks the auth for a given action, if user is the owner of the parent

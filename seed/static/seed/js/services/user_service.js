@@ -12,6 +12,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
     var urls = generated_urls;
 
     var organization;
+    var user_id;
 
     /**
      * returns the current organization, set initially by a controller
@@ -232,6 +233,23 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         }).error(function(data, status) {
             defer.reject(data, status);
         });
+        return defer.promise;
+    };
+
+    /**
+     * gets the current user's id
+     */
+    user_factory.get_user_id = function () {
+        var defer = $q.defer();
+        if (!_.isNil(user_id)) defer.resolve(user_id);
+        else {
+            $http.get('/api/v2/users/current_user_id/').success(function (data) {
+                user_id = data.pk;
+                defer.resolve(user_id);
+            }).error(function (data, status) {
+                defer.reject(data, status);
+            });
+        }
         return defer.promise;
     };
 

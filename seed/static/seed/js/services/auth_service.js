@@ -6,8 +6,9 @@
 angular.module('BE.seed.service.auth', []).factory('auth_service', [
   '$http',
   '$q',
+  'user_service',
   'generated_urls',
-  function ($http, $q, generated_urls) {
+  function ($http, $q, user_service, generated_urls) {
 
     var auth_factory = {};
     var urls = generated_urls;
@@ -22,27 +23,26 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
      *      auth = data.auth; // auth === {'can_invite_member': true, 'can_remove_member': true}
      *  });
      *
-     * @param  {organization_id}  id of organization
+     * @param organization_id
      * @param  {array}  actions is an array of actions
      * @return {promise} then a an object with keys as the actions, and bool
      * values
      */
-    auth_factory.is_authorized = function(user_id, organization_id, actions) {
+    auth_factory.is_authorized = function(organization_id, actions) {
         var defer = $q.defer();
-        console.log(user_id);
-        console.log(organization_id);
-        console.log(actions);
-        $http({
-            method: 'GET',
-            url: '/api/v2/users/' + user_id + '/is_authorized/',
-            data: {
-                actions: actions,
-                organization_id: organization_id
-            }
-        }).success(function(data, status, headers, config) {
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
+        user_service.get_user_id().then(function (user_id) {
+            $http({
+                method: 'POST',
+                url: '/api/v2/users/' + user_id + '/is_authorized/',
+                data: {
+                    actions: actions,
+                    organization_id: organization_id
+                }
+            }).success(function (data, status, headers, config) {
+                defer.resolve(data);
+            }).error(function (data, status, headers, config) {
+                defer.reject(data, status);
+            });
         });
         return defer.promise;
     };
