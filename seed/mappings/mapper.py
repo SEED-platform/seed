@@ -168,7 +168,7 @@ def merge_building(snapshot, b1, b2, can_attrs, conf, default=None, match_type=N
 
     return snapshot, changes
 
-
+# TODO: fix for new data model!
 def get_building_attrs(data_set_buildings):
     """Returns a dictionary of attributes from each data_set_building.
 
