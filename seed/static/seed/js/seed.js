@@ -235,7 +235,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
         }]
       }
     })
-    /*.state({
+    /* TO REMOVE */
+    /*
+    .state({
       name: 'projects',
       url: '/projects',
       templateUrl: static_url + 'seed/partials/projects.html',
@@ -1101,7 +1103,7 @@ SEED_app.constant('urls', {
   search_building_snapshots: BE.urls.search_building_snapshots_url,
   save_match: BE.urls.save_match_url,
   seed_home: BE.urls.seed_home,
-  update_building: BE.urls.update_building,
+  // update_building: BE.urls.update_building,
   static_url: BE.urls.STATIC_URL
 });
 SEED_app.constant('generated_urls', window.BE.app_urls);

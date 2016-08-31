@@ -130,6 +130,7 @@ ENERGY_UNITS = (
 #
 
 
+# TO REMOVE
 def get_ancestors(building):
     """gets all the non-raw, non-composite ancestors of a building
 
@@ -485,109 +486,109 @@ def unmatch_snapshot_tree(building_pk):
     canon.save()
 
 
-def _get_filtered_values(updated_values):
-    """Breaks out mappable, meta and source BuildingSnapshot attributes."""
-    from seed.utils.constants import META_FIELDS, EXCLUDE_FIELDS
+# def _get_filtered_values(updated_values):
+#     """Breaks out mappable, meta and source BuildingSnapshot attributes."""
+#     from seed.utils.constants import META_FIELDS, EXCLUDE_FIELDS
 
-    mappable_values = {}
-    meta_values = {}
-    source_values = {}
+#     mappable_values = {}
+#     meta_values = {}
+#     source_values = {}
 
-    for item in updated_values:
-        value = updated_values[item]
-        if item.endswith('_source'):
-            source_values[item] = value
-        elif item in META_FIELDS:
-            meta_values[item] = value
-        elif item not in EXCLUDE_FIELDS:
-            mappable_values[item] = value
+#     for item in updated_values:
+#         value = updated_values[item]
+#         if item.endswith('_source'):
+#             source_values[item] = value
+#         elif item in META_FIELDS:
+#             meta_values[item] = value
+#         elif item not in EXCLUDE_FIELDS:
+#             mappable_values[item] = value
 
-    return mappable_values, meta_values, source_values
-
-
-def _get_diff_sources(mappable, old_snapshot):
-    """Return a list of str for values that changed from old_snapshot."""
-    results = []
-    for item in mappable:
-        value = mappable[item]
-        if getattr(old_snapshot, item, None) != value and value:
-            results.append(item)
-
-    return results
+#     return mappable_values, meta_values, source_values
 
 
-def update_building(old_snapshot, updated_values, user, *args, **kwargs):
-    """Creates a new snapshot with updated values."""
-    from seed.mappings import seed_mappings, mapper as seed_mapper
+# def _get_diff_sources(mappable, old_snapshot):
+#     """Return a list of str for values that changed from old_snapshot."""
+#     results = []
+#     for item in mappable:
+#         value = mappable[item]
+#         if getattr(old_snapshot, item, None) != value and value:
+#             results.append(item)
 
-    mappable, meta, sources = _get_filtered_values(updated_values)
+#     return results
 
-    # extra data will get filtered
-    extra_data = updated_values['extra_data']
-    extra_data = extra_data or old_snapshot.extra_data or {}
 
-    canon = old_snapshot.canonical_building or None
-    # Need to hydrate sources
-    sources = {
-        k: BuildingSnapshot.objects.get(pk=v) for k, v in sources.items() if v
-    }
+# def update_building(old_snapshot, updated_values, user, *args, **kwargs):
+#     """Creates a new snapshot with updated values."""
+#     from seed.mappings import seed_mappings, mapper as seed_mapper
 
-    # Handle the mapping of "normal" attributes.
-    new_snapshot = mapper.map_row(
-        mappable,
-        dict(seed_mappings.BuildingSnapshot_to_BuildingSnapshot),
-        BuildingSnapshot,
-        initial_data=sources  # Copy parent's source attributes.
-    )
+#     mappable, meta, sources = _get_filtered_values(updated_values)
 
-    # convert dates to something django likes
-    new_snapshot.clean()
-    new_snapshot.save()
+#     # extra data will get filtered
+#     extra_data = updated_values['extra_data']
+#     extra_data = extra_data or old_snapshot.extra_data or {}
 
-    diff_sources = _get_diff_sources(mappable, old_snapshot)
-    for diff in diff_sources:
-        setattr(new_snapshot, '{0}_source'.format(diff), new_snapshot)
+#     canon = old_snapshot.canonical_building or None
+#     # Need to hydrate sources
+#     sources = {
+#         k: BuildingSnapshot.objects.get(pk=v) for k, v in sources.items() if v
+#     }
 
-    new_snapshot.canonical_building = canon
-    new_snapshot.save()
+#     # Handle the mapping of "normal" attributes.
+#     new_snapshot = mapper.map_row(
+#         mappable,
+#         dict(seed_mappings.BuildingSnapshot_to_BuildingSnapshot),
+#         BuildingSnapshot,
+#         initial_data=sources  # Copy parent's source attributes.
+#     )
 
-    # All all the orgs the old snapshot had.
-    new_snapshot.super_organization = old_snapshot.super_organization
-    # Move the meta data over.
-    for meta_val in meta:
-        setattr(new_snapshot, meta_val, meta[meta_val])
-    # Insert new_snapshot into the inheritance chain
-    old_snapshot.children.add(new_snapshot)
-    new_snapshot.import_file_id = old_snapshot.import_file_id
+#     # convert dates to something django likes
+#     new_snapshot.clean()
+#     new_snapshot.save()
 
-    new_snapshot.extra_data = extra_data
+#     diff_sources = _get_diff_sources(mappable, old_snapshot)
+#     for diff in diff_sources:
+#         setattr(new_snapshot, '{0}_source'.format(diff), new_snapshot)
 
-    # Update/override anything in extra data.
-    extra, sources = seed_mapper.merge_extra_data(
-        new_snapshot, old_snapshot, default=new_snapshot
-    )
-    new_snapshot.extra_data = extra
-    new_snapshot.extra_data_sources = sources
-    new_snapshot.save()
+#     new_snapshot.canonical_building = canon
+#     new_snapshot.save()
 
-    # If we had a canonical building and its can_snapshot was old, update.
-    if canon and canon.canonical_snapshot == old_snapshot:
-        canon.canonical_snapshot = new_snapshot
-        canon.save()
+#     # All all the orgs the old snapshot had.
+#     new_snapshot.super_organization = old_snapshot.super_organization
+#     # Move the meta data over.
+#     for meta_val in meta:
+#         setattr(new_snapshot, meta_val, meta[meta_val])
+#     # Insert new_snapshot into the inheritance chain
+#     old_snapshot.children.add(new_snapshot)
+#     new_snapshot.import_file_id = old_snapshot.import_file_id
 
-    # If the old snapshot was in any project the ProjectBuilding set
-    # needs to be updated to point to the new snapshot. We might want
-    # to refactor ProjectBuildings to contain a CanonicalBuilding
-    # foreign key in the future.
-    old_snapshot.project_building_snapshots.all().update(
-        building_snapshot=new_snapshot
-    )
+#     new_snapshot.extra_data = extra_data
 
-    # Check to see if there are any new ``extra_data`` fields added for this
-    # org.
-    save_column_names(new_snapshot)
+#     # Update/override anything in extra data.
+#     extra, sources = seed_mapper.merge_extra_data(
+#         new_snapshot, old_snapshot, default=new_snapshot
+#     )
+#     new_snapshot.extra_data = extra
+#     new_snapshot.extra_data_sources = sources
+#     new_snapshot.save()
 
-    return new_snapshot
+#     # If we had a canonical building and its can_snapshot was old, update.
+#     if canon and canon.canonical_snapshot == old_snapshot:
+#         canon.canonical_snapshot = new_snapshot
+#         canon.save()
+
+#     # If the old snapshot was in any project the ProjectBuilding set
+#     # needs to be updated to point to the new snapshot. We might want
+#     # to refactor ProjectBuildings to contain a CanonicalBuilding
+#     # foreign key in the future.
+#     old_snapshot.project_building_snapshots.all().update(
+#         building_snapshot=new_snapshot
+#     )
+
+#     # Check to see if there are any new ``extra_data`` fields added for this
+#     # org.
+#     save_column_names(new_snapshot)
+
+#     return new_snapshot
 
 
 def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
