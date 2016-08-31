@@ -4,25 +4,12 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import types
-import unicodedata
 
-from autoslug import AutoSlugField
-from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
-from django.db.models.fields.related import ManyToManyField
 from django.utils.translation import ugettext_lazy as _
-from django_extensions.db.models import TimeStampedModel
-from django_pgjson.fields import JsonField
 
-from seed.audit_logs.models import AuditLog, LOG
-from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
-from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
-from seed.managers.json import JsonManager
-from seed.utils.generic import split_model_fields, obj_to_dict
-from seed.utils.time import convert_datestr
 from seed.models.models import (
     Enum,
     Unit,

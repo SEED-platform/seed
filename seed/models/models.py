@@ -24,7 +24,6 @@ from seed.managers.json import JsonManager
 from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.time import convert_datestr
 
-
 PROJECT_NAME_MAX_LENGTH = 255
 
 # Represents the data source of a given BuildingSnapshot
