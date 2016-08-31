@@ -4,16 +4,14 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import json
+
 import logging
 
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 
-from seed.decorators import ajax_request, require_organization_id
-from seed.lib.superperms.orgs.decorators import has_perm, PERMS
+from seed.lib.superperms.orgs.decorators import PERMS
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
@@ -21,79 +19,26 @@ from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser,
 )
-from seed.models import CanonicalBuilding
 from seed.landing.models import SEEDUser as User
 from seed.tasks import (
     invite_to_seed,
 )
-from seed.utils.api import api_endpoint
 from seed.utils.organizations import create_organization
 from seed.cleansing.models import (
-    CATEGORY_MISSING_MATCHING_FIELD,
-    CATEGORY_MISSING_VALUES,
-    CATEGORY_IN_RANGE_CHECKING,
     DATA_TYPES as CLEANSING_DATA_TYPES,
     SEVERITY as CLEANSING_SEVERITY,
-    Rules
 )
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
+from rest_framework import viewsets
+from seed.decorators import ajax_request_class
+from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.utils.api import api_endpoint_class
+from rest_framework.decorators import list_route, detail_route
+from django.core.exceptions import ObjectDoesNotExist
 
 
 _log = logging.getLogger(__name__)
-
-#
-# def _dict_org(request, organizations):
-#     """returns a dictionary of an organization's data."""
-#
-#     cbs = list(CanonicalBuilding.objects.filter(canonical_snapshot__super_organization__in=organizations).values('canonical_snapshot__super_organization_id'))
-#
-#     org_map = dict((x.pk, 0) for x in organizations)
-#     for cb in cbs:
-#         org_id = cb['canonical_snapshot__super_organization_id']
-#         org_map[org_id] = org_map[org_id] + 1
-#
-#     orgs = []
-#     for o in organizations:
-#         # We don't wish to double count sub organization memberships.
-#         org_users = OrganizationUser.objects.select_related('user') \
-#             .filter(organization=o)
-#
-#         owners = []
-#         role_level = None
-#         user_is_owner = False
-#         for ou in org_users:
-#             if ou.role_level == ROLE_OWNER:
-#                 owners.append({
-#                     'first_name': ou.user.first_name,
-#                     'last_name': ou.user.last_name,
-#                     'email': ou.user.email,
-#                     'id': ou.user_id
-#                 })
-#
-#                 if ou.user == request.user:
-#                     user_is_owner = True
-#
-#             if ou.user == request.user:
-#                 role_level = _get_js_role(ou.role_level)
-#
-#         org = {
-#             'name': o.name,
-#             'org_id': o.pk,
-#             'id': o.pk,
-#             'number_of_users': len(org_users),
-#             'user_is_owner': user_is_owner,
-#             'user_role': role_level,
-#             'owners': owners,
-#             'sub_orgs': _dict_org(request, o.child_orgs.all()),
-#             'is_parent': o.is_parent,
-#             'parent_id': o.parent_id,
-#             'num_buildings': org_map[o.pk],
-#             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
-#         }
-#         orgs.append(org)
-#
-#     return orgs
-#
-#
 
 
 def _get_js_role(role):
@@ -161,16 +106,6 @@ def _get_severity_from_js(severity):
     return d.get(severity)
 
 
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
-from rest_framework import viewsets
-from seed.decorators import ajax_request_class, require_organization_id_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.utils.api import api_endpoint_class
-from rest_framework.decorators import list_route, detail_route
-from django.core.exceptions import ObjectDoesNotExist
-
-
 class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
     raise_exception = True
 
@@ -232,7 +167,7 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
         body = request.data
         org_name = body.get('org_name')
         org_id = body.get('organization_id')
-        if ((org_name and org_id) or (not org_name and not org_id)):
+        if (org_name and org_id) or (not org_name and not org_id):
             return JsonResponse({
                 'status': 'error',
                 'message': 'Choose either an existing org or provide a new one'
@@ -276,7 +211,7 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
                        first_name)
 
         return JsonResponse({'status': 'success', 'message': user.email, 'org': org.name,
-                'org_created': org_created, 'username': user.username})
+                             'org_created': org_created, 'username': user.username})
 
     @ajax_request_class
     @has_perm_class('requires_superuser')
@@ -284,26 +219,35 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
         """
         Retrieves all users' email addresses and IDs.
         Only usable by superusers.
-
-        Returns::
-
-            {
-                'users': [
-                    'email': 'Email address of user',
-                    'user_id': 'ID of user'
-                ] ...
-            }
+        ---
+        type:
+            users:
+                many: true
+                description: an array of email/user_id objects
+                email:
+                    description: email address
+                user_id:
+                    description: user_id
         """
         users = []
         for u in User.objects.all():
             users.append({'email': u.email, 'user_id': u.pk})
-
         return JsonResponse({'users': users})
 
     @ajax_request_class
     @api_endpoint_class
     @list_route(methods=['GET'])
-    def my_pk(self, request):
+    def current_user_id(self, request):
+        """
+        Returns the id (primary key) for the current user to allow it
+        to be passed to other user related endpoints
+        ---
+        type:
+            pk:
+                description: Primary key for the current user
+                required: true
+                type: string
+        """
         return JsonResponse({'pk': request.user.id})
 
     @api_endpoint_class
@@ -378,56 +322,82 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """
-        Retrieves the request's user's first_name, last_name, email
-        and api key if exists.
-
-        Returns::
-
-            {
-                'status': 'success',
-                'user': {
-                    'first_name': user's first name,
-                    'last_name': user's last name,
-                    'email': user's email,
-                    'api_key': user's API key
-                }
-            }
+        Retrieves the a user's first_name, last_name, email
+        and api key if exists by user ID (pk).
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: User ID / primary key
+              type: integer
+              required: true
+              paramType: path
+        type:
+            status:
+                description: success or error
+                type: string
+                required: true
+            first_name:
+                description: user first name
+                type: string
+                required: true
+            last_name:
+                description: user last name
+                type: string
+                required: true
+            email:
+                description: user email
+                type: string
+                required: true
+            api_key:
+                description: user API key
+                type: string
+                required: true
         """
+
         try:
             user = User.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)}, status=404)
         if not user == request.user:
-            return JsonResponse({'status': 'error', 'message': "Cannot access user account with pk = " + str(pk)}, status=403)
+            return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)}, status=403)
         return JsonResponse({
             'status': 'success',
-            'user': {
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'email': user.email,
-                'api_key': user.api_key,
-            }
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'api_key': user.api_key,
         })
 
     @ajax_request_class
     @detail_route(methods=['GET'])
     def generate_api_key(self, request, pk=None):
-        """generates a new API key
-
-        Returns::
-
-            {
-                'status': 'success',
-                'api_key': the new api key
-            }
+        """
+        Generates a new API key
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: User ID / primary key
+              type: integer
+              required: true
+              paramType: path
+        type:
+            status:
+                description: success or error
+                type: string
+                required: true
+            api_key:
+                description: the new API key for this user
+                type: string
+                required: true
         """
         try:
             user = User.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)}, status=404)
         if not user == request.user:
-            return JsonResponse({'status': 'error', 'message': "Cannot access user account with pk = " + str(pk)},
-                                status=403)
+            return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)}, status=403)
         user.generate_key()
         return {
             'status': 'success',
@@ -438,29 +408,48 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
     @ajax_request_class
     def update(self, request, pk=None):
         """
-        Updates the request's user's first name, last name, and email
-
-        Payload::
-
-            {
-             'user': {
-                      'first_name': :first_name,
-                      'last_name': :last_name,
-                      'email': :email
-                    }
-            }
-
-        Returns::
-
-            {
-                'status': 'success',
-                'user': {
-                    'first_name': user's first name,
-                    'last_name': user's last name,
-                    'email': user's email,
-                    'api_key': user's API key
-                }
-            }
+        Updates the user's first name, last name, and email
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: User ID / primary key
+              type: integer
+              required: true
+              paramType: path
+            - name: first_name
+              description: New first name
+              type: string
+              required: true
+            - name: last_name
+              description: New last name
+              type: string
+              required: true
+            - name: email
+              description: New user email
+              type: string
+              required: true
+        type:
+            status:
+                description: success or error
+                type: string
+                required: true
+            first_name:
+                description: user first name
+                type: string
+                required: true
+            last_name:
+                description: user last name
+                type: string
+                required: true
+            email:
+                description: user email
+                type: string
+                required: true
+            api_key:
+                description: user API key
+                type: string
+                required: true
         """
         body = request.data
         try:
@@ -468,9 +457,8 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)}, status=404)
         if not user == request.user:
-            return JsonResponse({'status': 'error', 'message': "Cannot access user account with pk = " + str(pk)},
-                                status=403)
-        json_user = body.get('user')
+            return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)}, status=403)
+        json_user = body
         user.first_name = json_user.get('first_name')
         user.last_name = json_user.get('last_name')
         user.email = json_user.get('email')
@@ -478,12 +466,10 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
         user.save()
         return JsonResponse({
             'status': 'success',
-            'user': {
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'email': user.email,
-                'api_key': user.api_key,
-            }
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'api_key': user.api_key,
         })
 
     @ajax_request_class
@@ -492,20 +478,30 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
         """
         sets/updates a user's password, follows the min requirement of
         django password validation settings in config/settings/common.py
-
-        Payload::
-
-            {
-                'current_password': current_password,
-                'password_1': password_1,
-                'password_2': password_2
-            }
-
-        Returns::
-
-            {
-                'status': 'success'
-            }
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: current_password
+              description: Users current password
+              type: string
+              required: true
+            - name: password_1
+              description: Users new password 1
+              type: string
+              required: true
+            - name: password_2
+              description: Users new password 2
+              type: string
+              required: true
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
+            message:
+                type: string
+                description: error message, if any
+                required: false
         """
         body = request.data
         try:
@@ -513,8 +509,7 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)}, status=404)
         if not user == request.user:
-            return JsonResponse({'status': 'error', 'message': "Cannot access user account with pk = " + str(pk)},
-                                status=403)
+            return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)}, status=403)
         current_password = body.get('current_password')
         p1 = body.get('password_1')
         p2 = body.get('password_2')
@@ -541,18 +536,38 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
     @ajax_request_class
     @detail_route(methods=['GET'])
     def is_authorized(self, request, pk=None):
-        """checks the auth for a given action, if user is the owner of the parent
+        """
+        Checks the auth for a given action, if user is the owner of the parent
         org then True is returned for each action
-
-        Payload::
-
-            {
-                'organization_id': 2,
-                'actions': ['can_invite_member', 'can_remove_member']
-            }
-
-        :param actions: from the json payload, a list of actions to check
-        :returns: a dict of with keys equal to the actions, and values as bool
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: User ID (primary key)
+              type: integer
+              required: true
+              paramType: path
+            - name: organization_id
+              description: ID (primary key) for organization
+              type: integer
+              required: true
+            - name: actions
+              type: array[string]
+              required: true
+              description: a list of actions to check
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
+            message:
+                type: string
+                description: error message, if any
+                required: false
+            auth:
+                type: object
+                description: a dict of with keys equal to the actions, and values as bool
+                required: true
         """
         actions, org, error, message = self._parse_is_authenticated_params(request)
         if error:
@@ -563,8 +578,7 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)}, status=404)
         if not user == request.user:
-            return JsonResponse({'status': 'error', 'message': "Cannot access user account with pk = " + str(pk)},
-                                status=403)
+            return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)}, status=403)
 
         auth = self._try_parent_org_auth(user, org, actions)
         if auth:
@@ -607,7 +621,7 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
         the parent org, then None is returned.
 
         :param user: the request user
-        :param organization_id: id of org to check its parent
+        :param organization: org to check its parent
         :param actions: list of str actions to check
         :returns: a dict of action permission resolutions or None
         """
@@ -627,14 +641,36 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
     @ajax_request_class
     @detail_route(methods=['GET'])
     def shared_buildings(self, request, pk=None):
-        """gets the request user's ``show_shared_buildings`` attr"""
+        """
+        Get the request user's ``show_shared_buildings`` attr
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: User ID (primary key)
+              type: integer
+              required: true
+              paramType: path
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
+            show_shared_buildings:
+                type: string
+                description: the user show shared buildings attribute
+                required: true
+            message:
+                type: string
+                description: error message, if any
+                required: false
+        """
         try:
             user = User.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)}, status=404)
         if not user == request.user:
-            return JsonResponse({'status': 'error', 'message': "Cannot access user account with pk = " + str(pk)},
-                                status=403)
+            return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)}, status=403)
 
         return JsonResponse({
             'status': 'success',
@@ -642,20 +678,39 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
         })
 
     @ajax_request_class
-    @detail_route(methods=['GET'])
-    def set_default_organization(self, request, pk=None):
-        """sets the user's default organization"""
+    @detail_route(methods=['PUT'])
+    def default_organization(self, request, pk=None):
+        """
+        Sets the user's default organization
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: User ID (primary key)
+              type: integer
+              required: true
+              paramType: path
+            - name: organization_id
+              description: The new default organization ID to use for this user
+              type: integer
+              required: true
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
+            message:
+                type: string
+                description: error message, if any
+                required: false
+        """
         body = request.data
         try:
             user = User.objects.get(pk=pk)
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)}, status=404)
         if not user == request.user:
-            return JsonResponse({'status': 'error', 'message': "Cannot access user account with pk = " + str(pk)},
-                                status=403)
-
-        org = body['organization']
-        user.default_organization_id = org['id']
+            return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)}, status=403)
+        user.default_organization_id = body['organization_id']
         user.save()
         return {'status': 'success'}
-

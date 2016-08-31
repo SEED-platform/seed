@@ -39,9 +39,9 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: urls.accounts.set_default_organization,
+            url: '/api/v2/users/1/default_organization/', //TODO: Need to pass in the current user to get ID
             data: {
-                organization: org
+                organization_id: org
             }
         }).success(function(data) {
             defer.resolve(data);
@@ -54,7 +54,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
     user_factory.get_users = function() {
 
         var defer = $q.defer();
-        $http.get(urls.accounts.get_users).success(function(data) {
+        $http.get('/api/v2/users/').success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {
             defer.reject(data, status);
@@ -78,7 +78,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
 
         $http({
             method: 'POST',
-            url: urls.accounts.add_user,
+            url: '/api/v2/users/',
             data: new_user_details
         }).success(function(data) {
             defer.resolve(data);
@@ -135,7 +135,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         var defer = $q.defer();
         $http({
             method: 'GET',
-            url: urls.accounts.get_user_profile
+            url: '/api/v2/users/1/' // TODO: Pass in actual user
         }).success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {
@@ -152,7 +152,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            url: urls.accounts.generate_api_key
+            url: '/api/v2/users/1/generate_api_key/' // TODO: Pass in actual user
         }).success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {
@@ -197,8 +197,12 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: urls.accounts.update_user,
-            data: {user: user}
+            url: '/api/v2/users/1/', // TODO: Pass in actual user
+            data: {
+                first_name: user.first_name,
+                last_name: user.last_name,
+                email: user.email
+            }
         }).success(function(data) {
             defer.resolve(data);
         }).error(function(data, status) {
@@ -213,11 +217,11 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      * @param {string} password_1
      * @param {string} password_2
      */
-    user_factory.set_password = function(current_password, password_1, password_2) {
+    user_factory.set_password = function(current_user_id, current_password, password_1, password_2) {
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: urls.accounts.set_password,
+            url: '/api/v2/users/1/set_password/', // TODO: Pass in actual user
             data: {
                 current_password: current_password,
                 password_1: password_1,

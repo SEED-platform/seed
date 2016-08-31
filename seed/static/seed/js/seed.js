@@ -813,6 +813,8 @@ SEED_app.config(['$routeProvider', function ($routeProvider) {
                     return organization_service.get_organization(organization_id);
                 }],
                 auth_payload: ['auth_service', '$route', '$q', function(auth_service, $route, $q) {
+                    console.log($route);
+                    console.log($q);
                     var organization_id = $route.current.params.organization_id;
                     return auth_service.is_authorized(organization_id, ['can_invite_member', 'can_remove_member', 'requires_owner', 'requires_member'])
                     .then(function (data) {

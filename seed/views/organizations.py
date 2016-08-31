@@ -236,15 +236,23 @@ class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
     def destroy(self, request, pk=None):
         """
         Starts a background task to delete an organization and all related data.
-
-        :GET: Expects 'org_id' for the organization.
-
-        Returns::
-
-            {
-                'status': 'success' or 'error',
-                'progress_key': ID of background job, for retrieving job progress
-            }
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              type: integer
+              description: Organization ID (primary key)
+              required: true
+              paramType: path
+        type:
+            status:
+                description: success or error
+                type: string
+                required: true
+            progress_key:
+                description: ID of background job, for retrieving job progress
+                type: string
+                required: true
         """
         org_id = pk
         deleting_cache_key = get_prog_key(
@@ -264,6 +272,7 @@ class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         """
         Retrieves a single organization by id.
+        ---
 
         Returns::
 
@@ -382,21 +391,25 @@ class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
     def remove_user(self, request, pk=None):
         """
         Removes a user from an organization.
-
-        Payload::
-
-            {
-                'organization_id': ID of the org,
-                'user_id': ID of the user
-            }
-
-        Returns::
-
-            {
-                'status': 'success' or 'error',
-                'message': 'error message, if any'
-            }
-
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Organization ID (Primary key)
+              type: integer
+              required: true
+              paramType: path
+            - name: user_id
+              description: User ID (Primary key) of the user to remove from the organization
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
+            message:
+                type: string
+                description: info/error message, if any
+                required: false
         """
         body = request.data
 
@@ -462,22 +475,29 @@ class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
     def create(self, request):
         """
         Creates a new organization.
-
-        Payload::
-
-            {
-                'organization_name': The name of the new org,
-                'user_id': the user id of the owner of the new org,
-            }
-
-        Returns::
-
-            {
-                'status': 'success' or 'error',
-                'message': 'message, if any',
-                'organization_id': The ID of the new org, if created.
-            }
-
+        ---
+        parameters:
+            - name: organization_name
+              description: The new organization name
+              type: string
+              required: true
+            - name: user_id
+              description: The user ID (primary key) to be used as the owner of the new organization
+              type: integer
+              required: true
+        type:
+           status:
+               type: string
+               description: success or error
+               required: true
+           message:
+               type: string
+               description: error/informational message, if any
+               required: false
+           organization_id:
+               type: string
+               description: The ID of the new org, if created
+               required: false
         """
         body = request.data
         user = User.objects.get(pk=body['user_id'])
@@ -501,22 +521,25 @@ class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
     def add_user(self, request, pk=None):
         """
         Adds an existing user to an organization.
-
-        Payload::
-
-            {
-                'organization_id': The ID of the organization,
-                'user_id': the user id of the owner of the new org,
-            }
-
-        Returns::
-
-            {
-                'status': 'success' or 'error',
-                'message': 'message, if any',
-            }
-
-
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Organization ID (Primary key)
+              type: integer
+              required: true
+              paramType: path
+            - name: user_id
+              description: User ID (Primary key) of the user to add to the organization
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
+            message:
+                type: string
+                description: info/error message, if any
+                required: false
         """
         body = request.data
         org = Organization.objects.get(pk=pk)
@@ -605,16 +628,24 @@ class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
         members of sibling orgs must return at least this many buildings
         from orgs they do not belong to, or else buildings from orgs they
         don't belong to will be removed from the results.
-
-        :GET: Expects organization_id in the query string.
-
-        Returns::
-
-            {
-             'status': 'success',
-             'query_threshold': The minimum number of buildings that must be
-                 returned from a search to avoid squelching non-member-org results.
-            }
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Organization ID (Primary key)
+              type: integer
+              required: true
+              paramType: path
+        type:
+            status:
+                type: string
+                required: true
+                description: success or error
+            query_threshold:
+                type: integer
+                required: true
+                description: Minimum number of buildings that must be returned from a search to avoid
+                             squelching non-member-org results
         """
         org = Organization.objects.get(pk=pk)
         return JsonResponse({
@@ -628,11 +659,17 @@ class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
     def shared_fields(self, request, pk=None):
         """
         Retrieves all fields marked as shared for this org tree.
-
-        :GET: Expects organization_id in the query string.
-
-        Returns::
-
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Organization ID (Primary key)
+              type: integer
+              required: true
+              paramType: path
+        type: object
+        """
+        """
             {
              'status': 'success',
              'shared_fields': [
@@ -701,18 +738,31 @@ class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
     def cleansing_rules(self, request, pk=None):
         """
         Returns the cleansing rules for an org.
-
-        :param request:
-        :GET: Expects organization_id in the query string.
-
-        Returns::
-
-            {
-             'status': 'success',
-             'in_range_checking': An array of in-range error rules,
-             'missing_matching_field': An array of fields to verify existence,
-             'missing_values': An array of fields to ignore missing values
-            }
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Organization ID (Primary key)
+              type: integer
+              required: true
+              paramType: path
+        type:
+            status:
+                type: string
+                required: true
+                description: success or error
+            in_range_checking:
+                type: array[string]
+                required: true
+                description: An array of in-range error rules
+            missing_matching_field:
+                type: array[string]
+                required: true
+                description: An array of fields to verify existence
+            missing_values:
+                type: array[string]
+                required: true
+                description: An array of fields to ignore missing values
         """
         org = Organization.objects.get(pk=pk)
 
@@ -763,18 +813,31 @@ class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
     def reset_cleansing_rules(self, request, pk=None):
         """
         Resets an organization's data cleansing rules
-
-        :param request:
-        :GET: Expects organization_id in the query string.
-
-        Returns::
-
-            {
-             'status': 'success',
-             'in_range_checking': An array of in-range error rules,
-             'missing_matching_field': An array of fields to verify existence,
-             'missing_values': An array of fields to ignore missing values
-            }
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Organization ID (Primary key)
+              type: integer
+              required: true
+              paramType: path
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
+            in_range_checking:
+                type: array[string]
+                required: true
+                description: An array of in-range error rules
+            missing_matching_field:
+                type: array[string]
+                required: true
+                description: An array of fields to verify existence
+            missing_values:
+                type: array[string]
+                required: true
+                description: An array of fields to ignore missing values
         """
         org = Organization.objects.get(pk=pk)
 
@@ -784,47 +847,60 @@ class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
-    @detail_route(methods=['POST'])
+    @detail_route(methods=['PUT'])
     def save_cleansing_rules(self, request, pk=None):
         """
         Saves an organization's settings: name, query threshold, shared fields
-
-        Payload::
-
-            {
-                'organization_id: 2,
-                'cleansing_rules': {
-                    'missing_matching_field': [
-                        {
-                            'field': 'address_line_1',
-                            'severity': 'error'
-                        }
-                    ],
-                    'missing_values': [
-                        {
-                            'field': 'address_line_1',
-                            'severity': 'error'
-                        }
-                    ],
-                    'in_range_checking': [
-                        {
-                            'field': 'conditioned_floor_area',
-                            'enabled': true,
-                            'type': 'number',
-                            'min': null,
-                            'max': 7000000,
-                            'severity': 'error',
-                            'units': 'square feet'
-                        },
-                    ]
-                }
+        Body type is:
+        {
+            'cleansing_rules': {
+                'missing_matching_field': [
+                    {
+                        'field': 'address_line_1',
+                        'severity': 'error'
+                    }
+                ],
+                'missing_values': [
+                    {
+                        'field': 'address_line_1',
+                        'severity': 'error'
+                    }
+                ],
+                'in_range_checking': [
+                    {
+                        'field': 'conditioned_floor_area',
+                        'enabled': true,
+                        'type': 'number',
+                        'min': null,
+                        'max': 7000000,
+                        'severity': 'error',
+                        'units': 'square feet'
+                    },
+                ]
             }
-
-        Returns::
-
-            {
-                'status': 'success',
-            }
+        }
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Organization ID (Primary key)
+              type: integer
+              required: true
+              paramType: path
+            - name: body
+              description: body containing all the things
+              type: object
+              paramType: body
+              required: true
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
+            message:
+                type: string
+                description: error message, if any
+                required: true
         """
         body = request.data
         try:
@@ -880,30 +956,39 @@ class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
     def sub_org(self, request, pk=None):
         """
         Creates a child org of a parent org.
-
-        Payload::
-
-            {
-                'parent_org_id': ID of the parent org,
-                'sub_org': {
-                    'name': Name of new sub org,
-                    'email': Email address of owner of sub org, which
-                            must already exist
-                }
-            }
-
-        Returns::
-
-            {
-                'status': 'success' or 'error',
-                'message': Error message, if any,
-                'organization_id': ID of newly-created org
-            }
-
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Organization ID (Primary key)
+              type: integer
+              required: true
+              paramType: path
+            - name: sub_org_name
+              description: Name of the new sub organization
+              type: string
+              required: true
+            - name: sub_org_owner_email
+              description: Email of the owner of the sub organization, which must already exist
+              type: string
+              required: true
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
+            message:
+                type: string
+                description: error message, if any
+                required: true
+            organization_id:
+                type: integer
+                description: ID of newly-created org
+                required: true
         """
         body = request.data
         org = Organization.objects.get(pk=pk)
-        email = body['sub_org']['email']
+        email = body['sub_org_owner_email']
         try:
             user = User.objects.get(username=email)
         except User.DoesNotExist:
@@ -912,7 +997,7 @@ class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
                 'message': 'User with email address (%s) does not exist' % email
             }, status=404)
         sub_org = Organization.objects.create(
-            name=body['sub_org']['name']
+            name=body['sub_org_name']
         )
 
         OrganizationUser.objects.get_or_create(user=user, organization=sub_org)

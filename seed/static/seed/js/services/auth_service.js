@@ -27,11 +27,14 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
      * @return {promise} then a an object with keys as the actions, and bool
      * values
      */
-    auth_factory.is_authorized = function(organization_id, actions) {
+    auth_factory.is_authorized = function(user_id, organization_id, actions) {
         var defer = $q.defer();
+        console.log(user_id);
+        console.log(organization_id);
+        console.log(actions);
         $http({
-            method: 'POST',
-            url: urls.accounts.is_authorized,
+            method: 'GET',
+            url: '/api/v2/users/' + user_id + '/is_authorized/',
             data: {
                 actions: actions,
                 organization_id: organization_id
