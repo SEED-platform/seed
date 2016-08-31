@@ -32,7 +32,11 @@ from seed.cleansing.tasks import (
     cleanse_data_chunk,
 )
 from seed.data_importer.models import (
-    ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
+    ImportFile,
+    ImportRecord,
+    STATUS_READY_TO_MERGE,
+    ROW_DELIMITER,
+    DuplicateDataError,
 )
 from seed.decorators import get_prog_key
 from seed.decorators import lock_and_track
@@ -335,14 +339,14 @@ def _map_data(file_pk, *args, **kwargs):
 
     id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
     increment = get_cache_increment_value(id_chunks)
-    tasks = [map_row_chunk.s(ids, file_pk, source_type, prog_key, increment)
-             for ids in id_chunks]
+    tasks = [map_row_chunk.s(ids, file_pk, source_type, prog_key, increment) for ids in id_chunks]
 
     if tasks:
         # specify the chord as an immutable with .si
         chord(tasks, interval=15)(finish_mapping.si(file_pk))
     else:
-        finish_mapping.subtask(file_pk)
+        logger.debug("Not creating finish_mapping chord, calling directly")
+        finish_mapping.si(file_pk)
 
 
 @shared_task
@@ -634,6 +638,7 @@ def save_raw_data(file_pk, *args, **kwargs):
     return result
 
 
+# TODO: Not used -- remove
 def _stringify(values):
     """Take iterable of str and NoneTypes and reduce to space sep. str."""
     return ' '.join(
@@ -1209,11 +1214,3 @@ def is_same_snapshot(s1, s2):
             return False
 
     return True
-
-
-# TODO: Move this to the models
-class DuplicateDataError(RuntimeError):
-
-    def __init__(self, id):
-        super(DuplicateDataError, self).__init__()
-        self.id = id

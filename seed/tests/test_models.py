@@ -15,6 +15,7 @@ from seed import models as seed_models
 from seed.mappings import mapper
 from seed.tests import util
 
+
 @skip("Fix for new data model")
 class TestBuildingSnapshot(TestCase):
     """Test the clean methods on BuildingSnapshotModel."""
