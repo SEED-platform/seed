@@ -52,6 +52,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.existing_members_modal',
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.export_modal',
+  'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
   'BE.seed.controller.label_admin',
@@ -436,7 +437,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'reports',
-      url: '/inventory/reports',
+      url: '/{inventory_type:properties|taxlots}/reports',
       templateUrl: static_url + 'seed/partials/inventory_reports.html',
       controller: 'inventory_reports_controller',
       resolve: {
@@ -447,9 +448,20 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'list_settings',
-      url: '/inventory/settings',
+      url: '/{inventory_type:properties|taxlots}/settings',
       templateUrl: static_url + 'seed/partials/inventory_settings.html',
       controller: 'inventory_settings_controller',
+      resolve: {
+        $uibModalInstance: function () {
+          return {close: function () {}};
+        }
+      }
+    })
+    .state({
+      name: 'detail_settings',
+      url: '/{inventory_type:properties|taxlots}/{inventory_id:int}/cycles/{cycle_id:int}/settings',
+      templateUrl: static_url + 'seed/partials/inventory_detail_settings.html',
+      controller: 'inventory_detail_settings_controller',
       resolve: {
         $uibModalInstance: function () {
           return {close: function () {}};
@@ -1017,9 +1029,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       }
     })
     .state({
+      name: 'detail',
+      abstract: true,
+      controller: 'base_detail_controller',
+      template: '<ui-view>'
+    })
+    .state({
       name: 'property',
       url: '/properties/:property_id/cycles/:cycle_id',
-      templateUrl: static_url + 'seed/partials/inventory_item_detail.html',
+      templateUrl: static_url + 'seed/partials/inventory_detail.html',
       controller: 'property_detail_controller',
       resolve: {
         property_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
@@ -1034,14 +1052,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
         }],
         default_property_columns: ['user_service', function (user_service) {
           //TODO: Return default Property columns
-          return []
+          return [];
         }]
-      }
+      },
+      parent: 'detail'
     })
     .state({
       name: 'taxlot',
       url: '/taxlots/:taxlot_id/cycles/:cycle_id',
-      templateUrl: static_url + 'seed/partials/inventory_item_detail.html',
+      templateUrl: static_url + 'seed/partials/inventory_detail.html',
       controller: 'taxlot_detail_controller',
       resolve: {
         taxlot_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
@@ -1058,7 +1077,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           //TODO: Return default TaxLot columns
           return [];
         }]
-      }
+      },
+      parent: 'detail'
     });
 }]);
 

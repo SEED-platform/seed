@@ -9,15 +9,10 @@ angular.module('BE.seed.controller.base_detail', [])
 			'$log',
 			'$filter',
 			'inventory_service',
-			'all_columns',
 			'urls',
 			'label_helper_service',
-			'default_columns',
-function($scope, $uibModal, $log, $filter, inventory_service,
-				 all_columns, urls, label_helper_service, default_columns) {
-
-	$scope.fields = all_columns.fields;
-	$scope.default_columns = default_columns.columns;
+function($scope, $uibModal, $log, $filter, inventory_service, urls, label_helper_service) {
+	
 	$scope.edit_form_showing = false;
 
 	/** Holds a copy of original state of item_state.
@@ -45,13 +40,13 @@ function($scope, $uibModal, $log, $filter, inventory_service,
 	$scope.on_cancel = function () {
 		$scope.restore_copy();
 		$scope.edit_form_showing = false;
-	}
+	};
 
 	/* User clicked 'edit' link */
 	$scope.on_edit = function () {
 		$scope.make_copy_before_edit();
 		$scope.edit_form_showing = true;
-	}
+	};
 
 	/**
 	 * save_property_state: saves the property state in case cancel gets clicked
@@ -72,7 +67,7 @@ function($scope, $uibModal, $log, $filter, inventory_service,
 	/**
 	 * generate_data_fields: returns a list of objects representing
 	 * the data fields (fixed column and extra_data) to show for
-	 * the current item in the detail view (Proeprty or State).
+	 * the current item in the detail view (Property or State).
 	 *
 	 * This method makes sure keys/fields are not duplicated.
 	 * Also, it only adds columns that are in the
@@ -188,7 +183,7 @@ function($scope, $uibModal, $log, $filter, inventory_service,
 
 	/** Open a model to edit labels for the current detail item.
 	 *
-	 * @param item	A Propety or TaxLot object
+	 * @param item	A Property or TaxLot object
 	 * @param type	"property" or "taxlot"  << This might be unnecessary.
 	 */
 

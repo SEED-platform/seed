@@ -20,7 +20,12 @@ angular.module('BE.seed.controller.property_detail', [])
 function($controller, $state, $scope, $uibModal, $location, $log, $filter, urls, label_helper_service,
 				 	inventory_service, property_payload, all_property_columns, default_property_columns ) {
 
+	$scope.fields = all_property_columns.fields;
+
 	/** See service for structure of returned payload */
+	$scope.inventory = {
+		id: property_payload.property.id
+	};
 	$scope.property = property_payload.property;
 	$scope.cycle = property_payload.cycle;
 	$scope.related_taxlots = property_payload.taxlots;
@@ -34,7 +39,7 @@ function($controller, $state, $scope, $uibModal, $location, $log, $filter, urls,
 	// Let's remember this.
 	$scope.all_extra_data_keys = property_payload.extra_data_keys;
 
-	$scope.item_type = "property";
+	$scope.inventory_type = "properties";
 	$scope.item_title = "Property : " + ($scope.item_state.address_line_1 ? $scope.item_state.address_line_1 : '(no address 1)');
 	$scope.user = {};
 	$scope.user_role = property_payload.user_role;
