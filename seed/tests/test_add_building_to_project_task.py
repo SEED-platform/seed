@@ -9,6 +9,7 @@ Unit tests for seed/views/labels.py
 """
 
 from django.test import TestCase
+from unittest import skip
 
 from seed.utils.organizations import (
     create_organization,
