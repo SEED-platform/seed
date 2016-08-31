@@ -10,9 +10,12 @@ from rest_framework import routers
 
 from seed.views.datasets import DatasetViewSet
 from seed.views.main import (
-    home, version, create_pm_mapping, get_total_number_of_buildings_for_user,
-    get_building, get_datasets_count, search_buildings,
-    search_building_snapshots,
+    home, version, create_pm_mapping,
+    get_total_number_of_buildings_for_user,         # TO REMOVE
+    get_building,                                   # TO REMOVE
+    get_datasets_count,
+    search_buildings,                               # TO REMOVE
+    search_building_snapshots,                      # TO REMOVE
     get_default_columns, set_default_columns,
     get_default_building_detail_columns,
     set_default_building_detail_columns, get_columns, save_match,
@@ -21,9 +24,10 @@ from seed.views.main import (
     delete_duplicates_from_import_file,
     create_dataset, get_datasets, get_dataset, get_import_file, delete_file,
     delete_dataset,
-    update_dataset, update_building, get_building_summary_report_data,
-    get_building_report_data,
-    get_aggregated_building_report_data, get_column_mapping_suggestions,
+    update_dataset,  # update_building,
+    # get_building_summary_report_data,
+    # get_building_report_data, get_aggregated_building_report_data,
+    get_column_mapping_suggestions,
     get_raw_column_names,
     get_first_five_rows, save_column_mappings, start_mapping, remap_buildings,
     start_system_matching, public_search, progress, export_buildings,
@@ -54,7 +58,7 @@ urlpatterns = [
     url(r'^' + apiv1 + r'version/$', version, name='version'),
 
     url(r'^' + apiv1 + r'create_pm_mapping/$', create_pm_mapping, name='create_pm_mapping'),
-
+    # TO REMOVE
     url(
         r'^' + apiv1 + r'get_total_number_of_buildings_for_user/$',
         get_total_number_of_buildings_for_user,
@@ -114,24 +118,24 @@ urlpatterns = [
     url(r'^' + apiv1 + r'delete_file/$', delete_file, name='delete_file'),
     url(r'^' + apiv1 + r'delete_dataset/$', delete_dataset, name='delete_dataset'),
     url(r'^' + apiv1 + r'update_dataset/$', update_dataset, name='update_dataset'),
-    url(r'^' + apiv1 + r'update_building/$', update_building, name='update_building'),
+    # url(r'^' + apiv1 + r'update_building/$', update_building, name='update_building'),
 
     # Building reports
-    url(
-        r'^' + apiv1 + r'get_building_summary_report_data/$',
-        get_building_summary_report_data,
-        name='get_building_summary_report_data',
-    ),
-    url(
-        r'^' + apiv1 + r'get_building_report_data/$',
-        get_building_report_data,
-        name='get_building_report_data',
-    ),
-    url(
-        r'^' + apiv1 + r'get_aggregated_building_report_data/$',
-        get_aggregated_building_report_data,
-        name='get_aggregated_building_report_data',
-    ),
+    # url(
+    #     r'^' + apiv1 + r'get_building_summary_report_data/$',
+    #     get_building_summary_report_data,
+    #     name='get_building_summary_report_data',
+    # ),
+    # url(
+    #     r'^' + apiv1 + r'get_building_report_data/$',
+    #     get_building_report_data,
+    #     name='get_building_report_data',
+    # ),
+    # url(
+    #     r'^' + apiv1 + r'get_aggregated_building_report_data/$',
+    #     get_aggregated_building_report_data,
+    #     name='get_aggregated_building_report_data',
+    # ),
 
     # New MCM endpoints
     url(

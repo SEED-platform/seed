@@ -10,6 +10,7 @@ import logging
 from dateutil import parser
 
 from mock import patch
+
 from django.test import TestCase
 from django.core.files import File
 from seed.audit_logs.models import AuditLog
@@ -161,7 +162,8 @@ class TestTasks(TestCase):
         }
 
     def test_cached_first_row_order(self):
-        """Tests to make sure the first row is saved in the correct order.  It should be the order of the headers in the original file."""
+        """Tests to make sure the first row is saved in the correct order.
+        It should be the order of the headers in the original file."""
         with patch.object(ImportFile, 'cache_first_rows', return_value=None):
             tasks._save_raw_data(
                 self.import_file.pk,
@@ -614,6 +616,7 @@ class TestTasks(TestCase):
             1
         )
 
+    # Will be obsoleted
     def test_get_ancestors(self):
         """Tests get_ancestors(building), returns all non-composite, non-raw
             BuildingSnapshot instances.

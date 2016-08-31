@@ -166,7 +166,7 @@ angular.module('BE.seed.service.inventory_reports',
 
         $http({
                 method: 'GET',
-                'url': window.BE.urls.get_building_summary_report_data,
+                'url': window.BE.urls.get_inventory_summary_report_data,
                 'params': args
         }).success(function(data, status, headers, config) {
             building_reports_factory.summary_data = (data != undefined && data.summary_data != undefined) ? data.summary_data : [];

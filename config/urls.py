@@ -56,7 +56,7 @@ urlpatterns = [
     url(r'^robots\.txt', robots_txt, name='robots_txt'),
 
     # bluesky api views
-    url(r'^app/', include('seed.urls.properties', namespace="api")),
+    url(r'^app/', include('seed.urls.properties', namespace="app", app_name='properties')),
 ]
 
 if settings.DEBUG:
