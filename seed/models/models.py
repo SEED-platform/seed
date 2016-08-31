@@ -791,8 +791,6 @@ class Enum(models.Model):
         )
 
 
-
-
 class CanonicalManager(models.Manager):
     """Manager to add useful model filtering methods"""
 

@@ -31,7 +31,6 @@ from seed.models.models import (
 )
 
 
-
 def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
     """Callable provided to MCM to return a previously mapped field.
 
@@ -146,7 +145,7 @@ class Column(models.Model):
 
     # name of the table which the column name applies, if the column name
     # is a db field
-    table_name = models.CharField(max_length=512,  blank=True, db_index=True,)
+    table_name = models.CharField(max_length=512, blank=True, db_index=True,)
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
