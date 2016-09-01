@@ -4,7 +4,7 @@
 
         </div>
         <div class="page_title">
-            <h1>Inventory</h1>
+            <h1>{$ inventory_type == 'taxlots' ? 'Tax Lot' : 'Property' $} List Settings</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
@@ -14,4 +14,33 @@
     <div class="section_nav" ng-include="urls.static_url + 'seed/partials/inventory_nav.html'"></div>
 </div>
 
-<div style="margin-top:50px; text-align:center">IN PROGRESS</div>
+<div class="section_header_container">
+    <div id="building-settings" class="section_header has_no_padding fixed_height_short">
+        <div class="section_action_container left_wide">
+            <h2><i class="fa fa-cogs"></i><span>Column Order/Visibility</span></h2>
+        </div>
+        <div class="section_action_container right section_action_btn">
+            <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">Save Changes
+                <i class="fa fa-check align_right" ng-show="settings_updated"></i></button>
+        </div>
+    </div>
+</div>
+
+<div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
+    <div class="section_content with_padding" style="overflow:hidden;">
+        <h3>Add Shared Buildings.</h3>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" ng-model="user.show_shared_buildings">
+                Include in your buildings list all buildings shared with you.
+            </label>
+        </div>
+        <h3>There are {$ data.length | number $} columns of data available to you.</h3>
+        <p>Select columns from the list below to make them appear in your {$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $} List table. Drag the rows to change the order in which they appear.</p>
+    </div>
+    <div class="section_content">
+        <div id="grid-container">
+            <div ui-grid="gridOptions" ui-grid-selection ui-grid-draggable-rows></div>
+        </div>
+    </div>
+</div>

@@ -2524,3 +2524,33 @@ gs-input .tags .tag-item .remove-button {
     }
   }
 }
+
+.ui-grid-draggable-row-target {
+  opacity: 0.5 !important;
+}
+
+.ui-grid-draggable-row {
+  cursor: grab;
+  height: 30px;
+}
+
+.ui-grid-draggable-row-over {
+  position: relative;
+
+  &:before {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    border-bottom: 2px dotted #AAA;
+  }
+
+  &--above:before {
+    top: 0;
+  }
+
+  &--below:before {
+    bottom: 0;
+  }
+}

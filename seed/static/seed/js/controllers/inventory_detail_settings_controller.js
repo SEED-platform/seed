@@ -5,15 +5,58 @@
 angular.module('BE.seed.controller.inventory_detail_settings', [])
   .controller('inventory_detail_settings_controller', [
     '$scope',
+    '$window',
     '$uibModalInstance',
-    '$state',
     '$stateParams',
-    function ($scope, $uibModalInstance, $state, $stateParams) {
+    'columns',
+    function ($scope, $window, $uibModalInstance, $stateParams, columns) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id
       };
       $scope.cycle = {
         id: $stateParams.cycle_id
+      };
+
+      var restoreDefaults = function () {
+        // TODO
+        console.debug('Restoring detail setting defaults')
+      };
+
+      $scope.updateHeight = function () {
+        var height = 0;
+        _.forEach(['.header', '.page_header_container', '.section_nav_container', '.section_header_container', '.section_content.with_padding'], function (selector) {
+          height += angular.element(selector)[0].offsetHeight;
+        });
+        angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
+        angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');
+        $scope.gridApi.core.handleWindowResize();
+      };
+
+      $scope.data = columns;
+
+      $scope.gridOptions = {
+        data: 'data',
+        enableColumnMenus: false,
+        enableFiltering: true,
+        enableGridMenu: true,
+        enableSorting: false,
+        gridMenuCustomItems: [{
+          title: 'Reset defaults',
+          action: restoreDefaults
+        }],
+        gridMenuShowHideColumns: false,
+        rowTemplate: '<div grid="grid" class="ui-grid-draggable-row" draggable="true"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader, \'custom\': true }" ui-grid-cell></div></div>',
+        columnDefs: [{
+          name: 'displayName',
+          displayName: 'Column Name',
+          enableHiding: false
+        }],
+        onRegisterApi: function (gridApi) {
+          $scope.gridApi = gridApi;
+
+          $scope.updateHeight();
+          angular.element($window).on('resize', _.debounce($scope.updateHeight, 150));
+        }
       };
     }]);
