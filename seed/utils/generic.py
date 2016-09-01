@@ -5,6 +5,9 @@
 :author
 """
 import math
+import json
+from django.core import serializers
+from django_pgjson.fields import JsonField
 
 
 def split_model_fields(obj, fields):
@@ -39,3 +42,31 @@ def median(lst):
 
 def round_down_hundred_thousand(x):
     return int(math.floor(x / 100000.0)) * 100000
+
+
+def obj_to_dict(obj, include_m2m=True):
+    """serializes obj for a JSON friendly version
+        tries to serialize JsonField
+
+    """
+
+    if include_m2m:
+        data = serializers.serialize('json', [obj, ])
+    else:
+        data = serializers.serialize('json', [obj, ], fields=tuple(
+            [f.name for f in obj.__class__._meta.local_fields]
+        ))
+
+    struct = json.loads(data)[0]
+    response = struct['fields']
+    response[u'id'] = response[u'pk'] = struct['pk']
+    response[u'model'] = struct['model']
+    # JsonField doesn't get serialized by `serialize`
+    for f in obj._meta.fields:
+        if isinstance(f, JsonField):
+            e = getattr(obj, f.name)
+            # PostgreSQL < 9.3 support
+            while isinstance(e, unicode):
+                e = json.loads(e)
+            response[unicode(f.name)] = e
+    return response

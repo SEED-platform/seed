@@ -5,7 +5,6 @@
 :author
 """
 
-import copy
 import datetime
 import json
 import logging
@@ -20,17 +19,23 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import DefaultStorage
 from django.db.models import Q
-from django.http import HttpResponse  # , HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 
-from seed import tasks   # , models
+from seed import tasks  # , models
 from seed.audit_logs.models import AuditLog
-from seed.common import mapper as simple_mapper
 from seed.common import views as vutil
 from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
+from seed.data_importer.tasks import (
+    map_data,
+    remap_data,
+    match_buildings,
+    save_raw_data as task_save_raw,
+)
 from seed.decorators import ajax_request, get_prog_key, require_organization_id
 from seed.lib.exporter import Exporter
+from seed.lib.mappings import mapper as simple_mapper
+from seed.lib.mappings import mapping_data
 from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
@@ -41,18 +46,13 @@ from seed.models import (
     Column,
     ColumnMapping,
     ProjectBuilding,
-    get_ancestors,              # TO REMOVE
+    get_ancestors,  # TO REMOVE
     unmatch_snapshot_tree as unmatch_snapshot,
     CanonicalBuilding,
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
-)
-from seed.tasks import (
-    map_data,
-    remap_data,
-    match_buildings,
-    save_raw_data as task_save_raw,
+    PropertyState,
 )
 from seed.utils.api import api_endpoint
 from seed.utils.buildings import (
@@ -155,11 +155,13 @@ def version(request):
     """
     Returns the SEED version and current git sha
     """
-    manifest_path = os.path.dirname(os.path.realpath(__file__)) + '/../../package.json'
+    manifest_path = os.path.dirname(
+        os.path.realpath(__file__)) + '/../../package.json'
     with open(manifest_path) as package_json:
         manifest = json.load(package_json)
 
-    sha = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).strip()
+    sha = subprocess.check_output(
+        ['git', 'rev-parse', '--short', 'HEAD']).strip()
 
     return {
         'version': manifest['version'],
@@ -611,7 +613,7 @@ def get_datasets_count(request):
 
     # first make sure that the organization id exists
     if Organization.objects.filter(pk=request.GET['organization_id']).exists():
-        datasets_count = Organization.objects.get(pk=org_id).import_records.\
+        datasets_count = Organization.objects.get(pk=org_id).import_records. \
             all().distinct().count()
         return {'status': 'success', 'datasets_count': datasets_count}
     else:
@@ -757,9 +759,10 @@ def search_building_snapshots(request):
     body = json.loads(request.body)
     q = body.get('q', '')
     other_search_params = body.get('filter_params', {})
-    order_by = body.get('order_by', 'pm_property_id')
-    if not order_by or order_by == '':
-        order_by = 'pm_property_id'
+    # order_by = body.get('order_by', 'pm_property_id')
+    # if not order_by or order_by == '':
+    #     order_by = 'pm_property_id'
+    order_by = 'id'
     sort_reverse = body.get('sort_reverse', False)
     page = int(body.get('page', 1))
     number_per_page = int(body.get('number_per_page', 10))
@@ -769,14 +772,16 @@ def search_building_snapshots(request):
     if sort_reverse:
         order_by = "-%s" % order_by
 
-    # only search in ASSESED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS
-    building_snapshots = BuildingSnapshot.objects.order_by(order_by).filter(
+    # TODO: remove the hard coded assessments
+    # only search in ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS
+    # FIXME: changing to PropertyState -- but should probably be PropertyView
+    building_snapshots = PropertyState.objects.order_by(order_by).filter(
         import_file__pk=import_file_id,
         source_type__in=[ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS],
     )
 
     fieldnames = [
-        'pm_property_id',
+        # 'pm_property_id',
         'address_line_1',
         'property_name',
     ]
@@ -795,8 +800,11 @@ def search_building_snapshots(request):
         buildings_queryset, other_search_params, db_columns
     )
     buildings, building_count = search.generate_paginated_results(
-        buildings_queryset, number_per_page=number_per_page, page=page, matching=True
+        buildings_queryset, number_per_page=number_per_page, page=page,
+        matching=True
     )
+
+    _log.debug("I found {} buildings".format(building_count))
 
     return {
         'status': 'success',
@@ -874,14 +882,16 @@ def _set_default_columns_by_request(body, user, field):
 @login_required
 def set_default_columns(request):
     body = json.loads(request.body)
-    return _set_default_columns_by_request(body, request.user, 'default_custom_columns')
+    return _set_default_columns_by_request(body, request.user,
+                                           'default_custom_columns')
 
 
 @ajax_request
 @login_required
 def set_default_building_detail_columns(request):
     body = json.loads(request.body)
-    return _set_default_columns_by_request(body, request.user, 'default_building_detail_custom_columns')
+    return _set_default_columns_by_request(body, request.user,
+                                           'default_building_detail_custom_columns')
 
 
 @require_organization_id
@@ -1259,80 +1269,42 @@ def delete_duplicates_from_import_file(request):
     }
 
 
-@api_endpoint
-@ajax_request
-@login_required
-def get_column_mapping_suggestions(request):
+def tmp_mapping_suggestions(import_file_id, org_id, user):
     """
-    Returns suggested mappings from an uploaded file's headers to known
-    data fields.
+    Temp function for allowing both api version for mapping suggestions to
+    return the same data. Move this to the mapping_suggestions once we can
+    deprecate the old get_column_mapping_suggestion method.
 
-    Payload::
+    Args:
+        import_id_pk: import file id
+        org_id: organization id of user
+        user: user object from request
 
-        {
-            'import_file_id': The ID of the ImportRecord to examine,
-            'org_id': The ID of the user's organization
-        }
+    Returns:
+        dictionary
 
-    Returns::
-
-        {
-            'status': 'success',
-            'suggested_column_mappings': {
-                column header from file: [ (destination_column, score) ...]
-                ...
-            },
-            'building_columns': [ a list of all possible columns ],
-            'building_column_types': [a list of column types corresponding to building_columns],
-        }
-
-    ..todo: The response of this method may not be correct. verify.
     """
+
     result = {'status': 'success'}
 
-    body = json.loads(request.body)
-    org_id = body.get('org_id')
-
     membership = OrganizationUser.objects.select_related('organization') \
-        .get(organization_id=org_id, user=request.user)
+        .get(organization_id=org_id, user=user)
     organization = membership.organization
 
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'), import_record__super_organization_id=organization.pk)
+    import_file = ImportFile.objects.get(pk=import_file_id,
+                                         import_record__super_organization_id=organization.pk)
 
-    # Make a dictionary of the column names and their respective types.
-    # Build this dictionary from BEDES fields (the null organization columns,
-    # and all of the column mappings that this organization has previously
-    # saved.
-    mappable_types = get_mappable_types()
-    field_names = mappable_types.keys()
-    column_types = {}
+    # Get a list of the database fields in a list
+    md = mapping_data.MappingData()
 
-    # Note on exclude:
-    # mappings get created to mappable types but we deal with them manually
-    # so don't include them here
-    columns = list(
-        Column.objects.select_related('unit')
-        .filter(Q(mapped_mappings__super_organization_id=org_id) | Q(organization__isnull=True))
-        .exclude(column_name__in=field_names)
+    # TODO: Move this to the MappingData class and remove calling add_extra_data
+    # Check if there are any DB columns that are not defined in the
+    # list of mapping data.
+    columns = list(Column.objects.select_related('unit').filter(
+        Q(mapped_mappings__super_organization_id=org_id) |
+        Q(organization__isnull=True)).exclude(column_name__in=md.keys())
     )
-
-    for c in columns:
-        if c.unit:
-            unit = c.unit.get_unit_type_display()
-        else:
-            unit = 'string'
-        column_types[c.column_name] = {
-            'unit_type': unit.lower(),
-            'schema': '',
-        }
-
-    db_columns = copy.deepcopy(mappable_types)
-    for k, v in db_columns.items():
-        db_columns[k] = {
-            'unit_type': v if v else 'string',
-            'schema': 'BEDES',
-        }
-    column_types.update(db_columns)
+    md.add_extra_data(columns)
 
     # Portfolio manager files have their own mapping scheme
     if import_file.from_portfolio_manager:
@@ -1342,45 +1314,115 @@ def get_column_mapping_suggestions(request):
 
         # if there is no pm mapping found but the file has already been matched
         # then effectively the mappings are already known with a confidence of 100
-        no_pm_mappings_confience = 100 if import_file.matching_done else 0
+        no_pm_mappings_confidence = 100 if import_file.matching_done else 0
 
-        for col, item in simple_mapper.get_pm_mapping(
-                ver, import_file.first_row_columns,
-                include_none=True).items():
+        for col, item in simple_mapper.get_pm_mapping(ver,
+                                                      import_file.first_row_columns,
+                                                      include_none=True).items():
             if item is None:
-                suggested_mappings[col] = (col, no_pm_mappings_confience)
-            else:
-                cleaned_field = item.field
-                suggested_mappings[col] = (cleaned_field, 100)
-
+                suggested_mappings[col] = (col, no_pm_mappings_confidence)
     else:
         # All other input types
         suggested_mappings = mapper.build_column_mapping(
             import_file.first_row_columns,
-            column_types.keys(),
+            md.keys_with_table_names(),
             previous_mapping=get_column_mapping,
             map_args=[organization],
             thresh=20  # percentage match we require
         )
-        # replace None with empty string for column names
+        # replace None with empty string for column names and tables
         for m in suggested_mappings:
-            dest, conf = suggested_mappings[m]
-            if dest is None:
+            table, dest, conf = suggested_mappings[m]
+            if table is None:
                 suggested_mappings[m][0] = u''
-
-    # Only db columns on BuildingSnapshot
-    building_columns = set(sorted(field_names))
-
-    # Only columns from Column table. Notice we're removing any db columns
-    # from this list. TODO nicholasserra this should probably happen above.
-    extra_data_columns = set(sorted(column_types.keys())) - building_columns
+            if dest is None:
+                suggested_mappings[m][1] = u''
 
     result['suggested_column_mappings'] = suggested_mappings
-    result['building_columns'] = list(building_columns)
-    result['extra_data_columns'] = list(extra_data_columns)
-    result['building_column_types'] = column_types
+    result['column_names'] = md.building_columns()
+    result['columns'] = md.data
 
     return result
+
+
+@api_endpoint
+@ajax_request
+@login_required
+def get_column_mapping_suggestions(request):
+    """
+    Returns suggested mappings from an uploaded file's headers to known
+    data fields.
+    Payload::
+        {
+            'import_file_id': The ID of the ImportRecord to examine,
+            'org_id': The ID of the user's organization
+        }
+    Returns::
+        {
+            'status': 'success',
+            'suggested_column_mappings': {
+                column header from file: [ (destination_column, score) ...]
+                ...
+            },
+            'building_columns': [ a list of all possible columns ],
+            'building_column_types': [a list of column types corresponding to building_columns],
+        }
+    ..todo: The response of this method may not be correct. verify.
+    """
+    body = json.loads(request.body)
+    org_id = body.get('org_id')
+    import_file_id = body.get('import_file_id')
+
+    return tmp_mapping_suggestions(import_file_id, org_id, request.user)
+
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
+from rest_framework import viewsets
+from seed.decorators import ajax_request_class
+from seed.utils.api import api_endpoint_class
+from rest_framework.decorators import detail_route
+
+
+class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
+    raise_exception = True
+
+    @api_endpoint_class
+    @ajax_request_class
+    @detail_route(methods=['get'])
+    def mapping_suggestions(self, request, pk):
+        """
+        Returns suggested mappings from an uploaded file's headers to known
+        data fields.
+
+        Returns::
+            {
+                'status': 'success',
+                'suggested_column_mappings': {
+                    column header from file: [ (destination_column, score) ...]
+                    ...
+                },
+                'building_columns': [ a list of all possible columns ],
+                'building_column_types': [a list of column types corresponding to building_columns],
+            }
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: import_file_id
+              required: true
+              paramType: query
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+        org_id = request.query_params.get('organization_id', None)
+
+        result = tmp_mapping_suggestions(pk, org_id, request.user)
+
+        return HttpResponse(json.dumps(result),
+                            content_type='application/json')
 
 
 @api_endpoint
@@ -1641,7 +1683,8 @@ def create_dataset(request):
     org_id = int(body['organization_id'])
 
     try:
-        _log.info("create_dataset: getting Organization for id=({})".format(org_id))
+        _log.info(
+            "create_dataset: getting Organization for id=({})".format(org_id))
         org = Organization.objects.get(pk=org_id)
     except Organization.DoesNotExist:
         return {"status": 'error',
@@ -2336,10 +2379,7 @@ def delete_buildings(request):
     ).update(active=False)
     return {'status': 'success'}
 
-
 # DMcQ: Test for building reporting
-
-
 # @require_organization_id
 # @api_endpoint
 # @ajax_request

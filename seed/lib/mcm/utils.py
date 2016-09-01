@@ -19,7 +19,7 @@ def batch(iterable, size):
 
     """
     sourceiter = iter(iterable)
-    while 1:
+    while True:
         batchiter = islice(sourceiter, size)
         yield list(chain([batchiter.next()], batchiter))
 

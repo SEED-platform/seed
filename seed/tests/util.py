@@ -11,8 +11,7 @@
 import json
 
 from seed.models import (
-    BuildingSnapshot,
-    CanonicalBuilding,
+    PropertyState,
     Column,
     ColumnMapping,
     set_initial_sources,
@@ -45,9 +44,10 @@ def make_fake_mappings(mappings, org):
         column_mapping.column_mapped.add(column_mapped)
 
 
-def make_fake_snapshot(import_file, init_data, bs_type, is_canon=False, org=None):
-    """For making fake mapped BuildingSnapshots to test matching against."""
-    snapshot = BuildingSnapshot.objects.create(**init_data)
+def make_fake_snapshot(import_file, init_data, bs_type, is_canon=False,
+                       org=None):
+    """For making fake mapped PropertyState to test matching against."""
+    snapshot = PropertyState.objects.create(**init_data)
     snapshot.import_file = import_file
     snapshot.super_organization = org
     if import_file is None:
@@ -57,12 +57,16 @@ def make_fake_snapshot(import_file, init_data, bs_type, is_canon=False, org=None
     snapshot.source_type = bs_type
     set_initial_sources(snapshot)
     snapshot.save()
-    if is_canon:
-        canonical_building = CanonicalBuilding.objects.create(
-            canonical_snapshot=snapshot
-        )
-        snapshot.canonical_building = canonical_building
-        snapshot.save()
+
+    # The idea of canon is no longer applicable. The linked property state
+    # in the PropertyView is now canon
+    # TODO: Do we need to recreate this functionality
+    # if is_canon:
+    #     canonical_building = CanonicalBuilding.objects.create(
+    #         canonical_snapshot=snapshot
+    #     )
+    #     snapshot.canonical_building = canonical_building
+    #     snapshot.save()
 
     return snapshot
 

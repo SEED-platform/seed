@@ -157,6 +157,80 @@ Each message that is written to the logger is a Log Record. The log record is st
 in the web server & Celery
 
 
+BEDES Compliance and Managing Columns
+-------------------------------------
+
+Columns that do not represent hardcoded fields in the application are
+represented using a Django database model defined in the seed.models module.
+
+The goal of adding new columns to the database is to create seed.models.Column
+records in the database for each column to import. In the Django application,
+Columns are linked together via a Schema model. Currently there is a schema
+containing the ESPM fields with a name of "BEDES". When creating columns they
+should be added to either an existing schema or a new one should be created if
+that is the desired result.
+
+When creating Column records, if the type of the column is a string (should be
+treated as a string for searching and filtering), then just creating a Column
+record is sufficient for importing that column. If the column type is not
+string, then a seed.models.Unit record must be created and linked to the
+Column model via a foreign key.
+
+The initial fields from the ESPM schema were imported using a standard
+Django migration using the migration library south. You can find the
+initial migration here:
+
+.. note:: This seems out of state
+
+    https://github.com/seed-platform/seed/blob/master/seed/migrations/0025_add_espm_column_names.py
+
+In that example, the migration is using the data from the 'flat_schema' and
+'types' keys of the python dictionary defined here:
+
+.. note::
+
+    Need to reevaluate how this is stored
+    https://github.com/seed-platform/seed-mcm/blob/master/mcm/data/ESPM/espm.py
+
+.. note::
+
+    The fields to import do not need to be in a separate file, and the format
+    could differ from what is shown here as long as the migration logic
+    accounted for the different format.
+
+
+Resetting the Database
+----------------------
+
+This is a brief description of how to drop and re-create the database
+for the seed application.
+
+The first two commands below are commands distributed with the
+Postgres database, and are not part of the seed application. The third
+command below will create the required database tables for seed and
+setup initial data that the application expects (initial columns for
+BEDES). The last command below (spanning multiple lines) will create a
+new superuser and organization that you can use to login to the
+application, and from there create any other users or organizations
+that you require.
+
+Below are the commands for resetting the database and creating a new
+user:
+
+.. code-block:: console
+
+    psql -c 'DROP DATABASE "seeddb"'
+    psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
+    psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO seeduser;'
+    psql -c 'ALTER USER seeduser CREATEDB;'
+
+    psql -c 'ALTER USER seeduser CREATEROLE;'
+    ./manage.py migrate
+    ./manage.py create_default_user \
+        --username=testuser@seed.org \
+        --password=password \
+        --organization=testorg
+
 Testing
 -------
 

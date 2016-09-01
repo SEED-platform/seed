@@ -5,7 +5,6 @@
 from __future__ import absolute_import
 
 import os
-import sys  # Needed for coverage
 from os.path import abspath, join, dirname
 
 from kombu import Exchange, Queue
@@ -13,14 +12,12 @@ from kombu.serialization import register
 
 from seed.serializers.celery import CeleryDatetimeSerializer
 
-
 SITE_ROOT = abspath(join(dirname(__file__), "..", ".."))
 
 SEED_DATADIR = join(SITE_ROOT, 'seed', 'data')
 
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -42,7 +39,6 @@ SECRET_KEY = os.environ.get(
 )
 
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
-
 
 TEMPLATES = [
     {
@@ -67,7 +63,6 @@ TEMPLATES = [
     },
 ]
 
-
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -80,7 +75,6 @@ MIDDLEWARE_CLASSES = (
 )
 
 ROOT_URLCONF = 'config.urls'
-
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -111,7 +105,7 @@ SEED_CORE_APPS = (
     'seed.lib.superperms.orgs',
     'seed.audit_logs',
     'seed.cleansing',
-    'seed.functional'
+    'seed.functional'  # why is this a core_app?
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
@@ -215,7 +209,8 @@ CELERY_QUEUES = (
 )
 
 # Register our custom JSON serializer so we can serialize datetime objects in celery.
-register('seed_json', CeleryDatetimeSerializer.seed_dumps, CeleryDatetimeSerializer.seed_loads,
+register('seed_json', CeleryDatetimeSerializer.seed_dumps,
+         CeleryDatetimeSerializer.seed_loads,
          content_type='application/json', content_encoding='utf-8')
 
 CELERY_ACCEPT_CONTENT = ['seed_json']
@@ -237,7 +232,6 @@ LOCALE_PATHS = (
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-
 # Added By Gavin on 1/27/2014
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_PLUGINS = [
@@ -247,14 +241,11 @@ NOSE_PLUGINS = [
 # Django 1.5+ way of doing user profiles
 AUTH_USER_MODEL = 'landing.SEEDUser'
 NOSE_ARGS = ['--exclude-dir=libs/dal',
-             '--exclude-dir=data_importer',
              '--exclude-dir=seed/common']
-
 
 # Matching Settings
 MATCH_MIN_THRESHOLD = 0.3
 MATCH_MED_THRESHOLD = 0.4
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -286,7 +277,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Django Rest Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -302,6 +292,5 @@ REST_FRAMEWORK = {
 }
 
 SWAGGER_SETTINGS = {
-    "exclude_namespaces": ["labels"],    #  List URL namespaces to ignore
+    "exclude_namespaces": ["labels"],  # List URL namespaces to ignore
 }
-

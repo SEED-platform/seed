@@ -577,6 +577,7 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
 
 class LoggedInFunctionalTestCase(FunctionalLiveServerBaseTestCase):
     """Private class for inheritance"""
+
     def setUp(self):
         super(LoggedInFunctionalTestCase, self).setUp()
         self.login()

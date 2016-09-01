@@ -153,6 +153,7 @@ class PageTests(unittest.TestCase):
         table_locator = seed.functional.tests.page.Locator('XPATH', '//table')
 
         class TestPage(seed.functional.tests.page.Page):
+
             def __init__(self, test_obj, locator, table_locator):
                 locator = locator
                 self.table_locator = table_locator

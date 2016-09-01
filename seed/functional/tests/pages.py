@@ -107,6 +107,7 @@ class AccountsPage(Page):
     :type: sub_org: bool, string
 
     """
+
     def __init__(self, test_obj, use_url=None, create_import=None,
                  import_file=None, building=None, sub_org=None):
         locator = Locator('ID', 'org-owned-tables')
@@ -238,6 +239,7 @@ class BuildingInfo(Page):
     :type: import_file: dict
 
     """
+
     def __init__(self, test_obj, building_id=None, create_building=None,
                  create_project=None, import_file=None):
         if building_id or create_building:
@@ -295,6 +297,7 @@ class BuildingsList(Page):
     :type: num_buildings: int
 
     """
+
     def __init__(self, test_obj, url=None, import_file=None, building=None,
                  num_buildings=0):
         locator = Locator('ID', 'btnBuildingActions')
@@ -334,6 +337,7 @@ class BuildingLabels(Page):
     :type: use_url: bool
 
     """
+
     def __init__(self, test_obj, use_url=None):
         url = "app/#/buildings/labels" if use_url else None
         locator = Locator('CLASS_NAME', 'newLabelInput')
@@ -353,6 +357,7 @@ class BuildingListSettings(Page):
     :type: use_url: bool
 
     """
+
     def __init__(self, test_obj, use_url=None):
         url = "app/#/settings" if use_url else None
         locator = Locator('ID', 'building-settings')
@@ -390,6 +395,7 @@ class BuildingProjects(Page):
     :type: id: int
 
     """
+
     def __init__(self, test_obj, id=None):
         url = "app/#/buildings/{id}/projects".format(id) if id else None
         locator = Locator('CLASS_NAME', 'section_action_container')
@@ -412,6 +418,7 @@ class BuildingReports(Page):
     :type: use_url: bool
 
     """
+
     def __init__(self, test_obj, use_url=None):
         url = "app/#/buildings/reports" if use_url else None
         locator = Locator('CLASS_NAME', 'chart-holder')
@@ -445,6 +452,7 @@ class DataMapping(Page):
     :type: building: bool or dict
 
     """
+
     def __init__(self, test_obj, dataset_id=None, create_import=None,
                  import_record=None, import_file=None, building=None):
         locator = Locator('CLASS_NAME', 'mapping')
@@ -497,6 +505,7 @@ class DataSetsList(Page):
     :type: building: bool or dict
 
     """
+
     def __init__(self, test_obj,
                  create_import=None, import_file=None, building=None):
         locator = Locator('CLASS_NAME', 'dataset_list')
@@ -548,6 +557,7 @@ class DataSetInfo(Page):
     :type: building: bool or dict
 
     """
+
     def __init__(self, test_obj, dataset_id=None, create_import=None,
                  import_record=None, import_file=None, building=None):
         locator = Locator('CLASS_NAME', 'import_results')
@@ -593,6 +603,7 @@ class LandingPage(Page):
     :type: use_url: bool
 
     """
+
     def __init__(self, test_obj, use_url=None):
         if use_url:
             use_url = '/'
@@ -612,6 +623,7 @@ class MainPage(Page):
     :type: use_url: bool
 
     """
+
     def __init__(self, test_obj, use_url=None):
         if use_url:
             use_url = 'app/#/'
@@ -633,6 +645,7 @@ class ProfilePage(Page):
     :type: section: string one of profile/security/developer, case insensitive.
 
     """
+
     def __init__(self, test_obj, use_url=None, section=None):
         # set use text
         section = section if section else 'profile'
@@ -700,6 +713,7 @@ class ProjectsList(Page):
     :type: import_file: dict
 
     """
+
     def __init__(self, test_obj, use_url=None, building_id=None,
                  create_building=None, create_project=None, import_file=None):
         if use_url:
@@ -758,6 +772,7 @@ class ProjectPage(Page):
     :type: import_file: dict
 
     """
+
     def __init__(self, test_obj, name=None, building_id=None,
                  create_building=None, create_project=None, import_file=None):
         if name and isinstance(name, basestring):
@@ -824,6 +839,7 @@ class ProjectBuildingInfo(Page):
     :type: import_file: dict
 
     """
+
     def __init__(self, test_obj, use_url=False, name=None, building_id=None,
                  create_building=None, create_project=None, import_file=None):
         if use_url and not (name and building_id):

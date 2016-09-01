@@ -43,9 +43,11 @@ angular.module('BE.seed.controller.mapping', [])
     cleansing_service
 ) {
 
-    var db_field_columns = suggested_mappings_payload.building_columns;
-    var extra_data_columns = suggested_mappings_payload.extra_data_columns;
-    var original_columns = angular.copy(db_field_columns.concat(extra_data_columns));
+    var db_field_columns = suggested_mappings_payload.column_names;
+    var columns = suggested_mappings_payload.columns;
+    var extra_data_columns = _.filter(columns, 'extra_data');
+    var original_columns = _.map(columns, function f(n){ return n['name']});
+    // var original_columns = angular.copy(db_field_columns.concat(extra_data_columns));
 
     // Readability for db columns.
     for (var i = 0; i < db_field_columns.length; i++) {
@@ -77,13 +79,14 @@ angular.module('BE.seed.controller.mapping', [])
     angular.forEach($scope.suggested_mappings, function (v, k) {
         // only title case fields like address_line_1 which have had their
         // typeahead suggestions title cased
-        if (!_.includes($scope.typeahead_columns, v[0])) {
-            v[0] = $filter('titleCase')(v[0]);
+        if (!_.includes($scope.typeahead_columns, v[1])) {
+            v[1] = $filter('titleCase')(v[1]);
         }
     });
+
     $scope.raw_columns = raw_columns_payload.raw_columns;
     $scope.first_five = first_five_rows_payload.first_five_rows;
-    $scope.building_column_types = suggested_mappings_payload.building_column_types;
+    $scope.building_column_types = suggested_mappings_payload.columns;
     $scope.validator_service = mappingValidatorService;
     $scope.user = $scope.user || {};
     // Where we store which columns get concatenated and in which order.
@@ -212,21 +215,24 @@ angular.module('BE.seed.controller.mapping', [])
      * Validates example data related to a raw column using a validator service.
      *
      * @param tcm: a table column mapping object.
-     * @modifies: attributes on that mapping object.
+     * @modifies: attributes on the table column mapping object.
      */
     $scope.validate_data = function(tcm) {
         tcm.user_suggestion = true;
         if (!_.isUndefined(tcm.suggestion) && !_.isEmpty(tcm.suggestion)) {
             var type;
-            if (_.includes(original_columns, angular.lowercase(tcm.suggestion).replace(/ /g, '_'))) {
-                type = $scope.building_column_types[angular.lowercase(tcm.suggestion).replace(/ /g, '_')];
+
+            // find the column in the list of building_columns
+            type = _.find($scope.building_column_types, { 'name': angular.lowercase(tcm.suggestion).replace(/ /g, '_')});
+
+            // if the suggestion isn't found in the building columns then
+            // do we need to do something? Set the unit data type regardless.
+            if (_.isUndefined(type)) {
+                tcm.suggestion_type = '';
             } else {
-                type = $scope.building_column_types[tcm.suggestion];
+                tcm.suggestion_type = type.js_type;
             }
-            if (!_.isUndefined(type)) {
-                type = type.unit_type;
-            }
-            tcm.suggestion_type = type;
+
             tcm.invalids = $scope.validator_service.validate(
                 tcm.raw_data, type
             );
@@ -282,9 +288,10 @@ angular.module('BE.seed.controller.mapping', [])
                     if (!_.isUndefined(value[0][0]) && angular.isArray(value[0])) {
                       that.suggestion = value[0][0];
                     } else {
-                      that.suggestion = value[0];
+                      that.suggestion_table_name = value[0];
+                      that.suggestion = value[1];
                     }
-                    that.confidence = value[1];
+                    that.confidence = value[2];
                     // if mapping is finished, don't show suggestions
                     if ($scope.import_file.matching_done && that.confidence < 100) {
                       that.suggestion = '';
@@ -542,8 +549,7 @@ angular.module('BE.seed.controller.mapping', [])
     $scope.disable_mapping_button = function() {
       if(angular.element('.disable-mapping-btn').length > 0) {
         angular.element('.mapping-button').prop('disabled', true);
-      }
-      else {
+      } else {
         angular.element('.mapping-button').prop('disabled', false);
       }
     };
