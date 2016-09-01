@@ -26,6 +26,11 @@ from seed.functional.tests.pages import BuildingsList, BuildingListSettings
 from seed.functional.tests.pages import LandingPage, MainPage
 from seed.functional.tests.pages import ProfilePage, ProjectBuildingInfo
 from seed.functional.tests.pages import ProjectsList, ProjectPage
+from seed.functional.tests.pages import AccountsPage
+from seed.functional.tests.pages import DataMapping
+from seed.functional.tests.pages import DataSetsList, DataSetInfo
+
+from seed.data_importer.models import ROW_DELIMITER
 
 
 def loggedout_tests_generator():
@@ -83,33 +88,33 @@ def loggedin_tests_generator():
             def test_accounts_page(self):
                 """make sure accounts//organinizations works."""
                 # load imports
-                import_file, _ = self.create_import(name="test dataset")
+                import_file, _ = self.create_import(name="Test Dataset")
                 self.create_building(import_file=import_file)
 
                 # create sub_org
-                self.create_sub_org(name="sub org")
+                self.create_sub_org(name="Sub Org")
                 other_user_details = {
                     'username': 'johnh@example.com',
                     'password': 'password',
                     'email': 'johnh@example.com',
-                    'first_name': 'john',
-                    'last_name': 'henry'
+                    'first_name': 'John',
+                    'last_name': 'Henry'
                 }
                 # add another org self.user is member of (not owner)
                 other_user = self.create_user(**other_user_details)
                 other_org, _ = self.create_org(
-                    name='other org', user=other_user
+                    name='Other Org', user=other_user
                 )
                 self.create_org_user(
                     user=self.user, org=other_org, role='member'
                 )
 
-                page = mainpage(self, use_url=True)
+                page = MainPage(self, use_url=True)
                 page.find_element_by_id('sidebar-accounts').click()
 
-                accounts = accountspage(self)
+                accounts = AccountsPage(self)
                 title = accounts.wait_for_element_by_class_name('page_title')
-                assert title.text == 'organizations'
+                assert title.text == 'Organizations'
 
                 managed_orgs = accounts.get_managed_org_tables()
                 # sanity check should have parent and child
@@ -134,15 +139,15 @@ def loggedin_tests_generator():
                 assert len(sub_orgs[1:]) == len(children) == 1
 
                 # check names
-                assert parent.org['organization'].text == 'org'
-                assert child.org['organization'].text == 'sub org'
+                assert parent.org['ORGANIZATION'].text == 'Org'
+                assert child.org['ORGANIZATION'].text == 'Sub Org'
 
                 # check for sub-organizations header
-                assert sub_orgs[0]['organization'].text == 'sub-organizations'
+                assert sub_orgs[0]['ORGANIZATION'].text == 'Sub-Organizations'
 
                 # check sub org and child are the same
-                assert sub_orgs[1]['organization'].text == child.org[
-                    'organization'].text
+                assert sub_orgs[1]['ORGANIZATION'].text == child.org[
+                    'ORGANIZATION'].text
 
                 # test ' organizations i belong to' table
                 member_orgs = accounts.get_member_orgs_table()
@@ -150,48 +155,48 @@ def loggedin_tests_generator():
                 # check num and name of orgs
                 assert len(member_orgs) == 3
                 org_names = [
-                    org['organization name'].text for org in member_orgs
+                    org['ORGANIZATION NAME'].text for org in member_orgs
                 ]
-                assert 'org' in org_names
-                assert 'sub org' in org_names
-                assert 'other org' in org_names
+                assert 'Org' in org_names
+                assert 'Sub Org' in org_names
+                assert 'Other Org' in org_names
 
                 # check details
                 org = member_orgs.find_row_by_field(
-                    'organization name', 'org'
+                    'ORGANIZATION NAME', 'Org'
                 )
                 sub_org = member_orgs.find_row_by_field(
-                    'organization name', 'sub org'
+                    'ORGANIZATION NAME', 'Sub Org'
                 )
                 other = member_orgs.find_row_by_field(
-                    'organization name', 'other org'
+                    'ORGANIZATION NAME', 'Other Org'
                 )
-                assert org['number of buildings'].text == '1'
-                assert org['your role'].text == 'owner'
-                assert org['organization owner(s)'].text == 'jane doe'
+                assert org['NUMBER OF BUILDINGS'].text == '1'
+                assert org['YOUR ROLE'].text == 'owner'
+                assert org['ORGANIZATION OWNER(S)'].text == 'Jane Doe'
 
-                assert sub_org['number of buildings'].text == '0'
-                assert sub_org['your role'].text == 'owner'
-                assert sub_org['organization owner(s)'].text == 'jane doe'
+                assert sub_org['NUMBER OF BUILDINGS'].text == '0'
+                assert sub_org['YOUR ROLE'].text == 'owner'
+                assert sub_org['ORGANIZATION OWNER(S)'].text == 'Jane Doe'
 
-                assert sub_org['number of buildings'].text == '0'
-                assert other['your role'].text == 'member'
-                assert other['organization owner(s)'].text == 'john henry'
+                assert sub_org['NUMBER OF BUILDINGS'].text == '0'
+                assert other['YOUR ROLE'].text == 'member'
+                assert other['ORGANIZATION OWNER(S)'].text == 'John Henry'
 
             def test_dataset_list(self):
                 """make sure dataset list works."""
                 # load imports
-                self.create_import(name="test dataset")
-                page = mainpage(self, use_url=true)
+                self.create_import(name="Test Dataset")
+                page = MainPage(self, use_url=True)
                 page.find_element_by_id('sidebar-data').click()
-                datasets = datasetslist(self)
+                datasets = DataSetsList(self)
 
                 # make sure there's a row in the table
                 datasets.find_element_by_css_selector('td.name')
                 table = datasets.ensure_table_is_loaded()
-                data_set_name = table.first_row['data set name']
-                data_set_files = table.first_row['# of files']
-                assert data_set_name.text == "test dataset"
+                data_set_name = table.first_row['DATA SET NAME']
+                data_set_files = table.first_row['# OF FILES']
+                assert data_set_name.text == "Test Dataset"
                 assert data_set_files.text == "1"
 
             def test_dataset_detail(self):
@@ -200,8 +205,8 @@ def loggedin_tests_generator():
                 and load dataset.
                 """
                 mock_file = mock_file_factory("test.csv")
-                datasets = datasetslist(
-                    self, create_import=true,
+                datasets = DataSetsList(
+                    self, create_import=True,
                     import_file={'mock_file': mock_file}
                 )
                 # click a dataset.
@@ -209,12 +214,12 @@ def loggedin_tests_generator():
                     'td a.import_name').click()
 
                 # ensure page is loaded
-                dataset = datasetinfo(self)
+                dataset = DataSetInfo(self)
 
                 # make sure import file is there.
                 table = dataset.ensure_table_is_loaded()
                 row = table.first_row
-                data_file_cell = row['data files']
+                data_file_cell = row['DATA FILES']
                 assert data_file_cell.text == mock_file.base_name
 
             def test_mapping_page(self):
@@ -224,17 +229,17 @@ def loggedin_tests_generator():
                 """
                 # create records and navigate to dataset detail view.
                 mock_file = mock_file_factory("test.csv")
-                import_record = {'name': 'test dataset'}
+                import_record = {'name': 'Test Dataset'}
                 import_file = {
-                    'cached_first_row': row_delimiter.join(
+                    'cached_first_row': ROW_DELIMITER.join(
                         [u'name', u'address']
                     ),
-                    'cached_second_to_fifth_row': row_delimiter.join(
+                    'cached_second_to_fifth_row': ROW_DELIMITER.join(
                         ['name', 'address.']
                     ),
                     'mock_file': mock_file
                 }
-                dataset = datasetinfo(
+                dataset = DataSetInfo(
                     self, import_record=import_record, import_file=import_file
                 )
 
@@ -242,10 +247,10 @@ def loggedin_tests_generator():
                 dataset.find_element_by_id('data-mapping-0').click()
 
                 # make sure mapping table is shown.
-                data_mapping = datamapping(self)
+                data_mapping = DataMapping(self)
                 table = data_mapping.ensure_table_is_loaded()
-                row = table.find_row_by_field('data file header', 'address')
-                address = row['row 1']
+                row = table.find_row_by_field('DATA FILE HEADER', 'address')
+                address = row['ROW 1']
                 assert address.text == 'address.'
 
             # TODO Update for Inventory
@@ -955,7 +960,7 @@ def loggedin_tests_generator():
                     username_input.send_keys('test@example.com')
                     password_input = page.find_element_by_id("id_password")
                     password_input.send_keys('asasdfG123')
-                    page.find_element_by_css_selector(
+                    page.wait_for_element_by_css_selector(
                         'input[value="Log In"]'
                     ).click()
                     # should now be on main page
