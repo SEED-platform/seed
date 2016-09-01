@@ -19,12 +19,10 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import DefaultStorage
 from django.db.models import Q
-from django.http import HttpResponseBadRequest
-from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 
-from seed import tasks   # , models
+from seed import tasks  # , models
 from seed.audit_logs.models import AuditLog
 from seed.common import views as vutil
 from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
@@ -48,7 +46,7 @@ from seed.models import (
     Column,
     ColumnMapping,
     ProjectBuilding,
-    get_ancestors,              # TO REMOVE
+    get_ancestors,  # TO REMOVE
     unmatch_snapshot_tree as unmatch_snapshot,
     CanonicalBuilding,
     ASSESSED_BS,
@@ -2380,7 +2378,6 @@ def delete_buildings(request):
         buildingsnapshot__in=tuple(selected_buildings)
     ).update(active=False)
     return {'status': 'success'}
-
 
 # DMcQ: Test for building reporting
 # @require_organization_id

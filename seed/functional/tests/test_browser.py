@@ -8,29 +8,24 @@
 
 :author nlong, Paul Munday<paul@paulmunday.net>
 """
-from datetime import date
 import inspect
 import os
-
+from datetime import date
 from unittest import skip
 
 from selenium.webdriver.support.select import Select
 
-from seed.functional.tests.browser_definitions import BROWSERS
-from seed.functional.tests.base import eprint
 from seed.functional.tests.base import LOGGED_IN_CLASSES
 from seed.functional.tests.base import LOGGED_OUT_CLASSES
+from seed.functional.tests.base import eprint
 from seed.functional.tests.base import mock_file_factory
-from seed.functional.tests.pages import AccountsPage
+from seed.functional.tests.browser_definitions import BROWSERS
 from seed.functional.tests.pages import BuildingInfo, BuildingLabels
-from seed.functional.tests.pages import BuildingsList, BuildingListSettings
 from seed.functional.tests.pages import BuildingProjects, BuildingReports
-from seed.functional.tests.pages import DataMapping, DataSetInfo, DataSetsList
+from seed.functional.tests.pages import BuildingsList, BuildingListSettings
 from seed.functional.tests.pages import LandingPage, MainPage
 from seed.functional.tests.pages import ProfilePage, ProjectBuildingInfo
 from seed.functional.tests.pages import ProjectsList, ProjectPage
-
-from seed.data_importer.models import ROW_DELIMITER
 
 
 def loggedout_tests_generator():
@@ -109,7 +104,7 @@ def loggedin_tests_generator():
                     user=self.user, org=other_org, role='member'
                 )
 
-                page = mainpage(self, use_url=true)
+                page = mainpage(self, use_url=True)
                 page.find_element_by_id('sidebar-accounts').click()
 
                 accounts = accountspage(self)

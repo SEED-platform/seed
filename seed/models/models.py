@@ -18,7 +18,6 @@ from django_pgjson.fields import JsonField
 from seed.audit_logs.models import AuditLog, LOG
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
-from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.managers.json import JsonManager
 from seed.utils.generic import split_model_fields, obj_to_dict
