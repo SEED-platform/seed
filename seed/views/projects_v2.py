@@ -135,7 +135,8 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    def retrieve(self, request, pk=None):
+    @list_route(methods=['GET'])
+    def get_project(self, request):
         """
         Retrieves details about a project.
         ---
@@ -145,10 +146,10 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
               description: The organization_id for this user's organization
               required: true
               paramType: query
-            - name: pk
-              description: The primary key for this project
+            - name: project_slug
+              description: The project slug identifier for this project
               required: true
-              paramType: path
+              paramType: query
         """
         """
         Returns::
@@ -170,12 +171,17 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
              'end_date': Timestamp of end of project
             }
         """
-        project_slug = pk
         try:
-            project = Project.objects.get(pk=project_slug)
+            project_slug = request.query_params.get('project_slug')
+        except:
+            return JsonResponse({'status': 'error',
+                                 'message': 'project_slug needs to be included as a query parameter'},
+                                status=400)
+        try:
+            project = Project.objects.get(slug=project_slug)
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error',
-                                 'message': 'Could not access project with pk = ' + str(pk)},
+                                 'message': 'Could not access project with slug = ' + str(project_slug)},
                                 status=403)
         if project.super_organization_id != int(request.query_params.get('organization_id', None)):
             return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=403)
@@ -196,7 +202,8 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    def destroy(self, request, pk=None):
+    @list_route(methods=['DELETE'])
+    def delete_project(self, request):
         """
         Deletes a project.
         ---
@@ -206,10 +213,10 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
               description: "The organization_id"
               required: true
               paramType: query
-            - name: pk
-              description: "Primary Key"
+            - name: project_slug
+              description: The project slug identifier for this project
               required: true
-              paramType: path
+              paramType: query
         type:
             status:
                 required: true
@@ -221,7 +228,12 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
                 type: string
         """
         organization_id = request.query_params.get('organization_id', None)
-        project = Project.objects.get(pk=pk)
+        project_slug = request.query_params.get('project_slug', None)
+        if organization_id is None or project_slug is None:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Needs organization_id and project_slug as query parameters.'},
+                                status=400)
+        project = Project.objects.get(slug=project_slug)
         if project.super_organization_id != int(organization_id):
             return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=403)
         project.delete()
@@ -314,21 +326,22 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
             c.deadline_date = parser.parse(project_deadline_date)
             c.save()
 
-        return JsonResponse({'status': 'success', 'project_slug': project.pk})
+        return JsonResponse({'status': 'success', 'project_slug': project.slug})
 
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    def update(self, request, pk=None):
+    @list_route(methods=['PUT'])
+    def update_project(self, request):
         """
         Updates an existing project's details and compliance info.
         ---
         parameter_strategy: replace
         parameters:
-            - name: pk
-              description: "Primary Key"
+            - name: project_slug
+              description: Project slug identifier
               required: true
-              paramType: path
+              paramType: query
             - name: name
               description: updated name of the project, if rename is requested
               type: string
@@ -358,10 +371,16 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
         body = request.data
         project_name = body.get('name', None)
         try:
-            project = Project.objects.get(pk=pk)
+            project_slug = request.query_params.get('project_slug')
+        except:
+            return JsonResponse({'status': 'error',
+                                 'message': 'project_slug must be passed in as query argument'},
+                                status=400)
+        try:
+            project = Project.objects.get(slug=project_slug)
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error',
-                                 'message': 'Could not retrieve project with pk = ' + str(pk)},
+                                 'message': 'Could not retrieve project with slug = ' + str(project_slug)},
                                 status=403)
         if project_name:
             project.name = project_name
@@ -395,17 +414,17 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['PUT'])
-    def add_buildings(self, request, pk=None):
+    @list_route(methods=['PUT'])
+    def add_buildings(self, request):
         """
         Adds buildings to a project.
         ---
         parameter_strategy: replace
         parameters:
-            - name: pk
+            - name: project_slug
               required: true
-              description: Primary key for the project to update
-              paramType: path
+              description: Project slug identifier
+              paramType: query
             - name: selected_buildings
               required: true
               description: JSON list of building IDs to add to this project
@@ -429,12 +448,19 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
         body = request.data
         project_json = {'selected_buildings': body}
         try:
-            project = Project.objects.get(pk=pk)
+            project_slug = request.query_params.get('project_slug')
+        except:
+            return JsonResponse({'status': 'error',
+                                 'message': 'project_slug needs to be included as a query parameter'},
+                                status=400)
+        try:
+            project = Project.objects.get(slug=project_slug)
         except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Could not find project with pk = ' + str(pk)},
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not find project with project_slug = ' + str(project_slug)},
                                 status=403)
         add_buildings.delay(
-            project_slug=project.slug, project_dict=project_json,
+            project_slug=project.slug, prpoject_dict=project_json,
             user_pk=request.user.pk)
 
         key = project.adding_buildings_status_percentage_cache_key
@@ -446,17 +472,17 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['PUT'])
-    def remove_buildings(self, request, pk=None):
+    @list_route(methods=['PUT'])
+    def remove_buildings(self, request):
         """
         Removes buildings from a project.
         ---
         parameter_strategy: replace
         parameters:
-            - name: pk
+            - name: project_slug
               required: true
-              description: Primary key for the project to update
-              paramType: path
+              description: Project slug identifier
+              paramType: query
             - name: selected_buildings
               required: true
               description: JSON list of building IDs to remove from this project
@@ -480,10 +506,16 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
         body = request.data
         project_json = {'selected_buildings': body}
         try:
-            project = Project.objects.get(pk=pk)
+            project_slug = request.query_params.get('project_slug')
+        except:
+            return JsonResponse({'status': 'error',
+                                 'message': 'project_slug needs to be included as a query parameter'},
+                                status=400)
+        try:
+            project = Project.objects.get(slug=project_slug)
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error',
-                                 'message': 'Could not find project with pk = ' + str(pk)},
+                                 'message': 'Could not find project with project_slug = ' + str(project_slug)},
                                 status=403)
         remove_buildings.delay(
             project_slug=project.slug, project_dict=project_json,
@@ -503,14 +535,11 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
         ---
         parameter_strategy: replace
         parameters:
-            - name: pk
-              required: true
-              description: Primary key for the project to update
-              paramType: path
             - name: project_loading_cache_key
               required: true
               description:  Job identifier from add_buildings_to_project.
               type: string
+              paramType: query
         type:
             status:
                 required: true
@@ -568,18 +597,18 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['PUT'])
-    def update_building(self, request, pk=None):
+    @list_route(methods=['PUT'])
+    def update_building(self, request):
         """
         Updates extra information about the building/project relationship.
         In particular, whether the building is compliant and who approved it.
         ---
         parameter_strategy: replace
         parameters:
-            - name: pk
+            - name: project_slug
               required: true
-              description: Primary key for the project to update
-              paramType: path
+              description: Project slug identifier
+              paramType: query
             - name: building_id
               required: true
               description: id of building to update
@@ -608,12 +637,18 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
         """
         body = request.data
         try:
+            project_slug = request.query_params.get('project_slug')
+        except:
+            return JsonResponse({'status': 'error',
+                                 'message': 'project_slug needs to be included as a query parameter'},
+                                status=400)
+        try:
             pb = ProjectBuilding.objects.get(
-                project__pk=pk,
+                project__slug=project_slug,
                 building_snapshot__pk=body['building_id'])
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error',
-                                 'message': 'Could not access project building with pk = ' + str(pk)},
+                                 'message': 'Could not access project building with slug = ' + str(project_slug)},
                                 status=403)
         pb.approved_date = datetime.datetime.now()
         pb.approver = request.user
@@ -656,7 +691,7 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
               type: integer
               required: true
             - name: search_params
-              description: JSON body containing: {filter_params__project_slug, project_slug, and q}
+              description: JSON body containing: filter_params__project_slug, project_slug, and q
               type: object
               required: true
         type:

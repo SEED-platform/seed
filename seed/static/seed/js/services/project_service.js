@@ -32,13 +32,13 @@ angular.module('BE.seed.service.project', [])
         return defer.promise;
     };
 
-    project_factory.get_project = function(project_id) {
-        console.log(project_id);
+    project_factory.get_project = function(project_slug) {
         var defer = $q.defer();
         $http({
             method: 'GET',
-            url: '/api/v2/projects/' + project_id + '/',
+            url: '/api/v2/projects/get_project/',
             params: {
+                project_slug: project_slug,
                 organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
@@ -74,10 +74,9 @@ angular.module('BE.seed.service.project', [])
 
     project_factory.update_project_name = function(project) {
         var defer = $q.defer();
-        console.log("Project:", project);
         $http({
             method: 'PUT',
-            url: '/api/v2/projects/' + project.id + '/',
+            url: '/api/v2/projects/update_project/',
             data: {
                 name: project.name,
                 is_compliance: project.is_compliance,
@@ -85,6 +84,7 @@ angular.module('BE.seed.service.project', [])
                 deadline_date: project.deadline_date
             },
             params: {
+                project_slug: project.slug,
                 organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
@@ -99,11 +99,12 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: '/api/v2/projects/' + project.id + '/add_buildings/',
+            url: '/api/v2/projects/add_buildings/',
             data: {
                 project: project
             },
             params: {
+                project_slug: project.slug,
                 organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
@@ -118,11 +119,12 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: '/api/v2/projects/' + project.id + '/remove_buildings/',
+            url: '/api/v2/projects/remove_buildings/',
             data: {
                 project: project.selected_buildings,
             },
             params: {
+                project_slug: project.slug,
                 organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
@@ -137,8 +139,8 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'GET',
-            url: '/api/v2/projects/' + project.id + '/add_building_status/',
-            data: {project_loading_cache_key: project_loading_cache_key}
+            url: '/api/v2/projects/add_building_status/',
+            params: {project_loading_cache_key: project_loading_cache_key}
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -151,8 +153,9 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'DELETE',
-            url: '/api/v2/projects/' + project.id + '/',
+            url: '/api/v2/projects/delete_project/',
             params: {
+                project_slug: project_slug,
                 organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
