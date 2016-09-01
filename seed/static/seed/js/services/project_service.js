@@ -31,12 +31,13 @@ angular.module('BE.seed.service.project', [])
         });
         return defer.promise;
     };
-    project_factory.get_project = function(project_slug) {
 
+    project_factory.get_project = function(project_id) {
+        console.log(project_id);
         var defer = $q.defer();
         $http({
             method: 'GET',
-            url: '/api/v2/projects/{}/'.format(project_slug),
+            url: '/api/v2/projects/' + project_id + '/',
             params: {
                 organization_id: user_service.get_organization().id
             }
@@ -73,9 +74,10 @@ angular.module('BE.seed.service.project', [])
 
     project_factory.update_project_name = function(project) {
         var defer = $q.defer();
+        console.log("Project:", project);
         $http({
             method: 'PUT',
-            url: '/api/v2/projects/{}/'.format(project_slug),
+            url: '/api/v2/projects/' + project.id + '/',
             data: {
                 name: project.name,
                 is_compliance: project.is_compliance,
@@ -97,10 +99,9 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: '/api/v2/projects/{}/add_buildings'.format(project.id),
+            url: '/api/v2/projects/' + project.id + '/add_buildings/',
             data: {
                 project: project
-
             },
             params: {
                 organization_id: user_service.get_organization().id
@@ -117,9 +118,11 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: '/api/v2/projects/{}/remove_buildings'.format(project.id),
+            url: '/api/v2/projects/' + project.id + '/remove_buildings/',
             data: {
-                project: project,
+                project: project.selected_buildings,
+            },
+            params: {
                 organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
@@ -134,7 +137,7 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'GET',
-            url: '/api/v2/projects/{}/add_building_status'.format(project.id),
+            url: '/api/v2/projects/' + project.id + '/add_building_status/',
             data: {project_loading_cache_key: project_loading_cache_key}
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -148,9 +151,8 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'DELETE',
-            url: '/api/v2/projects/{}/'.format(project.id),
-            data: {
-                project_slug: project_slug,
+            url: '/api/v2/projects/' + project.id + '/',
+            params: {
                 organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
@@ -197,7 +199,7 @@ angular.module('BE.seed.service.project', [])
 
 
     project_factory.move_buildings = function(source_project_slug, target_project_slug, buildings, select_all_checkbox, search_params, copy) {
-        // moves or copies buildings from source_project to tartget_project
+        // moves or copies buildings from source_project to target_project
 
         var defer = $q.defer();
         $http({

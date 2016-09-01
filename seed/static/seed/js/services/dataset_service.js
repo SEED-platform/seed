@@ -36,7 +36,7 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
         var defer = $q.defer();
         $http({
             method: 'GET',
-            url: '/api/v2/datasets/{}/'.format(dataset_id),
+            url: '/api/v2/datasets/' + dataset_id + '/',
             params: {}
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -69,7 +69,7 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
         var defer = $q.defer();
         $http({
             method: 'DELETE',
-            url: '/api/v2/datasets/{}/'.format(dataset_id),
+            url: '/api/v2/datasets/' + dataset_id + '/',
             params: {
                 organization_id: user_service.get_organization().id
             }
@@ -86,7 +86,7 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: '/api/v2/datasets/{}/'.format(dataset_id),
+            url: '/api/v2/datasets/' + dataset.id + '/',
             data: {
                 dataset: dataset.name
             },
