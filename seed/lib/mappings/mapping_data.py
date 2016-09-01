@@ -39,7 +39,7 @@ class MappingData(object):
             if f.name not in exclude_fields:  # and '_source' not in f.name:
                 self.data.append(
                     {
-                        'table': 'PropertyState',
+                        'table': 'property',
                         'name': f.name,
                         'type': f.get_internal_type() if f.get_internal_type else 'string',
                         'js_type': self.normalize_mappable_type(
@@ -54,7 +54,7 @@ class MappingData(object):
             if f.name not in exclude_fields:  # and '_source' not in f.name:
                 self.data.append(
                     {
-                        'table': 'TaxLotState',
+                        'table': 'taxlot',
                         'name': f.name,
                         'type': f.get_internal_type() if f.get_internal_type else 'string',
                         'js_type': self.normalize_mappable_type(
@@ -102,7 +102,7 @@ class MappingData(object):
                     'type': unit,
                     'js_type': self.normalize_mappable_type(unit),
                     'schema': 'BEDES',
-                    'table': 'PropertyState',
+                    'table': 'property',
                     'extra_data': True,
                 }
             )

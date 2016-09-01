@@ -79,8 +79,8 @@ angular.module('BE.seed.controller.mapping', [])
     angular.forEach($scope.suggested_mappings, function (v, k) {
         // only title case fields like address_line_1 which have had their
         // typeahead suggestions title cased
-        if (!_.includes($scope.typeahead_columns, v[0])) {
-            v[0] = $filter('titleCase')(v[0]);
+        if (!_.includes($scope.typeahead_columns, v[1])) {
+            v[1] = $filter('titleCase')(v[1]);
         }
     });
 
@@ -231,7 +231,7 @@ angular.module('BE.seed.controller.mapping', [])
                 tcm.suggestion_type = '';
             } else {
                 tcm.suggestion_type = type.js_type;
-            };
+            }
 
             tcm.invalids = $scope.validator_service.validate(
                 tcm.raw_data, type
@@ -549,8 +549,7 @@ angular.module('BE.seed.controller.mapping', [])
     $scope.disable_mapping_button = function() {
       if(angular.element('.disable-mapping-btn').length > 0) {
         angular.element('.mapping-button').prop('disabled', true);
-      }
-      else {
+      } else {
         angular.element('.mapping-button').prop('disabled', false);
       }
     };

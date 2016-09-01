@@ -13,7 +13,7 @@ from cleaners import default_cleaner
 def build_column_mapping(raw_columns, dest_columns, previous_mapping=None,
                          map_args=None, thresh=0):
     """
-    Build a probabalistic mapping structure for mapping raw to dest.
+    Build a probabilistic mapping structure for mapping raw to dest.
 
     Args:
         raw_columns: list of str. The column names we're trying to map.
@@ -177,7 +177,7 @@ def map_row(row, mapping, model_class, cleaner=None, concat=None, **kwargs):
     # In case we need to look up cleaner by dynamic field mapping.
     for item, value in row.items():
         # Look through any of our concatenation configs to see if this row
-        # needs to be set aside for mergning with others at the end of the map.
+        # needs to be set aside for merging with others at the end of the map.
         for concat_column in concat:
             if item in concat_column['concat_columns']:
                 concat_column['concat_values'][item] = value
