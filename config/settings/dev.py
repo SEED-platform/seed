@@ -4,8 +4,10 @@
 """
 from __future__ import absolute_import
 
+import sys
 from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
+
 
 DEBUG = True
 SESSION_COOKIE_SECURE = False

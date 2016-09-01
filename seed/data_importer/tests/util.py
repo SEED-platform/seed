@@ -30,7 +30,8 @@ def load_test_data(test_obj, filename):
     test_obj.maxDiff = None
     test_obj.fake_user = User.objects.create(username='test')
     test_obj.import_record = ImportRecord.objects.create(
-        owner=test_obj.fake_user, last_modified_by=test_obj.fake_user
+        owner=test_obj.fake_user,
+        last_modified_by=test_obj.fake_user
     )
     test_obj.import_file = ImportFile.objects.create(
         import_record=test_obj.import_record
@@ -83,7 +84,8 @@ def load_test_data(test_obj, filename):
 
     test_obj.fake_org = Organization.objects.create()
     OrganizationUser.objects.create(
-        user=test_obj.fake_user, organization=test_obj.fake_org
+        user=test_obj.fake_user,
+        organization=test_obj.fake_org
     )
 
     test_obj.import_record.super_organization = test_obj.fake_org

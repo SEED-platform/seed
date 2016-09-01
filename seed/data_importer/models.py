@@ -62,6 +62,13 @@ IMPORT_STATII = [
 ]
 
 
+class DuplicateDataError(RuntimeError):
+
+    def __init__(self, id):
+        super(DuplicateDataError, self).__init__()
+        self.id = id
+
+
 class NotDeletableModel(models.Model):
     deleted = models.BooleanField(default=False)
 

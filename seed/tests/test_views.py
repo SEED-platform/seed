@@ -7,6 +7,8 @@
 import json
 from datetime import date, datetime, timedelta
 
+from unittest import skip
+
 from django.core.cache import cache
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.test import TestCase
@@ -118,122 +120,6 @@ class MainViewTests(TestCase):
                                     json.dumps(payload),
                                     content_type='application/json')
         self.assertTrue(json.loads(response.content)['success'])
-
-
-# Gavin 02/18/2014
-# Why are we testing DataImporterViews in the seed module?
-class DataImporterViewTests(TestCase):
-    """
-    Tests of the data_importer views (and the objects they create).
-    """
-
-    def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-        }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details)
-        self.client.login(**user_details)
-
-    def test_get_raw_column_names(self):
-        """Make sure we get column names back in a format we expect."""
-        import_record = ImportRecord.objects.create()
-        expected_raw_columns = ['tax id', 'name', 'etc.']
-        expected_saved_format = ROW_DELIMITER.join(expected_raw_columns)
-        import_file = ImportFile.objects.create(
-            import_record=import_record,
-            cached_first_row=expected_saved_format
-        )
-
-        # Just make sure we were saved correctly
-        self.assertEqual(import_file.cached_first_row, expected_saved_format)
-
-        url = reverse_lazy("seed:get_raw_column_names")
-        resp = self.client.post(
-            url, data=json.dumps(
-                {'import_file_id': import_file.pk}
-            ), content_type='application/json'
-        )
-
-        body = json.loads(resp.content)
-
-        self.assertEqual(body.get('raw_columns', []), expected_raw_columns)
-
-    def test_get_first_five_rows(self):
-        """Make sure we get our first five rows back correctly."""
-        import_record = ImportRecord.objects.create()
-        expected_raw_columns = ['tax id', 'name', 'etc.']
-        expected_raw_rows = [
-            ['02023', '12 Jefferson St.', 'etc.'],
-            ['12433', '23 Washington St.', 'etc.'],
-            ['04422', '4 Adams St.', 'etc.'],
-        ]
-
-        expected = [
-            dict(zip(expected_raw_columns, row)) for row in expected_raw_rows
-        ]
-        expected_saved_format = '\n'.join([
-            ROW_DELIMITER.join(row) for row
-            in expected_raw_rows
-        ])
-        import_file = ImportFile.objects.create(
-            import_record=import_record,
-            cached_first_row=ROW_DELIMITER.join(expected_raw_columns),
-            cached_second_to_fifth_row=expected_saved_format
-        )
-
-        # Just make sure we were saved correctly
-        self.assertEqual(
-            import_file.cached_second_to_fifth_row, expected_saved_format
-        )
-
-        url = reverse_lazy("seed:get_first_five_rows")
-        resp = self.client.post(
-            url, data=json.dumps(
-                {'import_file_id': import_file.pk}
-            ), content_type='application/json'
-        )
-
-        body = json.loads(resp.content)
-
-        self.assertEqual(body.get('first_five_rows', []), expected)
-
-    def test_get_first_five_rows_with_newlines(self):
-        import_record = ImportRecord.objects.create()
-        expected_raw_columns = ['id', 'name', 'etc']
-        expected_raw_rows = [
-            ['1', 'test', 'new\nline'],
-            ['2', 'test', 'single'],
-        ]
-
-        expected = [
-            dict(zip(expected_raw_columns, row)) for row in expected_raw_rows
-        ]
-        expected_saved_format = "1%stest%snew\nline\n2%stest%ssingle".replace(
-            '%s', ROW_DELIMITER)
-
-        import_file = ImportFile.objects.create(
-            import_record=import_record,
-            cached_first_row=ROW_DELIMITER.join(expected_raw_columns),
-            cached_second_to_fifth_row=expected_saved_format
-        )
-
-        # Just make sure we were saved correctly
-        self.assertEqual(
-            import_file.cached_second_to_fifth_row, expected_saved_format
-        )
-
-        url = reverse_lazy("seed:get_first_five_rows")
-        resp = self.client.post(
-            url, data=json.dumps(
-                {'import_file_id': import_file.pk}
-            ), content_type='application/json'
-        )
-
-        body = json.loads(resp.content)
-
-        self.assertEqual(body.get('first_five_rows', []), expected)
 
 
 class DefaultColumnsViewTests(TestCase):
@@ -382,7 +268,8 @@ class SearchViewTests(TestCase):
         OrganizationUser.objects.create(user=self.user, organization=self.org)
         self.client.login(**user_details)
 
-    def test_seach_active_canonicalbuildings(self):
+    @skip("Fix for new data model")
+    def test_search_active_canonicalbuildings(self):
         """
         tests the search_buildings method used throughout the app for only
         returning active CanonicalBuilding BuildingSnapshot instances.
@@ -442,6 +329,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['number_returned'], NUMBER_PER_PAGE)
         self.assertEqual(len(data['buildings']), NUMBER_PER_PAGE)
 
+    @skip("Fix for new data model")
     def test_search_sort(self):
         """
         tests the search_buildings method used throughout the app for only
@@ -504,6 +392,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['tax_lot_id'], '9')
         self.assertEqual(data['buildings'][9]['tax_lot_id'], '0')
 
+    @skip("Fix for new data model")
     def test_search_extra_data(self):
         """
         tests the search_buildings method used throughout the app for only
@@ -581,6 +470,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['tax_lot_id'], '9')
         self.assertEqual(data['buildings'][4]['tax_lot_id'], '5')
 
+    @skip("Fix for new data model")
     def test_sort_extra_data(self):
         """
         Tests that sorting on extra data takes the column type
@@ -728,6 +618,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][1]['year_built'], 6)
         self.assertEqual(data['buildings'][2]['year_built'], 7)
 
+    @skip("Fix for new data model")
     def test_search_filter_date_range_ISO8601(self):
         cb = CanonicalBuilding(active=True)
         cb.save()
@@ -769,6 +660,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['number_matching_search'], 1)
         self.assertEqual(len(data['buildings']), 1)
 
+    @skip("Fix for new data model")
     def test_search_exact_match(self):
         """
         Tests search_buildings method when called with an exact match.
@@ -826,6 +718,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(len(data['buildings']), 1)
         self.assertEqual(data['buildings'][0]['address_line_1'], 'Address')
 
+    @skip("Fix for new data model")
     def test_search_case_insensitive_exact_match(self):
         """
         Tests search_buildings method when called with a case insensitive exact match.
@@ -903,6 +796,7 @@ class SearchViewTests(TestCase):
         self.assertIn('Address', addresses)
         self.assertNotIn('fake address', addresses)
 
+    @skip("Fix for new data model")
     def test_search_empty_column(self):
         """
         Tests search_buildings method when called with an empty column query.
@@ -961,6 +855,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['address_line_1'], '')
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
 
+    @skip("Fix for new data model")
     def test_search_not_empty_column(self):
         """
         Tests search_buildings method when called with a not-empty column query.
@@ -1019,6 +914,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['address_line_1'], 'Address')
         self.assertEqual(data['buildings'][0]['pk'], b2.pk)
 
+    @skip("Fix for new data model")
     def test_search_extra_data_exact_match(self):
         """Exact match on extra_data json keys"""
         # Uppercase
@@ -1073,6 +969,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(len(data['buildings']), 1)
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
 
+    @skip("Fix for new data model")
     def test_search_extra_data_non_existent_column(self):
         """
         Empty column query on extra_data key should match key not existing in JsonField.
@@ -1129,6 +1026,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(len(data['buildings']), 1)
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
 
+    @skip("Fix for new data model")
     def test_search_extra_data_empty_column(self):
         """
         Empty column query on extra_data key should match key's value being empty in JsonField.
@@ -1185,6 +1083,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(len(data['buildings']), 1)
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
 
+    @skip("Fix for new data model")
     def test_search_extra_data_non_empty_column(self):
         """
         Not-empty column query on extra_data key.
@@ -1241,6 +1140,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(len(data['buildings']), 1)
         self.assertEqual(data['buildings'][0]['pk'], b2.pk)
 
+    @skip("Fix for new data model")
     def test_search_exclude_filter(self):
         cb1 = CanonicalBuilding(active=True)
         cb1.save()
@@ -1312,6 +1212,7 @@ class SearchViewTests(TestCase):
         self.assertIn('Include 2', addresses)
         self.assertNotIn('Exclude', addresses)
 
+    @skip("Fix for new data model")
     def test_search_extra_data_exclude_filter(self):
         cb1 = CanonicalBuilding(active=True)
         cb1.save()
@@ -1382,6 +1283,7 @@ class SearchViewTests(TestCase):
         self.assertIn('Include 2', fields)
         self.assertNotIn('Exclude', fields)
 
+    @skip("Fix for new data model")
     def test_search_exact_exclude_filter(self):
         cb1 = CanonicalBuilding(active=True)
         cb1.save()
@@ -1453,6 +1355,7 @@ class SearchViewTests(TestCase):
         self.assertIn('exclude', addresses)
         self.assertNotIn('Exclude', addresses)
 
+    @skip("Fix for new data model")
     def test_search_extra_data_exact_exclude_filter(self):
         cb1 = CanonicalBuilding(active=True)
         cb1.save()
@@ -1537,6 +1440,7 @@ class SearchBuildingSnapshotsViewTests(TestCase):
         OrganizationUser.objects.create(user=self.user, organization=self.org)
         self.client.login(**user_details)
 
+    @skip("Fix for new data model")
     def test_search_building_snapshots(self):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
@@ -1722,6 +1626,7 @@ class ImportFileViewsTests(TestCase):
         self.assertEqual('success', json.loads(response.content)['status'])
 
 
+@skip("Fix for new data model")
 class ReportViewsTests(TestCase):
 
     def setUp(self):
@@ -1759,6 +1664,8 @@ class ReportViewsTests(TestCase):
             reverse("seed:get_building_summary_report_data"), params)
         self.assertEqual('success', json.loads(response.content)['status'])
 
+    # TODO replace with test for inventory report
+    @skip("Fix for new data model")
     def test_get_building_report_data(self):
         params = {
             'start_date': (datetime.now() - timedelta(days=30)).strftime(
@@ -1773,6 +1680,12 @@ class ReportViewsTests(TestCase):
                                    params)
         self.assertEqual('success', json.loads(response.content)['status'])
 
+    @skip("Fix for new data model")
+    def test_get_inventory_report_data(self):
+        pass    # TODO
+
+    # TODO replace with test for inventory report
+    @skip("Fix for new data model")
     def test_get_aggregated_building_report_data(self):
         params = {
             'start_date': (datetime.now() - timedelta(days=30)).strftime(
@@ -1787,7 +1700,12 @@ class ReportViewsTests(TestCase):
             reverse("seed:get_aggregated_building_report_data"), params)
         self.assertEqual('success', json.loads(response.content)['status'])
 
+    @skip("Fix for new data model")
+    def test_get_aggregated_inventory_report_data(self):
+        pass    # TODO
 
+
+@skip("Fix for new data model")
 class BuildingDetailViewTests(TestCase):
     """
     Tests of the SEED Building Detail page
@@ -1842,6 +1760,8 @@ class BuildingDetailViewTests(TestCase):
         self.parent_1 = parent_1
         self.parent_2 = parent_2
 
+    # TODO Replace with test_get_property, test_get_taxlot
+    @skip("Fix for new data model")
     def test_get_building(self):
         """ tests the get_building view which returns building detail and source
             information from parent buildings.
@@ -1901,6 +1821,18 @@ class BuildingDetailViewTests(TestCase):
             self.parent_2.pk
         )
 
+    # TODO
+    @skip("Fix for new data model")
+    def test_get_property(self):
+        pass
+
+    # TODO
+    @skip("Fix for new data model")
+    def test_get_taxlot(self):
+        pass
+
+    # TODO replace with test for inventory report
+    @skip("Fix for new data model")
     def test_get_building_with_project(self):
         """ tests get_building projects payload"""
         # arrange
@@ -1940,6 +1872,8 @@ class BuildingDetailViewTests(TestCase):
             'test project'
         )
 
+    # TODO replace with test for inventory report
+    @skip("Fix for new data model")
     def test_get_building_with_deleted_dataset(self):
         """ tests the get_building view where the dataset has been deleted and
             the building should load without showing the sources from deleted
@@ -1988,6 +1922,8 @@ class BuildingDetailViewTests(TestCase):
             places=1,
         )
 
+    # TODO replace with test for inventory report
+    @skip("Fix for new data model")
     def test_get_building_imported_buildings_includes_green_button(self):
         # arrange
         self.parent_2.source_type = 6
@@ -2022,6 +1958,8 @@ class BuildingDetailViewTests(TestCase):
             self.import_file_2.pk
         )
 
+    # TODO replace with test for inventory
+    @skip("Fix for new data model")
     def test_update_building_audit_log(self):
         """tests that a building update logs an audit_log"""
         # arrange
@@ -2048,6 +1986,7 @@ class BuildingDetailViewTests(TestCase):
         self.assertTrue('update_building' in audit_log.action)
         self.assertEqual(audit_log.audit_type, LOG)
 
+    @skip("Fix for new data model")
     def test_save_match_audit_log(self):
         """tests that a building match logs an audit_log"""
         # act
@@ -2073,6 +2012,7 @@ class BuildingDetailViewTests(TestCase):
         self.assertEqual(audit_log.action_note, 'Matched building.')
         self.assertEqual(audit_log.audit_type, LOG)
 
+    @skip("Fix for new data model")
     def test_get_match_tree(self):
         """tests get_match_tree"""
         # arrange
@@ -2104,6 +2044,7 @@ class BuildingDetailViewTests(TestCase):
         self.assertIn(self.parent_2.pk, ids)
         self.assertIn(self.parent_1.children.first().pk, ids)
 
+    @skip("Fix for new data model")
     def test_get_match_tree_from_child(self):
         """tests get_match_tree from the child"""
         # arrange
@@ -2211,6 +2152,7 @@ class BuildingDetailViewTests(TestCase):
             'message': 'Only buildings within an organization can be matched'
         })
 
+    @skip("Fix for new data model")
     def test_save_unmatch_audit_log(self):
         """tests that a building unmatch logs an audit_log"""
         # arrange match to unmatch
@@ -2523,6 +2465,7 @@ class TestMCMViews(TestCase):
         self.assertEqual(body.get('progress', 0), test_progress['progress'])
         self.assertEqual(body.get('progress_key', ''), progress_key)
 
+    @skip("Fix for new data model")
     def test_remap_buildings(self):
         """Test good case for resetting mapping."""
         # Make raw BSes, these should stick around.
@@ -2568,6 +2511,7 @@ class TestMCMViews(TestCase):
 
         self.assertEqual(get_cache(cache_key)['progress'], 0)
 
+    @skip("Fix for new data model")
     def test_reset_mapped_w_previous_matches(self):
         """Ensure we ignore mapped buildings with children BuildingSnapshots."""
         # Make the raw BSes for us to make new mappings from
@@ -2621,6 +2565,7 @@ class TestMCMViews(TestCase):
             child
         )
 
+    @skip("Fix for new data model")
     def test_reset_mapped_w_matching_done(self):
         """Make sure we don't delete buildings that have been merged."""
         self.import_file.matching_done = True
@@ -2712,6 +2657,7 @@ class TestMCMViews(TestCase):
         self.assertEqual(self.org, import_record.super_organization)
 
 
+@skip("Fix for new data model")
 class MatchTreeTests(TestCase):
     """Currently only tests _parent_tree_coparents"""
 
@@ -2849,7 +2795,7 @@ class MatchTreeTests(TestCase):
         self.assertEqual('success', json.loads(response.content)['status'])
 
 
-class BlueSkyViewTests(TestCase):
+class InventoryViewTests(TestCase):
 
     def setUp(self):
         user_details = {
@@ -2897,7 +2843,7 @@ class BlueSkyViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:properties"), params)
+        response = self.client.get(reverse("app:properties"), params)
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -2915,7 +2861,7 @@ class BlueSkyViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:properties"), params)
+        response = self.client.get(reverse("app:properties"), params)
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -2939,7 +2885,7 @@ class BlueSkyViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:properties"), params)
+        response = self.client.get(reverse("app:properties"), params)
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -2971,7 +2917,7 @@ class BlueSkyViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:properties"), params)
+        response = self.client.get(reverse("app:properties"), params)
         results = json.loads(response.content)
         self.assertEquals(len(results['results']), 1)
         result = results['results'][0]
@@ -2980,10 +2926,6 @@ class BlueSkyViewTests(TestCase):
         related = result['related'][0]
         self.assertEquals(related['postal_code'], result['postal_code'])
         self.assertEquals(related['primary'], 'P')
-        collapsed = result['collapsed']
-        self.assertEquals(
-            collapsed['block_number'][0], related['block_number']
-        )
 
     def test_get_properties_taxlot_extra_data(self):
         extra_data = {
@@ -3015,7 +2957,7 @@ class BlueSkyViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:properties"), params)
+        response = self.client.get(reverse("app:properties"), params)
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -3036,7 +2978,7 @@ class BlueSkyViewTests(TestCase):
             'page': 'one',
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:properties"), params)
+        response = self.client.get(reverse("app:properties"), params)
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 1)
         pagination = result['pagination']
@@ -3054,7 +2996,7 @@ class BlueSkyViewTests(TestCase):
             'page': 10,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:properties"), params)
+        response = self.client.get(reverse("app:properties"), params)
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 0)
         pagination = result['pagination']
@@ -3089,23 +3031,17 @@ class BlueSkyViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("bluesky:property-detail", args=(property_property.id,)),
+            reverse("app:property-details",
+                    args=(property_property.id, self.cycle.pk)),
             params
         )
         results = json.loads(response.content)
-        self.assertEquals(results['id'], property_view.pk)
 
-        rcycle = results['cycle']
-        self.assertEquals(rcycle['name'], '2010 Annual')
-        self.assertEquals(rcycle['user'], self.user.pk)
-        self.assertEquals(rcycle['organization'], self.org.pk)
-
-        self.assertEquals(len(results['lots']), 1)
-        expected_lot = {
-            'cycle': self.cycle.pk, 'id': taxlot_view.pk,
-            'state': taxlot_state.pk, 'taxlot': taxlot.pk, 'labels': []
-        }
-        self.assertEquals(results['lots'][0], expected_lot)
+        self.assertEqual(results['status'], 'success')
+        self.assertEqual(results['history'], [])
+        self.assertEqual(results['labels'], [])
+        self.assertEqual(results['source'], 'ImportFile')
+        self.assertEqual(results['changed_fields'], None)
 
         expected_property = {
             'campus': False, 'id': property_property.pk,
@@ -3114,9 +3050,35 @@ class BlueSkyViewTests(TestCase):
         self.assertEquals(results['property'], expected_property)
 
         state = results['state']
-        self.assertEquals(state['address_line_1'],
-                          property_state.address_line_1)
         self.assertEquals(state['id'], property_state.pk)
+        self.assertEquals(state['address_line_1'], property_state.address_line_1)
+
+        rcycle = results['cycle']
+        self.assertEquals(rcycle['name'], '2010 Annual')
+        self.assertEquals(rcycle['user'], self.user.pk)
+        self.assertEquals(rcycle['organization'], self.org.pk)
+
+        self.assertEquals(len(results['taxlots']), 1)
+
+        rtaxlot = results['taxlots'][0]
+        self.assertEqual(rtaxlot['id'], taxlot.pk)
+        self.assertEqual(rtaxlot['labels'], [])
+        self.assertEqual(
+            rtaxlot['taxlot'],
+            {'id': taxlot.pk, 'organization': self.org.pk}
+        )
+
+        tcycle = rtaxlot['cycle']
+        self.assertEquals(tcycle['name'], '2010 Annual')
+        self.assertEquals(tcycle['user'], self.user.pk)
+        self.assertEquals(tcycle['organization'], self.org.pk)
+
+        tstate = rtaxlot['state']
+        self.assertEqual(tstate['id'], taxlot_state.pk)
+        self.assertEqual(tstate['address'], taxlot_state.address)
+
+    def test_get_property_history(self):
+        pass    # TODO
 
     def test_get_property_multiple_taxlots(self):
         property_state = self.property_state_factory.get_property_state()
@@ -3152,29 +3114,52 @@ class BlueSkyViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("bluesky:property-detail", args=(property_property.id,)),
+            reverse("app:property-details",
+                    args=(property_property.id, self.cycle.pk)),
             params
         )
         results = json.loads(response.content)
-        self.assertEquals(results['id'], property_view.pk)
 
         rcycle = results['cycle']
         self.assertEquals(rcycle['name'], '2010 Annual')
         self.assertEquals(rcycle['user'], self.user.pk)
         self.assertEquals(rcycle['organization'], self.org.pk)
 
-        self.assertEquals(len(results['lots']), 2)
-        expected_lot_1 = {
-            'cycle': self.cycle.pk, 'id': taxlot_view_1.pk,
-            'state': taxlot_state_1.pk, 'taxlot': taxlot_1.pk, 'labels': []
-        }
-        self.assertEquals(results['lots'][0], expected_lot_1)
+        self.assertEquals(len(results['taxlots']), 2)
 
-        expected_lot_2 = {
-            'cycle': self.cycle.pk, 'id': taxlot_view_2.pk,
-            'state': taxlot_state_2.pk, 'taxlot': taxlot_2.pk, 'labels': []
-        }
-        self.assertEquals(results['lots'][1], expected_lot_2)
+        rtaxlot_1 = results['taxlots'][0]
+        self.assertEqual(rtaxlot_1['id'], taxlot_1.pk)
+        self.assertEqual(rtaxlot_1['labels'], [])
+        self.assertEqual(
+            rtaxlot_1['taxlot'],
+            {'id': taxlot_1.pk, 'organization': self.org.pk}
+        )
+
+        tcycle_1 = rtaxlot_1['cycle']
+        self.assertEquals(tcycle_1['name'], '2010 Annual')
+        self.assertEquals(tcycle_1['user'], self.user.pk)
+        self.assertEquals(tcycle_1['organization'], self.org.pk)
+
+        tstate_1 = rtaxlot_1['state']
+        self.assertEqual(tstate_1['id'], taxlot_state_1.pk)
+        self.assertEqual(tstate_1['address'], taxlot_state_1.address)
+
+        rtaxlot_2 = results['taxlots'][1]
+        self.assertEqual(rtaxlot_2['id'], taxlot_2.pk)
+        self.assertEqual(rtaxlot_2['labels'], [])
+        self.assertEqual(
+            rtaxlot_2['taxlot'],
+            {'id': taxlot_2.pk, 'organization': self.org.pk}
+        )
+
+        tcycle_2 = rtaxlot_2['cycle']
+        self.assertEquals(tcycle_2['name'], '2010 Annual')
+        self.assertEquals(tcycle_2['user'], self.user.pk)
+        self.assertEquals(tcycle_2['organization'], self.org.pk)
+
+        tstate_2 = rtaxlot_2['state']
+        self.assertEqual(tstate_2['id'], taxlot_state_2.pk)
+        self.assertEqual(tstate_2['address'], taxlot_state_2.address)
 
         expected_property = {
             'campus': False, 'id': property_property.pk,
@@ -3212,7 +3197,7 @@ class BlueSkyViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 1,
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 1)
@@ -3241,6 +3226,7 @@ class BlueSkyViewTests(TestCase):
         self.assertIn('extra_data_field', related)
         self.assertEquals(related['extra_data_field'], 'edfval')
 
+    @skip("Fix for new data model")
     def test_get_taxlots_no_cycle_id(self):
         property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property()
@@ -3263,7 +3249,7 @@ class BlueSkyViewTests(TestCase):
             'organization_id': self.org.pk,
             'page': 1,
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 1)
@@ -3282,18 +3268,23 @@ class BlueSkyViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
+
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 1)
         self.assertEquals(len(result['results'][0]['related']), 2)
-        collapsed = result['results'][0]['collapsed']
-        self.assertIn(property_state.address_line_1,
-                      collapsed['address_line_1'])
-        self.assertIn(property_state_1.address_line_1,
-                      collapsed['address_line_1'])
-        self.assertIn(
+
+        related_1 = result['results'][0]['related'][0]
+        related_2 = result['results'][0]['related'][1]
+        self.assertEqual(
+            property_state.address_line_1, related_1['address_line_1']
+        )
+        self.assertEqual(
+            property_state_1.address_line_1, related_2['address_line_1']
+        )
+        self.assertEqual(
             taxlot_state.jurisdiction_taxlot_identifier,
-            collapsed['calculated_taxlot_ids']
+            related_1['calculated_taxlot_ids']
         )
 
     def test_get_taxlots_multiple_taxlots(self):
@@ -3332,7 +3323,7 @@ class BlueSkyViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 1,
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 2)
@@ -3412,7 +3403,7 @@ class BlueSkyViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 1,
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 1)
@@ -3422,6 +3413,7 @@ class BlueSkyViewTests(TestCase):
         self.assertEquals(result['extra_data_field'], 'edfval')
         self.assertEquals(len(result['related']), 1)
 
+    @skip("Fix for new data model")
     def test_get_taxlots_page_not_an_integer(self):
         property_state = self.property_state_factory.get_property_state(
             extra_data=json.dumps({'extra_data_field': 'edfval'})
@@ -3447,7 +3439,7 @@ class BlueSkyViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 'bad',
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
         result = json.loads(response.content)
 
         self.assertEquals(len(result['results']), 1)
@@ -3485,7 +3477,7 @@ class BlueSkyViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 'bad',
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
         result = json.loads(response.content)
 
         self.assertEquals(len(result['results']), 1)
@@ -3524,7 +3516,7 @@ class BlueSkyViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 'bad',
         }
-        response = self.client.get(reverse("bluesky:lots"), params)
+        response = self.client.get(reverse("app:taxlots"), params)
         related = json.loads(response.content)['results'][0]['related'][0]
         self.assertEqual(related['calculated_taxlot_ids'], 'Missing')
 
@@ -3564,11 +3556,9 @@ class BlueSkyViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("bluesky:lot-detail", args=(taxlot.id,)), params
-        )
+            reverse("app:taxlot-details",
+                    args=(taxlot.id, self.cycle.pk)), params)
         result = json.loads(response.content)
-
-        self.assertEqual(result['id'], taxlot.id)
 
         cycle = result['cycle']
         self.assertEqual(cycle['id'], self.cycle.pk)
@@ -3577,22 +3567,23 @@ class BlueSkyViewTests(TestCase):
         self.assertEqual(cycle['user'], self.user.pk)
 
         properties = result['properties']
-        expected_property_1 = {
-            'cycle': self.cycle.pk,
-            'id': property_view_1.pk,
-            'property': property_property_1.pk,
-            'state': property_state_1.pk,
-            'labels': []
-        }
-        expected_property_2 = {
-            'cycle': self.cycle.pk,
-            'id': property_view_2.pk,
-            'property': property_property_2.pk,
-            'state': property_state_2.pk,
-            'labels': []
-        }
-        self.assertIn(expected_property_1, properties)
-        self.assertIn(expected_property_2, properties)
+        self.assertEqual(len(properties), 2)
+        self.assertEqual(properties[0]['cycle']['name'], self.cycle.name)
+        self.assertEqual(properties[1]['cycle']['name'], self.cycle.name)
+        self.assertEqual(
+            properties[0]['property']['id'], property_property_1.pk
+        )
+        self.assertEqual(
+            properties[1]['property']['id'], property_property_2.pk
+        )
+        self.assertEqual(
+            properties[0]['state']['address_line_1'],
+            property_state_1.address_line_1
+        )
+        self.assertEqual(
+            properties[1]['state']['address_line_1'],
+            property_state_2.address_line_1
+        )
 
         state = result['state']
         self.assertEqual(state['id'], taxlot_state.pk)
@@ -3609,14 +3600,15 @@ class BlueSkyViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("bluesky:cycles"), params
+            reverse("app:cycles"), params
         )
         results = json.loads(response.content)
+        self.assertEqual(results['status'], 'success')
 
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result['pk'], self.cycle.pk)
-        self.assertEqual(result['name'], self.cycle.name)
+        self.assertEqual(len(results['cycles']), 1)
+        cycle = results['cycles'][0]
+        self.assertEqual(cycle['pk'], self.cycle.pk)
+        self.assertEqual(cycle['name'], self.cycle.name)
 
     def test_get_property_columns(self):
         self.column_factory.get_column(
@@ -3635,7 +3627,7 @@ class BlueSkyViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("bluesky:property-columns"), params
+            reverse("app:property-columns"), params
         )
         results = json.loads(response.content)
 
@@ -3681,7 +3673,7 @@ class BlueSkyViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("bluesky:taxlot-columns"), params
+            reverse("app:taxlot-columns"), params
         )
         results = json.loads(response.content)
 

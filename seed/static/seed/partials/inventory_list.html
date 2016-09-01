@@ -1,0 +1,111 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+
+        </div>
+        <div class="page_title">
+            <h1>Inventory</h1>
+        </div>
+        <div class="right page_action_container page_action_btn"></div>
+    </div>
+</div>
+
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+</div>
+
+<div class="inventory-list-controls">
+    <form name="listControlsForm"
+          class="form-inline"
+          role="form"
+          ng-submit="submitNewLabelForm(newLabelForm.$valid)"
+          novalidate>
+        <div class="form-group">
+            <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
+                <button id="btnInventoryActions"
+                        type="button"
+                        uib-dropdown-toggle
+                        class="btn btn-default btn-sm"
+                        ng-disabled="gridApi.selection.getSelectedCount() == 0">
+                    Actions <span class="caret"></span>
+                </button>
+                <ul uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
+                    <li ng-hide="menu.user.organization.user_role === 'viewer'">
+                        <a ng-click="open_delete_modal()">Delete Selected</a>
+                    </li>
+                    <li>
+                        <a ng-click="open_export_modal()">Export Selected</a>
+                    </li>
+                    <li>
+                        <a ng-click="open_update_inventory_labels_modal()">Add/Remove Labels</a>
+                    </li>
+                </ul>
+            </div>
+
+            <select id="showHideFilterSelect"
+                    class="btn btn-default btn-sm"
+                    ng-init="matching_filter_options.selected = matching_filter_options_init"
+                    ng-model="matching_filter_options.selected"
+                    ng-options="option.id as option.value for option in matching_filter_options"
+                    ng-change="update_show_matching_filter(matching_filter_options.selected)"
+                    ng-disabled="true">
+            </select>
+
+        </div>
+        <div class="form-group">
+            <label for="tagsInput">Filter by label:</label>
+            <div class="btn-group">
+                <tags-input id="tagsInput"
+                            ng-model="selected_labels"
+                            placeholder="Add a label"
+                            replace-spaces-with-dashes="false"
+                            add-from-autocomplete-only="true">
+                    <auto-complete source="loadLabelsForFilter($query)"
+                                   max-results-to-show="255"
+                                   min-length="0"
+                                   load-on-empty="true"
+                                   load-on-focus="true"
+                    >
+                    </auto-complete>
+                </tags-input>
+            </div>
+        </div>
+        <div class="btn-group building-list-filter-buttons">
+            <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm">Clear Labels</button>
+        </div>
+    </form>
+
+    <div class="form-group" style="padding-top: 20px;">
+        <label>Cycle:</label>
+        <div class="btn-group">
+            <select class="form-control input-sm col-xs-2" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
+                    ng-options="option.name for option in cycle.cycles track by option.pk">
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="inventory-list-tab-container">
+    <div class="item-count">
+        <i class="fa fa-building-o"></i>
+        {$ total | number:0 $}
+        <span ng-show="object == 'property'"><ng-pluralize count="total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize></span>
+        <span ng-show="object == 'taxlot'"><ng-pluralize count="total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
+    </div>
+    <ul class="nav nav-tabs" style="margin-bottom:1px;">
+        <li ng-class="{active: object=='property'}" heading="View by Property">
+            <a ui-sref="properties">View by Property</a>
+        </li>
+        <li ng-class="{active: object=='taxlot'}" heading="View by Tax Lot">
+            <a ui-sref="taxlots">View by Tax Lot</a>
+        </li>
+    </ul>
+</div>
+
+<div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
+    <div class="section_content">
+        <div id="grid-container">
+            <div ui-grid="gridOptions" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-save-state ui-grid-selection ui-grid-tree-view></div>
+        </div>
+    </div>
+</div>

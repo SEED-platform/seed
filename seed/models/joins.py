@@ -16,8 +16,6 @@ from seed.models import (
     TaxLotView,
 )
 
-from seed.utils.generic import split_model_fields
-
 logger = logging.getLogger(__name__)
 
 

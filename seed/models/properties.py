@@ -9,18 +9,12 @@ from __future__ import unicode_literals
 import logging
 
 from django.db import models
-from django.db.models.fields.related import ManyToManyField
 from django_pgjson.fields import JsonField
 
 from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
-    COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW,
-    Cycle,
-    TaxLot,
-    TaxLotState,
-    TaxLotView,
-    StatusLabel
+    COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW
 )
 from seed.utils.generic import split_model_fields, obj_to_dict
 
@@ -28,12 +22,25 @@ logger = logging.getLogger(__name__)
 
 # State of the data that was imported. This will be used to flag which
 # rows are orphaned and can be deleted.
+DATA_STATE_UNKNOWN = 0
+DATA_STATE_IMPORT = 1
+DATA_STATE_MAPPING = 2
+DATA_STATE_MATCHING = 3
 DATA_STATE = (
-    (0, 'Unknown'),
-    (1, 'Post Import'),
-    (2, 'Post Mapping'),
-    (3, 'Post Matching'),
+    (DATA_STATE_UNKNOWN, 'Unknown'),
+    (DATA_STATE_IMPORT, 'Post Import'),
+    (DATA_STATE_MAPPING, 'Post Mapping'),
+    (DATA_STATE_MATCHING, 'Post Matching'),
 )
+from django.db.models.fields.related import ManyToManyField
+from seed.models import Cycle
+from seed.models import StatusLabel
+from auditlog import AUDIT_IMPORT
+from auditlog import DATA_UPDATE_TYPE
+from seed.utils.time import convert_datestr
+
+# Oops! we override a builtin in some of the models
+property_decorator = property
 
 
 class Property(models.Model):
@@ -80,12 +87,16 @@ class PropertyState(models.Model):
     city = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
     postal_code = models.CharField(max_length=255, null=True, blank=True)
-    building_count = models.IntegerField(null=True,
-                                         blank=True)  # Only spot where it's 'building' in the app, b/c this is a PortMgr field.
+
+    # Only spot where it's 'building' in the app, b/c this is a PortMgr field.
+    building_count = models.IntegerField(null=True, blank=True)
+
     property_notes = models.TextField(null=True, blank=True)
     year_ending = models.DateField(null=True, blank=True)
-    use_description = models.CharField(max_length=255, null=True,
-                                       blank=True)  # Tax IDs are often stuck in here.
+
+    # Tax IDs are often stuck here.
+    use_description = models.CharField(max_length=255, null=True, blank=True)
+
     gross_floor_area = models.FloatField(null=True, blank=True)
     year_built = models.IntegerField(null=True, blank=True)
     recent_sale_date = models.DateTimeField(null=True, blank=True)
@@ -130,18 +141,18 @@ class PropertyState(models.Model):
             end=end
         )
 
-        tls, _ = TaxLotState.objects.get_or_create(
-            jurisdiction_taxlot_identifier=tax_lot_id
-        )
-
-        logger.debug("the cycle is {}".format(cycle))
-        logger.debug("the taxlotstate is {}".format(tls))
-        tlv, _ = TaxLotView.objects.get_or_create(
-            state=tls,
-            cycle=cycle,
-        ).first()
+        # tls, _ = TaxLotState.objects.get_or_create(
+        #     jurisdiction_taxlot_identifier=tax_lot_id
+        # )
         #
-        logger.debug("taxlotview is {}".format(tlv))
+        # logger.debug("the cycle is {}".format(cycle))
+        # logger.debug("the taxlotstate is {}".format(tls))
+        # tlv, _ = TaxLotView.objects.get_or_create(
+        #     state=tls,
+        #     cycle=cycle,
+        # ).first()
+        #
+        # logger.debug("taxlotview is {}".format(tlv))
 
         return self
 
@@ -170,19 +181,19 @@ class PropertyState(models.Model):
         )
 
         # create 1 to 1 pointless taxlots for now
-        tl = TaxLot.objects.create(
-            organization=org
-        )
-
-        tls, _ = TaxLotState.objects.get_or_create(
-            jurisdiction_taxlot_identifier=tax_lot_id
-        )
-
-        tlv, _ = TaxLotView.objects.get_or_create(
-            taxlot=tl,
-            state=tls,
-            cycle=cycle,
-        )
+        # tl = TaxLot.objects.create(
+        #     organization=org
+        # )
+        #
+        # tls, _ = TaxLotState.objects.get_or_create(
+        #     jurisdiction_taxlot_identifier=tax_lot_id
+        # )
+        #
+        # tlv, _ = TaxLotView.objects.get_or_create(
+        #     taxlot=tl,
+        #     state=tls,
+        #     cycle=cycle,
+        # )
 
         self.save()
 
@@ -298,6 +309,81 @@ class PropertyView(models.Model):
     def __unicode__(self):
         return u'Property View - %s' % (self.pk)
 
-    # FIXME: Add unique constraint on (property, cycle)
     class Meta:
         unique_together = ('property', 'cycle',)
+
+    def __init__(self, *args, **kwargs):
+        self._import_filename = kwargs.pop('import_filename', None)
+        super(PropertyView, self).__init__(*args, **kwargs)
+
+    def initialize_audit_logs(self, **kwargs):
+        kwargs.update({
+            'organization': self.property.organization,
+            'state': self.state,
+            'view': self,
+            'record_type': AUDIT_IMPORT
+        })
+        return PropertyAuditLog.objects.create(**kwargs)
+
+    def update_state(self, new_state, **kwds):
+        view_audit_log = PropertyAuditLog.objects.filter(
+            state=self.state
+        ).first()
+        if not view_audit_log:
+            view_audit_log = self.initialize_audit_logs(
+                description="Initial audit log added on update.",
+                record_type=AUDIT_IMPORT,
+            )
+        new_audit_log = PropertyAuditLog(
+            organization=self.property.organization,
+            parent1=view_audit_log,
+            state=new_state,
+            view=self,
+            **kwds
+        )
+        self.state = new_state
+        self.save()
+        new_audit_log.save()
+        return
+
+    def save(self, *args, **kwargs):
+        # create audit log on creation
+        audit_log_initialized = True if self.id else False
+        import_filename = kwargs.pop('import_filename', self._import_filename)
+        super(PropertyView, self).save(*args, **kwargs)
+        if not audit_log_initialized:
+            self.initialize_audit_logs(
+                description="Initial audit log added on creation/save.",
+                record_type=AUDIT_IMPORT,
+                import_filename=import_filename
+            )
+
+    @property_decorator
+    def import_filename(self):
+        """Get the import file name form the audit logs"""
+        if not getattr(self, '_import_filename', None):
+            audit_log = PropertyAuditLog.objects.filter(
+                view_id=self.pk).order_by('created').first()
+            self._import_filename = audit_log.import_filename
+        return self._import_filename
+
+
+class PropertyAuditLog(models.Model):
+    organization = models.ForeignKey(Organization)
+    parent1 = models.ForeignKey('PropertyAuditLog', blank=True, null=True,
+                                related_name='propertyauditlog__parent1')
+    parent2 = models.ForeignKey('PropertyAuditLog', blank=True, null=True,
+                                related_name='propertyauditlog__parent2')
+
+    state = models.ForeignKey('PropertyState',
+                              related_name='propertyauditlog__state')
+    view = models.ForeignKey('PropertyView',
+                             related_name='propertyauditlog__view', null=True)
+
+    name = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    import_filename = models.CharField(max_length=255, null=True, blank=True)
+    record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True,
+                                      blank=True)
+    created = models.DateTimeField(auto_now_add=True, null=True)

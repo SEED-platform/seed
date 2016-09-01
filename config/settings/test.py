@@ -4,32 +4,34 @@
 """
 from __future__ import absolute_import
 
+import sys
+
 from celery.utils import LOG_LEVELS
 
 from config.settings.common import *  # noqa
 
 LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'handlers': {
-            'console': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler'
-            },
-            'file': {
-                'level': 'DEBUG',
-                'class': 'logging.FileHandler',
-                'filename': 'log/test.log'
-            },
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler'
         },
-        'loggers': {
-            # the name of the logger, if empty, then this is the default logger
-            '': {
-                'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
-                'handlers': ['console', 'file'],
-            }
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'log/test.log'
         },
-    }
+    },
+    'loggers': {
+        # the name of the logger, if empty, then this is the default logger
+        '': {
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'handlers': ['console', 'file'],
+        }
+    },
+}
 
 PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',
@@ -68,7 +70,7 @@ NOSE_ARGS = [
     '--exclude-dir=seed/common',
     '--exclude-dir=seed/functional',
     '--nocapture',
-    '--nologcapture'
+    '--nologcapture',
 ]
 
 REQUIRE_UNIQUE_EMAIL = False

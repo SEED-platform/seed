@@ -3,20 +3,22 @@
  * :author
  */
 /**
-  This controller handles the building reports page, watching for and remembering
+  This controller handles the inventory reports page, watching for and remembering
   the user's selections for chart parameters like date range and x and y variables,
   and then updating the chart directives when the user clicks the update chart button.
 */
 
-angular.module('BE.seed.controller.buildings_reports', [])
-.controller('buildings_reports_controller', ['$scope',
+angular.module('BE.seed.controller.inventory_reports', [])
+.controller('inventory_reports_controller', ['$scope',
                                               '$log',
-                                              'buildings_reports_service',
+                                              'inventory_reports_service',
                                               'simple_modal_service',
+                                              'cycles',
                                     function( $scope,
                                               $log,
-                                              buildings_reports_service,
-                                              simple_modal_service
+                                              inventory_reports_service,
+                                              simple_modal_service,
+                                              cycles
                                             ){
 
 
@@ -24,6 +26,13 @@ angular.module('BE.seed.controller.buildings_reports', [])
 
   /* Define the first five colors. After that, rely on Dimple's default colors. */
   $scope.defaultColors = ['#458cc8', '#779e1c', '#f2c41d', '#939495', '#c83737', '#f18630'];
+
+  /* Setup models from "From" and "To" selectors */
+  $scope.cycles = cycles;
+
+  /* Model for pulldowns, initialized in init below */
+  $scope.fromCycle = {}
+  $scope.toCycle = {}
 
   /* SCOPE VARS */
   /* ~~~~~~~~~~ */
@@ -93,10 +102,10 @@ angular.module('BE.seed.controller.buildings_reports', [])
       axisMin: ''
     },
     {
-      name: 'Building Classification',
-      label:'Building Classification',
+      name: 'Property Classification',
+      label:'Property Classification',
       varName:'use_description',
-      axisLabel:'Building Classification',
+      axisLabel:'Property Classification',
       axisTickFormat: '',
       axisType: 'Category',
       axisMin: ''
@@ -116,15 +125,6 @@ angular.module('BE.seed.controller.buildings_reports', [])
   // Chart titles
   $scope.chart1Title = '';
   $scope.chart2Title = '';
-
-  // Datepickers
-  var initStartDate = new Date();
-  initStartDate.setYear(initStartDate.getFullYear()-1);
-  $scope.startDate = initStartDate;
-  $scope.startDatePickerOpen = false;
-  $scope.endDate = new Date();
-  $scope.endDatePickerOpen = false;
-  $scope.invalidDates = false; // set this to true when startDate >= endDate;
 
   // Series
   // the following variable keeps track of which
@@ -154,33 +154,12 @@ angular.module('BE.seed.controller.buildings_reports', [])
   /* UI HANDLERS */
   /* ~~~~~~~~~~~ */
 
-  // Handle datepicker open/close events
-  $scope.openStartDatePicker = function ($event) {
-    $event.preventDefault();
-    $event.stopPropagation();
-    $scope.startDatePickerOpen = !$scope.startDatePickerOpen;
-  };
-  $scope.openEndDatePicker = function ($event) {
-    $event.preventDefault();
-    $event.stopPropagation();
-    $scope.endDatePickerOpen = !$scope.endDatePickerOpen;
-  };
-
-  $scope.$watch('startDate', function(newval, oldval){
-    $scope.checkInvalidDate();
-  });
-
-  $scope.$watch('endDate', function(newval, oldval){
-    $scope.checkInvalidDate();
-  });
-
-  $scope.checkInvalidDate = function() {
-     $scope.invalidDates = ($scope.endDate < $scope.startDate);
-  };
-
-
   /* Update data used by the chart. This will force the charts to re-render*/
   $scope.updateChartData = function(){
+
+    // TODO Form check, although at the moment it's just four selects so user shouldn't be able to get form into an invalid state. */
+
+    /*
     if ($scope.invalidDates){
       //Show a basic error modal
       var modalOptions = {
@@ -198,7 +177,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
       });
       return;
     }
-
+    */
     clearChartData();
     $scope.chartStatusMessage = 'Loading data...';
     $scope.aggChartStatusMessage = 'Loading data...';
@@ -229,8 +208,8 @@ angular.module('BE.seed.controller.buildings_reports', [])
   function clearChartData(){
     $scope.chartData = [];
     $scope.aggChartData = [];
-    $scope.buildingCounts = [];
-    $scope.aggBuildingCounts = [];
+    $scope.propertyCounts = [];
+    $scope.aggPropertyCounts = [];
   }
 
   /* Update the titles above each chart*/
@@ -266,12 +245,12 @@ angular.module('BE.seed.controller.buildings_reports', [])
     var yVar = $scope.yAxisSelectedItem.varName;
     $scope.chartIsLoading = true;
 
-    buildings_reports_service.get_report_data(xVar, yVar, $scope.startDate, $scope.endDate)
+    inventory_reports_service.get_report_data(xVar, yVar, $scope.fromCycle.selected_cycle.pk, $scope.toCycle.selected_cycle.pk)
       .then(function(data) {
           var yAxisType = ( yVar === 'use_description' ? 'Category' : 'Measure');
-          var bldgCounts = data.building_counts;
-          var colorsArr = mapColors(bldgCounts);
-          $scope.buildingCounts = bldgCounts;
+          var propertyCounts = data.property_counts;
+          var colorsArr = mapColors(propertyCounts);
+          $scope.propertyCounts = propertyCounts;
           $scope.chartData = {
             series:  $scope.chartSeries,
             chartData: data.chart_data,
@@ -291,7 +270,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
         },
         function(data, status){
           $scope.chartStatusMessage = 'Data load error.';
-          $log.error('#BuildingReportsController: Error loading chart data : ' + status);
+          $log.error('#InventoryReportsController: Error loading chart data : ' + status);
         })
       .finally(function(){
         $scope.chartIsLoading = false;
@@ -315,12 +294,12 @@ angular.module('BE.seed.controller.buildings_reports', [])
     var xVar = $scope.xAxisSelectedItem.varName;
     var yVar = $scope.yAxisSelectedItem.varName;
     $scope.aggChartIsLoading = true;
-    buildings_reports_service.get_aggregated_report_data(xVar, yVar, $scope.startDate, $scope.endDate)
+    inventory_reports_service.get_aggregated_report_data(xVar, yVar, $scope.fromCycle.selected_cycle.pk, $scope.toCycle.selected_cycle.pk)
       .then(function(data) {
-          $scope.aggBuildingCounts = data.building_counts;
-          var bldgCounts = data.building_counts;
-          var colorsArr = mapColors(bldgCounts);
-          $scope.aggBuildingCounts = bldgCounts;
+          $scope.aggPropertyCounts = data.property_counts;
+          var propertyCounts = data.property_counts;
+          var colorsArr = mapColors(propertyCounts);
+          $scope.aggPropertyCounts = propertyCounts;
           $scope.aggChartData = {
             series:  $scope.aggChartSeries,
             chartData: data.chart_data,
@@ -337,7 +316,7 @@ angular.module('BE.seed.controller.buildings_reports', [])
         },
         function(data, status){
           $scope.aggChartStatusMessage = 'Data load error.';
-          $log.error('#BuildingReportsController: Error loading agg chart data : ' + status);
+          $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
         })
       .finally(function(){
         $scope.aggChartIsLoading = false;
@@ -350,21 +329,21 @@ angular.module('BE.seed.controller.buildings_reports', [])
           seriesName:  A string value for the name of the series
           color:       A hex value for the color
         }
-      A side effect of this method is that the colors are also applied to the bldgCounts object
+      A side effect of this method is that the colors are also applied to the propertyCounts object
       so that they're available in the table view beneath the chart that lists group details.
   */
-  function mapColors(bldgCounts){
-    if (!bldgCounts) return [];
+  function mapColors(propertyCounts){
+    if (!propertyCounts) return [];
     var colorsArr = [];
-    var numBldgGroups = bldgCounts.length;
-    for (var groupIndex=0;groupIndex<numBldgGroups;groupIndex++){
+    var numPropertyGroups = propertyCounts.length;
+    for (var groupIndex=0;groupIndex<numPropertyGroups;groupIndex++){
       var obj = {};
-      obj.seriesName = bldgCounts[groupIndex].yr_e;
+      obj.seriesName = propertyCounts[groupIndex].yr_e;
       obj.color = $scope.defaultColors[groupIndex];
-      bldgCounts[groupIndex].color = obj.color;
+      propertyCounts[groupIndex].color = obj.color;
       colorsArr.push(obj);
     }
-    //bldgCounts.reverse(); //so the table/legend order matches the order Dimple will build the groups
+    //propertyCounts.reverse(); //so the table/legend order matches the order Dimple will build the groups
     return colorsArr;
   }
 
@@ -372,7 +351,15 @@ angular.module('BE.seed.controller.buildings_reports', [])
   /* Call the update method so the page initializes
      with the values set in the scope */
   function init(){
-    //$scope.updateChartData();
+
+    // Initialize pulldowns
+    $scope.fromCycle = {
+      selected_cycle: cycles[0]
+    };
+    $scope.toCycle = {
+      selected_cycle: cycles[0]
+    };
+
   }
 
   init();

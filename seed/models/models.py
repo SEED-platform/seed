@@ -18,12 +18,10 @@ from django_pgjson.fields import JsonField
 from seed.audit_logs.models import AuditLog, LOG
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
-from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.managers.json import JsonManager
 from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.time import convert_datestr
-
 
 PROJECT_NAME_MAX_LENGTH = 255
 
@@ -131,6 +129,7 @@ ENERGY_UNITS = (
 #
 
 
+# TO REMOVE
 def get_ancestors(building):
     """gets all the non-raw, non-composite ancestors of a building
 
@@ -441,204 +440,109 @@ def unmatch_snapshot_tree(building_pk):
     canon.save()
 
 
-def _get_filtered_values(updated_values):
-    """Breaks out mappable, meta and source BuildingSnapshot attributes."""
-    from seed.utils.constants import META_FIELDS, EXCLUDE_FIELDS
+# def _get_filtered_values(updated_values):
+#     """Breaks out mappable, meta and source BuildingSnapshot attributes."""
+#     from seed.utils.constants import META_FIELDS, EXCLUDE_FIELDS
 
-    mappable_values = {}
-    meta_values = {}
-    source_values = {}
+#     mappable_values = {}
+#     meta_values = {}
+#     source_values = {}
 
-    for item in updated_values:
-        value = updated_values[item]
-        if item.endswith('_source'):
-            source_values[item] = value
-        elif item in META_FIELDS:
-            meta_values[item] = value
-        elif item not in EXCLUDE_FIELDS:
-            mappable_values[item] = value
+#     for item in updated_values:
+#         value = updated_values[item]
+#         if item.endswith('_source'):
+#             source_values[item] = value
+#         elif item in META_FIELDS:
+#             meta_values[item] = value
+#         elif item not in EXCLUDE_FIELDS:
+#             mappable_values[item] = value
 
-    return mappable_values, meta_values, source_values
-
-
-def _get_diff_sources(mappable, old_snapshot):
-    """Return a list of str for values that changed from old_snapshot."""
-    results = []
-    for item in mappable:
-        value = mappable[item]
-        if getattr(old_snapshot, item, None) != value and value:
-            results.append(item)
-
-    return results
+#     return mappable_values, meta_values, source_values
 
 
-def update_building(old_snapshot, updated_values, user, *args, **kwargs):
-    """Creates a new snapshot with updated values."""
-    from seed.mappings import seed_mappings, mapper as seed_mapper
+# def _get_diff_sources(mappable, old_snapshot):
+#     """Return a list of str for values that changed from old_snapshot."""
+#     results = []
+#     for item in mappable:
+#         value = mappable[item]
+#         if getattr(old_snapshot, item, None) != value and value:
+#             results.append(item)
 
-    mappable, meta, sources = _get_filtered_values(updated_values)
-
-    # extra data will get filtered
-    extra_data = updated_values['extra_data']
-    extra_data = extra_data or old_snapshot.extra_data or {}
-
-    canon = old_snapshot.canonical_building or None
-    # Need to hydrate sources
-    sources = {
-        k: BuildingSnapshot.objects.get(pk=v) for k, v in sources.items() if v
-    }
-
-    # Handle the mapping of "normal" attributes.
-    new_snapshot = mapper.map_row(
-        mappable,
-        dict(seed_mappings.BuildingSnapshot_to_BuildingSnapshot),
-        BuildingSnapshot,
-        initial_data=sources  # Copy parent's source attributes.
-    )
-
-    # convert dates to something django likes
-    new_snapshot.clean()
-    new_snapshot.save()
-
-    diff_sources = _get_diff_sources(mappable, old_snapshot)
-    for diff in diff_sources:
-        setattr(new_snapshot, '{0}_source'.format(diff), new_snapshot)
-
-    new_snapshot.canonical_building = canon
-    new_snapshot.save()
-
-    # All all the orgs the old snapshot had.
-    new_snapshot.super_organization = old_snapshot.super_organization
-    # Move the meta data over.
-    for meta_val in meta:
-        setattr(new_snapshot, meta_val, meta[meta_val])
-    # Insert new_snapshot into the inheritance chain
-    old_snapshot.children.add(new_snapshot)
-    new_snapshot.import_file_id = old_snapshot.import_file_id
-
-    new_snapshot.extra_data = extra_data
-
-    # Update/override anything in extra data.
-    extra, sources = seed_mapper.merge_extra_data(
-        new_snapshot, old_snapshot, default=new_snapshot
-    )
-    new_snapshot.extra_data = extra
-    new_snapshot.extra_data_sources = sources
-    new_snapshot.save()
-
-    # If we had a canonical building and its can_snapshot was old, update.
-    if canon and canon.canonical_snapshot == old_snapshot:
-        canon.canonical_snapshot = new_snapshot
-        canon.save()
-
-    # If the old snapshot was in any project the ProjectBuilding set
-    # needs to be updated to point to the new snapshot. We might want
-    # to refactor ProjectBuildings to contain a CanonicalBuilding
-    # foreign key in the future.
-    old_snapshot.project_building_snapshots.all().update(
-        building_snapshot=new_snapshot
-    )
-
-    # Check to see if there are any new ``extra_data`` fields added for this
-    # org.
-    save_column_names(new_snapshot)
-
-    return new_snapshot
+#     return results
 
 
-def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
-    """Callable provided to MCM to return a previously mapped field.
+# def update_building(old_snapshot, updated_values, user, *args, **kwargs):
+#     """Creates a new snapshot with updated values."""
+#     from seed.mappings import seed_mappings, mapper as seed_mapper
 
-    :param column_raw: str, the column name of the raw data.
-    :param organization: Organization inst.
-    :param attr_name: str, name of attribute on ColumnMapping to pull out.
-        whether we're looking at a mapping from the perspective of
-        a raw_column (like we do when creating a mapping), or mapped_column,
-        (like when we're applying that mapping).
-    :returns: list of mapped items, float representation of confidence.
+#     mappable, meta, sources = _get_filtered_values(updated_values)
 
-    """
-    from seed.utils.mapping import _get_column_names
+#     # extra data will get filtered
+#     extra_data = updated_values['extra_data']
+#     extra_data = extra_data or old_snapshot.extra_data or {}
 
-    if not isinstance(column_raw, list):
-        column_raw = [column_raw]
+#     canon = old_snapshot.canonical_building or None
+#     # Need to hydrate sources
+#     sources = {
+#         k: BuildingSnapshot.objects.get(pk=v) for k, v in sources.items() if v
+#     }
 
-    cols = Column.objects.filter(
-        organization=organization, column_name__in=column_raw
-    )
+#     # Handle the mapping of "normal" attributes.
+#     new_snapshot = mapper.map_row(
+#         mappable,
+#         dict(seed_mappings.BuildingSnapshot_to_BuildingSnapshot),
+#         BuildingSnapshot,
+#         initial_data=sources  # Copy parent's source attributes.
+#     )
 
-    try:
-        previous_mapping = ColumnMapping.objects.get(
-            super_organization=organization,
-            column_raw__in=cols,
-        )
+#     # convert dates to something django likes
+#     new_snapshot.clean()
+#     new_snapshot.save()
 
-    except ColumnMapping.DoesNotExist:
-        return None
+#     diff_sources = _get_diff_sources(mappable, old_snapshot)
+#     for diff in diff_sources:
+#         setattr(new_snapshot, '{0}_source'.format(diff), new_snapshot)
 
-    column_names = _get_column_names(previous_mapping, attr_name=attr_name)
+#     new_snapshot.canonical_building = canon
+#     new_snapshot.save()
 
-    if previous_mapping.is_direct():
-        column_names = column_names[0]
+#     # All all the orgs the old snapshot had.
+#     new_snapshot.super_organization = old_snapshot.super_organization
+#     # Move the meta data over.
+#     for meta_val in meta:
+#         setattr(new_snapshot, meta_val, meta[meta_val])
+#     # Insert new_snapshot into the inheritance chain
+#     old_snapshot.children.add(new_snapshot)
+#     new_snapshot.import_file_id = old_snapshot.import_file_id
 
-    return column_names, 100
+#     new_snapshot.extra_data = extra_data
 
+#     # Update/override anything in extra data.
+#     extra, sources = seed_mapper.merge_extra_data(
+#         new_snapshot, old_snapshot, default=new_snapshot
+#     )
+#     new_snapshot.extra_data = extra
+#     new_snapshot.extra_data_sources = sources
+#     new_snapshot.save()
 
-def get_column_mappings(organization):
-    """Returns dict of all the column mappings for an Organization's given source type
+#     # If we had a canonical building and its can_snapshot was old, update.
+#     if canon and canon.canonical_snapshot == old_snapshot:
+#         canon.canonical_snapshot = new_snapshot
+#         canon.save()
 
-    :param organization: inst, Organization.
-    :returns: dict, list of dict.
+#     # If the old snapshot was in any project the ProjectBuilding set
+#     # needs to be updated to point to the new snapshot. We might want
+#     # to refactor ProjectBuildings to contain a CanonicalBuilding
+#     # foreign key in the future.
+#     old_snapshot.project_building_snapshots.all().update(
+#         building_snapshot=new_snapshot
+#     )
 
-    Use this when actually performing mapping between data sources, but only call it after all of the mappings
-    have been saved to the ``ColumnMapping`` table.
+#     # Check to see if there are any new ``extra_data`` fields added for this
+#     # org.
+#     save_column_names(new_snapshot)
 
-    """
-    from seed.utils.mapping import _get_column_names
-
-    source_mappings = ColumnMapping.objects.filter(
-        super_organization=organization
-    )
-    concat_confs = []
-    mapping = {}
-    for item in source_mappings:
-        if not item.column_mapped.all().exists():
-            continue
-        key = _get_column_names(item)
-        value = _get_column_names(item, attr_name='column_mapped')[0]
-
-        if isinstance(key, list) and len(key) > 1:
-            concat_confs.append({
-                'concat_columns': key,
-                'target': value,
-                'delimiter': ' '
-            })
-            continue
-
-        # These should be lists of one element each.
-        mapping[key[0]] = value
-
-    return mapping, concat_confs
-
-
-def save_column_names(property_state, mapping=None):
-    """Save unique column names for extra_data in this organization.
-
-    Basically this is a record of all the extra_data keys we've ever seen
-    for a particular organization.
-
-    :param property_state: PropertyState instance.
-    """
-    from seed.utils import mapping as mapping_utils
-
-    for key in property_state.extra_data:
-        # Ascertain if our key is ``extra_data`` or not.
-        is_extra_data = key not in mapping_utils.get_mappable_columns()
-        Column.objects.get_or_create(
-            organization=property_state.super_organization,
-            column_name=key[:511],
-            is_extra_data=is_extra_data
-        )
+#     return new_snapshot
 
 
 class Project(TimeStampedModel):
@@ -882,118 +786,6 @@ class Enum(models.Model):
 
         return u'Enum: {0}: Values {1}'.format(
             self.enum_name, enums_string
-        )
-
-
-class Column(models.Model):
-    """The name of a column for a given organization."""
-    SOURCE_PROPERTY = 'P'
-    SOURCE_TAXLOT = 'T'
-    SOURCE_CHOICES = (
-        (SOURCE_PROPERTY, 'Property'),
-        (SOURCE_TAXLOT, 'Taxlot'),
-    )
-    SOURCE_CHOICES_MAP = {
-        SOURCE_PROPERTY: 'property',
-        SOURCE_TAXLOT: 'taxlot',
-    }
-
-    organization = models.ForeignKey(SuperOrganization, blank=True, null=True)
-    column_name = models.CharField(max_length=512, db_index=True)
-    unit = models.ForeignKey(Unit, blank=True, null=True)
-    enum = models.ForeignKey(Enum, blank=True, null=True)
-    is_extra_data = models.BooleanField(default=False)
-    extra_data_source = models.CharField(
-        max_length=1, null=True, blank=True,
-        db_index=True, choices=SOURCE_CHOICES
-    )
-
-    class Meta:
-        unique_together = (
-            'organization', 'column_name', 'is_extra_data', 'extra_data_source')
-
-    def __unicode__(self):
-        return u'{0}'.format(self.column_name)
-
-
-class ColumnMapping(models.Model):
-    """Stores previous user-defined column mapping.
-
-    We'll pull from this when pulling from varied, dynamic
-    source data to present the user with previous choices for that
-    same field in subsequent data loads.
-
-    """
-    user = models.ForeignKey(User, blank=True, null=True)
-    source_type = models.IntegerField(
-        choices=SEED_DATA_SOURCES, null=True, blank=True
-    )
-    super_organization = models.ForeignKey(
-        SuperOrganization,
-        verbose_name=_('SeedOrg'),
-        blank=True,
-        null=True,
-        related_name='column_mappings'
-    )
-    column_raw = models.ManyToManyField(
-        'Column',
-        related_name='raw_mappings',
-        blank=True,
-    )
-    column_mapped = models.ManyToManyField(
-        'Column',
-        related_name='mapped_mappings',
-        blank=True,
-    )
-
-    def is_direct(self):
-        """
-        Returns True if the ColumnMapping is a direct mapping from imported
-        column name to either a BEDES column or a previously imported column.
-        Returns False if the ColumnMapping represents a concatenation.
-        """
-        return (
-            (self.column_raw.count() == 1) and
-            (self.column_mapped.count() == 1)
-        )
-
-    def is_concatenated(self):
-        """
-        Returns True if the ColumnMapping represents the concatenation of
-        imported column names; else returns False.
-        """
-        return (not self.is_direct())
-
-    def remove_duplicates(self, qs, m2m_type='column_raw'):
-        """Remove any other Column Mappings that use these columns.
-
-        :param qs: queryset of ``Column``. These are the Columns in a M2M with
-            this instance.
-        :param m2m_type: str, the name of the field we're comparing against.
-            Defaults to 'column_raw'.
-
-        """
-        ColumnMapping.objects.filter(**{
-            '{0}__in'.format(m2m_type): qs,
-            'super_organization': self.super_organization
-        }).exclude(pk=self.pk).delete()
-
-    def save(self, *args, **kwargs):
-        """Overrides default model save to eliminate duplicate mappings.
-
-        .. warning ::
-            Other column mappings which have the same raw_columns in them
-            will be removed!
-
-        """
-        super(ColumnMapping, self).save(*args, **kwargs)
-        # Because we need to have saved our ColumnMapping in order to have M2M,
-        # We must create it before we prune older references.
-        self.remove_duplicates(self.column_raw.all())
-
-    def __unicode__(self):
-        return u'{0}: {1} - {2}'.format(
-            self.pk, self.column_raw.all(), self.column_mapped.all()
         )
 
 
