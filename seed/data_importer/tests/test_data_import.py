@@ -202,7 +202,6 @@ class TestMapping(TestCase):
         )
 
 
-@skip("Fix for new data model")
 class TestMatching(TestMapping):
     """Tests for dealing with SEED related tasks for matching data."""
 

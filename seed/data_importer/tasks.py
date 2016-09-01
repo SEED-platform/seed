@@ -1206,6 +1206,7 @@ def is_same_snapshot(s1, s2):
         if k[0] == "_":
             continue
         # also need to ignore any field with "_source" in it
+        # TODO: Remove _source as this is no longer in the database
         if "_source" in k:
             continue
         if k in fields_to_ignore:
