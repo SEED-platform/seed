@@ -53,6 +53,7 @@ class BaseFake(object):
     *Always* call super, *first* when overridding init if you subclass this.
 
     """
+
     def __init__(self):
         self.fake = Factory.create()
         self.fake.seed(SEED)
@@ -140,6 +141,7 @@ class FakeColumnFactory(BaseFake):
     """
     Factory Class for producing Column instances.
     """
+
     def __init__(self, organization=None):
         super(FakeColumnFactory, self).__init__()
         self.organization = organization
@@ -185,7 +187,7 @@ class FakeCycleFactory(BaseFake):
             start = kw.pop('start')
         else:
             start = self.fake.date_time_this_decade()
-            start = datetime.datetime(start.year, 01, 01)
+            start = datetime.datetime(start.year, 0o1, 0o1)
         if 'end' in kw:
             end = kw.pop('end')
         else:

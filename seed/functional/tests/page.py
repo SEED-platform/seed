@@ -712,6 +712,7 @@ class Table(object):
             )
 
     """
+
     def __init__(self, headers, rows, safe=True):
         self.safe = safe
         self.headers = tuple([str(header) for header in headers])
@@ -992,6 +993,7 @@ class TableRow(collections.Mapping):
     >>> tr = TableRow([(2, 2), ('2', 3)])
     KeyError
     """
+
     def __init__(self, constructor, **kwargs):
         if isinstance(constructor, (TableRow, collections.OrderedDict)):
             key_check = len(constructor)
@@ -1070,6 +1072,7 @@ class TableColumn(collections.Sequence):
     >>> col0 == col1 and coll0.header == col1.header
     False
     """
+
     def __init__(self, header, elements=None):
         if not elements:
             elements = ()
@@ -1117,8 +1120,8 @@ class TableColumn(collections.Sequence):
 
 
 def _check_seq(seq, error):
-        if (isinstance(seq, collections.Sequence) and not
-                isinstance(seq, basestring)):
-            return seq
-        else:
-            raise error
+    if (isinstance(seq, collections.Sequence) and not
+            isinstance(seq, basestring)):
+        return seq
+    else:
+        raise error

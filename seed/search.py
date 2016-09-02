@@ -139,9 +139,11 @@ def generate_paginated_results(queryset, number_per_page=25, page=1,
             }
         ]
     """
+
+    # This method seems to be doing way too much work by enforcing the whitelisting
     parent_org = None
-    if whitelist_orgs:
-        parent_org = whitelist_orgs.first().parent_org
+    # if whitelist_orgs:
+    #     parent_org = whitelist_orgs.first().parent_org
 
     page = page - 1 if page > 0 else 0  # zero index
     MAX_RESULTS = 100
@@ -183,22 +185,20 @@ def generate_paginated_results(queryset, number_per_page=25, page=1,
         # see if a building is matched
 
         # This data is only needed on mapping/matching steps, not general filtering
-        if matching:
-            co_parent = b.co_parent
-            if co_parent:
-                building_dict['matched'] = True
-                building_dict['coparent'] = co_parent.to_dict()
-                child = b.children.first()
-                if child:
-                    building_dict['confidence'] = child.confidence
-            else:
-                building_dict['matched'] = False
+        # if matching:
+            # co_parent = b.co_parent
+            # if co_parent:
+            #     building_dict['matched'] = True
+            #     building_dict['coparent'] = co_parent.to_dict()
+            #     child = b.children.first()
+            #     if child:
+            #         building_dict['confidence'] = child.confidence
+            # else:
+            #     building_dict['matched'] = False
 
         # only add the buildings if it is in an org the user belongs or the
         # query count exceeds the query threshold
-        if not below_threshold or not is_not_whitelist_building(
-                parent_org, b, whitelist_orgs
-        ):
+        if not below_threshold:  # or not is_not_whitelist_building(parent_org, b, whitelist_orgs)
             building_list.append(building_dict)
 
     return building_list, building_count
@@ -639,6 +639,7 @@ def paginate_results(request, search_results):
 
 def mask_results(search_results):
     """masks (deletes dict keys) for non-shared public fields"""
+
     whitelist_fields = {}
     results = []
     for b in search_results:

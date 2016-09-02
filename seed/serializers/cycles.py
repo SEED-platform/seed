@@ -10,5 +10,6 @@ from seed.models import Cycle
 
 
 class CycleSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Cycle
