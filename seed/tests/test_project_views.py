@@ -54,7 +54,7 @@ class ProjectsViewTests(TestCase):
 
         if via_http:
             return self.client.post(
-                reverse_lazy('projects:create_project'),
+                reverse_lazy('apiv2:projects-list'),
                 data=json.dumps({
                     'organization_id': org_id,
                     'project': {
@@ -128,7 +128,7 @@ class ProjectsViewTests(TestCase):
         # standard case, should only see proj1, not other_proj
         self._set_role_level(ROLE_VIEWER)
         resp = self.client.get(
-            reverse_lazy("projects:get_projects"),
+            reverse_lazy("apiv2:projects-list"),
             {'organization_id': self.org.id},
             content_type='application/json',
         )
@@ -204,7 +204,7 @@ class ProjectsViewTests(TestCase):
         # standard case, should only see proj1, not other_proj
         self._set_role_level(ROLE_VIEWER)
         resp = self.client.get(
-            reverse_lazy("projects:get_project"),
+            reverse_lazy("apiv2:projects-get-project"),
             {'organization_id': self.org.id, 'project_slug': 'proj1'},
             content_type='application/json',
         )
@@ -227,7 +227,7 @@ class ProjectsViewTests(TestCase):
         # test when user sends org id that the user is in, but a project in
         # a different org
         resp = self.client.get(
-            reverse_lazy("projects:get_project"),
+            reverse_lazy("apiv2:projects-get-project"),
             {'organization_id': self.org.id, 'project_slug': 'otherproj'},
             content_type='application/json',
         )
@@ -240,7 +240,7 @@ class ProjectsViewTests(TestCase):
         )
         # test for the case that a user does not belong to the org
         resp = self.client.get(
-            reverse_lazy("projects:get_project"),
+            reverse_lazy("apiv2:projects-get-project"),
             {'organization_id': other_org.pk, 'project_slug': 'otherproj'},
             content_type='application/json',
         )
@@ -259,7 +259,7 @@ class ProjectsViewTests(TestCase):
         # standard case
         self.assertEqual(Project.objects.all().count(), 1)
         resp = self.client.delete(
-            reverse_lazy("projects:delete_project"),
+            reverse_lazy("apiv2:projects-delete-project"),
             data=json.dumps(
                 {'organization_id': self.org.id, 'project_slug': 'proj1'}
             ),
@@ -271,7 +271,7 @@ class ProjectsViewTests(TestCase):
         self._create_project(name='proj1', via_http=True)
         self._set_role_level(ROLE_VIEWER)
         resp = self.client.delete(
-            reverse_lazy("projects:delete_project"),
+            reverse_lazy("apiv2:projects-delete-project"),
             data=json.dumps(
                 {'organization_id': self.org.id, 'project_slug': 'proj1'}
             ),
@@ -290,7 +290,7 @@ class ProjectsViewTests(TestCase):
         self._create_project('proj2', other_org.pk, other_user)
         self._set_role_level(ROLE_MEMBER)
         resp = self.client.delete(
-            reverse_lazy("projects:delete_project"),
+            reverse_lazy("apiv2:projects-delete-project"),
             data=json.dumps(
                 {'organization_id': self.org.id, 'project_slug': 'proj2'}
             ),
@@ -311,7 +311,7 @@ class ProjectsViewTests(TestCase):
             'is_compliance': None
         }
         resp = self.client.post(
-            reverse_lazy("projects:update_project"),
+            reverse_lazy("apiv2:projects-update-project"),
             data=json.dumps(
                 {'organization_id': self.org.id, 'project': project}
             ),
@@ -330,7 +330,7 @@ class ProjectsViewTests(TestCase):
         # test that a view cannot update
         self._set_role_level(ROLE_VIEWER)
         resp = self.client.post(
-            reverse_lazy("projects:update_project"),
+            reverse_lazy("apiv2:projects-update-project"),
             data=json.dumps(
                 {'organization_id': self.org.id, 'project': project}
             ),
@@ -357,7 +357,7 @@ class ProjectsViewTests(TestCase):
         # This test fails due to the orchestrate_search_filter_sort
         # still relying on buildingsnapshot
         resp = self.client.post(
-            reverse_lazy("projects:add_buildings_to_project"),
+            reverse_lazy("apiv2:projects-add-buildings"),
             data=json.dumps(
                 {'organization_id': self.org.id, 'project': project}
             ),
@@ -375,7 +375,7 @@ class ProjectsViewTests(TestCase):
         # test case where user is viewer
         self._set_role_level(ROLE_VIEWER)
         resp = self.client.post(
-            reverse_lazy("projects:add_buildings_to_project"),
+            reverse_lazy("apiv2:projects-add-buildings"),
             data=json.dumps(
                 {'organization_id': self.org.id, 'project': project}
             ),
@@ -406,7 +406,7 @@ class ProjectsViewTests(TestCase):
         }
         # test standard case
         resp = self.client.post(
-            reverse_lazy("projects:remove_buildings_from_project"),
+            reverse_lazy("apiv2:projects-remove-buildings"),
             data=json.dumps(
                 {'organization_id': self.org.id, 'project': project_payload}
             ),
@@ -444,7 +444,7 @@ class ProjectsViewTests(TestCase):
         }
         # test standard case
         resp = self.client.post(
-            reverse_lazy("projects:remove_buildings_from_project"),
+            reverse_lazy("apiv2:projects-remove-buildings"),
             data=json.dumps(
                 {'organization_id': self.org.id, 'project': project_payload}
             ),
@@ -478,7 +478,7 @@ class ProjectsViewTests(TestCase):
             'selected_buildings': [building.pk]
         }
         resp = self.client.post(
-            reverse_lazy("projects:remove_buildings_from_project"),
+            reverse_lazy("apiv2:projects-remove-buildings"),
             data=json.dumps(
                 {'organization_id': self.org.id, 'project': project_payload}
             ),
@@ -499,7 +499,7 @@ class ProjectsViewTests(TestCase):
 
         # test standard case
         resp = self.client.get(
-            reverse_lazy("projects:get_projects_count"),
+            reverse_lazy("apiv2:projects-count"),
             {'organization_id': self.org.id},
             content_type='application/json',
         )
@@ -513,7 +513,7 @@ class ProjectsViewTests(TestCase):
         # test case where user is not in org
         other_org = Organization.objects.create(name='not my org')
         resp = self.client.get(
-            reverse_lazy("projects:get_projects_count"),
+            reverse_lazy("apiv2:projects-count"),
             {'organization_id': other_org.id},
             content_type='application/json',
         )
@@ -547,7 +547,7 @@ class ProjectsViewTests(TestCase):
 
         # test standard case
         resp = self.client.get(
-            reverse_lazy("seed:get_datasets_count"),
+            reverse_lazy("apiv2:datasets-count"),
             {'organization_id': self.org.id},
             content_type='application/json',
         )
@@ -560,7 +560,7 @@ class ProjectsViewTests(TestCase):
         )
         # test case where user is not in org
         resp = self.client.get(
-            reverse_lazy("seed:get_datasets_count"),
+            reverse_lazy("apiv2:datasets-count"),
             {'organization_id': other_org.id},
             content_type='application/json',
         )
@@ -573,7 +573,7 @@ class ProjectsViewTests(TestCase):
         )
         # test case where org does not exist
         resp = self.client.get(
-            reverse_lazy("seed:get_datasets_count"),
+            reverse_lazy("apiv2:datasets-count"),
             {'organization_id': 999},
             content_type='application/json',
         )
@@ -613,7 +613,7 @@ class ProjectsViewTests(TestCase):
         }
 
         resp = self.client.post(
-            reverse_lazy("projects:move_buildings"),
+            reverse_lazy("apiv2:projects-move-buildings"),
             data=json.dumps(payload),
             content_type='application/json',
         )
@@ -649,7 +649,7 @@ class ProjectsViewTests(TestCase):
         }
 
         resp = self.client.post(
-            reverse_lazy("projects:move_buildings"),
+            reverse_lazy("apiv2:projects-move-buildings"),
             data=json.dumps(payload),
             content_type='application/json',
         )
