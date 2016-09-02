@@ -63,7 +63,8 @@ def get_properties(request):
         cycle = Cycle.objects.get(organization_id=request.GET['organization_id'], pk=cycle_id)
     else:
         cycle = Cycle.objects.filter(organization_id=request.GET['organization_id'])
-        cycle = cycle.lastest() if cycle else None
+        print cycle.__class__
+        cycle = cycle.latest() if cycle else None
         # TODO: Need to catch if the cycle does not exist and return nice error
 
     property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
@@ -189,7 +190,7 @@ def get_taxlots(request):
         cycle = Cycle.objects.get(organization_id=request.GET['organization_id'], pk=cycle_id)
     else:
         cycle = Cycle.objects.filter(organization_id=request.GET['organization_id'])
-        cycle = cycle.lastest() if cycle else None
+        cycle = cycle.latest() if cycle else None
         # TODO: Need to catch if the cycle does not exist and return nice error
 
     taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
