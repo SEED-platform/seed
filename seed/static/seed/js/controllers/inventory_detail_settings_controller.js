@@ -8,8 +8,11 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
     '$window',
     '$uibModalInstance',
     '$stateParams',
-    'columns',
-    function ($scope, $window, $uibModalInstance, $stateParams, columns) {
+    'inventory_service',
+    'user_service',
+    'all_columns',
+    'default_columns',
+    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, all_columns, default_columns) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id
@@ -19,8 +22,18 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
       };
 
       var restoreDefaults = function () {
-        // TODO
-        console.debug('Restoring detail setting defaults')
+        $scope.data = angular.copy(all_columns);
+        _.defer($scope.gridApi.selection.selectAllRows);
+      };
+
+      var saveSettings = function () {
+        var cols = [];
+        var count = $scope.gridApi.grid.selection.selectedCount;
+        if (count > 0 && count < all_columns.length) {
+          cols = _.map($scope.gridApi.selection.getSelectedRows(), 'name');
+          $scope.data = inventory_service.reorderBySelected($scope.data, cols);
+        }
+        localStorage.setItem('grid.' + $scope.inventory_type + '.detail.visible', JSON.stringify(cols));
       };
 
       $scope.updateHeight = function () {
@@ -33,7 +46,15 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         $scope.gridApi.core.handleWindowResize();
       };
 
-      $scope.data = columns;
+      $scope.data = angular.copy(all_columns);
+      // Temp code while localStorage is still used:
+      var localColumns = localStorage.getItem('grid.' + $scope.inventory_type + '.detail.visible');
+      if (!_.isNull(localColumns)) {
+        default_columns.columns = JSON.parse(localColumns);
+      } else {
+        default_columns.columns = [];
+      }
+      $scope.data = inventory_service.reorderBySelected($scope.data, default_columns.columns);
 
       $scope.gridOptions = {
         data: 'data',
@@ -54,8 +75,22 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         }],
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
+          if (_.isEmpty(default_columns.columns)) {
+            _.defer(gridApi.selection.selectAllRows);
+          } else {
+            _.defer(function () {
+              // Select default rows
+              _.forEach($scope.gridApi.grid.rows, function (row) {
+                if (row.entity.defaultSelection) row.setSelected(true);
+              });
+            });
+          }
 
-          $scope.updateHeight();
+          gridApi.selection.on.rowSelectionChanged($scope, saveSettings);
+          gridApi.selection.on.rowSelectionChangedBatch($scope, saveSettings);
+          gridApi.draggableRows.on.rowDropped($scope, saveSettings);
+
+          _.delay($scope.updateHeight, 150);
           angular.element($window).on('resize', _.debounce($scope.updateHeight, 150));
         }
       };

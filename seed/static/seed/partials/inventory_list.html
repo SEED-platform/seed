@@ -4,7 +4,7 @@
 
         </div>
         <div class="page_title">
-            <h1>Inventory</h1>
+            <h1>{$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $}</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
@@ -94,10 +94,10 @@
     </div>
     <ul class="nav nav-tabs" style="margin-bottom:1px;">
         <li ng-class="{active: inventory_type=='properties'}" heading="View by Property">
-            <a ui-sref="properties">View by Property</a>
+            <a ui-sref="inventory_list({inventory_type: 'properties'})">View by Property</a>
         </li>
         <li ng-class="{active: inventory_type=='taxlots'}" heading="View by Tax Lot">
-            <a ui-sref="taxlots">View by Tax Lot</a>
+            <a ui-sref="inventory_list({inventory_type: 'taxlots'})">View by Tax Lot</a>
         </li>
     </ul>
 </div>

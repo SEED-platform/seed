@@ -1,6 +1,3 @@
-        <a id="inventory-list" ng-if="inventory_type=='properties'" ui-sref="properties" ui-sref-active="active">Properties List</a><!--
-     --><a id="inventory-list" ng-if="inventory_type=='taxlots'" ui-sref="taxlots" ui-sref-active="active">Tax Lots List</a><!--
-     --><a id="list-settings" ng-if="inventory_type=='properties'" ui-sref="list_settings({inventory_type: 'properties'})" ui-sref-active="active">List Settings</a><!--
-     --><a id="list-settings" ng-if="inventory_type=='taxlots'" ui-sref="list_settings({inventory_type: 'taxlots'})" ui-sref-active="active">List Settings</a><!--
-     --><a id="reports" ng-if="inventory_type=='properties'" ui-sref="reports({inventory_type: 'properties'})" ui-sref-active="active">Reports</a><!--
-     --><a id="reports" ng-if="inventory_type=='taxlots'" ui-sref="reports({inventory_type: 'taxlots'})" ui-sref-active="active">Reports</a>
+        <a id="inventory-list" ui-sref="inventory_list({inventory_type: inventory_type})" ui-sref-active="active">{$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties'$} List</a><!--
+     --><a id="list-settings" ui-sref="list_settings({inventory_type: inventory_type})" ui-sref-active="active">List Settings</a><!--
+     --><a id="reports" ui-sref="reports({inventory_type: inventory_type})" ui-sref-active="active">Reports</a>

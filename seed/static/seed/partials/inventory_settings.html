@@ -19,20 +19,16 @@
         <div class="section_action_container left_wide">
             <h2><i class="fa fa-cogs"></i><span>Column Order/Visibility</span></h2>
         </div>
-        <div class="section_action_container right section_action_btn">
-            <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">Save Changes
-                <i class="fa fa-check align_right" ng-show="settings_updated"></i></button>
-        </div>
     </div>
 </div>
 
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
     <div class="section_content with_padding" style="overflow:hidden;">
-        <h3>Add Shared Buildings.</h3>
+        <h3>Add Shared {$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $}.</h3>
         <div class="checkbox">
             <label>
-                <input type="checkbox" ng-model="user.show_shared_buildings">
-                Include in your buildings list all buildings shared with you.
+                <input type="checkbox" ng-model="showSharedBuildings" ng-change="saveShowSharedBuildings()">
+                Include in your {$ inventory_type == 'taxlots' ? 'tax lots' : 'properties' $} list all {$ inventory_type == 'taxlots' ? 'tax lots' : 'properties' $} shared with you.
             </label>
         </div>
         <h3>There are {$ data.length | number $} columns of data available to you.</h3>
