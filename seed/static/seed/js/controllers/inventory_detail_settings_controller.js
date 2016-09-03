@@ -2,8 +2,8 @@
  * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-angular.module('BE.seed.controller.inventory_settings', [])
-  .controller('inventory_settings_controller', [
+angular.module('BE.seed.controller.inventory_detail_settings', [])
+  .controller('inventory_detail_settings_controller', [
     '$scope',
     '$window',
     '$uibModalInstance',
@@ -12,8 +12,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
     'user_service',
     'all_columns',
     'default_columns',
-    'shared_fields_payload',
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, all_columns, default_columns, shared_fields_payload) {
+    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, all_columns, default_columns) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id
@@ -21,8 +20,6 @@ angular.module('BE.seed.controller.inventory_settings', [])
       $scope.cycle = {
         id: $stateParams.cycle_id
       };
-
-      $scope.showSharedBuildings = shared_fields_payload.show_shared_buildings;
 
       var restoreDefaults = function () {
         $scope.data = angular.copy(all_columns);
@@ -36,7 +33,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
           cols = _.map($scope.gridApi.selection.getSelectedRows(), 'name');
           $scope.data = inventory_service.reorderBySelected($scope.data, cols);
         }
-        localStorage.setItem('grid.' + $scope.inventory_type + '.visible', JSON.stringify(cols));
+        localStorage.setItem('grid.' + $scope.inventory_type + '.detail.visible', JSON.stringify(cols));
       };
 
       $scope.updateHeight = function () {
@@ -49,13 +46,9 @@ angular.module('BE.seed.controller.inventory_settings', [])
         $scope.gridApi.core.handleWindowResize();
       };
 
-      $scope.saveShowSharedBuildings = function () {
-        user_service.set_default_columns([], $scope.showSharedBuildings);
-      };
-
       $scope.data = angular.copy(all_columns);
       // Temp code while localStorage is still used:
-      var localColumns = localStorage.getItem('grid.' + $scope.inventory_type + '.visible');
+      var localColumns = localStorage.getItem('grid.' + $scope.inventory_type + '.detail.visible');
       if (!_.isNull(localColumns)) {
         default_columns.columns = JSON.parse(localColumns);
       } else {
