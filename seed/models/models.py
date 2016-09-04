@@ -44,13 +44,6 @@ SEARCH_CONFIDENCE_RANGES = {
     'high': 1.0,
 }
 
-BS_VALUES_LIST = [
-    'pk',  # needed for matching not to blow up
-    # 'tax_lot_id', # no longer on the propertystate
-    'pm_property_id',
-    'custom_id_1',
-    'address_line_1',
-]
 
 NATURAL_GAS = 1
 ELECTRICITY = 2

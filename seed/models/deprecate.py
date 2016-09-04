@@ -21,6 +21,14 @@ from seed.models import SEED_DATA_SOURCES
 from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.time import convert_datestr
 
+BS_VALUES_LIST = [
+    'pk',  # needed for matching not to blow up
+    # 'tax_lot_id', # no longer on the propertystate
+    'pm_property_id',
+    'custom_id_1',
+    'address_line_1',
+]
+
 SYSTEM_MATCH = 1
 USER_MATCH = 2
 POSSIBLE_MATCH = 3
