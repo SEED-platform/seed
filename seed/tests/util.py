@@ -8,13 +8,17 @@
 # Utilities for testing SEED modules.
 ###
 
+import datetime
 import json
 
 from seed.models import (
     PropertyState,
+    Property,
+    PropertyView,
     Column,
     ColumnMapping,
     set_initial_sources,
+    Cycle,
 )
 
 
@@ -47,6 +51,10 @@ def make_fake_mappings(mappings, org):
 def make_fake_snapshot(import_file, init_data, bs_type, is_canon=False,
                        org=None):
     """For making fake mapped PropertyState to test matching against."""
+
+    if not org:
+        raise "no org"
+
     snapshot = PropertyState.objects.create(**init_data)
     snapshot.import_file = import_file
     snapshot.super_organization = org
@@ -60,8 +68,44 @@ def make_fake_snapshot(import_file, init_data, bs_type, is_canon=False,
 
     # The idea of canon is no longer applicable. The linked property state
     # in the PropertyView is now canon
-    # TODO: Do we need to recreate this functionality
-    # if is_canon:
+    if is_canon:
+        # need to create a cycle and add it to the PropertyView table
+        cycle, _ = Cycle.objects.get_or_create(
+            name=u'Test Cycle',
+            organization=org,
+            start=datetime.datetime(2015, 1, 1),
+            end=datetime.datetime(2015, 12, 31),
+        )
+
+        # # create 1 to 1 pointless taxlots for now
+        # tl = TaxLot.objects.create(
+        #     organization=org
+        # )
+        #
+        # tls, _ = TaxLotState.objects.get_or_create(
+        #     jurisdiction_taxlot_identifier='1234'
+        # )
+        #
+        # tlv, _ = TaxLotView.objects.get_or_create(
+        #     taxlot=tl,
+        #     state=tls,
+        #     cycle=cycle,
+        # )
+
+        # set the property view here for now to make sure that the data
+        # show up in the bluesky tables
+        prop = Property.objects.create(
+            organization=org
+        )
+
+        pv, _ = PropertyView.objects.get_or_create(
+            property=prop,
+            cycle=cycle,
+            state=snapshot
+        )
+
+        # print "Here are my data: %s" % pv.__dict__
+
     #     canonical_building = CanonicalBuilding.objects.create(
     #         canonical_snapshot=snapshot
     #     )

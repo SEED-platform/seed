@@ -10,11 +10,11 @@ from django.utils.translation import ugettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
+from seed.utils.mapping import get_mappable_columns
 from seed.models.models import (
     Enum,
     Unit,
     SEED_DATA_SOURCES,
-
 )
 
 
@@ -56,15 +56,18 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
     return 'property', column_names, 100
 
 
+# TODO: Make this a static method
 def get_column_mappings(organization):
-    """Returns dict of all the column mappings for an Organization's given source type
+    """
+    Returns dict of all the column mappings for an Organization's given
+    source type
 
     :param organization: inst, Organization.
     :returns: dict, list of dict.
 
-    Use this when actually performing mapping between data sources, but only call it after all of the mappings
-    have been saved to the ``ColumnMapping`` table.
-
+    Use this when actually performing mapping between data sources, but only
+    call it after all of the mappings have been saved to the ``ColumnMapping``
+    table.
     """
     from seed.utils.mapping import _get_column_names
 
@@ -147,6 +150,139 @@ class Column(models.Model):
 
     def __unicode__(self):
         return u'{0}'.format(self.column_name)
+
+    @staticmethod
+    def create_mappings(mappings, organization, user):
+        """
+        Create the mappings for an organization and a user based on a simple
+        array of array object.
+
+        Args:
+            mappings: destination field is the field in the database
+                      raw_field is the field in the datafile
+                "mappings": [
+                    ["destination_field": "raw_field"], #  direct mapping
+                    ["destination_field2":
+                        ["raw_field1", "raw_field2"]],   #  concatenated mapping
+                    ...
+                ]
+            organization: Organization object
+            user: User object
+
+        Returns:
+
+        .. note::
+
+            The mapping fields seem backwards, in the the first field is the
+            destination field that is in the database as the "actual" field.
+            The second field is the value that is in the datafile.
+
+        """
+
+        for mapping in mappings:
+            dest_field, raw_field = mapping
+            if dest_field == '':
+                dest_field = None
+
+            # TODO: this has been replicated in ColumnMapping.create_mappings(mapping)
+            dest_cols = Column._column_fields_to_columns(dest_field, organization)
+            raw_cols = Column._column_fields_to_columns(raw_field, organization)
+            try:
+                column_mapping, created = ColumnMapping.objects.get_or_create(
+                    super_organization=organization,
+                    column_raw__in=raw_cols,
+                )
+            except ColumnMapping.MultipleObjectsReturned:
+                # handle the special edge-case where remove dupes doesn't get
+                # called by ``get_or_create``
+                ColumnMapping.objects.filter(
+                    super_organization=organization,
+                    column_raw__in=raw_cols,
+                ).delete()
+                column_mapping, created = ColumnMapping.objects.get_or_create(
+                    super_organization=organization,
+                    column_raw__in=raw_cols,
+                )
+
+            # Clear out the column_raw and column mapped relationships.
+            column_mapping.column_raw.clear()
+            column_mapping.column_mapped.clear()
+
+            # Add all that we got back from the interface back in the M2M rel.
+            [column_mapping.column_raw.add(raw_col) for raw_col in raw_cols]
+            if dest_cols is not None:
+                [
+                    column_mapping.column_mapped.add(dest_col)
+                    for dest_col in dest_cols
+                ]
+
+            column_mapping.user = user
+            column_mapping.save()
+
+        return True
+
+    @staticmethod
+    def _column_fields_to_columns(fields, organization):
+        """Take a list of str, and turn it into a list of Column objects.
+
+        :param fields: list of str. (optionally a single string).
+        :param organization: superperms.Organization instance.
+        :returns: list of Column instances.
+        """
+        if fields is None:
+            return None
+
+        col_fields = []  # Container for the strings of the column_names
+        if isinstance(fields, list):
+            col_fields.extend(fields)
+        else:
+            col_fields = [fields]
+
+        cols = []  # Container for our Column instances.
+
+        # It'd be nice if we could do this in a batch.
+        for col_name in col_fields:
+            if not col_name:
+                continue
+
+            col = None
+
+            is_extra_data = col_name not in get_mappable_columns()
+            org_col = Column.objects.filter(
+                organization=organization,
+                column_name=col_name,
+                is_extra_data=is_extra_data
+            ).first()
+
+            if org_col is not None:
+                col = org_col
+
+            else:
+                # Try for "global" column definitions, e.g. BEDES.
+                global_col = Column.objects.filter(
+                    organization=None,
+                    column_name=col_name
+                ).first()
+
+                if global_col is not None:
+                    # create organization mapped column
+                    global_col.pk = None
+                    global_col.id = None
+                    global_col.organization = organization
+                    global_col.save()
+
+                    col = global_col
+
+                else:
+                    col, _ = Column.objects.get_or_create(
+                        organization=organization,
+                        column_name=col_name,
+                        is_extra_data=is_extra_data,
+                    )
+
+            cols.append(col)
+
+        return cols
 
 
 class ColumnMapping(models.Model):

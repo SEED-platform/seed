@@ -11,10 +11,9 @@ from dateutil import parser
 from django.test import TestCase
 from mock import patch
 
-from seed.audit_logs.models import AuditLog
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile
-from seed.lib.superperms.orgs.models import Organization
+from seed.data_importer.tests import util as test_util
 from seed.models import (
     ASSESSED_RAW,
     ASSESSED_BS,
@@ -22,78 +21,26 @@ from seed.models import (
     POSSIBLE_MATCH,
     SYSTEM_MATCH,
     DATA_STATE_IMPORT,
-    FLOAT,
     PropertyState,
     Column,
-    ColumnMapping,
-    Unit,
     get_ancestors,
 )
 from seed.tests import util
-from seed.data_importer.tests import util as test_util
-
 
 logger = logging.getLogger(__name__)
-
-
-class TestCleaner(TestCase):
-    """Tests that our logic for constructing cleaners works."""
-
-    def setUp(self):
-        self.org = Organization.objects.create()
-
-        unit = Unit.objects.create(
-            unit_name='mapped_col unit',
-            unit_type=FLOAT,
-        )
-
-        raw = Column.objects.create(
-            column_name='raw_col',
-            organization=self.org,
-        )
-
-        self.mapped_col = 'mapped_col'
-        mapped = Column.objects.create(
-            column_name=self.mapped_col,
-            unit=unit,
-            organization=self.org,
-        )
-
-        mapping = ColumnMapping.objects.create(
-            super_organization=self.org
-        )
-        mapping.column_raw.add(raw)
-        mapping.column_mapped.add(mapped)
-
-    def test_build_cleaner(self):
-        cleaner = tasks._build_cleaner(self.org)
-
-        # data is cleaned correctly for fields on PropertyState
-        # model
-        bs_field = 'gross_floor_area'
-        self.assertEqual(
-            cleaner.clean_value('123,456', bs_field),
-            123456
-        )
-
-        # data is cleaned correctly for mapped fields that have unit
-        # type information
-        self.assertEqual(
-            cleaner.clean_value('123,456', self.mapped_col),
-            123456
-        )
-
-        # other fields are just strings
-        self.assertEqual(
-            cleaner.clean_value('123,456', 'random'),
-            '123,456'
-        )
 
 
 class TestMapping(TestCase):
     """Tests for dealing with SEED related tasks for mapping data."""
 
     def setUp(self):
+        # Make sure to delete the old mappings and properties because this
+        # tests expects very specific column names and properties in order
+        # Column.objects.all().delete()
+        # ColumnMapping.objects.all().delete()
+        # PropertyState.objects.all().delete()
+        # ImportFile.objects.all().delete()
+        # ImportRecord.objects.all().delete()
         test_util.load_test_data(self, 'portfolio-manager-sample.csv')
 
     def test_cached_first_row_order(self):
@@ -202,12 +149,12 @@ class TestMapping(TestCase):
         )
 
 
-@skip("Fix for new data model")
-class TestMatching(TestMapping):
+# @skip("Fix for new data model")
+class TestMatching(TestCase):
     """Tests for dealing with SEED related tasks for matching data."""
 
     def setUp(self):
-        test_util.load_new_test_data(self, 'portfolio-manager-sample.csv')
+        test_util.import_test_data(self, 'propertystates-one-cycle.csv')
 
     def test_is_same_snapshot(self):
         """Test to check if two snapshots are duplicates"""
@@ -254,66 +201,79 @@ class TestMatching(TestMapping):
 
     def test_match_buildings(self):
         """Good case for testing our matching system."""
-        # TODO: Fix the PM, tax lot id, and custom ID fields in PropertyState
-        # Move this to a fixture
-        bs_data = {
-            'pm_property_id': 1243,
-            # 'tax_lot_id': '435/422',
-            'property_name': 'Greenfield Complex',
-            'custom_id_1': 12,
-            'address_line_1': '555 Database LN.',
-            'address_line_2': '',
-            'city': 'Gotham City',
-            'postal_code': 8999,
-        }
 
-        # Since the change to not match duplicates there needs to be a second record that isn't exactly the same
-        # to run this test.  In this case address_line_2 now has a value of 'A' rather than ''
-        bs_data_2 = {
-            'pm_property_id': 1243,
-            # 'tax_lot_id': '435/422',
-            'property_name': 'Greenfield Complex',
-            'custom_id_1': 12,
-            'address_line_1': '555 Database LN.',
-            'address_line_2': 'A',
-            'city': 'Gotham City',
-            'postal_code': 8999,
-        }
+        # make sure that the new data was loaded correctly
+        ps = PropertyState.objects.filter(address_line_1='1181 Douglas Street')[0]
+        # print ps.__dict__
 
-        # Setup mapped AS snapshot.
-        snapshot = util.make_fake_snapshot(
-            self.import_file, bs_data, ASSESSED_BS, is_canon=True,
-            org=self.fake_org
-        )
-        # Different file, but same ImportRecord.
-        # Setup mapped PM snapshot.
-        # Should be an identical match.
-        new_import_file = ImportFile.objects.create(
-            import_record=self.import_record,
-            mapping_done=True
-        )
+        self.assertEqual(ps.site_eui, 439.9)
+        self.assertEqual(ps.extra_data['CoStar Property ID'], '1575599')
 
-        new_snapshot = util.make_fake_snapshot(
-            new_import_file, bs_data_2, PORTFOLIO_BS, org=self.fake_org
-        )
-
-        tasks.match_buildings(new_import_file.pk, self.fake_user.pk)
-
-        result = PropertyState.objects.all()[0]
-
-        self.assertEqual(result.property_name, snapshot.property_name)
-        self.assertEqual(result.property_name, new_snapshot.property_name)
-        # Since these two buildings share a common ID, we match that way.
-        # self.assertEqual(result.confidence, 0.9)
-        self.assertEqual(
-            sorted([r.pk for r in result.parents.all()]),
-            sorted([new_snapshot.pk, snapshot.pk])
-        )
-        self.assertGreater(AuditLog.objects.count(), 0)
-        self.assertEqual(
-            AuditLog.objects.first().action_note,
-            'System matched building ID.'
-        )
+        # # TODO: Fix the PM, tax lot id, and custom ID fields in PropertyState
+        # # Move this to a fixture
+        # bs_data = {
+        #     'pm_property_id': 1243,
+        #     # 'tax_lot_id': '435/422',
+        #     'property_name': 'Greenfield Complex',
+        #     'custom_id_1': 12,
+        #     'address_line_1': '555 Database LN.',
+        #     'address_line_2': '',
+        #     'city': 'Gotham City',
+        #     'postal_code': 8999,
+        # }
+        #
+        # # Since the change to not match duplicates there needs to be a second record that isn't exactly the same
+        # # to run this test.  In this case address_line_2 now has a value of 'A' rather than ''
+        # bs_data_2 = {
+        #     'pm_property_id': 1243,
+        #     # 'tax_lot_id': '435/422',
+        #     'property_name': 'Greenfield Complex',
+        #     'custom_id_1': 12,
+        #     'address_line_1': '555 Database LN.',
+        #     'address_line_2': 'A',
+        #     'city': 'Gotham City',
+        #     'postal_code': 8999,
+        # }
+        #
+        # # Setup mapped AS snapshot.
+        # snapshot = util.make_fake_snapshot(
+        #     self.import_file,
+        #     bs_data,
+        #     ASSESSED_BS,
+        #     is_canon=True,
+        #     org=self.fake_org
+        # )
+        # # Different file, but same ImportRecord.
+        # # Setup mapped PM snapshot.
+        # # Should be an identical match.
+        # new_import_file = ImportFile.objects.create(
+        #     import_record=self.import_record,
+        #     mapping_done=True
+        # )
+        #
+        # new_snapshot = util.make_fake_snapshot(
+        #     new_import_file,
+        #     bs_data_2,
+        #     PORTFOLIO_BS,
+        #     is_canon=False,
+        #     org=self.fake_org
+        # )
+        #
+        # tasks.match_buildings(new_import_file.pk, self.fake_user.pk)
+        #
+        # self.assertEqual(result.property_name, snapshot.property_name)
+        # self.assertEqual(result.property_name, new_snapshot.property_name)
+        # # Since these two buildings share a common ID, we match that way.
+        # # self.assertEqual(result.confidence, 0.9)
+        # self.assertEqual(
+        #     sorted([r.pk for r in result.parents.all()]),
+        #     sorted([new_snapshot.pk, snapshot.pk])
+        # )
+        # self.assertGreater(AuditLog.objects.count(), 0)
+        # self.assertEqual(
+        #     AuditLog.objects.first().action_note,
+        #     'System matched building ID.'
+        # )
 
     @skip("Fix for new data model")
     def test_match_duplicate_buildings(self):

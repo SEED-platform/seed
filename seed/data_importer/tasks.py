@@ -267,14 +267,12 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
         if property_state.jurisdiction_property_identifier:
             tax_lot_id = property_state.jurisdiction_property_identifier
 
-        property_state = property_state.assign_cycle_and_tax_lot(org,
-                                                                 datetime.datetime(
-                                                                     2015, 1,
-                                                                     1),
-                                                                 datetime.datetime(
-                                                                     2015, 12,
-                                                                     31),
-                                                                 tax_lot_id)
+        property_state = property_state.assign_cycle_and_tax_lot(
+            org,
+            datetime.datetime(2015, 1, 1),
+            datetime.datetime(2015, 12, 31),
+            tax_lot_id
+        )
 
         # Assign some other arguments here
         property_state.import_file = import_file
@@ -339,7 +337,8 @@ def _map_data(file_pk, *args, **kwargs):
 
     id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
     increment = get_cache_increment_value(id_chunks)
-    tasks = [map_row_chunk.s(ids, file_pk, source_type, prog_key, increment) for ids in id_chunks]
+    tasks = [map_row_chunk.s(ids, file_pk, source_type, prog_key, increment)
+             for ids in id_chunks]
 
     if tasks:
         # specify the chord as an immutable with .si
@@ -553,7 +552,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
     logger.debug("Current cache state")
     current_cache = get_cache(prog_key)
     logger.debug(current_cache)
-    time.sleep(2)
+    time.sleep(2)  # NL: yuck
     result = current_cache
 
     try:

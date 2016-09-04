@@ -11,9 +11,7 @@ import logging
 import os
 import subprocess
 import uuid
-# from collections import defaultdict
 
-# from dateutil.parser import parse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ImproperlyConfigured
@@ -22,7 +20,7 @@ from django.db.models import Q
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 
-from seed import tasks  # , models
+from seed import tasks
 from seed.audit_logs.models import AuditLog
 from seed.common import views as vutil
 from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
@@ -44,7 +42,6 @@ from seed.models import (
     save_snapshot_match,
     BuildingSnapshot,
     Column,
-    ColumnMapping,
     ProjectBuilding,
     get_ancestors,  # TO REMOVE
     unmatch_snapshot_tree as unmatch_snapshot,
@@ -60,8 +57,7 @@ from seed.utils.buildings import (
     get_buildings_for_user_count
 )
 from seed.utils.cache import get_cache, set_cache
-# from seed.utils.generic import median, round_down_hundred_thousand
-from seed.utils.mapping import get_mappable_types, get_mappable_columns
+from seed.utils.mapping import get_mappable_types
 from seed.utils.projects import (
     get_projects,
 )
@@ -1511,67 +1507,67 @@ def get_first_five_rows(request):
     }
 
 
-def _column_fields_to_columns(fields, organization):
-    """Take a list of str, and turn it into a list of Column objects.
-
-    :param fields: list of str. (optionally a single string).
-    :param organization: superperms.Organization instance.
-    :returns: list of Column instances.
-    """
-    if fields is None:
-        return None
-
-    col_fields = []  # Container for the strings of the column_names
-    if isinstance(fields, list):
-        col_fields.extend(fields)
-    else:
-        col_fields = [fields]
-
-    cols = []  # Container for our Column instances.
-
-    # It'd be nice if we could do this in a batch.
-    for col_name in col_fields:
-        if not col_name:
-            continue
-
-        col = None
-
-        is_extra_data = col_name not in get_mappable_columns()
-        org_col = Column.objects.filter(
-            organization=organization,
-            column_name=col_name,
-            is_extra_data=is_extra_data
-        ).first()
-
-        if org_col is not None:
-            col = org_col
-
-        else:
-            # Try for "global" column definitions, e.g. BEDES.
-            global_col = Column.objects.filter(
-                organization=None,
-                column_name=col_name
-            ).first()
-
-            if global_col is not None:
-                # create organization mapped column
-                global_col.pk = None
-                global_col.id = None
-                global_col.organization = organization
-                global_col.save()
-
-                col = global_col
-
-            else:
-                col, _ = Column.objects.get_or_create(
-                    organization=organization,
-                    column_name=col_name,
-                    is_extra_data=is_extra_data,
-                )
-
-        cols.append(col)
-
-    return cols
+# def _column_fields_to_columns(fields, organization):
+#     """Take a list of str, and turn it into a list of Column objects.
+#
+#     :param fields: list of str. (optionally a single string).
+#     :param organization: superperms.Organization instance.
+#     :returns: list of Column instances.
+#     """
+#     if fields is None:
+#         return None
+#
+#     col_fields = []  # Container for the strings of the column_names
+#     if isinstance(fields, list):
+#         col_fields.extend(fields)
+#     else:
+#         col_fields = [fields]
+#
+#     cols = []  # Container for our Column instances.
+#
+#     # It'd be nice if we could do this in a batch.
+#     for col_name in col_fields:
+#         if not col_name:
+#             continue
+#
+#         col = None
+#
+#         is_extra_data = col_name not in get_mappable_columns()
+#         org_col = Column.objects.filter(
+#             organization=organization,
+#             column_name=col_name,
+#             is_extra_data=is_extra_data
+#         ).first()
+#
+#         if org_col is not None:
+#             col = org_col
+#
+#         else:
+#             # Try for "global" column definitions, e.g. BEDES.
+#             global_col = Column.objects.filter(
+#                 organization=None,
+#                 column_name=col_name
+#             ).first()
+#
+#             if global_col is not None:
+#                 # create organization mapped column
+#                 global_col.pk = None
+#                 global_col.id = None
+#                 global_col.organization = organization
+#                 global_col.save()
+#
+#                 col = global_col
+#
+#             else:
+#                 col, _ = Column.objects.get_or_create(
+#                     organization=organization,
+#                     column_name=col_name,
+#                     is_extra_data=is_extra_data,
+#                 )
+#
+#         cols.append(col)
+#
+#     return cols
 
 
 @api_endpoint
@@ -1601,50 +1597,17 @@ def save_column_mappings(request):
 
         {'status': 'success'}
     """
+
     body = json.loads(request.body)
     import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
     organization = import_file.import_record.super_organization
     mappings = body.get('mappings', [])
-    for mapping in mappings:
-        dest_field, raw_field = mapping
-        if dest_field == '':
-            dest_field = None
+    status = Column.create_mappings(mappings, organization, request.user)
 
-        dest_cols = _column_fields_to_columns(dest_field, organization)
-        raw_cols = _column_fields_to_columns(raw_field, organization)
-        try:
-            column_mapping, created = ColumnMapping.objects.get_or_create(
-                super_organization=organization,
-                column_raw__in=raw_cols,
-            )
-        except ColumnMapping.MultipleObjectsReturned:
-            # handle the special edge-case where remove dupes doesn't get
-            # called by ``get_or_create``
-            ColumnMapping.objects.filter(
-                super_organization=organization,
-                column_raw__in=raw_cols,
-            ).delete()
-            column_mapping, created = ColumnMapping.objects.get_or_create(
-                super_organization=organization,
-                column_raw__in=raw_cols,
-            )
-
-        # Clear out the column_raw and column mapped relationships.
-        column_mapping.column_raw.clear()
-        column_mapping.column_mapped.clear()
-
-        # Add all that we got back from the interface back in the M2M rel.
-        [column_mapping.column_raw.add(raw_col) for raw_col in raw_cols]
-        if dest_cols is not None:
-            [
-                column_mapping.column_mapped.add(dest_col)
-                for dest_col in dest_cols
-            ]
-
-        column_mapping.user = request.user
-        column_mapping.save()
-
-    return {'status': 'success'}
+    if status:
+        return {'status': 'success'}
+    else:
+        return {'status': 'error'}
 
 
 @api_endpoint
@@ -2077,6 +2040,7 @@ def save_raw_data(request):
     return task_save_raw(import_file_id)
 
 
+# Move to data_mapping
 @api_endpoint
 @ajax_request
 @login_required
