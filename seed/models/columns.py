@@ -161,11 +161,30 @@ class Column(models.Model):
             mappings: destination field is the field in the database
                       raw_field is the field in the datafile
                 "mappings": [
-                    ["destination_field": "raw_field"], #  direct mapping
-                    ["destination_field2":
+                    ["destination_field", "raw_field"], #  direct mapping
+                    ["destination_field2",
                         ["raw_field1", "raw_field2"]],   #  concatenated mapping
                     ...
                 ]
+
+                .. todo::
+
+                    move concatenation out of this function, if possible
+
+                    mappings: [
+                        {
+                            'from': 'eui',
+                            'to_field': 'energy_use_intensity',
+                            'to_table_name': 'property',
+                        },
+                        { # TODO: make this a concatenate option
+                            'from': 'eui',
+                            'to_field': 'energy_use_intensity',
+                            'to_table_name': 'property',
+                        }
+                    ]
+
+
             organization: Organization object
             user: User object
 
@@ -184,7 +203,6 @@ class Column(models.Model):
             if dest_field == '':
                 dest_field = None
 
-            # TODO: this has been replicated in ColumnMapping.create_mappings(mapping)
             dest_cols = Column._column_fields_to_columns(dest_field, organization)
             raw_cols = Column._column_fields_to_columns(raw_field, organization)
             try:

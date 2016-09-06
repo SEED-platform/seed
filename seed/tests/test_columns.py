@@ -101,7 +101,7 @@ class TestColumns(TestCase):
 
     def test_save_mappings(self):
         # Test that we can upload a mapping hash
-        map = [
+        test_map = [
             # a: field in the db
             # b: field in the datafile
             ["eui", "my energy use intensity"],
@@ -109,7 +109,7 @@ class TestColumns(TestCase):
             ["concatenated", ["one", "two"]]
         ]
 
-        seed_models.Column.create_mappings(map, self.fake_org, self.fake_user)
+        seed_models.Column.create_mappings(test_map, self.fake_org, self.fake_user)
 
         test_mapping, _ = seed_models.get_column_mappings(self.fake_org)
 

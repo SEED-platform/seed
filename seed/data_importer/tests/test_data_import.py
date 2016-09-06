@@ -36,11 +36,6 @@ class TestMapping(TestCase):
     def setUp(self):
         # Make sure to delete the old mappings and properties because this
         # tests expects very specific column names and properties in order
-        # Column.objects.all().delete()
-        # ColumnMapping.objects.all().delete()
-        # PropertyState.objects.all().delete()
-        # ImportFile.objects.all().delete()
-        # ImportRecord.objects.all().delete()
         test_util.load_test_data(self, 'portfolio-manager-sample.csv')
 
     def test_cached_first_row_order(self):
