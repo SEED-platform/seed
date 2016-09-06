@@ -128,37 +128,56 @@ class PropertyState(models.Model):
 
     extra_data = JsonField(default={}, blank=True)
 
-    def promote_to_view(self, start, end, tax_lot_id):
+    def promote(self, cycle):
         """
-        Helper initializer to add a property and its tax_lot/cycle
-        relationships.
+        Promote the PropertyState to the view table for the given cycle
+
+        Args:
+            cycle: Cycle to assign the view
+
+        Returns:
+            The resulting PropertyView (note that it is not returning the
+            PropertyState)
+
         """
 
-        cycle, _ = Cycle.objects.get_or_create(
-            name=u'Hack Cycle',
-            organization=self.super_organization,
-            start=start,
-            end=end
-        )
+        # First check if the cycle and the PropertyState already have a view
+        pvs = PropertyView.objects.filter(cycle=cycle, state=self)
 
-        # tls, _ = TaxLotState.objects.get_or_create(
-        #     jurisdiction_taxlot_identifier=tax_lot_id
-        # )
-        #
-        # logger.debug("the cycle is {}".format(cycle))
-        # logger.debug("the taxlotstate is {}".format(tls))
-        # tlv, _ = TaxLotView.objects.get_or_create(
-        #     state=tls,
-        #     cycle=cycle,
-        # ).first()
-        #
-        # logger.debug("taxlotview is {}".format(tlv))
+        logger.debug("Found %s PropertyViews" % len(pvs))
 
-        return self
+        if len(pvs) == 0:
+            logger.debug("Found 0 PropertyViews, adding property, promoting")
+            # There are no PropertyViews for this property state and cycle.
+            # Most likely there is nothing to match right now, so just
+            # promote it to the view
+
+            # Need to create a property for this state
+            prop = Property.objects.create(
+                organization=self.super_organization
+            )
+
+            pv = PropertyView.objects.create(
+                property=prop,
+                cycle=cycle,
+                state=self
+            )
+
+            return pv
+        elif len(pvs) == 1:
+            logger.debug("Found 1 PropertyView... Nothing to do")
+            # PropertyView already exists for cycle and state. Nothing to do.
+            return pvs[0]
+        else:
+            logger.debug("Found %s PropertyView" % len(pvs))
+            logger.debug("This should never occur, famous last words?")
+
+            return None
 
     def __unicode__(self):
         return u'Property State - %s' % (self.pk)
 
+    # TODO: deprecate this method, was hacked during mapping testing
     def assign_cycle_and_tax_lot(self, org, start_date, end_date, tax_lot_id):
         """
 
@@ -172,42 +191,42 @@ class PropertyState(models.Model):
 
         """
 
-        # TODO: we should set the cycle before we iterate over *every* row
-        cycle, _ = Cycle.objects.get_or_create(
-            name=u'Hack Cycle',
-            organization=org,
-            start=start_date,
-            end=end_date
-        )
-
-        # create 1 to 1 pointless taxlots for now
-        # tl = TaxLot.objects.create(
+        # # TODO: we should set the cycle before we iterate over *every* row
+        # cycle, _ = Cycle.objects.get_or_create(
+        #     name=u'Hack Cycle',
+        #     organization=org,
+        #     start=start_date,
+        #     end=end_date
+        # )
+        #
+        # # create 1 to 1 pointless taxlots for now
+        # # tl = TaxLot.objects.create(
+        # #     organization=org
+        # # )
+        # #
+        # # tls, _ = TaxLotState.objects.get_or_create(
+        # #     jurisdiction_taxlot_identifier=tax_lot_id
+        # # )
+        # #
+        # # tlv, _ = TaxLotView.objects.get_or_create(
+        # #     taxlot=tl,
+        # #     state=tls,
+        # #     cycle=cycle,
+        # # )
+        #
+        # self.save()
+        #
+        # # set the property view here for now to make sure that the data
+        # # show up in the bluesky tables
+        # property = Property.objects.create(
         #     organization=org
         # )
         #
-        # tls, _ = TaxLotState.objects.get_or_create(
-        #     jurisdiction_taxlot_identifier=tax_lot_id
-        # )
-        #
-        # tlv, _ = TaxLotView.objects.get_or_create(
-        #     taxlot=tl,
-        #     state=tls,
+        # PropertyView.objects.get_or_create(
+        #     property=property,
         #     cycle=cycle,
+        #     state=self
         # )
-
-        self.save()
-
-        # set the property view here for now to make sure that the data
-        # show up in the bluesky tables
-        property = Property.objects.create(
-            organization=org
-        )
-
-        PropertyView.objects.get_or_create(
-            property=property,
-            cycle=cycle,
-            state=self
-        )
 
         return self
 
@@ -244,10 +263,10 @@ class PropertyState(models.Model):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-            }
+                }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-            }
+                }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk

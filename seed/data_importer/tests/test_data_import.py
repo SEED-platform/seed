@@ -4,6 +4,7 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import datetime
 import logging
 from unittest import skip
 
@@ -21,7 +22,10 @@ from seed.models import (
     POSSIBLE_MATCH,
     SYSTEM_MATCH,
     DATA_STATE_IMPORT,
+    Cycle,
     PropertyState,
+    Property,
+    PropertyView,
     Column,
     get_ancestors,
 )
@@ -197,12 +201,42 @@ class TestMatching(TestCase):
     def test_match_buildings(self):
         """Good case for testing our matching system."""
 
+        cycle, _ = Cycle.objects.get_or_create(
+            name=u'Hack Cycle 2015',
+            organization=self.fake_org,
+            start=datetime.datetime(2015, 1, 1),
+            end=datetime.datetime(2015, 12, 31),
+        )
+
+        cycle2, _ = Cycle.objects.get_or_create(
+            name=u'Hack Cycle 2016',
+            organization=self.fake_org,
+            start=datetime.datetime(2016, 1, 1),
+            end=datetime.datetime(2016, 12, 31),
+        )
+
         # make sure that the new data was loaded correctly
         ps = PropertyState.objects.filter(address_line_1='1181 Douglas Street')[0]
-        # print ps.__dict__
-
         self.assertEqual(ps.site_eui, 439.9)
         self.assertEqual(ps.extra_data['CoStar Property ID'], '1575599')
+        print ps.__dict__
+
+        # Promote the PropertyState to a PropertyView
+        pv1 = ps.promote(cycle)
+        pv2 = ps.promote(cycle)  # should just return the same object
+        self.assertEqual(pv1, pv2)
+
+        # promote the same state for a new cycle, same data
+        pv3 = ps.promote(cycle2)
+        self.assertNotEqual(pv3, pv1)
+
+
+
+        props = PropertyView.objects.all()
+        self.assertEqual(len(props), 2)
+
+        # props = PropertyView.objects.filter()
+
 
         # # TODO: Fix the PM, tax lot id, and custom ID fields in PropertyState
         # # Move this to a fixture
