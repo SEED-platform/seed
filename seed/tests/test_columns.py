@@ -8,9 +8,9 @@
 from django.test import TestCase
 
 from seed import models as seed_models
-from seed.models import PropertyState, Column
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.models import PropertyState, Column
 
 
 class TestColumns(TestCase):
@@ -110,7 +110,8 @@ class TestColumns(TestCase):
             ["concatenated", ["one", "two"]]
         ]
 
-        seed_models.Column.create_mappings(test_map, self.fake_org, self.fake_user)
+        seed_models.Column.create_mappings(test_map, self.fake_org,
+                                           self.fake_user)
 
         test_mapping, _ = seed_models.get_column_mappings(self.fake_org)
 
@@ -138,16 +139,6 @@ class TestColumns(TestCase):
         self.assertEqual(c.is_extra_data, True)
         self.assertEqual(c.table_name, 'PropertyState')
         self.assertEqual(ps.extra_data['lab'], 'hawkins national laboratory')
-
-
-
-
-
-
-
-
-
-
 
 
 class TestColumnMapping(TestCase):

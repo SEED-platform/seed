@@ -48,23 +48,25 @@ def make_fake_mappings(mappings, org):
         column_mapping.column_mapped.add(column_mapped)
 
 
-def make_fake_snapshot(import_file, init_data, bs_type, is_canon=False,
+def make_fake_property(import_file, init_data, bs_type, is_canon=False,
                        org=None):
     """For making fake mapped PropertyState to test matching against."""
 
     if not org:
         raise "no org"
 
-    snapshot = PropertyState.objects.create(**init_data)
-    snapshot.import_file = import_file
-    snapshot.super_organization = org
+    ps = PropertyState.objects.create(**init_data)
+    ps.import_file = import_file
+    ps.super_organization = org
     if import_file is None:
-        snapshot.import_record = None
+        ps.import_record = None
     else:
-        snapshot.import_record = import_file.import_record
-    snapshot.source_type = bs_type
-    set_initial_sources(snapshot)
-    snapshot.save()
+        ps.import_record = import_file.import_record
+        ps.source_type = bs_type
+
+    # TODO: can we remove set_initial sources? Seems like this is invalid in the new data model world.
+    set_initial_sources(ps)
+    ps.save()
 
     # The idea of canon is no longer applicable. The linked property state
     # in the PropertyView is now canon
@@ -77,42 +79,9 @@ def make_fake_snapshot(import_file, init_data, bs_type, is_canon=False,
             end=datetime.datetime(2015, 12, 31),
         )
 
-        # # create 1 to 1 pointless taxlots for now
-        # tl = TaxLot.objects.create(
-        #     organization=org
-        # )
-        #
-        # tls, _ = TaxLotState.objects.get_or_create(
-        #     jurisdiction_taxlot_identifier='1234'
-        # )
-        #
-        # tlv, _ = TaxLotView.objects.get_or_create(
-        #     taxlot=tl,
-        #     state=tls,
-        #     cycle=cycle,
-        # )
+        ps.promote(cycle)
 
-        # set the property view here for now to make sure that the data
-        # show up in the bluesky tables
-        prop = Property.objects.create(
-            organization=org
-        )
-
-        pv, _ = PropertyView.objects.get_or_create(
-            property=prop,
-            cycle=cycle,
-            state=snapshot
-        )
-
-        # print "Here are my data: %s" % pv.__dict__
-
-    #     canonical_building = CanonicalBuilding.objects.create(
-    #         canonical_snapshot=snapshot
-    #     )
-    #     snapshot.canonical_building = canonical_building
-    #     snapshot.save()
-
-    return snapshot
+    return ps
 
 
 class FakeRequest(object):

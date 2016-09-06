@@ -2475,11 +2475,11 @@ class TestMCMViews(TestCase):
         """Test good case for resetting mapping."""
         # Make raw BSes, these should stick around.
         for x in range(10):
-            test_util.make_fake_snapshot(self.import_file, {}, ASSESSED_RAW)
+            test_util.make_fake_property(self.import_file, {}, ASSESSED_RAW)
 
         # Make "mapped" BSes, these should get removed.
         for x in range(10):
-            test_util.make_fake_snapshot(self.import_file, {}, ASSESSED_BS)
+            test_util.make_fake_property(self.import_file, {}, ASSESSED_BS)
 
         # Set import file like we're done mapping
         self.import_file.mapping_done = True
@@ -2521,13 +2521,13 @@ class TestMCMViews(TestCase):
         """Ensure we ignore mapped buildings with children BuildingSnapshots."""
         # Make the raw BSes for us to make new mappings from
         for x in range(10):
-            test_util.make_fake_snapshot(self.import_file, {}, ASSESSED_RAW)
+            test_util.make_fake_property(self.import_file, {}, ASSESSED_RAW)
         # Simulate existing mapped BSes, which should be deleted.
         for x in range(10):
-            test_util.make_fake_snapshot(self.import_file, {}, ASSESSED_BS)
+            test_util.make_fake_property(self.import_file, {}, ASSESSED_BS)
 
         # Setup our exceptional case: here the first BS has a child, COMPOSITE.
-        child = test_util.make_fake_snapshot(None, {}, COMPOSITE_BS)
+        child = test_util.make_fake_property(None, {}, COMPOSITE_BS)
         first = BuildingSnapshot.objects.filter(
             import_file=self.import_file
         )[:1].get()
@@ -2578,7 +2578,7 @@ class TestMCMViews(TestCase):
         self.import_file.save()
 
         for x in range(10):
-            test_util.make_fake_snapshot(self.import_file, {}, ASSESSED_BS)
+            test_util.make_fake_property(self.import_file, {}, ASSESSED_BS)
 
         resp = self.client.post(
             reverse_lazy("seed:remap_buildings"),

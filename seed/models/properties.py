@@ -263,10 +263,10 @@ class PropertyState(models.Model):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-                }
+            }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-                }
+            }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk
@@ -295,7 +295,7 @@ class PropertyState(models.Model):
         return d
 
     @staticmethod
-    def find_unmatched_buildings(import_file):
+    def find_unmatched(import_file):
         """Get unmatched building snapshots' id info from an import file.
 
         :param import_file: ImportFile inst.

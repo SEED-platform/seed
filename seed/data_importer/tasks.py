@@ -257,22 +257,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
             **kwargs
         )
 
-        # TODO: Figure out how to handle tax_lot_id's here
-
-        # if property_state.tax_lot_id:
-        #      property_state.tax_lot_id = _normalize_tax_lot_id(str(model.tax_lot_id))
-
-        tax_lot_id = uuid.uuid4()
-        if property_state.jurisdiction_property_identifier:
-            tax_lot_id = property_state.jurisdiction_property_identifier
-
-        property_state = property_state.assign_cycle_and_tax_lot(
-            org,
-            datetime.datetime(2015, 1, 1),
-            datetime.datetime(2015, 12, 31),
-            tax_lot_id
-        )
-
         # Assign some other arguments here
         property_state.import_file = import_file
         property_state.source_type = save_type
@@ -285,11 +269,9 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
         # Make sure that we've saved all of the extra_data column names
         Column.save_column_names(property_state, mapping=mapping)
 
-
     # # TODO: Save tax lot state
     # if tax_lot_state:
     #     Column.save_column_names(tax_lot_state, mapping=mapping)
-
 
     increment_cache(prog_key, increment)
 
@@ -964,7 +946,7 @@ def _match_buildings(file_pk, user_pk):
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
     org = Organization.objects.filter(users=import_file.import_record.owner)[0]
-    unmatched_buildings = PropertyState.find_unmatched_buildings(import_file)
+    unmatched_buildings = PropertyState.find_unmatched(import_file)
 
     duplicates = []
 

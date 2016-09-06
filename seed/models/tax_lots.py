@@ -51,6 +51,30 @@ class TaxLotState(models.Model):
     def __unicode__(self):
         return u'TaxLot State - %s' % (self.pk)
 
+    def promote(self, cycle):
+        """
+
+        Args:
+            cycle:
+
+        Returns:
+
+        """
+        return None
+
+        # tls, _ = TaxLotState.objects.get_or_create(
+        #     jurisdiction_taxlot_identifier=tax_lot_id
+        # )
+        #
+        # logger.debug("the cycle is {}".format(cycle))
+        # logger.debug("the taxlotstate is {}".format(tls))
+        # tlv, _ = TaxLotView.objects.get_or_create(
+        #     state=tls,
+        #     cycle=cycle,
+        # ).first()
+        #
+        # logger.debug("taxlotview is {}".format(tlv))
+
 
 class TaxLotView(models.Model):
     # TODO: Are all foreignkeys automatically indexed?

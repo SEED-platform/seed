@@ -24,7 +24,6 @@ from seed.models import (
     DATA_STATE_IMPORT,
     Cycle,
     PropertyState,
-    Property,
     PropertyView,
     Column,
     get_ancestors,
@@ -170,7 +169,7 @@ class TestMatching(TestCase):
             'postal_code': 8999,
         }
 
-        s1 = util.make_fake_snapshot(
+        s1 = util.make_fake_property(
             self.import_file, bs_data, ASSESSED_BS, is_canon=True,
             org=self.fake_org
         )
@@ -190,7 +189,7 @@ class TestMatching(TestCase):
             'postal_code': 8999,
         }
 
-        s2 = util.make_fake_snapshot(
+        s2 = util.make_fake_property(
             self.import_file, bs_data_2, ASSESSED_BS, is_canon=True,
             org=self.fake_org
         )
@@ -198,7 +197,7 @@ class TestMatching(TestCase):
         self.assertFalse(tasks.is_same_snapshot(s1, s2),
                          "Matching a snapshot to a different snapshot should return False")
 
-    def test_match_buildings(self):
+    def test_promote_properties(self):
         """Good case for testing our matching system."""
 
         cycle, _ = Cycle.objects.get_or_create(
@@ -216,10 +215,11 @@ class TestMatching(TestCase):
         )
 
         # make sure that the new data was loaded correctly
-        ps = PropertyState.objects.filter(address_line_1='1181 Douglas Street')[0]
+        ps = \
+            PropertyState.objects.filter(address_line_1='1181 Douglas Street')[
+                0]
         self.assertEqual(ps.site_eui, 439.9)
         self.assertEqual(ps.extra_data['CoStar Property ID'], '1575599')
-        print ps.__dict__
 
         # Promote the PropertyState to a PropertyView
         pv1 = ps.promote(cycle)
@@ -230,64 +230,82 @@ class TestMatching(TestCase):
         pv3 = ps.promote(cycle2)
         self.assertNotEqual(pv3, pv1)
 
-
-
         props = PropertyView.objects.all()
         self.assertEqual(len(props), 2)
 
-        # props = PropertyView.objects.filter()
+    def test_match_buildings(self):
+        """Good case for testing our matching system."""
+
+        cycle, _ = Cycle.objects.get_or_create(
+            name=u'Hack Cycle 2015',
+            organization=self.fake_org,
+            start=datetime.datetime(2015, 1, 1),
+            end=datetime.datetime(2015, 12, 31),
+        )
+
+        # make sure that the new data was loaded correctly
+        ps = PropertyState.objects.filter(
+            address_line_1='1181 Douglas Street'
+        )[0]
+        print ps.__dict__
+
+        # Promote the PropertyState to a PropertyView
+        pv1 = ps.promote(cycle)
+
+        props = PropertyView.objects.all()
+        self.assertEqual(len(props), 1)
+
+        pv2 = PropertyView.objects.filter(state=ps)[0]
+        print pv2.__dict__
+
+        self.assertEqual(pv1, pv2)
+
+        properties = PropertyState.find_unmatched(self.import_file)
+        print "The length of properties is %s" % len(properties)
+        for p in properties:
+            print p.__dict__
+
+        bs_data = {
+            'pm_property_id': 1243,
+            # 'tax_lot_id': '435/422',
+            'property_name': 'Greenfield Complex',
+            'custom_id_1': 12,
+            'address_line_1': '555 Database LN.',
+            'address_line_2': '',
+            'city': 'Gotham City',
+            'postal_code': 8999,
+        }
+
+        # Since the change to not match duplicates there needs to be a second record that isn't exactly the same
+        # to run this test.  In this case address_line_2 now has a value of 'A' rather than ''
+        bs_data_2 = {
+            'pm_property_id': 1243,
+            # 'tax_lot_id': '435/422',
+            'property_name': 'Greenfield Complex',
+            'custom_id_1': 12,
+            'address_line_1': '555 Database LN.',
+            'address_line_2': 'A',
+            'city': 'Gotham City',
+            'postal_code': 8999,
+        }
+
+        # Setup mapped AS snapshot.
+        util.make_fake_property(self.import_file, bs_data, ASSESSED_BS,
+                                is_canon=True, org=self.fake_org)
+
+        # Different file, but same ImportRecord.
+        # Setup mapped PM snapshot.
+        # Should be an identical match.
+        new_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            mapping_done=True
+        )
+
+        util.make_fake_property(new_import_file, bs_data_2, PORTFOLIO_BS,
+                                is_canon=False, org=self.fake_org)
 
 
-        # # TODO: Fix the PM, tax lot id, and custom ID fields in PropertyState
-        # # Move this to a fixture
-        # bs_data = {
-        #     'pm_property_id': 1243,
-        #     # 'tax_lot_id': '435/422',
-        #     'property_name': 'Greenfield Complex',
-        #     'custom_id_1': 12,
-        #     'address_line_1': '555 Database LN.',
-        #     'address_line_2': '',
-        #     'city': 'Gotham City',
-        #     'postal_code': 8999,
-        # }
-        #
-        # # Since the change to not match duplicates there needs to be a second record that isn't exactly the same
-        # # to run this test.  In this case address_line_2 now has a value of 'A' rather than ''
-        # bs_data_2 = {
-        #     'pm_property_id': 1243,
-        #     # 'tax_lot_id': '435/422',
-        #     'property_name': 'Greenfield Complex',
-        #     'custom_id_1': 12,
-        #     'address_line_1': '555 Database LN.',
-        #     'address_line_2': 'A',
-        #     'city': 'Gotham City',
-        #     'postal_code': 8999,
-        # }
-        #
-        # # Setup mapped AS snapshot.
-        # snapshot = util.make_fake_snapshot(
-        #     self.import_file,
-        #     bs_data,
-        #     ASSESSED_BS,
-        #     is_canon=True,
-        #     org=self.fake_org
-        # )
-        # # Different file, but same ImportRecord.
-        # # Setup mapped PM snapshot.
-        # # Should be an identical match.
-        # new_import_file = ImportFile.objects.create(
-        #     import_record=self.import_record,
-        #     mapping_done=True
-        # )
-        #
-        # new_snapshot = util.make_fake_snapshot(
-        #     new_import_file,
-        #     bs_data_2,
-        #     PORTFOLIO_BS,
-        #     is_canon=False,
-        #     org=self.fake_org
-        # )
-        #
+
         # tasks.match_buildings(new_import_file.pk, self.fake_user.pk)
         #
         # self.assertEqual(result.property_name, snapshot.property_name)
@@ -327,7 +345,7 @@ class TestMatching(TestCase):
         )
 
         # Setup mapped PM snapshot.
-        util.make_fake_snapshot(
+        util.make_fake_property(
             import_file, bs_data, PORTFOLIO_BS, is_canon=True,
             org=self.fake_org
         )
@@ -339,7 +357,7 @@ class TestMatching(TestCase):
             mapping_done=True
         )
 
-        util.make_fake_snapshot(
+        util.make_fake_property(
             new_import_file, bs_data, PORTFOLIO_BS, org=self.fake_org
         )
 
@@ -366,7 +384,7 @@ class TestMatching(TestCase):
         }
 
         # Setup mapped AS snapshot.
-        util.make_fake_snapshot(
+        util.make_fake_property(
             self.import_file, bs_data, ASSESSED_BS, is_canon=True,
             org=self.fake_org
         )
@@ -386,7 +404,7 @@ class TestMatching(TestCase):
             mapping_done=True
         )
 
-        new_snapshot = util.make_fake_snapshot(
+        new_snapshot = util.make_fake_property(
             duplicate_import_file, bs_data, PORTFOLIO_BS, org=self.fake_org
         )
 
@@ -420,14 +438,14 @@ class TestMatching(TestCase):
             'postal_code': 8999,
         }
 
-        snapshot = util.make_fake_snapshot(
+        snapshot = util.make_fake_property(
             self.import_file, bs1_data, ASSESSED_BS, is_canon=True
         )
         new_import_file = ImportFile.objects.create(
             import_record=self.import_record,
             mapping_done=True
         )
-        new_snapshot = util.make_fake_snapshot(
+        new_snapshot = util.make_fake_property(
             new_import_file, bs2_data, PORTFOLIO_BS, org=self.fake_org
         )
 
@@ -463,7 +481,7 @@ class TestMatching(TestCase):
         }
 
         # Note: no Canonical Building is created for this snapshot.
-        snapshot = util.make_fake_snapshot(
+        snapshot = util.make_fake_property(
             self.import_file, bs1_data, ASSESSED_BS, is_canon=False,
             org=self.fake_org
         )
@@ -496,7 +514,7 @@ class TestMatching(TestCase):
 
         self.import_file.mapping_done = True
         self.import_file.save()
-        util.make_fake_snapshot(
+        util.make_fake_property(
             self.import_file, bs1_data, ASSESSED_BS, is_canon=True
         )
 
@@ -532,12 +550,12 @@ class TestMatching(TestCase):
             mapping_done=True
         )
 
-        util.make_fake_snapshot(
+        util.make_fake_property(
             self.import_file, bs1_data, ASSESSED_BS, is_canon=True,
             org=self.fake_org
         )
 
-        util.make_fake_snapshot(
+        util.make_fake_property(
             new_import_file, bs2_data, PORTFOLIO_BS, org=self.fake_org
         )
 
@@ -583,7 +601,7 @@ class TestMatching(TestCase):
         }
 
         # Setup mapped AS snapshot.
-        util.make_fake_snapshot(
+        util.make_fake_property(
             self.import_file, bs_data, ASSESSED_BS, is_canon=True,
             org=self.fake_org
         )
@@ -596,7 +614,7 @@ class TestMatching(TestCase):
             mapping_done=True
         )
 
-        util.make_fake_snapshot(
+        util.make_fake_property(
             new_import_file, bs_data_2, PORTFOLIO_BS, org=self.fake_org
         )
 

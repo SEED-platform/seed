@@ -54,13 +54,13 @@ class TestBuildingSnapshot(TestCase):
         self.import_file2 = ImportFile.objects.create(
             import_record=self.import_record
         )
-        self.bs1 = util.make_fake_snapshot(
+        self.bs1 = util.make_fake_property(
             self.import_file1,
             self.bs1_data,
             bs_type=seed_models.ASSESSED_BS,
             is_canon=True
         )
-        self.bs2 = util.make_fake_snapshot(
+        self.bs2 = util.make_fake_property(
             self.import_file2,
             self.bs2_data,
             bs_type=seed_models.PORTFOLIO_BS,
@@ -75,13 +75,13 @@ class TestBuildingSnapshot(TestCase):
 
     def _add_additional_fake_buildings(self):
         """DRY up some test code below where many BuildingSnapshots are needed."""
-        self.bs3 = util.make_fake_snapshot(
+        self.bs3 = util.make_fake_property(
             self.import_file1, self.bs1_data, bs_type=seed_models.COMPOSITE_BS,
         )
-        self.bs4 = util.make_fake_snapshot(
+        self.bs4 = util.make_fake_property(
             self.import_file1, self.bs2_data, bs_type=seed_models.COMPOSITE_BS,
         )
-        self.bs5 = util.make_fake_snapshot(
+        self.bs5 = util.make_fake_property(
             self.import_file1, self.bs2_data, bs_type=seed_models.COMPOSITE_BS,
         )
 
@@ -301,7 +301,7 @@ class TestBuildingSnapshot(TestCase):
             u'postal_code': u'68674',
         }
 
-        fake_building = util.make_fake_snapshot(
+        fake_building = util.make_fake_property(
             self.import_file2,
             fake_building_kwargs,
             seed_models.COMPOSITE_BS,
@@ -398,7 +398,7 @@ class TestBuildingSnapshot(TestCase):
             u'extra_data': {}
         }
 
-        fake_building = util.make_fake_snapshot(
+        fake_building = util.make_fake_property(
             self.import_file2,
             fake_building_kwargs,
             seed_models.COMPOSITE_BS,
@@ -538,11 +538,11 @@ class TestBuildingSnapshot(TestCase):
         """
         TODO:
         """
-        self.bs3 = util.make_fake_snapshot(
+        self.bs3 = util.make_fake_property(
             self.import_file1, self.bs1_data, bs_type=seed_models.COMPOSITE_BS,
             is_canon=True,
         )
-        self.bs4 = util.make_fake_snapshot(
+        self.bs4 = util.make_fake_property(
             self.import_file1, self.bs2_data, bs_type=seed_models.COMPOSITE_BS,
             is_canon=True,
         )

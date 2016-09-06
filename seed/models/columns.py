@@ -96,9 +96,6 @@ def get_column_mappings(organization):
     return mapping, concat_confs
 
 
-
-
-
 class Column(models.Model):
     """The name of a column for a given organization."""
     SOURCE_PROPERTY = 'P'
