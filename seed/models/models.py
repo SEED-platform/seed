@@ -266,7 +266,7 @@ def set_initial_sources(snapshot):
 
 #     # Check to see if there are any new ``extra_data`` fields added for this
 #     # org.
-#     save_column_names(new_snapshot)
+#     Column.save_column_names(new_snapshot)
 
 #     return new_snapshot
 

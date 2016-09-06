@@ -61,7 +61,6 @@ from seed.models import (
     POSSIBLE_MATCH,
     initialize_canonical_building,
     save_snapshot_match,
-    save_column_names,
     BuildingSnapshot,
     PropertyState,
     DATA_STATE_IMPORT,
@@ -284,7 +283,13 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
 
     if property_state:
         # Make sure that we've saved all of the extra_data column names
-        save_column_names(property_state, mapping=mapping)
+        Column.save_column_names(property_state, mapping=mapping)
+
+
+    # # TODO: Save tax lot state
+    # if tax_lot_state:
+    #     Column.save_column_names(tax_lot_state, mapping=mapping)
+
 
     increment_cache(prog_key, increment)
 

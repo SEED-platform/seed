@@ -8,6 +8,7 @@
 from django.test import TestCase
 
 from seed import models as seed_models
+from seed.models import PropertyState, Column
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 
@@ -120,8 +121,33 @@ class TestColumns(TestCase):
         # TODO: Why isn't the concatenated field showing up!
         self.assertDictEqual(expected, test_mapping)
 
-        c = seed_models.Column.objects.filter(column_name='hawkins')[0]
+        c = Column.objects.filter(column_name='hawkins')[0]
         self.assertEqual(c.is_extra_data, True)
+
+    def test_save_columns(self):
+        # create
+
+        ps = PropertyState.objects.create(
+            super_organization=self.fake_org,
+            extra_data={'a': 123, 'lab': 'hawkins national laboratory'}
+        )
+        Column.save_column_names(ps)
+
+        c = Column.objects.filter(column_name='lab')[0]
+
+        self.assertEqual(c.is_extra_data, True)
+        self.assertEqual(c.table_name, 'PropertyState')
+        self.assertEqual(ps.extra_data['lab'], 'hawkins national laboratory')
+
+
+
+
+
+
+
+
+
+
 
 
 class TestColumnMapping(TestCase):

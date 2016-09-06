@@ -96,25 +96,7 @@ def get_column_mappings(organization):
     return mapping, concat_confs
 
 
-# TODO: Make this a static method on Column
-def save_column_names(property_state, mapping=None):
-    """Save unique column names for extra_data in this organization.
 
-    Basically this is a record of all the extra_data keys we've ever seen
-    for a particular organization.
-
-    :param property_state: PropertyState instance.
-    """
-    from seed.utils import mapping as mapping_utils
-
-    for key in property_state.extra_data:
-        # Ascertain if our key is ``extra_data`` or not.
-        is_extra_data = key not in mapping_utils.get_mappable_columns()
-        Column.objects.get_or_create(
-            organization=property_state.super_organization,
-            column_name=key[:511],
-            is_extra_data=is_extra_data
-        )
 
 
 class Column(models.Model):
@@ -301,6 +283,33 @@ class Column(models.Model):
             cols.append(col)
 
         return cols
+
+    @staticmethod
+    def save_column_names(property_state, mapping=None):
+        """Save unique column names for extra_data in this organization.
+
+        Basically this is a record of all the extra_data keys we've ever seen
+        for a particular organization.
+
+        :param property_state: PropertyState instance.
+        """
+        from seed.utils import mapping as mapping_utils
+
+        # TODO: Need to allow passing in the TaxLotState as well.
+        for key in property_state.extra_data:
+            # Ascertain if our key is ``extra_data`` or not.
+            # TODO: The get_mappable_columns only returns for the PropertyState
+            # Need to expand this to the tax_lot_state to know which one to look
+            # in, or just rewrite this is_extra_data logic, because it is wrong!
+            is_extra_data = key not in mapping_utils.get_mappable_columns()
+            Column.objects.get_or_create(
+                organization=property_state.super_organization,
+                column_name=key[:511],
+                is_extra_data=is_extra_data,
+                table_name='PropertyState'
+            )
+
+        # TODO: Save the tax lot extra data fields
 
 
 class ColumnMapping(models.Model):
