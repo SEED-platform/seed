@@ -26,8 +26,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       var lastCycleId = inventory_service.get_last_cycle();
       if (cycle) {
-        params.cycle = cycle.pk;
-        inventory_service.save_last_cycle(cycle.pk);
+        params.cycle = cycle.id;
+        inventory_service.save_last_cycle(cycle.id);
       } else if (_.isInteger(lastCycleId)) {
         params.cycle = lastCycleId;
       }
@@ -235,8 +235,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       var lastCycleId = inventory_service.get_last_cycle();
 
       if (cycle) {
-        params.cycle = cycle.pk;
-        inventory_service.save_last_cycle(cycle.pk);
+        params.cycle = cycle.id;
+        inventory_service.save_last_cycle(cycle.id);
       } else if (_.isInteger(lastCycleId)) {
         params.cycle = lastCycleId;
       }

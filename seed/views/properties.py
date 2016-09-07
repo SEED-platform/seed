@@ -314,26 +314,6 @@ def get_taxlots(request):
 @ajax_request
 @login_required
 @has_perm('requires_viewer')
-def get_cycles(request):
-    cycles = Cycle.objects.filter(organization_id=request.GET['organization_id'])
-    return_cycles = []
-    for cycle in cycles:
-        return_cycles.append({
-            'pk': cycle.pk,
-            'name': cycle.name,
-            'from_date': "",
-            'to_date': ""
-        })
-
-    return {'status': 'success', 'cycles': return_cycles}
-
-
-@require_organization_id
-@require_organization_membership
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
 def get_property_columns(request):
     columns = [
         {
@@ -835,6 +815,26 @@ def get_taxlot_columns(request):
     return columns
 
 
+@require_organization_id
+@require_organization_membership
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('requires_viewer')
+def get_cycles(request):
+    cycles = Cycle.objects.filter(organization_id=request.GET['organization_id'])
+    return_cycles = []
+    for cycle in cycles:
+        return_cycles.append({
+            'pk': cycle.pk,
+            'name': cycle.name,
+            'from_date': "",
+            'to_date': ""
+        })
+
+    return {'status': 'success', 'cycles': return_cycles}
+
+
 class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
@@ -892,7 +892,7 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
             changed_fields = json.loads(log.description)\
                 if log.record_type == AUDIT_USER_EDIT else None
             record = {
-                'state': PropertyStateSerializer(log.state),
+                'state': PropertyStateSerializer(log.state).data,
                 'date_edited': log.created.ctime(),
                 'source': log.get_record_type_display(),
                 'filename': log.import_filename,
@@ -1015,7 +1015,7 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
             changed_fields = json.loads(log.description)\
                 if log.record_type == AUDIT_USER_EDIT else None
             record = {
-                'state': TaxLotStateSerializer(log.state),
+                'state': TaxLotStateSerializer(log.state).data,
                 'date_edited': log.created.ctime(),
                 'source': log.get_record_type_display(),
                 'filename': log.import_filename,

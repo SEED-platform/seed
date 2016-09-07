@@ -5,7 +5,7 @@
 :author
 """
 from datetime import datetime
-from unittests import skip
+from unittest import skip
 
 from django.test import TestCase
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser

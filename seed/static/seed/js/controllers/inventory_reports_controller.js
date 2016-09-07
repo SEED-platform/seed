@@ -245,8 +245,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
     var yVar = $scope.yAxisSelectedItem.varName;
     $scope.chartIsLoading = true;
 
-    inventory_reports_service.get_report_data(xVar, yVar, $scope.fromCycle.selected_cycle.pk, $scope.toCycle.selected_cycle.pk)
+    inventory_reports_service.get_report_data(xVar, yVar, $scope.toCycle.selected_cycle.start, $scope.fromCycle.selected_cycle.end)
       .then(function(data) {
+          data = data.data;
           var yAxisType = ( yVar === 'use_description' ? 'Category' : 'Measure');
           var propertyCounts = data.property_counts;
           var colorsArr = mapColors(propertyCounts);
@@ -294,8 +295,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
     var xVar = $scope.xAxisSelectedItem.varName;
     var yVar = $scope.yAxisSelectedItem.varName;
     $scope.aggChartIsLoading = true;
-    inventory_reports_service.get_aggregated_report_data(xVar, yVar, $scope.fromCycle.selected_cycle.pk, $scope.toCycle.selected_cycle.pk)
+    inventory_reports_service.get_aggregated_report_data(xVar, yVar, $scope.toCycle.selected_cycle.start, $scope.fromCycle.selected_cycle.end)
       .then(function(data) {
+          data = data.aggregated_data;
           $scope.aggPropertyCounts = data.property_counts;
           var propertyCounts = data.property_counts;
           var colorsArr = mapColors(propertyCounts);
@@ -354,10 +356,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
     // Initialize pulldowns
     $scope.fromCycle = {
-      selected_cycle: cycles[0]
+      selected_cycle: $scope.cycles.cycles[0]
     };
     $scope.toCycle = {
-      selected_cycle: cycles[0]
+      selected_cycle: $scope.cycles.cycles[$scope.cycles.cycles.length-1]
     };
 
   }
