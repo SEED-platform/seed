@@ -351,17 +351,23 @@ def _map_data(file_pk, *args, **kwargs):
 
 @shared_task
 @lock_and_track
-def _cleanse_data(file_pk):
+def _cleanse_data(file_pk, report_type='property'):
     """
 
     Get the mapped data and run the cleansing class against it in chunks. The
-    mapped data are pulled from the PropertyState table.
+    mapped data are pulled from the PropertyState(or Taxlot) table.
 
     @lock_and_track returns a progress_key
 
     :param file_pk: int, the id of the import_file we're working with.
+    :param report: string, 'property' or 'taxlot', defaults to property
 
     """
+    # TODO Since this function was previously hardcoded to use PropertyState,
+    # but the functions/methods it calls can now handle both, I converted
+    # this function and had it default to PropertyState, I did not change
+    # anything where it gets called.
+
     import_file = ImportFile.objects.get(pk=file_pk)
 
     source_type_dict = {
@@ -376,7 +382,10 @@ def _cleanse_data(file_pk):
     # After the mapping stage occurs, the data end up in the PropertyState
     # table under the *_BS value.
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_BS)
-    qs = PropertyState.objects.filter(
+
+    model = {'property': PropertyState, 'taxlot': TaxLotState}.get(record_type)
+
+    qs = model.objects.filter(
         import_file=import_file,
         source_type=source_type,
     ).only('id').iterator()
@@ -388,8 +397,10 @@ def _cleanse_data(file_pk):
 
     id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
     increment = get_cache_increment_value(id_chunks)
-    tasks = [cleanse_data_chunk.s(ids, file_pk, increment) for ids in
-             id_chunks]
+    tasks = [
+        cleanse_data_chunk.s(report_type, ids, file_pk, increment)
+        for ids in id_chunks
+    ]
 
     if tasks:
         # specify the chord as an immutable with .si
