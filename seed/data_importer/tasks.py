@@ -46,27 +46,36 @@ from seed.lib.mcm.data.ESPM import espm as espm_schema
 from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.utils import batch
 from seed.lib.superperms.orgs.models import Organization
+
 from seed.models import (
-    ASSESSED_RAW,
-    PORTFOLIO_RAW,
-    GREEN_BUTTON_RAW,
     ASSESSED_BS,
-    PORTFOLIO_BS,
-    GREEN_BUTTON_BS,
+    ASSESSED_RAW,
     BS_VALUES_LIST,
+    DATA_STATE_IMPORT,
+    DATA_STATE_MAPPING,
+    GREEN_BUTTON_BS,
+    GREEN_BUTTON_RAW,
+    PORTFOLIO_BS,
+    PORTFOLIO_RAW,
+    POSSIBLE_MATCH,
+    SYSTEM_MATCH,
+)
+
+from seed.models import (
+    BuildingSnapshot,
     Column,
+    PropertyState,
+    TaxLotState
+)
+
+from seed.models import (
     get_column_mappings,
     find_canonical_building_values,
-    SYSTEM_MATCH,
-    POSSIBLE_MATCH,
     initialize_canonical_building,
     save_snapshot_match,
     save_column_names,
-    BuildingSnapshot,
-    PropertyState,
-    DATA_STATE_IMPORT,
-    DATA_STATE_MAPPING,
 )
+
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache
 from seed.utils.mapping import get_mappable_columns
@@ -267,14 +276,12 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
         if property_state.jurisdiction_property_identifier:
             tax_lot_id = property_state.jurisdiction_property_identifier
 
-        property_state = property_state.assign_cycle_and_tax_lot(org,
-                                                                 datetime.datetime(
-                                                                     2015, 1,
-                                                                     1),
-                                                                 datetime.datetime(
-                                                                     2015, 12,
-                                                                     31),
-                                                                 tax_lot_id)
+        property_state = property_state.assign_cycle_and_tax_lot(
+            org,
+            datetime.datetime(2015, 1, 1),                          # FIXME!
+            datetime.datetime(2015, 12, 31),                        # FIXME!
+            tax_lot_id
+        )
 
         # Assign some other arguments here
         property_state.import_file = import_file
@@ -351,7 +358,7 @@ def _map_data(file_pk, *args, **kwargs):
 
 @shared_task
 @lock_and_track
-def _cleanse_data(file_pk, report_type='property'):
+def _cleanse_data(file_pk, record_type='property'):
     """
 
     Get the mapped data and run the cleansing class against it in chunks. The
@@ -365,8 +372,8 @@ def _cleanse_data(file_pk, report_type='property'):
     """
     # TODO Since this function was previously hardcoded to use PropertyState,
     # but the functions/methods it calls can now handle both, I converted
-    # this function and had it default to PropertyState, I did not change
-    # anything where it gets called.
+    # this function and had record_type to  default to PropertyState,
+    # I did not change anything where it gets called.
 
     import_file = ImportFile.objects.get(pk=file_pk)
 
@@ -383,7 +390,9 @@ def _cleanse_data(file_pk, report_type='property'):
     # table under the *_BS value.
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_BS)
 
-    model = {'property': PropertyState, 'taxlot': TaxLotState}.get(record_type)
+    model = {
+        'property': PropertyState, 'taxlot': TaxLotState
+    }.get(record_type)
 
     qs = model.objects.filter(
         import_file=import_file,
@@ -398,7 +407,7 @@ def _cleanse_data(file_pk, report_type='property'):
     id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
     increment = get_cache_increment_value(id_chunks)
     tasks = [
-        cleanse_data_chunk.s(report_type, ids, file_pk, increment)
+        cleanse_data_chunk.s(record_type, ids, file_pk, increment)
         for ids in id_chunks
     ]
 
