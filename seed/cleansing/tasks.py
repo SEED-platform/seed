@@ -35,7 +35,7 @@ def cleanse_data_chunk(record_type, ids, file_pk, increment):
     super_org = import_file.import_record.super_organization
 
     c = Cleansing(super_org.get_parent())
-    c.cleanse(qs, record_type)
+    c.cleanse(record_type, qs)
     c.save_to_cache(file_pk)
 
 

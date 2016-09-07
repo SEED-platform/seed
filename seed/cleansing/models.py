@@ -345,7 +345,7 @@ class Cleansing(object):
     def get_fieldnames(self, record_type):
         """Get fieldnames to apply to results."""
         field_names = ['id']
-        field_names.append(self.required_fields[record_type])
+        field_names.extend(self.required_fields[record_type])
         return field_names
 
     def prune_data(self):
