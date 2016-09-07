@@ -13,7 +13,6 @@ import re
 import string
 import time
 import traceback
-import uuid
 from _csv import Error
 from functools import reduce
 
@@ -63,8 +62,10 @@ from seed.models import (
     save_snapshot_match,
     BuildingSnapshot,
     PropertyState,
+    PropertyView,
     DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
+    DATA_STATE_MATCHING,
 )
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache
@@ -687,8 +688,9 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
 @shared_task
 @lock_and_track
 def match_buildings(file_pk, user_pk):
-    """kicks off system matching, returns progress key #NL -- this seems to
-    return a JSON--not a progress key?"""
+    """
+    kicks off system matching, returns progress key within the JSON response
+    """
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
     if import_file.matching_done:
@@ -720,14 +722,17 @@ def match_buildings(file_pk, user_pk):
 
 def handle_id_matches(unmatched_bs, import_file, user_pk):
     """"Deals with exact matches in the IDs of buildings."""
+
     id_matches = get_canonical_id_matches(
         unmatched_bs.super_organization_id,
-        unmatched_bs.pm_property_id,
+        unmatched_bs.pm_parent_property_id,
         None,  # unmatched_bs.tax_lot_id, # TODO: this is now a relationship
         unmatched_bs.custom_id_1
     )
     if not id_matches.exists():
         return
+
+    print id_matches
 
     # Check to see if there are any duplicates here
     for can_snap in id_matches:
@@ -941,12 +946,15 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
 @shared_task
 @lock_and_track
 def _match_buildings(file_pk, user_pk):
-    """ngram search against all of the canonical_building snapshots for org."""
-    #     assert True
+    """ngram search against all of the propertystates for org."""
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
     org = Organization.objects.filter(users=import_file.import_record.owner)[0]
+
+    # Return a list of all the properties based on the import file
     unmatched_buildings = PropertyState.find_unmatched(import_file)
+    # canonical_buildings =
+    # TODO: need to also return the taxlots and taxlotproperties (yuck)
 
     duplicates = []
 
@@ -956,13 +964,18 @@ def _match_buildings(file_pk, user_pk):
     # if the match is a duplicate of other existing data add it to a list
     # and indicate which existing record it is a duplicate of
     for unmatched in unmatched_buildings:
+        print "trying to match %s" % unmatched.__dict__
         try:
             match = handle_id_matches(unmatched, import_file, user_pk)
+            print "My match was %s" % match
+            if match:
+                print "YESSSSSS"
         except DuplicateDataError as e:
             duplicates.append(unmatched.pk)
             unmatched.duplicate_id = e.id
             unmatched.save()
             continue
+
         if match:
             newly_matched_building_pks.extend([match.pk, unmatched.pk])
 
@@ -1135,31 +1148,45 @@ def remap_data(import_file_pk):
     return result
 
 
-# TODO: delete this method
+# TODO: move or rename
 def get_canonical_snapshots(org_id):
-    """Return all of the BuildingSnapshots that are canonical for an org."""
-    snapshots = BuildingSnapshot.objects.filter(
-        canonicalbuilding__active=True, super_organization_id=org_id
-    )
+    """
+    Return all of the PropertyStates from the PropertyView
+    for a specific cycle.
 
-    return snapshots
+    Args:
+        org_id: Organization ID
+
+    Returns:
+        QuerySet
+
+    """
+
+    pvs = PropertyView.objects.filter(
+        state__super_organization=org_id,
+        state__data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING]
+    ).select_related('state')
+
+    ids = [p.state.id for p in pvs]
+    return PropertyState.objects.filter(pk__in=ids)
 
 
+# TODO: delete this method
 def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
     """Returns canonical snapshots that match at least one id."""
     params = []
     can_snapshots = get_canonical_snapshots(org_id)
     if pm_id:
         params.append(Q(pm_property_id=pm_id))
-        # params.append(Q(tax_lot_id=pm_id))
+        # params.append(Q(tax_lot_state__tax_lot_id=pm_id))
         params.append(Q(custom_id_1=pm_id))
     if tax_id:
         params.append(Q(pm_property_id=tax_id))
-        # params.append(Q(tax_lot_id=tax_id))
+        # params.append(Q(tax_lot_state__tax_lot_id=tax_id))
         params.append(Q(custom_id_1=tax_id))
     if custom_id:
         params.append(Q(pm_property_id=custom_id))
-        # params.append(Q(tax_lot_id=custom_id))
+        # params.append(Q(tax_lot_state__tax_lot_id=custom_id))
         params.append(Q(custom_id_1=custom_id))
 
     if not params:

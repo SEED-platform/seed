@@ -104,20 +104,23 @@ def load_test_data(test_obj, filename):
     return test_obj
 
 
-def import_test_data(test_obj, filename):
-    """Import the new test file for many-to-many testing. This imports and
-    maps the data accordingly.
+def import_example_data(test_obj, filename):
+    """
+    Import example spreadsheets that contain the 4 cases to test the
+    new data model.
 
-        Args:
+    Args:
         test_obj: test object to add data to
-        filename: name of the file to import in the new format
+        filename: name of the file to import
 
-        Returns:
+    Returns:
+        test_obj
 
     """
 
     test_obj.fake_user = User.objects.create(username='test')
     test_obj.fake_org = Organization.objects.create()
+
     # Create an org user
     OrganizationUser.objects.create(
         user=test_obj.fake_user,
@@ -132,6 +135,114 @@ def import_test_data(test_obj, filename):
     test_obj.import_file = ImportFile.objects.create(
         import_record=test_obj.import_record
     )
+    test_obj.import_file.is_espm = True
+    test_obj.import_file.source_type = ASSESSED_RAW
+    test_obj.import_file.data_state = DATA_STATE_IMPORT
+
+    f = path.join(path.dirname(__file__), 'data', filename)
+    test_obj.import_file.file = File(open(f))
+    test_obj.import_file.save()
+
+    save_raw_data(test_obj.import_file.id)
+
+    # setup the mapping
+    properties_mapping = [
+        [u'jurisdiction_taxlot_identifier', u'jurisdiction_taxlot_identifier'],
+        [u'jurisdiction_property_identifier', u'jurisdiction_property_identifier'],
+        [u'building_portfolio_manager_identifier', u'building_portfolio_manager_identifier'],
+        [u'pm_parent_property_id', u'pm_parent_property_id'],
+        [u'address_line_1', u'address_line_1'],
+        [u'city', u'city'],
+        [u'property_name', u'property_name'],
+        [u'property_notes', u'property_notes'],
+        [u'use_description', u'use_description'],
+        [u'gross_floor_area', u'gross_floor_area'],
+        [u'owner', u'owner'],
+        [u'owner_email', u'owner_email'],
+        [u'owner_telephone', u'owner_telephone'],
+        [u'site_eui', u'site_eui'],
+        [u'energy_score', u'energy_score'],
+        [u'year_ending', u'year_ending'],
+    ]
+
+    Column.create_mappings(properties_mapping, test_obj.fake_org, test_obj.fake_user)
+
+    # call the mapping function from the tasks file
+    map_data(test_obj.import_file.id)
+
+    # print len(PropertyState.objects.all())
+
+    # This is the last row of the portfolio manager file
+    test_obj.fake_extra_data = {
+        u'City': u'EnergyTown',
+        u'ENERGY STAR Score': u'',
+        u'State/Province': u'Illinois',
+        u'Site EUI (kBtu/ft2)': u'',
+        u'Year Ending': u'',
+        u'Weather Normalized Source EUI (kBtu/ft2)': u'',
+        u'Parking - Gross Floor Area (ft2)': u'',
+        u'Address 1': u'000015581 SW Sycamore Court',
+        u'Property Id': u'101125',
+        u'Address 2': u'Not Available',
+        u'Source EUI (kBtu/ft2)': u'',
+        u'Release Date': u'',
+        u'National Median Source EUI (kBtu/ft2)': u'',
+        u'Weather Normalized Site EUI (kBtu/ft2)': u'',
+        u'National Median Site EUI (kBtu/ft2)': u'',
+        u'Year Built': u'',
+        u'Postal Code': u'10108-9812',
+        u'Organization': u'Occidental Management',
+        u'Property Name': u'Not Available',
+        u'Property Floor Area (Buildings and Parking) (ft2)': u'',
+        u'Total GHG Emissions (MtCO2e)': u'',
+        u'Generation Date': u'',
+    }
+    test_obj.fake_row = {
+        u'Name': u'The Whitehouse',
+        u'Address Line 1': u'1600 Pennsylvania Ave.',
+        u'Year Built': u'1803',
+        u'Double Tester': 'Just a note from bob'
+    }
+
+    test_obj.import_record.super_organization = test_obj.fake_org
+    test_obj.import_record.save()
+
+    test_obj.fake_mappings = {
+        'property_name': u'Name',
+        'address_line_1': u'Address Line 1',
+        'year_built': u'Year Built'
+    }
+
+    return test_obj
+
+
+def import_exported_test_data(test_obj, filename):
+    """
+    Import test files from Stephen for many-to-many testing. This imports and
+    maps the data accordingly. Presently these files are missing a couple
+    attributes to make them valid: 1) need the master campus record to define
+    the pm_property_id, 2) the joins between propertystate and taxlotstate
+    seem to be missing
+
+        Args:
+            test_obj: test object to add data to
+            filename: name of the file to import in the new format
+
+        Returns:
+            test_obj
+    """
+
+    test_obj.fake_user = User.objects.create(username='test')
+    test_obj.fake_org = Organization.objects.create()
+    # Create an org user
+    OrganizationUser.objects.create(user=test_obj.fake_user, organization=test_obj.fake_org)
+
+    test_obj.import_record = ImportRecord.objects.create(
+        owner=test_obj.fake_user,
+        last_modified_by=test_obj.fake_user,
+        super_organization=test_obj.fake_org
+    )
+    test_obj.import_file = ImportFile.objects.create(import_record=test_obj.import_record)
     test_obj.import_file.is_espm = True
     test_obj.import_file.source_type = ASSESSED_RAW
     test_obj.import_file.data_state = DATA_STATE_IMPORT

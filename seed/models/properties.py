@@ -22,6 +22,9 @@ logger = logging.getLogger(__name__)
 
 # State of the data that was imported. This will be used to flag which
 # rows are orphaned and can be deleted.
+
+# TODO: There are a bunch of these states already defined in the data_importer/
+# models.py file. Should probably revert this and use those.
 DATA_STATE_UNKNOWN = 0
 DATA_STATE_IMPORT = 1
 DATA_STATE_MAPPING = 2
@@ -76,10 +79,16 @@ class PropertyState(models.Model):
                                                         null=True, blank=True)
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
-    # TODO: Check if pm_parent and pm_property are the same (Nathan?)
-    pm_parent_property_id = models.CharField(max_length=255, null=True,
-                                             blank=True)
+
+    # If the property is a campus then the pm_parent_property_id is the same
+    # for all the properties. The master campus record (campus=True) the
+    # pm_property_id will be set the same as pm_parent_property_id
+    pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True)
     pm_property_id = models.CharField(max_length=255, null=True, blank=True)
+    building_portfolio_manager_identifier = models.CharField(max_length=255, null=True, blank=True)
+    building_home_energy_score_identifier = models.CharField(max_length=255, null=True, blank=True)
+
+    # Tax Lot Number of the property
     lot_number = models.CharField(max_length=255, null=True, blank=True)
     property_name = models.CharField(max_length=255, null=True, blank=True)
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
@@ -108,12 +117,7 @@ class PropertyState(models.Model):
     owner_address = models.CharField(max_length=255, null=True, blank=True)
     owner_city_state = models.CharField(max_length=255, null=True, blank=True)
     owner_postal_code = models.CharField(max_length=255, null=True, blank=True)
-    building_portfolio_manager_identifier = models.CharField(max_length=255,
-                                                             null=True,
-                                                             blank=True)
-    building_home_energy_score_identifier = models.CharField(max_length=255,
-                                                             null=True,
-                                                             blank=True)
+
     energy_score = models.IntegerField(null=True, blank=True)
     site_eui = models.FloatField(null=True, blank=True)
     generation_date = models.DateTimeField(null=True, blank=True)
@@ -144,8 +148,6 @@ class PropertyState(models.Model):
         # First check if the cycle and the PropertyState already have a view
         pvs = PropertyView.objects.filter(cycle=cycle, state=self)
 
-        logger.debug("Found %s PropertyViews" % len(pvs))
-
         if len(pvs) == 0:
             logger.debug("Found 0 PropertyViews, adding property, promoting")
             # There are no PropertyViews for this property state and cycle.
@@ -157,16 +159,14 @@ class PropertyState(models.Model):
                 organization=self.super_organization
             )
 
-            pv = PropertyView.objects.create(
-                property=prop,
-                cycle=cycle,
-                state=self
-            )
+            pv = PropertyView.objects.create(property=prop, cycle=cycle,
+                                             state=self)
 
             return pv
         elif len(pvs) == 1:
             logger.debug("Found 1 PropertyView... Nothing to do")
             # PropertyView already exists for cycle and state. Nothing to do.
+
             return pvs[0]
         else:
             logger.debug("Found %s PropertyView" % len(pvs))
@@ -294,6 +294,7 @@ class PropertyState(models.Model):
 
         return d
 
+    # TODO: oops, this should be in the ImportFile world, not the property
     @staticmethod
     def find_unmatched(import_file):
         """Get unmatched building snapshots' id info from an import file.
@@ -305,7 +306,6 @@ class PropertyState(models.Model):
 
         """
 
-        # TODO: rewrite this to find the properties that don't have their building in the propertyview
         return PropertyState.objects.filter(
             ~models.Q(source_type__in=[
                 COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW

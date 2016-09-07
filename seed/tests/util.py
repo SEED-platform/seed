@@ -13,8 +13,6 @@ import json
 
 from seed.models import (
     PropertyState,
-    Property,
-    PropertyView,
     Column,
     ColumnMapping,
     set_initial_sources,

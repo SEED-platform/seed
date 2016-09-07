@@ -27,6 +27,7 @@ from seed.models import (
     PropertyView,
     Column,
     get_ancestors,
+    DATA_STATE_MAPPING
 )
 from seed.tests import util
 
@@ -147,55 +148,9 @@ class TestMapping(TestCase):
         )
 
 
-# @skip("Fix for new data model")
-class TestMatching(TestCase):
-    """Tests for dealing with SEED related tasks for matching data."""
-
+class TestPromotingProperties(TestCase):
     def setUp(self):
-        test_util.import_test_data(self, 'propertystates-one-cycle.csv')
-
-    def test_is_same_snapshot(self):
-        """Test to check if two snapshots are duplicates"""
-
-        # TODO: Fix the PM, tax lot id, and custom ID fields in PropertyState
-        bs_data = {
-            # 'pm_property_id': 1243,
-            # 'tax_lot_id': '435/422',
-            'property_name': 'Greenfield Complex',
-            # 'custom_id_1': 12,
-            'address_line_1': '555 Database LN.',
-            'address_line_2': '',
-            'city': 'Gotham City',
-            'postal_code': 8999,
-        }
-
-        s1 = util.make_fake_property(
-            self.import_file, bs_data, ASSESSED_BS, is_canon=True,
-            org=self.fake_org
-        )
-
-        self.assertTrue(tasks.is_same_snapshot(s1, s1),
-                        "Matching a snapshot to itself should return True")
-
-        # Making a different snapshot, now Garfield complex rather than Greenfield complex
-        bs_data_2 = {
-            # 'pm_property_id': 1243,
-            # 'tax_lot_id': '435/422',
-            'property_name': 'Garfield Complex',
-            # 'custom_id_1': 12,
-            'address_line_1': '555 Database LN.',
-            'address_line_2': '',
-            'city': 'Gotham City',
-            'postal_code': 8999,
-        }
-
-        s2 = util.make_fake_property(
-            self.import_file, bs_data_2, ASSESSED_BS, is_canon=True,
-            org=self.fake_org
-        )
-
-        self.assertFalse(tasks.is_same_snapshot(s1, s2),
-                         "Matching a snapshot to a different snapshot should return False")
+        test_util.import_exported_test_data(self, 'propertystates-one-cycle.csv')
 
     def test_promote_properties(self):
         """Good case for testing our matching system."""
@@ -215,9 +170,7 @@ class TestMatching(TestCase):
         )
 
         # make sure that the new data was loaded correctly
-        ps = \
-            PropertyState.objects.filter(address_line_1='1181 Douglas Street')[
-                0]
+        ps = PropertyState.objects.filter(address_line_1='1181 Douglas Street')[0]
         self.assertEqual(ps.site_eui, 439.9)
         self.assertEqual(ps.extra_data['CoStar Property ID'], '1575599')
 
@@ -233,94 +186,103 @@ class TestMatching(TestCase):
         props = PropertyView.objects.all()
         self.assertEqual(len(props), 2)
 
-    def test_match_buildings(self):
-        """Good case for testing our matching system."""
 
-        cycle, _ = Cycle.objects.get_or_create(
-            name=u'Hack Cycle 2015',
-            organization=self.fake_org,
-            start=datetime.datetime(2015, 1, 1),
-            end=datetime.datetime(2015, 12, 31),
-        )
+# @skip("Fix for new data model")
+class TestMatching(TestCase):
+    """Tests for dealing with SEED related tasks for matching data."""
 
-        # make sure that the new data was loaded correctly
-        ps = PropertyState.objects.filter(
-            address_line_1='1181 Douglas Street'
-        )[0]
-        print ps.__dict__
+    def setUp(self):
+        test_util.import_example_data(self, 'example-data-properties.xlsx')
 
-        # Promote the PropertyState to a PropertyView
-        pv1 = ps.promote(cycle)
+    def test_is_same_snapshot(self):
+        """Test to check if two snapshots are duplicates"""
 
-        props = PropertyView.objects.all()
-        self.assertEqual(len(props), 1)
-
-        pv2 = PropertyView.objects.filter(state=ps)[0]
-        print pv2.__dict__
-
-        self.assertEqual(pv1, pv2)
-
-        properties = PropertyState.find_unmatched(self.import_file)
-        print "The length of properties is %s" % len(properties)
-        for p in properties:
-            print p.__dict__
-
+        # TODO: Fix the PM, tax lot id, and custom ID fields in PropertyState
         bs_data = {
-            'pm_property_id': 1243,
+            # 'pm_property_id': 1243,
             # 'tax_lot_id': '435/422',
             'property_name': 'Greenfield Complex',
-            'custom_id_1': 12,
+            # 'custom_id_1': 12,
             'address_line_1': '555 Database LN.',
             'address_line_2': '',
             'city': 'Gotham City',
             'postal_code': 8999,
         }
 
-        # Since the change to not match duplicates there needs to be a second record that isn't exactly the same
-        # to run this test.  In this case address_line_2 now has a value of 'A' rather than ''
+        s1 = util.make_fake_property(self.import_file, bs_data, ASSESSED_BS, is_canon=True,
+                                     org=self.fake_org)
+
+        self.assertTrue(tasks.is_same_snapshot(s1, s1),
+                        "Matching a snapshot to itself should return True")
+
+        # Making a different snapshot, now Garfield complex rather than Greenfield complex
         bs_data_2 = {
-            'pm_property_id': 1243,
+            # 'pm_property_id': 1243,
             # 'tax_lot_id': '435/422',
-            'property_name': 'Greenfield Complex',
-            'custom_id_1': 12,
+            'property_name': 'Garfield Complex',
+            # 'custom_id_1': 12,
             'address_line_1': '555 Database LN.',
-            'address_line_2': 'A',
+            'address_line_2': '',
             'city': 'Gotham City',
             'postal_code': 8999,
         }
 
-        # Setup mapped AS snapshot.
-        util.make_fake_property(self.import_file, bs_data, ASSESSED_BS,
-                                is_canon=True, org=self.fake_org)
+        s2 = util.make_fake_property(self.import_file, bs_data_2, ASSESSED_BS, is_canon=True,
+                                     org=self.fake_org)
 
-        # Different file, but same ImportRecord.
-        # Setup mapped PM snapshot.
-        # Should be an identical match.
-        new_import_file = ImportFile.objects.create(
-            import_record=self.import_record,
-            mapping_done=True
+        self.assertFalse(tasks.is_same_snapshot(s1, s2),
+                         "Matching a snapshot to a different snapshot should return False")
+
+    def test_match_buildings(self):
+        """Good case for testing our matching system."""
+
+        cycle, _ = Cycle.objects.get_or_create(
+            name=u'Test Hack Cycle 2015',
+            organization=self.fake_org,
+            start=datetime.datetime(2015, 1, 1),
+            end=datetime.datetime(2015, 12, 31),
         )
 
-        util.make_fake_property(new_import_file, bs_data_2, PORTFOLIO_BS,
-                                is_canon=False, org=self.fake_org)
+        ps = PropertyState.objects.filter(data_state=DATA_STATE_MAPPING,
+                                          super_organization=self.fake_org)
 
+        for p in ps:
+            from seed.utils.generic import pp
+            pp(p)
+            #
+            # # Promote 5 of these to views to test the remaining code
+            # promote_mes = PropertyState.objects.filter(
+            #     data_state=DATA_STATE_MAPPING,
+            #     super_organization=self.fake_org)[:5]
+            # for promote_me in promote_mes:
+            #     promote_me.promote(cycle)
+            #
+            # ps = tasks.get_canonical_snapshots(self.fake_org)
+            # from django.db.models.query import QuerySet
+            # self.assertTrue(isinstance(ps, QuerySet))
+            # logger.debug("There are %s properties" % len(ps))
+            # for p in ps:
+            #     print p
+            #
+            # self.assertEqual(len(ps), 5)
+            # self.assertEqual(ps[0].address_line_1, '1211 Bryant Street')
+            # self.assertEqual(ps[4].address_line_1, '1031 Ellis Lane')
 
+            # tasks.match_buildings(self.import_file.pk, self.fake_user.pk)
 
-        # tasks.match_buildings(new_import_file.pk, self.fake_user.pk)
-        #
-        # self.assertEqual(result.property_name, snapshot.property_name)
-        # self.assertEqual(result.property_name, new_snapshot.property_name)
-        # # Since these two buildings share a common ID, we match that way.
-        # # self.assertEqual(result.confidence, 0.9)
-        # self.assertEqual(
-        #     sorted([r.pk for r in result.parents.all()]),
-        #     sorted([new_snapshot.pk, snapshot.pk])
-        # )
-        # self.assertGreater(AuditLog.objects.count(), 0)
-        # self.assertEqual(
-        #     AuditLog.objects.first().action_note,
-        #     'System matched building ID.'
-        # )
+            # self.assertEqual(result.property_name, snapshot.property_name)
+            # self.assertEqual(result.property_name, new_snapshot.property_name)
+            # # Since these two buildings share a common ID, we match that way.
+            # # self.assertEqual(result.confidence, 0.9)
+            # self.assertEqual(
+            #     sorted([r.pk for r in result.parents.all()]),
+            #     sorted([new_snapshot.pk, snapshot.pk])
+            # )
+            # self.assertGreater(AuditLog.objects.count(), 0)
+            # self.assertEqual(
+            #     AuditLog.objects.first().action_note,
+            #     'System matched building ID.'
+            # )
 
     @skip("Fix for new data model")
     def test_match_duplicate_buildings(self):
