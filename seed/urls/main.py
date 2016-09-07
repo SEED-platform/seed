@@ -36,7 +36,7 @@ from seed.views.main import (
     delete_buildings, delete_organization
 )
 from seed.views.organizations import OrganizationViewSet
-from seed.views.properties import (get_properties, get_cycles)
+from seed.views.properties import get_properties
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
