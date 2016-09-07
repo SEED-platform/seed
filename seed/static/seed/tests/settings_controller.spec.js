@@ -1,7 +1,7 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
-describe('controller: settings_controller', function(){
+describe('controller: organization_settings_controller', function(){
     // globals set up and used in each test scenario
     var mockService, scope, controller;
     var ctrl, ctrl_scope, modalInstance;
@@ -30,7 +30,7 @@ describe('controller: settings_controller', function(){
 
     // this is outside the beforeEach so it can be configured by each unit test
     function create_settings_controller(){
-        ctrl = ctrl('settings_controller', {
+        ctrl = ctrl('organization_settings_controller', {
             $scope: ctrl_scope,
             all_columns: {fields: [
                 {checked: false, title: 'PM Property ID', sort_column: 'pm_property_id'},

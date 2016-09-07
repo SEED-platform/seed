@@ -21,6 +21,7 @@ from seed.models import (
     PORTFOLIO_BS,
     POSSIBLE_MATCH,
     SYSTEM_MATCH,
+    DATA_STATE_IMPORT,
     FLOAT,
     PropertyState,
     Column,
@@ -134,7 +135,8 @@ class TestMapping(TestCase):
         fake_raw_bs = PropertyState.objects.create(
             import_file=fake_import_file,
             extra_data=self.fake_row,
-            source_type=ASSESSED_RAW
+            source_type=ASSESSED_RAW,
+            data_state=DATA_STATE_IMPORT,
         )
 
         util.make_fake_mappings(self.fake_mappings, self.fake_org)
@@ -178,10 +180,11 @@ class TestMapping(TestCase):
             raw_save_done=True
         )
         self.fake_row['City'] = 'Someplace Nice'
-        ps = PropertyState.objects.create(
+        PropertyState.objects.create(
             import_file=fake_import_file,
             source_type=ASSESSED_RAW,
-            extra_data=self.fake_row
+            extra_data=self.fake_row,
+            data_state=DATA_STATE_IMPORT,
         )
 
         self.fake_mappings['address_line_1'] = ['Address Line 1', 'City']
@@ -199,7 +202,7 @@ class TestMapping(TestCase):
         )
 
 
-@skip("Matching is still broken")
+@skip("Fix for new data model")
 class TestMatching(TestMapping):
     """Tests for dealing with SEED related tasks for matching data."""
 
@@ -554,6 +557,7 @@ class TestMatching(TestMapping):
             1
         )
 
+    # Will be obsolete
     def test_get_ancestors(self):
         """Tests get_ancestors(building), returns all non-composite, non-raw
             PropertyState instances.

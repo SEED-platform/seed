@@ -2,18 +2,20 @@
  * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-angular.module('BE.seed.service.buildings_reports',
-    []).factory('buildings_reports_service', ['$http',
+angular.module('BE.seed.service.inventory_reports',
+    []).factory('inventory_reports_service', ['$http',
                                                 '$q',
+                                                '$log',
                                                 '$timeout',
                                                 'user_service',
                                     function ( $http,
                                                 $q,
+                                                $log,
                                                 $timeout,
                                                 user_service) {
 
 
-    /**     Get building data given the provided parameters.
+    /**     Get inventory data given the provided parameters.
             Data will be passed back to caller as well as stored as a property of this service
             for other views that might want to bind to it.
 
@@ -29,7 +31,7 @@ angular.module('BE.seed.service.buildings_reports',
                     },
                     ...
                 ],
-                "building_counts": [
+                "property_counts": [
                     {
                         "yr_e": string for year ending
                         "num_buildings": number of buildings in query results
@@ -39,18 +41,37 @@ angular.module('BE.seed.service.buildings_reports',
                 ]
             }
     */
-    function get_report_data(xVar, yVar, startDate, endDate) {
+    function get_report_data(xVar, yVar, startCycleID, endCycleID) {
+
+        // Error checks (should be able to collapse this...)
+        if (angular.isUndefined(xVar)){
+          $log.error("#inventory_reports_service.get_report_data(): null 'xVar' parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(yVar)){
+          $log.error("#inventory_reports_service.get_report_data(): null 'yVar' parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(startCycleID)){
+          $log.error("#inventory_reports_service.get_report_data(): null 'startCycleID' parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(endCycleID)){
+          $log.error("#inventory_reports_service.get_report_data(): null 'endCycleID' parameter");
+          throw new Error("Invalid Parameter");
+        }
+
         var defer = $q.defer();
         var args = {
                         organization_id: user_service.get_organization().id,
                         x_var: xVar,
                         y_var: yVar,
-                        start_date: getDateString(startDate),
-                        end_date: getDateString(endDate)
+                        start_cycle_id: startCycleID,
+                        end_cycle_id: endCycleID
                     };
         $http({
                 method: 'GET',
-                url: window.BE.urls.get_building_report_data,
+                url: window.BE.urls.get_inventory_report_data,
                 params: args
         }).success(function(data, status, headers, config) {
             building_reports_factory.report_data = (data !== undefined && data.report_data !== undefined) ? data.report_data : [];
@@ -63,7 +84,7 @@ angular.module('BE.seed.service.buildings_reports',
     }
 
 
-    /**     Get aggregated building data given the provided parameters.
+    /**     Get aggregated property data given the provided parameters.
             Data will be passed back to caller as well as stored as a property of this service
             for other views that might want to bind to it.
 
@@ -78,7 +99,7 @@ angular.module('BE.seed.service.buildings_reports',
                     },
                     ...
                 ],
-                "building_counts": [
+                "property_counts": [
                     {
                         "yr_e": string for year ending - group by
                         "num_buildings": number of buildings in query results
@@ -88,18 +109,38 @@ angular.module('BE.seed.service.buildings_reports',
                 ]
             }
     */
-    function get_aggregated_report_data(xVar, yVar, startDate, endDate) {
+    function get_aggregated_report_data(xVar, yVar, startCycleID, endCycleID) {
+
+       // Error checks (should be able to collapse this...)
+        if (angular.isUndefined(xVar)){
+          $log.error("#inventory_reports_service.get_aggregated_report_data(): null 'xVar' parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(yVar)){
+          $log.error("#inventory_reports_service.get_aggregated_report_data(): null 'yVar' parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(startCycleID)){
+          $log.error("#inventory_reports_service.get_aggregated_report_data(): null 'startCycleID' parameter");
+          throw new Error("Invalid Parameter");
+        }
+        if (angular.isUndefined(endCycleID)){
+          $log.error("#inventory_reports_service.get_aggregated_report_data(): null 'endCycleID' parameter");
+          throw new Error("Invalid Parameter");
+        }
+
+
         var defer = $q.defer();
         var args = {
                         organization_id: user_service.get_organization().id,
                         x_var: xVar,
                         y_var: yVar,
-                        start_date: getDateString(startDate),
-                        end_date: getDateString(endDate)
+                        start_cycle_id: startCycleID,
+                        end_cycle_id: endCycleID
                     };
         $http({
                 method: 'GET',
-                url: window.BE.urls.get_aggregated_building_report_data,
+                url: window.BE.urls.get_aggregated_property_report_data,
                 params: args
         }).success(function(data, status, headers, config) {
             building_reports_factory.aggregated_reports_data = (data !== undefined && data.report_data !== undefined) ? data.report_data : [];
@@ -111,7 +152,7 @@ angular.module('BE.seed.service.buildings_reports',
         return defer.promise;
     }
 
-    /*  This method is not current used in the first verion of the building reports page.
+    /*  This method is not current used in the first version of the building reports page.
         Uncomment this method when the back end endpoint ahas been implemented.*/
     /*
     function get_summary_data(xVar, yVar, startDate, endDate) {
@@ -125,7 +166,7 @@ angular.module('BE.seed.service.buildings_reports',
 
         $http({
                 method: 'GET',
-                'url': window.BE.urls.get_building_summary_report_data,
+                'url': window.BE.urls.get_inventory_summary_report_data,
                 'params': args
         }).success(function(data, status, headers, config) {
             building_reports_factory.summary_data = (data != undefined && data.summary_data != undefined) ? data.summary_data : [];
@@ -137,14 +178,6 @@ angular.module('BE.seed.service.buildings_reports',
         return defer.promise;
     };
     */
-
-    /* Take a date object and return a string in the format YYYY-MM-DD */
-    function getDateString(dateObj){
-       var yyyy = dateObj.getFullYear().toString();
-       var mm = (dateObj.getMonth()+1).toString(); // getMonth() is zero-based
-       var dd = dateObj.getDate().toString();
-       return yyyy + '-' + (mm[1]?mm:'0'+mm[0]) + '-' + (dd[1]?dd:'0'+dd[0]); // padding
-    }
 
     /* Public API */
 

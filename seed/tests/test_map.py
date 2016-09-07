@@ -12,7 +12,7 @@ import json
 from StringIO import StringIO
 
 from django.test import TestCase
-from seed.common import mapper
+from seed.lib.mappings import mapper
 
 
 class TestMapping(TestCase):

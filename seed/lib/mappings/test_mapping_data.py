@@ -32,7 +32,7 @@ class TestMappingData(TestCase):
             "js_type": "",
             "name": "address_line_1",
             "schema": "BEDES",
-            "table": "PropertyState",
+            "table": "property",
             "type": "CharField",
             "extra_data": False,
         }
@@ -42,7 +42,7 @@ class TestMappingData(TestCase):
             "js_type": "",
             "name": "state",
             "schema": "BEDES",
-            "table": "TaxLotState",
+            "table": "taxlot",
             "type": "CharField",
             "extra_data": False,
         }
@@ -82,7 +82,7 @@ class TestMappingData(TestCase):
             "js_type": "",
             "name": "city",
             "schema": "BEDES",
-            "table": "TaxLotState",
+            "table": "taxlot",
             "type": "CharField",
             "extra_data": False,
         }
@@ -96,7 +96,7 @@ class TestMappingData(TestCase):
             "js_type": "",
             "name": "city",
             "schema": "BEDES",
-            "table": "PropertyState",
+            "table": "property",
             "type": "CharField",
             "extra_data": False,
         }
@@ -123,7 +123,7 @@ class TestMappingData(TestCase):
             "js_type": "string",
             "name": "a_column",
             "schema": "BEDES",
-            "table": "PropertyState",
+            "table": "property",
             "type": "string"
         }
         expected_data_z = {
@@ -131,7 +131,7 @@ class TestMappingData(TestCase):
             "js_type": "float",
             "name": "z_column",
             "schema": "BEDES",
-            "table": "PropertyState",
+            "table": "property",
             "type": "float"
         }
 
@@ -139,16 +139,25 @@ class TestMappingData(TestCase):
 
         # _log.debug(json.dumps(self.obj.data, indent=4, sort_keys=True))
 
-        c = self.obj.find_column('PropertyState', 'z_column')
+        c = self.obj.find_column('property', 'z_column')
         self.assertDictEqual(c, expected_data_z)
 
         expected = [
-            {'name': u'a_column', 'js_type': 'string',
-             'table': 'PropertyState', 'extra_data': True, 'type': 'string',
-             'schema': 'BEDES'},
-            {'name': u'z_column', 'js_type': u'float',
-             'table': 'PropertyState', 'extra_data': True, 'type': u'float',
-             'schema': 'BEDES'}
+            {
+                'name': u'a_column',
+                'js_type': 'string',
+                'table': 'property',
+                'extra_data': True,
+                'type': 'string',
+                'schema': 'BEDES'
+            }, {
+                'name': u'z_column',
+                'js_type': u'float',
+                'table': 'property',
+                'extra_data': True,
+                'type': u'float',
+                'schema': 'BEDES'
+            }
         ]
         c = self.obj.extra_data()
         self.assertListEqual(expected, c)

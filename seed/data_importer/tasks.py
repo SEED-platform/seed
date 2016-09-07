@@ -32,7 +32,11 @@ from seed.cleansing.tasks import (
     cleanse_data_chunk,
 )
 from seed.data_importer.models import (
-    ImportFile, ImportRecord, STATUS_READY_TO_MERGE, ROW_DELIMITER
+    ImportFile,
+    ImportRecord,
+    STATUS_READY_TO_MERGE,
+    ROW_DELIMITER,
+    DuplicateDataError,
 )
 from seed.decorators import get_prog_key
 from seed.decorators import lock_and_track
@@ -56,17 +60,12 @@ from seed.models import (
     SYSTEM_MATCH,
     POSSIBLE_MATCH,
     initialize_canonical_building,
-    set_initial_sources,
     save_snapshot_match,
     save_column_names,
     BuildingSnapshot,
     PropertyState,
-    Property,
-    PropertyView,
-    TaxLot,
-    TaxLotState,
-    TaxLotView,
-    Cycle,
+    DATA_STATE_IMPORT,
+    DATA_STATE_MAPPING,
 )
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache
@@ -269,13 +268,18 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
             tax_lot_id = property_state.jurisdiction_property_identifier
 
         property_state = property_state.assign_cycle_and_tax_lot(org,
-                                                                 datetime.datetime(2015, 1, 1),
-                                                                 datetime.datetime(2015, 12, 31),
+                                                                 datetime.datetime(
+                                                                     2015, 1,
+                                                                     1),
+                                                                 datetime.datetime(
+                                                                     2015, 12,
+                                                                     31),
                                                                  tax_lot_id)
 
         # Assign some other arguments here
         property_state.import_file = import_file
         property_state.source_type = save_type
+        property_state.data_state = DATA_STATE_MAPPING
         property_state.clean()
         property_state.super_organization = import_file.import_record.super_organization
         property_state.save()
@@ -330,18 +334,19 @@ def _map_data(file_pk, *args, **kwargs):
     qs = PropertyState.objects.filter(
         import_file=import_file,
         source_type=source_type,
+        data_state=DATA_STATE_IMPORT,
     ).only('id').iterator()
 
     id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
     increment = get_cache_increment_value(id_chunks)
-    tasks = [map_row_chunk.s(ids, file_pk, source_type, prog_key, increment)
-             for ids in id_chunks]
+    tasks = [map_row_chunk.s(ids, file_pk, source_type, prog_key, increment) for ids in id_chunks]
 
     if tasks:
         # specify the chord as an immutable with .si
         chord(tasks, interval=15)(finish_mapping.si(file_pk))
     else:
-        finish_mapping.subtask(file_pk)
+        logger.debug("Not creating finish_mapping chord, calling directly")
+        finish_mapping.si(file_pk)
 
 
 @shared_task
@@ -418,6 +423,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
         raw_property.import_file = import_file  # not defined in new data model
         raw_property.extra_data = c
         raw_property.source_type = source_type  # not defined in new data model
+        raw_property.data_state = DATA_STATE_IMPORT
 
         # We require a save to get our PK
         # We save here to set our initial source PKs.
@@ -632,6 +638,7 @@ def save_raw_data(file_pk, *args, **kwargs):
     return result
 
 
+# TODO: Not used -- remove
 def _stringify(values):
     """Take iterable of str and NoneTypes and reduce to space sep. str."""
     return ' '.join(
@@ -907,19 +914,22 @@ def _normalize_address_str(address_val):
             normalized_address = _normalize_address_number(
                 addr['AddressNumber'])
 
-        if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
+        if 'StreetNamePreDirectional' in addr and addr[
+                'StreetNamePreDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
                 addr['StreetNamePreDirectional'])  # NOQA
 
         if 'StreetName' in addr and addr['StreetName'] is not None:
             normalized_address = normalized_address + ' ' + addr['StreetName']
 
-        if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
+        if 'StreetNamePostType' in addr and addr[
+                'StreetNamePostType'] is not None:
             # remove any periods from abbreviations
             normalized_address = normalized_address + ' ' + _normalize_address_post_type(
                 addr['StreetNamePostType'])  # NOQA
 
-        if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
+        if 'StreetNamePostDirectional' in addr and addr[
+                'StreetNamePostDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
                 addr['StreetNamePostDirectional'])  # NOQA
 
@@ -1097,7 +1107,8 @@ def _remap_data(import_file_pk):
     # Delete buildings already mapped for this file.
     PropertyState.objects.filter(
         import_file=import_file,
-        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS)  # TODO: make these not hard coded integers
+        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS)
+        # TODO: make these not hard coded integers
     ).delete()
 
     import_file.mapping_done = False
@@ -1203,11 +1214,3 @@ def is_same_snapshot(s1, s2):
             return False
 
     return True
-
-
-# TODO: Move this to the models
-class DuplicateDataError(RuntimeError):
-
-    def __init__(self, id):
-        super(DuplicateDataError, self).__init__()
-        self.id = id

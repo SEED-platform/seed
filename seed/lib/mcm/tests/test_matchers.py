@@ -77,8 +77,12 @@ class TestMatchers(TestCase):
     def test_case_insensitivity(self):
         """Make sure we disregard case when doing comparisons."""
         fake_comp = 'TeST'
-        fake_categories = ['test', 'thing', 'face']
-        match, percent = matchers.best_match(
+        fake_categories = [
+            ('_', 'test'),
+            ('_', 'thing'),
+            ('_', 'face'),
+        ]
+        table, match, percent = matchers.best_match(
             fake_comp, fake_categories, top_n=1
         )[0]
 
@@ -92,6 +96,6 @@ class TestMatchers(TestCase):
         self.assertEqual(len(matches), 6)
         first_match = matches[0]
         second_match = matches[1]
-        self.assertEqual(first_match[0], 'illinois')
-        self.assertGreater(first_match[1], 90)
-        self.assertLess(second_match[1], 90)
+        self.assertEqual(first_match[1], 'illinois')
+        self.assertGreater(first_match[2], 90)
+        self.assertLess(second_match[2], 90)
