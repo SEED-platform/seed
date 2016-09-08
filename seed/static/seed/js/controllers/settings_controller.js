@@ -3,7 +3,7 @@
  * :author
  */
 angular.module('BE.seed.controller.organization_settings', [])
-.controller('settings_controller', [
+.controller('organization_settings_controller', [
     '$scope',
     '$log',
     'all_columns',
@@ -13,7 +13,6 @@ angular.module('BE.seed.controller.organization_settings', [])
     'auth_payload',
     'organization_service',
     '$filter',
-    'user_service',
     function (
       $scope,
       $log,
@@ -23,8 +22,7 @@ angular.module('BE.seed.controller.organization_settings', [])
       shared_fields_payload,
       auth_payload,
       organization_service,
-      $filter,
-      user_service
+      $filter
     ) {
     $scope.fields = all_columns.fields;
     $scope.org = organization_payload.organization;

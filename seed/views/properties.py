@@ -62,7 +62,10 @@ def get_properties(request):
     if cycle_id:
         cycle = Cycle.objects.get(organization_id=request.GET['organization_id'], pk=cycle_id)
     else:
-        cycle = Cycle.objects.filter(organization_id=request.GET['organization_id']).latest()
+        cycle = Cycle.objects.filter(organization_id=request.GET['organization_id'])
+        print cycle.__class__
+        cycle = cycle.latest() if cycle else None
+        # TODO: Need to catch if the cycle does not exist and return nice error
 
     property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
         .filter(property__organization_id=request.GET['organization_id'], cycle=cycle)
@@ -186,7 +189,9 @@ def get_taxlots(request):
     if cycle_id:
         cycle = Cycle.objects.get(organization_id=request.GET['organization_id'], pk=cycle_id)
     else:
-        cycle = Cycle.objects.filter(organization_id=request.GET['organization_id']).latest()
+        cycle = Cycle.objects.filter(organization_id=request.GET['organization_id'])
+        cycle = cycle.latest() if cycle else None
+        # TODO: Need to catch if the cycle does not exist and return nice error
 
     taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
         .filter(taxlot__organization_id=request.GET['organization_id'], cycle=cycle)
@@ -315,6 +320,9 @@ def get_taxlots(request):
 @login_required
 @has_perm('requires_viewer')
 def get_property_columns(request):
+    """TODO: These property columns should be merged with
+    constants.py:ASSESSOR_FIELDS"""
+
     columns = [
         {
             'name': 'building_portfolio_manager_identifier',

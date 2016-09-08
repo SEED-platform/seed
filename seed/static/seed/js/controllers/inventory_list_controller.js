@@ -2,15 +2,16 @@
  * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-angular.module('BE.seed.controller.properties', [])
-  .controller('properties_controller', [
+angular.module('BE.seed.controller.inventory_list', [])
+  .controller('inventory_list_controller', [
     '$scope',
     '$window',
     '$log',
     '$uibModal',
+    '$stateParams',
     'inventory_service',
     'label_service',
-    'properties',
+    'inventory',
     'cycles',
     'columns',
     'urls',
@@ -18,21 +19,28 @@ angular.module('BE.seed.controller.properties', [])
               $window,
               $log,
               $uibModal,
+              $stateParams,
               inventory_service,
               label_service,
-              properties,
+              inventory,
               cycles,
               columns,
               urls) {
-      $scope.object = 'property';
-      $scope.objects = properties.results;
-      $scope.pagination = properties.pagination;
+      $scope.inventory_type = $stateParams.inventory_type;
+      $scope.objects = inventory.results;
+      $scope.pagination = inventory.pagination;
       $scope.total = $scope.pagination.total;
       $scope.number_per_page = 999999999;
-      $scope.restoring = false;
 
       $scope.labels = [];
       $scope.selected_labels = [];
+
+      var localColumns = localStorage.getItem('grid.' + $scope.inventory_type + '.visible');
+      if (!_.isNull(localColumns)) {
+        $scope.visible_columns = JSON.parse(localColumns);
+      } else {
+        $scope.visible_columns = [];
+      }
 
       // Matching dropdown values
       var SHOW_ALL = 'Show All';
@@ -134,11 +142,19 @@ angular.module('BE.seed.controller.properties', [])
           var relatedIndex = trueIndex;
           for (var j = 0; j < related.length; ++j) {
             // Rename nested keys
-            var map = {
-              city: 'tax_city',
-              state: 'tax_state',
-              postal_code: 'tax_postal_code'
-            };
+            if ($scope.inventory_type == 'properties') {
+              var map = {
+                city: 'tax_city',
+                state: 'tax_state',
+                postal_code: 'tax_postal_code'
+              };
+            } else if ($scope.inventory_type == 'taxlots') {
+              var map = {
+                city: 'property_city',
+                state: 'property_state',
+                postal_code: 'property_postal_code'
+              };
+            }
             var updated = _.reduce(related[j], function (result, value, key) {
               key = map[key] || key;
               result[key] = value;
@@ -155,11 +171,19 @@ angular.module('BE.seed.controller.properties', [])
       };
 
       var refresh_objects = function () {
-        inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle).then(function (properties) {
-          $scope.objects = properties.results;
-          $scope.pagination = properties.pagination;
-          processData();
-        });
+        if ($scope.inventory_type == 'properties') {
+          inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle).then(function (properties) {
+            $scope.objects = properties.results;
+            $scope.pagination = properties.pagination;
+            processData();
+          });
+        } else if ($scope.inventory_type == 'taxlots') {
+          inventory_service.get_taxlots($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle).then(function (taxlots) {
+            $scope.objects = taxlots.results;
+            $scope.pagination = taxlots.pagination;
+            processData();
+          });
+        }
       };
 
       $scope.update_cycle = function (cycle) {
@@ -205,11 +229,13 @@ angular.module('BE.seed.controller.properties', [])
       };
       _.map(columns, function (col) {
         var filter = {}, aggregation = {};
+        if (!_.isEmpty($scope.visible_columns)) col.visible = _.includes($scope.visible_columns, col.name);
         if (col.type == 'number') filter = {filter: inventory_service.numFilter()};
         else filter = {filter: inventory_service.textFilter()};
         if (col.related) aggregation.treeAggregationType = 'uniqueList';
         return _.defaults(col, filter, aggregation, defaults);
       });
+      columns = inventory_service.reorderBySelected(columns, $scope.visible_columns);
       columns.unshift({
         name: 'id',
         displayName: '',
@@ -259,26 +285,10 @@ angular.module('BE.seed.controller.properties', [])
         });
       };
 
-      var saveState = function () {
-        if (!$scope.restoring) {
-          localStorage.setItem('grid.properties', JSON.stringify($scope.gridApi.saveState.save()));
-        }
-      };
-
-      var restoreState = function () {
-        $scope.restoring = true;
-        var state = localStorage.getItem('grid.properties');
-        if (!_.isNull(state)) {
-          state = JSON.parse(state);
-          $scope.gridApi.saveState.restore($scope, state);
-        }
-        _.defer(function () {
-          $scope.restoring = false;
-        });
-      };
-
-      var restoreDefaultState = function () {
-        $scope.gridApi.saveState.restore($scope, $scope.defaultState);
+      var savePinning = function () {
+        /*if (!$scope.restoring) {
+         localStorage.setItem('grid.properties', JSON.stringify($scope.gridApi.saveState.save()));
+         }*/
       };
 
       $scope.gridOptions = {
@@ -286,14 +296,11 @@ angular.module('BE.seed.controller.properties', [])
         enableFiltering: true,
         enableGridMenu: true,
         enableSorting: true,
-        exporterCsvFilename: window.BE.initial_org_name + ' Property Data.csv',
+        exporterCsvFilename: window.BE.initial_org_name + ($scope.inventory_type == 'taxlots' ? ' Tax Lot ' : ' Property ') + 'Data.csv',
         exporterMenuPdf: false,
         fastWatch: true,
         flatEntityAccess: true,
-        gridMenuCustomItems: [{
-          title: 'Reset settings',
-          action: restoreDefaultState
-        }],
+        gridMenuShowHideColumns: false,
         saveFocus: false,
         saveGrouping: false,
         saveGroupingExpandedStates: false,
@@ -306,26 +313,16 @@ angular.module('BE.seed.controller.properties', [])
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
 
-          $scope.updateHeight();
+          _.delay($scope.updateHeight, 150);
           angular.element($window).on('resize', _.debounce($scope.updateHeight, 150));
 
-          gridApi.colMovable.on.columnPositionChanged($scope, saveState);
-          gridApi.colResizable.on.columnSizeChanged($scope, saveState);
-          gridApi.core.on.columnVisibilityChanged($scope, saveState);
-          gridApi.core.on.filterChanged($scope, saveState);
-          gridApi.core.on.sortChanged($scope, saveState);
-          gridApi.pinning.on.columnPinned($scope, saveState);
+          gridApi.pinning.on.columnPinned($scope, savePinning);
 
           gridApi.core.on.rowsRendered($scope, _.debounce(function () {
             $scope.$apply(function () {
               $scope.total = _.filter($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), {treeLevel: 0}).length;
             });
           }, 150));
-
-          _.defer(function () {
-            $scope.defaultState = $scope.gridApi.saveState.save();
-            restoreState();
-          });
         }
       }
     }]);

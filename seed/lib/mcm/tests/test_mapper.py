@@ -8,11 +8,11 @@ import copy
 from unittest import TestCase
 
 from seed.lib.mcm import cleaners, mapper
-from mcm import mapper
-from mcm.tests.utils import FakeModel
+from seed.lib.mcm.tests.utils import FakeModel
 
 
 class TestMapper(TestCase):
+
     # Pre-existing static mapping
     fake_mapping = {
         u'Property Id': u'property_id',
@@ -31,26 +31,31 @@ class TestMapper(TestCase):
     ]
     # Columns we'll try to create a mapping to dynamically
     dest_columns = [
-        u'address_line_1',
-        u'name',
-        u'city',
-        u'tax_lot_id',
-        u'custom_id_1'
+        (u'PropertyState', u'address_line_1'),
+        (u'PropertyState', u'name'),
+        (u'PropertyState', u'city'),
+        (u'TaxLotState', u'tax_lot_id'),
+        (u'PropertyState', u'custom_id_1'),
     ]
 
     expected = {
-        u'Address': [u'address_line_1', 90],
-        u'BBL': [u'tax_lot_id', 47],
-        u'Building ID': [u'tax_lot_id', 52],
-        u'City': [u'city', 100],
-        u'Name': [u'name', 100]
+        u'Address': [u'PropertyState', u'address_line_1', 90],
+        u'BBL': [u'TaxLotState', u'tax_lot_id', 47],
+        u'Building ID': [u'TaxLotState', u'tax_lot_id', 52],
+        u'City': [u'PropertyState', u'city', 100],
+        u'Name': [u'PropertyState', u'name', 100]
     }
 
-    test_cleaning_schema = {'types': {
-        'property_id': 'float',
-    }}
+    test_cleaning_schema = {
+        'types': {
+            'property_id': 'float',
+        }
+    }
 
     test_cleaner = cleaners.Cleaner(test_cleaning_schema)
+
+    def setUp(self):
+        self.maxDiff = None
 
     def test_map_row(self):
         """Test the mapping between csv values and python objects."""
@@ -114,13 +119,13 @@ class TestMapper(TestCase):
         """Callable result at the begining of the list."""
         expected = copy.deepcopy(self.expected)
         # This should be the result of our "previous_mapping" call.
-        expected[u'Building ID'] = [u'custom_id_1', 27]
+        expected[u'Building ID'] = [u'PropertyState', u'custom_id_1', 27]
 
         # Here we pretend that we're doing a query and returning
         # relevant results.
         def get_mapping(raw, *args, **kwargs):
             if raw == u'Building ID':
-                return [u'custom_id_1', 27]
+                return [u'PropertyState', u'custom_id_1', 27]
 
         dyn_mapping = mapper.build_column_mapping(
             self.raw_columns,
@@ -131,18 +136,19 @@ class TestMapper(TestCase):
         self.assertDictEqual(dyn_mapping, expected)
 
     def test_build_column_mapping_w_callable_and_ignored_column(self):
-        """tests that an ignored column (`['', 100]`) should not return a
-        suggetion.
+        """
+        tests that an ignored column (`['', 100]`) should not return a
+        suggestion.
         """
         expected = copy.deepcopy(self.expected)
         # This should be the result of our "previous_mapping" call.
-        expected[u'Building ID'] = [u'', 100]
+        expected[u'Building ID'] = [u'', u'', 100]
 
         # Here we pretend that the callable `get_mapping` finds that the column
         # has been saved as '' i.e ignored.
         def get_mapping(raw, *args, **kwargs):
             if raw == u'Building ID':
-                return [u'', 100]
+                return [u'', u'', 100]
 
         dyn_mapping = mapper.build_column_mapping(
             self.raw_columns,
@@ -156,13 +162,13 @@ class TestMapper(TestCase):
         """We handle explicit saves of null, and return those dutifully."""
         expected = copy.deepcopy(self.expected)
         # This should be the result of our "previous_mapping" call.
-        expected[u'Building ID'] = [None, 1]
+        expected[u'Building ID'] = [None, None, 1]
 
         # Here we pretend that we're doing a query and returning
         # relevant results.
         def get_mapping(raw, *args, **kwargs):
             if raw == u'Building ID':
-                return [None, 1]
+                return [None, None, 1]
 
         dyn_mapping = mapper.build_column_mapping(
             self.raw_columns,
@@ -176,7 +182,7 @@ class TestMapper(TestCase):
         """We return None if there's no good match."""
         expected = copy.deepcopy(self.expected)
         # This should be the result of our "previous_mapping" call.
-        null_result = [None, 0]
+        null_result = [None, None, 0]
         expected[u'BBL'] = null_result
 
         dyn_mapping = mapper.build_column_mapping(
@@ -215,8 +221,8 @@ class TestMapper(TestCase):
         self.assertDictEqual(
             modified_model.mapped_extra_data,
             {
-                u'heading_1': u'value1',        # Saved correct column name.
-                u'property_id': 234235423.0     # Also saved correct type.
+                u'heading_1': u'value1',  # Saved correct column name.
+                u'property_id': 234235423.0  # Also saved correct type.
             }
         )
 
@@ -250,7 +256,7 @@ class TestMapper(TestCase):
     def test_map_row_handle_unmapped_columns(self):
         """No KeyError when we check mappings for our column."""
         test_mapping = copy.deepcopy(self.fake_mapping)
-        del(test_mapping[u'Property Id'])
+        del (test_mapping[u'Property Id'])
         fake_row = {
             u'Property Id': u'234,235,423',
             u'heading1': u'value1',

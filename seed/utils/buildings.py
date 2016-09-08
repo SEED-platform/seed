@@ -17,6 +17,8 @@ from seed.utils.constants import ASSESSOR_FIELDS_BY_COLUMN
 
 def get_source_type(import_file, source_type=''):
     """Used for converting ImportFile source_type into an int."""
+
+    # TODO: move source_type to a database lookup. Right now it is hard coded
     source_type_str = getattr(import_file, 'source_type', '') or ''
     source_type_str = source_type or source_type_str
     source_type_str = source_type_str.upper().replace(' ', '_')

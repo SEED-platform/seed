@@ -12,17 +12,20 @@ from seed.models import (
 
 
 class PropertySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Property
 
 
 class PropertyStateSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = PropertyState
     extra_data = serializers.JSONField()
 
 
 class PropertyViewSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = PropertyView
         depth = 1

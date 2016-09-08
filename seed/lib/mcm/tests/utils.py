@@ -18,6 +18,7 @@ def list_has_substring(substring, l):
 
 
 class FakeManager(object):
+
     def get_or_create(*args, **kwargs):
         return FakeModel(), True
 

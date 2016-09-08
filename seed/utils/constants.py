@@ -340,6 +340,94 @@ ASSESSOR_FIELDS = [
         "max": "modified__lte",
         "field_type": "building_information",
         "checked": False
+    },
+    {
+        "title": "Conditioned Floor Area",
+        "sort_column": "conditioned_floor_area",
+        "class": "is_aligned_right",
+        "title_class": "",
+        "type": "date",
+        "min": "modified__gte",
+        "max": "modified__lte",
+        "field_type": "building_information",
+        "checked": False
+    },
+    {
+        "title": "Occupied Floor Area",
+        "sort_column": "occupied_floor_area",
+        "class": "is_aligned_right",
+        "title_class": "",
+        "type": "date",
+        "min": "modified__gte",
+        "max": "modified__lte",
+        "field_type": "building_information",
+        "checked": False
+    },
+    {
+        "title": "Site EUI Weather Normalized",
+        "sort_column": "site_eui_weather_normalized",
+        "class": "is_aligned_right",
+        "title_class": "",
+        "type": "date",
+        "min": "modified__gte",
+        "max": "modified__lte",
+        "field_type": "building_information",
+        "checked": False
+    },
+    {
+        "title": "Source EUI",
+        "sort_column": "source_eui",
+        "class": "is_aligned_right",
+        "title_class": "",
+        "type": "date",
+        "min": "modified__gte",
+        "max": "modified__lte",
+        "field_type": "building_information",
+        "checked": False
+    },
+    {
+        "title": "Source EUI Weather Normalized",
+        "sort_column": "source_eui_weather_normalized",
+        "class": "is_aligned_right",
+        "title_class": "",
+        "type": "date",
+        "min": "modified__gte",
+        "max": "modified__lte",
+        "field_type": "building_information",
+        "checked": False
+    },
+    {
+        "title": "Building Certification",
+        "sort_column": "building_certification",
+        "class": "is_aligned_right",
+        "title_class": "",
+        "type": "date",
+        "min": "modified__gte",
+        "max": "modified__lte",
+        "field_type": "building_information",
+        "checked": False
+    },
+    {
+        "title": "Energy Alerts",
+        "sort_column": "energy_alerts",
+        "class": "is_aligned_right",
+        "title_class": "",
+        "type": "date",
+        "min": "modified__gte",
+        "max": "modified__lte",
+        "field_type": "building_information",
+        "checked": False
+    },
+    {
+        "title": "Space Alerts",
+        "sort_column": "space_alerts",
+        "class": "is_aligned_right",
+        "title_class": "",
+        "type": "date",
+        "min": "modified__gte",
+        "max": "modified__lte",
+        "field_type": "building_information",
+        "checked": False
     }
 ]
 

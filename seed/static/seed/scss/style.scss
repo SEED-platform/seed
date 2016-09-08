@@ -2362,9 +2362,8 @@ gs-input .tags .tag-item .remove-button {
   padding: 20px 10px;
 
   .form-group {
-    margin-bottom: 0;
     margin-right: 20px;
-    margin-bottom: 0px;
+    margin-bottom: 0;
   }
 
   & + .buildingListControls {
@@ -2451,8 +2450,8 @@ gs-input .tags .tag-item .remove-button {
 }
 
 .table_item_detail {
-  margin: 0px 10px;
-  border: 1px solid #F1F1F1
+  margin: 0 10px;
+  border: 1px solid #F1F1F1;
 }
 
 .highlight {
@@ -2523,5 +2522,35 @@ gs-input .tags .tag-item .remove-button {
     span > svg path {
       fill: #23527c;
     }
+  }
+}
+
+.ui-grid-draggable-row-target {
+  opacity: 0.5 !important;
+}
+
+.ui-grid-draggable-row {
+  cursor: grab;
+  height: 30px;
+}
+
+.ui-grid-draggable-row-over {
+  position: relative;
+
+  &:before {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    border-bottom: 2px dashed #AAA;
+  }
+
+  &--above:before {
+    top: 0;
+  }
+
+  &--below:before {
+    bottom: 0;
   }
 }

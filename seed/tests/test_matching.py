@@ -5,7 +5,7 @@
 :author
 """
 from django.test import TestCase
-from seed.tasks import _normalize_address_str
+from seed.data_importer.tasks import _normalize_address_str
 
 
 def make_method(message, expected):

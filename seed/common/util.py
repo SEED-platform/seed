@@ -9,8 +9,7 @@ import csv
 import json
 import sys
 
-from . import mapper
-
+from seed.lib.mappings import mapper
 
 # use this to recognize when to remove from mapping
 REMOVE_KEY = "REMOVE"

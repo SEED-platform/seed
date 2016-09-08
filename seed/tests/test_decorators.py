@@ -103,6 +103,7 @@ class TestDecorators(TestCase):
 
 
 class RequireOrganizationIDTests(TestCase):
+
     def setUp(self):
         @decorators.require_organization_id
         def test_view(request):

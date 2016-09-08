@@ -229,7 +229,7 @@ def browser_cap_factory(browser_name, version=None, platform=None, **kw):
     :type platform: string
     :returns: dictionary
     """
-    if version and type(version) != str and type(version) != int:
+    if version and not isinstance(version, str) and not isinstance(version, int):
         print browser_name, 'version', version, type(version)
         raise TypeError('version must be a string or int if supplied')
     version, platform = validate_browser(browser_name, version, platform)
@@ -270,11 +270,11 @@ def validate_details(browser, version, platform):
     if browser in ['Firefox', 'Chrome']:
         if not version:
             version = 'latest'
-        elif type(version) == int and version < 0:
+        elif isinstance(version, int) and version < 0:
             version = "latest{}".format(version)
     elif not version:
-            version = capacities.valid_versions[platform][0]
-    if type(version) == int:
+        version = capacities.valid_versions[platform][0]
+    if isinstance(version, int):
         if version < 0:
             n = -version
             try:

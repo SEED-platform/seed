@@ -3,13 +3,21 @@
 :author
 """
 from __future__ import absolute_import
-from config.settings.common import *  # noqa
+
+import sys
+
 from celery.utils import LOG_LEVELS
+
+from config.settings.common import *  # noqa
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler'
+        },
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
@@ -17,11 +25,11 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
+        # the name of the logger, if empty, then this is the default logger
+        '': {
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'handlers': ['console', 'file'],
+        }
     },
 }
 
@@ -62,7 +70,7 @@ NOSE_ARGS = [
     '--exclude-dir=seed/common',
     '--exclude-dir=seed/functional',
     '--nocapture',
-    '--nologcapture'
+    '--nologcapture',
 ]
 
 REQUIRE_UNIQUE_EMAIL = False
