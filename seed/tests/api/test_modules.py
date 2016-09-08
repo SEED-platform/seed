@@ -11,8 +11,9 @@ import time
 
 import requests
 
-from seed_readingtools import check_status, read_map_file, upload_file
-
+from seed_readingtools import (
+    check_status, check_progress, read_map_file, upload_file
+)
 
 def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, filetype, mappingfilepath, log):
 
@@ -33,10 +34,15 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
     result = requests.post(main_url + '/app/save_raw_data/',
                            headers=header,
                            data=json.dumps(payload))
-    # progress = check_progress(main_url, header, result.json()['progress_key'])
+    # if you don't do this you will break stuff
+    # as it won't finish the task
+    progress = check_progress(main_url, header, result.json()['progress_key'])
+    # without the above line this is just checking the url returned something
+    # not that it did anything
     check_status(result, partmsg, log)
 
-    time.sleep(20)
+    # Really?  I think the idea was if we wait long enough it might finish?
+    # time.sleep(20)
 
     # Get the mapping suggestions
     print ('API Function: get_column_mapping_suggestions\n'),
