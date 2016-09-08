@@ -12,8 +12,9 @@ import time
 import requests
 
 from seed_readingtools import (
-    check_status, check_progress, read_map_file, upload_file
+    check_status, read_map_file, upload_file  # , check_progress
 )
+
 
 def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, filetype, mappingfilepath, log):
 
