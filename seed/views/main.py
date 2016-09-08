@@ -1353,7 +1353,7 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['get'])
+    @detail_route(methods=['GET'])
     def mapping_suggestions(self, request, pk):
         """
         Returns suggested mappings from an uploaded file's headers to known
@@ -1375,7 +1375,7 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
             - name: pk
               description: import_file_id
               required: true
-              paramType: query
+              paramType: path
             - name: organization_id
               description: The organization_id for this user's organization
               required: true

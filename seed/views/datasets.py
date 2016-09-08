@@ -9,7 +9,6 @@ import datetime
 import json
 import logging
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from rest_framework import viewsets
 
@@ -21,11 +20,15 @@ from seed.models import BuildingSnapshot
 from seed.utils.api import api_endpoint_class
 from seed.utils.time import convert_to_js_timestamp
 from rest_framework.decorators import list_route
+from rest_framework.authentication import SessionAuthentication
+from seed.authentication import SEEDAuthentication
+
 _log = logging.getLogger(__name__)
 
 
-class DatasetViewSet(LoginRequiredMixin, viewsets.ViewSet):
+class DatasetViewSet(viewsets.ViewSet):
     raise_exception = True
+    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     @require_organization_id_class
     @api_endpoint_class

@@ -155,6 +155,22 @@ def get_api_request_user(request):
         return False
 
 
+from rest_framework import authentication
+
+
+class ExampleAuthentication(authentication.BaseAuthentication):
+    def authenticate(self, request):
+        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        from seed.landing.models import SEEDUser as User
+        if not auth_header:
+            return None
+        try:
+            username, api_key = auth_header.split(':')
+            return User.objects.get(api_key=api_key, username=username), None
+        except (ValueError, User.DoesNotExist):
+            return None
+
+
 class APIBypassCSRFMiddleware(object):
     """
     This middleware turns off CSRF protection for API clients.

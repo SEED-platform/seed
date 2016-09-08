@@ -17,13 +17,14 @@ from seed.lib.superperms.orgs.models import (
 from seed.models import CanonicalBuilding
 from seed.landing.models import SEEDUser as User
 from seed.utils.organizations import create_organization
-from django.contrib.auth.mixins import LoginRequiredMixin
+from rest_framework.authentication import SessionAuthentication
+from seed.authentication import SEEDAuthentication
 from django.http import JsonResponse
 from rest_framework import viewsets
-from seed.decorators import ajax_request_class, require_organization_id_class
+from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.utils.api import api_endpoint_class
-from rest_framework.decorators import list_route, detail_route
+from rest_framework.decorators import detail_route
 from django.core.exceptions import ObjectDoesNotExist
 from seed.public.models import INTERNAL, PUBLIC, SharedBuildingField
 from seed.utils.buildings import get_columns as utils_get_columns
@@ -36,7 +37,6 @@ from seed.cleansing.models import (
     Rules
 )
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
-from django.contrib.auth.decorators import permission_required
 from seed.decorators import get_prog_key
 from seed import tasks
 
@@ -188,8 +188,9 @@ def _save_fields(org, new_fields, old_fields, is_public=False):
 _log = logging.getLogger(__name__)
 
 
-class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
+class OrganizationViewSet(viewsets.ViewSet):
     raise_exception = True
+    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     @api_endpoint_class
     @ajax_request_class
@@ -552,6 +553,7 @@ class OrganizationViewSet(LoginRequiredMixin, viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
+    @detail_route(methods=['PUT'])
     def save_settings(self, request, pk=None):
         """
         Saves an organization's settings: name, query threshold, shared fields

@@ -129,13 +129,13 @@ def search_and_project(header, main_url, organization_id, log):
     print ('API Function: create_project\n'),
     partmsg = 'create_project'
     time1 = dt.datetime.now()
-    newproject_payload = {'project': {'name': 'New Project_' + str(time1.day) + str(time1.second),
-                                      'compliance_type': 'describe compliance type',
-                                      'description': 'project description'},
-                          'organization_id': organization_id}
+    newproject_payload = {'name': 'New Project_' + str(time1.day) + str(time1.second),
+                          'compliance_type': 'describe compliance type',
+                          'description': 'project description'}
 
-    result = requests.post(main_url + '/app/projects/create_project/',
+    result = requests.post(main_url + '/api/v2/projects/',
                            headers=header,
+                           params=json.dumps({'organization_id': organization_id}),
                            data=json.dumps(newproject_payload))
     check_status(result, partmsg, log)
 
@@ -146,9 +146,9 @@ def search_and_project(header, main_url, organization_id, log):
     print ('API Function: get_project\n'),
     partmsg = 'get_project'
 
-    result = requests.get(main_url + '/app/projects/get_projects/',
+    result = requests.get(main_url + '/api/v2/projects/',
                           headers=header,
-                          params={'organization_id': organization_id})
+                          params=json.dumps({'project_slug': project_slug, 'organization_id': organization_id}))
     check_status(result, partmsg, log)
 
     # Populate project by search buildings result

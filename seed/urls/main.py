@@ -6,9 +6,6 @@
 """
 
 from django.conf.urls import url
-from rest_framework import routers
-
-from seed.views.datasets import DatasetViewSet
 from seed.views.main import (
     home, version, create_pm_mapping,
     get_total_number_of_buildings_for_user,         # TO REMOVE
@@ -22,9 +19,6 @@ from seed.views.main import (
     get_coparents, save_raw_data, get_PM_filter_by_counts,
     delete_duplicates_from_import_file,
     get_import_file, delete_file,
-    # update_building,
-    # get_building_summary_report_data,
-    # get_building_report_data, get_aggregated_building_report_data,
     get_column_mapping_suggestions,
     get_raw_column_names,
     get_first_five_rows, save_column_mappings, start_mapping, remap_buildings,
@@ -33,13 +27,7 @@ from seed.views.main import (
     export_buildings_download, angular_js_tests, delete_organization_buildings,
     delete_buildings
 )
-from seed.views.organizations import OrganizationViewSet
 from seed.views.properties import (get_properties, get_cycles)
-
-api_v2_router = routers.DefaultRouter()
-api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
-api_v2_router.register(r'organizations', OrganizationViewSet,
-                       base_name="organizations")
 
 # prefix, to revert back to original endpoints, leave this blank
 apiv1 = r''  # r'api/v1/'

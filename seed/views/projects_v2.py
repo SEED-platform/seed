@@ -312,7 +312,10 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
                 'message': 'project already exists for the organization'
             }, status=409)
         project.last_modified_by = request.user
-        project.description = project_description
+        if project_description:
+            project.description = project_description
+        else:
+            project.description = ""
         project.save()
 
         project_compliance_type = body.get('compliance_type', None)
@@ -388,23 +391,24 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
         project.save()
 
         project_compliance_type = body.get('is_compliance')
-        if project_compliance_type.lower() == "true":
-            if project.has_compliance:
+        if project_compliance_type:  # don't do any changes if new compliance flag isn't included
+            if project_compliance_type.lower() == "true":
+                if project.has_compliance:
+                    c = project.get_compliance()
+                else:
+                    c = Compliance.objects.create(
+                        project=project,
+                    )
+                project_end_date = body.get('end_date')
+                project_deadline_date = body.get('deadline_date')
+                c.end_date = parser.parse(project_end_date)
+                c.deadline_date = parser.parse(project_deadline_date)
+                c.compliance_type = project_compliance_type
+                c.save()
+            elif project.has_compliance:
+                # delete compliance
                 c = project.get_compliance()
-            else:
-                c = Compliance.objects.create(
-                    project=project,
-                )
-            project_end_date = body.get('end_date')
-            project_deadline_date = body.get('deadline_date')
-            c.end_date = parser.parse(project_end_date)
-            c.deadline_date = parser.parse(project_deadline_date)
-            c.compliance_type = project_compliance_type
-            c.save()
-        elif project.has_compliance:
-            # delete compliance
-            c = project.get_compliance()
-            c.delete()
+                c.delete()
 
         return JsonResponse({
             'status': 'success',
@@ -446,7 +450,6 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
                              background job, to determine the job's progress
         """
         body = request.data
-        project_json = {'selected_buildings': body}
         try:
             project_slug = request.query_params.get('project_slug')
         except:
@@ -460,7 +463,7 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
                                  'message': 'Could not find project with project_slug = ' + str(project_slug)},
                                 status=403)
         add_buildings.delay(
-            project_slug=project.slug, prpoject_dict=project_json,
+            project_slug=project.slug, prpoject_dict=body,
             user_pk=request.user.pk)
 
         key = project.adding_buildings_status_percentage_cache_key
@@ -504,7 +507,6 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
                              background job, to determine the job's progress
         """
         body = request.data
-        project_json = {'selected_buildings': body}
         try:
             project_slug = request.query_params.get('project_slug')
         except:
@@ -518,7 +520,7 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
                                  'message': 'Could not find project with project_slug = ' + str(project_slug)},
                                 status=403)
         remove_buildings.delay(
-            project_slug=project.slug, project_dict=project_json,
+            project_slug=project.slug, project_dict=body,
             user_pk=request.user.pk)
         key = project.removing_buildings_status_percentage_cache_key
         return JsonResponse({

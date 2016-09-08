@@ -237,6 +237,9 @@ def remove_buildings(project_slug, project_dict, user_pk):
            information
        :user_pk int or str: the user's pk or id
     """
+    print(project_slug)
+    print(project_dict)
+    print(user_pk)
     project = Project.objects.get(slug=project_slug)
     user = User.objects.get(pk=user_pk)
     project.last_modified_by = user

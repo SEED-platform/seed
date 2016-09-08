@@ -28,7 +28,6 @@ from seed.cleansing.models import (
     DATA_TYPES as CLEANSING_DATA_TYPES,
     SEVERITY as CLEANSING_SEVERITY,
 )
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from rest_framework import viewsets
 from seed.decorators import ajax_request_class
@@ -36,9 +35,64 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.utils.api import api_endpoint_class
 from rest_framework.decorators import list_route, detail_route
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.authentication import SessionAuthentication
+from seed.authentication import SEEDAuthentication
 
 
 _log = logging.getLogger(__name__)
+
+
+def _dict_org(request, organizations):
+    """returns a dictionary of an organization's data."""
+
+    cbs = list(CanonicalBuilding.objects.filter(canonical_snapshot__super_organization__in=organizations).values('canonical_snapshot__super_organization_id'))
+
+    org_map = dict((x.pk, 0) for x in organizations)
+    for cb in cbs:
+        org_id = cb['canonical_snapshot__super_organization_id']
+        org_map[org_id] = org_map[org_id] + 1
+
+    orgs = []
+    for o in organizations:
+        # We don't wish to double count sub organization memberships.
+        org_users = OrganizationUser.objects.select_related('user') \
+            .filter(organization=o)
+
+        owners = []
+        role_level = None
+        user_is_owner = False
+        for ou in org_users:
+            if ou.role_level == ROLE_OWNER:
+                owners.append({
+                    'first_name': ou.user.first_name,
+                    'last_name': ou.user.last_name,
+                    'email': ou.user.email,
+                    'id': ou.user_id
+                })
+
+                if ou.user == request.user:
+                    user_is_owner = True
+
+            if ou.user == request.user:
+                role_level = _get_js_role(ou.role_level)
+
+        org = {
+            'name': o.name,
+            'org_id': o.pk,
+            'id': o.pk,
+            'number_of_users': len(org_users),
+            'user_is_owner': user_is_owner,
+            'user_role': role_level,
+            'owners': owners,
+            'sub_orgs': _dict_org(request, o.child_orgs.all()),
+            'is_parent': o.is_parent,
+            'parent_id': o.parent_id,
+            'num_buildings': org_map[o.pk],
+            'created': o.created.strftime('%Y-%m-%d') if o.created else '',
+        }
+        orgs.append(org)
+
+    return orgs
 
 
 def _get_js_role(role):
@@ -106,8 +160,9 @@ def _get_severity_from_js(severity):
     return d.get(severity)
 
 
-class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
+class UserViewSet(viewsets.ViewSet):
     raise_exception = True
+    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     @api_endpoint_class
     @ajax_request_class
@@ -163,6 +218,10 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
                 description: Username of new user
                 required: true
                 type: string
+            user_id:
+                description: User ID (pk) of new user
+                required: true
+                type: integer
         """
         body = request.data
         org_name = body.get('org_name')
@@ -211,7 +270,8 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
                        first_name)
 
         return JsonResponse({'status': 'success', 'message': user.email, 'org': org.name,
-                             'org_created': org_created, 'username': user.username})
+                             'org_created': org_created, 'username': user.username,
+                             'user_id': user.id})
 
     @ajax_request_class
     @has_perm_class('requires_superuser')
@@ -357,7 +417,7 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
 
         try:
             user = User.objects.get(pk=pk)
-        except ObjectDoesNotExist:
+        except Exception:
             return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)}, status=404)
         if not user == request.user:
             return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)}, status=403)
@@ -551,6 +611,7 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
               description: ID (primary key) for organization
               type: integer
               required: true
+              paramType: query
             - name: actions
               type: array[string]
               required: true
@@ -608,7 +669,7 @@ class UserViewSet(LoginRequiredMixin, viewsets.ViewSet):
             error = True
 
         try:
-            org = Organization.objects.get(pk=body.get('organization_id'))
+            org = Organization.objects.get(pk=request.query_params.get('organization_id'))
         except Organization.DoesNotExist:
             message = 'organization does not exist'
             error = True

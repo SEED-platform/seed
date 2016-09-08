@@ -139,23 +139,24 @@ class TestApi(TestCase):
     def test_user_profile(self):
         # test logging in with the password, the remaining versions will use the HTTP Authentication
         self.client.login(username='test_user@demo.com', password='test_pass')
-        r = self.client.get('/app/accounts/get_user_profile', follow=True)
+        r = self.client.get('/api/v2/users/' + str(self.user.pk) + '/', follow=True)
         self.assertEqual(r.status_code, 200)
 
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
-        self.assertEqual(r['user']['first_name'], 'Jaqen')
-        self.assertEqual(r['user']['last_name'], 'H\'ghar')
-        self.client.logout
+        self.assertEqual(r['first_name'], 'Jaqen')
+        self.assertEqual(r['last_name'], 'H\'ghar')
+        self.client.logout()
 
     def test_with_http_authorization(self):
-        r = self.client.get('/app/accounts/get_user_profile', follow=True, **self.headers)
+        r = self.client.get('/api/v2/users/' + str(self.user.pk) + '/', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertNotEqual(r, None)
 
     def test_organization(self):
-        r = self.client.get('/app/accounts/get_organizations/', follow=True, **self.headers)
+        self.client.login(username='test_user@demo.com', password='test_pass')
+        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 
         # {
@@ -176,12 +177,12 @@ class TestApi(TestCase):
         self.assertEqual(r['organizations'][0]['num_buildings'], 0)
 
     def test_organization_details(self):
-        r = self.client.get('/app/accounts/get_organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
         # get details on the organization
-        r = self.client.get('/app/accounts/get_organization/?organization_id=%s' % organization_id, follow=True,
+        r = self.client.get('/api/v2/organizations/' + str(organization_id) + '/', follow=True,
                             **self.headers)
         self.assertEqual(r.status_code, 200)
 
@@ -216,24 +217,24 @@ class TestApi(TestCase):
         self.assertEqual(r['organization']['user_is_owner'], True)
 
     def test_update_user(self):
-        user_payload = {'user': {
+        user_payload = {
             'first_name': 'Arya',
             'last_name': 'Stark',
-            'email': self.user.username}
+            'email': self.user.username
         }
-        r = self.client.post('/app/accounts/update_user/', data=json.dumps(user_payload),
+        r = self.client.put('/api/v2/users/%s/' % self.user.pk, data=json.dumps(user_payload),
                              content_type='application/json', **self.headers)
 
         # re-retrieve the user profile
-        r = self.client.get('/app/accounts/get_user_profile', follow=True, **self.headers)
+        r = self.client.get('/api/v2/users/' + str(self.user.pk) + '/', follow=True, **self.headers)
         r = json.loads(r.content)
 
         self.assertEqual(r['status'], 'success')
-        self.assertEqual(r['user']['first_name'], 'Arya')
-        self.assertEqual(r['user']['last_name'], 'Stark')
+        self.assertEqual(r['first_name'], 'Arya')
+        self.assertEqual(r['last_name'], 'Stark')
 
     def test_adding_user(self):
-        r = self.client.get('/app/accounts/get_organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
         new_user = {
@@ -241,24 +242,21 @@ class TestApi(TestCase):
             'first_name': 'Brienne',
             'last_name': 'Tarth',
             'email': 'test+1@demo.com',
-            'role': {
-                'name': 'Member',
-                'value': 'member'
-            }
+            'role': 'member'
         }
 
-        r = self.client.post('/app/accounts/add_user/', data=json.dumps(new_user), content_type='application/json',
+        r = self.client.post('/api/v2/users/', data=json.dumps(new_user), content_type='application/json',
                              **self.headers)
         self.assertEqual(r.status_code, 200)
 
-        r = self.client.get('/app/accounts/get_organization/?organization_id=%s' % organization_id, follow=True,
+        r = self.client.get('/api/v2/organizations/%s/' % organization_id, follow=True,
                             **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertEqual(r['organization']['number_of_users'], 2)
 
         # get org users
-        r = self.client.post('/app/accounts/get_organizations_users/', data='{"organization_id": %s}' % organization_id,
+        r = self.client.post('/api/v2/organizations/%s/users/' % organization_id,
                              content_type='application/json', **self.headers)
         self.assertEqual(r.status_code, 200)
         # {
@@ -291,18 +289,17 @@ class TestApi(TestCase):
         # Change the user role
         payload = {
             'organization_id': organization_id,
-            'user_id': user_id,
             'role': 'owner'
         }
 
-        r = self.client.post('/app/accounts/update_role/', data=json.dumps(payload), content_type='application/json',
+        r = self.client.post('/api/v2/users/%s/update_role/' % user_id, data=json.dumps(payload), content_type='application/json',
                              **self.headers)
 
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
 
-        r = self.client.post('/app/accounts/get_organizations_users/', data='{"organization_id": %s}' % organization_id,
+        r = self.client.post('/api/v2/organizations/%s/users/' % organization_id,
                              content_type='application/json', **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
@@ -310,11 +307,11 @@ class TestApi(TestCase):
         self.assertEqual(new_user['role'], 'owner')
 
     def test_get_query_threshold(self):
-        r = self.client.get('/app/accounts/get_organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        r = self.client.get("/app/accounts/get_query_threshold/?organization_id=%s" % organization_id, follow=True,
+        r = self.client.get("/api/v2/organizations/%s/query_threshold/" % organization_id, follow=True,
                             **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
@@ -322,11 +319,11 @@ class TestApi(TestCase):
         self.assertEqual(r['query_threshold'], None)
 
     def test_shared_fields(self):
-        r = self.client.get('/app/accounts/get_organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        r = self.client.get("/app/accounts/get_shared_fields/?organization_id=%s" % organization_id, follow=True,
+        r = self.client.get("/api/v2/organizations/%s/shared_fields/" % organization_id, follow=True,
                             **self.headers)
 
         self.assertEqual(r.status_code, 200)
@@ -336,7 +333,7 @@ class TestApi(TestCase):
         self.assertEqual(r['shared_fields'], [])
 
     def test_upload_buildings_file(self):
-        r = self.client.get('/app/accounts/get_organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
@@ -346,7 +343,7 @@ class TestApi(TestCase):
         payload = {'organization_id': organization_id, 'name': 'API Test'}
 
         # create the data set
-        r = self.client.post('/app/create_dataset/', data=json.dumps(payload), content_type='application/json',
+        r = self.client.post('/api/v2/datasets/', data=json.dumps(payload), content_type='application/json',
                              **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
@@ -473,9 +470,9 @@ class TestApi(TestCase):
         # self.assertEqual(r['progress'], 100)
 
         # # Get the mapping suggestions
-        payload = {
-            'import_file_id': import_file_id,
-            'org_id': organization_id
-        }
-        r = self.client.post('/app/get_column_mapping_suggestions/', json.dumps(payload),
-                             content_type='application/json', follow=True, **self.headers)
+        r = self.client.post(
+            '/api/v2/data_files/{}/mapping_suggestions/?organization_id={}'.format(import_file_id, organization_id),
+            content_type='application/json',
+            follow=True,
+            **self.headers
+        )
