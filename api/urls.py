@@ -8,7 +8,7 @@ from django.conf.urls import url, include
 
 from seed.views.datasets import DatasetViewSet
 from seed.views.main import DataFileViewSet
-from seed.views.projects_v2 import ProjectsViewSet
+from seed.views.projects import ProjectsViewSet
 from seed.views.organizations import OrganizationViewSet
 from seed.views.accounts import UserViewSet
 from seed.views.labels import LabelViewSet
@@ -30,7 +30,7 @@ api_v2_router.register(r'data_files', DataFileViewSet, base_name="data_files")
 api_v2_router.register(r'projects', ProjectsViewSet, base_name="projects")
 api_v2_router.register(r'users', UserViewSet, base_name="users")
 # api_v2_router.register(r'labels', LabelViewSet, base_name="labels")
-api_v2_router.register(r'reverse_test', TestReverseViewSet, base_name="reverse_test")
+# api_v2_router.register(r'reverse_test', TestReverseViewSet, base_name="reverse_test")
 
 urlpatterns = [
     # v2 api
@@ -55,10 +55,10 @@ urlpatterns = [
         TaxLot.as_view({'get': 'get_taxlot'}), name='taxlot-details'),
     url(r'^taxlots/(?P<taxlots_pk>\d+)/cycles/(?P<cycle_pk>\d+)/$',
         TaxLot.as_view({'put': 'put'}), name='update-taxlot-details'),
-    url(r'^get_property_report_data/$',
-        Report.as_view({'get': 'get_property_report_data'}),
-        name='property_report_data'),
-    url(r'^get_aggregated_property_report_data/$',
-        Report.as_view({'get': 'get_aggregated_property_report_data'}),
-        name='aggregated_property_report_data'),
+    # url(r'^get_property_report_data/$',
+    #    Report.as_view({'get': 'get_property_report_data'}),
+    #    name='property_report_data'),
+    # url(r'^get_aggregated_property_report_data/$',
+    #    Report.as_view({'get': 'get_aggregated_property_report_data'}),
+    #    name='aggregated_property_report_data'),
 ]
