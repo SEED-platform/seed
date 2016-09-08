@@ -281,11 +281,17 @@ class Cleansing(object):
         :param kwargs:
         :return:
         """
-        # TODO confirm these are correct
+        # For changed field names, TODO uncomment when appropriate
+        # self.required_fields = {
+        #     'property': ['address_line_1', 'pm_property_id',
+        #                  'jurisdiction_property_id'],
+        #     'taxlot': ['jurisdiction_taxlot_id', 'address_line_1'],
+        # }
+        # For old field names, TODO remove when appropriate
         self.required_fields = {
             'property': ['address_line_1', 'pm_property_id',
-                         'jurisdiction_property_id'],
-            'taxlot': ['jurisdiction_taxlot_id', 'address_line_1'],
+                         'jurisdiction_property_identifier'],
+            'taxlot': ['jurisdiction_taxlot_identifier', 'address'],
         }
         self.org = organization
         super(Cleansing, self).__init__(*args, **kwargs)
