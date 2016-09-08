@@ -283,9 +283,9 @@ class Cleansing(object):
         """
         # TODO confirm these are correct
         self.required_fields = {
-            'property': ['address_line_1', 'pm_parent_property_id',
-                         'jurisdiction_property_identifier'],
-            'taxlot': ['jurisdiction_taxlot_identifier', 'address'],
+            'property': ['address_line_1', 'pm_property_id',
+                         'jurisdiction_property_id'],
+            'taxlot': ['jurisdiction_taxlot_id', 'address_line_1'],
         }
         self.org = organization
         super(Cleansing, self).__init__(*args, **kwargs)
