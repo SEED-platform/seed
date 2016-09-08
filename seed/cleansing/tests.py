@@ -352,7 +352,7 @@ class CleansingDataSample(TestCase):
         ).iterator()
 
         c = Cleansing(self.org)
-        c.cleanse('property', qs)
+        c.cleanse(qs)
 
         # print data
         # This only checks to make sure the 31 errors have occurred.
