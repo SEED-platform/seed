@@ -23,7 +23,7 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
      *      auth = data.auth; // auth === {'can_invite_member': true, 'can_remove_member': true}
      *  });
      *
-     * @param organization_id
+     * @param  {integer}  organization_id is the id of organization
      * @param  {array}  actions is an array of actions
      * @return {promise} then a an object with keys as the actions, and bool
      * values
