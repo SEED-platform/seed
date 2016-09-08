@@ -116,7 +116,7 @@ INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
 # apps to auto load name spaced URLs for JS use (see seed.main.views.home)
 SEED_URL_APPS = (
-    'accounts',
+   # 'accounts',
     'ajaxuploader',
     'data_importer',
     'seed',
@@ -292,5 +292,5 @@ REST_FRAMEWORK = {
 }
 
 SWAGGER_SETTINGS = {
-    "exclude_namespaces": ["labels"],  # List URL namespaces to ignore
+    "exclude_namespaces": ["labels", "app"],  # List URL namespaces to ignore
 }

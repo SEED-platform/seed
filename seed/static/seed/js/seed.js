@@ -391,6 +391,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
               pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
             }
           }
+
           // params: (query, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id)
           return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null);
         }],

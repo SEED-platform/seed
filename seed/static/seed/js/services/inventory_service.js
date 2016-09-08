@@ -456,7 +456,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.get_property_columns = function () {
 
       var defer = $q.defer();
-      var get_property_columns_url = "/api/v2/property-columns/";
+      var get_property_columns_url = "/app/property-columns";
       var organization_id = user_service.get_organization().id;
 
       $http({
