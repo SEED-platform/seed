@@ -900,7 +900,7 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
             changed_fields = json.loads(log.description)\
                 if log.record_type == AUDIT_USER_EDIT else None
             record = {
-                'state': PropertyStateSerializer(log.state),
+                'state': PropertyStateSerializer(log.state).data,
                 'date_edited': log.created.ctime(),
                 'source': log.get_record_type_display(),
                 'filename': log.import_filename,
@@ -1023,7 +1023,7 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
             changed_fields = json.loads(log.description)\
                 if log.record_type == AUDIT_USER_EDIT else None
             record = {
-                'state': TaxLotStateSerializer(log.state),
+                'state': TaxLotStateSerializer(log.state).data,
                 'date_edited': log.created.ctime(),
                 'source': log.get_record_type_display(),
                 'filename': log.import_filename,

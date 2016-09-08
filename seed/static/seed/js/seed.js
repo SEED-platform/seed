@@ -52,6 +52,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.existing_members_modal',
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.export_modal',
+  'BE.seed.controller.inventory_detail_settings',
+  'BE.seed.controller.inventory_list',
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
   'BE.seed.controller.label_admin',
@@ -65,10 +67,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.organization',
   'BE.seed.controller.organization_settings',
   'BE.seed.controller.project',
-  'BE.seed.controller.properties',
   'BE.seed.controller.property_detail',
   'BE.seed.controller.security',
-  'BE.seed.controller.taxlots',
   'BE.seed.controller.taxlot_detail',
   'BE.seed.controller.update_item_labels_modal_ctrl'
 ]);
@@ -436,7 +436,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'reports',
-      url: '/inventory/reports',
+      url: '/{inventory_type:properties|taxlots}/reports',
       templateUrl: static_url + 'seed/partials/inventory_reports.html',
       controller: 'inventory_reports_controller',
       resolve: {
@@ -447,13 +447,47 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'list_settings',
-      url: '/inventory/settings',
+      url: '/{inventory_type:properties|taxlots}/settings',
       templateUrl: static_url + 'seed/partials/inventory_settings.html',
       controller: 'inventory_settings_controller',
       resolve: {
         $uibModalInstance: function () {
           return {close: function () {}};
-        }
+        },
+        all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+          if ($stateParams.inventory_type === 'properties') {
+            return inventory_service.get_property_columns();
+          } else if ($stateParams.inventory_type === 'taxlots') {
+            return inventory_service.get_taxlot_columns();
+          }
+        }],
+        default_columns: ['user_service', function (user_service) {
+          return user_service.get_default_columns();
+        }],
+        shared_fields_payload: ['user_service', function (user_service) {
+          return user_service.get_shared_buildings();
+        }]
+      }
+    })
+    .state({
+      name: 'detail_settings',
+      url: '/{inventory_type:properties|taxlots}/{inventory_id:int}/cycles/{cycle_id:int}/settings',
+      templateUrl: static_url + 'seed/partials/inventory_detail_settings.html',
+      controller: 'inventory_detail_settings_controller',
+      resolve: {
+        $uibModalInstance: function () {
+          return {close: function () {}};
+        },
+        all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+          if ($stateParams.inventory_type === 'properties') {
+            return inventory_service.get_property_columns();
+          } else if ($stateParams.inventory_type === 'taxlots') {
+            return inventory_service.get_taxlot_columns();
+          }
+        }],
+        default_columns: ['user_service', function (user_service) {
+          return user_service.get_default_columns();
+        }]
       }
     })
     .state({
@@ -710,9 +744,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       }
     })
     .state({
-      name: 'feedback',
-      url: '/feedback',
-      templateUrl: static_url + 'seed/partials/feedback.html'
+      name: 'contact',
+      url: '/contact',
+      templateUrl: static_url + 'seed/partials/contact.html'
     })
     .state({
       name: 'api_docs',
@@ -746,7 +780,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       name: 'organization_settings',
       url: '/accounts/:organization_id',
       templateUrl: static_url + 'seed/partials/settings.html',
-      controller: 'settings_controller',
+      controller: 'organization_settings_controller',
       resolve: {
         all_columns: ['building_services', function (building_services) {
           return building_services.get_columns(true);
@@ -782,7 +816,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       name: 'organization_sharing',
       url: '/accounts/:organization_id/sharing',
       templateUrl: static_url + 'seed/partials/sharing.html',
-      controller: 'settings_controller',
+      controller: 'organization_settings_controller',
       resolve: {
         all_columns: ['building_services', function (building_services) {
           return building_services.get_columns();
@@ -983,43 +1017,40 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       }
     })
     .state({
-      name: 'properties',
-      url: '/properties',
+      name: 'inventory_list',
+      url: '/{inventory_type:properties|taxlots}',
       templateUrl: static_url + 'seed/partials/inventory_list.html',
-      controller: 'properties_controller',
+      controller: 'inventory_list_controller',
       resolve: {
-        properties: ['inventory_service', function (inventory_service) {
-          return inventory_service.get_properties(1);
+        inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+          if ($stateParams.inventory_type === 'properties') {
+            return inventory_service.get_properties(1);
+          } else if ($stateParams.inventory_type === 'taxlots') {
+            return inventory_service.get_taxlots(1);
+          }
         }],
         cycles: ['inventory_service', function (inventory_service) {
           return inventory_service.get_cycles();
         }],
-        columns: ['inventory_service', function (inventory_service) {
-          return inventory_service.get_property_columns();
+        columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+          if ($stateParams.inventory_type === 'properties') {
+            return inventory_service.get_property_columns();
+          } else if ($stateParams.inventory_type === 'taxlots') {
+            return inventory_service.get_taxlot_columns();
+          }
         }]
       }
     })
     .state({
-      name: 'taxlots',
-      url: '/taxlots',
-      templateUrl: static_url + 'seed/partials/inventory_list.html',
-      controller: 'taxlots_controller',
-      resolve: {
-        taxlots: ['inventory_service', function (inventory_service) {
-          return inventory_service.get_taxlots(1);
-        }],
-        cycles: ['inventory_service', function (inventory_service) {
-          return inventory_service.get_cycles();
-        }],
-        columns: ['inventory_service', function (inventory_service) {
-          return inventory_service.get_taxlot_columns();
-        }]
-      }
+      name: 'detail',
+      abstract: true,
+      controller: 'base_detail_controller',
+      template: '<ui-view>'
     })
     .state({
       name: 'property',
       url: '/properties/:property_id/cycles/:cycle_id',
-      templateUrl: static_url + 'seed/partials/inventory_item_detail.html',
+      templateUrl: static_url + 'seed/partials/inventory_detail.html',
       controller: 'property_detail_controller',
       resolve: {
         property_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
@@ -1034,14 +1065,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
         }],
         default_property_columns: ['user_service', function (user_service) {
           //TODO: Return default Property columns
-          return []
+          return [];
         }]
-      }
+      },
+      parent: 'detail'
     })
     .state({
       name: 'taxlot',
       url: '/taxlots/:taxlot_id/cycles/:cycle_id',
-      templateUrl: static_url + 'seed/partials/inventory_item_detail.html',
+      templateUrl: static_url + 'seed/partials/inventory_detail.html',
       controller: 'taxlot_detail_controller',
       resolve: {
         taxlot_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
@@ -1058,7 +1090,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           //TODO: Return default TaxLot columns
           return [];
         }]
-      }
+      },
+      parent: 'detail'
     });
 }]);
 

@@ -24,7 +24,7 @@
                ng-class="{item: true, active: is_active('/properties') || is_active('/taxlots')}"
                href="{% url "seed:home" %}#/properties"
                >
-                <div class="icon"><img src="{{STATIC_URL}}seed/images/icon-city.svg" title="Inventory" ></img></div>
+                <div class="icon"><img src="{{STATIC_URL}}seed/images/icon-city.svg" title="Inventory"></div>
                 <div ng-show="!is_initial_state" class="item_name">Inventory</div>
             </a>
             <a id="sidebar-data" ng-class="{item: true, active: is_active('/data')}" title="Data" href="{% url "seed:home" %}#/data" ng-show="menu.user.organization.user_role !== 'viewer'">
@@ -39,13 +39,13 @@
             </a>
 
             <div class="divider"></div>
-            <a id="sidebar-feedback" ng-class="{item: true, active: is_active('/feedback')}" title="Contact" href="{% url "seed:home" %}#/feedback">
-                <div class="icon"><i class="fa fa-certificate"></i></div>
-                <div ng-show="!is_initial_state" class="item_name">Contact</div>
-            </a>
             <a id="sidebar-api" ng-class="{item: true, active: is_active('/api/swagger/')}" title="API Documentation" href="{% url "seed:home" %}#/api/swagger">
                 <div class="icon"><i class="fa fa-code"></i></div>
                 <div ng-show="!is_initial_state" class="item_name">API Documentation</div>
+            </a>
+            <a id="sidebar-contact" ng-class="{item: true, active: is_active('/contact')}" title="Contact" href="{% url "seed:home" %}#/contact">
+                <div class="icon"><i class="fa fa-question-circle"></i></div>
+                <div ng-show="!is_initial_state" class="item_name">Contact</div>
             </a>
             <a id="sidebar-about" ng-class="{item: true, active: is_active('/about')}" title="About" href="{% url "seed:home" %}#/about">
                 <div class="icon"><i class="fa fa-info-circle"></i></div>

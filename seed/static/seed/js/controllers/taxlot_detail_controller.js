@@ -20,7 +20,12 @@ angular.module('BE.seed.controller.taxlot_detail', [])
 function($controller, $state, $scope,  $uibModal, $location, $log, $filter, urls, label_helper_service,
 				 	inventory_service, taxlot_payload, all_taxlot_columns, default_taxlot_columns ) {
 
+	$scope.fields = all_taxlot_columns.fields;
+
 	/** See service for structure of returned payload */
+	$scope.inventory = {
+		id: taxlot_payload.taxlot.id
+	};
 	$scope.taxlot = taxlot_payload.taxlot;
 	$scope.cycle = taxlot_payload.cycle;
 	$scope.related_properties = taxlot_payload.properties;
@@ -34,8 +39,8 @@ function($controller, $state, $scope,  $uibModal, $location, $log, $filter, urls
 	// as provided by the server.
 	$scope.all_extra_data_keys = taxlot_payload.extra_data_keys;
 
-	$scope.item_type = "taxlot";
-	$scope.item_title = "Tax Lot : " + ($scope.item_state.address ? $scope.item_state.address : '(no address)'); // TODO: Decide what value (address_line_1?) to show as identifying label in tax lot detail view?
+	$scope.inventory_type = 'taxlots';
+	$scope.item_title = 'Tax Lot : ' + ($scope.item_state.address ? $scope.item_state.address : '(no address)'); // TODO: Decide what value (address_line_1?) to show as identifying label in tax lot detail view?
 	$scope.user = {};
 	$scope.user_role = taxlot_payload.user_role;
 
@@ -53,12 +58,12 @@ function($controller, $state, $scope,  $uibModal, $location, $log, $filter, urls
 	/* User clicked 'save' button */
 	$scope.on_save = function () {
 		$scope.save_taxlot();
-	}
+	};
 
 
 	$scope.on_show_related_property = function(property) {
 		$location.path('/properties/' + property.property.id + '/cycles/' + property.cycle.id);
-	}
+	};
 
 	/**
 	 * save_taxlot: saves the user's changes to the TaxLot State object.

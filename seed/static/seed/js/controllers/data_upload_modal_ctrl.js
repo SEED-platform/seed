@@ -31,7 +31,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
   'dataset',
   '$timeout',
   'uploader_service',
-  '$location',
+  '$state',
   'mapping_service',
   'matching_service',
   'building_services',
@@ -44,7 +44,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     dataset,
     $timeout,
     uploader_service,
-    $location,
+    $state,
     mapping_service,
     matching_service,
     building_services,
@@ -109,16 +109,16 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     };
     $scope.goto_data_mapping = function () {
         $uibModalInstance.close();
-        $location.path('/data/mapping/' + $scope.dataset.import_file_id);
+        $state.go('mapping', {importfile_id: $scope.dataset.import_file_id});
     };
     $scope.goto_data_matching = function () {
         $uibModalInstance.close();
-        $location.path('/data/matching/' + $scope.dataset.import_file_id);
+        $state.go('matching', {importfile_id: $scope.dataset.import_file_id});
     };
     $scope.view_my_buildings = function () {
         $uibModalInstance.close();
         spinner_utility.show();
-        $location.path('/buildings/');
+        $state.go('properties');
         spinner_utility.hide();
     };
     /**

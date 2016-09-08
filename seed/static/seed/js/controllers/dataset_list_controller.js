@@ -9,8 +9,8 @@ angular.module('BE.seed.controller.dataset', [])
     '$uibModal',
     'urls',
     'dataset_service',
-    '$location',
-    function ($scope, datasets_payload, $uibModal, urls, dataset_service, $location) {
+    '$state',
+    function ($scope, datasets_payload, $uibModal, urls, dataset_service, $state) {
     $scope.datasets = datasets_payload.datasets;
     $scope.columns = [
         {
@@ -108,7 +108,7 @@ angular.module('BE.seed.controller.dataset', [])
         for (var i=0; i < dataset.importfiles.length; i++){
             var importfile = dataset.importfiles[i];
             if (importfile.source_type === 'Assessed Raw') {
-                $location.path('/data/mapping/' + importfile.id);
+                $state.go('mapping', {importfile_id: importfile.id});
                 break;
             }
         }
@@ -122,7 +122,7 @@ angular.module('BE.seed.controller.dataset', [])
         for (var i=0; i < dataset.importfiles.length; i++){
             var importfile = dataset.importfiles[i];
             if (importfile.source_type === 'Portfolio Raw') {
-                $location.path('/data/matching/' + importfile.id);
+                $state.go('matching', {importfile_id: importfile.id});
                 break;
             }
         }
