@@ -34,6 +34,7 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
             $http({
                 method: 'POST',
                 url: '/api/v2/users/' + user_id + '/is_authorized/',
+                params: {organization_id: organization_id},
                 data: {
                     actions: actions,
                     organization_id: organization_id
