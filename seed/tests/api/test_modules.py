@@ -11,7 +11,9 @@ import time
 
 import requests
 
-from seed_readingtools import check_status, read_map_file, upload_file
+from seed_readingtools import (
+    check_status, read_map_file, upload_file  # , check_progress
+)
 
 
 def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, filetype, mappingfilepath, log):
@@ -34,8 +36,11 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
                            headers=header,
                            data=json.dumps(payload))
     # progress = check_progress(main_url, header, result.json()['progress_key'])
+    # without the above line this is just checking the url returned something
+    # not that it did anything, as there are no guarantees the task finished
     check_status(result, partmsg, log)
 
+    # I think the idea was if we wait long enough it might finish?
     time.sleep(20)
 
     # Get the mapping suggestions
@@ -83,23 +88,25 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
                           params={'import_file_id': import_id})
     check_status(result, partmsg, log, PIIDflag='cleansing')
 
+    # SKIP THIS AS MATCHING BROKEN  DUE TO MIX OF OLD AND NEW CODE
+
     # Match uploaded buildings with buildings already in the organization.
-    print ('API Function: start_system_matching\n'),
-    partmsg = 'start_system_matching'
-    payload = {'file_id': import_id,
-               'organization_id': organization_id}
+    # print ('API Function: start_system_matching\n'),
+    # partmsg = 'start_system_matching'
+    # payload = {'file_id': import_id,
+    #            'organization_id': organization_id}
 
-    count = 100
-    while(count > 0):
-        result = requests.post(main_url + '/app/start_system_matching/',
-                               headers=header,
-                               data=json.dumps(payload))
-        if result.status_code == 200:
-            break
-        time.sleep(5)
-        count -= 1
+    # count = 100
+    # while(count > 0):
+    #     result = requests.post(main_url + '/app/start_system_matching/',
+    #                            headers=header,
+    #                            data=json.dumps(payload))
+    #     if result.status_code == 200:
+    #         break
+    #     time.sleep(5)
+    #     count -= 1
 
-    check_status(result, partmsg, log)
+    # check_status(result, partmsg, log)
 
     # Check number of matched and unmatched BuildingSnapshots
     print ('API Function: get_PM_filter_by_counts\n'),
