@@ -182,20 +182,20 @@ angular.module('BE.seed.controller.base_detail', [])
 
       /** Open a model to edit labels for the current detail item.
        *
-       * @param item  A Property or TaxLot object
-       * @param type  "property" or "taxlot"  << This might be unnecessary.
+       * @param inventory_id  A Property or TaxLot ID
+       * @param inventory_type  "properties" or "taxlots"
        */
 
-      $scope.open_update_labels_modal = function (item, type) {
+      $scope.open_update_labels_modal = function (inventory_id, inventory_type) {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/update_item_labels_modal.html',
-          controller: 'update_item_labels_modal_ctrl',
+          controller: 'update_item_labels_modal_controller',
           resolve: {
-            item: function () {
-              return item;
+            inventory_id: function () {
+              return inventory_id;
             },
-            type: function () {
-              return type;
+            inventory_type: function () {
+              return inventory_type;
             }
           }
         });

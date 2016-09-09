@@ -1,24 +1,19 @@
 /*
  * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
- *
- * Controller for the Update Labels modal window.
- * Manages applying labels to a single Property or Tax Lot, as
- * well as allowing for the creation of new labels.
- * The Property or Tax Lot is passed in as 'item', identified by
- * type="property" or type="taxlot"
- *
- *
  */
-angular.module('BE.seed.controller.update_item_labels_modal_ctrl', [])
-.controller('update_item_labels_modal_ctrl', [
+angular.module('BE.seed.controller.building_detail_update_labels_modal', [])
+.controller('building_detail_update_labels_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'label_service',
-  'item',
-  'type',
+  'building',
   'Notification',
-  function ($scope, $uibModalInstance, label_service, item, type, notification) {
+  function ($scope, $uibModalInstance, label_service, building, notification) {
+
+    //Controller for the Update Building Labels modal window.
+    //Manages applying labels to a single buildings, as
+    //well as allowing for the creation of new labels.
 
     //keep track of status of service call
     $scope.loading = false;
@@ -98,37 +93,18 @@ angular.module('BE.seed.controller.update_item_labels_modal_ctrl', [])
             .map('id')
             .value();
 
-
-        // TODO: refactor two service calls in if/else into one call
-        if (type==="property") {
-          label_service.update_property_labels(addLabelIDs, removeLabelIDs, [property.pk], false, {}).then(
+        label_service.update_building_labels(addLabelIDs, removeLabelIDs, [building.pk], false, {}).then(
             function(data){
-                if (data.num_properties_updated === 1) {
-                    notification.primary(data.num_properties_updated + ' property updated.');
+                if (data.num_buildings_updated === 1) {
+                    notification.primary(data.num_buildings_updated + ' building updated.');
                 } else {
-                    notification.primary(data.num_properties_updated + ' properties updated.');
+                    notification.primary(data.num_buildings_updated + ' buildings updated.');
                 }
                 $uibModalInstance.close();
             },
             function(data, status) {
             }
-          );
-        } else if (type==="taxlot") {
-          label_service.update_taxlot_labels(addLabelIDs, removeLabelIDs, [taxlot.pk], false, {}).then(
-            function(data){
-                if (data.num_taxlots_updated === 1) {
-                    notification.primary(data.num_taxlots_updated + ' tax lot updated.');
-                } else {
-                    notification.primary(data.num_taxlots_updated + ' tax lots updated.');
-                }
-                $uibModalInstance.close();
-            },
-            function(data, status) {
-            }
-          );
-        }
-
-
+        );
     };
 
     /* User has cancelled dialog */
@@ -142,7 +118,7 @@ angular.module('BE.seed.controller.update_item_labels_modal_ctrl', [])
         $scope.initialize_new_label();
         //get labels with 'is_applied' property by passing in current search state
         $scope.loading = true;
-        label_service.get_labels([item.pk], false, {}).then(function(data){
+        label_service.get_labels([building.pk], false, {}).then(function(data){
              $scope.labels = data.results;
              $scope.loading = false;
         });

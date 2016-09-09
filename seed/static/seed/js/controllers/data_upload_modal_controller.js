@@ -3,7 +3,7 @@
  * :author
  */
 /**
- * data_upload_modal_ctrl: the AngularJS controller for the data upload modal.
+ * data_upload_modal_controller: the AngularJS controller for the data upload modal.
  *
  * The numbers corresponding to ``step.number`` are reflected in
  * modal title changes like so:
@@ -23,7 +23,7 @@
  * ng-switch-when="12" == Error Processing Data
  */
 angular.module('BE.seed.controller.data_upload_modal', [])
-.controller('data_upload_modal_ctrl', [
+.controller('data_upload_modal_controller', [
   '$scope',
   '$uibModalInstance',
   '$log',
@@ -118,7 +118,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     $scope.view_my_buildings = function () {
         $uibModalInstance.close();
         spinner_utility.show();
-        $state.go('properties');
+        $state.go('inventory_list', {inventory_type: 'properties'});
         spinner_utility.hide();
     };
     /**

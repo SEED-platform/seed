@@ -186,7 +186,7 @@ angular.module('BE.seed.controller.menu', [])
       $scope.open_create_project_modal = function () {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/edit_project_modal.html',
-          controller: 'edit_project_modal_ctrl',
+          controller: 'edit_project_modal_controller',
           resolve: {
             project: function () {
               return $scope.menu.project;
@@ -210,12 +210,12 @@ angular.module('BE.seed.controller.menu', [])
 
       /**
        * open_data_upload_modal: opens the data upload modal, passes in the
-       *  data_upload_modal_ctrl controller.
+       *  data_upload_modal_controller controller.
        */
       $scope.open_data_upload_modal = function () {
         var dataModalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
-          controller: 'data_upload_modal_ctrl',
+          controller: 'data_upload_modal_controller',
           resolve: {
             step: function () {
               return 1;

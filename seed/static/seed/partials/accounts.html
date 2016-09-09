@@ -30,7 +30,7 @@
                     <tbody>
                         <tr>
                             <td class="account_pending left">Julie Daily (<strong>Owner</strong>) would like to add you in the role of <strong>Member</strong> to this organization.</td>
-                            <td class="account_pending right" style="text-align:right;"><a class="btn btn-primary" href="">Accept</a> <a class="btn btn-default" href="">Reject</a>
+                            <td class="account_pending right" style="text-align:right;"><a class="btn btn-primary" href="">Accept</a> <a class="btn btn-default" href="">Reject</a></td>
                         </tr>
                     </tbody>
                 </table>
@@ -103,7 +103,8 @@
                     <thead>
                         <tr>
                             <th>Organization Name</th>
-                            <th>Number of Buildings</th>
+                            <th>Number of Properties</th>
+                            <th>Number of Tax Lots</th>
                             <th>Your Role</th>
                             <th>Organization Owner(s)</th>
                         </tr>
@@ -115,7 +116,14 @@
                                 <span ng-if="org.user_role === 'viewer'">{$ org.name $}</span>
                             </td>
                             <td class="align_to_top">
-                                <span>{$ org.num_buildings $}</span>
+                                <div ng-repeat="cycle in org.cycles" ng-if="cycle.num_properties">
+                                    {$ cycle.name $}: {$ cycle.num_properties $}
+                                </div>
+                            </td>
+                            <td class="align_to_top">
+                                <div ng-repeat="cycle in org.cycles" ng-if="cycle.num_taxlots">
+                                    {$ cycle.name $}: {$ cycle.num_taxlots $}
+                                </div>
                             </td>
                             <td class="align_to_top">{$ org.user_role || "-" $}</td>
                             <td>

@@ -52,6 +52,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.existing_members_modal',
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.export_modal',
+  'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_list',
   'BE.seed.controller.inventory_reports',
@@ -67,10 +68,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.organization',
   'BE.seed.controller.organization_settings',
   'BE.seed.controller.project',
-  'BE.seed.controller.property_detail',
   'BE.seed.controller.security',
-  'BE.seed.controller.taxlot_detail',
-  'BE.seed.controller.update_item_labels_modal_ctrl'
+  'BE.seed.controller.update_item_labels_modal'
 ]);
 angular.module('BE.seed.filters', [
   'district',
@@ -235,9 +234,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
         }]
       }
     })
-    /* TO REMOVE */
-    /*
-    .state({
+    /*.state({
       name: 'projects',
       url: '/projects',
       templateUrl: static_url + 'seed/partials/projects.html',
@@ -1048,46 +1045,24 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       template: '<ui-view>'
     })
     .state({
-      name: 'property',
-      url: '/properties/:property_id/cycles/:cycle_id',
+      name: 'inventory_detail',
+      url: '/{inventory_type:properties|taxlots}/:inventory_id/cycles/:cycle_id',
       templateUrl: static_url + 'seed/partials/inventory_detail.html',
-      controller: 'property_detail_controller',
+      controller: 'inventory_detail_controller',
       resolve: {
-        property_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
-          // load `get_building` before page is loaded to avoid
-          // page flicker.
-          var property_id = $stateParams.property_id;
+        inventory_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
+          // load `get_building` before page is loaded to avoid page flicker.
+          var inventory_id = $stateParams.inventory_id;
           var cycle_id = $stateParams.cycle_id;
-          return inventory_service.get_property(property_id, cycle_id);
+          if ($stateParams.inventory_type == 'properties') return inventory_service.get_property(inventory_id, cycle_id);
+          else if ($stateParams.inventory_type == 'taxlots') return inventory_service.get_taxlot(inventory_id, cycle_id);
         }],
-        all_property_columns: ['inventory_service', function (inventory_service) {
-          return inventory_service.get_property_columns();
+        all_columns: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
+          if ($stateParams.inventory_type == 'properties') return inventory_service.get_property_columns();
+          else if ($stateParams.inventory_type == 'taxlots') return inventory_service.get_taxlot_columns();
         }],
-        default_property_columns: ['user_service', function (user_service) {
+        default_columns: ['user_service', function (user_service) {
           //TODO: Return default Property columns
-          return [];
-        }]
-      },
-      parent: 'detail'
-    })
-    .state({
-      name: 'taxlot',
-      url: '/taxlots/:taxlot_id/cycles/:cycle_id',
-      templateUrl: static_url + 'seed/partials/inventory_detail.html',
-      controller: 'taxlot_detail_controller',
-      resolve: {
-        taxlot_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
-          // load `get_building` before page is loaded to avoid
-          // page flicker.
-          var taxlot_id = $stateParams.taxlot_id;
-          var cycle_id = $stateParams.cycle_id;
-          return inventory_service.get_taxlot(taxlot_id, cycle_id);
-        }],
-        all_taxlot_columns: ['inventory_service', function (inventory_service) {
-          return inventory_service.get_taxlot_columns();
-        }],
-        default_taxlot_columns: ['user_service', function (user_service) {
-          //TODO: Return default TaxLot columns
           return [];
         }]
       },

@@ -63,7 +63,7 @@ angular.module('BE.seed.service.label',
     */
 
     function get_labels(selected_properties, select_all_checkbox, search_params) {
-        return get_labels_for_org(user_service.get_organization().id);
+        return get_labels_for_org(user_service.get_organization().id, selected_properties, select_all_checkbox, search_params);
     }
 
     function get_labels_for_org(org_id, selected_properties, select_all_checkbox, search_params) {

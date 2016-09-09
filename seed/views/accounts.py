@@ -23,7 +23,7 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser,
 )
 from seed.utils.buildings import get_columns as utils_get_columns
-from seed.models import CanonicalBuilding
+from seed.models import Cycle, PropertyView, TaxLotView
 from seed.landing.models import SEEDUser as User
 from seed.tasks import (
     invite_to_seed,
@@ -47,18 +47,19 @@ _log = logging.getLogger(__name__)
 def _dict_org(request, organizations):
     """returns a dictionary of an organization's data."""
 
-    cbs = list(CanonicalBuilding.objects.filter(canonical_snapshot__super_organization__in=organizations).values('canonical_snapshot__super_organization_id'))
-
-    org_map = dict((x.pk, 0) for x in organizations)
-    for cb in cbs:
-        org_id = cb['canonical_snapshot__super_organization_id']
-        org_map[org_id] = org_map[org_id] + 1
-
     orgs = []
     for o in organizations:
+        org_cycles = Cycle.objects.filter(organization=o).order_by('name')
+        cycles = []
+        for c in org_cycles:
+            cycles.append({
+                'name': c.name,
+                'num_properties': PropertyView.objects.filter(cycle=c).count(),
+                'num_taxlots': TaxLotView.objects.filter(cycle=c).count()
+            })
+
         # We don't wish to double count sub organization memberships.
-        org_users = OrganizationUser.objects.select_related('user') \
-            .filter(organization=o)
+        org_users = OrganizationUser.objects.select_related('user').filter(organization=o)
 
         owners = []
         role_level = None
@@ -89,7 +90,7 @@ def _dict_org(request, organizations):
             'sub_orgs': _dict_org(request, o.child_orgs.all()),
             'is_parent': o.is_parent,
             'parent_id': o.parent_id,
-            'num_buildings': org_map[o.pk],
+            'cycles': cycles,
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
         }
         orgs.append(org)

@@ -99,11 +99,11 @@ angular.module('BE.seed.controller.inventory_list', [])
        including creating a new label or applying to/removing from a building.
        When the modal is closed, refresh labels and search.
        */
-      $scope.open_update_building_labels_modal = function () {
+      $scope.open_update_labels_modal = function () {
 
         var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/update_building_labels_modal.html',
-          controller: 'update_building_labels_modal_ctrl',
+          templateUrl: urls.static_url + 'seed/partials/update_item_labels_modal.html',
+          controller: 'update_item_labels_modal_controller',
           resolve: {
             search: function () {
               return $scope.search;

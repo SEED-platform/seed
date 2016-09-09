@@ -1,25 +1,25 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
-describe('controller: new_member_modal_ctrl', function(){
+describe('controller: create_organization_modal_controller', function(){
     // globals set up and used in each test scenario
-    var mock_user_service, scope, controller, modal_state;
+    var mock_organization_service, scope, controller, modal_state;
     var ctrl, ctrl_scope, modalInstance, timeout;
     beforeEach(function() {
         module('BE.seed');
     });
 
     // inject AngularJS dependencies for the controller
-    beforeEach(inject(function($controller, $rootScope, $uibModal, $q, user_service, $timeout) {
+    beforeEach(inject(function($controller, $rootScope, $uibModal, $q, organization_service, $timeout) {
         ctrl = $controller;
         scope = $rootScope;
         ctrl_scope = $rootScope.$new();
         modal_state = '';
         timeout = $timeout;
 
-        mock_user_service = user_service;
-        spyOn(mock_user_service, 'add')
-            .andCallFake(function(user){
+        mock_organization_service = organization_service;
+        spyOn(mock_organization_service, 'create_sub_org')
+            .andCallFake(function(org, sub_org){
                 // return $q.reject for error scenario
                 return $q.when({status: 'success'});
             }
@@ -27,8 +27,8 @@ describe('controller: new_member_modal_ctrl', function(){
     }));
 
     // this is outside the beforeEach so it can be configured by each unit test
-    function create_new_member_controller(){
-        ctrl = ctrl('new_member_modal_ctrl', {
+    function create_organization_modal_controller(){
+        ctrl = ctrl('create_organization_modal_controller', {
             $scope: ctrl_scope,
             $uibModalInstance: {
                 close: function() {
@@ -46,39 +46,28 @@ describe('controller: new_member_modal_ctrl', function(){
      * Test scenarios
      */
 
-    it('should set the default role to \'member\'', function() {
-        // arrange
-        create_new_member_controller();
-
-        // act
-        ctrl_scope.$digest();
-
-        // assertions
-        expect(ctrl_scope.user.role.value).toEqual('member');
-    });
-    it('should call the user service to add a new user to the org',
+    it('should call the organization service to add a new sub_org',
         function() {
         // arrange
-        create_new_member_controller();
+        create_organization_modal_controller();
 
         // act
         ctrl_scope.$digest();
-        ctrl_scope.user.first_name = 'JB';
-        ctrl_scope.user.last_name = 'Smooth';
-        ctrl_scope.user.email = 'jb.smooth@be.com';
+        ctrl_scope.sub_org.name = 'my shiny new org';
+        ctrl_scope.sub_org.email = 'jb.smooth@be.com';
         ctrl_scope.submit_form(true);
 
         // assertions
-        expect(mock_user_service.add)
-            .toHaveBeenCalledWith({
-                first_name: 'JB',
-                last_name: 'Smooth',
-                email: 'jb.smooth@be.com',
-                role: ctrl_scope.roles[0],
-                organization: {
+        expect(mock_organization_service.create_sub_org)
+            .toHaveBeenCalledWith(
+                {
                     organization_id: 1
+                },
+                {
+                    name: 'my shiny new org',
+                    email: 'jb.smooth@be.com'
                 }
-            });
+            );
     });
 
 });

@@ -168,7 +168,7 @@ angular.module('BE.seed.controller.building_list', [])
 
         var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/update_building_labels_modal.html',
-            controller: 'update_building_labels_modal_ctrl',
+            controller: 'update_building_labels_modal_controller',
             resolve: {
                 search: function () {
                     return $scope.search;

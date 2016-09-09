@@ -119,7 +119,7 @@ angular.module('BE.seed.controller.mapping', [])
     $scope.open_concat_modal = function(building_column_types, raw_columns) {
         var concatModalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/concat_modal.html',
-            controller: 'concat_modal_ctrl',
+            controller: 'concat_modal_controller',
             resolve: {
                 building_column_types: function() {
                     return Object.keys(building_column_types);
@@ -605,7 +605,7 @@ angular.module('BE.seed.controller.mapping', [])
         ds.import_file_id = $scope.import_file.id;
         var dataModalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
-            controller: 'data_upload_modal_ctrl',
+            controller: 'data_upload_modal_controller',
             resolve: {
                 step: function(){
                     return step;

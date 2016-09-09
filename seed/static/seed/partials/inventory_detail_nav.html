@@ -1,3 +1,2 @@
-        <a id="item_title" ng-if="inventory_type==='properties'" ui-sref="detail.property({property_id: inventory.id, cycle_id: cycle.id})" ui-sref-active="active">Property Detail</a><!--
-     --><a id="item_title" ng-if="inventory_type==='taxlots'" ui-sref="detail.taxlot({taxlot_id: inventory.id, cycle_id: cycle.id})" ui-sref-active="active">Tax Lot Detail</a><!--
+        <a id="item_title" ui-sref="detail.inventory_detail({inventory_type: inventory_type, inventory_id: inventory.id, cycle_id: cycle.id})" ui-sref-active="active">{$ inventory_type == 'taxlots' ? 'Tax Lot' : 'Property'$} Detail</a><!--
      --><a id="settings" ui-sref="detail_settings({inventory_type: inventory_type, inventory_id: inventory.id, cycle_id: cycle.id})" ui-sref-active="active">Settings</a>

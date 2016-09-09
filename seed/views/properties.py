@@ -320,7 +320,7 @@ def get_taxlots(request):
 @login_required
 @has_perm('requires_viewer')
 def get_cycles(request):
-    cycles = Cycle.objects.filter(organization_id=request.GET['organization_id'])
+    cycles = Cycle.objects.filter(organization_id=request.GET['organization_id']).order_by('name')
     return_cycles = []
     for cycle in cycles:
         return_cycles.append({
