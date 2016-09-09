@@ -190,6 +190,8 @@ td
 tearDown
 templatetags
 TableRows
+TaxLot
+taxlot
 TestCaseFactory
 TestCaseFactoryBrowser
 Thusly
