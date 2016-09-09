@@ -57,7 +57,6 @@ from seed.utils.buildings import (
     get_buildings_for_user_count
 )
 from seed.utils.cache import get_cache, set_cache
-# from seed.utils.generic import median, round_down_hundred_thousand
 from seed.utils.mapping import get_mappable_types, get_mappable_columns
 from seed.utils.projects import (
     get_projects,
@@ -1336,16 +1335,18 @@ def get_column_mapping_suggestions(request):
     return tmp_mapping_suggestions(import_file_id, org_id, request.user)
 
 
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import JsonResponse
 from rest_framework import viewsets
 from seed.decorators import ajax_request_class
 from seed.utils.api import api_endpoint_class
 from rest_framework.decorators import detail_route
+from rest_framework.authentication import SessionAuthentication
+from seed.authentication import SEEDAuthentication
 
 
-class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
+class DataFileViewSet(viewsets.ViewSet):
     raise_exception = True
+    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     @api_endpoint_class
     @ajax_request_class
@@ -1381,8 +1382,7 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
 
         result = tmp_mapping_suggestions(pk, org_id, request.user)
 
-        return HttpResponse(json.dumps(result),
-                            content_type='application/json')
+        return JsonResponse(result)
 
 
 @api_endpoint

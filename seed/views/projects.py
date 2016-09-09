@@ -33,11 +33,12 @@ from seed.utils.api import api_endpoint_class
 from seed.utils import projects as utils
 from seed.utils.time import convert_to_js_timestamp
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import list_route
+from rest_framework.authentication import SessionAuthentication
+from seed.authentication import SEEDAuthentication
 
 
 _log = logging.getLogger(__name__)
@@ -48,8 +49,9 @@ DEFAULT_CUSTOM_COLUMNS = [
 ]
 
 
-class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
+class ProjectsViewSet(viewsets.ViewSet):
     raise_exception = True
+    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     @require_organization_id_class
     @api_endpoint_class
@@ -175,15 +177,15 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
         except:
             return JsonResponse({'status': 'error',
                                  'message': 'project_slug needs to be included as a query parameter'},
-                                status=400)
+                                status=status.HTTP_400_BAD_REQUEST)
         try:
             project = Project.objects.get(slug=project_slug)
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error',
                                  'message': 'Could not access project with slug = ' + str(project_slug)},
-                                status=403)
+                                status=status.HTTP_404_NOT_FOUND)
         if project.super_organization_id != int(request.query_params.get('organization_id', None)):
-            return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=403)
+            return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         project_dict = project.__dict__
         project_dict['is_compliance'] = project.has_compliance
         if project_dict['is_compliance']:
@@ -231,10 +233,10 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
         if organization_id is None or project_slug is None:
             return JsonResponse({'status': 'error',
                                  'message': 'Needs organization_id and project_slug as query parameters.'},
-                                status=400)
+                                status=status.HTTP_400_BAD_REQUEST)
         project = Project.objects.get(slug=project_slug)
         if project.super_organization_id != int(organization_id):
-            return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=403)
+            return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         project.delete()
         return JsonResponse({'status': 'success'})
 
@@ -298,7 +300,7 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'project already exists for user'
-            }, status=409)
+            }, status=status.HTTP_409_CONFLICT)
 
         project, created = Project.objects.get_or_create(
             name=project_name,
@@ -309,7 +311,7 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'project already exists for the organization'
-            }, status=409)
+            }, status=status.HTTP_409_CONFLICT)
         project.last_modified_by = request.user
         if project_description:
             project.description = project_description
@@ -377,13 +379,13 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
         except:
             return JsonResponse({'status': 'error',
                                  'message': 'project_slug must be passed in as query argument'},
-                                status=400)
+                                status=status.HTTP_400_BAD_REQUEST)
         try:
             project = Project.objects.get(slug=project_slug)
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error',
                                  'message': 'Could not retrieve project with slug = ' + str(project_slug)},
-                                status=403)
+                                status=status.HTTP_404_NOT_FOUND)
         if project_name:
             project.name = project_name
         project.last_modified_by = request.user
@@ -454,13 +456,13 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
         except:
             return JsonResponse({'status': 'error',
                                  'message': 'project_slug needs to be included as a query parameter'},
-                                status=400)
+                                status=status.HTTP_400_BAD_REQUEST)
         try:
             project = Project.objects.get(slug=project_slug)
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error',
                                  'message': 'Could not find project with project_slug = ' + str(project_slug)},
-                                status=403)
+                                status=status.HTTP_404_NOT_FOUND)
         add_buildings.delay(
             project_slug=project.slug, prpoject_dict=body,
             user_pk=request.user.pk)
@@ -511,13 +513,13 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
         except:
             return JsonResponse({'status': 'error',
                                  'message': 'project_slug needs to be included as a query parameter'},
-                                status=400)
+                                status=status.HTTP_400_BAD_REQUEST)
         try:
             project = Project.objects.get(slug=project_slug)
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error',
                                  'message': 'Could not find project with project_slug = ' + str(project_slug)},
-                                status=403)
+                                status=status.HTTP_404_NOT_FOUND)
         remove_buildings.delay(
             project_slug=project.slug, project_dict=body,
             user_pk=request.user.pk)
@@ -642,7 +644,7 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
         except:
             return JsonResponse({'status': 'error',
                                  'message': 'project_slug needs to be included as a query parameter'},
-                                status=400)
+                                status=status.HTTP_400_BAD_REQUEST)
         try:
             pb = ProjectBuilding.objects.get(
                 project__slug=project_slug,
@@ -650,7 +652,7 @@ class ProjectsViewSet(LoginRequiredMixin, viewsets.ViewSet):
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error',
                                  'message': 'Could not access project building with slug = ' + str(project_slug)},
-                                status=403)
+                                status=status.HTTP_404_NOT_FOUND)
         pb.approved_date = datetime.datetime.now()
         pb.approver = request.user
         status_label = StatusLabel.objects.get(pk=body['label'])

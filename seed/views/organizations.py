@@ -38,6 +38,7 @@ from seed.cleansing.models import (
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 from seed.decorators import get_prog_key
 from seed import tasks
+from rest_framework import status
 
 
 def _dict_org(request, organizations):
@@ -306,7 +307,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'no organization_id sent'
-            }, status=400)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             org = Organization.objects.get(pk=org_id)
@@ -314,7 +315,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'organization does not exist'
-            }, status=404)
+            }, status=status.HTTP_404_NOT_FOUND)
         if (
             not request.user.is_superuser and
             not OrganizationUser.objects.filter(
@@ -327,7 +328,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'user is not the owner of the org'
-            }, status=403)
+            }, status=status.HTTP_403_FORBIDDEN)
 
         return JsonResponse({
             'status': 'success',
@@ -371,7 +372,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error',
                                  'message': 'Could not retrieve organization at pk = ' + str(pk)},
-                                status=404)
+                                status=status.HTTP_404_NOT_FOUND)
         users = []
         for u in org.organizationuser_set.all():
             user = u.user
@@ -420,13 +421,13 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'organization does not exist'
-            }, status=404)
+            }, status=status.HTTP_404_NOT_FOUND)
 
         if body.get('user_id') is None:
             return JsonResponse({
                 'status': 'error',
                 'message': 'missing the user_id'
-            }, status=400)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = User.objects.get(pk=body['user_id'])
@@ -434,7 +435,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'user does not exist'
-            }, status=404)
+            }, status=status.HTTP_404_NOT_FOUND)
 
         if not OrganizationUser.objects.filter(
             user=request.user, organization=org, role_level=ROLE_OWNER
@@ -442,7 +443,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'only the organization owner can remove a member'
-            }, status=403)
+            }, status=status.HTTP_403_FORBIDDEN)
 
         is_last_member = not OrganizationUser.objects.filter(
             organization=org,
@@ -452,7 +453,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'an organization must have at least one member'
-            }, status=409)
+            }, status=status.HTTP_409_CONFLICT)
 
         is_last_owner = not OrganizationUser.objects.filter(
             organization=org,
@@ -463,7 +464,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'an organization must have at least one owner level member'
-            }, status=409)
+            }, status=status.HTTP_409_CONFLICT)
 
         ou = OrganizationUser.objects.get(user=user, organization=org)
         ou.delete()
@@ -508,7 +509,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'organization name already exists'
-            }, status=409)
+            }, status=status.HTTP_409_CONFLICT)
 
         org, _, _ = create_organization(user, org_name, org_name)
         return JsonResponse({'status': 'success',
@@ -591,7 +592,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(pk=pk)
         posted_org = body.get('organization', None)
         if posted_org is None:
-            return JsonResponse({'status': 'error', 'message': 'malformed request'}, status=400)
+            return JsonResponse({'status': 'error', 'message': 'malformed request'}, status=status.HTTP_400_BAD_REQUEST)
 
         desired_threshold = posted_org.get('query_threshold', None)
         if desired_threshold is not None:
@@ -911,12 +912,12 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'organization does not exist'
-            }, status=404)
+            }, status=status.HTTP_404_NOT_FOUND)
         if body.get('cleansing_rules') is None:
             return JsonResponse({
                 'status': 'error',
                 'message': 'missing the cleansing_rules'
-            }, status=400)
+            }, status=status.HTTP_404_NOT_FOUND)
 
         posted_rules = body['cleansing_rules']
         updated_rules = []
@@ -997,7 +998,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'User with email address (%s) does not exist' % email
-            }, status=404)
+            }, status=status.HTTP_404_NOT_FOUND)
         sub_org = Organization.objects.create(
             name=body['sub_org_name']
         )
@@ -1013,7 +1014,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'Tried to create child of a child organization.'
-            }, status=409)
+            }, status=status.HTTP_409_CONFLICT)
 
         return JsonResponse({'status': 'success',
                             'organization_id': sub_org.pk})

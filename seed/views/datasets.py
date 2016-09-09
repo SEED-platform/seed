@@ -21,6 +21,7 @@ from seed.utils.time import convert_to_js_timestamp
 from rest_framework.decorators import list_route
 from rest_framework.authentication import SessionAuthentication
 from seed.authentication import SEEDAuthentication
+from rest_framework import status
 
 _log = logging.getLogger(__name__)
 
@@ -145,7 +146,7 @@ class DatasetViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'user does not have permission to update dataset',
-            }, status=400)
+            }, status=status.HTTP_400_BAD_REQUEST)
         d = d[0]
         d.name = name
         d.save()
@@ -269,7 +270,7 @@ class DatasetViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'user does not have permission to delete dataset',
-            }, status=400)
+            }, status=status.HTTP_403_FORBIDDEN)
         d = d[0]
         d.delete()
         return JsonResponse({'status': 'success'})
@@ -316,7 +317,7 @@ class DatasetViewSet(viewsets.ViewSet):
             org = Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
             return JsonResponse({"status": 'error', 'message': 'organization_id not provided'},
-                                status=403)
+                                status=status.HTTP_400_BAD_REQUEST)
         record = ImportRecord.objects.create(
             name=body['name'],
             app="seed",
@@ -364,4 +365,4 @@ class DatasetViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'Could not find organization_id: {}'.format(org_id)
-            }, status=400)
+            }, status=status.HTTP_400_BAD_REQUEST)
