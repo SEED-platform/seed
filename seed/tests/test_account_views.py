@@ -13,7 +13,7 @@ from seed.cleansing.models import Rules, CATEGORY_MISSING_MATCHING_FIELD, \
     CATEGORY_MISSING_VALUES, CATEGORY_IN_RANGE_CHECKING
 from seed.landing.models import SEEDUser as User
 from seed.views.main import _get_default_org
-from seed.views.accounts import _dict_org, _get_js_role, _get_role_from_js
+from seed.views.users import _dict_org, _get_js_role, _get_role_from_js
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
@@ -178,7 +178,7 @@ class AccountsViewTests(TestCase):
     def test_get_organization_std_case(self):
         """test normal case"""
         resp = self.client.get(
-            reverse_lazy("apiv2:organizations-detail", args=[self.org.id]) + '?organization_id=' + str(self.org.id),
+            reverse_lazy("apiv2:organizations-detail", args=[self.org.id]),
             content_type='application/json',
         )
 
@@ -206,7 +206,7 @@ class AccountsViewTests(TestCase):
         other_org.add_member(other_user)
 
         resp = self.client.get(
-            reverse_lazy("apiv2:organizations-detail", args=[other_org.id]) + '?organization_id=' + str(other_org.id),
+            reverse_lazy("apiv2:organizations-detail", args=[other_org.id]),
             content_type='application/json',
         )
         self.assertEquals(
@@ -236,7 +236,7 @@ class AccountsViewTests(TestCase):
         self.org.add_member(u)
 
         resp = self.client.delete(
-            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]) + '?organization_id=' + str(self.org.id),
+            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]),
             data=json.dumps({'user_id': u.id}),
             content_type='application/json',
         )
@@ -251,7 +251,7 @@ class AccountsViewTests(TestCase):
         self.assertEqual(self.org.users.count(), 1)
 
         resp = self.client.delete(
-            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]) + '?organization_id=' + str(self.org.id),
+            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]),
             data=json.dumps({'user_id': self.user.id}),
             content_type='application/json',
         )
@@ -269,7 +269,7 @@ class AccountsViewTests(TestCase):
         self.assertEqual(self.org.users.count(), 2)
 
         resp = self.client.delete(
-            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]) + '?organization_id=' + str(self.org.id),
+            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]),
             data=json.dumps({'user_id': self.user.id}),
             content_type='application/json',
         )
@@ -299,8 +299,7 @@ class AccountsViewTests(TestCase):
         self.org.add_member(u)
 
         resp = self.client.delete(
-            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]) + '?organization_id=' + str(self.org.id),
-            data=json.dumps({}),
+            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]),
             content_type='application/json',
         )
         self.assertDictEqual(
@@ -316,7 +315,7 @@ class AccountsViewTests(TestCase):
         self.org.add_member(u)
 
         resp = self.client.delete(
-            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]) + '?organization_id=' + str(self.org.id),
+            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]),
             data=json.dumps({'user_id': 9999}),
             content_type='application/json',
         )
@@ -333,7 +332,7 @@ class AccountsViewTests(TestCase):
         self.org.add_member(u)
 
         resp = self.client.delete(
-            reverse_lazy("apiv2:organizations-remove-user", args=[9999]) + '?organization_id=' + str(9999),
+            reverse_lazy("apiv2:organizations-remove-user", args=[9999]),
             data=json.dumps({'user_id': u.id}),
             content_type='application/json',
         )
@@ -363,7 +362,7 @@ class AccountsViewTests(TestCase):
         self.assertEquals(ou.role_level, ROLE_VIEWER)
 
         resp = self.client.put(
-            reverse_lazy("apiv2:users-update-role", args=[u.id]),
+            reverse_lazy("apiv2:users-update-role", args=[u.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps(
                 {
                     'organization_id': self.org.id,
@@ -390,11 +389,11 @@ class AccountsViewTests(TestCase):
         self.assertEquals(ou.role_level, ROLE_OWNER)
 
         resp = self.client.put(
-            reverse_lazy("apiv2:users-update-role", args=[self.user.id]),
+            reverse_lazy("apiv2:users-update-role", args=[self.user.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps(
                 {
-                    'organization_id': self.org.id,
-                    'role': 'member'
+                    'role': 'member',
+                    'organization_id': str(self.org.id)
                 }
             ),
             content_type='application/json',
@@ -417,7 +416,7 @@ class AccountsViewTests(TestCase):
         self.assertEquals(ou.role_level, ROLE_OWNER)
 
         resp = self.client.put(
-            reverse_lazy("apiv2:users-update-role", args=[u.id]),
+            reverse_lazy("apiv2:users-update-role", args=[self.user.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps(
                 {
                     'organization_id': self.org.id,
@@ -538,7 +537,7 @@ class AccountsViewTests(TestCase):
                          'property_name')
 
     def test_add_shared_fields(self):
-        url = reverse_lazy('apiv2:organizations-save-settings', args=[self.org.pk]) + '?organization_id=' + str(self.org.pk)
+        url = reverse_lazy('apiv2:organizations-save-settings', args=[self.org.pk])
         payload = {
             u'organization_id': self.org.pk,
             u'organization': {
@@ -588,19 +587,19 @@ class AccountsViewTests(TestCase):
     def test_get_cleansing_rules_matching(self):
         Rules.objects.create(org=self.org, category=CATEGORY_MISSING_MATCHING_FIELD,
                              field='address_line_1', severity=0)
-        response = self.client.get(reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]) + '?organization_id=' + str(self.org.pk))
+        response = self.client.get(reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]))
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_cleansing_rules_values(self):
         Rules.objects.create(org=self.org, category=CATEGORY_MISSING_VALUES,
                              field='address_line_1', severity=0)
-        response = self.client.get(reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]) + '?organization_id=' + str(self.org.pk))
+        response = self.client.get(reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]))
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_cleansing_rules_range(self):
         Rules.objects.create(org=self.org, category=CATEGORY_IN_RANGE_CHECKING,
                              field='address_line_1', severity=0)
-        response = self.client.get(reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]) + '?organization_id=' + str(self.org.pk))
+        response = self.client.get(reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]))
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_save_cleansing_rules(self):

@@ -122,7 +122,6 @@ SEED_URL_APPS = (
     'data_importer',
     'seed',
     'audit_logs',
-    'projects',
 )
 
 MEDIA_ROOT = join(SITE_ROOT, 'collected_static')

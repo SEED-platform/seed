@@ -154,7 +154,7 @@ class ProjectsViewTests(TestCase):
         # test for member
         self._set_role_level(ROLE_MEMBER)
         resp = self.client.get(
-            reverse_lazy("projects:get_projects"),
+            reverse_lazy("apiv2:projects-list"),
             {'organization_id': self.org.id},
             content_type='application/json',
         )
@@ -165,7 +165,7 @@ class ProjectsViewTests(TestCase):
         # test for owner
         self._set_role_level(ROLE_OWNER)
         resp = self.client.get(
-            reverse_lazy("projects:get_projects"),
+            reverse_lazy("apiv2:projects-list"),
             {'organization_id': self.org.id},
             content_type='application/json',
         )
@@ -175,7 +175,7 @@ class ProjectsViewTests(TestCase):
         )
         # test for an org the user does not belong
         resp = self.client.get(
-            reverse_lazy("projects:get_projects"),
+            reverse_lazy("apiv2:projects-list"),
             {'organization_id': other_org.id},
             content_type='application/json',
         )
@@ -299,7 +299,7 @@ class ProjectsViewTests(TestCase):
             'organization_id': self.org.id,
         }
         resp = self.client.put(
-            reverse_lazy("apiv2:projects-update-project") + '?project_slug=' + str(project['slug']),
+            reverse_lazy("apiv2:projects-update-project") + '?project_slug=' + str(project['slug']) + '&organization_id=' + str(self.org.id),
             data=json.dumps(
                 project
             ),
@@ -318,7 +318,7 @@ class ProjectsViewTests(TestCase):
         # test that a view cannot update
         self._set_role_level(ROLE_VIEWER)
         resp = self.client.put(
-            reverse_lazy("apiv2:projects-update-project") + '?project_slug=' + str(project['slug']),
+            reverse_lazy("apiv2:projects-update-project") + '?project_slug=' + str(project['slug']) + '&organization_id=' + str(self.org.id),
             data=json.dumps(
                 {'organization_id': self.org.id, 'project': project}
             ),

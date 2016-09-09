@@ -157,14 +157,27 @@ def _make_resp(message_name):
 
 def _get_org_id(request):
     """Extract the ``organization_id`` regardless of HTTP method type."""
+    # first try to get it from the query parameters
     org_id = request.GET.get('organization_id')
+    # if that doesn't work...
     if org_id is None:
+        # try getting it from the request body itself
         try:
-            org_id = json.loads(request.body).get('organization_id')
-        except ValueError:
-            # no JSON body to load, org_id being None will raise an error
-            pass
-
+            if hasattr(request, 'data'):
+                body = request.data
+            else:
+                body = request.body
+            org_id = json.loads(body).get('organization_id')
+        except Exception:
+            # if that doesn't work, try getting it from the url path itself, i.e. '/api/v2/organizations/12/'
+            if hasattr(request, '_request') and 'organizations' in request._request.path:
+                try:
+                    org_id = int(request._request.path.split('/')[4])
+                except Exception as e:
+                    # one of many possible things went wrong, pass with None
+                    return None
+            else:
+                return None
     return org_id
 
 

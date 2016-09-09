@@ -587,7 +587,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'error message, if any'
             }
         """
-        body = json.loads(request.body)
+        body = request.data
         org = Organization.objects.get(pk=pk)
         posted_org = body.get('organization', None)
         if posted_org is None:

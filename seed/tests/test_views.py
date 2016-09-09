@@ -2239,9 +2239,8 @@ class TestMCMViews(TestCase):
 
     def test_get_column_mapping_suggestions(self):
         response = self.client.get(
-            reverse_lazy("apiv2:data_files-mapping-suggestions", args=[self.import_file.pk]),
-            content_type='application/json',
-            params={'organization_id': self.org.pk}
+            reverse_lazy("apiv2:data_files-mapping-suggestions", args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
+            content_type='application/json'
         )
         self.assertEqual('success', json.loads(response.content)['status'])
 

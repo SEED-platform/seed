@@ -66,7 +66,7 @@ from seed.utils.projects import (
     get_projects,
 )
 from seed.utils.time import convert_to_js_timestamp
-from seed.views.accounts import _get_js_role
+from seed.views.users import _get_js_role
 from .. import search
 
 DEFAULT_CUSTOM_COLUMNS = [

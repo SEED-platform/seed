@@ -245,7 +245,9 @@ class TestApi(TestCase):
             'role': 'member'
         }
 
-        r = self.client.post('/api/v2/users/', data=json.dumps(new_user), content_type='application/json',
+        r = self.client.post('/api/v2/users/?organization_id=' + str(organization_id),
+                             data=json.dumps(new_user),
+                             content_type='application/json',
                              **self.headers)
         self.assertEqual(r.status_code, 200)
 
@@ -256,7 +258,7 @@ class TestApi(TestCase):
         self.assertEqual(r['organization']['number_of_users'], 2)
 
         # get org users
-        r = self.client.post('/api/v2/organizations/%s/users/' % organization_id,
+        r = self.client.get('/api/v2/organizations/%s/users/' % organization_id,
                              content_type='application/json', **self.headers)
         self.assertEqual(r.status_code, 200)
         # {
@@ -292,15 +294,17 @@ class TestApi(TestCase):
             'role': 'owner'
         }
 
-        r = self.client.post('/api/v2/users/%s/update_role/' % user_id, data=json.dumps(payload), content_type='application/json',
-                             **self.headers)
+        r = self.client.put('/api/v2/users/%s/update_role/?organization_id=%s' % (user_id, organization_id),
+                            data=json.dumps(payload),
+                            content_type='application/json',
+                            **self.headers)
 
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
 
-        r = self.client.post('/api/v2/organizations/%s/users/' % organization_id,
-                             content_type='application/json', **self.headers)
+        r = self.client.get('/api/v2/organizations/%s/users/' % organization_id,
+                            content_type='application/json', **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         new_user = [i for i in r['users'] if i['last_name'] == 'Tarth'][0]
@@ -340,10 +344,10 @@ class TestApi(TestCase):
         raw_building_file = os.path.relpath(os.path.join('seed/tests/data', 'covered-buildings-sample.csv'))
         self.assertTrue(os.path.isfile(raw_building_file), 'could not find file')
 
-        payload = {'organization_id': organization_id, 'name': 'API Test'}
+        payload = {'name': 'API Test'}
 
         # create the data set
-        r = self.client.post('/api/v2/datasets/', data=json.dumps(payload), content_type='application/json',
+        r = self.client.post('/api/v2/datasets/?organization_id=' + str(organization_id), data=json.dumps(payload), content_type='application/json',
                              **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)

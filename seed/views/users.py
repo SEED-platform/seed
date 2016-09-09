@@ -350,8 +350,8 @@ class UserViewSet(viewsets.ViewSet):
         organization_id = body['organization_id']
 
         is_last_member = not OrganizationUser.objects.filter(
-            organization=organization_id,
-        ).exclude(user=user_id).exists()
+            organization_id=organization_id,
+        ).exclude(user_id=user_id).exists()
 
         if is_last_member:
             return JsonResponse({
@@ -360,9 +360,9 @@ class UserViewSet(viewsets.ViewSet):
             }, status=409)
 
         is_last_owner = not OrganizationUser.objects.filter(
-            organization=organization_id,
+            organization_id=organization_id,
             role_level=ROLE_OWNER,
-        ).exclude(user=user_id).exists()
+        ).exclude(user_id=user_id).exists()
 
         if is_last_owner:
             return JsonResponse({
