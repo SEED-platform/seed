@@ -24,15 +24,21 @@ angular.module('BE.seed.controller.taxlots', [])
               cycles,
               columns,
               urls) {
-      $scope.object = 'taxlot';
+      $scope.inventory_type = 'taxlots';
       $scope.objects = taxlots.results;
       $scope.pagination = taxlots.pagination;
       $scope.total = $scope.pagination.total;
       $scope.number_per_page = 999999999;
-      $scope.restoring = false;
 
       $scope.labels = [];
       $scope.selected_labels = [];
+
+      var localColumns = localStorage.getItem('grid.' + $scope.inventory_type + '.visible');
+      if (!_.isNull(localColumns)) {
+        $scope.visible_columns = JSON.parse(localColumns);
+      } else {
+        $scope.visible_columns = [];
+      }
 
       // Matching dropdown values
       var SHOW_ALL = 'Show All';
@@ -205,19 +211,21 @@ angular.module('BE.seed.controller.taxlots', [])
       };
       _.map(columns, function (col) {
         var filter = {}, aggregation = {};
+        if (!_.isEmpty($scope.visible_columns)) col.visible = _.includes($scope.visible_columns, col.name);
         if (col.type == 'number') filter = {filter: inventory_service.numFilter()};
         else filter = {filter: inventory_service.textFilter()};
         if (col.related) aggregation.treeAggregationType = 'uniqueList';
         return _.defaults(col, filter, aggregation, defaults);
       });
+      columns = inventory_service.reorderBySelected(columns, $scope.visible_columns);
       columns.unshift({
         name: 'id',
         displayName: '',
         cellTemplate: '<div class="ui-grid-row-header-link">' +
-        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.object == \'property\' ? \'properties\' : \'taxlots\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.pk$}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.inventory_type == \'properties\' ? \'properties\' : \'taxlots\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.pk$}">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
-        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.object == \'property\' ? \'taxlots\' : \'properties\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.pk$}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.inventory_type == \'properties\' ? \'taxlots\' : \'properties\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.pk$}">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
         '</div>',
@@ -259,26 +267,10 @@ angular.module('BE.seed.controller.taxlots', [])
         });
       };
 
-      var saveState = function () {
-        if (!$scope.restoring) {
-          localStorage.setItem('grid.taxlots', JSON.stringify($scope.gridApi.saveState.save()));
-        }
-      };
-
-      var restoreState = function () {
-        $scope.restoring = true;
-        var state = localStorage.getItem('grid.taxlots');
-        if (!_.isNull(state)) {
-          state = JSON.parse(state);
-          $scope.gridApi.saveState.restore($scope, state);
-        }
-        _.defer(function () {
-          $scope.restoring = false;
-        });
-      };
-
-      var restoreDefaultState = function () {
-        $scope.gridApi.saveState.restore($scope, $scope.defaultState);
+      var savePinning = function () {
+        /*if (!$scope.restoring) {
+          localStorage.setItem('grid.properties', JSON.stringify($scope.gridApi.saveState.save()));
+        }*/
       };
 
       $scope.gridOptions = {
@@ -290,10 +282,7 @@ angular.module('BE.seed.controller.taxlots', [])
         exporterMenuPdf: false,
         fastWatch: true,
         flatEntityAccess: true,
-        gridMenuCustomItems: [{
-          title: 'Reset settings',
-          action: restoreDefaultState
-        }],
+        gridMenuShowHideColumns: false,
         saveFocus: false,
         saveGrouping: false,
         saveGroupingExpandedStates: false,
@@ -306,26 +295,16 @@ angular.module('BE.seed.controller.taxlots', [])
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
 
-          $scope.updateHeight();
+          _.delay($scope.updateHeight, 150);
           angular.element($window).on('resize', _.debounce($scope.updateHeight, 150));
 
-          gridApi.colMovable.on.columnPositionChanged($scope, saveState);
-          gridApi.colResizable.on.columnSizeChanged($scope, saveState);
-          gridApi.core.on.columnVisibilityChanged($scope, saveState);
-          gridApi.core.on.filterChanged($scope, saveState);
-          gridApi.core.on.sortChanged($scope, saveState);
-          gridApi.pinning.on.columnPinned($scope, saveState);
+          gridApi.pinning.on.columnPinned($scope, savePinning);
 
           gridApi.core.on.rowsRendered($scope, _.debounce(function () {
             $scope.$apply(function () {
               $scope.total = _.filter($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), {treeLevel: 0}).length;
             });
           }, 150));
-
-          _.defer(function () {
-            $scope.defaultState = $scope.gridApi.saveState.save();
-            restoreState();
-          });
         }
       }
     }]);

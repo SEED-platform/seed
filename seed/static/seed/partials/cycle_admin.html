@@ -16,76 +16,77 @@
 <div id="cycle_admin" class="container-fluid">
 
     <div class="newCycleInput">
-        <form   name="newCycleForm"
-                class="form-inline"
-                role="form"
-                ng-submit="submitNewCycleForm(newCycleForm)"
-                novalidate>
-            <div    class="form-group"
-                    ng-class="{'has-error': newCycleForm.name.$invalid &&
+        <form name="newCycleForm"
+              class="form-inline"
+              role="form"
+              ng-submit="submitNewCycleForm(newCycleForm)"
+              novalidate>
+            <div class="form-group"
+                 ng-class="{'has-error': newCycleForm.name.$invalid &&
                                             newCycleForm.name.$dirty }">
-                <label  class="control-label sectionLabel"
-                        style="padding-right:20px;">
-                        Create new cycle</label>
-                <div    class="input-group"
-                        style="padding-right:20px;">
-                    <input  type="text"
-                            name="name"
-                            class="form-control"
-                            ng-minlength="1"
-                            ng-maxlength="100"
-                            style="min-width:300px;"
-                            ng-model="new_cycle.name"
-                            placeholder="Cycle Name"
-                            sd-check-cycle-exists="cycles"
-                            required>
+                <label class="control-label sectionLabel"
+                       style="padding-right:20px;">
+                    Create new cycle</label>
+                <div class="input-group"
+                     style="padding-right:20px;">
+                    <input type="text"
+                           name="name"
+                           class="form-control"
+                           ng-minlength="1"
+                           ng-maxlength="100"
+                           style="min-width:300px;"
+                           ng-model="new_cycle.name"
+                           placeholder="Cycle Name"
+                           sd-check-cycle-exists="cycles"
+                           required>
 
                 </div>
                 <div class="form-group" ng-class="{'has-error' : invalidDates }">
-                <label for="from-date">From date:</label>
+                    <label for="from-date">From date:</label>
 
-                <div class="input-group date-input" style="padding-right:20px;">
-                    <input  id="from-date"
-                            type="text"
-                            class="form-control"
-                            uib-datepicker-popup="MM-dd-yyyy"
-                            is-open="startDatePickerOpen"
-                            ng-model="startDate"
-                            uib-tooltip="'From Date' must be before 'To Date'"
-                            tooltip-placement="top"
-                            tooltip-trigger="mouseenter"
-                            tooltip-enable="invalidDates"
-                            />
+                    <div class="input-group date-input" style="padding-right:20px;">
+                        <input id="from-date"
+                               type="text"
+                               class="form-control"
+                               uib-datepicker-popup="MM-dd-yyyy"
+                               is-open="startDatePickerOpen"
+                               ng-model="startDate"
+                               uib-tooltip="'From Date' must be before 'To Date'"
+                               tooltip-placement="top"
+                               tooltip-trigger="mouseenter"
+                               tooltip-enable="invalidDates"
+                        />
                     <span class="input-group-btn">
                         <button type="button"
                                 class="btn btn-default"
                                 ng-click="openStartDatePicker($event)"><i class="fa fa-calendar"></i></button>
                     </span>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label for="to-date">To date:</label>
-                <div class="input-group date-input" style="padding-right:20px;">
-                    <input  id="to-date"
-                            type="text"
-                            class="form-control"
-                            uib-datepicker-popup="MM-dd-yyyy"
-                            is-open="endDatePickerOpen"
-                            ng-model="endDate"/>
+                <div class="form-group">
+                    <label for="to-date">To date:</label>
+                    <div class="input-group date-input" style="padding-right:20px;">
+                        <input id="to-date"
+                               type="text"
+                               class="form-control"
+                               uib-datepicker-popup="MM-dd-yyyy"
+                               is-open="endDatePickerOpen"
+                               ng-model="endDate"/>
                     <span class="input-group-btn">
                         <button type="button"
                                 class="btn btn-default"
                                 ng-click="openEndDatePicker($event)"><i class="fa fa-calendar"></i></button>
                     </span>
+                    </div>
                 </div>
-            </div>
                 <button id="btnCreateCycle"
                         class="btn btn-primary"
                         ng-disabled="newCycleForm.$invalid">
-                        Create Cycle</button>
+                    Create Cycle
+                </button>
                 <div class="help-block">
-                    <span   class="has-error"
-                            ng-show="newCycleForm.name.$error.sdCheckCycleExists">
+                    <span class="has-error"
+                          ng-show="newCycleForm.name.$error.sdCheckCycleExists">
                             This cycle name is already taken.
                     </span>
                 </div>
@@ -99,29 +100,29 @@
     </div>
 
     <div class="table_list_container">
-        <table class="table table-striped table-hover table-condensed">
+        <table class="table table-striped table-hover table-condensed" style="margin-bottom:0;">
 
             <tr class="tableHeader">
-              <td style="width:40%;padding-left:10px;">Name</td>
-              <td style="width:25%">From Date</td>
-              <td style="width:25%">To Date</td>
-              <td width="width:10%" align="right"></td>
+                <td style="width:40%;padding-left:10px;">Name</td>
+                <td style="width:25%">From Date</td>
+                <td style="width:25%">To Date</td>
+                <td width="width:10%" align="right"></td>
             </tr>
 
             <tr ng-repeat="cycle in cycles">
 
                 <td style="border:0px; padding-left:10px; vertical-align:middle;">
-                    <span   editable-text="cycle.name"
-                            e-name="name"
-                            e-form="rowform"
-                            ng-show="rowform.$visible"
-                            onbeforesave="checkEditCycleBeforeSave($data, cycle.name)"
-                            e-ng-keypress="onEditCycleNameKeypress($event, rowform)"
-                            e-maxlength="255"
-                            e-required>
+                    <span editable-text="cycle.name"
+                          e-name="name"
+                          e-form="rowform"
+                          ng-show="rowform.$visible"
+                          onbeforesave="checkEditCycleBeforeSave($data, cycle.name)"
+                          e-ng-keypress="onEditCycleNameKeypress($event, rowform)"
+                          e-maxlength="255"
+                          e-required>
                         {$ cycle.name $}
                     </span>
-                    <span   ng-show="!rowform.$visible">
+                    <span ng-show="!rowform.$visible">
                         {$ cycle.name $}
                     </span>
                 </td>
@@ -137,29 +138,30 @@
                 <td style="white-space: nowrap; border:0px;" align="right">
 
                     <!-- form -->
-                    <form   editable-form name="rowform"
-                            onbeforesave="saveCycle($data, cycle.id, $index)"
-                            ng-show="rowform.$visible"
-                            class="form-buttons form-inline"
-                            shown="inserted == cycle">
-                      <button   type="submit"
+                    <form editable-form name="rowform"
+                          onbeforesave="saveCycle($data, cycle.id, $index)"
+                          ng-show="rowform.$visible"
+                          class="form-buttons form-inline"
+                          shown="inserted == cycle">
+                        <button type="submit"
                                 ng-disabled="rowform.$waiting"
                                 class="btn btn-primary btn-rowform">
-                        save
-                      </button>
-                      <button   type="button"
+                            save
+                        </button>
+                        <button type="button"
                                 ng-disabled="rowform.$waiting"
                                 ng-click="rowform.$cancel()"
                                 class="btn btn-default btn-rowform">
-                        cancel
-                      </button>
+                            cancel
+                        </button>
                     </form>
 
                     <div class="buttons" ng-show="!rowform.$visible">
-                      <button   class="btn btn-default  btn-rowform"
+                        <button class="btn btn-default  btn-rowform"
                                 ng-click="rowform.$show()">
-                                edit</button>
-	                    <!--
+                            edit
+                        </button>
+                        <!--
                       <button   class="btn btn-danger btn-rowform"
                                 ng-click="deleteLabel(cycle, $index)">
                                 X</button>

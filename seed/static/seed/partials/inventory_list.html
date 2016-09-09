@@ -4,7 +4,7 @@
 
         </div>
         <div class="page_title">
-            <h1>Inventory</h1>
+            <h1>{$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $}</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
@@ -89,15 +89,15 @@
     <div class="item-count">
         <i class="fa fa-building-o"></i>
         {$ total | number:0 $}
-        <span ng-show="object == 'property'"><ng-pluralize count="total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize></span>
-        <span ng-show="object == 'taxlot'"><ng-pluralize count="total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
+        <span ng-show="inventory_type == 'properties'"><ng-pluralize count="total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize></span>
+        <span ng-show="inventory_type == 'taxlots'"><ng-pluralize count="total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
     </div>
     <ul class="nav nav-tabs" style="margin-bottom:1px;">
-        <li ng-class="{active: object=='property'}" heading="View by Property">
-            <a ui-sref="properties">View by Property</a>
+        <li ng-class="{active: inventory_type=='properties'}" heading="View by Property">
+            <a ui-sref="inventory_list({inventory_type: 'properties'})">View by Property</a>
         </li>
-        <li ng-class="{active: object=='taxlot'}" heading="View by Tax Lot">
-            <a ui-sref="taxlots">View by Tax Lot</a>
+        <li ng-class="{active: inventory_type=='taxlots'}" heading="View by Tax Lot">
+            <a ui-sref="inventory_list({inventory_type: 'taxlots'})">View by Tax Lot</a>
         </li>
     </ul>
 </div>
