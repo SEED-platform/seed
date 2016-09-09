@@ -262,7 +262,7 @@ class FakeTaxLotStateFactory(BaseFake):
     """
     Factory Class for producing TaxLotState instances.
     """
-    
+
     def get_details(self):
         taxlot_details = {
             'jurisdiction_taxlot_identifier': self.fake.numerify(text='#####'),
