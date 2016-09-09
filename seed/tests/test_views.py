@@ -3592,7 +3592,7 @@ class InventoryViewTests(TestCase):
 
         self.assertEqual(len(results['cycles']), 1)
         cycle = results['cycles'][0]
-        self.assertEqual(cycle['pk'], self.cycle.pk)
+        self.assertEqual(cycle['id'], self.cycle.pk)
         self.assertEqual(cycle['name'], self.cycle.name)
 
     def test_get_property_columns(self):

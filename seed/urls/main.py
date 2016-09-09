@@ -27,16 +27,13 @@ from seed.views.main import (
     export_buildings_download, angular_js_tests, delete_organization_buildings,
     delete_buildings
 )
-from seed.views.properties import (get_properties, get_cycles)
+from seed.views.properties import get_properties
+
 
 # prefix, to revert back to original endpoints, leave this blank
 apiv1 = r''  # r'api/v1/'
 
 urlpatterns = [
-
-    # DMcQ Temp
-    # TEMP : dummy data method for implementing cycles on FE
-    url(r'^' + apiv1 + r'get_cycles/$', get_cycles, name='get_cycles'),
 
     # template routes
     url(r'^$', home, name='home'),
