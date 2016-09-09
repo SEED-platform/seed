@@ -6,7 +6,6 @@
 """
 
 import datetime
-import json
 import logging
 
 from django.http import JsonResponse
@@ -366,4 +365,3 @@ class DatasetViewSet(viewsets.ViewSet):
                 'status': 'error',
                 'message': 'Could not find organization_id: {}'.format(org_id)
             }, status=400)
-

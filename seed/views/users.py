@@ -41,57 +41,57 @@ from seed.authentication import SEEDAuthentication
 _log = logging.getLogger(__name__)
 
 
-def _dict_org(request, organizations):
-    """returns a dictionary of an organization's data."""
-
-    cbs = list(CanonicalBuilding.objects.filter(canonical_snapshot__super_organization__in=organizations).values('canonical_snapshot__super_organization_id'))
-
-    org_map = dict((x.pk, 0) for x in organizations)
-    for cb in cbs:
-        org_id = cb['canonical_snapshot__super_organization_id']
-        org_map[org_id] = org_map[org_id] + 1
-
-    orgs = []
-    for o in organizations:
-        # We don't wish to double count sub organization memberships.
-        org_users = OrganizationUser.objects.select_related('user') \
-            .filter(organization=o)
-
-        owners = []
-        role_level = None
-        user_is_owner = False
-        for ou in org_users:
-            if ou.role_level == ROLE_OWNER:
-                owners.append({
-                    'first_name': ou.user.first_name,
-                    'last_name': ou.user.last_name,
-                    'email': ou.user.email,
-                    'id': ou.user_id
-                })
-
-                if ou.user == request.user:
-                    user_is_owner = True
-
-            if ou.user == request.user:
-                role_level = _get_js_role(ou.role_level)
-
-        org = {
-            'name': o.name,
-            'org_id': o.pk,
-            'id': o.pk,
-            'number_of_users': len(org_users),
-            'user_is_owner': user_is_owner,
-            'user_role': role_level,
-            'owners': owners,
-            'sub_orgs': _dict_org(request, o.child_orgs.all()),
-            'is_parent': o.is_parent,
-            'parent_id': o.parent_id,
-            'num_buildings': org_map[o.pk],
-            'created': o.created.strftime('%Y-%m-%d') if o.created else '',
-        }
-        orgs.append(org)
-
-    return orgs
+# def _dict_org(request, organizations):
+#     """returns a dictionary of an organization's data."""
+#
+#     cbs = list(CanonicalBuilding.objects.filter(canonical_snapshot__super_organization__in=organizations).values('canonical_snapshot__super_organization_id'))
+#
+#     org_map = dict((x.pk, 0) for x in organizations)
+#     for cb in cbs:
+#         org_id = cb['canonical_snapshot__super_organization_id']
+#         org_map[org_id] = org_map[org_id] + 1
+#
+#     orgs = []
+#     for o in organizations:
+#         # We don't wish to double count sub organization memberships.
+#         org_users = OrganizationUser.objects.select_related('user') \
+#             .filter(organization=o)
+#
+#         owners = []
+#         role_level = None
+#         user_is_owner = False
+#         for ou in org_users:
+#             if ou.role_level == ROLE_OWNER:
+#                 owners.append({
+#                     'first_name': ou.user.first_name,
+#                     'last_name': ou.user.last_name,
+#                     'email': ou.user.email,
+#                     'id': ou.user_id
+#                 })
+#
+#                 if ou.user == request.user:
+#                     user_is_owner = True
+#
+#             if ou.user == request.user:
+#                 role_level = _get_js_role(ou.role_level)
+#
+#         org = {
+#             'name': o.name,
+#             'org_id': o.pk,
+#             'id': o.pk,
+#             'number_of_users': len(org_users),
+#             'user_is_owner': user_is_owner,
+#             'user_role': role_level,
+#             'owners': owners,
+#             'sub_orgs': _dict_org(request, o.child_orgs.all()),
+#             'is_parent': o.is_parent,
+#             'parent_id': o.parent_id,
+#             'num_buildings': org_map[o.pk],
+#             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
+#         }
+#         orgs.append(org)
+#
+#     return orgs
 
 
 def _get_js_role(role):

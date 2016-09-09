@@ -129,7 +129,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         org.organization_id = org.id;
         $http({
             method: 'PUT',
-            url: urls.accounts.save_org_settings,
+            url: '/api/v2/organizations/' + org.id + '/save_settings/',
             data: {
                 organization_id: org.id,
                 organization: org

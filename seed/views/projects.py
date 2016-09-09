@@ -5,7 +5,6 @@
 :author
 """
 # system imports
-import json
 import datetime
 import logging
 
@@ -38,7 +37,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import viewsets
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import list_route
 
 
 _log = logging.getLogger(__name__)

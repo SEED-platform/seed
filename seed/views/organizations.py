@@ -4,7 +4,6 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import json
 import logging
 
 from seed.lib.superperms.orgs.models import (
@@ -39,6 +38,7 @@ from seed.cleansing.models import (
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 from seed.decorators import get_prog_key
 from seed import tasks
+
 
 def _dict_org(request, organizations):
     """returns a dictionary of an organization's data."""
@@ -1016,7 +1016,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             }, status=409)
 
         return JsonResponse({'status': 'success',
-                'organization_id': sub_org.pk})
+                            'organization_id': sub_org.pk})
 
 #
 # @ajax_request
@@ -1061,5 +1061,3 @@ class OrganizationViewSet(viewsets.ViewSet):
 #     """
 #     from seed.views.main import _search_buildings
 #     _search_buildings(request)
-
-

@@ -223,7 +223,7 @@ class TestApi(TestCase):
             'email': self.user.username
         }
         r = self.client.put('/api/v2/users/%s/' % self.user.pk, data=json.dumps(user_payload),
-                             content_type='application/json', **self.headers)
+                            content_type='application/json', **self.headers)
 
         # re-retrieve the user profile
         r = self.client.get('/api/v2/users/' + str(self.user.pk) + '/', follow=True, **self.headers)
@@ -259,7 +259,7 @@ class TestApi(TestCase):
 
         # get org users
         r = self.client.get('/api/v2/organizations/%s/users/' % organization_id,
-                             content_type='application/json', **self.headers)
+                            content_type='application/json', **self.headers)
         self.assertEqual(r.status_code, 200)
         # {
         #     "status": "success",

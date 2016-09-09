@@ -13,7 +13,7 @@ from seed.cleansing.models import Rules, CATEGORY_MISSING_MATCHING_FIELD, \
     CATEGORY_MISSING_VALUES, CATEGORY_IN_RANGE_CHECKING
 from seed.landing.models import SEEDUser as User
 from seed.views.main import _get_default_org
-from seed.views.users import _dict_org, _get_js_role, _get_role_from_js
+from seed.views.users import _get_js_role, _get_role_from_js
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
@@ -22,7 +22,6 @@ from seed.lib.superperms.orgs.models import (
     Organization
 )
 from seed.lib.superperms.orgs.exceptions import InsufficientPermission
-from seed.models import BuildingSnapshot, CanonicalBuilding
 from seed.public.models import SharedBuildingField
 from seed.tests.util import FakeRequest
 from unittest import skip
@@ -47,100 +46,104 @@ class AccountsViewTests(TestCase):
         self.client.login(**user_details)
         self.fake_request = FakeRequest(user=self.user)
 
-    @skip("Fix for new model")
+    @skip("Fix for new model -- _dict_org used CanonicalBuilding")
     def test_dict_org(self):
-        """_dict_org turns our org structure into a json payload."""
-        expected_single_org_payload = {
-            'sub_orgs': [],
-            'owners': [{
-                'first_name': u'Johnny',
-                'last_name': u'Energy',
-                'email': u'test_user@demo.com',
-                'id': self.user.pk
-            }],
-            'number_of_users': 1,
-            'name': 'my org',
-            'user_role': 'owner',
-            'is_parent': True,
-            'parent_id': self.org.pk,
-            'org_id': self.org.pk,
-            'id': self.org.pk,
-            'user_is_owner': True,
-            'num_buildings': 0,
-            'created': self.org.created.strftime('%Y-%m-%d')
-        }
+        pass
 
-        org_payload = _dict_org(self.fake_request, [self.org])
+    #     """_dict_org turns our org structure into a json payload."""
+    #     expected_single_org_payload = {
+    #         'sub_orgs': [],
+    #         'owners': [{
+    #             'first_name': u'Johnny',
+    #             'last_name': u'Energy',
+    #             'email': u'test_user@demo.com',
+    #             'id': self.user.pk
+    #         }],
+    #         'number_of_users': 1,
+    #         'name': 'my org',
+    #         'user_role': 'owner',
+    #         'is_parent': True,
+    #         'parent_id': self.org.pk,
+    #         'org_id': self.org.pk,
+    #         'id': self.org.pk,
+    #         'user_is_owner': True,
+    #         'num_buildings': 0,
+    #         'created': self.org.created.strftime('%Y-%m-%d')
+    #     }
+    #
+    #     org_payload = _dict_org(self.fake_request, [self.org])
+    #
+    #     self.assertEqual(len(org_payload), 1)
+    #     self.assertDictEqual(org_payload[0], expected_single_org_payload)
+    #
+    #     # Now let's make sure that we pick up related buildings correctly.
+    #     for x in range(10):
+    #         can = CanonicalBuilding.objects.create()
+    #         snap = BuildingSnapshot.objects.create()
+    #         snap.super_organization = self.org
+    #         snap.save()
+    #
+    #         can.canonical_snapshot = snap
+    #         can.save()
+    #
+    #     expected_single_org_payload['num_buildings'] = 10
+    #     self.assertDictEqual(
+    #         _dict_org(self.fake_request, [self.org])[0],
+    #         expected_single_org_payload
+    #     )
 
-        self.assertEqual(len(org_payload), 1)
-        self.assertDictEqual(org_payload[0], expected_single_org_payload)
-
-        # Now let's make sure that we pick up related buildings correctly.
-        for x in range(10):
-            can = CanonicalBuilding.objects.create()
-            snap = BuildingSnapshot.objects.create()
-            snap.super_organization = self.org
-            snap.save()
-
-            can.canonical_snapshot = snap
-            can.save()
-
-        expected_single_org_payload['num_buildings'] = 10
-        self.assertDictEqual(
-            _dict_org(self.fake_request, [self.org])[0],
-            expected_single_org_payload
-        )
-
-    @skip("Fix for new model")
+    @skip("Fix for new model -- _dict_org used CanonicalBuilding")
     def test_dic_org_w_member_in_parent_and_child(self):
-        """What happens when a user has a role in parent and child."""
-        new_org = Organization.objects.create(name="sub")
-        expected_multiple_org_payload = {
-            'sub_orgs': [{
-                'owners': [{
-                    'first_name': u'Johnny',
-                    'last_name': u'Energy',
-                    'email': u'test_user@demo.com',
-                    'id': self.user.pk
-                }],
-                'number_of_users': 1,
-                'name': 'sub',
-                'sub_orgs': [],
-                'user_role': 'owner',
-                'is_parent': False,
-                'parent_id': self.org.pk,
-                'org_id': new_org.pk,
-                'id': new_org.pk,
-                'user_is_owner': True,
-                'num_buildings': 0,
-                'created': new_org.created.strftime('%Y-%m-%d')
-            }],
-            'owners': [{
-                'first_name': u'Johnny',
-                'last_name': u'Energy',
-                'email': u'test_user@demo.com',
-                'id': self.user.pk
-            }],
-            'number_of_users': 1,
-            'name': 'my org',
-            'user_role': 'owner',
-            'is_parent': True,
-            'parent_id': self.org.pk,
-            'org_id': self.org.pk,
-            'id': self.org.pk,
-            'user_is_owner': True,
-            'num_buildings': 0,
-            'created': self.org.created.strftime('%Y-%m-%d')
-        }
+        pass
 
-        new_org.parent_org = self.org
-        new_org.save()
-        new_org.add_member(self.user)
+    #     """What happens when a user has a role in parent and child."""
+    #     new_org = Organization.objects.create(name="sub")
+    #     expected_multiple_org_payload = {
+    #         'sub_orgs': [{
+    #             'owners': [{
+    #                 'first_name': u'Johnny',
+    #                 'last_name': u'Energy',
+    #                 'email': u'test_user@demo.com',
+    #                 'id': self.user.pk
+    #             }],
+    #             'number_of_users': 1,
+    #             'name': 'sub',
+    #             'sub_orgs': [],
+    #             'user_role': 'owner',
+    #             'is_parent': False,
+    #             'parent_id': self.org.pk,
+    #             'org_id': new_org.pk,
+    #             'id': new_org.pk,
+    #             'user_is_owner': True,
+    #             'num_buildings': 0,
+    #             'created': new_org.created.strftime('%Y-%m-%d')
+    #         }],
+    #         'owners': [{
+    #             'first_name': u'Johnny',
+    #             'last_name': u'Energy',
+    #             'email': u'test_user@demo.com',
+    #             'id': self.user.pk
+    #         }],
+    #         'number_of_users': 1,
+    #         'name': 'my org',
+    #         'user_role': 'owner',
+    #         'is_parent': True,
+    #         'parent_id': self.org.pk,
+    #         'org_id': self.org.pk,
+    #         'id': self.org.pk,
+    #         'user_is_owner': True,
+    #         'num_buildings': 0,
+    #         'created': self.org.created.strftime('%Y-%m-%d')
+    #     }
 
-        org_payload = _dict_org(self.fake_request, Organization.objects.all())
-
-        self.assertEqual(len(org_payload), 2)
-        self.assertEqual(org_payload[0], expected_multiple_org_payload)
+        # new_org.parent_org = self.org
+        # new_org.save()
+        # new_org.add_member(self.user)
+        #
+        # org_payload = _dict_org(self.fake_request, Organization.objects.all())
+        #
+        # self.assertEqual(len(org_payload), 2)
+        # self.assertEqual(org_payload[0], expected_multiple_org_payload)
 
     def test_get_organizations(self):
         """ tests accounts.get_organizations
@@ -219,7 +222,7 @@ class AccountsViewTests(TestCase):
     def test_get_organization_org_doesnt_exist(self):
         """test for the case where a user doesn't have access"""
         resp = self.client.get(
-            reverse_lazy("apiv2:organizations-detail", args=[self.org.id+100]),
+            reverse_lazy("apiv2:organizations-detail", args=[self.org.id + 100]),
             content_type='application/json',
         )
         self.assertEquals(

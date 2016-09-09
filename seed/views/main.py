@@ -5,15 +5,12 @@
 :author
 """
 
-import datetime
 import json
 import logging
 import os
 import subprocess
 import uuid
-# from collections import defaultdict
 
-# from dateutil.parser import parse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ImproperlyConfigured
@@ -65,7 +62,6 @@ from seed.utils.mapping import get_mappable_types, get_mappable_columns
 from seed.utils.projects import (
     get_projects,
 )
-from seed.utils.time import convert_to_js_timestamp
 from seed.views.users import _get_js_role
 from .. import search
 
