@@ -14,7 +14,6 @@ from seed.models import (
     PropertyState,
     Column,
     ColumnMapping,
-    obj_to_dict,
 )
 
 
