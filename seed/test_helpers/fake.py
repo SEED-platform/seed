@@ -262,9 +262,8 @@ class FakeTaxLotStateFactory(BaseFake):
     """
     Factory Class for producing TaxLotState instances.
     """
-
-    def get_taxlot_state(self, **kw):
-        """Return a taxlot state populated with pseudo random data"""
+    
+    def get_details(self):
         taxlot_details = {
             'jurisdiction_taxlot_identifier': self.fake.numerify(text='#####'),
             'block_number': self.fake.numerify(text='#####'),
@@ -273,6 +272,11 @@ class FakeTaxLotStateFactory(BaseFake):
             'state': 'Oregon',
             'postal_code': "970{}".format(self.fake.numerify(text='##')),
         }
+        return taxlot_details
+
+    def get_taxlot_state(self, **kw):
+        """Return a taxlot state populated with pseudo random data"""
+        taxlot_details = self.get_details()
         taxlot_details.update(kw)
         return TaxLotState.objects.create(**taxlot_details)
 
