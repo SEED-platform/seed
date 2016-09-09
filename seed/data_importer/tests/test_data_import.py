@@ -246,43 +246,56 @@ class TestMatching(TestCase):
         ps = PropertyState.objects.filter(data_state=DATA_STATE_MAPPING,
                                           super_organization=self.fake_org)
 
+        # Promote case A (one property <-> one tax lot)
+        ps = PropertyState.objects.filter(building_portfolio_manager_identifier=2264)[0]
+
+        ps.promote(cycle)
+
+        ps = tasks.get_canonical_snapshots(self.fake_org)
+        from django.db.models.query import QuerySet
+        self.assertTrue(isinstance(ps, QuerySet))
+        logger.debug("There are %s properties" % len(ps))
         for p in ps:
             from seed.utils.generic import pp
             pp(p)
-            #
-            # # Promote 5 of these to views to test the remaining code
-            # promote_mes = PropertyState.objects.filter(
-            #     data_state=DATA_STATE_MAPPING,
-            #     super_organization=self.fake_org)[:5]
-            # for promote_me in promote_mes:
-            #     promote_me.promote(cycle)
-            #
-            # ps = tasks.get_canonical_snapshots(self.fake_org)
-            # from django.db.models.query import QuerySet
-            # self.assertTrue(isinstance(ps, QuerySet))
-            # logger.debug("There are %s properties" % len(ps))
-            # for p in ps:
-            #     print p
-            #
-            # self.assertEqual(len(ps), 5)
-            # self.assertEqual(ps[0].address_line_1, '1211 Bryant Street')
-            # self.assertEqual(ps[4].address_line_1, '1031 Ellis Lane')
 
-            # tasks.match_buildings(self.import_file.pk, self.fake_user.pk)
+        self.assertEqual(len(ps), 1)
+        self.assertEqual(ps[0].address_line_1, '50 Willow Ave SE')
 
-            # self.assertEqual(result.property_name, snapshot.property_name)
-            # self.assertEqual(result.property_name, new_snapshot.property_name)
-            # # Since these two buildings share a common ID, we match that way.
-            # # self.assertEqual(result.confidence, 0.9)
-            # self.assertEqual(
-            #     sorted([r.pk for r in result.parents.all()]),
-            #     sorted([new_snapshot.pk, snapshot.pk])
-            # )
-            # self.assertGreater(AuditLog.objects.count(), 0)
-            # self.assertEqual(
-            #     AuditLog.objects.first().action_note,
-            #     'System matched building ID.'
-            # )
+
+        # # Promote 5 of these to views to test the remaining code
+        # promote_mes = PropertyState.objects.filter(
+        #     data_state=DATA_STATE_MAPPING,
+        #     super_organization=self.fake_org)[:5]
+        # for promote_me in promote_mes:
+        #     promote_me.promote(cycle)
+        #
+        # ps = tasks.get_canonical_snapshots(self.fake_org)
+        # from django.db.models.query import QuerySet
+        # self.assertTrue(isinstance(ps, QuerySet))
+        # logger.debug("There are %s properties" % len(ps))
+        # for p in ps:
+        #     print p
+        #
+        # self.assertEqual(len(ps), 5)
+        # self.assertEqual(ps[0].address_line_1, '1211 Bryant Street')
+        # self.assertEqual(ps[4].address_line_1, '1031 Ellis Lane')
+
+        # tasks.match_buildings(self.import_file.pk, self.fake_user.pk)
+
+        # self.assertEqual(result.property_name, snapshot.property_name)
+        # self.assertEqual(result.property_name, new_snapshot.property_name)
+        # # Since these two buildings share a common ID, we match that way.
+        # # self.assertEqual(result.confidence, 0.9)
+        # self.assertEqual(
+        #     sorted([r.pk for r in result.parents.all()]),
+        #     sorted([new_snapshot.pk, snapshot.pk])
+        # )
+        # self.assertGreater(AuditLog.objects.count(), 0)
+        # self.assertEqual(
+        #     AuditLog.objects.first().action_note,
+        #     'System matched building ID.'
+        # )
 
     @skip("Fix for new data model")
     def test_match_duplicate_buildings(self):

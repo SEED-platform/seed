@@ -390,7 +390,15 @@ angular.module('BE.seed.controller.mapping', [])
     /*
      * Get_mappings
      * Pull out the mappings of the TCM objects (stored in raw_columns) list
-     * into a flat data structure like so [[<dest>, <raw>], ...].
+     * into a data structure in the format of
+     *      [
+     *          {
+     *              "from_field": <raw>,
+     *              "to_field": <dest>,
+     *              "to_table_name": "PropertyState"
+     *          },{
+     *              ...
+     *          }
      */
     $scope.get_mappings = function(){
         var mappings = [];
@@ -409,9 +417,11 @@ angular.module('BE.seed.controller.mapping', [])
             }
             // don't map ignored rows
             suggestion = tcm.mapped_row ? tcm.suggestion : '';
-            mappings.push([
+            mappings.push(
+              [
                 suggestion, header
-            ]);
+              ]
+            );
         }
 
         return mappings;

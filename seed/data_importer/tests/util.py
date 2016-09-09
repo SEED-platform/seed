@@ -147,22 +147,71 @@ def import_example_data(test_obj, filename):
 
     # setup the mapping
     properties_mapping = [
-        [u'jurisdiction_taxlot_identifier', u'jurisdiction_taxlot_identifier'],
-        [u'jurisdiction_property_identifier', u'jurisdiction_property_identifier'],
-        [u'building_portfolio_manager_identifier', u'building_portfolio_manager_identifier'],
-        [u'pm_parent_property_id', u'pm_parent_property_id'],
-        [u'address_line_1', u'address_line_1'],
-        [u'city', u'city'],
-        [u'property_name', u'property_name'],
-        [u'property_notes', u'property_notes'],
-        [u'use_description', u'use_description'],
-        [u'gross_floor_area', u'gross_floor_area'],
-        [u'owner', u'owner'],
-        [u'owner_email', u'owner_email'],
-        [u'owner_telephone', u'owner_telephone'],
-        [u'site_eui', u'site_eui'],
-        [u'energy_score', u'energy_score'],
-        [u'year_ending', u'year_ending'],
+        {
+            "from_field": u'jurisdiction_taxlot_identifier',
+            "to_table_name": u'TaxLotState',
+            "to_field": u'jurisdiction_taxlot_identifier',
+        }, {
+            "from_field": u'jurisdiction_property_identifier',
+            "to_table_name": u'PropertyState',
+            "to_field": u'jurisdiction_property_identifier',
+        }, {
+            "from_field": u'building_portfolio_manager_identifier',
+            "to_table_name": u'PropertyState',
+            "to_field": u'building_portfolio_manager_identifier',
+        }, {
+            "from_field": u'pm_parent_property_id',
+            "to_table_name": u'PropertyState',
+            "to_field": u'pm_parent_property_id'
+        }, {
+            "from_field": u'address_line_1',
+            "to_table_name": u'PropertyState',
+            "to_field": u'address_line_1'
+        }, {
+            "from_field": u'city',
+            "to_table_name": u'PropertyState',
+            "to_field": u'city'
+        }, {
+            "from_field": u'property_name',
+            "to_table_name": u'PropertyState',
+            "to_field": u'property_name'
+        }, {
+            "from_field": u'property_notes',
+            "to_table_name": u'PropertyState',
+            "to_field": u'property_notes'
+        }, {
+            "from_field": u'use_description',
+            "to_table_name": u'PropertyState',
+            "to_field": u'use_description'
+        }, {
+            "from_field": u'gross_floor_area',
+            "to_table_name": u'PropertyState',
+            "to_field": u'gross_floor_area'
+        }, {
+            "from_field": u'owner',
+            "to_table_name": u'PropertyState',
+            "to_field": u'owner'
+        }, {
+            "from_field": u'owner_email',
+            "to_table_name": u'PropertyState',
+            "to_field": u'owner_email'
+        }, {
+            "from_field": u'owner_telephone',
+            "to_table_name": u'PropertyState',
+            "to_field": u'owner_telephone'
+        }, {
+            "from_field": u'site_eui',
+            "to_table_name": u'PropertyState',
+            "to_field": u'site_eui'
+        }, {
+            "from_field": u'energy_score',
+            "to_table_name": u'PropertyState',
+            "to_field": u'energy_score'
+        }, {
+            "from_field": u'year_ending',
+            "to_table_name": u'PropertyState',
+            "to_field": u'year_ending'
+        }
     ]
 
     Column.create_mappings(properties_mapping, test_obj.fake_org, test_obj.fake_user)
@@ -302,7 +351,13 @@ def import_exported_test_data(test_obj, filename):
     for k in keys:
         if k == 'id':
             continue
-        mapping.append([k, k])
+        mapping.append(
+            {
+                "from_field": k,
+                "to_table_name": "PropertyState",
+                "to_field": k
+            }
+        )
 
     Column.create_mappings(mapping, test_obj.fake_org, test_obj.fake_user)
 
@@ -347,10 +402,21 @@ def import_exported_test_data(test_obj, filename):
     test_obj.import_record.super_organization = test_obj.fake_org
     test_obj.import_record.save()
 
-    test_obj.fake_mappings = {
-        'property_name': u'Name',
-        'address_line_1': u'Address Line 1',
-        'year_built': u'Year Built'
-    }
+    # setup the mapping
+    test_obj.fake_mappings = [
+        {
+            "from_field": u'Year Built',
+            "to_table_name": u'PropertyState',
+            "to_field": u'year_built',
+        }, {
+            "from_field": u'Address Line 1',
+            "to_table_name": u'PropertyState',
+            "to_field": u'address_line_1',
+        }, {
+            "from_field": u'Name',
+            "to_table_name": u'PropertyState',
+            "to_field": u'property_name'
+        }
+    ]
 
     return test_obj

@@ -81,7 +81,6 @@ class ApiAuthenticationTests(TestCase):
 
 
 class SchemaGenerationTests(TestCase):
-
     def test_get_api_endpoints_utils(self):
         """
         Test of function that traverses all URLs looking for api endpoints.
@@ -110,7 +109,6 @@ class SchemaGenerationTests(TestCase):
 
 
 class TestApi(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',  # the username needs to be in the form of an email.
@@ -181,7 +179,8 @@ class TestApi(TestCase):
         organization_id = self.get_org_id(r, self.user.username)
 
         # get details on the organization
-        r = self.client.get('/app/accounts/get_organization/?organization_id=%s' % organization_id, follow=True,
+        r = self.client.get('/app/accounts/get_organization/?organization_id=%s' % organization_id,
+                            follow=True,
                             **self.headers)
         self.assertEqual(r.status_code, 200)
 
@@ -247,18 +246,21 @@ class TestApi(TestCase):
             }
         }
 
-        r = self.client.post('/app/accounts/add_user/', data=json.dumps(new_user), content_type='application/json',
+        r = self.client.post('/app/accounts/add_user/', data=json.dumps(new_user),
+                             content_type='application/json',
                              **self.headers)
         self.assertEqual(r.status_code, 200)
 
-        r = self.client.get('/app/accounts/get_organization/?organization_id=%s' % organization_id, follow=True,
+        r = self.client.get('/app/accounts/get_organization/?organization_id=%s' % organization_id,
+                            follow=True,
                             **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertEqual(r['organization']['number_of_users'], 2)
 
         # get org users
-        r = self.client.post('/app/accounts/get_organizations_users/', data='{"organization_id": %s}' % organization_id,
+        r = self.client.post('/app/accounts/get_organizations_users/',
+                             data='{"organization_id": %s}' % organization_id,
                              content_type='application/json', **self.headers)
         self.assertEqual(r.status_code, 200)
         # {
@@ -295,14 +297,16 @@ class TestApi(TestCase):
             'role': 'owner'
         }
 
-        r = self.client.post('/app/accounts/update_role/', data=json.dumps(payload), content_type='application/json',
+        r = self.client.post('/app/accounts/update_role/', data=json.dumps(payload),
+                             content_type='application/json',
                              **self.headers)
 
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
 
-        r = self.client.post('/app/accounts/get_organizations_users/', data='{"organization_id": %s}' % organization_id,
+        r = self.client.post('/app/accounts/get_organizations_users/',
+                             data='{"organization_id": %s}' % organization_id,
                              content_type='application/json', **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
@@ -314,8 +318,9 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        r = self.client.get("/app/accounts/get_query_threshold/?organization_id=%s" % organization_id, follow=True,
-                            **self.headers)
+        r = self.client.get(
+            "/app/accounts/get_query_threshold/?organization_id=%s" % organization_id, follow=True,
+            **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
@@ -326,7 +331,8 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        r = self.client.get("/app/accounts/get_shared_fields/?organization_id=%s" % organization_id, follow=True,
+        r = self.client.get("/app/accounts/get_shared_fields/?organization_id=%s" % organization_id,
+                            follow=True,
                             **self.headers)
 
         self.assertEqual(r.status_code, 200)
@@ -340,13 +346,15 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        raw_building_file = os.path.relpath(os.path.join('seed/tests/data', 'covered-buildings-sample.csv'))
+        raw_building_file = os.path.relpath(
+            os.path.join('seed/tests/data', 'covered-buildings-sample.csv'))
         self.assertTrue(os.path.isfile(raw_building_file), 'could not find file')
 
         payload = {'organization_id': organization_id, 'name': 'API Test'}
 
         # create the data set
-        r = self.client.post('/app/create_dataset/', data=json.dumps(payload), content_type='application/json',
+        r = self.client.post('/app/create_dataset/', data=json.dumps(payload),
+                             content_type='application/json',
                              **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
@@ -382,7 +390,8 @@ class TestApi(TestCase):
             'file_id': import_file_id,
             'organization_id': organization_id
         }
-        r = self.client.post('/app/save_raw_data/', data=json.dumps(payload), content_type='application/json',
+        r = self.client.post('/app/save_raw_data/', data=json.dumps(payload),
+                             content_type='application/json',
                              follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 
@@ -413,18 +422,52 @@ class TestApi(TestCase):
         # Save the column mappings.
         payload = {
             'import_file_id': import_file_id,
-            'organization_id': organization_id
+            'organization_id': organization_id,
+            'mappings': [
+                {
+                    'from_field': 'City',  # raw field in import file
+                    'to_field': 'city',
+                    'to_table_name': 'PropertyState',
+                }, {
+                    'from_field': 'Zip',  # raw field in import file
+                    'to_field': 'postal_code',
+                    'to_table_name': 'PropertyState',
+                }, {
+                    'from_field': 'GBA',  # raw field in import file
+                    'to_field': 'gross_floor_area',
+                    'to_table_name': 'PropertyState',
+                }, {
+                    'from_field': 'BLDGS',  # raw field in import file
+                    'to_field': 'building_count',
+                    'to_table_name': 'PropertyState',
+                }, {
+                    'from_field': 'UBI',  # raw field in import file
+                    'to_field': 'jurisdiction_taxlot_identifier',
+                    'to_table_name': 'TaxLotState',
+                }, {
+                    'from_field': 'State',  # raw field in import file
+                    'to_field': 'state_province',
+                    'to_table_name': 'PropertyState',
+                }, {
+                    'from_field': 'Address',  # raw field in import file
+                    'to_field': 'address_line_1',
+                    'to_table_name': 'PropertyState',
+                }, {
+                    'from_field': 'Owner',  # raw field in import file
+                    'to_field': 'owner',
+                    'to_table_name': 'PropertyState',
+                }, {
+                    'from_field': 'Property Type',  # raw field in import file
+                    'to_field': 'use_description',
+                    'to_table_name': 'PropertyState',
+                }, {
+                    'from_field': 'AYB_YearBuilt',  # raw field in import file
+                    'to_field': 'year_built',
+                    'to_table_name': 'PropertyState',
+                }
+            ]
         }
-        payload['mappings'] = [[u'city', u'City'],
-                               [u'postal_code', u'Zip'],
-                               [u'gross_floor_area', u'GBA'],
-                               [u'building_count', u'BLDGS'],
-                               [u'tax_lot_id', u'UBI'],
-                               [u'state_province', u'State'],
-                               [u'address_line_1', u'Address'],
-                               [u'owner', u'Owner'],
-                               [u'use_description', u'Property Type'],
-                               [u'year_built', u'AYB_YearBuilt']]
+
         r = self.client.post('/app/save_column_mappings/', data=json.dumps(payload),
                              content_type='application/json', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)

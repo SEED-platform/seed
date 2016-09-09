@@ -1507,69 +1507,6 @@ def get_first_five_rows(request):
     }
 
 
-# def _column_fields_to_columns(fields, organization):
-#     """Take a list of str, and turn it into a list of Column objects.
-#
-#     :param fields: list of str. (optionally a single string).
-#     :param organization: superperms.Organization instance.
-#     :returns: list of Column instances.
-#     """
-#     if fields is None:
-#         return None
-#
-#     col_fields = []  # Container for the strings of the column_names
-#     if isinstance(fields, list):
-#         col_fields.extend(fields)
-#     else:
-#         col_fields = [fields]
-#
-#     cols = []  # Container for our Column instances.
-#
-#     # It'd be nice if we could do this in a batch.
-#     for col_name in col_fields:
-#         if not col_name:
-#             continue
-#
-#         col = None
-#
-#         is_extra_data = col_name not in get_mappable_columns()
-#         org_col = Column.objects.filter(
-#             organization=organization,
-#             column_name=col_name,
-#             is_extra_data=is_extra_data
-#         ).first()
-#
-#         if org_col is not None:
-#             col = org_col
-#
-#         else:
-#             # Try for "global" column definitions, e.g. BEDES.
-#             global_col = Column.objects.filter(
-#                 organization=None,
-#                 column_name=col_name
-#             ).first()
-#
-#             if global_col is not None:
-#                 # create organization mapped column
-#                 global_col.pk = None
-#                 global_col.id = None
-#                 global_col.organization = organization
-#                 global_col.save()
-#
-#                 col = global_col
-#
-#             else:
-#                 col, _ = Column.objects.get_or_create(
-#                     organization=organization,
-#                     column_name=col_name,
-#                     is_extra_data=is_extra_data,
-#                 )
-#
-#         cols.append(col)
-#
-#     return cols
-
-
 @api_endpoint
 @ajax_request
 @login_required
@@ -1577,7 +1514,8 @@ def get_first_five_rows(request):
 def save_column_mappings(request):
     """
     Saves the mappings between the raw headers of an ImportFile and the
-    destination fields in the BuildingSnapshot model.
+    destination fields in the `to_table_name` model which should be either
+    PropertyState or TaxLotState
 
     Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
 
@@ -1586,10 +1524,16 @@ def save_column_mappings(request):
         {
             "import_file_id": ID of the ImportFile record,
             "mappings": [
-                ["destination_field": "raw_field"],  #direct mapping
-                ["destination_field2":
-                    ["raw_field1", "raw_field2"],  #concatenated mapping
-                ...
+                {
+                    'from_field': 'eui',  # raw field in import file
+                    'to_field': 'energy_use_intensity',
+                    'to_table_name': 'PropertyState',
+                },
+                {
+                    'from_field': 'gfa',
+                    'to_field': 'gross_floor_area',
+                    'to_table_name': 'PropertyState',
+                }
             ]
         }
 

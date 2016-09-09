@@ -68,6 +68,8 @@ class PropertyState(models.Model):
     import_file = models.ForeignKey(ImportFile, null=True, blank=True)
     # FIXME: source_type needs to be a foreign key or make it import_file.source_type
     source_type = models.IntegerField(null=True, blank=True, db_index=True)
+
+    # TODO: super_organization is sometimes organization -- are these the same?
     super_organization = models.ForeignKey(Organization, blank=True, null=True)
     data_state = models.IntegerField(choices=DATA_STATE, default=0)
 
@@ -75,8 +77,7 @@ class PropertyState(models.Model):
     confidence = models.FloatField(default=0, null=True, blank=True)
 
     # TODO: hmm, name this jurisdiction_property_id to stay consistent?
-    jurisdiction_property_identifier = models.CharField(max_length=255,
-                                                        null=True, blank=True)
+    jurisdiction_property_identifier = models.CharField(max_length=255, null=True, blank=True)
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
 
@@ -84,20 +85,25 @@ class PropertyState(models.Model):
     # for all the properties. The master campus record (campus=True) the
     # pm_property_id will be set the same as pm_parent_property_id
     pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True)
-    pm_property_id = models.CharField(max_length=255, null=True, blank=True)
+    pm_property_id = models.CharField(max_length=255, null=True, blank=True)  # use this one
     building_portfolio_manager_identifier = models.CharField(max_length=255, null=True, blank=True)
+    # hes_id?
+    # home_energy_score_id
     building_home_energy_score_identifier = models.CharField(max_length=255, null=True, blank=True)
 
     # Tax Lot Number of the property
     lot_number = models.CharField(max_length=255, null=True, blank=True)
     property_name = models.CharField(max_length=255, null=True, blank=True)
+
+    # Leave this as is for now, normalize into its own table soon
+    # use properties to assess from instances
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
     address_line_2 = models.CharField(max_length=255, null=True, blank=True)
     city = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
     postal_code = models.CharField(max_length=255, null=True, blank=True)
 
-    # Only spot where it's 'building' in the app, b/c this is a PortMgr field.
+    # Only spot where it's 'building' in the app, b/c this is a PM field.
     building_count = models.IntegerField(null=True, blank=True)
 
     property_notes = models.TextField(null=True, blank=True)
@@ -111,6 +117,8 @@ class PropertyState(models.Model):
     recent_sale_date = models.DateTimeField(null=True, blank=True)
     conditioned_floor_area = models.FloatField(null=True, blank=True)
     occupied_floor_area = models.FloatField(null=True, blank=True)
+
+    # Normalize eventually on owner/address table
     owner = models.CharField(max_length=255, null=True, blank=True)
     owner_email = models.CharField(max_length=255, null=True, blank=True)
     owner_telephone = models.CharField(max_length=255, null=True, blank=True)
@@ -263,10 +271,10 @@ class PropertyState(models.Model):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-            }
+                }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-            }
+                }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk

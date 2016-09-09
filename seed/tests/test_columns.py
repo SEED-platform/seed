@@ -10,7 +10,12 @@ from django.test import TestCase
 from seed import models as seed_models
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from seed.models import PropertyState, Column
+from seed.models import (
+    PropertyState,
+    Column,
+    ColumnMapping,
+    obj_to_dict,
+)
 
 
 class TestColumns(TestCase):
@@ -100,30 +105,91 @@ class TestColumns(TestCase):
         test_mapping, _ = seed_models.get_column_mappings(org)
         self.assertDictEqual(test_mapping, expected)
 
-    def test_save_mappings(self):
-        # Test that we can upload a mapping hash
+    # def test_save_mappings(self):
+    #     # Test that we can upload a mapping hash
+    #     test_map = [
+    #         # a: field in the db
+    #         # b: field in the datafile
+    #         ["eui", "my energy use intensity"],
+    #         ["best lab", "hawkins"],
+    #         ["concatenated", ["one", "two"]]
+    #     ]
+    #
+    #     seed_models.Column.create_mappings(test_map, self.fake_org,
+    #                                        self.fake_user)
+    #
+    #     test_mapping, _ = seed_models.get_column_mappings(self.fake_org)
+    #
+    #     expected = {
+    #         u'hawkins': u'best lab',
+    #         u'my energy use intensity': u'eui'
+    #     }
+    #     # TODO: Concatenation is broken or never worked... that is why there is only 2
+    #     self.assertDictEqual(expected, test_mapping)
+    #
+    #     c = Column.objects.filter(column_name='hawkins')[0]
+    #     self.assertEqual(c.is_extra_data, True)
+
+    def test_save_mappings_dict(self):
+        """
+        Test the way of saving mappings, which is dict-based instead of list of list of list.
+        """
+
         test_map = [
-            # a: field in the db
-            # b: field in the datafile
-            ["eui", "my energy use intensity"],
-            ["best lab", "hawkins"],
-            ["concatenated", ["one", "two"]]
+            {
+                'from_field': 'eui',
+                'to_field': 'site_eui',
+                'to_table_name': 'PropertyState',
+            },
+            {
+                'from_field': 'address',
+                'to_field': 'address',
+                'to_table_name': 'TaxLotState'
+            },
+            {
+                'from_field': 'Wookiee',
+                'to_field': 'Dothraki',
+                'to_table_name': 'PropertyState',
+            },
+            {
+                'from_field': 'Ewok',
+                'to_field': 'Merovingian',
+                'to_table_name': 'TaxLotState',
+            },
+            {
+                'from_field': 'Ewok',
+                'to_field': 'Hattin',
+                'to_table_name': 'TaxLotState',
+            },
         ]
 
-        seed_models.Column.create_mappings(test_map, self.fake_org,
-                                           self.fake_user)
-
+        seed_models.Column.create_mappings(test_map, self.fake_org, self.fake_user)
         test_mapping, _ = seed_models.get_column_mappings(self.fake_org)
-
         expected = {
-            u'hawkins': u'best lab',
-            u'my energy use intensity': u'eui'
+            u'Wookiee': u'Dothraki',
+            u'address': u'address',
+            u'eui': u'site_eui',
+            # u'Ewok': u'Merovingian',
+            u'Ewok': u'Hattin',
         }
-        # TODO: Why isn't the concatenated field showing up!
         self.assertDictEqual(expected, test_mapping)
+        self.assertTrue(test_mapping['Ewok'], 'Hattin')
 
-        c = Column.objects.filter(column_name='hawkins')[0]
-        self.assertEqual(c.is_extra_data, True)
+        c_wookiee = Column.objects.filter(column_name='Wookiee')[0]
+        self.assertEqual(c_wookiee.is_extra_data, True)
+        c_merovingian = Column.objects.filter(column_name='Merovingian')[0]
+        self.assertEqual(c_merovingian.is_extra_data, True)
+        self.assertEqual(c_merovingian.table_name, 'TaxLotState')
+
+        # Check the database for the mapped columns since create_mappings doesn't return anything!
+        cm = ColumnMapping.objects.filter(super_organization=self.fake_org,
+                                          column_raw__in=[c_wookiee]).first()
+
+
+        column = cm.column_mapped.first()
+        self.assertEqual(column.is_extra_data, True)
+        self.assertEqual(column.table_name, "PropertyState")
+        self.assertEqual(column.column_name, "Dothraki")
 
     def test_save_columns(self):
         # create

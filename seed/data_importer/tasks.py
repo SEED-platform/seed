@@ -1148,7 +1148,7 @@ def remap_data(import_file_pk):
     return result
 
 
-# TODO: move or rename
+# TODO: rename to get_canonical_properties
 def get_canonical_snapshots(org_id):
     """
     Return all of the PropertyStates from the PropertyView
