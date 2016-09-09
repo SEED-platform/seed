@@ -39,6 +39,8 @@ from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 from seed.decorators import get_prog_key
 from seed import tasks
 from rest_framework import status
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import permission_required
 
 
 def _dict_org(request, organizations):
@@ -232,7 +234,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse({'organizations': _dict_org(request, qs)})
 
-    # @permission_required('seed.can_access_admin')
+    @method_decorator(permission_required('seed.can_access_admin'))
     @api_endpoint_class
     @ajax_request_class
     def destroy(self, request, pk=None):
