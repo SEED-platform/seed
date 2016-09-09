@@ -16,11 +16,14 @@ from seed.views.main import (
     get_datasets_count,
     search_buildings,                               # TO REMOVE
     search_building_snapshots,                      # TO REMOVE
-    get_default_columns, set_default_columns,
+    get_default_columns,
+    set_default_columns,
     get_default_building_detail_columns,
     set_default_building_detail_columns, get_columns, save_match,
     get_match_tree,
-    get_coparents, save_raw_data, get_PM_filter_by_counts,
+    get_coparents,
+    save_raw_data,
+    get_PM_filter_by_counts,
     delete_duplicates_from_import_file,
     create_dataset, get_datasets, get_dataset, get_import_file, delete_file,
     delete_dataset,

@@ -65,7 +65,7 @@ class TestColumns(TestCase):
             seed_models.get_column_mapping(
                 raw_column.column_name, org2, 'column_mapped'
             ),
-            (u'property', u'custom_id_1', 100)
+            (u'PropertyState', u'custom_id_1', 100)
         )
 
     def test_get_column_mappings(self):
@@ -184,7 +184,6 @@ class TestColumns(TestCase):
         # Check the database for the mapped columns since create_mappings doesn't return anything!
         cm = ColumnMapping.objects.filter(super_organization=self.fake_org,
                                           column_raw__in=[c_wookiee]).first()
-
 
         column = cm.column_mapped.first()
         self.assertEqual(column.is_extra_data, True)

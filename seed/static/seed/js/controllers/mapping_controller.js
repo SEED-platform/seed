@@ -281,6 +281,7 @@ angular.module('BE.seed.controller.mapping', [])
         is_concatenated: false,
         find_suggested_mapping: function (suggestions) {
             var that = this;
+            console.log(this);
             angular.forEach(suggestions, function(value, key) {
                 // Check first element of each value to see if it matches.
                 // if it does, then save that key as a suggestion
@@ -418,9 +419,11 @@ angular.module('BE.seed.controller.mapping', [])
             // don't map ignored rows
             suggestion = tcm.mapped_row ? tcm.suggestion : '';
             mappings.push(
-              [
-                suggestion, header
-              ]
+                {
+                  "from_field": header,
+                  "to_field": suggestion,
+                  "to_table_name": "PropertyState"
+                }
             );
         }
 
@@ -452,14 +455,24 @@ angular.module('BE.seed.controller.mapping', [])
      * reverse titleCase mappings which were titleCase in the suggestion input
      */
     var get_untitle_cased_mappings = function () {
-        var mappings = $scope.get_mappings().map(function (m) {
-            var mapping = m[0];
-            mapping = angular.lowercase(mapping).replace(/ /g, '_');
-            if (_.includes(original_columns, mapping)) {
-                m[0] = mapping;
-            }
-            return m;
+        var mappings = $scope.get_mappings();
+        _.forEach(mappings, function(m){
+          var mapping = m["to_field"];
+          mapping = angular.lowercase(mapping).replace(/ /g, '_');
+          if (_.includes(original_columns, mapping)) {
+                m["to_field"] = mapping;
+          }
         });
+
+        // var mappings = $scope.get_mappings().map(function (m) {
+        //     var mapping = m[0];
+        //     mapping = angular.lowercase(mapping).replace(/ /g, '_');
+        //     if (_.includes(original_columns, mapping)) {
+        //         m[0] = mapping;
+        //     }
+        //     return m;
+        // });
+      console.log(mappings);
         return mappings;
     };
 

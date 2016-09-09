@@ -149,6 +149,7 @@ class TestMapping(TestCase):
 
 
 class TestPromotingProperties(TestCase):
+
     def setUp(self):
         test_util.import_exported_test_data(self, 'propertystates-one-cycle.csv')
 
@@ -261,7 +262,6 @@ class TestMatching(TestCase):
 
         self.assertEqual(len(ps), 1)
         self.assertEqual(ps[0].address_line_1, '50 Willow Ave SE')
-
 
         # # Promote 5 of these to views to test the remaining code
         # promote_mes = PropertyState.objects.filter(

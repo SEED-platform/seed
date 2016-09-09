@@ -41,10 +41,20 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
 
     try:
         previous_mapping = ColumnMapping.objects.get(
-            super_organization=organization,
-            column_raw__in=cols,
+            super_organization=organization, column_raw__in=cols,
         )
+    except ColumnMapping.MultipleObjectsReturned:
+        # # handle the special edge-case where remove dupes doesn't get
+        # # called by ``get_or_create``
+        ColumnMapping.objects.filter(
+            super_organization=organization,
+            column_raw__in=cols
+        ).delete()
 
+        previous_mapping, _ = ColumnMapping.objects.get_or_create(
+            super_organization=organization,
+            column_raw__in=cols
+        )
     except ColumnMapping.DoesNotExist:
         return None
 
@@ -53,7 +63,8 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
     if previous_mapping.is_direct():
         column_names = column_names[0]
 
-    return 'property', column_names, 100
+    # TODO: return the correct table name!
+    return 'PropertyState', column_names, 100
 
 
 # TODO: Make this a static method
@@ -303,7 +314,7 @@ class Column(models.Model):
             )
             new_field['from_column_object'] = select_col_obj(
                 field['from_field'],
-                None,
+                "",
                 from_org_col)
 
             new_data.append(new_field)
