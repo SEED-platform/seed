@@ -420,7 +420,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.get_cycles = function () {
 
       var defer = $q.defer();
-      var get_cycles_url = window.BE.urls.cycle_list;
+      var get_cycles_url = '/app/cycles/';
 
       $http({
         method: 'GET',
