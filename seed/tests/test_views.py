@@ -3316,8 +3316,7 @@ class InventoryViewTests(TestCase):
             taxlot=taxlot_1, state=taxlot_state_1, cycle=self.cycle
         )
         TaxLotProperty.objects.create(
-            property_view=property_view, taxlot_view=taxlot_view_1,
-            cycle=self.cycle
+            property_view=property_view, taxlot_view=taxlot_view_1, cycle=self.cycle
         )
         taxlot_state_2 = self.taxlot_state_factory.get_taxlot_state(
             postal_code=property_state.postal_code
@@ -3343,7 +3342,7 @@ class InventoryViewTests(TestCase):
 
         result = results[0]
         self.assertEquals(len(result['related']), 1)
-        self.assertEquals(result['address'], taxlot_state_1.address)
+        self.assertEquals(result['address_line_1'], taxlot_state_1.address_line_1)
         self.assertEquals(result['block_number'], taxlot_state_1.block_number)
 
         related = result['related'][0]

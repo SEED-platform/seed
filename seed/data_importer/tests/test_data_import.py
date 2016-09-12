@@ -248,6 +248,7 @@ class TestMatching(TestCase):
                                           organization=self.fake_org)
 
         # Promote case A (one property <-> one tax lot)
+        print ps.__dict__
         ps = PropertyState.objects.filter(pm_property_id=2264)[0]
 
         ps.promote(cycle)

@@ -162,8 +162,7 @@ class PropertyState(models.Model):
                 organization=self.organization
             )
 
-            pv = PropertyView.objects.create(property=prop, cycle=cycle,
-                                             state=self)
+            pv = PropertyView.objects.create(property=prop, cycle=cycle, state=self)
 
             return pv
         elif len(pvs) == 1:
