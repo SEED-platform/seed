@@ -12,7 +12,7 @@ from rest_framework import routers
 
 from seed.views.labels import (
     LabelViewSet,
-    UpdateBuildingLabelsAPIView,
+    UpdateInventoryLabelsAPIView,
 )
 
 
