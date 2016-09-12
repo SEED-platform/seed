@@ -281,7 +281,18 @@ class Cleansing(object):
         :param kwargs:
         :return:
         """
-
+        # For changed field names, TODO uncomment when appropriate
+        # self.required_fields = {
+        #     'property': ['address_line_1', 'pm_property_id',
+        #                  'jurisdiction_property_id'],
+        #     'taxlot': ['jurisdiction_taxlot_id', 'address_line_1'],
+        # }
+        # For old field names, TODO remove when appropriate
+        self.required_fields = {
+            'property': ['address_line_1', 'pm_property_id',
+                         'jurisdiction_property_identifier'],
+            'taxlot': ['jurisdiction_taxlot_identifier', 'address'],
+        }
         self.org = organization
         super(Cleansing, self).__init__(*args, **kwargs)
 
@@ -312,26 +323,22 @@ class Cleansing(object):
         """
         return "cleansing_results__%s" % file_pk
 
-    def cleanse(self, data):
+    def cleanse(self, record_type, data):
         """
         Send in data as a queryset from the BuildingSnapshot ids.
-
+        :param record_type: one of property/taxlot
         :param data: rows of data to be cleansed
         :return:
         """
+        fields = self.get_fieldnames(record_type)
 
         for datum in data:
             # Initialize the ID if it doesn't exist yet. Add in the other
             # fields that are of interest to the GUI
             if datum.id not in self.results:
                 self.results[datum.id] = {}
-                self.results[datum.id]['id'] = datum.id
-                self.results[datum.id]['address_line_1'] = datum.address_line_1
-
-                # TODO: Hook up these other fields again now that they have moved
-                # self.results[datum.id]['pm_property_id'] = datum.pm_property_id
-                # self.results[datum.id]['tax_lot_id'] = datum.tax_lot_id
-                # self.results[datum.id]['custom_id_1'] = datum.custom_id_1
+                for field in fields:
+                    self.results[datum.id][field] = getattr(datum, field)
                 self.results[datum.id]['cleansing_results'] = []
 
             # self.missing_matching_field(datum)
@@ -340,6 +347,12 @@ class Cleansing(object):
             # self.data_type_check(datum)
 
         self.prune_data()
+
+    def get_fieldnames(self, record_type):
+        """Get fieldnames to apply to results."""
+        field_names = ['id']
+        field_names.extend(self.required_fields[record_type])
+        return field_names
 
     def prune_data(self):
         """

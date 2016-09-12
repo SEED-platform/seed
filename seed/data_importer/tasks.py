@@ -13,7 +13,6 @@ import re
 import string
 import time
 import traceback
-import uuid
 from _csv import Error
 from functools import reduce
 
@@ -47,25 +46,31 @@ from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.utils import batch
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
-    ASSESSED_RAW,
-    PORTFOLIO_RAW,
-    GREEN_BUTTON_RAW,
     ASSESSED_BS,
-    PORTFOLIO_BS,
-    GREEN_BUTTON_BS,
+    ASSESSED_RAW,
     BS_VALUES_LIST,
+    GREEN_BUTTON_BS,
+    GREEN_BUTTON_RAW,
+    PORTFOLIO_BS,
+    PORTFOLIO_RAW,
+    POSSIBLE_MATCH,
+    SYSTEM_MATCH,
+)
+from seed.models import (
     Column,
+    TaxLotState
+)
+from seed.models import (
     get_column_mappings,
     find_canonical_building_values,
-    SYSTEM_MATCH,
-    POSSIBLE_MATCH,
     initialize_canonical_building,
     save_snapshot_match,
-    save_column_names,
     BuildingSnapshot,
     PropertyState,
+    PropertyView,
     DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
+    DATA_STATE_MATCHING,
 )
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache
@@ -258,24 +263,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
             **kwargs
         )
 
-        # TODO: Figure out how to handle tax_lot_id's here
-
-        # if property_state.tax_lot_id:
-        #      property_state.tax_lot_id = _normalize_tax_lot_id(str(model.tax_lot_id))
-
-        tax_lot_id = uuid.uuid4()
-        if property_state.jurisdiction_property_identifier:
-            tax_lot_id = property_state.jurisdiction_property_identifier
-
-        property_state = property_state.assign_cycle_and_tax_lot(org,
-                                                                 datetime.datetime(
-                                                                     2015, 1,
-                                                                     1),
-                                                                 datetime.datetime(
-                                                                     2015, 12,
-                                                                     31),
-                                                                 tax_lot_id)
-
         # Assign some other arguments here
         property_state.import_file = import_file
         property_state.source_type = save_type
@@ -286,7 +273,11 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
 
     if property_state:
         # Make sure that we've saved all of the extra_data column names
-        save_column_names(property_state, mapping=mapping)
+        Column.save_column_names(property_state, mapping=mapping)
+
+    # # TODO: Save tax lot state
+    # if tax_lot_state:
+    #     Column.save_column_names(tax_lot_state, mapping=mapping)
 
     increment_cache(prog_key, increment)
 
@@ -339,7 +330,8 @@ def _map_data(file_pk, *args, **kwargs):
 
     id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
     increment = get_cache_increment_value(id_chunks)
-    tasks = [map_row_chunk.s(ids, file_pk, source_type, prog_key, increment) for ids in id_chunks]
+    tasks = [map_row_chunk.s(ids, file_pk, source_type, prog_key, increment)
+             for ids in id_chunks]
 
     if tasks:
         # specify the chord as an immutable with .si
@@ -351,17 +343,23 @@ def _map_data(file_pk, *args, **kwargs):
 
 @shared_task
 @lock_and_track
-def _cleanse_data(file_pk):
+def _cleanse_data(file_pk, record_type='property'):
     """
 
     Get the mapped data and run the cleansing class against it in chunks. The
-    mapped data are pulled from the PropertyState table.
+    mapped data are pulled from the PropertyState(or Taxlot) table.
 
     @lock_and_track returns a progress_key
 
     :param file_pk: int, the id of the import_file we're working with.
+    :param report: string, 'property' or 'taxlot', defaults to property
 
     """
+    # TODO Since this function was previously hardcoded to use PropertyState,
+    # but the functions/methods it calls can now handle both, I converted
+    # this function and had record_type to  default to PropertyState,
+    # I did not change anything where it gets called.
+
     import_file = ImportFile.objects.get(pk=file_pk)
 
     source_type_dict = {
@@ -376,7 +374,12 @@ def _cleanse_data(file_pk):
     # After the mapping stage occurs, the data end up in the PropertyState
     # table under the *_BS value.
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_BS)
-    qs = PropertyState.objects.filter(
+
+    model = {
+        'property': PropertyState, 'taxlot': TaxLotState
+    }.get(record_type)
+
+    qs = model.objects.filter(
         import_file=import_file,
         source_type=source_type,
     ).only('id').iterator()
@@ -388,8 +391,10 @@ def _cleanse_data(file_pk):
 
     id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
     increment = get_cache_increment_value(id_chunks)
-    tasks = [cleanse_data_chunk.s(ids, file_pk, increment) for ids in
-             id_chunks]
+    tasks = [
+        cleanse_data_chunk.s(record_type, ids, file_pk, increment)
+        for ids in id_chunks
+    ]
 
     if tasks:
         # specify the chord as an immutable with .si
@@ -553,7 +558,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
     logger.debug("Current cache state")
     current_cache = get_cache(prog_key)
     logger.debug(current_cache)
-    time.sleep(2)
+    time.sleep(2)  # NL: yuck
     result = current_cache
 
     try:
@@ -701,8 +706,9 @@ def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
 @shared_task
 @lock_and_track
 def match_buildings(file_pk, user_pk):
-    """kicks off system matching, returns progress key #NL -- this seems to
-    return a JSON--not a progress key?"""
+    """
+    kicks off system matching, returns progress key within the JSON response
+    """
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
     if import_file.matching_done:
@@ -734,14 +740,17 @@ def match_buildings(file_pk, user_pk):
 
 def handle_id_matches(unmatched_bs, import_file, user_pk):
     """"Deals with exact matches in the IDs of buildings."""
+
     id_matches = get_canonical_id_matches(
         unmatched_bs.super_organization_id,
-        unmatched_bs.pm_property_id,
+        unmatched_bs.pm_parent_property_id,
         None,  # unmatched_bs.tax_lot_id, # TODO: this is now a relationship
         unmatched_bs.custom_id_1
     )
     if not id_matches.exists():
         return
+
+    print id_matches
 
     # Check to see if there are any duplicates here
     for can_snap in id_matches:
@@ -955,12 +964,15 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
 @shared_task
 @lock_and_track
 def _match_buildings(file_pk, user_pk):
-    """ngram search against all of the canonical_building snapshots for org."""
-    #     assert True
+    """ngram search against all of the propertystates for org."""
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
     org = Organization.objects.filter(users=import_file.import_record.owner)[0]
-    unmatched_buildings = PropertyState.find_unmatched_buildings(import_file)
+
+    # Return a list of all the properties based on the import file
+    unmatched_buildings = PropertyState.find_unmatched(import_file)
+    # canonical_buildings =
+    # TODO: need to also return the taxlots and taxlotproperties (yuck)
 
     duplicates = []
 
@@ -970,13 +982,18 @@ def _match_buildings(file_pk, user_pk):
     # if the match is a duplicate of other existing data add it to a list
     # and indicate which existing record it is a duplicate of
     for unmatched in unmatched_buildings:
+        print "trying to match %s" % unmatched.__dict__
         try:
             match = handle_id_matches(unmatched, import_file, user_pk)
+            print "My match was %s" % match
+            if match:
+                print "YESSSSSS"
         except DuplicateDataError as e:
             duplicates.append(unmatched.pk)
             unmatched.duplicate_id = e.id
             unmatched.save()
             continue
+
         if match:
             newly_matched_building_pks.extend([match.pk, unmatched.pk])
 
@@ -1149,31 +1166,45 @@ def remap_data(import_file_pk):
     return result
 
 
-# TODO: delete this method
+# TODO: rename to get_canonical_properties
 def get_canonical_snapshots(org_id):
-    """Return all of the BuildingSnapshots that are canonical for an org."""
-    snapshots = BuildingSnapshot.objects.filter(
-        canonicalbuilding__active=True, super_organization_id=org_id
-    )
+    """
+    Return all of the PropertyStates from the PropertyView
+    for a specific cycle.
 
-    return snapshots
+    Args:
+        org_id: Organization ID
+
+    Returns:
+        QuerySet
+
+    """
+
+    pvs = PropertyView.objects.filter(
+        state__super_organization=org_id,
+        state__data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING]
+    ).select_related('state')
+
+    ids = [p.state.id for p in pvs]
+    return PropertyState.objects.filter(pk__in=ids)
 
 
+# TODO: delete this method
 def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
     """Returns canonical snapshots that match at least one id."""
     params = []
     can_snapshots = get_canonical_snapshots(org_id)
     if pm_id:
         params.append(Q(pm_property_id=pm_id))
-        # params.append(Q(tax_lot_id=pm_id))
+        # params.append(Q(tax_lot_state__tax_lot_id=pm_id))
         params.append(Q(custom_id_1=pm_id))
     if tax_id:
         params.append(Q(pm_property_id=tax_id))
-        # params.append(Q(tax_lot_id=tax_id))
+        # params.append(Q(tax_lot_state__tax_lot_id=tax_id))
         params.append(Q(custom_id_1=tax_id))
     if custom_id:
         params.append(Q(pm_property_id=custom_id))
-        # params.append(Q(tax_lot_id=custom_id))
+        # params.append(Q(tax_lot_state__tax_lot_id=custom_id))
         params.append(Q(custom_id_1=custom_id))
 
     if not params:
@@ -1206,6 +1237,7 @@ def is_same_snapshot(s1, s2):
         if k[0] == "_":
             continue
         # also need to ignore any field with "_source" in it
+        # TODO: Remove _source as this is no longer in the database
         if "_source" in k:
             continue
         if k in fields_to_ignore:

@@ -9,12 +9,12 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
+from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.models import (
     Enum,
     Unit,
     SEED_DATA_SOURCES,
-
 )
 
 
@@ -41,10 +41,20 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
 
     try:
         previous_mapping = ColumnMapping.objects.get(
-            super_organization=organization,
-            column_raw__in=cols,
+            super_organization=organization, column_raw__in=cols,
         )
+    except ColumnMapping.MultipleObjectsReturned:
+        # # handle the special edge-case where remove dupes doesn't get
+        # # called by ``get_or_create``
+        ColumnMapping.objects.filter(
+            super_organization=organization,
+            column_raw__in=cols
+        ).delete()
 
+        previous_mapping, _ = ColumnMapping.objects.get_or_create(
+            super_organization=organization,
+            column_raw__in=cols
+        )
     except ColumnMapping.DoesNotExist:
         return None
 
@@ -53,18 +63,22 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
     if previous_mapping.is_direct():
         column_names = column_names[0]
 
-    return 'property', column_names, 100
+    # TODO: return the correct table name!
+    return 'PropertyState', column_names, 100
 
 
+# TODO: Make this a static method
 def get_column_mappings(organization):
-    """Returns dict of all the column mappings for an Organization's given source type
+    """
+    Returns dict of all the column mappings for an Organization's given
+    source type
 
     :param organization: inst, Organization.
     :returns: dict, list of dict.
 
-    Use this when actually performing mapping between data sources, but only call it after all of the mappings
-    have been saved to the ``ColumnMapping`` table.
-
+    Use this when actually performing mapping between data sources, but only
+    call it after all of the mappings have been saved to the ``ColumnMapping``
+    table.
     """
     from seed.utils.mapping import _get_column_names
 
@@ -93,27 +107,6 @@ def get_column_mappings(organization):
     return mapping, concat_confs
 
 
-# TODO: Make this a static method on Column
-def save_column_names(property_state, mapping=None):
-    """Save unique column names for extra_data in this organization.
-
-    Basically this is a record of all the extra_data keys we've ever seen
-    for a particular organization.
-
-    :param property_state: PropertyState instance.
-    """
-    from seed.utils import mapping as mapping_utils
-
-    for key in property_state.extra_data:
-        # Ascertain if our key is ``extra_data`` or not.
-        is_extra_data = key not in mapping_utils.get_mappable_columns()
-        Column.objects.get_or_create(
-            organization=property_state.super_organization,
-            column_name=key[:511],
-            is_extra_data=is_extra_data
-        )
-
-
 class Column(models.Model):
     """The name of a column for a given organization."""
     SOURCE_PROPERTY = 'P'
@@ -132,7 +125,7 @@ class Column(models.Model):
 
     # name of the table which the column name applies, if the column name
     # is a db field
-    table_name = models.CharField(max_length=512, blank=True, db_index=True,)
+    table_name = models.CharField(max_length=512, blank=True, db_index=True, )
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
@@ -148,6 +141,213 @@ class Column(models.Model):
     def __unicode__(self):
         return u'{0}'.format(self.column_name)
 
+    @staticmethod
+    def create_mappings(mappings, organization, user):
+        """
+        Create the mappings for an organization and a user based on a simple
+        array of array object.
+
+        Args:
+            mappings: dictionary containing mapping information
+
+                mappings: [
+                    {
+                        'from_field': 'eui',
+                        'to_field': 'energy_use_intensity',
+                        'to_table_name': 'property',
+                    },
+                    {
+                        'from_field': 'eui',
+                        'to_field': 'energy_use_intensity',
+                        'to_table_name': 'property',
+                    }
+                ]
+
+            organization: Organization object
+            user: User object
+
+        Returns:
+            True (data are saved in the ColumnMapping table in the database)
+
+        """
+
+        # Take the existing object and return the same object with the db column objects added to
+        # the dictionary (to_column_object and from_column_object)
+        mappings = Column._column_fields_to_columns(mappings, organization)
+
+        for mapping in mappings:
+            if isinstance(mapping, dict):
+
+                try:
+                    column_mapping, _ = ColumnMapping.objects.get_or_create(
+                        super_organization=organization,
+                        column_raw__in=mapping['from_column_object'],
+                    )
+                except ColumnMapping.MultipleObjectsReturned:
+                    # handle the special edge-case where remove dupes doesn't get
+                    # called by ``get_or_create``
+                    ColumnMapping.objects.filter(
+                        super_organization=organization,
+                        column_raw__in=mapping['from_column_object'],
+                    ).delete()
+
+                    column_mapping, _ = ColumnMapping.objects.get_or_create(
+                        super_organization=organization,
+                        column_raw__in=mapping['from_column_object'],
+                    )
+
+                # Clear out the column_raw and column mapped relationships. -- NL really? history?
+                column_mapping.column_raw.clear()
+                column_mapping.column_mapped.clear()
+
+                # Add all that we got back from the interface back in the M2M rel.
+                [column_mapping.column_raw.add(raw_col) for raw_col in
+                 mapping['from_column_object']]
+                if mapping['to_column_object'] is not None:
+                    [column_mapping.column_mapped.add(dest_col) for dest_col in
+                     mapping['to_column_object']]
+
+                column_mapping.user = user
+                column_mapping.save()
+            else:
+                raise TypeError("Mapping object needs to be of type dict")
+
+        return True
+
+    @staticmethod
+    def _column_fields_to_columns(fields, organization):
+        """
+        List of dictionaries to process into column objects. This method will create the columns
+        if they did not previously exist. Note that fields are probably mutable, but the method
+        returns a new list of fields.
+
+        .. example:
+
+            test_map = [
+                    {
+                        'from_field': 'eui',
+                        'to_field': 'site_eui',
+                        'to_table_name': 'PropertyState',
+                    },
+                    {
+                        'from_field': 'address',
+                        'to_field': 'address',
+                        'to_table_name': 'TaxLotState'
+                    },
+                    {
+                        'from_field': 'Wookiee',
+                        'to_field': 'Dothraki',
+                        'to_table_name': 'PropertyState',
+                    },
+                ]
+
+        Args:
+            fields: list of dicts containing to and from fields
+            organization: organization model instance
+
+        Returns:
+            dict with lists of columns to which is mappable.
+        """
+
+        def select_col_obj(column_name, table_name, organization_column):
+            if organization_column:
+                return [organization_column]
+            else:
+                # Try for "global" column definitions, e.g. BEDES. - Note the BEDES are not
+                # loaded into the database as of 9/8/2016 so not sure if this code is ever
+                # exercised
+                obj = Column.objects.filter(organization=None, column_name=column_name).first()
+
+                if obj:
+                    # create organization mapped column
+                    obj.pk = None
+                    obj.id = None
+                    obj.organization = organization
+                    obj.save()
+
+                    return [obj]
+                else:
+                    if table_name:
+                        obj, _ = Column.objects.get_or_create(
+                            organization=organization,
+                            column_name=column_name,
+                            table_name=table_name,
+                            is_extra_data=is_extra_data,
+                        )
+                        return [obj]
+                    else:
+                        obj, _ = Column.objects.get_or_create(
+                            organization=organization,
+                            column_name=column_name,
+                            is_extra_data=is_extra_data,
+                        )
+                        return [obj]
+
+            return True
+
+        md = MappingData()
+
+        # Container to store the dicts with the Column object
+        new_data = []
+
+        for field in fields:
+            new_field = field
+
+            # find the mapping data column (i.e. the database fields) that match, if it exists
+            # to set the extra data flag
+            db_field = md.find_column(field['to_table_name'], field['to_field'])
+            is_extra_data = False if db_field else True  # yes i am a db column, thus I am not extra_data
+
+            # find the to_column
+            to_org_col = Column.objects.filter(organization=organization,
+                                               column_name=field['to_field'],
+                                               table_name=field['to_table_name'],
+                                               is_extra_data=is_extra_data).first()
+            from_org_col = Column.objects.filter(organization=organization,
+                                                 column_name=field['from_field'],
+                                                 is_extra_data=is_extra_data).first()
+
+            new_field['to_column_object'] = select_col_obj(
+                field['to_field'],
+                field['to_table_name'],
+                to_org_col
+            )
+            new_field['from_column_object'] = select_col_obj(
+                field['from_field'],
+                "",
+                from_org_col)
+
+            new_data.append(new_field)
+
+        return new_data
+
+    @staticmethod
+    def save_column_names(property_state, mapping=None):
+        """Save unique column names for extra_data in this organization.
+
+        Basically this is a record of all the extra_data keys we've ever seen
+        for a particular organization.
+
+        :param property_state: PropertyState instance.
+        """
+        from seed.utils import mapping as mapping_utils
+
+        # TODO: Need to allow passing in the TaxLotState as well.
+        for key in property_state.extra_data:
+            # Ascertain if our key is ``extra_data`` or not.
+            # TODO: The get_mappable_columns only returns for the PropertyState
+            # Need to expand this to the tax_lot_state to know which one to look
+            # in, or just rewrite this is_extra_data logic, because it is wrong!
+            is_extra_data = key not in mapping_utils.get_mappable_columns()
+            Column.objects.get_or_create(
+                organization=property_state.super_organization,
+                column_name=key[:511],
+                is_extra_data=is_extra_data,
+                table_name='PropertyState'
+            )
+
+            # TODO: Save the tax lot extra data fields
+
 
 class ColumnMapping(models.Model):
     """Stores previous user-defined column mapping.
@@ -158,26 +358,11 @@ class ColumnMapping(models.Model):
 
     """
     user = models.ForeignKey(User, blank=True, null=True)
-    source_type = models.IntegerField(
-        choices=SEED_DATA_SOURCES, null=True, blank=True
-    )
-    super_organization = models.ForeignKey(
-        SuperOrganization,
-        verbose_name=_('SeedOrg'),
-        blank=True,
-        null=True,
-        related_name='column_mappings'
-    )
-    column_raw = models.ManyToManyField(
-        'Column',
-        related_name='raw_mappings',
-        blank=True,
-    )
-    column_mapped = models.ManyToManyField(
-        'Column',
-        related_name='mapped_mappings',
-        blank=True,
-    )
+    source_type = models.IntegerField(choices=SEED_DATA_SOURCES, null=True, blank=True)
+    super_organization = models.ForeignKey(SuperOrganization, verbose_name=_('SeedOrg'),
+                                           blank=True, null=True, related_name='column_mappings')
+    column_raw = models.ManyToManyField('Column', related_name='raw_mappings', blank=True, )
+    column_mapped = models.ManyToManyField('Column', related_name='mapped_mappings', blank=True, )
 
     def is_direct(self):
         """
@@ -198,7 +383,8 @@ class ColumnMapping(models.Model):
         return (not self.is_direct())
 
     def remove_duplicates(self, qs, m2m_type='column_raw'):
-        """Remove any other Column Mappings that use these columns.
+        """
+        Remove any other Column Mappings that use these columns.
 
         :param qs: queryset of ``Column``. These are the Columns in a M2M with
             this instance.
@@ -206,13 +392,13 @@ class ColumnMapping(models.Model):
             Defaults to 'column_raw'.
 
         """
-        ColumnMapping.objects.filter(**{
-            '{0}__in'.format(m2m_type): qs,
-            'super_organization': self.super_organization
-        }).exclude(pk=self.pk).delete()
+        ColumnMapping.objects.filter(
+            **{'{0}__in'.format(m2m_type): qs, 'super_organization': self.super_organization
+               }).exclude(pk=self.pk).delete()
 
     def save(self, *args, **kwargs):
-        """Overrides default model save to eliminate duplicate mappings.
+        """
+        Overrides default model save to eliminate duplicate mappings.
 
         .. warning ::
             Other column mappings which have the same raw_columns in them
