@@ -190,7 +190,7 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(data['columns'], columns)
 
         # get show_shared_buildings
-        url = reverse_lazy("accounts:get_shared_buildings")
+        url = reverse_lazy("apiv2:users-shared-buildings", args=[self.user.pk])
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -209,7 +209,7 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(200, response.status_code)
 
         # get show_shared_buildings
-        url = reverse_lazy("accounts:get_shared_buildings")
+        url = reverse_lazy("apiv2:users-shared-buildings", args=[self.user.pk])
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -1499,7 +1499,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse("seed:get_datasets"),
+        response = self.client.get(reverse("apiv2:datasets-list"),
                                    {'organization_id': self.org.pk})
         self.assertEqual(1, len(json.loads(response.content)['datasets']))
 
@@ -1507,7 +1507,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse("seed:get_datasets_count"),
+        response = self.client.get(reverse("apiv2:datasets-count"),
                                    {'organization_id': self.org.pk})
         self.assertEqual(200, response.status_code)
         j = json.loads(response.content)
@@ -1518,7 +1518,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse("seed:get_datasets_count"),
+        response = self.client.get(reverse("apiv2:datasets-count"),
                                    {'organization_id': 666})
         self.assertEqual(400, response.status_code)
         j = json.loads(response.content)
@@ -1530,8 +1530,9 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse("seed:get_dataset"),
-                                   {'dataset_id': import_record.pk})
+        response = self.client.get(
+            reverse("apiv2:datasets-detail", args=[import_record.pk]) + '?organization_id=' + str(self.org.pk)
+        )
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_delete_dataset(self):
@@ -1539,15 +1540,9 @@ class GetDatasetsViewsTests(TestCase):
         import_record.super_organization = self.org
         import_record.save()
 
-        post_data = {
-            'dataset_id': import_record.pk,
-            'organization_id': self.org.pk
-        }
-
         response = self.client.delete(
-            reverse_lazy("seed:delete_dataset"),
-            content_type='application/json',
-            data=json.dumps(post_data)
+            reverse_lazy("apiv2:datasets-detail", args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
+            content_type='application/json'
         )
         self.assertEqual('success', json.loads(response.content)['status'])
         self.assertFalse(
@@ -1559,14 +1554,11 @@ class GetDatasetsViewsTests(TestCase):
         import_record.save()
 
         post_data = {
-            'dataset': {
-                'id': import_record.pk,
-                'name': 'new'
-            }
+            'dataset': 'new'
         }
 
-        response = self.client.post(
-            reverse_lazy("seed:update_dataset"),
+        response = self.client.put(
+            reverse_lazy("apiv2:datasets-detail", args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
             data=json.dumps(post_data)
         )
@@ -2248,15 +2240,9 @@ class TestMCMViews(TestCase):
         )
 
     def test_get_column_mapping_suggestions(self):
-        post_data = {
-            'import_file_id': self.import_file.pk,
-            'org_id': self.org.pk
-        }
-
-        response = self.client.post(
-            reverse_lazy("seed:get_column_mapping_suggestions"),
-            content_type='application/json',
-            data=json.dumps(post_data)
+        response = self.client.get(
+            reverse_lazy("apiv2:data_files-mapping-suggestions", args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
+            content_type='application/json'
         )
         self.assertEqual('success', json.loads(response.content)['status'])
 
@@ -2624,9 +2610,8 @@ class TestMCMViews(TestCase):
         DATASET_NAME_1 = 'test_name 1'
         DATASET_NAME_2 = 'city compliance dataset 2014'
         resp = self.client.post(
-            reverse_lazy("seed:create_dataset"),
+            reverse_lazy("apiv2:datasets-list") + '?organization_id=' + str(self.org.pk),
             data=json.dumps({
-                'organization_id': self.org.pk,
                 'name': DATASET_NAME_1,
             }),
             content_type='application/json',
@@ -2635,9 +2620,8 @@ class TestMCMViews(TestCase):
         self.assertEqual(data['name'], DATASET_NAME_1)
 
         resp = self.client.post(
-            reverse_lazy("seed:create_dataset"),
+            reverse_lazy("apiv2:datasets-list") + '?organization_id=' + str(self.org.pk),
             data=json.dumps({
-                'organization_id': self.org.pk,
                 'name': DATASET_NAME_2,
             }),
             content_type='application/json',
@@ -2656,9 +2640,8 @@ class TestMCMViews(TestCase):
 
         # test duplicate name
         resp = self.client.post(
-            reverse_lazy("seed:create_dataset"),
+            reverse_lazy("apiv2:datasets-list") + '?organization_id=' + str(self.org.pk),
             data=json.dumps({
-                'organization_id': self.org.pk,
                 'name': DATASET_NAME_1,
             }),
             content_type='application/json',

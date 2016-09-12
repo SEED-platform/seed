@@ -39,7 +39,7 @@ angular.module('BE.seed.service.cycle',
 
         $http({
             method: 'GET',
-            url: window.BE.urls.cycle_list,
+            url: '/app/cycles/',
             params: searchArgs
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -64,7 +64,7 @@ angular.module('BE.seed.service.cycle',
         var defer = $q.defer();
         $http({
             method: 'POST',
-            url: window.BE.urls.cycle_list,
+            url: '/app/cycles/',
             data: cycle,
             params: {
                 organization_id: user_service.get_organization().id
@@ -91,7 +91,7 @@ angular.module('BE.seed.service.cycle',
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: window.BE.urls.cycle_list + cycle.id + '/',
+            url: '/app/cycles/' + cycle.id + '/',
             data: cycle,
             params: {
                 organization_id: user_service.get_organization().id

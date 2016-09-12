@@ -74,7 +74,7 @@ A PDF of the endpoints is available here :download:`pdf <API_endpoints.pdf>`.
 Account Management Endpoints
 ----------------------------
 
-.. automodule:: seed.views.accounts
+.. automodule:: seed.views.users
     :members:
     :undoc-members:
 
