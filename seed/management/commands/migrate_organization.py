@@ -81,19 +81,15 @@ def create_property_state_for_node(node, org, cb):
     for key in node.extra_data:
         if key.strip() == '':
             if node.extra_data[key].strip() != '':
-                print "WARNING: key '{}' for organization={} has value={} (cb={})".format(key, org,
-                                                                                          node.extra_data[
-                                                                                              key],
-                                                                                          cb.pk)
+                print "WARNING: key '{}' for organization={} has value={} (cb={})".format(
+                    key, org, node.extra_data[key], cb.pk)
             continue
 
         try:
             assert (key in taxlot_columns or key in property_columns)
         except AssertionError:
-            raise KeyError("Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key,
-                                                                                             node.extra_data[
-                                                                                                 key],
-                                                                                             org))
+            raise KeyError("Every key must be mapped: '{}'=>'{}' for org={} missing!".format(
+                key, node.extra_data[key], org))
 
     property_state_extra_data = {x: y for (x, y) in node.extra_data.items() if
                                  y in property_columns}
@@ -166,19 +162,15 @@ def create_tax_lot_state_for_node(node, org, cb):
     for key in node.extra_data:
         if key.strip() == '':
             if node.extra_data[key]:
-                print "WARNING: key '{}' for organization={} has value={} (cb={})".format(key, org,
-                                                                                          node.extra_data[
-                                                                                              key],
-                                                                                          cb.pk)
+                print "WARNING: key '{}' for organization={} has value={} (cb={})".format(
+                    key, org, node.extra_data[key], cb.pk)
             continue
 
         try:
             assert (key in taxlot_columns or key in property_columns)
         except AssertionError:
-            print "WARNING: Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key,
-                                                                                             node.extra_data[
-                                                                                                 key],
-                                                                                             org)
+            print "WARNING: Every key must be mapped: '{}'=>'{}' for org={} missing!".format(
+                key, node.extra_data[key], org)
             # raise KeyError("Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key, node.extra_data[key], org))
 
     taxlot_extra_data = {x: y for (x, y) in node.extra_data.items() if y in taxlot_columns}
