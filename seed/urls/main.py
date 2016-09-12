@@ -6,6 +6,7 @@
 """
 
 from django.conf.urls import url
+
 from seed.views.main import (
     home, version, create_pm_mapping,
     get_total_number_of_buildings_for_user,         # TO REMOVE
@@ -28,7 +29,6 @@ from seed.views.main import (
     delete_buildings
 )
 from seed.views.properties import get_properties
-
 
 # prefix, to revert back to original endpoints, leave this blank
 apiv1 = r''  # r'api/v1/'

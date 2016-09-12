@@ -5,14 +5,14 @@
 :author
 """
 from django.conf.urls import url, include
+from rest_framework import routers
 
+from api.views import TestReverseViewSet, test_view_with_arg
 from seed.views.datasets import DatasetViewSet
 from seed.views.main import DataFileViewSet
-from seed.views.projects import ProjectsViewSet
 from seed.views.organizations import OrganizationViewSet
+from seed.views.projects import ProjectsViewSet
 from seed.views.users import UserViewSet
-from api.views import TestReverseViewSet, test_view_with_arg
-from rest_framework import routers
 
 
 api_v2_router = routers.DefaultRouter()
