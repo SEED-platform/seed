@@ -75,6 +75,8 @@ class Command(BaseCommand):
             else:
                 options['cb_whitelist_string'] = options['cb_whitelist_string'] + "," + cbs
 
+        options['clear_bluesky_labels'] = False
+
         destroy, migrate, campus, m2m, primarysecondary, migrate_columns, migrate_labels = map(lambda x: options[x], ("destroy", "migrate", "campus", "m2m", "primarysecondary", "migrate_columns", "migrate_labels"))
 
         if not destroy and not migrate and not campus and not m2m and not primarysecondary and not migrate_columns and not migrate_labels:
