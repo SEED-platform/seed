@@ -81,9 +81,11 @@ class Command(BaseCommand):
 
             states = map(lambda pv: pv.state, list(property_views))
 
+            # All property views where the state has a parent property that isn't "Not Applicable."
             for (pv, state) in zip(property_views, states):
                 pm_parent_property_id = state.pm_parent_property_id
-                if pm_parent_property_id == state.building_portfolio_manager_identifier:
+                # What is the difference between these two fields?
+                if pm_parent_property_id == state.building_portfolio_manager_identifier or pm_parent_property_id == state.pm_property_id:
                     print "Auto reference!"
                     prop = pv.property
                     prop.campus = True
@@ -127,8 +129,9 @@ class Command(BaseCommand):
 
                     if not PropertyView.objects.filter(property=parent_property, cycle=pv.cycle).count():
 
-                        parent_views = PropertyView.objects.filter(property=parent_property).all()
-                        parent_views = [ppv for ppv in parent_views if ppv.cycle.start <= pv.cycle.start]
+                        parent_views = list(PropertyView.objects.filter(property=parent_property).all())
+                        parent_views.sort(key=lambda pv: pv.cycle.start)
+                        # parent_views = [ppv for ppv in parent_views if ppv.cycle.start <= pv.cycle.start]
                         assert len(parent_views), "This should always be true."
 
 
