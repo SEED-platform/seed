@@ -330,7 +330,7 @@ def get_property_columns(request):
             'type': 'number',
             'related': False
         }, {
-            'name': 'jurisdiction_property_identifier',
+            'name': 'jurisdiction_property_id',
             'displayName': 'Property / Building ID',
             'type': 'numberStr',
             'related': False
@@ -624,7 +624,7 @@ def get_taxlot_columns(request):
             'displayName': 'Property Name',
             'related': True
         }, {
-            'name': 'jurisdiction_property_identifier',
+            'name': 'jurisdiction_property_id',
             'displayName': 'Property / Building ID',
             'type': 'numberStr',
             'related': True

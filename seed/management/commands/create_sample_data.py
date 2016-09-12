@@ -113,9 +113,9 @@ class CreateSampleDataFakePropertyStateFactory(FakePropertyStateFactory):
         self.case_description = case_description
         self.extra_data_factory = extra_data_factory
 
-    def _generate_jurisdiction_property_identifier(self):
+    def _generate_jurisdiction_property_id(self):
         """
-        Generates something that resembles a jurisdiction_property_identifier.
+        Generates something that resembles a jurisdiction_property_id.
         This is a somewhat vaguely defined identifier with the following rules:
 
         1:  There is at most two groups of characters separated by an optional dash
@@ -167,7 +167,7 @@ class CreateSampleDataFakePropertyStateFactory(FakePropertyStateFactory):
                             "gross_floor_area": self.fake.numerify(text='#######'),
                             "property_notes": self.case_description,
                             "building_home_energy_score_identifier": randint(88888, 111111),
-                            "jurisdiction_property_identifier": self._generate_jurisdiction_property_identifier()}
+                            "jurisdiction_property_id": self._generate_jurisdiction_property_id()}
 
         property.update(data_not_in_base)
 

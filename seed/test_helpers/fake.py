@@ -234,7 +234,7 @@ class FakePropertyStateFactory(BaseFake):
         """Return a dict of pseudo random data for use with PropertyState"""
         owner = self.fake.random_element(elements=self.owners)
         return {
-            'jurisdiction_property_identifier': self.fake.numerify(text='#####'),
+            'jurisdiction_property_id': self.fake.numerify(text='#####'),
             'pm_parent_property_id': self.fake.numerify(text='#####'),
             'lot_number': self.fake.numerify(text='#####'),
             'address_line_1': self.address_line_1(),

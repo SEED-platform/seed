@@ -152,9 +152,9 @@ def import_example_data(test_obj, filename):
             "to_table_name": u'TaxLotState',
             "to_field": u'jurisdiction_taxlot_identifier',
         }, {
-            "from_field": u'jurisdiction_property_identifier',
+            "from_field": u'jurisdiction_property_id',
             "to_table_name": u'PropertyState',
-            "to_field": u'jurisdiction_property_identifier',
+            "to_field": u'jurisdiction_property_id',
         }, {
             "from_field": u'building_portfolio_manager_identifier',
             "to_table_name": u'PropertyState',

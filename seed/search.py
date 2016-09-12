@@ -86,7 +86,7 @@ def search_properties(q, fieldnames=None, queryset=None):
     if fieldnames is None:
         fieldnames = [
             'pm_parent_property_id'
-            'jurisdiction_property_identifier'
+            'jurisdiction_property_id'
             'address_line_1',
             'property_name',
         ]

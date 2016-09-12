@@ -4,19 +4,19 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from django.db import models
+from datetime import (
+    date,
+    datetime,
+)
 from logging import getLogger
 
+import pytz
+from django.db import models
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.utils.cache import set_cache_raw, get_cache_raw
 from seed.utils.constants import ASSESSOR_FIELDS_BY_COLUMN
-import pytz
-from datetime import (
-    date,
-    datetime,
-)
 
 logger = getLogger(__name__)
 
@@ -252,14 +252,14 @@ class Rules(models.Model):
                 severity=rule['severity'],
                 units=rule.get('units', '')
             )
-        # for pair in data_type_check:
-        #     Rules.objects.create(
-        #         org=organization,
-        #         field=pair[0],
-        #         category=CATEGORY_DATA_TYPE_CHECK,
-        #         type=pair[1],
-        #         severity=SEVERITY_ERROR
-        #     )
+            # for pair in data_type_check:
+            #     Rules.objects.create(
+            #         org=organization,
+            #         field=pair[0],
+            #         category=CATEGORY_DATA_TYPE_CHECK,
+            #         type=pair[1],
+            #         severity=SEVERITY_ERROR
+            #     )
 
     @staticmethod
     def restore_defaults(organization):
@@ -272,7 +272,6 @@ class Rules(models.Model):
 
 
 class Cleansing(object):
-
     def __init__(self, organization, *args, **kwargs):
         """
         Initialize the Cleansing class.
@@ -289,8 +288,7 @@ class Cleansing(object):
         # }
         # For old field names, TODO remove when appropriate
         self.required_fields = {
-            'property': ['address_line_1', 'pm_property_id',
-                         'jurisdiction_property_identifier'],
+            'property': ['address_line_1', 'pm_property_id', 'jurisdiction_property_id'],
             'taxlot': ['jurisdiction_taxlot_identifier', 'address'],
         }
         self.org = organization
@@ -379,7 +377,8 @@ class Cleansing(object):
         # TODO: NL: Should we check the extra_data field for the data?
         """
 
-        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_MISSING_MATCHING_FIELD, enabled=True) \
+        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_MISSING_MATCHING_FIELD,
+                                         enabled=True) \
                 .order_by('field', 'severity'):
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
@@ -410,7 +409,8 @@ class Cleansing(object):
         # TODO: Check the extra_data field for the data?
         """
 
-        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_MISSING_VALUES, enabled=True) \
+        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_MISSING_VALUES,
+                                         enabled=True) \
                 .order_by('field', 'severity'):
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
@@ -435,7 +435,8 @@ class Cleansing(object):
         :param datum: Database record containing the BS version of the fields populated
         :return: None
         """
-        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_IN_RANGE_CHECKING, enabled=True) \
+        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_IN_RANGE_CHECKING,
+                                         enabled=True) \
                 .order_by('field', 'severity'):
 
             # check if the field exists
@@ -504,7 +505,8 @@ class Cleansing(object):
         :return: None
         """
 
-        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_DATA_TYPE_CHECK, enabled=True) \
+        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_DATA_TYPE_CHECK,
+                                         enabled=True) \
                 .order_by('field', 'severity'):
             # check if the field exists
             if hasattr(datum, rule.field):

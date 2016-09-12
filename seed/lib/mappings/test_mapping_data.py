@@ -63,7 +63,7 @@ class TestMappingData(TestCase):
                          'conditioned_floor_area', 'custom_id_1', 'data_state',
                          'district', 'energy_alerts', 'energy_score',
                          'generation_date', 'gross_floor_area',
-                         'jurisdiction_property_identifier',
+                         'jurisdiction_property_id',
                          'jurisdiction_taxlot_identifier', 'lot_number',
                          'number_properties', 'occupied_floor_area', 'owner',
                          'owner_address', 'owner_city_state', 'owner_email',

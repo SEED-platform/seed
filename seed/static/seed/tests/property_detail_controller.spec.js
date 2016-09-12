@@ -126,7 +126,7 @@ describe('controller: property_detail_controller', function(){
                     "generation_date": "2013-09-27T18:41:00Z",
                     "gross_floor_area": "",
                     "id": 1048,
-                    "jurisdiction_property_identifier": "",
+                    "jurisdiction_property_id": "",
                     "lot_number": "",
                     "occupied_floor_area": "",
                     "owner": "",

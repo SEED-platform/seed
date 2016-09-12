@@ -119,7 +119,7 @@ def create_property_state_for_node(node, org, cb):
         property_state_extra_data["prop_bs_id"] = node.pk
 
     property_state = seed.models.PropertyState(confidence = node.confidence,
-                                                       jurisdiction_property_identifier = None,
+                                                       jurisdiction_property_id = None,
                                                        lot_number = node.lot_number,
                                                        property_name = node.property_name,
                                                        address_line_1 = node.address_line_1,
