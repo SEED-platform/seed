@@ -22,13 +22,15 @@ router.register(r'', LabelViewSet, base_name="label")
 
 urlpatterns = [
     url(
-        r'^property-labels/$',
-        UpdateBuildingLabelsAPIView.as_view(),
+        r'^property/',
+        UpdateInventoryLabelsAPIView.as_view(),
+        {'inventory_type': 'property'},
         name="property_labels",
     ),
     url(
         r'^taxlot-labels/$',
-        UpdateBuildingLabelsAPIView.as_view(),
+        UpdateInventoryLabelsAPIView.as_view(),
+        {'inventory_type': 'taxlot'},
         name="taxlot_labels",
     ),
 ]

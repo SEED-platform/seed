@@ -11,11 +11,17 @@ import logging
 from django.db import models
 from django_pgjson.fields import JsonField
 
+from auditlog import AUDIT_IMPORT
+from auditlog import DATA_UPDATE_TYPE
+
 from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
+from seed.models import (Cycle, StatusLabel)
 from seed.models import (
     COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW
 )
+from seed.utils.time import convert_datestr
+
 from seed.utils.generic import split_model_fields, obj_to_dict
 
 logger = logging.getLogger(__name__)
@@ -32,12 +38,6 @@ DATA_STATE = (
     (DATA_STATE_MAPPING, 'Post Mapping'),
     (DATA_STATE_MATCHING, 'Post Matching'),
 )
-from django.db.models.fields.related import ManyToManyField
-from seed.models import Cycle
-from seed.models import StatusLabel
-from auditlog import AUDIT_IMPORT
-from auditlog import DATA_UPDATE_TYPE
-from seed.utils.time import convert_datestr
 
 # Oops! we override a builtin in some of the models
 property_decorator = property
@@ -50,12 +50,19 @@ class Property(models.Model):
     # Handle properties that may have multiple properties (e.g. buildings)
     campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', blank=True, null=True)
+    labels = models.ManyToManyField(StatusLabel, through='PropertyLabels')
 
     class Meta:
         verbose_name_plural = 'properties'
 
     def __unicode__(self):
         return u'Property - %s' % (self.pk)
+
+
+class PropertyLabels(models.Model):
+    """This exists to we can bulk_create labels"""
+    statuslabel = models.ForeignKey('StatusLabel')
+    property = models.ForeignKey('Property')
 
 
 class PropertyState(models.Model):
@@ -299,12 +306,12 @@ class PropertyState(models.Model):
 
 class PropertyView(models.Model):
     """Similar to the old world of canonical building"""
-    property = models.ForeignKey(Property,
-                                 related_name='views')  # different property views can be associated with each other (2012, 2013).
+    # different property views can be associated with each other (2012, 2013.
+    property = models.ForeignKey(Property, related_name='views')
     cycle = models.ForeignKey(Cycle)
     state = models.ForeignKey(PropertyState)
 
-    labels = ManyToManyField(StatusLabel)
+    # labels = models.ManyToManyField(StatusLabel)
 
     def __unicode__(self):
         return u'Property View - %s' % (self.pk)

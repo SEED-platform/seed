@@ -4,11 +4,15 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
+from collections import namedtuple
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import viewsets
 from rest_framework import generics
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
 from rest_framework import response
+from rest_framework import status
 
 from seed.decorators import (
     DecoratorMixin,
@@ -27,13 +31,24 @@ from seed.models import (
     StatusLabel as Label,
     BuildingSnapshot,
     CanonicalBuilding,
+    Property,
+    PropertyLabels,
+    TaxLot,
+    TaxLotLabels,
+
 )
 from seed.serializers.labels import (
     LabelSerializer,
     UpdateBuildingLabelsSerializer,
 )
 
+# missing from DRF specified in requirements
+status.HTTP_422_UNPROCESSABLE_ENTITY = 422
 
+ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
+
+
+# TODO update for new data model
 class LabelViewSet(DecoratorMixin(drf_api_endpoint),
                    viewsets.ModelViewSet):
     serializer_class = LabelSerializer
@@ -58,6 +73,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
             super_organization=self.get_organization()
         ).order_by("name").distinct()
 
+    # TODO update for new data model
     def get_serializer(self, *args, **kwargs):
         kwargs['super_organization'] = self.get_organization()
         building_snapshots = BuildingFilterBackend().filter_queryset(
@@ -69,69 +85,151 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
         return super(LabelViewSet, self).get_serializer(*args, **kwargs)
 
 
-class UpdateBuildingLabelsAPIView(generics.GenericAPIView):
-    filter_backends = (BuildingFilterBackend,)
-    queryset = BuildingSnapshot.objects.all()
-    serializer_class = UpdateBuildingLabelsSerializer
+class UpdateInventoryLabelsAPIView(generics.CreateAPIView):
+    renderer_classes = (JSONRenderer,)
+    parser_classes = (JSONParser,)
+    inventory_models = {'property': Property, 'taxlot': TaxLot}
+    models = {'property': PropertyLabels, 'taxlot': TaxLotLabels}
+    errors = {
+        'disjoint': ErrorState(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            'add_label_ids and remove_label_ids cannot contain elements in common'
+        ),
+        'missing_org': ErrorState(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            'missing organization_id'
+        )
+    }
 
-    _organization = None
+    def get_queryset(self, inventory_type, organization_id):
+        Model = self.models[inventory_type]
+        return Model.objects.filter(
+            statuslabel__super_organization_id=organization_id
+        )
 
-    def get_organization(self):
-        if self._organization is None:
-            try:
-                self._organization = self.request.user.orgs.get(
-                    pk=self.request.query_params["organization_id"],
-                )
-            except ObjectDoesNotExist:
-                self._organization = self.request.user.orgs.all()[0]
-        return self._organization
+    def get_label_desc(self, add_label_ids, remove_label_ids):
+        return Label.objects.filter(
+            pk__in=add_label_ids + remove_label_ids
+        ).values('id', 'color', 'name')
 
-    def put(self, *args, **kwargs):
+    def get_inventory_id(self, q, inventory_type):
+        return getattr(q, "{}_id".format(inventory_type))
+
+    def exclude(self, qs, inventory_type, label_ids):
+        exclude = {label: [] for label in label_ids}
+        for q in qs:
+            if q.statuslabel_id in label_ids:
+                inventory_id = self.get_inventory_id(q, inventory_type)
+                exclude[q.statuslabel_id].append(inventory_id)
+        return exclude
+
+    def filter_by_inventory(self, qs, inventory_type, inventory_ids):
+        if inventory_ids:
+            filterdict = {
+                "{}__pk__in".format(inventory_type): inventory_ids
+            }
+            qs = qs.filter(**filterdict)
+        return qs
+
+    def label_factory(self, inventory_type, label_id, inventory_id):
+        Model = self.models[inventory_type]
+        create_dict = {
+            'statuslabel_id': label_id,
+            "{}_id".format(inventory_type): inventory_id
+        }
+        return Model(**create_dict)
+
+    def add_labels(self, qs, inventory_type, inventory_ids, add_label_ids):
+        added = []
+        if add_label_ids:
+            Model = self.models[inventory_type]
+            InventoryModel = self.inventory_models[inventory_type]
+            exclude = self.exclude(qs, inventory_type, add_label_ids)
+            inventory_ids = inventory_ids if inventory_ids else [
+                m.pk for m in InventoryModel.objects.all()
+            ]
+            new_inventory_labels = [
+                self.label_factory(inventory_type, label_id, pk)
+                for label_id in add_label_ids for pk in inventory_ids
+                if pk not in exclude[label_id]
+            ]
+            Model.objects.bulk_create(new_inventory_labels)
+            added = [
+                self.get_inventory_id(m, inventory_type)
+                for m in new_inventory_labels
+            ]
+        return added
+
+    def remove_labels(self, qs, inventory_type, remove_label_ids):
+        removed = []
+        if remove_label_ids:
+            rqs = qs.filter(
+                statuslabel_id__in=remove_label_ids
+            )
+            removed = [self.get_inventory_id(q, inventory_type) for q in rqs]
+            rqs.delete()
+        return removed
+
+    def put(self, request, inventory_type):
         """
         Updates label assignments to buildings.
 
         Payload::
 
             {
-                "add_label_ids": {array}            Array of label ids to apply to selected buildings
-                "remove_label_ids": {array}         Array of label ids to remove from selected buildings
-                "selected_buildings": {array}       Array of building ids to apply/remove labels. (this will be empty or null if select_all_checkbox is true),  # NOQA
-                "select_all_checkbox": {boolean},   Whether select all checkbox was selected on building list
-                "filter_params": {object}           A 'filter params' object containing key/value pairs for selected filters  # NOQA
+                "add_label_ids": {array}        Array of label ids to add
+                "remove_label_ids": {array}     Array of label ids to remove
+                "inventory_ids": {array}        Array property/taxlot  ids
                 "organization_id": {integer}        The user's org ID
             }
 
         Returns::
 
             {
-                'status': {string}                  'success' or 'error'
-                'message': {string}                 Error message if status = 'error'
-                'num_buildings_updated': {integer}  Number of buildings in queryset
+                'status': {string}              'success' or 'error'
+                'message': {string}             Error message if error
+                'num_updated': {integer}        Number of properties/taxlots
+                                                updated
+                'labels': [                     List of labels affected.
+                    {
+                        'color': {string}
+                        'id': {int}
+                        'label': {'string'}
+                        'name': {string}
+                    }...
+                ]
             }
 
         """
-        building_snapshots = self.filter_queryset(self.get_queryset())
-        queryset = CanonicalBuilding.objects.filter(
-            # This is a stop-gap solution for a bug in django-pgjson
-            # https://github.com/djangonauts/django-pgjson/issues/35
-            # - once a release has been made with this fixed the 'tuple'
-            # casting can be removed.
-            id__in=tuple(building_snapshots.values_list('canonical_building', flat=True)),
-        )
-        serializer = self.get_serializer(
-            data=self.request.data,
-            queryset=queryset,
-            super_organization=self.get_organization(),
-        )
-        serializer.is_valid(raise_exception=True)
-
-        # This needs to happen before `save()` so that we get an accurate
-        # number.  Otherwise, if the save changes the underlying queryset the
-        # call to `count()` will re-evaluate and return a different number.
-        num_updated = building_snapshots.count()
-
-        serializer.save()
-
-        return response.Response({
-            "num_buildings_updated": num_updated,
-        })
+        add_label_ids = request.data.get('add_label_ids', [])
+        remove_label_ids = request.data.get('remove_label_ids', [])
+        inventory_ids = request.data.get('inventory_ids', None)
+        organization_id = request.data.get('organization_id', None)
+        error = None
+        # ensure add_label_ids and remove_label_ids are different
+        if not set(add_label_ids).isdisjoint(remove_label_ids):
+            error = self.errors('disjoint')
+        elif not organization_id:
+            error = self.errors('missing_org')
+        if error:
+            result = {
+                'status': 'error',
+                'message': error.message
+            }
+            status_code = error.status_code
+        else:
+            qs = self.get_queryset(inventory_type, organization_id)
+            qs = self.filter_by_inventory(qs, inventory_type, inventory_ids)
+            removed = self.remove_labels(qs, inventory_type, remove_label_ids)
+            added = self.add_labels(
+                qs, inventory_type, inventory_ids, add_label_ids
+            )
+            num_updated = len(set(added).union(removed))
+            labels = self.get_label_desc(add_label_ids, remove_label_ids)
+            result = {
+                'status': 'success',
+                'num_updated': num_updated,
+                'labels': labels
+            }
+            status_code = status.HTTP_200_OK
+        return response.Response(result, status=status_code)
