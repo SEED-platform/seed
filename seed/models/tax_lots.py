@@ -36,11 +36,11 @@ class TaxLotState(models.Model):
     # import_record = models.ForeignKey(ImportRecord)
     confidence = models.FloatField(default=0, null=True, blank=True)
 
-    jurisdiction_taxlot_identifier = models.CharField(max_length=255,
-                                                      null=True, blank=True)
+    jurisdiction_tax_lot_id = models.CharField(max_length=255, null=True, blank=True)
     block_number = models.CharField(max_length=255, null=True, blank=True)
     district = models.CharField(max_length=255, null=True, blank=True)
-    address = models.CharField(max_length=255, null=True, blank=True)
+    address_line_1 = models.CharField(max_length=255, null=True, blank=True)
+    address_line_2 = models.CharField(max_length=255, null=True, blank=True)
     city = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
     postal_code = models.CharField(max_length=255, null=True, blank=True)

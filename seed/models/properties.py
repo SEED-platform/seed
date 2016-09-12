@@ -69,27 +69,23 @@ class PropertyState(models.Model):
     # FIXME: source_type needs to be a foreign key or make it import_file.source_type
     source_type = models.IntegerField(null=True, blank=True, db_index=True)
 
-    # TODO: super_organization is sometimes organization -- are these the same?
-    super_organization = models.ForeignKey(Organization, blank=True, null=True)
-    data_state = models.IntegerField(choices=DATA_STATE, default=0)
+    organization = models.ForeignKey(Organization, blank=True, null=True)
+    data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
 
     # Is this still being used during matching? Apparently so.
     confidence = models.FloatField(default=0, null=True, blank=True)
 
-    # TODO: hmm, name this jurisdiction_property_id to stay consistent?
-    jurisdiction_property_identifier = models.CharField(max_length=255, null=True, blank=True)
+    jurisdiction_property_id = models.CharField(max_length=255, null=True, blank=True)
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
 
     # If the property is a campus then the pm_parent_property_id is the same
-    # for all the properties. The master campus record (campus=True) the
-    # pm_property_id will be set the same as pm_parent_property_id
+    # for all the properties. The master campus record (campus=True on Property model) will
+    # have the pm_property_id set to be the same as the pm_parent_property_id
     pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True)
-    pm_property_id = models.CharField(max_length=255, null=True, blank=True)  # use this one
-    building_portfolio_manager_identifier = models.CharField(max_length=255, null=True, blank=True)
-    # hes_id?
-    # home_energy_score_id
-    building_home_energy_score_identifier = models.CharField(max_length=255, null=True, blank=True)
+    pm_property_id = models.CharField(max_length=255, null=True, blank=True)
+
+    home_energy_score_id = models.CharField(max_length=255, null=True, blank=True)
 
     # Tax Lot Number of the property
     lot_number = models.CharField(max_length=255, null=True, blank=True)
@@ -135,8 +131,7 @@ class PropertyState(models.Model):
     source_eui = models.FloatField(null=True, blank=True)
     energy_alerts = models.TextField(null=True, blank=True)
     space_alerts = models.TextField(null=True, blank=True)
-    building_certification = models.CharField(max_length=255, null=True,
-                                              blank=True)
+    building_certification = models.CharField(max_length=255, null=True, blank=True)
 
     extra_data = JsonField(default={}, blank=True)
 
@@ -271,10 +266,10 @@ class PropertyState(models.Model):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-            }
+                }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-            }
+                }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk
