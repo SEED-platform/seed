@@ -474,7 +474,7 @@ def get_property_columns(request):
             'type': 'number',
             'related': False
         }, {
-            'name': 'building_home_energy_score_identifier',
+            'name': 'home_energy_score_id',
             'displayName': 'Home Energy Score ID',
             'type': 'numberStr',
             'related': False
@@ -737,7 +737,7 @@ def get_taxlot_columns(request):
             'type': 'number',
             'related': True
         }, {
-            'name': 'building_home_energy_score_identifier',
+            'name': 'home_energy_score_id',
             'displayName': 'Home Energy Score ID',
             'type': 'numberStr',
             'related': True

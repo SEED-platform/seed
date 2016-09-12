@@ -166,7 +166,7 @@ class CreateSampleDataFakePropertyStateFactory(FakePropertyStateFactory):
                             "year_ending": self.year_ending,
                             "gross_floor_area": self.fake.numerify(text='#######'),
                             "property_notes": self.case_description,
-                            "building_home_energy_score_identifier": randint(88888, 111111),
+                            "home_energy_score_id": randint(88888, 111111),
                             "jurisdiction_property_id": self._generate_jurisdiction_property_id()}
 
         property.update(data_not_in_base)

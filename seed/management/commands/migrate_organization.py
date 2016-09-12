@@ -142,7 +142,7 @@ def create_property_state_for_node(node, org, cb):
                                                        owner_city_state = node.owner_city_state,
                                                        owner_postal_code = node.owner_postal_code,
                                                        building_portfolio_manager_identifier = node.pm_property_id,
-                                                       building_home_energy_score_identifier = None,
+                                                       home_energy_score_id = None,
                                                        energy_score = node.energy_score,
                                                        site_eui = node.site_eui,
                                                        generation_date = node.generation_date,

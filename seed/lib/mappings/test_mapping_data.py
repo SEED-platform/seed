@@ -58,7 +58,7 @@ class TestMappingData(TestCase):
         expected_data = ['address', 'address_line_1', 'address_line_2',
                          'block_number', 'building_certification',
                          'building_count',
-                         'building_home_energy_score_identifier',
+                         'home_energy_score_id',
                          'building_portfolio_manager_identifier', 'city',
                          'conditioned_floor_area', 'custom_id_1', 'data_state',
                          'district', 'energy_alerts', 'energy_score',
