@@ -25,6 +25,7 @@ from seed.lib.superperms.orgs.exceptions import InsufficientPermission
 from seed.public.models import SharedBuildingField
 from seed.tests.util import FakeRequest
 from unittest import skip
+from seed.models.deprecate import CanonicalBuilding, BuildingSnapshot
 
 
 class AccountsViewTests(TestCase):
@@ -49,6 +50,13 @@ class AccountsViewTests(TestCase):
     @skip("Fix for new model -- _dict_org used CanonicalBuilding")
     def test_dict_org(self):
         """_dict_org turns our org structure into a json payload."""
+
+        # the original _dict_org implementation relies on CanonicalBuilding, etc.,
+        # this test is currently skipped, so for the sake of flake8,
+        # create a dummy _dict_org function here
+        def _dict_org(a, b):
+            return {}
+
         expected_single_org_payload = {
             'sub_orgs': [],
             'owners': [{
@@ -93,6 +101,13 @@ class AccountsViewTests(TestCase):
     @skip("Fix for new model -- _dict_org used CanonicalBuilding")
     def test_dic_org_w_member_in_parent_and_child(self):
         """What happens when a user has a role in parent and child."""
+
+        # the original _dict_org implementation relies on CanonicalBuilding, etc.,
+        # this test is currently skipped, so for the sake of flake8,
+        # create a dummy _dict_org function here
+        def _dict_org(a, b):
+            return {}
+
         new_org = Organization.objects.create(name="sub")
         expected_multiple_org_payload = {
             'sub_orgs': [{
