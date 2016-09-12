@@ -98,7 +98,7 @@ def search_taxlots(q, fieldnames=None, queryset=None):
         return TaxLotState.objects.none()
     if fieldnames is None:
         fieldnames = [
-            'jurisdiction_taxlot_identifier',
+            'jurisdiction_tax_lot_id',
             'address'
             'block_number'
         ]

@@ -70,7 +70,7 @@ class TestMapping(TestCase):
         ).latest('id')
 
         self.assertDictEqual(raw_saved.extra_data, self.fake_extra_data)
-        self.assertEqual(raw_saved.super_organization, self.fake_org)
+        self.assertEqual(raw_saved.organization, self.fake_org)
 
     def test_map_data(self):
         """Save mappings based on user specifications."""
@@ -110,7 +110,7 @@ class TestMapping(TestCase):
 
         # Make sure that we saved the extra_data column mappings
         data_columns = Column.objects.filter(
-            organization=test_bs.super_organization,
+            organization=test_bs.organization,
             is_extra_data=True
         )
 
@@ -245,10 +245,10 @@ class TestMatching(TestCase):
         )
 
         ps = PropertyState.objects.filter(data_state=DATA_STATE_MAPPING,
-                                          super_organization=self.fake_org)
+                                          organization=self.fake_org)
 
         # Promote case A (one property <-> one tax lot)
-        ps = PropertyState.objects.filter(building_portfolio_manager_identifier=2264)[0]
+        ps = PropertyState.objects.filter(pm_property_id=2264)[0]
 
         ps.promote(cycle)
 
@@ -266,7 +266,7 @@ class TestMatching(TestCase):
         # # Promote 5 of these to views to test the remaining code
         # promote_mes = PropertyState.objects.filter(
         #     data_state=DATA_STATE_MAPPING,
-        #     super_organization=self.fake_org)[:5]
+        #     organization=self.fake_org)[:5]
         # for promote_me in promote_mes:
         #     promote_me.promote(cycle)
         #

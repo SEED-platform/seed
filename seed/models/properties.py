@@ -159,7 +159,7 @@ class PropertyState(models.Model):
 
             # Need to create a property for this state
             prop = Property.objects.create(
-                organization=self.super_organization
+                organization=self.organization
             )
 
             pv = PropertyView.objects.create(property=prop, cycle=cycle,
@@ -208,7 +208,7 @@ class PropertyState(models.Model):
         # # )
         # #
         # # tls, _ = TaxLotState.objects.get_or_create(
-        # #     jurisdiction_taxlot_identifier=tax_lot_id
+        # #     jurisdiction_tax_lot_id=tax_lot_id
         # # )
         # #
         # # tlv, _ = TaxLotView.objects.get_or_create(

@@ -70,7 +70,7 @@ class Command(BaseCommand):
         for property_view in PropertyView.objects.filter(property__organization=org).all():
             if TaxLotProperty.objects.filter(property_view=property_view).count() <= 1: continue
 
-            links = list(TaxLotProperty.objects.filter(property_view=property_view).order_by('property_view__state__building_portfolio_manager_identifier').all())
+            links = list(TaxLotProperty.objects.filter(property_view=property_view).order_by('property_view__state__pm_property_id').all())
 
             for ndx in xrange(1, len(links)):
                 print "Setting secondary"

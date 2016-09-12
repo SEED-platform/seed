@@ -55,16 +55,18 @@ class TestMappingData(TestCase):
 
         # should only have one of each (3 of the fields are common in tax
         # lot and property table.
-        expected_data = ['address', 'address_line_1', 'address_line_2',
-                         'block_number', 'building_certification',
+        expected_data = ['address_line_1',
+                         'address_line_2',
+                         'block_number',
+                         'building_certification',
                          'building_count',
-                         'home_energy_score_id',
-                         'building_portfolio_manager_identifier', 'city',
+                         'city',
                          'conditioned_floor_area', 'custom_id_1', 'data_state',
                          'district', 'energy_alerts', 'energy_score',
                          'generation_date', 'gross_floor_area',
+                         'home_energy_score_id',
                          'jurisdiction_property_id',
-                         'jurisdiction_taxlot_identifier', 'lot_number',
+                         'jurisdiction_tax_lot_id', 'lot_number',
                          'number_properties', 'occupied_floor_area', 'owner',
                          'owner_address', 'owner_city_state', 'owner_email',
                          'owner_postal_code', 'owner_telephone',
@@ -103,6 +105,14 @@ class TestMappingData(TestCase):
 
         c = self.obj.find_column(expect_0['table'], expect_0['name'])
         self.assertDictEqual(c, expect_0)
+
+    def test_keys_with_table_names(self):
+        c = self.obj.keys_with_table_names()
+        c_1 = [x for x in c if x[0] == 'PropertyState' and x[1] == 'address_line_1'][0]
+        self.assertEqual(c_1, ('PropertyState', 'address_line_1'))
+
+        c_2 = [x for x in c if x[0] == 'TaxLotState' and x[1] == 'address_line_1'][0]
+        self.assertEqual(c_2, ('TaxLotState', 'address_line_1'))
 
     def test_null_extra_data(self):
         self.assertEquals(self.obj.extra_data(), [])

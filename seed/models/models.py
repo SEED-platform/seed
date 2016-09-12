@@ -37,13 +37,11 @@ SEED_DATA_SOURCES = (
     (GREEN_BUTTON_RAW, 'Green Button Raw'),
 )
 
-
 SEARCH_CONFIDENCE_RANGES = {
     'low': 0.4,
     'medium': 0.75,
     'high': 1.0,
 }
-
 
 NATURAL_GAS = 1
 ELECTRICITY = 2
@@ -286,9 +284,8 @@ class Project(TimeStampedModel):
     owner = models.ForeignKey(
         User, verbose_name=_('User'), blank=True, null=True
     )
-    last_modified_by = models.ForeignKey(
-        User, blank=True, null=True, related_name='last_modified_user'
-    )
+    last_modified_by = models.ForeignKey(User, blank=True, null=True,
+                                         related_name='last_modified_user')
     super_organization = models.ForeignKey(
         SuperOrganization,
         verbose_name=_('SeedOrg'),

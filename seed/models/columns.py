@@ -340,7 +340,7 @@ class Column(models.Model):
             # in, or just rewrite this is_extra_data logic, because it is wrong!
             is_extra_data = key not in mapping_utils.get_mappable_columns()
             Column.objects.get_or_create(
-                organization=property_state.super_organization,
+                organization=property_state.organization,
                 column_name=key[:511],
                 is_extra_data=is_extra_data,
                 table_name='PropertyState'
@@ -393,8 +393,11 @@ class ColumnMapping(models.Model):
 
         """
         ColumnMapping.objects.filter(
-            **{'{0}__in'.format(m2m_type): qs, 'super_organization': self.super_organization
-               }).exclude(pk=self.pk).delete()
+            **{
+                '{0}__in'.format(m2m_type): qs,
+                'super_organization': self.super_organization
+            }
+        ).exclude(pk=self.pk).delete()
 
     def save(self, *args, **kwargs):
         """

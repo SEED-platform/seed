@@ -210,7 +210,7 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         Create an ImportRecord object and the associated ImportFile.
 
         Set up a minimal ImportRecords and ImportFile sufficient to run a
-        test. The import record contains only the owner and super_organization
+        test. The import record contains only the owner and organization
         and by default, the ImportFile only references the ImportRecord.
 
         As ImportFile.file is a django.db.models.FileField field it can be tricky
@@ -258,9 +258,8 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
         """
         Create an ImportRecord object and the associated ImportFile.
 
-        Set up a minimal ImportRecord sufficient to run a
-        test. The import record contains only the owner and super_organization
-        by default.
+        Set up a minimal ImportRecord sufficient to run a test. The import
+        record contains only the owner and organization by default.
 
         :param: name: a name for the Import Record/Dataset
         :param kw: keywords passed to ImporRecors.objects.create
@@ -337,7 +336,7 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
 
         Set up a minimal CanonicalBuilding and BuildingSnapshot suitable for
         use in tests. The defaults for the BuildingSnapshot set the
-        super_organization, the import file (as supplied) and address_line_1
+        organization, the import file (as supplied) and address_line_1
         with a value of 'address'. Any supplied keywords will be passed to
         BuildingSnapshot.objects.create and will override the defaults.
 
@@ -367,7 +366,7 @@ class FunctionalLiveServerBaseTestCase(StaticLiveServerTestCase):
 
         Set up multiple CanonicalBuilding and BuildingSnapshots  for
         use in tests. The defaults for the BuildingSnapshot set the
-        super_organization, the import file (as supplied). Any supplied
+        organization, the import file (as supplied). Any supplied
         keywords will be passed to BuildingSnapshot.objects.create
         and will override the defaults.
 

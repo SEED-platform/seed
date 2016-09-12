@@ -289,7 +289,7 @@ class Cleansing(object):
         # For old field names, TODO remove when appropriate
         self.required_fields = {
             'property': ['address_line_1', 'pm_property_id', 'jurisdiction_property_id'],
-            'taxlot': ['jurisdiction_taxlot_identifier', 'address'],
+            'taxlot': ['jurisdiction_tax_lot_id', 'address_line_1'],
         }
         self.org = organization
         super(Cleansing, self).__init__(*args, **kwargs)

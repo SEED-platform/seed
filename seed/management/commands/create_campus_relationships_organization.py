@@ -40,7 +40,7 @@ logging.basicConfig(level=logging.DEBUG)
 def find_property_associated_with_portfolio_manager_id(pm_lot_id):
     if pm_lot_id is None: return False
 
-    result = PropertyView.objects.filter(state__building_portfolio_manager_identifier=pm_lot_id)\
+    result = PropertyView.objects.filter(state__pm_property_id=pm_lot_id)\
                                  .first()
     if result is None: return False
 
@@ -83,7 +83,7 @@ class Command(BaseCommand):
 
             for (pv, state) in zip(property_views, states):
                 pm_parent_property_id = state.pm_parent_property_id
-                if pm_parent_property_id == state.building_portfolio_manager_identifier:
+                if pm_parent_property_id == state.pm_property_id:
                     print "Auto reference!"
                     prop = pv.property
                     prop.campus = True
@@ -98,7 +98,7 @@ class Command(BaseCommand):
                     parent_property.save()
 
                     # Create a view and a state for the active cycle.
-                    parent_property_state = PropertyState(building_portfolio_manager_identifier=pm_parent_property_id,
+                    parent_property_state = PropertyState(pm_property_id=pm_parent_property_id,
                                                           pm_parent_property_id=pm_parent_property_id,
                                                           property_notes="Created by campus relations migration on {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
                     parent_property_state.save()

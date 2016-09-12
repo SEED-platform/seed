@@ -20,7 +20,7 @@ from seed.models import (
 
 
 class TaxLot(models.Model):
-    # NOTE: we have been calling this the super_organization. We
+    # NOTE: we have been calling this the organization. We
     # should stay consistent although I prefer the name organization (!super_org)
     organization = models.ForeignKey(Organization)
 
@@ -63,7 +63,7 @@ class TaxLotState(models.Model):
         return None
 
         # tls, _ = TaxLotState.objects.get_or_create(
-        #     jurisdiction_taxlot_identifier=tax_lot_id
+        #     jurisdiction_tax_lot_id=tax_lot_id
         # )
         #
         # logger.debug("the cycle is {}".format(cycle))

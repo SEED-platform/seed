@@ -250,23 +250,23 @@ def get_taxlots(request):
             .values_list('taxlot_view_id', flat=True)
         state_ids = TaxLotView.objects.filter(pk__in=related_taxlot_view_ids).values_list('state_id', flat=True)
 
-        jurisdiction_taxlot_identifiers = TaxLotState.objects.filter(pk__in=state_ids) \
-            .values_list('jurisdiction_taxlot_identifier', flat=True)
+        jurisdiction_tax_lot_ids = TaxLotState.objects.filter(pk__in=state_ids) \
+            .values_list('jurisdiction_tax_lot_id', flat=True)
 
         # Filter out associated tax lots that are present but which do not have preferred
-        none_in_jurisdiction_tax_lot_ids = None in jurisdiction_taxlot_identifiers
-        jurisdiction_taxlot_identifiers = filter(lambda x: x is not None, jurisdiction_taxlot_identifiers)
+        none_in_jurisdiction_tax_lot_ids = None in jurisdiction_tax_lot_ids
+        jurisdiction_tax_lot_ids = filter(lambda x: x is not None, jurisdiction_tax_lot_ids)
 
         if none_in_jurisdiction_tax_lot_ids:
-            jurisdiction_taxlot_identifiers.append('Missing')
+            jurisdiction_tax_lot_ids.append('Missing')
 
-        # jurisdiction_taxlot_identifiers = [""]
+        # jurisdiction_tax_lot_ids = [""]
 
         join_dict = property_map[join.property_view_id].copy()
         join_dict.update({
             'id': join.property_view.property_id,
             'primary': 'P' if join.primary else 'S',
-            'calculated_taxlot_ids': '; '.join(jurisdiction_taxlot_identifiers)
+            'calculated_taxlot_ids': '; '.join(jurisdiction_tax_lot_ids)
         })
         try:
             join_map[join.taxlot_view_id].append(join_dict)
@@ -324,7 +324,7 @@ def get_property_columns(request):
 
     columns = [
         {
-            'name': 'building_portfolio_manager_identifier',
+            'name': 'pm_property_id',
             'displayName': 'PM Property ID',
             'pinnedLeft': True,
             'type': 'number',
@@ -335,7 +335,7 @@ def get_property_columns(request):
             'type': 'numberStr',
             'related': False
         }, {
-            'name': 'jurisdiction_taxlot_identifier',
+            'name': 'jurisdiction_tax_lot_id',
             'displayName': 'Tax Lot ID',
             'type': 'numberStr',
             'related': True
@@ -573,7 +573,7 @@ def get_property_columns(request):
 def get_taxlot_columns(request):
     columns = [
         {
-            'name': 'jurisdiction_taxlot_identifier',
+            'name': 'jurisdiction_tax_lot_id',
             'displayName': 'Tax Lot ID',
             'pinnedLeft': True,
             'type': 'numberStr',
@@ -601,8 +601,13 @@ def get_taxlot_columns(request):
             'type': 'number',
             'related': False
         }, {
-            'name': 'address',
-            'displayName': 'Tax Lot Address',
+            'name': 'address_line_1',
+            'displayName': 'Tax Lot Address Line 1',
+            'type': 'numberStr',
+            'related': False
+        }, {
+            'name': 'address_line_2',
+            'displayName': 'Tax Lot Address Line 2',
             'type': 'numberStr',
             'related': False
         }, {
@@ -629,7 +634,7 @@ def get_taxlot_columns(request):
             'type': 'numberStr',
             'related': True
         }, {
-            'name': 'building_portfolio_manager_identifier',
+            'name': 'pm_property_id',
             'displayName': 'PM Property ID',
             'type': 'number',
             'related': True

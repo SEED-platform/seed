@@ -15,16 +15,15 @@ method mutiple times will always return the same sequence of results
 
     .. codeauthor:: Paul Munday<paul@paulmunday.net>
 """
-from collections import namedtuple
 import datetime
 import os
 import re
 import string
+from collections import namedtuple
 
-from faker import Factory
 import mock
-
 from django.db.models.fields.files import FieldFile
+from faker import Factory
 
 from seed.models import (
     BuildingSnapshot, Cycle, Column, Property, PropertyState, TaxLotState
@@ -127,8 +126,7 @@ class FakeBuildingSnapshotFactory(BaseFake):
                           super_organization=None, **kw):
         """Return a building snapshot populated with pseudo random data"""
         building_details = {
-            'super_organization': self._get_attr('super_organization',
-                                                 super_organization),
+            'super_organization': self._get_attr('super_organization', super_organization),
             'import_file': import_file,
             'canonical_building': canonical_building,
         }
@@ -265,9 +263,10 @@ class FakeTaxLotStateFactory(BaseFake):
 
     def get_details(self):
         taxlot_details = {
-            'jurisdiction_taxlot_identifier': self.fake.numerify(text='#####'),
+            'jurisdiction_tax_lot_id': self.fake.numerify(text='#####'),
             'block_number': self.fake.numerify(text='#####'),
-            'address': self.address_line_1(),
+            'address_line_1': self.address_line_1(),
+            'address_line_2': '',
             'city': 'Boring',
             'state': 'Oregon',
             'postal_code': "970{}".format(self.fake.numerify(text='##')),
@@ -301,6 +300,7 @@ def mock_file_factory(name, size=None, url=None, path=None):
             return name == other.name
         else:
             return name == other
+
     mock_file.__eq__.side_effect = __eq__
 
     def __ne__(other):

@@ -148,17 +148,17 @@ def import_example_data(test_obj, filename):
     # setup the mapping
     properties_mapping = [
         {
-            "from_field": u'jurisdiction_taxlot_identifier',
+            "from_field": u'jurisdiction_tax_lot_id',
             "to_table_name": u'TaxLotState',
-            "to_field": u'jurisdiction_taxlot_identifier',
+            "to_field": u'jurisdiction_tax_lot_id',
         }, {
             "from_field": u'jurisdiction_property_id',
             "to_table_name": u'PropertyState',
             "to_field": u'jurisdiction_property_id',
         }, {
-            "from_field": u'building_portfolio_manager_identifier',
+            "from_field": u'pm_property_id',
             "to_table_name": u'PropertyState',
-            "to_field": u'building_portfolio_manager_identifier',
+            "to_field": u'pm_property_id',
         }, {
             "from_field": u'pm_parent_property_id',
             "to_table_name": u'PropertyState',

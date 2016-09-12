@@ -6,7 +6,6 @@
 """
 import json
 from datetime import date, datetime, timedelta
-
 from unittest import skip
 
 from django.core.cache import cache
@@ -58,7 +57,6 @@ from seed.views.main import (
 
 
 class MainViewTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1428,7 +1426,6 @@ class SearchViewTests(TestCase):
 
 
 class SearchBuildingSnapshotsViewTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1483,7 +1480,6 @@ class SearchBuildingSnapshotsViewTests(TestCase):
 
 
 class GetDatasetsViewsTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1576,7 +1572,6 @@ class GetDatasetsViewsTests(TestCase):
 
 
 class ImportFileViewsTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1633,7 +1628,6 @@ class ImportFileViewsTests(TestCase):
 
 @skip("Fix for new data model")
 class ReportViewsTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1687,7 +1681,7 @@ class ReportViewsTests(TestCase):
 
     @skip("Fix for new data model")
     def test_get_inventory_report_data(self):
-        pass    # TODO
+        pass  # TODO
 
     # TODO replace with test for inventory report
     @skip("Fix for new data model")
@@ -1707,7 +1701,7 @@ class ReportViewsTests(TestCase):
 
     @skip("Fix for new data model")
     def test_get_aggregated_inventory_report_data(self):
-        pass    # TODO
+        pass  # TODO
 
 
 @skip("Fix for new data model")
@@ -2816,7 +2810,6 @@ class MatchTreeTests(TestCase):
 
 
 class InventoryViewTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -3098,7 +3091,7 @@ class InventoryViewTests(TestCase):
         self.assertEqual(tstate['address'], taxlot_state.address)
 
     def test_get_property_history(self):
-        pass    # TODO
+        pass  # TODO
 
     def test_get_property_multiple_taxlots(self):
         property_state = self.property_state_factory.get_property_state()
@@ -3236,11 +3229,11 @@ class InventoryViewTests(TestCase):
         )
         self.assertEquals(
             related['calculated_taxlot_ids'],
-            taxlot_state.jurisdiction_taxlot_identifier
+            taxlot_state.jurisdiction_tax_lot_id
         )
         self.assertEquals(
             related['calculated_taxlot_ids'],
-            result['jurisdiction_taxlot_identifier']
+            result['jurisdiction_tax_lot_id']
         )
         self.assertEquals(related['primary'], 'P')
         self.assertIn('extra_data_field', related)
@@ -3303,7 +3296,7 @@ class InventoryViewTests(TestCase):
             property_state_1.address_line_1, related_2['address_line_1']
         )
         self.assertEqual(
-            taxlot_state.jurisdiction_taxlot_identifier,
+            taxlot_state.jurisdiction_tax_lot_id,
             related_1['calculated_taxlot_ids']
         )
 
@@ -3354,21 +3347,11 @@ class InventoryViewTests(TestCase):
         self.assertEquals(result['block_number'], taxlot_state_1.block_number)
 
         related = result['related'][0]
-        self.assertEquals(related['address_line_1'],
-                          property_state.address_line_1)
-        self.assertEquals(
-            related['pm_parent_property_id'],
-            property_state.pm_parent_property_id
-        )
+        self.assertEquals(related['address_line_1'], property_state.address_line_1)
+        self.assertEquals(related['pm_parent_property_id'], property_state.pm_parent_property_id)
         calculated_taxlot_ids = related['calculated_taxlot_ids'].split('; ')
-        self.assertIn(
-            str(taxlot_state_1.jurisdiction_taxlot_identifier),
-            calculated_taxlot_ids
-        )
-        self.assertIn(
-            str(taxlot_state_2.jurisdiction_taxlot_identifier),
-            calculated_taxlot_ids
-        )
+        self.assertIn(str(taxlot_state_1.jurisdiction_tax_lot_id), calculated_taxlot_ids)
+        self.assertIn(str(taxlot_state_2.jurisdiction_tax_lot_id), calculated_taxlot_ids)
         self.assertEquals(related['primary'], 'P')
         self.assertIn('extra_data_field', related)
         self.assertEquals(related['extra_data_field'], 'edfval')
@@ -3386,21 +3369,14 @@ class InventoryViewTests(TestCase):
             property_state.pm_parent_property_id
         )
         calculated_taxlot_ids = related['calculated_taxlot_ids'].split('; ')
-        self.assertIn(
-            str(taxlot_state_1.jurisdiction_taxlot_identifier),
-            calculated_taxlot_ids
-        )
-        self.assertIn(
-            str(taxlot_state_2.jurisdiction_taxlot_identifier),
-            calculated_taxlot_ids
-        )
+        self.assertIn(str(taxlot_state_1.jurisdiction_tax_lot_id), calculated_taxlot_ids)
+        self.assertIn(str(taxlot_state_2.jurisdiction_tax_lot_id), calculated_taxlot_ids)
         self.assertEquals(related['primary'], 'P')
         self.assertIn('extra_data_field', related)
         self.assertEquals(related['extra_data_field'], 'edfval')
 
     def test_get_taxlots_extra_data(self):
-        property_state = self.property_state_factory.get_property_state(
-        )
+        property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
@@ -3510,7 +3486,7 @@ class InventoryViewTests(TestCase):
         self.assertEquals(pagination['has_previous'], False)
         self.assertEquals(pagination['total'], 1)
 
-    def test_get_taxlots_missing_jurisdiction_taxlot_identifiers(self):
+    def test_get_taxlots_missing_jurisdiction_tax_lot_id(self):
         property_state = self.property_state_factory.get_property_state(
             extra_data=json.dumps({'extra_data_field': 'edfval'})
         )
@@ -3520,7 +3496,7 @@ class InventoryViewTests(TestCase):
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
             postal_code=property_state.postal_code,
-            jurisdiction_taxlot_identifier=None
+            jurisdiction_tax_lot_id=None
         )
         taxlot = TaxLot.objects.create(organization=self.org)
         taxlot_view = TaxLotView.objects.create(
@@ -3651,14 +3627,14 @@ class InventoryViewTests(TestCase):
         )
         results = json.loads(response.content)
 
-        building_portfolio_manager_identifier_col = {
-            'name': 'building_portfolio_manager_identifier',
+        pm_property_id_col = {
+            'name': 'pm_property_id',
             'displayName': 'PM Property ID',
             'pinnedLeft': True,
             'type': 'number',
             'related': False,
         }
-        self.assertEqual(results[0], building_portfolio_manager_identifier_col)
+        self.assertEqual(results[0], pm_property_id_col)
 
         expected_property_extra_data_column = {
             'name': 'property_extra_data_column',
@@ -3697,14 +3673,14 @@ class InventoryViewTests(TestCase):
         )
         results = json.loads(response.content)
 
-        jurisdiction_taxlot_identifier_col = {
-            'name': 'jurisdiction_taxlot_identifier',
+        jurisdiction_tax_lot_id_col = {
+            'name': 'jurisdiction_tax_lot_id',
             'displayName': 'Tax Lot ID',
             'pinnedLeft': True,
             'type': 'numberStr',
             'related': False,
         }
-        self.assertEqual(results[0], jurisdiction_taxlot_identifier_col)
+        self.assertEqual(results[0], jurisdiction_tax_lot_id_col)
 
         expected_property_extra_data_column = {
             'name': 'property_extra_data_column',

@@ -46,8 +46,7 @@ def make_fake_mappings(mappings, org):
         column_mapping.column_mapped.add(column_mapped)
 
 
-def make_fake_property(import_file, init_data, bs_type, is_canon=False,
-                       org=None):
+def make_fake_property(import_file, init_data, bs_type, is_canon=False, org=None):
     """For making fake mapped PropertyState to test matching against."""
 
     if not org:
@@ -55,7 +54,7 @@ def make_fake_property(import_file, init_data, bs_type, is_canon=False,
 
     ps = PropertyState.objects.create(**init_data)
     ps.import_file = import_file
-    ps.super_organization = org
+    ps.organization = org
     if import_file is None:
         ps.import_record = None
     else:
