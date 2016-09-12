@@ -14,11 +14,15 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import DefaultStorage
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
+from rest_framework import viewsets
+from rest_framework.decorators import detail_route
 
 from seed import tasks
 from seed.audit_logs.models import AuditLog
@@ -30,7 +34,9 @@ from seed.data_importer.tasks import (
     match_buildings,
     save_raw_data as task_save_raw,
 )
-from seed.decorators import ajax_request, get_prog_key, require_organization_id
+from seed.decorators import (
+    ajax_request, ajax_request_class, get_prog_key, require_organization_id
+)
 from seed.lib.exporter import Exporter
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mappings import mapping_data
@@ -51,7 +57,7 @@ from seed.models import (
     GREEN_BUTTON_BS,
     PropertyState,
 )
-from seed.utils.api import api_endpoint
+from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
     get_buildings_for_user_count
@@ -1366,20 +1372,13 @@ def get_column_mapping_suggestions(request):
             'building_column_types': [a list of column types corresponding to building_columns],
         }
     ..todo: The response of this method may not be correct. verify.
+
     """
     body = json.loads(request.body)
     org_id = body.get('org_id')
     import_file_id = body.get('import_file_id')
 
     return tmp_mapping_suggestions(import_file_id, org_id, request.user)
-
-
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
-from rest_framework import viewsets
-from seed.decorators import ajax_request_class
-from seed.utils.api import api_endpoint_class
-from rest_framework.decorators import detail_route
 
 
 class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
@@ -1414,6 +1413,7 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
               description: The organization_id for this user's organization
               required: true
               paramType: query
+
         """
         org_id = request.query_params.get('organization_id', None)
 
@@ -2416,7 +2416,11 @@ def delete_buildings(request):
 
 #         Returns::
 
-#             bldg_counts:  dict that looks like {year_ending : {"buildings_with_data": set(canonical ids), "buildings": set(canonical ids)}
+#             bldg_counts:  dict that looks like
+#               {
+#                   year_ending : {"buildings_with_data": set(canonical ids),
+#                   "buildings": set(canonical ids)
+#               }
 #                             This is a collection of all year_ending dates and ids
 #                             the canonical buildings that have data for that year
 #                             and those that have files with that year_ending but no
@@ -2424,9 +2428,24 @@ def delete_buildings(request):
 #                             E.G.
 #                             "bldg_counts"     (pending)
 #                                 __len__    int: 8
-#                                 2000-12-31 (140037191378512)    dict: {'buildings_w_data': set([35897, 35898]), 'buildings': set([35897, 35898])}
-#                                 2001-12-31 (140037292480784)    dict: {'buildings_w_data': set([35897, 35898]), 'buildings': set([35897, 35898])}
-#             data:   dict that looks like {canonical_id : { year_ending : {'x': x_value, 'y': y_value', 'release_date': release_date, 'building_snapshot_id': building_snapshot_id}}}
+#                                 2000-12-31 (140037191378512)    dict: {
+#                                   'buildings_w_data': set([35897, 35898]),
+#                                   'buildings': set([35897, 35898])
+#                                }
+#                                 2001-12-31 (140037292480784)    dict: {
+#                                   'buildings_w_data': set([35897, 35898]),
+#                                   'buildings': set([35897, 35898])
+#                               }
+#             data:   dict that looks like
+#               {
+#                  canonical_id : {
+#                      year_ending : {
+#                          'x': x_value, 'y': y_value',
+#                          'release_date': release_date,
+#                          'building_snapshot_id': building_snapshot_id
+#                      }
+#                  }
+#              }
 #                     This is the actual data for the building.  The top level key is
 #                     the canonical_id then the next level is the year_ending and
 #                     under that is the actual data.  NOTE:  If the year has files

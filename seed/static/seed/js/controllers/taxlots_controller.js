@@ -169,7 +169,7 @@ angular.module('BE.seed.controller.taxlots', [])
       };
 
       $scope.update_cycle = function (cycle) {
-        inventory_service.save_last_cycle(cycle.pk);
+        inventory_service.save_last_cycle(cycle.id);
         $scope.cycle.selected_cycle = cycle;
         refresh_objects();
       };
@@ -222,10 +222,10 @@ angular.module('BE.seed.controller.taxlots', [])
         name: 'id',
         displayName: '',
         cellTemplate: '<div class="ui-grid-row-header-link">' +
-        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.inventory_type == \'properties\' ? \'properties\' : \'taxlots\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.pk$}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.object == \'property\' ? \'properties\' : \'taxlots\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
-        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.inventory_type == \'properties\' ? \'taxlots\' : \'properties\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.pk$}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.object == \'property\' ? \'taxlots\' : \'properties\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
         '</div>',

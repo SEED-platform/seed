@@ -318,26 +318,6 @@ def get_taxlots(request):
 @ajax_request
 @login_required
 @has_perm('requires_viewer')
-def get_cycles(request):
-    cycles = Cycle.objects.filter(organization_id=request.GET['organization_id'])
-    return_cycles = []
-    for cycle in cycles:
-        return_cycles.append({
-            'pk': cycle.pk,
-            'name': cycle.name,
-            'from_date': "",
-            'to_date': ""
-        })
-
-    return {'status': 'success', 'cycles': return_cycles}
-
-
-@require_organization_id
-@require_organization_membership
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
 def get_property_columns(request):
     """TODO: These property columns should be merged with
     constants.py:ASSESSOR_FIELDS"""
@@ -840,6 +820,26 @@ def get_taxlot_columns(request):
         })
 
     return columns
+
+
+@require_organization_id
+@require_organization_membership
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('requires_viewer')
+def get_cycles(request):
+    cycles = Cycle.objects.filter(organization_id=request.GET['organization_id'])
+    return_cycles = []
+    for cycle in cycles:
+        return_cycles.append({
+            'pk': cycle.pk,
+            'name': cycle.name,
+            'from_date': "",
+            'to_date': ""
+        })
+
+    return {'status': 'success', 'cycles': return_cycles}
 
 
 class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
