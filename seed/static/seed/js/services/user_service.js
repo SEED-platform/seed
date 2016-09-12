@@ -38,17 +38,18 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
     user_factory.set_organization = function(org) {
         organization = org;
         var defer = $q.defer();
-        var this_user_id = get_user_id();
-        $http({
-            method: 'PUT',
-            url: '/api/v2/users/' + this_user_id.toString() + '/default_organization/',
-            data: {
-                organization_id: org
-            }
-        }).success(function(data) {
-            defer.resolve(data);
-        }).error(function(data, status) {
-            defer.reject(data, status);
+        user_factory.get_user_id().then(function (this_user_id) {
+            $http({
+                method: 'PUT',
+                url: '/api/v2/users/' + this_user_id.toString() + '/default_organization/',
+                data: {
+                    organization_id: org
+                }
+            }).success(function (data) {
+                defer.resolve(data);
+            }).error(function (data, status) {
+                defer.reject(data, status);
+            });
         });
         return defer.promise;
     };
@@ -118,13 +119,15 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
 
     user_factory.get_shared_buildings = function() {
         var defer = $q.defer();
-        $http({
-            method: 'GET',
-            url: urls.accounts.get_shared_buildings
-        }).success(function(data) {
-            defer.resolve(data);
-        }).error(function(data, status) {
-            defer.reject(data, status);
+        user_factory.get_user_id().then(function (this_user_id) {
+            $http({
+                method: 'GET',
+                url: '/api/v2/users/' + this_user_id.toString() + 'shared_buildings/'
+            }).success(function (data) {
+                defer.resolve(data);
+            }).error(function (data, status) {
+                defer.reject(data, status);
+            });
         });
         return defer.promise;
     };
@@ -135,14 +138,15 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      */
     user_factory.get_user_profile = function() {
         var defer = $q.defer();
-        var this_user_id = get_user_id();
-        $http({
-            method: 'GET',
-            url: '/api/v2/users/' + this_user_id.toString() + '/'
-        }).success(function(data) {
-            defer.resolve(data);
-        }).error(function(data, status) {
-            defer.reject(data, status);
+        user_factory.get_user_id().then(function (this_user_id) {
+            $http({
+                method: 'GET',
+                url: '/api/v2/users/' + this_user_id.toString() + '/'
+            }).success(function (data) {
+                defer.resolve(data);
+            }).error(function (data, status) {
+                defer.reject(data, status);
+            });
         });
         return defer.promise;
     };
@@ -153,14 +157,15 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      */
     user_factory.generate_api_key = function() {
         var defer = $q.defer();
-        var this_user_id = get_user_id();
-        $http({
-            method: 'GET',
-            url: '/api/v2/users/' + this_user_id.toString() + '/generate_api_key/'
-        }).success(function(data) {
-            defer.resolve(data);
-        }).error(function(data, status) {
-            defer.reject(data, status);
+        user_factory.get_user_id().then(function (this_user_id) {
+            $http({
+                method: 'GET',
+                url: '/api/v2/users/' + this_user_id.toString() + '/generate_api_key/'
+            }).success(function (data) {
+                defer.resolve(data);
+            }).error(function (data, status) {
+                defer.reject(data, status);
+            });
         });
         return defer.promise;
     };
@@ -199,20 +204,21 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      */
     user_factory.update_user = function(user) {
         var defer = $q.defer();
-        var this_user_id = get_user_id();
-        $http({
-            method: 'PUT',
-            url: '/api/v2/users/' + this_user_id.toString() + '/',
-            data: {
-                first_name: user.first_name,
-                last_name: user.last_name,
-                email: user.email
-            }
-        }).success(function(data) {
-            defer.resolve(data);
-        }).error(function(data, status) {
-            defer.reject(data, status);
-        });
+            user_factory.get_user_id().then(function (this_user_id) {
+                $http({
+                    method: 'PUT',
+                    url: '/api/v2/users/' + this_user_id.toString() + '/',
+                    data: {
+                        first_name: user.first_name,
+                        last_name: user.last_name,
+                        email: user.email
+                    }
+                }).success(function (data) {
+                    defer.resolve(data);
+                }).error(function (data, status) {
+                    defer.reject(data, status);
+                });
+            });
         return defer.promise;
     };
 
@@ -224,19 +230,20 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      */
     user_factory.set_password = function(current_password, password_1, password_2) {
         var defer = $q.defer();
-        var this_user_id = get_user_id();
-        $http({
-            method: 'PUT',
-            url: '/api/v2/users/' + this_user_id.toString() + '/set_password/',
-            data: {
-                current_password: current_password,
-                password_1: password_1,
-                password_2: password_2
-            }
-        }).success(function(data) {
-            defer.resolve(data);
-        }).error(function(data, status) {
-            defer.reject(data, status);
+        user_factory.get_user_id().then(function (this_user_id) {
+            $http({
+                method: 'PUT',
+                url: '/api/v2/users/' + this_user_id.toString() + '/set_password/',
+                data: {
+                    current_password: current_password,
+                    password_1: password_1,
+                    password_2: password_2
+                }
+            }).success(function (data) {
+                defer.resolve(data);
+            }).error(function (data, status) {
+                defer.reject(data, status);
+            });
         });
         return defer.promise;
     };
