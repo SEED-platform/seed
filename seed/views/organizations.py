@@ -44,6 +44,7 @@ from seed.utils.buildings import get_columns as utils_get_columns
 from seed.utils.organizations import create_organization
 
 
+# TODO: _dict_org uses CanonicalBuilding; delete or fix
 def _dict_org(request, organizations):
     """returns a dictionary of an organization's data."""
 
@@ -163,6 +164,7 @@ def _get_severity_from_js(severity):
     return d.get(severity)
 
 
+# TODO: Another reference to BuildingSnapshot
 def _save_fields(org, new_fields, old_fields, is_public=False):
     """Save Building to be Shared."""
     old_fields_names = set(old_fields.values_list('field__name', flat=True))
@@ -1021,47 +1023,3 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse({'status': 'success',
                             'organization_id': sub_org.pk})
-
-#
-# @ajax_request
-# def search_public_fields(request):
-#     """Search across all public fields.
-#
-#     Payload::
-#
-#         {
-#              'q': a string to search on (optional),
-#              'show_shared_buildings': True to include buildings from other
-#                  orgs in this user's org tree,
-#              'order_by': which field to order by (e.g. pm_property_id),
-#              'import_file_id': ID of an import to limit search to,
-#              'filter_params': { a hash of Django-like filter parameters to limit
-#                  query.  See seed.search.filter_other_params.  If 'project__slug'
-#                  is included and set to a project's slug, buildings will include
-#                  associated labels for that project.
-#                }
-#              'page': Which page of results to retrieve (default: 1),
-#              'number_per_page': Number of buildings to retrieve per page
-#                                 (default: 10),
-#         }
-#
-#     Returns::
-#
-#         {
-#              'status': 'success',
-#              'buildings': [
-#               { all fields for buildings the request user has access to;
-#                 e.g.:
-#                'canonical_building': the CanonicalBuilding ID of the building,
-#                'pm_property_id': ID of building (from Portfolio Manager),
-#                'address_line_1': First line of building's address,
-#                'property_name': Building's name, if any
-#                 ...
-#                }...
-#               ]
-#              'number_matching_search': Total number of buildings matching search,
-#              'number_returned': Number of buildings returned for this page
-#         }
-#     """
-#     from seed.views.main import _search_buildings
-#     _search_buildings(request)

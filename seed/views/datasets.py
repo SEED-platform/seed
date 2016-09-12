@@ -133,13 +133,19 @@ class DatasetViewSet(viewsets.ViewSet):
                   paramType: path
         """
 
+        organization_id = request.query_params.get('organization_id', None)
+        if organization_id is None:
+            return JsonResponse({'status': 'error', 'message': 'Missing organization_id query parameter'})
+        try:
+            organization_id = int(organization_id)
+        except ValueError:
+            return JsonResponse({'status': 'error', 'message': 'Bad (non-numeric) organization_id'})
         dataset_id = pk
-        orgs = request.user.orgs.all()
         name = request.data['dataset']
 
         # check if user has access to the dataset
         d = ImportRecord.objects.filter(
-            super_organization__in=orgs, pk=dataset_id
+            super_organization_id=organization_id, pk=dataset_id
         )
 
         if not d.exists():
@@ -193,7 +199,13 @@ class DatasetViewSet(viewsets.ViewSet):
                   paramType: path
         """
 
-        orgs = request.user.orgs.all()
+        organization_id = request.query_params.get('organization_id', None)
+        if organization_id is None:
+            return JsonResponse({'status': 'error', 'message': 'Missing organization_id query parameter'})
+        try:
+            organization_id = int(organization_id)
+        except ValueError:
+            return JsonResponse({'status': 'error', 'message': 'Bad (non-numeric) organization_id'})
 
         dataset_id = pk
 
@@ -201,7 +213,7 @@ class DatasetViewSet(viewsets.ViewSet):
 
         # check if user has access to the dataset
         d = ImportRecord.objects.filter(
-            super_organization__in=orgs, pk=dataset_id
+            super_organization_id=organization_id, pk=dataset_id
         )
         if d.exists():
             d = d[0]

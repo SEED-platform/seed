@@ -1530,7 +1530,9 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse("apiv2:datasets-detail", args=[import_record.pk]))
+        response = self.client.get(
+            reverse("apiv2:datasets-detail", args=[import_record.pk]) + '?organization_id=' + str(self.org.pk)
+        )
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_delete_dataset(self):
@@ -1556,7 +1558,7 @@ class GetDatasetsViewsTests(TestCase):
         }
 
         response = self.client.put(
-            reverse_lazy("apiv2:datasets-detail", args=[import_record.pk]),
+            reverse_lazy("apiv2:datasets-detail", args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
             data=json.dumps(post_data)
         )

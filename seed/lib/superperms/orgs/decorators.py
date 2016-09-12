@@ -9,6 +9,7 @@ from functools import wraps
 
 from django.conf import settings
 from django.http import HttpResponseForbidden
+
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
@@ -16,8 +17,6 @@ from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser
 )
-
-
 
 # Allow Super Users to ignore permissions.
 ALLOW_SUPER_USER_PERMS = getattr(settings, 'ALLOW_SUPER_USER_PERMS', True)
@@ -92,10 +91,7 @@ def can_modify_org_settings(org_user):
     # otherwise, there may be a parent org, so see if this user
     # is an owner of the parent.
     org = org_user.organization
-    if (
-                    org.parent_org is not None
-            and org.parent_org.is_owner(org_user.user)
-    ):
+    if org.parent_org is not None and org.parent_org.is_owner(org_user.user):
         return True
     return False
 
@@ -162,19 +158,20 @@ def _get_org_id(request):
     # if that doesn't work...
     if org_id is None:
         # try getting it from the request body itself
-        try:
-            if hasattr(request, 'data'):
-                body = request.data
-            else:
-                body = request.body
-            org_id = json.loads(body).get('organization_id')
-        except Exception:
+        if hasattr(request, 'data'):
+            body = request.data
+            org_id = body.get('organization_id', None)
+        else:
+            body = request.body
+            org_id = json.loads(body).get('organization_id', None)
+        if org_id is None:
             # if that doesn't work, try getting it from the url path itself, i.e. '/api/v2/organizations/12/'
             if hasattr(request, '_request') and 'organizations' in request._request.path:
                 try:
                     org_id = int(request._request.path.split('/')[4])
-                except Exception as e:
-                    # one of many possible things went wrong, pass with None
+                except (IndexError, ValueError):
+                    # IndexError will occur if the split results in less than 4 tokens
+                    # ValueError will occur if the result is non-numeric somehow
                     return None
             else:
                 return None

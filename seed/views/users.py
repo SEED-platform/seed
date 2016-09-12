@@ -41,59 +41,6 @@ from seed.utils.organizations import create_organization
 _log = logging.getLogger(__name__)
 
 
-# def _dict_org(request, organizations):
-#     """returns a dictionary of an organization's data."""
-#
-#     cbs = list(CanonicalBuilding.objects.filter(canonical_snapshot__super_organization__in=organizations).values('canonical_snapshot__super_organization_id'))
-#
-#     org_map = dict((x.pk, 0) for x in organizations)
-#     for cb in cbs:
-#         org_id = cb['canonical_snapshot__super_organization_id']
-#         org_map[org_id] = org_map[org_id] + 1
-#
-#     orgs = []
-#     for o in organizations:
-#         # We don't wish to double count sub organization memberships.
-#         org_users = OrganizationUser.objects.select_related('user') \
-#             .filter(organization=o)
-#
-#         owners = []
-#         role_level = None
-#         user_is_owner = False
-#         for ou in org_users:
-#             if ou.role_level == ROLE_OWNER:
-#                 owners.append({
-#                     'first_name': ou.user.first_name,
-#                     'last_name': ou.user.last_name,
-#                     'email': ou.user.email,
-#                     'id': ou.user_id
-#                 })
-#
-#                 if ou.user == request.user:
-#                     user_is_owner = True
-#
-#             if ou.user == request.user:
-#                 role_level = _get_js_role(ou.role_level)
-#
-#         org = {
-#             'name': o.name,
-#             'org_id': o.pk,
-#             'id': o.pk,
-#             'number_of_users': len(org_users),
-#             'user_is_owner': user_is_owner,
-#             'user_role': role_level,
-#             'owners': owners,
-#             'sub_orgs': _dict_org(request, o.child_orgs.all()),
-#             'is_parent': o.is_parent,
-#             'parent_id': o.parent_id,
-#             'num_buildings': org_map[o.pk],
-#             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
-#         }
-#         orgs.append(org)
-#
-#     return orgs
-
-
 def _get_js_role(role):
     """return the JS friendly role name for user
     :param role: role as defined in superperms.models
@@ -162,6 +109,17 @@ def _get_severity_from_js(severity):
 class UserViewSet(viewsets.ViewSet):
     raise_exception = True
     authentication_classes = (SessionAuthentication, SEEDAuthentication)
+
+    def validate_request_user(self, pk, request):
+        try:
+            user = User.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return False, JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)},
+                                       status=status.HTTP_404_NOT_FOUND)
+        if not user == request.user:
+            return False, JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)},
+                                       status=status.HTTP_403_FORBIDDEN)
+        return True, user
 
     @api_endpoint_class
     @ajax_request_class
@@ -414,14 +372,11 @@ class UserViewSet(viewsets.ViewSet):
                 required: true
         """
 
-        try:
-            user = User.objects.get(pk=pk)
-        except Exception:
-            return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
-        if not user == request.user:
-            return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)},
-                                status=status.HTTP_403_FORBIDDEN)
+        ok, content = self.validate_request_user(pk, request)
+        if ok:
+            user = content
+        else:
+            return content
         return JsonResponse({
             'status': 'success',
             'first_name': user.first_name,
@@ -453,14 +408,11 @@ class UserViewSet(viewsets.ViewSet):
                 type: string
                 required: true
         """
-        try:
-            user = User.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
-        if not user == request.user:
-            return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)},
-                                status=status.HTTP_403_FORBIDDEN)
+        ok, content = self.validate_request_user(pk, request)
+        if ok:
+            user = content
+        else:
+            return content
         user.generate_key()
         return {
             'status': 'success',
@@ -515,14 +467,11 @@ class UserViewSet(viewsets.ViewSet):
                 required: true
         """
         body = request.data
-        try:
-            user = User.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
-        if not user == request.user:
-            return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)},
-                                status=status.HTTP_403_FORBIDDEN)
+        ok, content = self.validate_request_user(pk, request)
+        if ok:
+            user = content
+        else:
+            return content
         json_user = body
         user.first_name = json_user.get('first_name')
         user.last_name = json_user.get('last_name')
@@ -569,12 +518,11 @@ class UserViewSet(viewsets.ViewSet):
                 required: false
         """
         body = request.data
-        try:
-            user = User.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)}, status=status.HTTP_404_NOT_FOUND)
-        if not user == request.user:
-            return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)}, status=status.HTTP_403_FORBIDDEN)
+        ok, content = self.validate_request_user(pk, request)
+        if ok:
+            user = content
+        else:
+            return content
         current_password = body.get('current_password')
         p1 = body.get('password_1')
         p2 = body.get('password_2')
@@ -642,14 +590,11 @@ class UserViewSet(viewsets.ViewSet):
         if error:
             return JsonResponse({'status': 'error', 'message': message})
 
-        try:
-            user = User.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
-        if not user == request.user:
-            return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)},
-                                status=status.HTTP_403_FORBIDDEN)
+        ok, content = self.validate_request_user(pk, request)
+        if ok:
+            user = content
+        else:
+            return content
 
         auth = self._try_parent_org_auth(user, org, actions)
         if auth:
@@ -736,14 +681,11 @@ class UserViewSet(viewsets.ViewSet):
                 description: error message, if any
                 required: false
         """
-        try:
-            user = User.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
-        if not user == request.user:
-            return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)},
-                                status=status.HTTP_403_FORBIDDEN)
+        ok, content = self.validate_request_user(pk, request)
+        if ok:
+            user = content
+        else:
+            return content
 
         return JsonResponse({
             'status': 'success',
@@ -778,14 +720,11 @@ class UserViewSet(viewsets.ViewSet):
                 required: false
         """
         body = request.data
-        try:
-            user = User.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
-        if not user == request.user:
-            return JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)},
-                                status=status.HTTP_403_FORBIDDEN)
+        ok, content = self.validate_request_user(pk, request)
+        if ok:
+            user = content
+        else:
+            return content
         user.default_organization_id = body['organization_id']
         user.save()
         return {'status': 'success'}

@@ -48,102 +48,98 @@ class AccountsViewTests(TestCase):
 
     @skip("Fix for new model -- _dict_org used CanonicalBuilding")
     def test_dict_org(self):
-        pass
+        """_dict_org turns our org structure into a json payload."""
+        expected_single_org_payload = {
+            'sub_orgs': [],
+            'owners': [{
+                'first_name': u'Johnny',
+                'last_name': u'Energy',
+                'email': u'test_user@demo.com',
+                'id': self.user.pk
+            }],
+            'number_of_users': 1,
+            'name': 'my org',
+            'user_role': 'owner',
+            'is_parent': True,
+            'parent_id': self.org.pk,
+            'org_id': self.org.pk,
+            'id': self.org.pk,
+            'user_is_owner': True,
+            'num_buildings': 0,
+            'created': self.org.created.strftime('%Y-%m-%d')
+        }
 
-    #     """_dict_org turns our org structure into a json payload."""
-    #     expected_single_org_payload = {
-    #         'sub_orgs': [],
-    #         'owners': [{
-    #             'first_name': u'Johnny',
-    #             'last_name': u'Energy',
-    #             'email': u'test_user@demo.com',
-    #             'id': self.user.pk
-    #         }],
-    #         'number_of_users': 1,
-    #         'name': 'my org',
-    #         'user_role': 'owner',
-    #         'is_parent': True,
-    #         'parent_id': self.org.pk,
-    #         'org_id': self.org.pk,
-    #         'id': self.org.pk,
-    #         'user_is_owner': True,
-    #         'num_buildings': 0,
-    #         'created': self.org.created.strftime('%Y-%m-%d')
-    #     }
-    #
-    #     org_payload = _dict_org(self.fake_request, [self.org])
-    #
-    #     self.assertEqual(len(org_payload), 1)
-    #     self.assertDictEqual(org_payload[0], expected_single_org_payload)
-    #
-    #     # Now let's make sure that we pick up related buildings correctly.
-    #     for x in range(10):
-    #         can = CanonicalBuilding.objects.create()
-    #         snap = BuildingSnapshot.objects.create()
-    #         snap.super_organization = self.org
-    #         snap.save()
-    #
-    #         can.canonical_snapshot = snap
-    #         can.save()
-    #
-    #     expected_single_org_payload['num_buildings'] = 10
-    #     self.assertDictEqual(
-    #         _dict_org(self.fake_request, [self.org])[0],
-    #         expected_single_org_payload
-    #     )
+        org_payload = _dict_org(self.fake_request, [self.org])
+
+        self.assertEqual(len(org_payload), 1)
+        self.assertDictEqual(org_payload[0], expected_single_org_payload)
+
+        # Now let's make sure that we pick up related buildings correctly.
+        for x in range(10):
+            can = CanonicalBuilding.objects.create()
+            snap = BuildingSnapshot.objects.create()
+            snap.super_organization = self.org
+            snap.save()
+
+            can.canonical_snapshot = snap
+            can.save()
+
+        expected_single_org_payload['num_buildings'] = 10
+        self.assertDictEqual(
+            _dict_org(self.fake_request, [self.org])[0],
+            expected_single_org_payload
+        )
 
     @skip("Fix for new model -- _dict_org used CanonicalBuilding")
     def test_dic_org_w_member_in_parent_and_child(self):
-        pass
+        """What happens when a user has a role in parent and child."""
+        new_org = Organization.objects.create(name="sub")
+        expected_multiple_org_payload = {
+            'sub_orgs': [{
+                'owners': [{
+                    'first_name': u'Johnny',
+                    'last_name': u'Energy',
+                    'email': u'test_user@demo.com',
+                    'id': self.user.pk
+                }],
+                'number_of_users': 1,
+                'name': 'sub',
+                'sub_orgs': [],
+                'user_role': 'owner',
+                'is_parent': False,
+                'parent_id': self.org.pk,
+                'org_id': new_org.pk,
+                'id': new_org.pk,
+                'user_is_owner': True,
+                'num_buildings': 0,
+                'created': new_org.created.strftime('%Y-%m-%d')
+            }],
+            'owners': [{
+                'first_name': u'Johnny',
+                'last_name': u'Energy',
+                'email': u'test_user@demo.com',
+                'id': self.user.pk
+            }],
+            'number_of_users': 1,
+            'name': 'my org',
+            'user_role': 'owner',
+            'is_parent': True,
+            'parent_id': self.org.pk,
+            'org_id': self.org.pk,
+            'id': self.org.pk,
+            'user_is_owner': True,
+            'num_buildings': 0,
+            'created': self.org.created.strftime('%Y-%m-%d')
+        }
 
-    #     """What happens when a user has a role in parent and child."""
-    #     new_org = Organization.objects.create(name="sub")
-    #     expected_multiple_org_payload = {
-    #         'sub_orgs': [{
-    #             'owners': [{
-    #                 'first_name': u'Johnny',
-    #                 'last_name': u'Energy',
-    #                 'email': u'test_user@demo.com',
-    #                 'id': self.user.pk
-    #             }],
-    #             'number_of_users': 1,
-    #             'name': 'sub',
-    #             'sub_orgs': [],
-    #             'user_role': 'owner',
-    #             'is_parent': False,
-    #             'parent_id': self.org.pk,
-    #             'org_id': new_org.pk,
-    #             'id': new_org.pk,
-    #             'user_is_owner': True,
-    #             'num_buildings': 0,
-    #             'created': new_org.created.strftime('%Y-%m-%d')
-    #         }],
-    #         'owners': [{
-    #             'first_name': u'Johnny',
-    #             'last_name': u'Energy',
-    #             'email': u'test_user@demo.com',
-    #             'id': self.user.pk
-    #         }],
-    #         'number_of_users': 1,
-    #         'name': 'my org',
-    #         'user_role': 'owner',
-    #         'is_parent': True,
-    #         'parent_id': self.org.pk,
-    #         'org_id': self.org.pk,
-    #         'id': self.org.pk,
-    #         'user_is_owner': True,
-    #         'num_buildings': 0,
-    #         'created': self.org.created.strftime('%Y-%m-%d')
-    #     }
+        new_org.parent_org = self.org
+        new_org.save()
+        new_org.add_member(self.user)
 
-        # new_org.parent_org = self.org
-        # new_org.save()
-        # new_org.add_member(self.user)
-        #
-        # org_payload = _dict_org(self.fake_request, Organization.objects.all())
-        #
-        # self.assertEqual(len(org_payload), 2)
-        # self.assertEqual(org_payload[0], expected_multiple_org_payload)
+        org_payload = _dict_org(self.fake_request, Organization.objects.all())
+
+        self.assertEqual(len(org_payload), 2)
+        self.assertEqual(org_payload[0], expected_multiple_org_payload)
 
     def test_get_organizations(self):
         """ tests accounts.get_organizations
@@ -169,14 +165,11 @@ class AccountsViewTests(TestCase):
 
     def test_get_organization_no_org(self):
         """test for error when no organization_id sent"""
-        try:
+        with self.assertRaises(NoReverseMatch):
             self.client.get(
                 reverse_lazy("apiv2:organizations-detail"),
                 content_type='application/json',
             )
-        except NoReverseMatch:
-            return
-        self.fail("Failed to raise NoReverseMatch on get_organization with no org id")
 
     def test_get_organization_std_case(self):
         """test normal case"""
@@ -286,16 +279,13 @@ class AccountsViewTests(TestCase):
     def test_remove_user_from_org_missing_org_id(self):
         u = User.objects.create(username="b@b.com", email="b@be.com")
         self.org.add_member(u)
-        try:
+        with self.assertRaises(NoReverseMatch):
             self.client.delete(
                 reverse_lazy("apiv2:organizations-remove-user") + '?organization_id=' + str(
                     self.org.id),
                 data=json.dumps({'user_id': u.id}),
                 content_type='application/json',
             )
-        except NoReverseMatch:
-            return
-        self.fail("Failed to raise NoReverseMatch exception with no organization id")
 
     def test_remove_user_from_org_missing_user_id(self):
         u = User.objects.create(username="b@b.com", email="b@be.com")

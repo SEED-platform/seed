@@ -172,9 +172,8 @@ class ProjectsViewSet(viewsets.ViewSet):
              'end_date': Timestamp of end of project
             }
         """
-        try:
-            project_slug = request.query_params.get('project_slug')
-        except:
+        project_slug = request.query_params.get('project_slug', None)
+        if project_slug is None:
             return JsonResponse({'status': 'error',
                                  'message': 'project_slug needs to be included as a query parameter'},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -374,9 +373,8 @@ class ProjectsViewSet(viewsets.ViewSet):
         """
         body = request.data
         project_name = body.get('name', None)
-        try:
-            project_slug = request.query_params.get('project_slug')
-        except:
+        project_slug = request.query_params.get('project_slug', None)
+        if project_slug is None:
             return JsonResponse({'status': 'error',
                                  'message': 'project_slug must be passed in as query argument'},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -451,9 +449,8 @@ class ProjectsViewSet(viewsets.ViewSet):
                              background job, to determine the job's progress
         """
         body = request.data
-        try:
-            project_slug = request.query_params.get('project_slug')
-        except:
+        project_slug = request.query_params.get('project_slug', None)
+        if project_slug is None:
             return JsonResponse({'status': 'error',
                                  'message': 'project_slug needs to be included as a query parameter'},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -508,9 +505,8 @@ class ProjectsViewSet(viewsets.ViewSet):
                              background job, to determine the job's progress
         """
         body = request.data
-        try:
-            project_slug = request.query_params.get('project_slug')
-        except:
+        project_slug = request.query_params.get('project_slug', None)
+        if project_slug is None:
             return JsonResponse({'status': 'error',
                                  'message': 'project_slug needs to be included as a query parameter'},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -529,6 +525,7 @@ class ProjectsViewSet(viewsets.ViewSet):
             'project_removing_cache_key': key
         })
 
+    # TODO: Broad except clause; what will redis return?
     @api_endpoint_class
     @ajax_request_class
     @list_route(methods=['GET'])
@@ -639,9 +636,8 @@ class ProjectsViewSet(viewsets.ViewSet):
                 description: Email address of user making change
         """
         body = request.data
-        try:
-            project_slug = request.query_params.get('project_slug')
-        except:
+        project_slug = request.query_params.get('project_slug', None)
+        if project_slug is None:
             return JsonResponse({'status': 'error',
                                  'message': 'project_slug needs to be included as a query parameter'},
                                 status=status.HTTP_400_BAD_REQUEST)
