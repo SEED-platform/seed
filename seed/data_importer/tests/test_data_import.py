@@ -4,6 +4,7 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import datetime
 import logging
 from unittest import skip
 
@@ -11,10 +12,9 @@ from dateutil import parser
 from django.test import TestCase
 from mock import patch
 
-from seed.audit_logs.models import AuditLog
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile
-from seed.lib.superperms.orgs.models import Organization
+from seed.data_importer.tests import util as test_util
 from seed.models import (
     ASSESSED_RAW,
     ASSESSED_BS,
@@ -22,78 +22,24 @@ from seed.models import (
     POSSIBLE_MATCH,
     SYSTEM_MATCH,
     DATA_STATE_IMPORT,
-    FLOAT,
+    Cycle,
     PropertyState,
+    PropertyView,
     Column,
-    ColumnMapping,
-    Unit,
     get_ancestors,
+    DATA_STATE_MAPPING
 )
 from seed.tests import util
-from seed.data_importer.tests import util as test_util
-
 
 logger = logging.getLogger(__name__)
-
-
-class TestCleaner(TestCase):
-    """Tests that our logic for constructing cleaners works."""
-
-    def setUp(self):
-        self.org = Organization.objects.create()
-
-        unit = Unit.objects.create(
-            unit_name='mapped_col unit',
-            unit_type=FLOAT,
-        )
-
-        raw = Column.objects.create(
-            column_name='raw_col',
-            organization=self.org,
-        )
-
-        self.mapped_col = 'mapped_col'
-        mapped = Column.objects.create(
-            column_name=self.mapped_col,
-            unit=unit,
-            organization=self.org,
-        )
-
-        mapping = ColumnMapping.objects.create(
-            super_organization=self.org
-        )
-        mapping.column_raw.add(raw)
-        mapping.column_mapped.add(mapped)
-
-    def test_build_cleaner(self):
-        cleaner = tasks._build_cleaner(self.org)
-
-        # data is cleaned correctly for fields on PropertyState
-        # model
-        bs_field = 'gross_floor_area'
-        self.assertEqual(
-            cleaner.clean_value('123,456', bs_field),
-            123456
-        )
-
-        # data is cleaned correctly for mapped fields that have unit
-        # type information
-        self.assertEqual(
-            cleaner.clean_value('123,456', self.mapped_col),
-            123456
-        )
-
-        # other fields are just strings
-        self.assertEqual(
-            cleaner.clean_value('123,456', 'random'),
-            '123,456'
-        )
 
 
 class TestMapping(TestCase):
     """Tests for dealing with SEED related tasks for mapping data."""
 
     def setUp(self):
+        # Make sure to delete the old mappings and properties because this
+        # tests expects very specific column names and properties in order
         test_util.load_test_data(self, 'portfolio-manager-sample.csv')
 
     def test_cached_first_row_order(self):
@@ -202,12 +148,52 @@ class TestMapping(TestCase):
         )
 
 
-@skip("Fix for new data model")
-class TestMatching(TestMapping):
+class TestPromotingProperties(TestCase):
+
+    def setUp(self):
+        test_util.import_exported_test_data(self, 'propertystates-one-cycle.csv')
+
+    def test_promote_properties(self):
+        """Good case for testing our matching system."""
+
+        cycle, _ = Cycle.objects.get_or_create(
+            name=u'Hack Cycle 2015',
+            organization=self.fake_org,
+            start=datetime.datetime(2015, 1, 1),
+            end=datetime.datetime(2015, 12, 31),
+        )
+
+        cycle2, _ = Cycle.objects.get_or_create(
+            name=u'Hack Cycle 2016',
+            organization=self.fake_org,
+            start=datetime.datetime(2016, 1, 1),
+            end=datetime.datetime(2016, 12, 31),
+        )
+
+        # make sure that the new data was loaded correctly
+        ps = PropertyState.objects.filter(address_line_1='1181 Douglas Street')[0]
+        self.assertEqual(ps.site_eui, 439.9)
+        self.assertEqual(ps.extra_data['CoStar Property ID'], '1575599')
+
+        # Promote the PropertyState to a PropertyView
+        pv1 = ps.promote(cycle)
+        pv2 = ps.promote(cycle)  # should just return the same object
+        self.assertEqual(pv1, pv2)
+
+        # promote the same state for a new cycle, same data
+        pv3 = ps.promote(cycle2)
+        self.assertNotEqual(pv3, pv1)
+
+        props = PropertyView.objects.all()
+        self.assertEqual(len(props), 2)
+
+
+# @skip("Fix for new data model")
+class TestMatching(TestCase):
     """Tests for dealing with SEED related tasks for matching data."""
 
     def setUp(self):
-        test_util.load_test_data(self, 'portfolio-manager-sample.csv')
+        test_util.import_example_data(self, 'example-data-properties.xlsx')
 
     def test_is_same_snapshot(self):
         """Test to check if two snapshots are duplicates"""
@@ -224,10 +210,8 @@ class TestMatching(TestMapping):
             'postal_code': 8999,
         }
 
-        s1 = util.make_fake_snapshot(
-            self.import_file, bs_data, ASSESSED_BS, is_canon=True,
-            org=self.fake_org
-        )
+        s1 = util.make_fake_property(self.import_file, bs_data, ASSESSED_BS, is_canon=True,
+                                     org=self.fake_org)
 
         self.assertTrue(tasks.is_same_snapshot(s1, s1),
                         "Matching a snapshot to itself should return True")
@@ -244,77 +228,76 @@ class TestMatching(TestMapping):
             'postal_code': 8999,
         }
 
-        s2 = util.make_fake_snapshot(
-            self.import_file, bs_data_2, ASSESSED_BS, is_canon=True,
-            org=self.fake_org
-        )
+        s2 = util.make_fake_property(self.import_file, bs_data_2, ASSESSED_BS, is_canon=True,
+                                     org=self.fake_org)
 
         self.assertFalse(tasks.is_same_snapshot(s1, s2),
                          "Matching a snapshot to a different snapshot should return False")
 
     def test_match_buildings(self):
         """Good case for testing our matching system."""
-        # TODO: Fix the PM, tax lot id, and custom ID fields in PropertyState
-        # Move this to a fixture
-        bs_data = {
-            'pm_property_id': 1243,
-            # 'tax_lot_id': '435/422',
-            'property_name': 'Greenfield Complex',
-            'custom_id_1': 12,
-            'address_line_1': '555 Database LN.',
-            'address_line_2': '',
-            'city': 'Gotham City',
-            'postal_code': 8999,
-        }
 
-        # Since the change to not match duplicates there needs to be a second record that isn't exactly the same
-        # to run this test.  In this case address_line_2 now has a value of 'A' rather than ''
-        bs_data_2 = {
-            'pm_property_id': 1243,
-            # 'tax_lot_id': '435/422',
-            'property_name': 'Greenfield Complex',
-            'custom_id_1': 12,
-            'address_line_1': '555 Database LN.',
-            'address_line_2': 'A',
-            'city': 'Gotham City',
-            'postal_code': 8999,
-        }
-
-        # Setup mapped AS snapshot.
-        snapshot = util.make_fake_snapshot(
-            self.import_file, bs_data, ASSESSED_BS, is_canon=True,
-            org=self.fake_org
-        )
-        # Different file, but same ImportRecord.
-        # Setup mapped PM snapshot.
-        # Should be an identical match.
-        new_import_file = ImportFile.objects.create(
-            import_record=self.import_record,
-            mapping_done=True
+        cycle, _ = Cycle.objects.get_or_create(
+            name=u'Test Hack Cycle 2015',
+            organization=self.fake_org,
+            start=datetime.datetime(2015, 1, 1),
+            end=datetime.datetime(2015, 12, 31),
         )
 
-        new_snapshot = util.make_fake_snapshot(
-            new_import_file, bs_data_2, PORTFOLIO_BS, org=self.fake_org
-        )
+        ps = PropertyState.objects.filter(data_state=DATA_STATE_MAPPING,
+                                          super_organization=self.fake_org)
 
-        tasks.match_buildings(new_import_file.pk, self.fake_user.pk)
+        # Promote case A (one property <-> one tax lot)
+        ps = PropertyState.objects.filter(building_portfolio_manager_identifier=2264)[0]
 
-        result = PropertyState.objects.all()[0]
+        ps.promote(cycle)
 
-        self.assertEqual(result.property_name, snapshot.property_name)
-        self.assertEqual(result.property_name, new_snapshot.property_name)
-        # Since these two buildings share a common ID, we match that way.
-        # self.assertEqual(result.confidence, 0.9)
-        self.assertEqual(
-            sorted([r.pk for r in result.parents.all()]),
-            sorted([new_snapshot.pk, snapshot.pk])
-        )
-        self.assertGreater(AuditLog.objects.count(), 0)
-        self.assertEqual(
-            AuditLog.objects.first().action_note,
-            'System matched building ID.'
-        )
+        ps = tasks.get_canonical_snapshots(self.fake_org)
+        from django.db.models.query import QuerySet
+        self.assertTrue(isinstance(ps, QuerySet))
+        logger.debug("There are %s properties" % len(ps))
+        for p in ps:
+            from seed.utils.generic import pp
+            pp(p)
 
+        self.assertEqual(len(ps), 1)
+        self.assertEqual(ps[0].address_line_1, '50 Willow Ave SE')
+
+        # # Promote 5 of these to views to test the remaining code
+        # promote_mes = PropertyState.objects.filter(
+        #     data_state=DATA_STATE_MAPPING,
+        #     super_organization=self.fake_org)[:5]
+        # for promote_me in promote_mes:
+        #     promote_me.promote(cycle)
+        #
+        # ps = tasks.get_canonical_snapshots(self.fake_org)
+        # from django.db.models.query import QuerySet
+        # self.assertTrue(isinstance(ps, QuerySet))
+        # logger.debug("There are %s properties" % len(ps))
+        # for p in ps:
+        #     print p
+        #
+        # self.assertEqual(len(ps), 5)
+        # self.assertEqual(ps[0].address_line_1, '1211 Bryant Street')
+        # self.assertEqual(ps[4].address_line_1, '1031 Ellis Lane')
+
+        # tasks.match_buildings(self.import_file.pk, self.fake_user.pk)
+
+        # self.assertEqual(result.property_name, snapshot.property_name)
+        # self.assertEqual(result.property_name, new_snapshot.property_name)
+        # # Since these two buildings share a common ID, we match that way.
+        # # self.assertEqual(result.confidence, 0.9)
+        # self.assertEqual(
+        #     sorted([r.pk for r in result.parents.all()]),
+        #     sorted([new_snapshot.pk, snapshot.pk])
+        # )
+        # self.assertGreater(AuditLog.objects.count(), 0)
+        # self.assertEqual(
+        #     AuditLog.objects.first().action_note,
+        #     'System matched building ID.'
+        # )
+
+    @skip("Fix for new data model")
     def test_match_duplicate_buildings(self):
         """
         Test for behavior when trying to match duplicate building data
@@ -337,7 +320,7 @@ class TestMatching(TestMapping):
         )
 
         # Setup mapped PM snapshot.
-        util.make_fake_snapshot(
+        util.make_fake_property(
             import_file, bs_data, PORTFOLIO_BS, is_canon=True,
             org=self.fake_org
         )
@@ -349,7 +332,7 @@ class TestMatching(TestMapping):
             mapping_done=True
         )
 
-        util.make_fake_snapshot(
+        util.make_fake_property(
             new_import_file, bs_data, PORTFOLIO_BS, org=self.fake_org
         )
 
@@ -358,6 +341,7 @@ class TestMatching(TestMapping):
 
         self.assertEqual(len(PropertyState.objects.all()), 2)
 
+    @skip("Fix for new data model")
     def test_handle_id_matches_duplicate_data(self):
         """
         Test for handle_id_matches behavior when matching duplicate data
@@ -375,7 +359,7 @@ class TestMatching(TestMapping):
         }
 
         # Setup mapped AS snapshot.
-        util.make_fake_snapshot(
+        util.make_fake_property(
             self.import_file, bs_data, ASSESSED_BS, is_canon=True,
             org=self.fake_org
         )
@@ -395,7 +379,7 @@ class TestMatching(TestMapping):
             mapping_done=True
         )
 
-        new_snapshot = util.make_fake_snapshot(
+        new_snapshot = util.make_fake_property(
             duplicate_import_file, bs_data, PORTFOLIO_BS, org=self.fake_org
         )
 
@@ -403,6 +387,7 @@ class TestMatching(TestMapping):
                           new_snapshot, duplicate_import_file,
                           self.fake_user.pk)
 
+    @skip("Fix for new data model")
     def test_match_no_matches(self):
         """When a canonical exists, but doesn't match, we create a new one."""
         # TODO: Fix the PM, tax lot id, and custom ID fields in PropertyState
@@ -428,14 +413,14 @@ class TestMatching(TestMapping):
             'postal_code': 8999,
         }
 
-        snapshot = util.make_fake_snapshot(
+        snapshot = util.make_fake_property(
             self.import_file, bs1_data, ASSESSED_BS, is_canon=True
         )
         new_import_file = ImportFile.objects.create(
             import_record=self.import_record,
             mapping_done=True
         )
-        new_snapshot = util.make_fake_snapshot(
+        new_snapshot = util.make_fake_property(
             new_import_file, bs2_data, PORTFOLIO_BS, org=self.fake_org
         )
 
@@ -456,6 +441,7 @@ class TestMatching(TestMapping):
 
         self.assertEqual(latest_snapshot.confidence, None)
 
+    @skip("Fix for new data model")
     def test_match_no_canonical_buildings(self):
         """If no canonicals exist, create, but no new PropertyStates."""
         bs1_data = {
@@ -470,7 +456,7 @@ class TestMatching(TestMapping):
         }
 
         # Note: no Canonical Building is created for this snapshot.
-        snapshot = util.make_fake_snapshot(
+        snapshot = util.make_fake_property(
             self.import_file, bs1_data, ASSESSED_BS, is_canon=False,
             org=self.fake_org
         )
@@ -487,6 +473,7 @@ class TestMatching(TestMapping):
         self.assertNotEqual(refreshed_snapshot.canonical_building, None)
         self.assertEqual(PropertyState.objects.all().count(), 1)
 
+    @skip("Fix for new data model")
     def test_no_unmatched_buildings(self):
         """Make sure we shortcut out if there isn't unmatched data."""
         bs1_data = {
@@ -502,7 +489,7 @@ class TestMatching(TestMapping):
 
         self.import_file.mapping_done = True
         self.import_file.save()
-        util.make_fake_snapshot(
+        util.make_fake_property(
             self.import_file, bs1_data, ASSESSED_BS, is_canon=True
         )
 
@@ -512,6 +499,7 @@ class TestMatching(TestMapping):
 
         self.assertEqual(PropertyState.objects.all().count(), 1)
 
+    @skip("Fix for new data model")
     def test_separates_system_and_possible_match_types(self):
         """We save possible matches separately."""
         bs1_data = {
@@ -537,12 +525,12 @@ class TestMatching(TestMapping):
             mapping_done=True
         )
 
-        util.make_fake_snapshot(
+        util.make_fake_property(
             self.import_file, bs1_data, ASSESSED_BS, is_canon=True,
             org=self.fake_org
         )
 
-        util.make_fake_snapshot(
+        util.make_fake_property(
             new_import_file, bs2_data, PORTFOLIO_BS, org=self.fake_org
         )
 
@@ -558,6 +546,7 @@ class TestMatching(TestMapping):
         )
 
     # Will be obsolete
+    @skip("Fix for new data model")
     def test_get_ancestors(self):
         """Tests get_ancestors(building), returns all non-composite, non-raw
             PropertyState instances.
@@ -587,7 +576,7 @@ class TestMatching(TestMapping):
         }
 
         # Setup mapped AS snapshot.
-        util.make_fake_snapshot(
+        util.make_fake_property(
             self.import_file, bs_data, ASSESSED_BS, is_canon=True,
             org=self.fake_org
         )
@@ -600,7 +589,7 @@ class TestMatching(TestMapping):
             mapping_done=True
         )
 
-        util.make_fake_snapshot(
+        util.make_fake_property(
             new_import_file, bs_data_2, PORTFOLIO_BS, org=self.fake_org
         )
 
@@ -617,6 +606,7 @@ class TestMatching(TestMapping):
 
         self.assertEqual(ancestor_pks, building_pks)
 
+    @skip("Fix for new data model")
     def test_save_raw_data_batch_iterator(self):
         """Ensure split_csv completes"""
         tasks.save_raw_data(self.import_file.pk)

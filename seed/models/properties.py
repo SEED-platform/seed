@@ -22,6 +22,9 @@ logger = logging.getLogger(__name__)
 
 # State of the data that was imported. This will be used to flag which
 # rows are orphaned and can be deleted.
+
+# TODO: There are a bunch of these states already defined in the data_importer/
+# models.py file. Should probably revert this and use those.
 DATA_STATE_UNKNOWN = 0
 DATA_STATE_IMPORT = 1
 DATA_STATE_MAPPING = 2
@@ -65,6 +68,8 @@ class PropertyState(models.Model):
     import_file = models.ForeignKey(ImportFile, null=True, blank=True)
     # FIXME: source_type needs to be a foreign key or make it import_file.source_type
     source_type = models.IntegerField(null=True, blank=True, db_index=True)
+
+    # TODO: super_organization is sometimes organization -- are these the same?
     super_organization = models.ForeignKey(Organization, blank=True, null=True)
     data_state = models.IntegerField(choices=DATA_STATE, default=0)
 
@@ -72,23 +77,33 @@ class PropertyState(models.Model):
     confidence = models.FloatField(default=0, null=True, blank=True)
 
     # TODO: hmm, name this jurisdiction_property_id to stay consistent?
-    jurisdiction_property_identifier = models.CharField(max_length=255,
-                                                        null=True, blank=True)
+    jurisdiction_property_identifier = models.CharField(max_length=255, null=True, blank=True)
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
-    # TODO: Check if pm_parent and pm_property are the same (Nathan?)
-    pm_parent_property_id = models.CharField(max_length=255, null=True,
-                                             blank=True)
-    pm_property_id = models.CharField(max_length=255, null=True, blank=True)
+
+    # If the property is a campus then the pm_parent_property_id is the same
+    # for all the properties. The master campus record (campus=True) the
+    # pm_property_id will be set the same as pm_parent_property_id
+    pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True)
+    pm_property_id = models.CharField(max_length=255, null=True, blank=True)  # use this one
+    building_portfolio_manager_identifier = models.CharField(max_length=255, null=True, blank=True)
+    # hes_id?
+    # home_energy_score_id
+    building_home_energy_score_identifier = models.CharField(max_length=255, null=True, blank=True)
+
+    # Tax Lot Number of the property
     lot_number = models.CharField(max_length=255, null=True, blank=True)
     property_name = models.CharField(max_length=255, null=True, blank=True)
+
+    # Leave this as is for now, normalize into its own table soon
+    # use properties to assess from instances
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
     address_line_2 = models.CharField(max_length=255, null=True, blank=True)
     city = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
     postal_code = models.CharField(max_length=255, null=True, blank=True)
 
-    # Only spot where it's 'building' in the app, b/c this is a PortMgr field.
+    # Only spot where it's 'building' in the app, b/c this is a PM field.
     building_count = models.IntegerField(null=True, blank=True)
 
     property_notes = models.TextField(null=True, blank=True)
@@ -102,18 +117,15 @@ class PropertyState(models.Model):
     recent_sale_date = models.DateTimeField(null=True, blank=True)
     conditioned_floor_area = models.FloatField(null=True, blank=True)
     occupied_floor_area = models.FloatField(null=True, blank=True)
+
+    # Normalize eventually on owner/address table
     owner = models.CharField(max_length=255, null=True, blank=True)
     owner_email = models.CharField(max_length=255, null=True, blank=True)
     owner_telephone = models.CharField(max_length=255, null=True, blank=True)
     owner_address = models.CharField(max_length=255, null=True, blank=True)
     owner_city_state = models.CharField(max_length=255, null=True, blank=True)
     owner_postal_code = models.CharField(max_length=255, null=True, blank=True)
-    building_portfolio_manager_identifier = models.CharField(max_length=255,
-                                                             null=True,
-                                                             blank=True)
-    building_home_energy_score_identifier = models.CharField(max_length=255,
-                                                             null=True,
-                                                             blank=True)
+
     energy_score = models.IntegerField(null=True, blank=True)
     site_eui = models.FloatField(null=True, blank=True)
     generation_date = models.DateTimeField(null=True, blank=True)
@@ -128,37 +140,52 @@ class PropertyState(models.Model):
 
     extra_data = JsonField(default={}, blank=True)
 
-    def promote_to_view(self, start, end, tax_lot_id):
+    def promote(self, cycle):
         """
-        Helper initializer to add a property and its tax_lot/cycle
-        relationships.
+        Promote the PropertyState to the view table for the given cycle
+
+        Args:
+            cycle: Cycle to assign the view
+
+        Returns:
+            The resulting PropertyView (note that it is not returning the
+            PropertyState)
+
         """
 
-        cycle, _ = Cycle.objects.get_or_create(
-            name=u'Hack Cycle',
-            organization=self.super_organization,
-            start=start,
-            end=end
-        )
+        # First check if the cycle and the PropertyState already have a view
+        pvs = PropertyView.objects.filter(cycle=cycle, state=self)
 
-        # tls, _ = TaxLotState.objects.get_or_create(
-        #     jurisdiction_taxlot_identifier=tax_lot_id
-        # )
-        #
-        # logger.debug("the cycle is {}".format(cycle))
-        # logger.debug("the taxlotstate is {}".format(tls))
-        # tlv, _ = TaxLotView.objects.get_or_create(
-        #     state=tls,
-        #     cycle=cycle,
-        # ).first()
-        #
-        # logger.debug("taxlotview is {}".format(tlv))
+        if len(pvs) == 0:
+            logger.debug("Found 0 PropertyViews, adding property, promoting")
+            # There are no PropertyViews for this property state and cycle.
+            # Most likely there is nothing to match right now, so just
+            # promote it to the view
 
-        return self
+            # Need to create a property for this state
+            prop = Property.objects.create(
+                organization=self.super_organization
+            )
+
+            pv = PropertyView.objects.create(property=prop, cycle=cycle,
+                                             state=self)
+
+            return pv
+        elif len(pvs) == 1:
+            logger.debug("Found 1 PropertyView... Nothing to do")
+            # PropertyView already exists for cycle and state. Nothing to do.
+
+            return pvs[0]
+        else:
+            logger.debug("Found %s PropertyView" % len(pvs))
+            logger.debug("This should never occur, famous last words?")
+
+            return None
 
     def __unicode__(self):
         return u'Property State - %s' % (self.pk)
 
+    # TODO: deprecate this method, was hacked during mapping testing
     def assign_cycle_and_tax_lot(self, org, start_date, end_date, tax_lot_id):
         """
 
@@ -172,42 +199,42 @@ class PropertyState(models.Model):
 
         """
 
-        # TODO: we should set the cycle before we iterate over *every* row
-        cycle, _ = Cycle.objects.get_or_create(
-            name=u'Hack Cycle',
-            organization=org,
-            start=start_date,
-            end=end_date
-        )
-
-        # create 1 to 1 pointless taxlots for now
-        # tl = TaxLot.objects.create(
+        # # TODO: we should set the cycle before we iterate over *every* row
+        # cycle, _ = Cycle.objects.get_or_create(
+        #     name=u'Hack Cycle',
+        #     organization=org,
+        #     start=start_date,
+        #     end=end_date
+        # )
+        #
+        # # create 1 to 1 pointless taxlots for now
+        # # tl = TaxLot.objects.create(
+        # #     organization=org
+        # # )
+        # #
+        # # tls, _ = TaxLotState.objects.get_or_create(
+        # #     jurisdiction_taxlot_identifier=tax_lot_id
+        # # )
+        # #
+        # # tlv, _ = TaxLotView.objects.get_or_create(
+        # #     taxlot=tl,
+        # #     state=tls,
+        # #     cycle=cycle,
+        # # )
+        #
+        # self.save()
+        #
+        # # set the property view here for now to make sure that the data
+        # # show up in the bluesky tables
+        # property = Property.objects.create(
         #     organization=org
         # )
         #
-        # tls, _ = TaxLotState.objects.get_or_create(
-        #     jurisdiction_taxlot_identifier=tax_lot_id
-        # )
-        #
-        # tlv, _ = TaxLotView.objects.get_or_create(
-        #     taxlot=tl,
-        #     state=tls,
+        # PropertyView.objects.get_or_create(
+        #     property=property,
         #     cycle=cycle,
+        #     state=self
         # )
-
-        self.save()
-
-        # set the property view here for now to make sure that the data
-        # show up in the bluesky tables
-        property = Property.objects.create(
-            organization=org
-        )
-
-        PropertyView.objects.get_or_create(
-            property=property,
-            cycle=cycle,
-            state=self
-        )
 
         return self
 
@@ -275,8 +302,9 @@ class PropertyState(models.Model):
 
         return d
 
+    # TODO: oops, this should be in the ImportFile world, not the property
     @staticmethod
-    def find_unmatched_buildings(import_file):
+    def find_unmatched(import_file):
         """Get unmatched building snapshots' id info from an import file.
 
         :param import_file: ImportFile inst.
@@ -286,7 +314,6 @@ class PropertyState(models.Model):
 
         """
 
-        # TODO: rewrite this to find the properties that don't have their building in the propertyview
         return PropertyState.objects.filter(
             ~models.Q(source_type__in=[
                 COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW

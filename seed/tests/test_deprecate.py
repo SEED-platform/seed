@@ -54,13 +54,13 @@ class TestBuildingSnapshot(TestCase):
         self.import_file2 = ImportFile.objects.create(
             import_record=self.import_record
         )
-        self.bs1 = util.make_fake_snapshot(
+        self.bs1 = util.make_fake_property(
             self.import_file1,
             self.bs1_data,
             bs_type=seed_models.ASSESSED_BS,
             is_canon=True
         )
-        self.bs2 = util.make_fake_snapshot(
+        self.bs2 = util.make_fake_property(
             self.import_file2,
             self.bs2_data,
             bs_type=seed_models.PORTFOLIO_BS,
@@ -75,13 +75,13 @@ class TestBuildingSnapshot(TestCase):
 
     def _add_additional_fake_buildings(self):
         """DRY up some test code below where many BuildingSnapshots are needed."""
-        self.bs3 = util.make_fake_snapshot(
+        self.bs3 = util.make_fake_property(
             self.import_file1, self.bs1_data, bs_type=seed_models.COMPOSITE_BS,
         )
-        self.bs4 = util.make_fake_snapshot(
+        self.bs4 = util.make_fake_property(
             self.import_file1, self.bs2_data, bs_type=seed_models.COMPOSITE_BS,
         )
-        self.bs5 = util.make_fake_snapshot(
+        self.bs5 = util.make_fake_property(
             self.import_file1, self.bs2_data, bs_type=seed_models.COMPOSITE_BS,
         )
 
@@ -180,82 +180,6 @@ class TestBuildingSnapshot(TestCase):
 
         self.assertEqual(list(bs1.children.all()), [])
         self.assertEqual(list(bs2.parents.all()), [])
-
-    def test_get_column_mapping(self):
-        """Honor organizational bounds, get mapping data."""
-        org1 = Organization.objects.create()
-        org2 = Organization.objects.create()
-
-        raw_column = seed_models.Column.objects.create(
-            column_name=u'Some Weird City ID',
-            organization=org2
-        )
-        mapped_column = seed_models.Column.objects.create(
-            column_name=u'custom_id_1',
-            organization=org2
-        )
-        column_mapping1 = seed_models.ColumnMapping.objects.create(
-            super_organization=org2,
-        )
-        column_mapping1.column_raw.add(raw_column)
-        column_mapping1.column_mapped.add(mapped_column)
-
-        # Test that it Doesn't give us a mapping from another org.
-        self.assertEqual(
-            seed_models.get_column_mapping(raw_column, org1, 'column_mapped'),
-            None
-        )
-
-        # Correct org, but incorrect destination column.
-        self.assertEqual(
-            seed_models.get_column_mapping('random', org2, 'column_mapped'),
-            None
-        )
-
-        # Fully correct example
-        self.assertEqual(
-            seed_models.get_column_mapping(
-                raw_column.column_name, org2, 'column_mapped'
-            ),
-            (u'custom_id_1', 100)
-        )
-
-    def test_get_column_mappings(self):
-        """We produce appropriate data structure for mapping"""
-        expected = dict(sorted([
-            (u'example_9', u'mapped_9'),
-            (u'example_8', u'mapped_8'),
-            (u'example_7', u'mapped_7'),
-            (u'example_6', u'mapped_6'),
-            (u'example_5', u'mapped_5'),
-            (u'example_4', u'mapped_4'),
-            (u'example_3', u'mapped_3'),
-            (u'example_2', u'mapped_2'),
-            (u'example_1', u'mapped_1'),
-            (u'example_0', u'mapped_0')
-        ]))
-        org = Organization.objects.create()
-
-        raw = []
-        mapped = []
-        for x in range(10):
-            raw.append(seed_models.Column.objects.create(
-                column_name='example_{0}'.format(x), organization=org
-            ))
-            mapped.append(seed_models.Column.objects.create(
-                column_name='mapped_{0}'.format(x), organization=org
-            ))
-
-        for x in range(10):
-            column_mapping = seed_models.ColumnMapping.objects.create(
-                super_organization=org,
-            )
-
-            column_mapping.column_raw.add(raw[x])
-            column_mapping.column_mapped.add(mapped[x])
-
-        test_mapping, _ = seed_models.get_column_mappings(org)
-        self.assertDictEqual(test_mapping, expected)
 
     def _check_save_snapshot_match_with_default(self, default_pk):
         """Test good case for saving a snapshot match."""
@@ -377,7 +301,7 @@ class TestBuildingSnapshot(TestCase):
             u'postal_code': u'68674',
         }
 
-        fake_building = util.make_fake_snapshot(
+        fake_building = util.make_fake_property(
             self.import_file2,
             fake_building_kwargs,
             seed_models.COMPOSITE_BS,
@@ -474,7 +398,7 @@ class TestBuildingSnapshot(TestCase):
             u'extra_data': {}
         }
 
-        fake_building = util.make_fake_snapshot(
+        fake_building = util.make_fake_property(
             self.import_file2,
             fake_building_kwargs,
             seed_models.COMPOSITE_BS,
@@ -614,11 +538,11 @@ class TestBuildingSnapshot(TestCase):
         """
         TODO:
         """
-        self.bs3 = util.make_fake_snapshot(
+        self.bs3 = util.make_fake_property(
             self.import_file1, self.bs1_data, bs_type=seed_models.COMPOSITE_BS,
             is_canon=True,
         )
-        self.bs4 = util.make_fake_snapshot(
+        self.bs4 = util.make_fake_property(
             self.import_file1, self.bs2_data, bs_type=seed_models.COMPOSITE_BS,
             is_canon=True,
         )
@@ -675,32 +599,3 @@ class TestCanonicalBuilding(TestCase):
             'pk: %s - snapshot: %s - active: False' % (c.pk, b.pk),
             str(c)
         )
-
-
-class TestColumnMapping(TestCase):
-    """Test ColumnMapping utility methods."""
-
-    def setUp(self):
-
-        foo_col = seed_models.Column.objects.create(column_name="foo")
-        bar_col = seed_models.Column.objects.create(column_name="bar")
-        baz_col = seed_models.Column.objects.create(column_name="baz")
-
-        dm = seed_models.ColumnMapping.objects.create()
-        dm.column_raw.add(foo_col)
-        dm.column_mapped.add(baz_col)
-
-        cm = seed_models.ColumnMapping.objects.create()
-        cm.column_raw.add(foo_col, bar_col)
-        cm.column_mapped.add(baz_col)
-
-        self.directMapping = dm
-        self.concatenatedMapping = cm
-
-    def test_is_direct(self):
-        self.assertEqual(self.directMapping.is_direct(), True)
-        self.assertEqual(self.concatenatedMapping.is_direct(), False)
-
-    def test_is_concatenated(self):
-        self.assertEqual(self.directMapping.is_concatenated(), False)
-        self.assertEqual(self.concatenatedMapping.is_concatenated(), True)

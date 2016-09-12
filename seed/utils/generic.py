@@ -4,8 +4,9 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import math
 import json
+import math
+
 from django.core import serializers
 from django_pgjson.fields import JsonField
 
@@ -50,6 +51,8 @@ def obj_to_dict(obj, include_m2m=True):
 
     """
 
+    # TODO: Why aren't we using Django's model_to_dict method?
+
     if include_m2m:
         data = serializers.serialize('json', [obj, ])
     else:
@@ -70,3 +73,14 @@ def obj_to_dict(obj, include_m2m=True):
                 e = json.loads(e)
             response[unicode(f.name)] = e
     return response
+
+
+def pp(model_obj):
+    """
+    Pretty Print the model object
+    """
+
+    data = serializers.serialize('json', [model_obj, ])
+    # from django.forms.models import model_to_dict
+    # j = model_to_dict(model_obj)
+    print json.dumps(json.loads(data), indent=2)
