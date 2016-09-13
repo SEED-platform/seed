@@ -433,6 +433,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
         # We require a save to get our PK
         # We save here to set our initial source PKs.
         raw_property.save()
+
         super_org = import_file.import_record.super_organization
         raw_property.organization = super_org
 

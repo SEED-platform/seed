@@ -200,10 +200,10 @@ class TestMatching(TestCase):
 
         # TODO: Fix the PM, tax lot id, and custom ID fields in PropertyState
         bs_data = {
-            # 'pm_property_id': 1243,
+            'pm_property_id': 1243,
             # 'tax_lot_id': '435/422',
             'property_name': 'Greenfield Complex',
-            # 'custom_id_1': 12,
+            'custom_id_1': 12,
             'address_line_1': '555 Database LN.',
             'address_line_2': '',
             'city': 'Gotham City',
@@ -218,10 +218,10 @@ class TestMatching(TestCase):
 
         # Making a different snapshot, now Garfield complex rather than Greenfield complex
         bs_data_2 = {
-            # 'pm_property_id': 1243,
+            'pm_property_id': 1243,
             # 'tax_lot_id': '435/422',
             'property_name': 'Garfield Complex',
-            # 'custom_id_1': 12,
+            'custom_id_1': 12,
             'address_line_1': '555 Database LN.',
             'address_line_2': '',
             'city': 'Gotham City',
@@ -248,8 +248,7 @@ class TestMatching(TestCase):
                                           organization=self.fake_org)
 
         # Promote case A (one property <-> one tax lot)
-        print ps.__dict__
-        ps = PropertyState.objects.filter(pm_property_id=2264)[0]
+        ps = PropertyState.objects.filter(pm_property_id=2264).first()
 
         ps.promote(cycle)
 

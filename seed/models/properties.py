@@ -158,6 +158,9 @@ class PropertyState(models.Model):
             # promote it to the view
 
             # Need to create a property for this state
+            if self.organization == None:
+                print "organization is None"
+
             prop = Property.objects.create(
                 organization=self.organization
             )
