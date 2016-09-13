@@ -121,6 +121,15 @@ angular.module('BE.seed.controller.inventory_reports', [])
       $scope.chart1Title = '';
       $scope.chart2Title = '';
 
+      // Datepickers
+      var initStartDate = new Date();
+      initStartDate.setYear(initStartDate.getFullYear()-1);
+      $scope.startDate = initStartDate;
+      $scope.startDatePickerOpen = false;
+      $scope.endDate = new Date();
+      $scope.endDatePickerOpen = false;
+      $scope.invalidDates = false; // set this to true when startDate >= endDate;
+
       // Series
       // the following variable keeps track of which
       // series will be sent to the graphs when data is updated
@@ -148,6 +157,32 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
       /* UI HANDLERS */
       /* ~~~~~~~~~~~ */
+
+      // Handle datepicker open/close events
+      $scope.openStartDatePicker = function ($event) {
+        console.debug('openStartDatePicker');
+        $event.preventDefault();
+        $event.stopPropagation();
+        $scope.startDatePickerOpen = !$scope.startDatePickerOpen;
+      };
+      $scope.openEndDatePicker = function ($event) {
+        console.debug('openEndDatePicker');
+        $event.preventDefault();
+        $event.stopPropagation();
+        $scope.endDatePickerOpen = !$scope.endDatePickerOpen;
+      };
+
+      $scope.$watch('startDate', function (newval, oldval) {
+        $scope.checkInvalidDate();
+      });
+
+      $scope.$watch('endDate', function (newval, oldval) {
+        $scope.checkInvalidDate();
+      });
+
+      $scope.checkInvalidDate = function () {
+        $scope.invalidDates = ($scope.endDate < $scope.startDate);
+      };
 
       /* Update data used by the chart. This will force the charts to re-render*/
       $scope.updateChartData = function () {

@@ -84,7 +84,7 @@
 
             <table ng-show="labels.length > 0" class="table table-striped" style="margin-bottom: 0;">
                 <tr ng-repeat="label in labels">
-                    <td class="label_column">
+                    <td class="label_column" style="vertical-align: middle;">
                         <span class="label label-{$ label.label $}">{$ label.name $}</span>
                     </td>
                     <td align="right">
@@ -125,13 +125,12 @@
         <button type="button"
                 class="btn btn-primary"
                 style="min-width:90px;"
-                ng-disabled="disabled"
+                ng-disabled="true"
                 ng-click="done()">
                 Done</button>
         <button type="button"
                 class="btn btn-default"
                 style="min-width:90px;"
-                ng-disabled="disabled"
                 ng-click="cancel()">
                 Cancel</button>
     </div>

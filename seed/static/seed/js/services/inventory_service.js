@@ -416,26 +416,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return defer.promise;
     };
 
-
-    inventory_service.get_cycles = function () {
-
-      var defer = $q.defer();
-      var get_cycles_url = window.BE.urls.cycle_list;
-
-      $http({
-        method: 'GET',
-        url: get_cycles_url,
-        params: {
-          organization_id: user_service.get_organization().id
-        }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
-      });
-      return defer.promise;
-    };
-
     inventory_service.get_last_cycle = function () {
       var organization_id = user_service.get_organization().id,
         pk = (JSON.parse(sessionStorage.getItem('cycles')) || {})[organization_id];

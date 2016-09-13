@@ -1,17 +1,20 @@
-angular.module('BE.seed.service.cycle',
-    []).factory('cycle_service', ['$http',
-                                    '$q',
-                                    '$timeout',
-                                    '$log',
-                                    'user_service',
-                        function (  $http,
-                                    $q,
-                                    $timeout,
-                                    $log,
-                                    user_service
-                                    ) {
+/*
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
+ */
+angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
+  '$http',
+  '$q',
+  '$timeout',
+  '$log',
+  'user_service',
+  function ($http,
+            $q,
+            $timeout,
+            $log,
+            user_service) {
 
-
+    var cycle_factory = {};
     /** Cycle Service:
         --------------------------------------------------
         Provides methods to add/edit cycles on the server.
@@ -30,24 +33,22 @@ angular.module('BE.seed.service.cycle',
 
     */
 
-    function get_cycles() {
-        var defer = $q.defer();
+    cycle_factory.get_cycles = function () {
+      var defer = $q.defer();
 
-        var searchArgs = {
-            organization_id: user_service.get_organization().id
-        };
-
-        $http({
-            method: 'GET',
-            url: window.BE.urls.cycle_list,
-            params: searchArgs
-        }).success(function(data, status, headers, config) {
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
-        });
-        return defer.promise;
-    }
+      $http({
+        method: 'GET',
+        url: window.BE.urls.get_cycles,
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).success(function (data, status, headers, config) {
+        defer.resolve(data);
+      }).error(function (data, status, headers, config) {
+        defer.reject(data, status);
+      });
+      return defer.promise;
+    };
 
 
     /*  Add a cycle to an organization's list of cycles
@@ -60,22 +61,22 @@ angular.module('BE.seed.service.cycle',
                                     created on the server.
 
     */
-    function create_cycle(cycle){
-        var defer = $q.defer();
-        $http({
-            method: 'POST',
-            url: window.BE.urls.cycle_list,
-            data: cycle,
-            params: {
-                organization_id: user_service.get_organization().id
-            }
-        }).success(function(data, status, headers, config) {
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
-        });
-        return defer.promise;
-    }
+    cycle_factory.create_cycle = function (cycle) {
+      var defer = $q.defer();
+      $http({
+        method: 'POST',
+        url: window.BE.urls.create_cycle,
+        data: cycle,
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).success(function (data, status, headers, config) {
+        defer.resolve(data);
+      }).error(function (data, status, headers, config) {
+        defer.reject(data, status);
+      });
+      return defer.promise;
+    };
 
 
     /*  Update an existing a cycle in an organization
@@ -87,35 +88,21 @@ angular.module('BE.seed.service.cycle',
                                 with either a success if the cycle was updated,
                                 or an error if not.
     */
-    function update_cycle(cycle){
-        var defer = $q.defer();
-        $http({
-            method: 'PUT',
-            url: window.BE.urls.cycle_list + cycle.id + '/',
-            data: cycle,
-            params: {
-                organization_id: user_service.get_organization().id
-            }
-        }).success(function(data, status, headers, config) {
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
-        });
-        return defer.promise;
-    }
-
-
-
-
-    /* Public API */
-
-    var cycle_factory = {
-
-        //functions
-        get_cycles : get_cycles,
-        create_cycle : create_cycle,
-        update_cycle : update_cycle
-
+    cycle_factory.update_cycle = function (cycle) {
+      var defer = $q.defer();
+      $http({
+        method: 'PUT',
+        url: window.BE.urls.update_cycle,
+        data: cycle,
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).success(function (data, status, headers, config) {
+        defer.resolve(data);
+      }).error(function (data, status, headers, config) {
+        defer.reject(data, status);
+      });
+      return defer.promise;
     };
 
     return cycle_factory;

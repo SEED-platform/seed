@@ -36,7 +36,7 @@ from seed.views.main import (
     delete_buildings, delete_organization
 )
 from seed.views.organizations import OrganizationViewSet
-from seed.views.properties import (get_properties, get_cycles)
+from seed.views.properties import (get_properties, create_cycle, get_cycles, update_cycle)
 
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
@@ -48,9 +48,10 @@ apiv1 = r''  # r'api/v1/'
 
 urlpatterns = [
 
-    # DMcQ Temp
-    # TEMP : dummy data method for implementing cycles on FE
+    # cycle routes
+    url(r'^' + apiv1 + r'create_cycle/$', create_cycle, name='create_cycle'),
     url(r'^' + apiv1 + r'get_cycles/$', get_cycles, name='get_cycles'),
+    url(r'^' + apiv1 + r'update_cycle/$', update_cycle, name='update_cycle'),
 
     # template routes
     url(r'^$', home, name='home'),

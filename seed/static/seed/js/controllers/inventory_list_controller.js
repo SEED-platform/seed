@@ -97,7 +97,7 @@ angular.module('BE.seed.controller.inventory_list', [])
        Opens the update building labels modal.
        All further actions for labels happen with that modal and its related controller,
        including creating a new label or applying to/removing from a building.
-       When the modal is closed, refresh labels and search.
+       When the modal is closed, and refresh labels.
        */
       $scope.open_update_labels_modal = function () {
 
@@ -105,8 +105,12 @@ angular.module('BE.seed.controller.inventory_list', [])
           templateUrl: urls.static_url + 'seed/partials/update_item_labels_modal.html',
           controller: 'update_item_labels_modal_controller',
           resolve: {
-            search: function () {
-              return $scope.search;
+            inventory_ids: function () {
+              if ($scope.gridApi.selection.getSelectAllState()) return [];
+              return _.map($scope.gridApi.selection.getSelectedRows(), 'id');
+            },
+            inventory_type: function () {
+              return $scope.inventory_type;
             }
           }
         });
@@ -129,7 +133,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       var lastCycleId = inventory_service.get_last_cycle();
       $scope.cycle = {
-        selected_cycle: lastCycleId ? _.find(cycles.cycles, {pk: lastCycleId}) : cycles.cycles[0],
+        selected_cycle: lastCycleId ? _.find(cycles.cycles, {id: lastCycleId}) : cycles.cycles[0],
         cycles: cycles.cycles
       };
 
@@ -187,7 +191,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       $scope.update_cycle = function (cycle) {
-        inventory_service.save_last_cycle(cycle.pk);
+        inventory_service.save_last_cycle(cycle.id);
         $scope.cycle.selected_cycle = cycle;
         refresh_objects();
       };
@@ -240,10 +244,10 @@ angular.module('BE.seed.controller.inventory_list', [])
         name: 'id',
         displayName: '',
         cellTemplate: '<div class="ui-grid-row-header-link">' +
-        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.inventory_type == \'properties\' ? \'properties\' : \'taxlots\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.pk$}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.inventory_type == \'properties\' ? \'properties\' : \'taxlots\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
-        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.inventory_type == \'properties\' ? \'taxlots\' : \'properties\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.pk$}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.inventory_type == \'properties\' ? \'taxlots\' : \'properties\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
         '</div>',

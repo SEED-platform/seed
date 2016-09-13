@@ -50,13 +50,14 @@
                                class="form-control"
                                uib-datepicker-popup="MM-dd-yyyy"
                                is-open="startDatePickerOpen"
-                               ng-model="startDate"
+                               ng-model="new_cycle.from_date"
                                uib-tooltip="'From Date' must be before 'To Date'"
                                tooltip-placement="top"
                                tooltip-trigger="mouseenter"
                                tooltip-enable="invalidDates"
+                               ng-required="true"
                         />
-                    <span class="input-group-btn">
+                        <span class="input-group-btn">
                         <button type="button"
                                 class="btn btn-default"
                                 ng-click="openStartDatePicker($event)"><i class="fa fa-calendar"></i></button>
@@ -71,8 +72,14 @@
                                class="form-control"
                                uib-datepicker-popup="MM-dd-yyyy"
                                is-open="endDatePickerOpen"
-                               ng-model="endDate"/>
-                    <span class="input-group-btn">
+                               ng-model="new_cycle.to_date"
+                               uib-tooltip="'From Date' must be before 'To Date'"
+                               tooltip-placement="top"
+                               tooltip-trigger="mouseenter"
+                               tooltip-enable="invalidDates"
+                               ng-required="true"
+                        />
+                        <span class="input-group-btn">
                         <button type="button"
                                 class="btn btn-default"
                                 ng-click="openEndDatePicker($event)"><i class="fa fa-calendar"></i></button>
@@ -104,14 +111,14 @@
 
             <tr class="tableHeader">
                 <td style="width:40%;padding-left:10px;">Name</td>
-                <td style="width:25%">From Date</td>
-                <td style="width:25%">To Date</td>
-                <td width="width:10%" align="right"></td>
+                <td style="width:25%;">From Date</td>
+                <td style="width:25%;">To Date</td>
+                <td style="width:10%;" align="right"></td>
             </tr>
 
             <tr ng-repeat="cycle in cycles">
 
-                <td style="border:0px; padding-left:10px; vertical-align:middle;">
+                <td style="border:0; padding-left:10px; vertical-align:middle;">
                     <span editable-text="cycle.name"
                           e-name="name"
                           e-form="rowform"
@@ -127,15 +134,39 @@
                     </span>
                 </td>
 
-                <td style="border:0px; padding-left:10px; vertical-align:middle;">
-                    {$ cycle.from_date $}
+                <td style="border:0; padding-left:10px; vertical-align:middle;">
+                    <span editable-bsdate="cycle.from_date"
+                          e-name="from_date"
+                          e-form="rowform"
+                          ng-show="rowform.$visible"
+                          e-is-open="opened.from_date"
+                          e-ng-click="open($event,'from_date')"
+                          e-datepicker-popup="MM-dd-yyyy"
+                          e-required>
+                        {$ cycle.from_date | date : 'MM-dd-yyyy' $}
+                    </span>
+                    <span ng-show="!rowform.$visible">
+                        {$ cycle.from_date | date : 'MM-dd-yyyy' $}
+                    </span>
                 </td>
 
-                <td style="border:0px; padding-left:10px; vertical-align:middle;">
-                    {$ cycle.to_date $}
+                <td style="border:0; padding-left:10px; vertical-align:middle;">
+                    <span editable-bsdate="cycle.to_date"
+                          e-name="to_date"
+                          e-form="rowform"
+                          ng-show="rowform.$visible"
+                          e-is-open="opened.to_date"
+                          e-ng-click="open($event,'to_date')"
+                          e-datepicker-popup="MM-dd-yyyy"
+                          e-required>
+                        {$ cycle.to_date | date : 'MM-dd-yyyy' $}
+                    </span>
+                    <span ng-show="!rowform.$visible">
+                        {$ cycle.to_date | date : 'MM-dd-yyyy' $}
+                    </span>
                 </td>
 
-                <td style="white-space: nowrap; border:0px;" align="right">
+                <td style="white-space: nowrap; border:0;" align="right">
 
                     <!-- form -->
                     <form editable-form name="rowform"
@@ -157,8 +188,7 @@
                     </form>
 
                     <div class="buttons" ng-show="!rowform.$visible">
-                        <button class="btn btn-default  btn-rowform"
-                                ng-click="rowform.$show()">
+                        <button class="btn btn-default btn-rowform" ng-click="rowform.$show()">
                             edit
                         </button>
                         <!--

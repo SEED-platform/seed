@@ -191,8 +191,8 @@ angular.module('BE.seed.controller.base_detail', [])
           templateUrl: urls.static_url + 'seed/partials/update_item_labels_modal.html',
           controller: 'update_item_labels_modal_controller',
           resolve: {
-            inventory_id: function () {
-              return inventory_id;
+            inventory_ids: function () {
+              return [inventory_id];
             },
             inventory_type: function () {
               return inventory_type;

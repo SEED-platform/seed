@@ -7,6 +7,7 @@
 import itertools
 import json
 
+import datetime
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
@@ -319,15 +320,72 @@ def get_taxlots(request):
 @ajax_request
 @login_required
 @has_perm('requires_viewer')
+def create_cycle(request):
+    body = json.loads(request.body)
+    org_id = request.GET['organization_id']
+    Cycle.objects.create(
+        name=body['name'],
+        start=body['from_date'],
+        end=body['to_date'],
+        created=datetime.datetime.now(),
+        organization_id=org_id
+    )
+    cycles = Cycle.objects.filter(organization_id=org_id).order_by('name')
+    return_cycles = []
+    for cycle in cycles:
+        return_cycles.append({
+            'id': cycle.id,
+            'name': cycle.name,
+            'from_date': cycle.start,
+            'to_date': cycle.end
+        })
+
+    return {'status': 'success', 'cycles': return_cycles}
+
+
+@require_organization_id
+@require_organization_membership
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('requires_viewer')
 def get_cycles(request):
     cycles = Cycle.objects.filter(organization_id=request.GET['organization_id']).order_by('name')
     return_cycles = []
     for cycle in cycles:
         return_cycles.append({
-            'pk': cycle.pk,
+            'id': cycle.id,
             'name': cycle.name,
-            'from_date': "",
-            'to_date': ""
+            'from_date': cycle.start,
+            'to_date': cycle.end
+        })
+
+    return {'status': 'success', 'cycles': return_cycles}
+
+
+@require_organization_id
+@require_organization_membership
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('can_modify_data')
+def update_cycle(request):
+    body = json.loads(request.body)
+    org_id = request.GET['organization_id']
+    Cycle.objects.filter(pk=body['id'], organization_id=org_id).update(
+        name=body['name'],
+        start=body['from_date'],
+        end=body['to_date']
+    )
+
+    cycles = Cycle.objects.filter(organization_id=org_id).order_by('name')
+    return_cycles = []
+    for cycle in cycles:
+        return_cycles.append({
+            'id': cycle.id,
+            'name': cycle.name,
+            'from_date': cycle.start,
+            'to_date': cycle.end
         })
 
     return {'status': 'success', 'cycles': return_cycles}

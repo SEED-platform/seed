@@ -17,8 +17,9 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'inventory_payload',
     'all_columns',
     'default_columns',
+    'labels_payload',
     function ($controller, $state, $scope, $uibModal, $log, $filter, $stateParams, urls, label_helper_service,
-              inventory_service, inventory_payload, all_columns, default_columns) {
+              inventory_service, inventory_payload, all_columns, default_columns, labels_payload) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id,
@@ -26,6 +27,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
       $scope.cycle = inventory_payload.cycle;
       $scope.fields = all_columns.fields;
+      $scope.labels = _.filter(labels_payload.results, 'is_applied');
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
@@ -117,8 +119,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
 
         $scope.data_fields = $scope.generate_data_fields($scope.item_state, $scope.default_columns, $scope.all_extra_data_keys);
-
-        $scope.labels = $scope.init_labels($scope.inventory);
       };
 
       // fired on controller loaded
