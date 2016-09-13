@@ -11,7 +11,15 @@ from seed.models import (
 )
 
 
+class PropertyLabelsField(serializers.RelatedField):
+
+    def to_representation(self, value):
+        return value.id
+
+
 class PropertySerializer(serializers.ModelSerializer):
+    # list of status labels (rather than the join field)
+    labels = PropertyLabelsField(read_only=True, many=True)
 
     class Meta:
         model = Property

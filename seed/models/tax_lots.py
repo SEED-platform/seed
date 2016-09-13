@@ -22,16 +22,10 @@ class TaxLot(models.Model):
     # NOTE: we have been calling this the super_organization. We
     # should stay consistent although I prefer the name organization (!super_org)
     organization = models.ForeignKey(Organization)
-    labels = models.ManyToManyField(StatusLabel, through='TaxlotLabels')
+    labels = models.ManyToManyField(StatusLabel)
 
     def __unicode__(self):
         return u'TaxLot - %s' % (self.pk)
-
-
-class TaxLotLabels(models.Model):
-    """This exists to we can bulk_create labels"""
-    statuslabel = models.ForeignKey('StatusLabel')
-    taxlot = models.ForeignKey('TaxLot')
 
 
 class TaxLotState(models.Model):

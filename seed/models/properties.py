@@ -50,19 +50,13 @@ class Property(models.Model):
     # Handle properties that may have multiple properties (e.g. buildings)
     campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', blank=True, null=True)
-    labels = models.ManyToManyField(StatusLabel, through='PropertyLabels')
+    labels = models.ManyToManyField(StatusLabel)
 
     class Meta:
         verbose_name_plural = 'properties'
 
     def __unicode__(self):
         return u'Property - %s' % (self.pk)
-
-
-class PropertyLabels(models.Model):
-    """This exists to we can bulk_create labels"""
-    statuslabel = models.ForeignKey('StatusLabel')
-    property = models.ForeignKey('Property')
 
 
 class PropertyState(models.Model):

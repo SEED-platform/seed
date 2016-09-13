@@ -6,13 +6,14 @@
 """
 from collections import namedtuple
 from django.core.exceptions import ObjectDoesNotExist
+from django.apps import apps
 
-from rest_framework import viewsets
-from rest_framework import generics
-from rest_framework.parsers import JSONParser
-from rest_framework.renderers import JSONRenderer
 from rest_framework import response
 from rest_framework import status
+from rest_framework import viewsets
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
+from rest_framework.views import APIView
 
 from seed.decorators import (
     DecoratorMixin,
@@ -30,16 +31,14 @@ from seed.utils.api import (
 from seed.models import (
     StatusLabel as Label,
     BuildingSnapshot,
-    CanonicalBuilding,
     Property,
-    PropertyLabels,
+    # PropertyLabels,
     TaxLot,
-    TaxLotLabels,
-
+    # TaxLotLabels
 )
+
 from seed.serializers.labels import (
     LabelSerializer,
-    UpdateBuildingLabelsSerializer,
 )
 
 # missing from DRF specified in requirements
@@ -85,11 +84,11 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
         return super(LabelViewSet, self).get_serializer(*args, **kwargs)
 
 
-class UpdateInventoryLabelsAPIView(generics.CreateAPIView):
+class UpdateInventoryLabelsAPIView(APIView):
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
     inventory_models = {'property': Property, 'taxlot': TaxLot}
-    models = {'property': PropertyLabels, 'taxlot': TaxLotLabels}
+    # models = {'property': PropertyLabels, 'taxlot': TaxLotLayybels}
     errors = {
         'disjoint': ErrorState(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -100,6 +99,18 @@ class UpdateInventoryLabelsAPIView(generics.CreateAPIView):
             'missing organization_id'
         )
     }
+
+    @property
+    def models(self):
+        """
+        Exposes Django's internal models for join table.
+
+        Used for bulk_create operations.
+        """
+        return{
+            'property': apps.get_model('seed', 'Property_labels'),
+            'taxlot': apps.get_model('seed', 'TaxLot_labels')
+        }
 
     def get_queryset(self, inventory_type, organization_id):
         Model = self.models[inventory_type]

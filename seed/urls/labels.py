@@ -28,7 +28,7 @@ urlpatterns = [
         name="property_labels",
     ),
     url(
-        r'^taxlot-labels/$',
+        r'^taxlot/$',
         UpdateInventoryLabelsAPIView.as_view(),
         {'inventory_type': 'taxlot'},
         name="taxlot_labels",

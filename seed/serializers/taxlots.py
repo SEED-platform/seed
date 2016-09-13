@@ -7,8 +7,22 @@
 from rest_framework import serializers
 
 from seed.models import (
-    TaxLotView, TaxLotState, TaxLotProperty
+    TaxLot, TaxLotProperty, TaxLotState, TaxLotView,
 )
+
+
+class TaxLotLabelsField(serializers.RelatedField):
+
+    def to_representation(self, value):
+        return value.id
+
+
+class TaxLotSerializer(serializers.ModelSerializer):
+    # list of status labels (rather than the join field)
+    labels = TaxLotLabelsField(read_only=True, many=True)
+
+    class Meta:
+        model = TaxLot
 
 
 class TaxLotPropertySerializer(serializers.ModelSerializer):
@@ -17,15 +31,15 @@ class TaxLotPropertySerializer(serializers.ModelSerializer):
         model = TaxLotProperty
 
 
+class TaxLotStateSerializer(serializers.ModelSerializer):
+    extra_data = serializers.JSONField()
+
+    class Meta:
+        model = TaxLotState
+
+
 class TaxLotViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TaxLotView
         depth = 1
-
-
-class TaxLotStateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = TaxLotState
-    extra_data = serializers.JSONField()
