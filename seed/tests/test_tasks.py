@@ -124,14 +124,14 @@ class TestTasks(TestCase):
             mapping_done=True
         )
 
-        snapshot = util.make_fake_snapshot(
+        snapshot = util.make_fake_property(
             self.import_file, bs1_data, ASSESSED_BS, is_canon=True
         )
 
         snapshot.super_organization = self.fake_org
         snapshot.save()
 
-        snapshot = util.make_fake_snapshot(
+        snapshot = util.make_fake_property(
             new_import_file,
             bs2_data, PORTFOLIO_BS
         )
@@ -143,7 +143,7 @@ class TestTasks(TestCase):
 
         # make one more building snapshot in a different org
         fake_org_2 = Organization.objects.create()
-        snapshot = util.make_fake_snapshot(
+        snapshot = util.make_fake_property(
             self.import_file, bs1_data, ASSESSED_BS, is_canon=True
         )
         snapshot.super_organization = fake_org_2

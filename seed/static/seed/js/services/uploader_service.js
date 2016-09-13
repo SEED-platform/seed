@@ -44,9 +44,11 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            url: window.BE.urls.create_dataset,
+            url: '/api/v2/datasets/',
             data: {
-                name: dataset_name,
+                name: dataset_name
+            },
+            params: {
                 organization_id: user_service.get_organization().id
             }
         }).success(function(data, status) {

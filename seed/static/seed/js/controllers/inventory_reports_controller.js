@@ -123,7 +123,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
       // Datepickers
       var initStartDate = new Date();
-      initStartDate.setYear(initStartDate.getFullYear()-1);
+      initStartDate.setYear(initStartDate.getFullYear() - 1);
       $scope.startDate = initStartDate;
       $scope.startDatePickerOpen = false;
       $scope.endDate = new Date();
@@ -275,8 +275,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
         var yVar = $scope.yAxisSelectedItem.varName;
         $scope.chartIsLoading = true;
 
-        inventory_reports_service.get_report_data(xVar, yVar, $scope.fromCycle.selected_cycle.pk, $scope.toCycle.selected_cycle.pk)
+        inventory_reports_service.get_report_data(xVar, yVar, $scope.toCycle.selected_cycle.start, $scope.fromCycle.selected_cycle.end)
           .then(function (data) {
+              data = data.data;
               var yAxisType = ( yVar === 'use_description' ? 'Category' : 'Measure');
               var propertyCounts = data.property_counts;
               var colorsArr = mapColors(propertyCounts);
@@ -318,36 +319,40 @@ angular.module('BE.seed.controller.inventory_reports', [])
        In the future, if we want the chart to look or behave differently depending on the data,
        we can pass in different configuration options.
 
-       */
+       **/
       function getAggChartData() {
 
         var xVar = $scope.xAxisSelectedItem.varName;
         var yVar = $scope.yAxisSelectedItem.varName;
         $scope.aggChartIsLoading = true;
-        inventory_reports_service.get_aggregated_report_data(xVar, yVar, $scope.fromCycle.selected_cycle.pk, $scope.toCycle.selected_cycle.pk)
-          .then(function (data) {
-              $scope.aggPropertyCounts = data.property_counts;
-              var propertyCounts = data.property_counts;
-              var colorsArr = mapColors(propertyCounts);
-              $scope.aggPropertyCounts = propertyCounts;
-              $scope.aggChartData = {
-                series: $scope.aggChartSeries,
-                chartData: data.chart_data,
-                xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
-                yAxisTitle: $scope.yAxisSelectedItem.axisLabel,
-                yAxisType: 'Category',
-                colors: colorsArr
-              };
-              if ($scope.aggChartData.chartData && $scope.aggChartData.chartData.length > 0) {
-                $scope.aggChartStatusMessage = '';
-              } else {
-                $scope.aggChartStatusMessage = 'No Data';
-              }
-            },
-            function (data, status) {
-              $scope.aggChartStatusMessage = 'Data load error.';
-              $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
-            })
+        inventory_reports_service.get_aggregated_report_data(
+          xVar, yVar,
+          $scope.toCycle.selected_cycle.start,
+          $scope.fromCycle.selected_cycle.end
+        ).then(function (data) {
+            data = data.aggregated_data;
+            $scope.aggPropertyCounts = data.property_counts;
+            var propertyCounts = data.property_counts;
+            var colorsArr = mapColors(propertyCounts);
+            $scope.aggPropertyCounts = propertyCounts;
+            $scope.aggChartData = {
+              series: $scope.aggChartSeries,
+              chartData: data.chart_data,
+              xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
+              yAxisTitle: $scope.yAxisSelectedItem.axisLabel,
+              yAxisType: 'Category',
+              colors: colorsArr
+            };
+            if ($scope.aggChartData.chartData && $scope.aggChartData.chartData.length) {
+              $scope.aggChartStatusMessage = '';
+            } else {
+              $scope.aggChartStatusMessage = 'No Data';
+            }
+          },
+          function (data, status) {
+            $scope.aggChartStatusMessage = 'Data load error.';
+            $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
+          })
           .finally(function () {
             $scope.aggChartIsLoading = false;
           });
@@ -384,10 +389,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
         // Initialize pulldowns
         $scope.fromCycle = {
-          selected_cycle: cycles[0]
+          selected_cycle: $scope.cycles.cycles[0]
         };
         $scope.toCycle = {
-          selected_cycle: cycles[0]
+          selected_cycle: $scope.cycles.cycles[$scope.cycles.cycles.length - 1]
         };
 
       }

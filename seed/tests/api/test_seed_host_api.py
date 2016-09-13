@@ -31,7 +31,6 @@ some apps.
 """
 
 import datetime as dt
-import json
 import os
 import sys
 import time
@@ -108,11 +107,10 @@ organization_id = account(header, main_url, username, log)
 # Create a dataset
 print ('API Function: create_dataset')
 partmsg = 'create_dataset'
-payload = {'organization_id': organization_id,
-           'name': 'API Test'}
-result = requests.post(main_url + '/app/create_dataset/',
+payload = {'name': 'API Test'}
+result = requests.post(main_url + '/api/v2/datasets/?organization_id=%s' % organization_id,
                        headers=header,
-                       data=json.dumps(payload))
+                       data=payload)
 check_status(result, partmsg, log)
 
 # Get the dataset id to be used

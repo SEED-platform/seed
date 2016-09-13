@@ -15,33 +15,34 @@ angular.module('BE.seed.service.inventory_reports',
                                                 user_service) {
 
 
-    /**     Get inventory data given the provided parameters.
-            Data will be passed back to caller as well as stored as a property of this service
-            for other views that might want to bind to it.
+    /**
+        * Get inventory data given the provided parameters.
+        Data will be passed back to caller as well as stored as a property
+        of this service for other views that might want to bind to it.
 
-            Response object will be in the format:
-            {
-                "status": "(success or error)",
-                "chart_data": [
-                    {
-                        "id" the id of the building,
-                        "yr_e" : the year ending value for this data point
-                        "x": value for x var,
-                        "y": value for y var,
-                    },
-                    ...
-                ],
-                "property_counts": [
-                    {
-                        "yr_e": string for year ending
-                        "num_buildings": number of buildings in query results
-                        "num_buildings_w_data" : number of buildings with valid x and y data in query results
-                    },
-                    ...
-                ]
-            }
+        Response object will be in the format:
+        {
+          "status": "(success or error)",
+          "data": {
+            "chart_data": [
+              {
+                "id" the property (not state) id of the building,
+                "yr_e" : the year ending value for this data point
+                "x": value for x var,
+                "y": value for y var,
+              }...
+            ],
+            "property_counts": [
+              {
+                "yr_e": string for year ending
+                "num_buildings": number of buildings in query results
+                "num_buildings_w_data" : number of buildings with valid
+                                         x and y data in query results
+              }, ...
+            ]
+        }
     */
-    function get_report_data(xVar, yVar, startCycleID, endCycleID) {
+    function get_report_data(xVar, yVar, start, end) {
 
         // Error checks (should be able to collapse this...)
         if (angular.isUndefined(xVar)){
@@ -52,13 +53,13 @@ angular.module('BE.seed.service.inventory_reports',
           $log.error("#inventory_reports_service.get_report_data(): null 'yVar' parameter");
           throw new Error("Invalid Parameter");
         }
-        if (angular.isUndefined(startCycleID)){
-          $log.error("#inventory_reports_service.get_report_data(): null 'startCycleID' parameter");
-          throw new Error("Invalid Parameter");
+        if (angular.isUndefined(start)){
+            $log.error("#inventory_reports_service.get_report_data(): null 'start' parameter");
+           throw new Error("Invalid Parameter");
         }
-        if (angular.isUndefined(endCycleID)){
-          $log.error("#inventory_reports_service.get_report_data(): null 'endCycleID' parameter");
-          throw new Error("Invalid Parameter");
+        if (angular.isUndefined(end)){
+            $log.error("#inventory_reports_service.get_report_data(): null 'end' parameter");
+            throw new Error("Invalid Parameter");
         }
 
         var defer = $q.defer();
@@ -66,8 +67,8 @@ angular.module('BE.seed.service.inventory_reports',
                         organization_id: user_service.get_organization().id,
                         x_var: xVar,
                         y_var: yVar,
-                        start_cycle_id: startCycleID,
-                        end_cycle_id: endCycleID
+                        start: start,
+                        end: end
                     };
         $http({
                 method: 'GET',
@@ -84,32 +85,35 @@ angular.module('BE.seed.service.inventory_reports',
     }
 
 
-    /**     Get aggregated property data given the provided parameters.
-            Data will be passed back to caller as well as stored as a property of this service
-            for other views that might want to bind to it.
+    /**
+        Get aggregated property data given the provided parameters.
+        Data will be passed back to caller as well as stored as a property of
+        this service for other views that might want to bind to it.
 
-            Response object will be in the format:
-            {
-                "status": "(success or error)",
-                "chart_data": [
-                    {
-                        "yr_e" : the year ending value for this group
-                        "x": value for x var,
-                        "y": value for secondary grouping (e.g. '1990-1999' for decade when getting data where y_var = year_built),
-                    },
-                    ...
-                ],
-                "property_counts": [
-                    {
-                        "yr_e": string for year ending - group by
-                        "num_buildings": number of buildings in query results
-                        "num_buildings_w_data" : number of buildings with valid x and y data in this group.
-                    },
-                    ...
-                ]
-            }
+        Response object will be in the format:
+        {
+          "status": "(success or error)",
+          "aggregated_data": {
+            "chart_data": [
+              {
+                "x": value for x var,
+                "y": value for secondary grouping
+                      (e.g. '1990-1999' for decade when getting data
+                      where y_var = year_built),
+              },
+              ...
+            ],
+            "property_counts": [
+              {
+                "yr_e": string for year ending - group by
+                "num_buildings": number of buildings in query results
+                "num_buildings_w_data" : number of buildings with valid
+                                         x and y data in this group.
+              },
+             ...
+          }
     */
-    function get_aggregated_report_data(xVar, yVar, startCycleID, endCycleID) {
+    function get_aggregated_report_data(xVar, yVar, start, end) {
 
        // Error checks (should be able to collapse this...)
         if (angular.isUndefined(xVar)){
@@ -120,12 +124,12 @@ angular.module('BE.seed.service.inventory_reports',
           $log.error("#inventory_reports_service.get_aggregated_report_data(): null 'yVar' parameter");
           throw new Error("Invalid Parameter");
         }
-        if (angular.isUndefined(startCycleID)){
-          $log.error("#inventory_reports_service.get_aggregated_report_data(): null 'startCycleID' parameter");
+        if (angular.isUndefined(start)){
+          $log.error("#inventory_reports_service.get_aggregated_report_data(): null 'start' parameter");
           throw new Error("Invalid Parameter");
         }
-        if (angular.isUndefined(endCycleID)){
-          $log.error("#inventory_reports_service.get_aggregated_report_data(): null 'endCycleID' parameter");
+        if (angular.isUndefined(end)){
+          $log.error("#inventory_reports_service.get_aggregated_report_data(): null 'end' parameter");
           throw new Error("Invalid Parameter");
         }
 
@@ -135,12 +139,12 @@ angular.module('BE.seed.service.inventory_reports',
                         organization_id: user_service.get_organization().id,
                         x_var: xVar,
                         y_var: yVar,
-                        start_cycle_id: startCycleID,
-                        end_cycle_id: endCycleID
+                        start: start,
+                        end: end
                     };
         $http({
                 method: 'GET',
-                url: window.BE.urls.get_aggregated_property_report_data,
+                url: window.BE.urls.get_aggregated_inventory_report_data,
                 params: args
         }).success(function(data, status, headers, config) {
             building_reports_factory.aggregated_reports_data = (data !== undefined && data.report_data !== undefined) ? data.report_data : [];
@@ -153,8 +157,12 @@ angular.module('BE.seed.service.inventory_reports',
     }
 
     /*  This method is not current used in the first version of the building reports page.
-        Uncomment this method when the back end endpoint ahas been implemented.*/
-    /*
+        Uncomment this method when the back end endpoint has been implemented.
+
+        2016-09-06 Note this was never properly implemented in the old
+        version so there is nothing meaningful to base the implementation
+        on. Therefore the endpoint may never get implemented.
+    */
     function get_summary_data(xVar, yVar, startDate, endDate) {
         var defer = $q.defer();
 
@@ -177,7 +185,6 @@ angular.module('BE.seed.service.inventory_reports',
         });
         return defer.promise;
     };
-    */
 
     /* Public API */
 

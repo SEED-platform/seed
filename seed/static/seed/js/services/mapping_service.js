@@ -95,7 +95,6 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
         });
 
         return defer.promise;
-
     };
 
     /*

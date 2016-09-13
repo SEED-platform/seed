@@ -748,7 +748,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'api_docs',
-      url: '/api-docs',
+      url: '/api/swagger',
       templateUrl: static_url + 'seed/partials/api_docs.html',
       controller: 'api_controller'
     })

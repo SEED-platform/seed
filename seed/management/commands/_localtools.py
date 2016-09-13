@@ -10,6 +10,25 @@ import seed.models
 from seed.models import TaxLotView
 
 
+def removeCommasToType(typ):
+
+    def removeCommas(val_string):
+        if val_string is None: return None
+        try:
+            return typ(str(val_string).replace(',', ''))
+        except ValueError:
+            print "Could not convert {} to {}".format(val_string, typ)
+            return None
+    return removeCommas
+
+
+# For converting between string and 'type' where the conversions are
+# more than the default.
+TYPE_MAPPER = collections.defaultdict(lambda : str)
+TYPE_MAPPER['FloatField'] = removeCommasToType(float)
+TYPE_MAPPER['IntegerField'] = removeCommasToType(int)
+
+
 class TaxLotIDValueError(ValueError):
     def __init__(self, original_string, field = None):
         super(TaxLotIDValueError, self).__init__("Invalid id string found: {}".format(original_string))
@@ -289,7 +308,8 @@ def set_state_value(state, field_string, value):
         return
     else:
         assert hasattr(state, field_string), "{} should have an explicit field named {} but does not.".format(state, field_string)
-        setattr(state, field_string, value)
+        conversion_func = TYPE_MAPPER[state._meta.get_field(field_string).get_internal_type()]
+        setattr(state, field_string, conversion_func(value))
     return
 
 

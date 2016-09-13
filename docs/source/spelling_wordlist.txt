@@ -9,6 +9,7 @@ angularjs
 API
 api
 app
+approver
 Args
 args
 attr
@@ -31,6 +32,7 @@ canonicalbuilding
 CanonicalBuilding
 cb
 checkbox
+checkboxes
 Chomsky
 chomsky
 chunked
@@ -190,6 +192,8 @@ td
 tearDown
 templatetags
 TableRows
+TaxLot
+taxlot
 TestCaseFactory
 TestCaseFactoryBrowser
 Thusly

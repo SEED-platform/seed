@@ -32,7 +32,7 @@ class TestMappingData(TestCase):
             "js_type": "",
             "name": "address_line_1",
             "schema": "BEDES",
-            "table": "property",
+            "table": "PropertyState",
             "type": "CharField",
             "extra_data": False,
         }
@@ -42,7 +42,7 @@ class TestMappingData(TestCase):
             "js_type": "",
             "name": "state",
             "schema": "BEDES",
-            "table": "taxlot",
+            "table": "TaxLotState",
             "type": "CharField",
             "extra_data": False,
         }
@@ -82,7 +82,7 @@ class TestMappingData(TestCase):
             "js_type": "",
             "name": "city",
             "schema": "BEDES",
-            "table": "taxlot",
+            "table": "TaxLotState",
             "type": "CharField",
             "extra_data": False,
         }
@@ -96,7 +96,7 @@ class TestMappingData(TestCase):
             "js_type": "",
             "name": "city",
             "schema": "BEDES",
-            "table": "property",
+            "table": "PropertyState",
             "type": "CharField",
             "extra_data": False,
         }
@@ -109,9 +109,9 @@ class TestMappingData(TestCase):
 
     def test_extra_data(self):
         # load up a bunch of columns
-        Column.objects.get_or_create(column_name="a_column")
+        Column.objects.get_or_create(column_name="a_column", table_name="")
         u, _ = Unit.objects.get_or_create(unit_name="faraday", unit_type=FLOAT)
-        Column.objects.get_or_create(column_name="z_column", unit=u)
+        Column.objects.get_or_create(column_name="z_column", table_name="PropertyState", unit=u)
         columns = list(Column.objects.select_related('unit').exclude(
             column_name__in=self.obj.keys()))
 
@@ -123,7 +123,7 @@ class TestMappingData(TestCase):
             "js_type": "string",
             "name": "a_column",
             "schema": "BEDES",
-            "table": "property",
+            "table": "",
             "type": "string"
         }
         expected_data_z = {
@@ -131,29 +131,32 @@ class TestMappingData(TestCase):
             "js_type": "float",
             "name": "z_column",
             "schema": "BEDES",
-            "table": "property",
+            "table": "PropertyState",
             "type": "float"
         }
 
         self.assertDictEqual(self.obj.data[0], expected_data_0)
 
         # _log.debug(json.dumps(self.obj.data, indent=4, sort_keys=True))
-
-        c = self.obj.find_column('property', 'z_column')
+        c = self.obj.find_column('', 'a_column')
+        self.assertDictEqual(c, expected_data_0)
+        c = self.obj.find_column('PropertyState', 'z_column')
         self.assertDictEqual(c, expected_data_z)
+        c = self.obj.find_column('DNE', 'z_column')
+        self.assertEqual(c, None)
 
         expected = [
             {
                 'name': u'a_column',
                 'js_type': 'string',
-                'table': 'property',
+                'table': '',
                 'extra_data': True,
                 'type': 'string',
                 'schema': 'BEDES'
             }, {
                 'name': u'z_column',
                 'js_type': u'float',
-                'table': 'property',
+                'table': 'PropertyState',
                 'extra_data': True,
                 'type': u'float',
                 'schema': 'BEDES'

@@ -6,42 +6,32 @@
 """
 
 from django.conf.urls import url
-from rest_framework import routers
 
-from seed.views.datasets import DatasetViewSet
 from seed.views.main import (
     home, version, create_pm_mapping,
     get_total_number_of_buildings_for_user,         # TO REMOVE
     get_building,                                   # TO REMOVE
-    get_datasets_count,
     search_buildings,                               # TO REMOVE
     search_building_snapshots,                      # TO REMOVE
-    get_default_columns, set_default_columns,
+    get_default_columns,
+    set_default_columns,
     get_default_building_detail_columns,
     set_default_building_detail_columns, get_columns, save_match,
     get_match_tree,
-    get_coparents, save_raw_data, get_PM_filter_by_counts,
+    get_coparents,
+    save_raw_data,
+    get_PM_filter_by_counts,
     delete_duplicates_from_import_file,
-    create_dataset, get_datasets, get_dataset, get_import_file, delete_file,
-    delete_dataset,
-    update_dataset,  # update_building,
-    # get_building_summary_report_data,
-    # get_building_report_data, get_aggregated_building_report_data,
+    get_import_file, delete_file,
     get_column_mapping_suggestions,
     get_raw_column_names,
     get_first_five_rows, save_column_mappings, start_mapping, remap_buildings,
     start_system_matching, public_search, progress, export_buildings,
     export_buildings_progress,
     export_buildings_download, angular_js_tests, delete_organization_buildings,
-    delete_buildings, delete_organization
+    delete_buildings
 )
-from seed.views.organizations import OrganizationViewSet
 from seed.views.properties import (get_properties, create_cycle, get_cycles, update_cycle)
-
-api_v2_router = routers.DefaultRouter()
-api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
-api_v2_router.register(r'organizations', OrganizationViewSet,
-                       base_name="organizations")
 
 # prefix, to revert back to original endpoints, leave this blank
 apiv1 = r''  # r'api/v1/'
@@ -51,7 +41,7 @@ urlpatterns = [
     # cycle routes
     url(r'^' + apiv1 + r'create_cycle/$', create_cycle, name='create_cycle'),
     url(r'^' + apiv1 + r'get_cycles/$', get_cycles, name='get_cycles'),
-    url(r'^' + apiv1 + r'update_cycle/$', update_cycle, name='update_cycle'),
+    # url(r'^' + apiv1 + r'update_cycle/$', update_cycle, name='update_cycle'),
 
     # template routes
     url(r'^$', home, name='home'),
@@ -70,11 +60,6 @@ urlpatterns = [
         name='get_total_number_of_buildings_for_user'
     ),
     url(r'^' + apiv1 + r'get_building/$', get_building, name='get_building'),
-    url(
-        r'^' + apiv1 + r'get_datasets_count/$',
-        get_datasets_count,
-        name='get_datasets_count'
-    ),
     url(r'^' + apiv1 + r'search_buildings/$', search_buildings,
         name='search_buildings'),
     url(
@@ -120,17 +105,9 @@ urlpatterns = [
         delete_duplicates_from_import_file,
         name='delete_duplicates_from_import_file',
     ),
-    url(r'^' + apiv1 + r'create_dataset/$', create_dataset,
-        name='create_dataset'),
-    url(r'^' + apiv1 + r'get_datasets/$', get_datasets, name='get_datasets'),
-    url(r'^' + apiv1 + r'get_dataset/$', get_dataset, name='get_dataset'),
     url(r'^' + apiv1 + r'get_import_file/$', get_import_file,
         name='get_import_file'),
     url(r'^' + apiv1 + r'delete_file/$', delete_file, name='delete_file'),
-    url(r'^' + apiv1 + r'delete_dataset/$', delete_dataset,
-        name='delete_dataset'),
-    url(r'^' + apiv1 + r'update_dataset/$', update_dataset,
-        name='update_dataset'),
     # url(r'^' + apiv1 + r'update_building/$', update_building,
     #     name='update_building'),
 
@@ -217,13 +194,6 @@ urlpatterns = [
         r'^' + apiv1 + r'delete_buildings/$',
         delete_buildings,
         name='delete_buildings'
-    ),
-
-    # delete org
-    url(
-        r'^' + apiv1 + r'delete_organization/$',
-        delete_organization,
-        name='delete_organization'
     ),
 
 ]

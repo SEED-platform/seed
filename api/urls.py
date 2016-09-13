@@ -5,22 +5,28 @@
 :author
 """
 from django.conf.urls import url, include
-
-from seed.views.datasets import DatasetViewSet
-from seed.views.organizations import OrganizationViewSet
-from seed.views.main import DataFileViewSet
-from api.views import TestReverseViewSet, test_view_with_arg
 from rest_framework import routers
+
+from api.views import TestReverseViewSet, test_view_with_arg
+from seed.views.datasets import DatasetViewSet
+from seed.views.main import DataFileViewSet
+from seed.views.organizations import OrganizationViewSet
+from seed.views.projects import ProjectsViewSet
+from seed.views.users import UserViewSet
+
 
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
 api_v2_router.register(r'data_files', DataFileViewSet, base_name="data_files")
+api_v2_router.register(r'projects', ProjectsViewSet, base_name="projects")
+api_v2_router.register(r'users', UserViewSet, base_name="users")
+# api_v2_router.register(r'labels', LabelViewSet, base_name="labels")
 api_v2_router.register(r'reverse_test', TestReverseViewSet, base_name="reverse_test")
 
 urlpatterns = [
     # v2 api
-    url(r'^', include(api_v2_router.urls)),  # , namespace='ap')),
+    url(r'^', include(api_v2_router.urls)),
 
     url(
         r'^test_view_with_arg/([0-9]{1})/$',
