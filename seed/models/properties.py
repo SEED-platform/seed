@@ -158,7 +158,7 @@ class PropertyState(models.Model):
             # promote it to the view
 
             # Need to create a property for this state
-            if self.organization == None:
+            if self.organization is None:
                 print "organization is None"
 
             prop = Property.objects.create(
@@ -268,10 +268,10 @@ class PropertyState(models.Model):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-                }
+            }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-                }
+            }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk
