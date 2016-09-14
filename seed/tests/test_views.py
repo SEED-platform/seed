@@ -2920,7 +2920,7 @@ class InventoryViewTests(TestCase):
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            address=property_state.address_line_1,
+            address_line_1=property_state.address_line_1,
             postal_code=property_state.postal_code
         )
         taxlot = TaxLot.objects.create(organization=self.org)
@@ -2959,7 +2959,7 @@ class InventoryViewTests(TestCase):
             property=prprty, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            address=property_state.address_line_1,
+            address_line_1=property_state.address_line_1,
             postal_code=property_state.postal_code,
             extra_data=json.dumps(extra_data)
         )
@@ -3094,7 +3094,7 @@ class InventoryViewTests(TestCase):
 
         tstate = rtaxlot['state']
         self.assertEqual(tstate['id'], taxlot_state.pk)
-        self.assertEqual(tstate['address'], taxlot_state.address)
+        self.assertEqual(tstate['address_line_1'], taxlot_state.address_line_1)
 
     def test_get_property_history(self):
         pass  # TODO
@@ -3161,7 +3161,7 @@ class InventoryViewTests(TestCase):
 
         tstate_1 = rtaxlot_1['state']
         self.assertEqual(tstate_1['id'], taxlot_state_1.pk)
-        self.assertEqual(tstate_1['address'], taxlot_state_1.address)
+        self.assertEqual(tstate_1['address_line_1'], taxlot_state_1.address_line_1)
 
         rtaxlot_2 = results['taxlots'][1]
         self.assertEqual(rtaxlot_2['id'], taxlot_2.pk)
@@ -3178,7 +3178,7 @@ class InventoryViewTests(TestCase):
 
         tstate_2 = rtaxlot_2['state']
         self.assertEqual(tstate_2['id'], taxlot_state_2.pk)
-        self.assertEqual(tstate_2['address'], taxlot_state_2.address)
+        self.assertEqual(tstate_2['address_line_1'], taxlot_state_2.address_line_1)
 
         expected_property = {
             'campus': False, 'id': property_property.pk,
@@ -3223,24 +3223,14 @@ class InventoryViewTests(TestCase):
 
         result = results[0]
         self.assertEquals(len(result['related']), 1)
-        self.assertEquals(result['address'], taxlot_state.address)
+        self.assertEquals(result['address_line_1'], taxlot_state.address_line_1)
         self.assertEquals(result['block_number'], taxlot_state.block_number)
 
         related = result['related'][0]
-        self.assertEquals(related['address_line_1'],
-                          property_state.address_line_1)
-        self.assertEquals(
-            related['pm_parent_property_id'],
-            property_state.pm_parent_property_id
-        )
-        self.assertEquals(
-            related['calculated_taxlot_ids'],
-            taxlot_state.jurisdiction_tax_lot_id
-        )
-        self.assertEquals(
-            related['calculated_taxlot_ids'],
-            result['jurisdiction_tax_lot_id']
-        )
+        self.assertEquals(related['address_line_1'], property_state.address_line_1)
+        self.assertEquals(related['pm_parent_property_id'], property_state.pm_parent_property_id)
+        self.assertEquals(related['calculated_taxlot_ids'], taxlot_state.jurisdiction_tax_lot_id)
+        self.assertEquals(related['calculated_taxlot_ids'], result['jurisdiction_tax_lot_id'])
         self.assertEquals(related['primary'], 'P')
         self.assertIn('extra_data_field', related)
         self.assertEquals(related['extra_data_field'], 'edfval')
@@ -3363,16 +3353,13 @@ class InventoryViewTests(TestCase):
 
         result = results[1]
         self.assertEquals(len(result['related']), 1)
-        self.assertEquals(result['address'], taxlot_state_2.address)
+        self.assertEquals(result['address_line_1'], taxlot_state_2.address_line_1)
         self.assertEquals(result['block_number'], taxlot_state_2.block_number)
 
         related = result['related'][0]
-        self.assertEquals(related['address_line_1'],
-                          property_state.address_line_1)
-        self.assertEquals(
-            related['pm_parent_property_id'],
-            property_state.pm_parent_property_id
-        )
+        self.assertEquals(related['address_line_1'], property_state.address_line_1)
+        self.assertEquals(related['pm_parent_property_id'], property_state.pm_parent_property_id)
+
         calculated_taxlot_ids = related['calculated_taxlot_ids'].split('; ')
         self.assertIn(str(taxlot_state_1.jurisdiction_tax_lot_id), calculated_taxlot_ids)
         self.assertIn(str(taxlot_state_2.jurisdiction_tax_lot_id), calculated_taxlot_ids)
