@@ -20,15 +20,15 @@ angular.module('BE.seed.controller.cycle_admin', [])
       $scope.auth = auth_payload.auth;
       var processCycles = function (cycles) {
         $scope.cycles = _.map(cycles.cycles, function (cycle) {
-          cycle.from_date = new Date(cycle.from_date);
-          cycle.to_date = new Date(cycle.to_date);
+          cycle.start = new Date(cycle.start);
+          cycle.end = new Date(cycle.end);
           return cycle;
         });
       };
       processCycles(cycles_payload);
 
       function initialize_new_cycle() {
-        $scope.new_cycle = {from_date: null, to_date: null, name: ''};
+        $scope.new_cycle = {start: null, end: null, name: ''};
       }
 
       /*  Take user input from New Cycle form and submit
@@ -92,8 +92,8 @@ angular.module('BE.seed.controller.cycle_admin', [])
         $event.preventDefault();
         $event.stopPropagation();
 
-        if (elementOpened == 'to_date') $scope.opened.from_date = false;
-        if (elementOpened == 'from_date') $scope.opened.to_date = false;
+        if (elementOpened == 'end') $scope.opened.start = false;
+        if (elementOpened == 'start') $scope.opened.end = false;
         $scope.opened[elementOpened] = !$scope.opened[elementOpened];
       };
 

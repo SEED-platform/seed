@@ -92,7 +92,7 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
       var defer = $q.defer();
       $http({
         method: 'PUT',
-        url: '/app/cycles/' + cycle.id + '/',
+        url: window.BE.urls.update_cycle,
         data: cycle,
         params: {
           organization_id: user_service.get_organization().id

@@ -43,7 +43,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
                 method: 'PUT',
                 url: '/api/v2/users/' + this_user_id.toString() + '/default_organization/',
                 data: {
-                    organization_id: org
+                    organization_id: org.id
                 }
             }).success(function (data) {
                 defer.resolve(data);

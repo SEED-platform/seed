@@ -324,8 +324,8 @@ def create_cycle(request):
     org_id = request.GET['organization_id']
     Cycle.objects.create(
         name=body['name'],
-        start=body['from_date'],
-        end=body['to_date'],
+        start=body['start'],
+        end=body['end'],
         created=datetime.datetime.now(),
         organization_id=org_id
     )
@@ -335,8 +335,8 @@ def create_cycle(request):
         return_cycles.append({
             'id': cycle.id,
             'name': cycle.name,
-            'from_date': cycle.start,
-            'to_date': cycle.end
+            'start': cycle.start,
+            'end': cycle.end
         })
 
     return {'status': 'success', 'cycles': return_cycles}
@@ -355,8 +355,8 @@ def get_cycles(request):
         return_cycles.append({
             'id': cycle.id,
             'name': cycle.name,
-            'from_date': cycle.start,
-            'to_date': cycle.end
+            'start': cycle.start,
+            'end': cycle.end
         })
 
     return {'status': 'success', 'cycles': return_cycles}
@@ -373,8 +373,8 @@ def update_cycle(request):
     org_id = request.GET['organization_id']
     Cycle.objects.filter(pk=body['id'], organization_id=org_id).update(
         name=body['name'],
-        start=body['from_date'],
-        end=body['to_date']
+        start=body['start'],
+        end=body['end']
     )
 
     cycles = Cycle.objects.filter(organization_id=org_id).order_by('name')
@@ -383,8 +383,8 @@ def update_cycle(request):
         return_cycles.append({
             'id': cycle.id,
             'name': cycle.name,
-            'from_date': cycle.start,
-            'to_date': cycle.end
+            'start': cycle.start,
+            'end': cycle.end
         })
 
     return {'status': 'success', 'cycles': return_cycles}
