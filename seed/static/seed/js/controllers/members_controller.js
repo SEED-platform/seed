@@ -27,7 +27,7 @@ angular.module('BE.seed.controller.members', [])
       $scope.org = organization_payload.organization;
       $scope.filter_params = {};
       $scope.auth = auth_payload.auth;
-      $scope.user_profile = user_profile_payload.user;
+      $scope.user_profile = user_profile_payload;
 
       $scope.is_last_owner = (_.chain($scope.users)
         .filter(['role', 'owner'])
