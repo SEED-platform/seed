@@ -275,6 +275,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }).catch(function () {
         defer.reject('Error fetching cycles');
       });
+
+      return defer.promise;
     };
 
 
