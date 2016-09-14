@@ -122,7 +122,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         user_factory.get_user_id().then(function (this_user_id) {
             $http({
                 method: 'GET',
-                url: '/api/v2/users/' + this_user_id.toString() + 'shared_buildings/'
+                url: '/api/v2/users/' + this_user_id + '/shared_buildings/'
             }).success(function (data) {
                 defer.resolve(data);
             }).error(function (data, status) {
