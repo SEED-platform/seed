@@ -63,8 +63,8 @@ def get_properties(request):
     if cycle_id:
         cycle = Cycle.objects.get(organization_id=request.GET['organization_id'], pk=cycle_id)
     else:
-        cycle = Cycle.objects.filter(organization_id=request.GET['organization_id'])
-        cycle = cycle.latest() if cycle else None
+        cycle = Cycle.objects.filter(organization_id=request.GET['organization_id']).order_by('name')
+        cycle = cycle.first() if cycle else None
         # TODO: Need to catch if the cycle does not exist and return nice error
 
     property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
