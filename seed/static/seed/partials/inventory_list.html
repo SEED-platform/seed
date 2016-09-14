@@ -79,7 +79,7 @@
         <label>Cycle:</label>
         <div class="btn-group">
             <select class="form-control input-sm col-xs-2" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
-                    ng-options="option.name for option in cycle.cycles track by option.pk">
+                    ng-options="option.name for option in cycle.cycles track by option.id">
             </select>
         </div>
     </div>

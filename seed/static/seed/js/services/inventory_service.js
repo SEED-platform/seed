@@ -9,8 +9,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
   '$log',
   'urls',
   'user_service',
+  'cycle_service',
   'spinner_utility',
-  function ($http, $q, $log, urls, user_service, spinner_utility) {
+  function ($http, $q, $log, urls, user_service, cycle_service, spinner_utility) {
 
     var inventory_service = {
       total_properties_for_user: 0,
@@ -26,29 +27,38 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         per_page: per_page || 999999999
       };
 
-      var lastCycleId = inventory_service.get_last_cycle();
-      if (cycle) {
-        params.cycle = cycle.id;
-        inventory_service.save_last_cycle(cycle.id);
-      } else if (_.isInteger(lastCycleId)) {
-        params.cycle = lastCycleId;
-      }
-
-      var get_properties_url = "/app/properties";
-
-      spinner_utility.show();
       var defer = $q.defer();
-      $http({
-        method: 'GET',
-        url: get_properties_url,
-        params: params
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
-      }).finally(function () {
-        spinner_utility.hide();
+
+      cycle_service.get_cycles().then(function (cycles) {
+        var validCycleIds = _.map(cycles.cycles, 'id');
+
+        var lastCycleId = inventory_service.get_last_cycle();
+        if (cycle) {
+          params.cycle = cycle.id;
+          inventory_service.save_last_cycle(cycle.id);
+        } else if (_.includes(validCycleIds, lastCycleId)) {
+          params.cycle = lastCycleId;
+        }
+
+        var get_properties_url = "/app/properties";
+
+        spinner_utility.show();
+
+        $http({
+          method: 'GET',
+          url: get_properties_url,
+          params: params
+        }).success(function (data, status, headers, config) {
+          defer.resolve(data);
+        }).error(function (data, status, headers, config) {
+          defer.reject(data, status);
+        }).finally(function () {
+          spinner_utility.hide();
+        });
+      }).catch(function () {
+        defer.reject('Error fetching cycles');
       });
+
       return defer.promise;
     };
 
@@ -188,8 +198,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         url: update_property_url,
         data: {
           organization_id: organization_id,
-          state: property_state,
-        },
+          state: property_state
+        }
       }).success(function (data, status, headers, config) {
         defer.resolve(data);
       }).error(function (data, status, headers, config) {
@@ -204,8 +214,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.delete_properties = function (search_payload) {
 
       var defer = $q.defer();
-      var delete_properties_url = "/app/properties"
-      var organization_id = user_service.get_organization().id
+      var delete_properties_url = "/app/properties";
+      var organization_id = user_service.get_organization().id;
 
       spinner_utility.show();
       $http({
@@ -234,31 +244,37 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         per_page: per_page || 999999999
       };
 
-      var lastCycleId = inventory_service.get_last_cycle();
-
-      if (cycle) {
-        params.cycle = cycle.id;
-        inventory_service.save_last_cycle(cycle.id);
-      } else if (_.isInteger(lastCycleId)) {
-        params.cycle = lastCycleId;
-      }
-
       var defer = $q.defer();
-      var get_taxlots_url = "/app/taxlots";
 
-      spinner_utility.show();
-      $http({
-        method: 'GET',
-        url: get_taxlots_url,
-        params: params
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
-      }).finally(function () {
-        spinner_utility.hide();
+      cycle_service.get_cycles().then(function (cycles) {
+        var validCycleIds = _.map(cycles.cycles, 'id');
+
+        var lastCycleId = inventory_service.get_last_cycle();
+        if (cycle) {
+          params.cycle = cycle.id;
+          inventory_service.save_last_cycle(cycle.id);
+        } else if (_.includes(validCycleIds, lastCycleId)) {
+          params.cycle = lastCycleId;
+        }
+
+        var get_taxlots_url = "/app/taxlots";
+
+        spinner_utility.show();
+
+        $http({
+          method: 'GET',
+          url: get_taxlots_url,
+          params: params
+        }).success(function (data, status, headers, config) {
+          defer.resolve(data);
+        }).error(function (data, status, headers, config) {
+          defer.reject(data, status);
+        }).finally(function () {
+          spinner_utility.hide();
+        });
+      }).catch(function () {
+        defer.reject('Error fetching cycles');
       });
-      return defer.promise;
     };
 
 
@@ -417,9 +433,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.get_last_cycle = function () {
-      var organization_id = user_service.get_organization().id,
-        pk = (JSON.parse(sessionStorage.getItem('cycles')) || {})[organization_id];
-      return pk;
+      var organization_id = user_service.get_organization().id;
+      return (JSON.parse(sessionStorage.getItem('cycles')) || {})[organization_id];
     };
 
     inventory_service.save_last_cycle = function (pk) {
