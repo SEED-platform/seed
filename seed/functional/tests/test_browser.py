@@ -8,13 +8,13 @@
 
 :author nlong, Paul Munday<paul@paulmunday.net>
 """
-from datetime import date
+# from datetime import date
 import inspect
 import os
 
-from unittest import skip
+# from unittest import skip
 
-from selenium.webdriver.support.select import Select
+# from selenium.webdriver.support.select import Select
 
 from seed.functional.tests.browser_definitions import BROWSERS
 from seed.functional.tests.base import eprint
@@ -22,13 +22,13 @@ from seed.functional.tests.base import LOGGED_IN_CLASSES
 from seed.functional.tests.base import LOGGED_OUT_CLASSES
 from seed.functional.tests.base import mock_file_factory
 from seed.functional.tests.pages import AccountsPage
-from seed.functional.tests.pages import BuildingInfo, BuildingLabels
-from seed.functional.tests.pages import BuildingsList, BuildingListSettings
-from seed.functional.tests.pages import BuildingProjects, BuildingReports
+# from seed.functional.tests.pages importBuildingInfo,  BuildingLabels
+# from seed.functional.tests.pages import BuildingsList, BuildingListSettings
+# from seed.functional.tests.pages import BuildingProjects, BuildingReports
 from seed.functional.tests.pages import DataMapping, DataSetInfo, DataSetsList
 from seed.functional.tests.pages import LandingPage, MainPage
-from seed.functional.tests.pages import ProfilePage, ProjectBuildingInfo
-from seed.functional.tests.pages import ProjectsList, ProjectPage
+from seed.functional.tests.pages import ProfilePage  # ,ProjectBuildingInfo
+# from seed.functional.tests.pages import ProjectsList, ProjectPage
 
 from seed.data_importer.models import ROW_DELIMITER
 
