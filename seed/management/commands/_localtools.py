@@ -21,12 +21,28 @@ def removeCommasToType(typ):
             return None
     return removeCommas
 
+def removeCommasToInteger(val_string):
+    if val_string is None: return None
+    try:
+        return int(float(str(val_string).replace(',', '')))
+    except ValueError:
+        print "Could not convert {} to {}".format(val_string, typ)
+        return None
+
+def removeNoneStrings(val_string):
+    if val_string is None or val_string.lower() == 'none': return None
+    else:
+        return val_string
+
 
 # For converting between string and 'type' where the conversions are
 # more than the default.
 TYPE_MAPPER = collections.defaultdict(lambda : str)
 TYPE_MAPPER['FloatField'] = removeCommasToType(float)
-TYPE_MAPPER['IntegerField'] = removeCommasToType(int)
+TYPE_MAPPER['IntegerField'] = removeCommasToInteger
+TYPE_MAPPER['DateField'] = removeNoneStrings
+TYPE_MAPPER['DateTimeField'] = removeNoneStrings
+
 
 
 class TaxLotIDValueError(ValueError):

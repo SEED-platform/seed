@@ -86,16 +86,19 @@ def create_property_state_for_node(node, org, cb):
     taxlot_columns = get_taxlot_columns(org)
 
     # Check every key is mapped at least once.
-    for key in node.extra_data:
+    for key in node.extra_data.keys():
         if key.strip()=='':
-            if node.extra_data[key].strip() != '':
+            if node.extra_data[key] is not None and node.extra_data[key].strip() != '':
                 print "WARNING: key '{}' for organization={} has value={} (cb={})".format(key, org, node.extra_data[key], cb.pk)
             continue
 
         try:
             assert (key in taxlot_columns or key in property_columns)
         except AssertionError:
-            raise KeyError("Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key, node.extra_data[key], org))
+            #raise KeyError("Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key, node.extra_data[key], org))
+            print "WARNINGXXX: {}".format(KeyError("Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key, node.extra_data[key], org)))
+            node.extra_data.pop(key)
+            continue
 
     property_state_extra_data = {x:y for (x,y) in node.extra_data.items() if y in property_columns}
     mapping = load_organization_property_field_mapping(org)
