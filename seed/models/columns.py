@@ -67,44 +67,7 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
     return 'PropertyState', column_names, 100
 
 
-# TODO: Make this a static method
-def get_column_mappings(organization):
-    """
-    Returns dict of all the column mappings for an Organization's given
-    source type
 
-    :param organization: inst, Organization.
-    :returns: dict, list of dict.
-
-    Use this when actually performing mapping between data sources, but only
-    call it after all of the mappings have been saved to the ``ColumnMapping``
-    table.
-    """
-    from seed.utils.mapping import _get_column_names
-
-    source_mappings = ColumnMapping.objects.filter(
-        super_organization=organization
-    )
-    concat_confs = []
-    mapping = {}
-    for item in source_mappings:
-        if not item.column_mapped.all().exists():
-            continue
-        key = _get_column_names(item)
-        value = _get_column_names(item, attr_name='column_mapped')[0]
-
-        if isinstance(key, list) and len(key) > 1:
-            concat_confs.append({
-                'concat_columns': key,
-                'target': value,
-                'delimiter': ' '
-            })
-            continue
-
-        # These should be lists of one element each.
-        mapping[key[0]] = value
-
-    return mapping, concat_confs
 
 
 class Column(models.Model):
@@ -414,3 +377,43 @@ class ColumnMapping(models.Model):
         return u'{0}: {1} - {2}'.format(
             self.pk, self.column_raw.all(), self.column_mapped.all()
         )
+
+    @staticmethod
+    def get_column_mappings(organization):
+        """
+        Returns dict of all the column mappings for an Organization's given
+        source type
+
+        :param organization: instance, Organization.
+        :returns: dict, list of dict.
+
+        Use this when actually performing mapping between data sources, but only
+        call it after all of the mappings have been saved to the ``ColumnMapping``
+        table.
+        """
+        from seed.utils.mapping import _get_column_names, _get_table_and_column_names
+
+        source_mappings = ColumnMapping.objects.filter(
+            super_organization=organization
+        )
+        concat_confs = []
+        mapping = {}
+        for item in source_mappings:
+            if not item.column_mapped.all().exists():
+                continue
+            key = _get_table_and_column_names(item, attr_name='column_raw')[0]
+            value = _get_table_and_column_names(item, attr_name='column_mapped')[0]
+
+            # Concat is not used as of 2016-09-14: commenting out.
+            # if isinstance(key, list) and len(key) > 1:
+            #     concat_confs.append({
+            #         'concat_columns': key,
+            #         'target': value,
+            #         'delimiter': ' '
+            #     })
+            #     continue
+
+            # These should be lists of one element each.
+            mapping[key[1]] = value
+
+        return mapping, concat_confs

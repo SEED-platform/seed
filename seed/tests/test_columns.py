@@ -69,40 +69,33 @@ class TestColumns(TestCase):
 
     def test_get_column_mappings(self):
         """We produce appropriate data structure for mapping"""
-        expected = dict(sorted([
-            (u'example_9', u'mapped_9'),
-            (u'example_8', u'mapped_8'),
-            (u'example_7', u'mapped_7'),
-            (u'example_6', u'mapped_6'),
-            (u'example_5', u'mapped_5'),
-            (u'example_4', u'mapped_4'),
-            (u'example_3', u'mapped_3'),
-            (u'example_2', u'mapped_2'),
-            (u'example_1', u'mapped_1'),
-            (u'example_0', u'mapped_0')
-        ]))
-        org = Organization.objects.create()
+        raw_data = [
+            {
+                "from_field": "raw_data_0",
+                "to_field": "destination_0",
+                "to_table_name": "PropertyState"
+            }, {
+                "from_field": "raw_data_1",
+                "to_field": "destination_1",
+                "to_table_name": "PropertyState"
+            }, {
+                "from_field": "raw_data_2",
+                "to_field": "destination_0",
+                "to_table_name": "TaxLotState"
+            },
+        ]
 
-        raw = []
-        mapped = []
-        for x in range(10):
-            raw.append(seed_models.Column.objects.create(
-                column_name='example_{0}'.format(x), organization=org
-            ))
-            mapped.append(seed_models.Column.objects.create(
-                column_name='mapped_{0}'.format(x), organization=org
-            ))
+        Column.create_mappings(raw_data, self.fake_org, self.fake_user)
 
-        for x in range(10):
-            column_mapping = seed_models.ColumnMapping.objects.create(
-                super_organization=org,
-            )
+        expected = {
+            u'raw_data_0': (u'PropertyState', u'destination_0'),
+            u'raw_data_1': (u'PropertyState', u'destination_1'),
+            u'raw_data_2': (u'TaxLotState', u'destination_0'),
+        }
 
-            column_mapping.column_raw.add(raw[x])
-            column_mapping.column_mapped.add(mapped[x])
-
-        test_mapping, _ = seed_models.get_column_mappings(org)
+        test_mapping, no_concat = seed_models.get_column_mappings(self.fake_org)
         self.assertDictEqual(test_mapping, expected)
+        self.assertEqual(no_concat, [])
 
     # def test_save_mappings(self):
     #     # Test that we can upload a mapping hash
