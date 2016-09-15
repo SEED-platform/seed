@@ -152,6 +152,7 @@ def create_property_state_for_node(node, org, cb):
                                                generation_date = node.generation_date,
                                                release_date = node.release_date,
                                                site_eui_weather_normalized = node.site_eui_weather_normalized,
+                                               year_ending=node.year_ending,
                                                source_eui = node.source_eui,
                                                energy_alerts = node.energy_alerts,
                                                space_alerts = node.space_alerts,

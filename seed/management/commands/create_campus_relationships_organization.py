@@ -134,8 +134,6 @@ class Command(BaseCommand):
                         # parent_views = [ppv for ppv in parent_views if ppv.cycle.start <= pv.cycle.start]
                         assert len(parent_views), "This should always be true."
 
-
-
                         ps = parent_views[-1].state
                         ps.pk = None
 
