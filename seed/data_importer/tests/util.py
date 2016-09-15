@@ -95,11 +95,26 @@ def load_test_data(test_obj, filename):
     test_obj.import_record.super_organization = test_obj.fake_org
     test_obj.import_record.save()
 
-    test_obj.fake_mappings = {
-        'property_name': u'Name',
-        'address_line_1': u'Address Line 1',
-        'year_built': u'Year Built'
-    }
+    test_obj.fake_mappings = [
+        {
+            "from_field": u'Name',
+            "to_table_name": u'PropertyState',
+            "to_field": u'property_name',
+        }, {
+            "from_field": u'Address Line 1',
+            "to_table_name": u'PropertyState',
+            "to_field": u'address_line_1',
+        }, {
+            "from_field": u'Year Built',
+            "to_table_name": u'PropertyState',
+            "to_field": u'year_built',
+        }, {
+            "from_field": u'Double Tester',
+            "to_table_name": u'PropertyState',
+            "to_field": u'Double Tester',
+        }
+
+    ]
 
     return test_obj
 
@@ -145,8 +160,11 @@ def import_example_data(test_obj, filename):
 
     save_raw_data(test_obj.import_file.id)
 
+    from seed.models import PropertyState
+    print PropertyState.objects.all().last().__dict__
+
     # setup the mapping
-    properties_mapping = [
+    test_obj.fake_mapping = [
         {
             "from_field": u'jurisdiction_taxlot_identifier',
             "to_table_name": u'TaxLotState',
@@ -211,10 +229,18 @@ def import_example_data(test_obj, filename):
             "from_field": u'year_ending',
             "to_table_name": u'PropertyState',
             "to_field": u'year_ending'
+        }, {
+            "from_field": u'extra_data_1',
+            "to_table_name": u'PropertyState',
+            "to_field": u'data_007'
+        }, {
+            "from_field": u'extra_data_2',
+            "to_table_name": u'TaxLotState',
+            "to_field": u'data_008'
         }
     ]
 
-    Column.create_mappings(properties_mapping, test_obj.fake_org, test_obj.fake_user)
+    Column.create_mappings(test_obj.fake_mapping, test_obj.fake_org, test_obj.fake_user)
 
     # call the mapping function from the tasks file
     map_data(test_obj.import_file.id)

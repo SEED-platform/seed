@@ -32,7 +32,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
 
     def get_cycles(self, start, end):
         organization_id = self.request.GET['organization_id']
-        if type(start) != type(end):
+        if not isinstance(start, type(end)):
             raise TypeError('start and end not same types')
         # if of type int or convertable  assume they are cycle ids
         try:

@@ -5,6 +5,7 @@
 :author
 """
 import json
+import logging
 from os import path
 from unittest import skip
 
@@ -22,12 +23,13 @@ from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
     PropertyState,
+    Column,
 )
-from seed.tests import util
+
+_log = logging.getLogger(__name__)
 
 
 class CleansingDataTestCoveredBuilding(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -68,23 +70,23 @@ class CleansingDataTestCoveredBuilding(TestCase):
 
         # This is silly, the mappings are backwards from what you would expect. The key is the BS field, and the
         # value is the value in the CSV
-        fake_mappings = {
-            'city': 'city',
-            'postal_code': 'Zip',
-            'gross_floor_area': 'GBA',
-            'building_count': 'BLDGS',
-            'year_built': 'AYB_YearBuilt',
-            'state_province': 'State',
-            'address_line_1': 'Address',
-            'owner': 'Owner',
-            'property_notes': 'Property Type',
-            'tax_lot_id': 'UBI',
-            'custom_id_1': 'Custom ID',
-            'pm_property_id': 'PM Property ID'
-        }
+        # fake_mappings = {
+        #     'city': 'city',
+        #     'postal_code': 'Zip',
+        #     'gross_floor_area': 'GBA',
+        #     'building_count': 'BLDGS',
+        #     'year_built': 'AYB_YearBuilt',
+        #     'state_province': 'State',
+        #     'address_line_1': 'Address',
+        #     'owner': 'Owner',
+        #     'property_notes': 'Property Type',
+        #     'tax_lot_id': 'UBI',
+        #     'custom_id_1': 'Custom ID',
+        #     'pm_property_id': 'PM Property ID'
+        # }
 
         tasks.save_raw_data(self.import_file.id)
-        util.make_fake_mappings(fake_mappings, self.org)
+        # util.make_fake_mappings(fake_mappings, self.org) -> convert to Column.create_mappings()
         tasks.map_data(self.import_file.id)
 
         qs = PropertyState.objects.filter(
@@ -162,7 +164,6 @@ class CleansingDataTestCoveredBuilding(TestCase):
 
 
 class CleansingDataTestPM(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -193,7 +194,6 @@ class CleansingDataTestPM(TestCase):
 
         # tasks.save_raw_data(self.import_file.pk)
 
-    @skip("Fix for new data model")
     def test_cleanse(self):
         # Import the file and run mapping
 
@@ -201,22 +201,56 @@ class CleansingDataTestPM(TestCase):
         # National Median Site EUI (kBtu/ft2),Source EUI (kBtu/ft2),Weather Normalized Source EUI (kBtu/ft2),
         # National Median Source EUI (kBtu/ft2),Parking - Gross Floor Area (ft2),Organization
         # Release Date
-        fake_mappings = {
-            'pm_property_id': u'Property Id',
-            'property_name': u'Property Name',
-            'address_line_1': u'Address 1',
-            'address_line_2': u'Address 2',
-            'city': u'City',
-            'state_province': u'State/Province',
-            'postal_code': u'Postal Code',
-            'year_built': u'Year Built',
-            'gross_floor_area': u'Property Floor Area (Buildings and Parking) (ft2)',
-            'site_eui': u'Site EUI (kBtu/ft2)',
-            'generation_date': u'Generation Date'
-        }
+        fake_mappings = [
+            {
+                "from_field": u'Property Id',
+                "to_table_name": u'PropertyState',
+                "to_field": u'pm_property_id',
+            }, {
+                "from_field": u'Property Name',
+                "to_table_name": u'PropertyState',
+                "to_field": u'property_name',
+            }, {
+                "from_field": u'Address 1',
+                "to_table_name": u'PropertyState',
+                "to_field": u'address_line_1',
+            }, {
+                "from_field": u'Address 2',
+                "to_table_name": u'PropertyState',
+                "to_field": u'address_line_2',
+            }, {
+                "from_field": u'City',
+                "to_table_name": u'PropertyState',
+                "to_field": u'city',
+            }, {
+                "from_field": u'State/Province',
+                "to_table_name": u'PropertyState',
+                "to_field": u'state_province',
+            }, {
+                "from_field": u'Postal Code',
+                "to_table_name": u'PropertyState',
+                "to_field": u'postal_code',
+            }, {
+                "from_field": u'Year Built',
+                "to_table_name": u'PropertyState',
+                "to_field": u'year_built',
+            }, {
+                "from_field": u'Property Floor Area (Buildings and Parking) (ft2)',
+                "to_table_name": u'PropertyState',
+                "to_field": u'gross_floor_area',
+            }, {
+                "from_field": u'Site EUI (kBtu/ft2)',
+                "to_table_name": u'PropertyState',
+                "to_field": u'site_eui',
+            }, {
+                "from_field": u'Generation Date',
+                "to_table_name": u'PropertyState',
+                "to_field": u'generation_date',
+            }
+        ]
 
         tasks.save_raw_data(self.import_file.id)
-        util.make_fake_mappings(fake_mappings, self.org)
+        Column.create_mappings(fake_mappings, self.org, self.user)
         tasks.map_data(self.import_file.id)
 
         qs = PropertyState.objects.filter(
@@ -225,12 +259,13 @@ class CleansingDataTestPM(TestCase):
         ).iterator()
 
         c = Cleansing(self.org)
-        c.cleanse(qs)
+        c.cleanse('property', qs)
+
+        _log.debug(c.results)
 
         self.assertEqual(len(c.results), 2)
 
-        result = [v for v in c.results.values() if
-                  v['address_line_1'] == '120243 E True Lane']
+        result = [v for v in c.results.values() if v['address_line_1'] == '120243 E True Lane']
         if len(result) == 1:
             result = result[0]
         else:
@@ -246,8 +281,7 @@ class CleansingDataTestPM(TestCase):
         }]
         self.assertEqual(res, result['cleansing_results'])
 
-        result = [v for v in c.results.values() if
-                  v['address_line_1'] == '95373 E Peach Avenue']
+        result = [v for v in c.results.values() if v['address_line_1'] == '95373 E Peach Avenue']
         if len(result) == 1:
             result = result[0]
         else:
@@ -265,7 +299,6 @@ class CleansingDataTestPM(TestCase):
 
 
 class CleansingDataSample(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -288,62 +321,179 @@ class CleansingDataSample(TestCase):
         self.import_file.is_espm = False
         self.import_file.source_type = 'ASSESSED_RAW'
         self.import_file.file = File(
-            open(path.join(path.dirname(__file__), 'test_data',
-                           'data-cleansing-sample.csv'))
-        )
+            open(path.join(path.dirname(__file__), 'test_data', 'data-cleansing-sample.csv')))
 
         self.import_file.save()
-
-        # tasks.save_raw_data(self.import_file.pk)
 
     def test_cleanse(self):
         # Import the file and run mapping
 
         # This is silly, the mappings are backwards from what you would expect.
         # The key is the BS field, and the value is the value in the CSV
-        fake_mappings = {
-            'block_number': 'block_number',
-            'error_type': 'error type',
-            'building_count': 'building_count',
-            'conditioned_floor_area': 'conditioned_floor_area',
-            'energy_score': 'energy_score',
-            'gross_floor_area': 'gross_floor_area',
-            'lot_number': 'lot_number',
-            'occupied_floor_area': 'occupied_floor_area',
-            'postal_code': 'postal_code',
-            'site_eui': 'site_eui',
-            'site_eui_weather_normalized': 'site_eui_weather_normalized',
-            'source_eui': 'source_eui',
-            'source_eui_weather_normalized': 'source_eui_weather_normalized',
-            'address_line_1': 'address_line_1',
-            'address_line_2': 'address_line_2',
-            'building_certification': 'building_certification',
-            'city': 'city',
-            'custom_id_1': 'custom_id_1',
-            'district': 'district',
-            'energy_alerts': 'energy_alerts',
-            'owner': 'owner',
-            'owner_address': 'owner_address',
-            'owner_city_state': 'owner_city_state',
-            'owner_email': 'owner_email',
-            'owner_postal_code': 'owner_postal_code',
-            'owner_telephone': 'owner_telephone',
-            'pm_property_id': 'pm_property_id',
-            'property_name': 'property_name',
-            'property_notes': 'property_notes',
-            'space_alerts': 'space_alerts',
-            'state_province': 'state_province',
-            'tax_lot_id': 'tax_lot_id',
-            'use_description': 'use_description',
-            'generation_date': 'generation_date',
-            'recent_sale_date': 'recent_sale_date',
-            'release_date': 'release_date',
-            'year_built': 'year_built',
-            'year_ending': 'year_ending',
-        }
+
+        fake_mappings = [
+            {
+                "from_field": u'block_number',
+                "to_table_name": u'PropertyState',
+                "to_field": u'block_number',
+            }, {
+                "from_field": u'error_type',
+                "to_table_name": u'PropertyState',
+                "to_field": u'error_type',
+            }, {
+                "from_field": u'building_count',
+                "to_table_name": u'PropertyState',
+                "to_field": u'building_count',
+            }, {
+                "from_field": u'conditioned_floor_area',
+                "to_table_name": u'PropertyState',
+                "to_field": u'conditioned_floor_area',
+            }, {
+                "from_field": u'energy_score',
+                "to_table_name": u'PropertyState',
+                "to_field": u'energy_score',
+            }, {
+                "from_field": u'gross_floor_area',
+                "to_table_name": u'PropertyState',
+                "to_field": u'gross_floor_area',
+            }, {
+                "from_field": u'lot_number',
+                "to_table_name": u'PropertyState',
+                "to_field": u'lot_number',
+            }, {
+                "from_field": u'occupied_floor_area',
+                "to_table_name": u'PropertyState',
+                "to_field": u'occupied_floor_area',
+            }, {
+                "from_field": u'conditioned_floor_area',
+                "to_table_name": u'PropertyState',
+                "to_field": u'conditioned_floor_area',
+            }, {
+                "from_field": u'postal_code',
+                "to_table_name": u'PropertyState',
+                "to_field": u'postal_code',
+            }, {
+                "from_field": u'site_eui',
+                "to_table_name": u'PropertyState',
+                "to_field": u'site_eui',
+            }, {
+                "from_field": u'site_eui_weather_normalized',
+                "to_table_name": u'PropertyState',
+                "to_field": u'site_eui_weather_normalized',
+            }, {
+                "from_field": u'source_eui',
+                "to_table_name": u'PropertyState',
+                "to_field": u'source_eui',
+            }, {
+                "from_field": u'source_eui_weather_normalized',
+                "to_table_name": u'PropertyState',
+                "to_field": u'source_eui_weather_normalized',
+            }, {
+                "from_field": u'address_line_1',
+                "to_table_name": u'PropertyState',
+                "to_field": u'address_line_1',
+            }, {
+                "from_field": u'address_line_2',
+                "to_table_name": u'PropertyState',
+                "to_field": u'address_line_2',
+            }, {
+                "from_field": u'building_certification',
+                "to_table_name": u'PropertyState',
+                "to_field": u'building_certification',
+            }, {
+                "from_field": u'city',
+                "to_table_name": u'PropertyState',
+                "to_field": u'city',
+            }, {
+                "from_field": u'custom_id_1',
+                "to_table_name": u'PropertyState',
+                "to_field": u'custom_id_1',
+            }, {
+                "from_field": u'district',
+                "to_table_name": u'PropertyState',
+                "to_field": u'district',
+            }, {
+                "from_field": u'energy_alerts',
+                "to_table_name": u'PropertyState',
+                "to_field": u'energy_alerts',
+            }, {
+                "from_field": u'owner_address',
+                "to_table_name": u'PropertyState',
+                "to_field": u'owner_address',
+            }, {
+                "from_field": u'owner_city_state',
+                "to_table_name": u'PropertyState',
+                "to_field": u'owner_city_state',
+            }, {
+                "from_field": u'owner_email',
+                "to_table_name": u'PropertyState',
+                "to_field": u'owner_email',
+            }, {
+                "from_field": u'owner_postal_code',
+                "to_table_name": u'PropertyState',
+                "to_field": u'owner_postal_code',
+            }, {
+                "from_field": u'owner_telephone',
+                "to_table_name": u'PropertyState',
+                "to_field": u'owner_telephone',
+            }, {
+                "from_field": u'pm_property_id',
+                "to_table_name": u'PropertyState',
+                "to_field": u'pm_property_id',
+            }, {
+                "from_field": u'property_name',
+                "to_table_name": u'PropertyState',
+                "to_field": u'property_name',
+            }, {
+                "from_field": u'property_notes',
+                "to_table_name": u'PropertyState',
+                "to_field": u'property_notes',
+            }, {
+                "from_field": u'space_alerts',
+                "to_table_name": u'PropertyState',
+                "to_field": u'space_alerts',
+            }, {
+                "from_field": u'state_province',
+                "to_table_name": u'PropertyState',
+                "to_field": u'state_province',
+            }, {
+                "from_field": u'tax_lot_id',
+                "to_table_name": u'PropertyState',
+                "to_field": u'tax_lot_id',
+            }, {
+                "from_field": u'use_description',
+                "to_table_name": u'PropertyState',
+                "to_field": u'use_description',
+            }, {
+                "from_field": u'generation_date',
+                "to_table_name": u'PropertyState',
+                "to_field": u'generation_date',
+            }, {
+                "from_field": u'recent_sale_date',
+                "to_table_name": u'PropertyState',
+                "to_field": u'recent_sale_date',
+            }, {
+                "from_field": u'generation_date',
+                "to_table_name": u'PropertyState',
+                "to_field": u'generation_date',
+            }, {
+                "from_field": u'release_date',
+                "to_table_name": u'PropertyState',
+                "to_field": u'release_date',
+            }, {
+                "from_field": u'year_built',
+                "to_table_name": u'PropertyState',
+                "to_field": u'year_built',
+            }, {
+                "from_field": u'year_ending',
+                "to_table_name": u'PropertyState',
+                "to_field": u'year_ending',
+            }
+        ]
 
         tasks.save_raw_data(self.import_file.id)
-        util.make_fake_mappings(fake_mappings, self.org)
+
+        Column.create_mappings(fake_mappings, self.org, self.user)
         tasks.map_data(self.import_file.id)
 
         qs = PropertyState.objects.filter(
@@ -354,13 +504,12 @@ class CleansingDataSample(TestCase):
         c = Cleansing(self.org)
         c.cleanse('property', qs)
 
-        # print data
-        # This only checks to make sure the 31 errors have occurred.
-        self.assertEqual(len(c.results), 31)
+        # _log.debug(c.results)
+        # This only checks to make sure the 34 errors have occurred.
+        self.assertEqual(len(c.results), 34)
 
 
 class CleansingViewTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
