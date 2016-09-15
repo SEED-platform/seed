@@ -413,7 +413,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       var defer = $q.defer();
-      var update_taxlot_url = "/app/properties/" + String(taxlot_id) + "/cycles/" + String(cycle_id);
+      var update_taxlot_url = "/app/taxlots/" + String(taxlot_id) + "/cycles/" + String(cycle_id);
       var organization_id = user_service.get_organization().id;
 
       spinner_utility.show();
