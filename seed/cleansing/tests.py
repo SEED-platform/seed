@@ -25,7 +25,6 @@ from seed.models import (
     PropertyState,
     Column,
 )
-from seed.tests import util
 
 _log = logging.getLogger(__name__)
 
@@ -71,20 +70,20 @@ class CleansingDataTestCoveredBuilding(TestCase):
 
         # This is silly, the mappings are backwards from what you would expect. The key is the BS field, and the
         # value is the value in the CSV
-        fake_mappings = {
-            'city': 'city',
-            'postal_code': 'Zip',
-            'gross_floor_area': 'GBA',
-            'building_count': 'BLDGS',
-            'year_built': 'AYB_YearBuilt',
-            'state_province': 'State',
-            'address_line_1': 'Address',
-            'owner': 'Owner',
-            'property_notes': 'Property Type',
-            'tax_lot_id': 'UBI',
-            'custom_id_1': 'Custom ID',
-            'pm_property_id': 'PM Property ID'
-        }
+        # fake_mappings = {
+        #     'city': 'city',
+        #     'postal_code': 'Zip',
+        #     'gross_floor_area': 'GBA',
+        #     'building_count': 'BLDGS',
+        #     'year_built': 'AYB_YearBuilt',
+        #     'state_province': 'State',
+        #     'address_line_1': 'Address',
+        #     'owner': 'Owner',
+        #     'property_notes': 'Property Type',
+        #     'tax_lot_id': 'UBI',
+        #     'custom_id_1': 'Custom ID',
+        #     'pm_property_id': 'PM Property ID'
+        # }
 
         tasks.save_raw_data(self.import_file.id)
         # util.make_fake_mappings(fake_mappings, self.org) -> convert to Column.create_mappings()
