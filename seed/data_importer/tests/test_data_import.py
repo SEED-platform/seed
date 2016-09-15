@@ -223,7 +223,6 @@ class TestMapping(DataMappingBaseTestCase):
 
 class TestMatching(DataMappingBaseTestCase):
     def setUp(self):
-        assert len(PropertyState.objects.all()) == 0
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
         self.fake_mappings = FAKE_MAPPINGS['short']
@@ -231,7 +230,6 @@ class TestMatching(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record = selfvars
-        assert self.org is not None
         self.import_file = self.load_import_file_file(
             filename, self.import_file
         )
@@ -303,36 +301,16 @@ class TestMatching(DataMappingBaseTestCase):
         #     data_state=DATA_STATE_MAPPING, organization=self.org
         # )
         # Should be ?
+        # Note these have org but no pm_property_id
         ps = PropertyState.objects.filter(
             data_state=DATA_STATE_IMPORT, organization=self.org
         )
         assert len(ps) != 0
-        print len(ps), self.psn
-        psx = len(PropertyState.objects.filter(organization=self.org))
-        assert psx == len(ps)
-        has_org = []
-        no_org = []
-        for p in PropertyState.objects.all():
-            if p.organization is None:
-                no_org.append(p)
-            else:
-                has_org.append(p)
-        print '>>>', len(no_org), len(has_org)
-        hol = [p.pm_property_id for p in has_org]
-        nol = [p.pm_property_id for p in no_org]
-        print ':::', hol, nol
-        for i in hol:
-            if i in nol:
-                print i, '<<<'
-
         # Promote case A (one property <-> one tax lot)
         psa = PropertyState.objects.filter(pm_property_id=2264).first()
         # psa = ps.filter(pm_property_id=2264)
-        # assert len(psa) != 0
         assert psa is not None
-        print type(psa)
-        # for f in psa._meta.get_fields():
-        #     print f, getattr(psa, f.name, 'blank')
+        # Fails  has pm_property_id but no org
         assert psa.organization is not None
         psa.promote(cycle)
 
