@@ -19,7 +19,7 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'GET',
-            url: urls.projects.get_projects,
+            url: '/api/v2/projects/',
             params: {
                 organization_id: user_service.get_organization().id
             }
@@ -31,12 +31,12 @@ angular.module('BE.seed.service.project', [])
         });
         return defer.promise;
     };
-    project_factory.get_project = function(project_slug) {
 
+    project_factory.get_project = function(project_slug) {
         var defer = $q.defer();
         $http({
             method: 'GET',
-            url: urls.projects.get_project,
+            url: '/api/v2/projects/get_project/',
             params: {
                 project_slug: project_slug,
                 organization_id: user_service.get_organization().id
@@ -53,9 +53,15 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'POST',
-            url: urls.projects.create_project,
+            url: '/api/v2/projects/',
             data: {
-                project: project,
+                name: project.name,
+                compliance_type: project.compliance_type,
+                description: project.description,
+                end_date: project.end_date,
+                deadline_date: project.deadline_date
+            },
+            params: {
                 organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
@@ -69,10 +75,16 @@ angular.module('BE.seed.service.project', [])
     project_factory.update_project_name = function(project) {
         var defer = $q.defer();
         $http({
-            method: 'POST',
-            url: urls.projects.update_project,
+            method: 'PUT',
+            url: '/api/v2/projects/update_project/',
             data: {
-                project: project,
+                name: project.name,
+                is_compliance: project.is_compliance,
+                end_date: project.end_date,
+                deadline_date: project.deadline_date
+            },
+            params: {
+                project_slug: project.slug,
                 organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
@@ -86,10 +98,13 @@ angular.module('BE.seed.service.project', [])
     project_factory.add_buildings = function(project) {
         var defer = $q.defer();
         $http({
-            method: 'POST',
-            url: urls.projects.add_buildings_to_project,
+            method: 'PUT',
+            url: '/api/v2/projects/add_buildings/',
             data: {
-                project: project,
+                project: project
+            },
+            params: {
+                project_slug: project.slug,
                 organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
@@ -103,10 +118,13 @@ angular.module('BE.seed.service.project', [])
     project_factory.remove_buildings = function(project) {
         var defer = $q.defer();
         $http({
-            method: 'POST',
-            url: urls.projects.remove_buildings_from_project,
+            method: 'PUT',
+            url: '/api/v2/projects/remove_buildings/',
             data: {
-                project: project,
+                project: project.selected_buildings,
+            },
+            params: {
+                project_slug: project.slug,
                 organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
@@ -120,9 +138,9 @@ angular.module('BE.seed.service.project', [])
     project_factory.add_buildings_status = function(project_loading_cache_key) {
         var defer = $q.defer();
         $http({
-            method: 'POST',
-            url: urls.projects.get_adding_buildings_to_project_status_percentage,
-            data: {project_loading_cache_key: project_loading_cache_key}
+            method: 'GET',
+            url: '/api/v2/projects/add_building_status/',
+            params: {project_loading_cache_key: project_loading_cache_key}
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -135,8 +153,8 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'DELETE',
-            url: urls.projects.delete_project,
-            data: {
+            url: '/api/v2/projects/delete_project/',
+            params: {
                 project_slug: project_slug,
                 organization_id: user_service.get_organization().id
             }
@@ -153,7 +171,7 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'GET',
-            url: urls.seed.get_datasets_count,
+            url: '/api/v2/datasets/count/',
             params: {
                 organization_id: user_service.get_organization().id
             }
@@ -170,7 +188,7 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'GET',
-            url: urls.projects.get_projects_count,
+            url: '/api/v2/projects/count/',
             params: {
                 organization_id: user_service.get_organization().id
             }
@@ -184,12 +202,12 @@ angular.module('BE.seed.service.project', [])
 
 
     project_factory.move_buildings = function(source_project_slug, target_project_slug, buildings, select_all_checkbox, search_params, copy) {
-        // moves or copies buildings from source_project to tartget_project
+        // moves or copies buildings from source_project to target_project
 
         var defer = $q.defer();
         $http({
             method: 'POST',
-            url: urls.projects.move_buildings,
+            url: '/api/v2/projects/move_buildings/',
             data: {
                 source_project_slug: source_project_slug,
                 target_project_slug: target_project_slug,

@@ -9,8 +9,8 @@ Utility methods pertaining to data import tasks.
 """
 import datetime
 
-from django.core.exceptions import ValidationError
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
 
 
 def get_core_pk_column(table_column_mappings, primary_field):

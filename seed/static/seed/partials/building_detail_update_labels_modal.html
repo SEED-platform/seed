@@ -10,7 +10,7 @@
             Add/Remove Labels</h4>
     </div>
     <div class="modal-body">
-        <div class="newLabelInput" style="margin-top:0px;">
+        <div class="newLabelInput" style="margin-top:0;">
             <form   name="newLabelForm"
                     class="form-inline"
                     role="form"
@@ -24,10 +24,10 @@
                             Create new label</label>
                     <div    class="input-group"
                             style="padding-right:20px;">
-                        <input  id="labelName" 
+                        <input  id="labelName"
                                 type="text"
                                 name="name"
-                                class="form-control" 
+                                class="form-control"
                                 ng-model="new_label.name"
                                 placeholder="Label Name"
                                 check-label-exists="labels"
@@ -44,7 +44,7 @@
                                 class="dropdown-menu pull-right"
                                 role="menu"
                                 aria-labelledby="btnSelectLabel">
-                                <li ng-repeat="label in available_colors" 
+                                <li ng-repeat="label in available_colors"
                                     ng-click="new_label.label = label.label; new_label.color = label.color">
                                     <a>
                                         <span class="label label-{$ label.label $}">{$ label.color $}</span>
@@ -54,12 +54,12 @@
                         </div>
                     </div>
                     <button type="submit"
-                            class="btn btn-primary" 
+                            class="btn btn-primary"
                             ng-disabled="newLabelForm.$invalid">
                         Create label
                     </button>
                     <div class="help-block">
-                        <span   class="has-error" 
+                        <span   class="has-error"
                                 ng-show="newLabelForm.name.$error.checkLabelExists">
                                 This label name is already taken.
                         </span>
@@ -72,7 +72,7 @@
 
         <div class="table-list-container">
 
-            <div class="labels-status-msg" 
+            <div class="labels-status-msg"
                  ng-show="loading==true || labels.length == 0">
                 <div ng-show="loading">
                     <p>Loading labels...</p>
@@ -89,25 +89,25 @@
                     </td>
                     <td align="right">
 
-                        <button type="button" 
-                                uib-btn-checkbox 
+                        <button type="button"
+                                uib-btn-checkbox
                                 ng-model="label.is_checked_remove"
                                 ng-show="label.is_applied"
-                                btn-checkbox-true="true" 
+                                btn-checkbox-true="true"
                                 btn-checkbox-false="false"
-                                class="btn btn-sm btn-default action_link" 
+                                class="btn btn-sm btn-default action_link"
                                 ng-class="{'btn-danger':label.is_checked_remove}"
                                 ng-click="toggle_remove(label)"
                                 >Remove
                         </button>
 
                         <button type="button"
-                                uib-btn-checkbox 
+                                uib-btn-checkbox
                                 ng-model="label.is_checked_add"
                                 ng-hide="label.is_applied"
-                                btn-checkbox-true="true" 
+                                btn-checkbox-true="true"
                                 btn-checkbox-false="false"
-                                class="btn btn-sm btn-default action_link" 
+                                class="btn btn-sm btn-default action_link"
                                 ng-class="{'btn-primary':label.is_checked_add}"
                                 ng-click="toggle_add(label)"
                                 >Add
@@ -118,13 +118,13 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" 
-                class="btn btn-primary" 
+        <button type="button"
+                class="btn btn-primary"
                 style="min-width:90px;"
                 ng-click="done()">
                 Done</button>
-        <button type="button" 
-                class="btn btn-default" 
+        <button type="button"
+                class="btn btn-default"
                 style="min-width:90px;"
                 ng-click="cancel()">
                 Cancel</button>

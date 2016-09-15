@@ -10,9 +10,7 @@
     </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav">
-        <a ng-href="#/profile" class="active">Profile Info</a><a ng-href="#/profile/security">Security</a><a ng-href="#/profile/admin" ng-show="auth.requires_superuser">Admin</a><a ng-href="#/profile/developer">Developer</a>
-    </div>
+    <div class="section_nav" ng-include="urls.static_url + 'seed/partials/profile_nav.html'"></div>
 </div>
 <div class="section">
     <div class="section_header_container">
@@ -21,7 +19,7 @@
         </div>
     </div>
     <div class="section_content_container">
-        <div class="section_content with_padding">          
+        <div class="section_content with_padding">
             <div class="row">
                 <div class="section_form_container col-sm-3">
                     <form name="profile_form" role="form" ng-submit="submit_form(profile_form.$valid)" novalidate>

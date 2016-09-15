@@ -3,7 +3,7 @@
  * :author
  */
 angular.module('BE.seed.controller.edit_project_modal', [])
-.controller('edit_project_modal_ctrl', [
+.controller('edit_project_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'project',

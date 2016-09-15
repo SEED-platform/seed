@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a class="page_action" ng-href="#/data/{$ import_file.dataset.id $}"><i class="fa fa-chevron-left"></i> {$ import_file.dataset.name $}</a>
+            <a class="page_action" ui-sref="dataset_detail({dataset_id: import_file.dataset.id})"><i class="fa fa-chevron-left"></i> {$ import_file.dataset.name $}</a>
 
         </div>
         <div class="page_title">
@@ -115,7 +115,7 @@
                             </td>
                         </tr>
                     </tbody>
-                    
+
                     <tbody>
                         <tr>
                             <td></td>
@@ -127,6 +127,7 @@
                             <th class="sub_head is_aligned_center">Map <a uib-popover="{$MAP_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th>
                             <th class="mapping_field">SEED Header</th>
                             <!--th class="sub_head is_aligned_center">Duplicate <a uib-popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
+                            <th>Inventory Type</th>
                             <th class="import_column_name">Data File Header</th>
                             <th>Row 1</th>
                             <th>Row 2</th>
@@ -142,6 +143,12 @@
                             </td>
                             <td ng-class="{'danger': tcm.is_duplicate == true, 'disable-mapping-btn': tcm.is_duplicate == true}" id="mapped-row-input-{$ $index $}">
                                 <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" ng-keyup="disable_mapping_button()" ng-blur="disable_mapping_button()" typeahead-on-select='change(tcm)' id="mapped-row-input-box-{$ $index $}"/>
+                            </td>
+                            <td id="mapped-row-type-{$ $index $}">
+                                <select ng-model="tcm.suggestion_table_name">
+                                    <option value="PropertyState">Property</option>
+                                    <option value="TaxLotState">Tax Lot</option>
+                                </select>
                             </td>
                             <!--td class="check is_aligned_center">
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
@@ -174,16 +181,16 @@
             <div class="left_40 section_action_container">
                 <button type="button" class="btn btn-primary" ng-click="review_mappings=false; show_mapped_buildings=false"><i class="fa fa-chevron-left"></i> Back to Mapping</button>
                 <div class="btn-group" style="margin-left:20px;">
-                    <button type="button" 
+                    <button type="button"
                             class="btn btn-primary btn-sm"
                             ng-click="do_update_filters()">
                         Update Filters
                     </button>
-                </div>   
+                </div>
             </div>
             <div class="right_60 section_action_container section_action_btn">
                 <button type="button" class="btn btn-default" ng-click="open_cleansing_modal()"><i class="fa fa-exclamation-triangle"></i>Data Cleansing Results</button>
-                <a ng-href="#/data/mapping/{$ import_file.id $}"><button id="save-mapping" type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button></a>
+                <a ui-sref="mapping({importfile_id: import_file.id})"><button id="save-mapping" type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button></a>
             </div>
         </div>
     </div>
@@ -202,7 +209,7 @@
                 <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done">Review Mapped Data</button>
         </div>
         <div class="col-lg-6 col-sm-6" ng-show="show_mapped_buildings">
-            <a ng-href="#/data/mapping/{$ import_file.id $}"><button type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button></a>
+            <a ui-sref="mapping({importfile_id: import_file.id})"><button type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button></a>
         </div>
     </div>
 </div>

@@ -27,13 +27,13 @@ angular.module('BE.seed.controller.organization', [])
     $scope.new_member_modal = function() {
         var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/new_member_modal.html',
-            controller: 'new_member_modal_ctrl'
+            controller: 'new_member_modal_controller'
         });
     };
     $scope.existing_members_modal = function() {
         var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/existing_members_modal.html',
-            controller: 'existing_members_modal_ctrl'
+            controller: 'existing_members_modal_controller'
         });
     };
 
@@ -43,7 +43,7 @@ angular.module('BE.seed.controller.organization', [])
     $scope.create_organization_modal = function() {
         var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/create_organization_modal.html',
-            controller: 'create_organization_modal_ctrl',
+            controller: 'create_organization_modal_controller',
             resolve: {
               organization: function () {
                 return $scope.org;

@@ -68,7 +68,7 @@ class Command(BaseCommand):
 
     def assign_primarysecondary_tax_lots(self, org):
         for property_view in PropertyView.objects.filter(property__organization=org).all():
-            if TaxLotProperty.objects.filter(property_view = property_view).count() <= 1: continue
+            if TaxLotProperty.objects.filter(property_view=property_view).count() <= 1: continue
 
             links = list(TaxLotProperty.objects.filter(property_view = property_view).order_by('taxlotview__state__jurisdiction_taxlot_identifier').all())
 

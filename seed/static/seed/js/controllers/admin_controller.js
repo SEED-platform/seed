@@ -5,11 +5,12 @@
 angular.module('BE.seed.controller.admin', [])
 .controller('seed_admin_controller', [
   '$scope',
+  '$state',
   'user_service',
   'organization_service',
   'uploader_service',
   'user_profile_payload',
-  function($scope, user_service, organization_service, uploader_service, user_profile_payload) {
+  function($scope, $state, user_service, organization_service, uploader_service, user_profile_payload) {
     $scope.user = {};
     $scope.temp_users = [];
     $scope.org = {};
@@ -23,8 +24,7 @@ angular.module('BE.seed.controller.admin', [])
     $scope.alert.bootstrap_class.ok = 'alert-success';
     $scope.alert.bootstrap_class.error = 'alert-danger';
     $scope.alert.css = $scope.alert.bootstrap_class.ok;
-    $scope.username = user_profile_payload.user.first_name + ' ' +
-        user_profile_payload.user.last_name;
+    $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
 
 
     var update_alert = function (is_ok, message) {
@@ -194,7 +194,7 @@ angular.module('BE.seed.controller.admin', [])
                     org.remove_message = 'success';
                     if (parseInt(org.id) === parseInt(user_service.get_organization().id)) {
                         // Reload page if deleting current org.
-                        window.location.reload();
+                        $state.reload();
                     } else {
                         get_organizations();
                         $scope.$emit('organization_deleted');

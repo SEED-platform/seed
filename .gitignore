@@ -30,7 +30,6 @@ web_root/CACHE
 collected_static
 celerybeat-schedule*
 web_root/images/sites/*
-test.sqlite
 media_root/*
 media/*
 bpd/data/untracked/*
@@ -42,13 +41,16 @@ htmlcov/
 src/
 *node_modules*
 bower_components/
-seed/tests/api/*_seedhost.txt
+
 docs/build/
 dump.rdb
 log
 *.log
 .tox
 
+# Ignore tmp test data
+seed/data_importer/tests/data/tmp_*
+seed/data_importer/tests/data/~*
+seed/tests/api/*_seedhost.txt
 seed/tests/api/seed_API_test.ini
-
-seed/tests/api/seed_API_test.ini
+test.sqlite

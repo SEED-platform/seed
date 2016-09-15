@@ -23,12 +23,6 @@ urlpatterns = [
     # landing page
     url(r'^', include('seed.landing.urls', namespace="landing", app_name="landing")),
 
-    # accounts/orgs AJAX
-    url(r'^app/accounts/', include('seed.urls.accounts', namespace="accounts", app_name="accounts")),
-
-    # projects AJAX
-    url(r'^app/projects/', include('seed.urls.projects', namespace="projects", app_name="projects")),
-
     # audit_logs AJAX
     url(r'^audit_logs/', include('seed.audit_logs.urls', namespace="audit_logs", app_name="audit_logs")),
 
@@ -55,9 +49,8 @@ urlpatterns = [
 
     url(r'^robots\.txt', robots_txt, name='robots_txt'),
 
-    # bluesky api views
-    url(r'^app/bluesky/', include('seed.urls.properties', namespace="bluesky", app_name="bluesky")),
-    url(r'^app/', include('seed.urls.properties', namespace="api")),
+    url(r'^api/v2/', include('api.urls', namespace="apiv2")),
+    url(r'^app/', include('seed.urls.properties', namespace="app", app_name='properties')),
 ]
 
 if settings.DEBUG:

@@ -4,16 +4,26 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from datetime import datetime, date
 import re
 import string
+from datetime import datetime, date
 
 import dateutil
 import dateutil.parser
+
 from seed.lib.mcm.matchers import fuzzy_in_set
 
-NONE_SYNONYMS = (u'not available', u'not applicable', u'n/a')
-BOOL_SYNONYMS = (u'true', u'yes', u'y', u'1')
+NONE_SYNONYMS = (
+    (u'_', u'not available'),
+    (u'_', u'not applicable'),
+    (u'_', u'n/a'),
+)
+BOOL_SYNONYMS = (
+    (u'_', u'true'),
+    (u'_', u'yes'),
+    (u'_', u'y'),
+    (u'_', u'1'),
+)
 PUNCT_REGEX = re.compile('[{0}]'.format(
     re.escape(string.punctuation.replace('.', '').replace('-', '')))
 )

@@ -33,7 +33,7 @@ angular.module('BE.seed.controller.dataset_detail', [])
     $scope.open_data_upload_modal = function() {
         var dataModalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
-            controller: 'data_upload_modal_ctrl',
+            controller: 'data_upload_modal_controller',
             resolve: {
                 step: function(){
                     return 2;

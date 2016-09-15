@@ -11,6 +11,7 @@ from django.utils.timezone import get_current_timezone, make_aware, make_naive
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.utils.cache import set_cache_raw, get_cache_raw
+from seed.utils.constants import ASSESSOR_FIELDS_BY_COLUMN
 import pytz
 from datetime import (
     date,
@@ -65,16 +66,16 @@ class Rules(models.Model):
         # Required fields
         missing_matching_field = [
             'address_line_1',
-            'tax_lot_id',
-            'custom_id_1',
-            'pm_property_id'
+            # 'tax_lot_id',
+            # 'custom_id_1',
+            # 'pm_property_id'
         ]
         # Ignored fields
         missing_values = [
             'address_line_1',
-            'tax_lot_id',
-            'custom_id_1',
-            'pm_property_id'
+            # 'tax_lot_id',
+            # 'custom_id_1',
+            # 'pm_property_id'
         ]
         # min/max range checks
         in_range_checking = [{
@@ -280,7 +281,18 @@ class Cleansing(object):
         :param kwargs:
         :return:
         """
-
+        # For changed field names, TODO uncomment when appropriate
+        # self.required_fields = {
+        #     'property': ['address_line_1', 'pm_property_id',
+        #                  'jurisdiction_property_id'],
+        #     'taxlot': ['jurisdiction_taxlot_id', 'address_line_1'],
+        # }
+        # For old field names, TODO remove when appropriate
+        self.required_fields = {
+            'property': ['address_line_1', 'pm_property_id',
+                         'jurisdiction_property_identifier'],
+            'taxlot': ['jurisdiction_taxlot_identifier', 'address'],
+        }
         self.org = organization
         super(Cleansing, self).__init__(*args, **kwargs)
 
@@ -311,24 +323,22 @@ class Cleansing(object):
         """
         return "cleansing_results__%s" % file_pk
 
-    def cleanse(self, data):
+    def cleanse(self, record_type, data):
         """
         Send in data as a queryset from the BuildingSnapshot ids.
-
+        :param record_type: one of property/taxlot
         :param data: rows of data to be cleansed
         :return:
         """
+        fields = self.get_fieldnames(record_type)
 
         for datum in data:
             # Initialize the ID if it doesn't exist yet. Add in the other
             # fields that are of interest to the GUI
             if datum.id not in self.results:
                 self.results[datum.id] = {}
-                self.results[datum.id]['id'] = datum.id
-                self.results[datum.id]['address_line_1'] = datum.address_line_1
-                self.results[datum.id]['pm_property_id'] = datum.pm_property_id
-                self.results[datum.id]['tax_lot_id'] = datum.tax_lot_id
-                self.results[datum.id]['custom_id_1'] = datum.custom_id_1
+                for field in fields:
+                    self.results[datum.id][field] = getattr(datum, field)
                 self.results[datum.id]['cleansing_results'] = []
 
             # self.missing_matching_field(datum)
@@ -337,6 +347,12 @@ class Cleansing(object):
             # self.data_type_check(datum)
 
         self.prune_data()
+
+    def get_fieldnames(self, record_type):
+        """Get fieldnames to apply to results."""
+        field_names = ['id']
+        field_names.extend(self.required_fields[record_type])
+        return field_names
 
     def prune_data(self):
         """
@@ -367,7 +383,7 @@ class Cleansing(object):
                 .order_by('field', 'severity'):
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
-                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
+                formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
                 if value is None:
                     # Field exists but the value is None. Register a cleansing error
                     self.results[datum.id]['cleansing_results'].append({
@@ -398,7 +414,7 @@ class Cleansing(object):
                 .order_by('field', 'severity'):
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
-                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
+                formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
 
                 if value == '':
                     # TODO: check if the value is zero?
@@ -425,7 +441,7 @@ class Cleansing(object):
             # check if the field exists
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
-                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
+                formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
 
                 # Don't check the out of range errors if the data are empty
                 if value is None:
@@ -493,7 +509,7 @@ class Cleansing(object):
             # check if the field exists
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
-                formatted_field = self.ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
+                formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
 
                 # Don't check the out of range errors if the data are empty
                 if value is None:
@@ -533,165 +549,3 @@ class Cleansing(object):
 
         z = sorted(existing_results, key=lambda k: k['id'])
         set_cache_raw(Cleansing.cache_key(file_pk), z, 3600)  # save the results for 1 hour
-
-    ASSESSOR_FIELDS = [
-        {
-            "title": "PM Property ID",
-            "sort_column": "pm_property_id",
-        },
-        {
-            "title": "Tax Lot ID",
-            "sort_column": "tax_lot_id",
-        },
-        {
-            "title": "Custom ID 1",
-            "sort_column": "custom_id_1",
-        },
-        {
-            "title": "Property Name",
-            "sort_column": "property_name",
-        },
-        {
-            "title": "Address Line 1",
-            "sort_column": "address_line_1",
-        },
-        {
-            "title": "Address Line 2",
-            "sort_column": "address_line_2",
-        },
-        {
-            "title": "County/District/Ward/Borough",
-            "sort_column": "district",
-        },
-        {
-            "title": "Lot Number",
-            "sort_column": "lot_number",
-        },
-        {
-            "title": "Block Number",
-            "sort_column": "block_number",
-        },
-        {
-            "title": "City",
-            "sort_column": "city",
-        },
-        {
-            "title": "State Province",
-            "sort_column": "state_province",
-        },
-        {
-            "title": "Postal Code",
-            "sort_column": "postal_code",
-        },
-        {
-            "title": "Year Built",
-            "sort_column": "year_built",
-        },
-        {
-            "title": "Use Description",
-            "sort_column": "use_description",
-        },
-        {
-            "title": "Building Count",
-            "sort_column": "building_count",
-        },
-        {
-            "title": "Property Notes",
-            "sort_column": "property_notes",
-        },
-        {
-            "title": "Recent Sale Date",
-            "sort_column": "recent_sale_date",
-        },
-        {
-            "title": "Owner",
-            "sort_column": "owner",
-        },
-        {
-            "title": "Owner Address",
-            "sort_column": "owner_address",
-        },
-        {
-            "title": "Owner City",
-            "sort_column": "owner_city_state",
-        },
-        {
-            "title": "Owner Postal Code",
-            "sort_column": "owner_postal_code",
-        },
-        {
-            "title": "Owner Email",
-            "sort_column": "owner_email",
-        },
-        {
-            "title": "Owner Telephone",
-            "sort_column": "owner_telephone",
-        },
-        {
-            "title": "Gross Floor Area",
-            "sort_column": "gross_floor_area",
-        },
-        {
-            "title": "Energy Score",
-            "sort_column": "energy_score",
-        },
-        {
-            "title": "Site EUI",
-            "sort_column": "site_eui",
-        },
-        {
-            "title": "Generation Date",
-            "sort_column": "generation_date",
-        },
-        {
-            "title": "Release Date",
-            "sort_column": "release_date",
-        },
-        {
-            "title": "Year Ending",
-            "sort_column": "year_ending",
-        },
-        {
-            "title": "Creation Date",
-            "sort_column": "created",
-        },
-        {
-            "title": "Modified Date",
-            "sort_column": "modified",
-        },
-        {
-            "title": "Conditioned Floor Area",
-            "sort_column": "conditioned_floor_area",
-        },
-        {
-            "title": "Occupied Floor Area",
-            "sort_column": "occupied_floor_area",
-        },
-        {
-            "title": "Site EUI Weather Normalized",
-            "sort_column": "site_eui_weather_normalized",
-        },
-        {
-            "title": "Source EUI",
-            "sort_column": "source_eui",
-        },
-        {
-            "title": "Source EUI Weather Normalized",
-            "sort_column": "source_eui_weather_normalized",
-        },
-        {
-            "title": "Building Certification",
-            "sort_column": "building_certification",
-        },
-        {
-            "title": "Energy Alerts",
-            "sort_column": "energy_alerts",
-        },
-        {
-            "title": "Space Alerts",
-            "sort_column": "space_alerts",
-        }]
-
-    ASSESSOR_FIELDS_BY_COLUMN = {
-        field['sort_column']: field for field in ASSESSOR_FIELDS
-    }

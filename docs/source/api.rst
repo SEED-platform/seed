@@ -60,6 +60,13 @@ In the case of an error, most endpoints will return this instead of the expected
 API-related Endpoints
 ---------------------
 
+A PDF of the endpoints is available here :download:`pdf <API_endpoints.pdf>`.
+
+.. note::
+
+    The PDF is slightly out-of-date and swagger will be replacing its use
+    in the upcoming release.
+
 .. automodule:: seed.views.api
     :members:
     :undoc-members:
@@ -67,7 +74,7 @@ API-related Endpoints
 Account Management Endpoints
 ----------------------------
 
-.. automodule:: seed.views.accounts
+.. automodule:: seed.views.users
     :members:
     :undoc-members:
 

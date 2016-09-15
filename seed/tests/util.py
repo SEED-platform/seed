@@ -8,14 +8,15 @@
 # Utilities for testing SEED modules.
 ###
 
+import datetime
 import json
 
 from seed.models import (
-    BuildingSnapshot,
-    CanonicalBuilding,
+    PropertyState,
     Column,
     ColumnMapping,
     set_initial_sources,
+    Cycle,
 )
 
 
@@ -45,26 +46,40 @@ def make_fake_mappings(mappings, org):
         column_mapping.column_mapped.add(column_mapped)
 
 
-def make_fake_snapshot(import_file, init_data, bs_type, is_canon=False, org=None):
-    """For making fake mapped BuildingSnapshots to test matching against."""
-    snapshot = BuildingSnapshot.objects.create(**init_data)
-    snapshot.import_file = import_file
-    snapshot.super_organization = org
-    if import_file is None:
-        snapshot.import_record = None
-    else:
-        snapshot.import_record = import_file.import_record
-    snapshot.source_type = bs_type
-    set_initial_sources(snapshot)
-    snapshot.save()
-    if is_canon:
-        canonical_building = CanonicalBuilding.objects.create(
-            canonical_snapshot=snapshot
-        )
-        snapshot.canonical_building = canonical_building
-        snapshot.save()
+def make_fake_property(import_file, init_data, bs_type, is_canon=False,
+                       org=None):
+    """For making fake mapped PropertyState to test matching against."""
 
-    return snapshot
+    if not org:
+        raise "no org"
+
+    ps = PropertyState.objects.create(**init_data)
+    ps.import_file = import_file
+    ps.super_organization = org
+    if import_file is None:
+        ps.import_record = None
+    else:
+        ps.import_record = import_file.import_record
+        ps.source_type = bs_type
+
+    # TODO: can we remove set_initial sources? Seems like this is invalid in the new data model world.
+    set_initial_sources(ps)
+    ps.save()
+
+    # The idea of canon is no longer applicable. The linked property state
+    # in the PropertyView is now canon
+    if is_canon:
+        # need to create a cycle and add it to the PropertyView table
+        cycle, _ = Cycle.objects.get_or_create(
+            name=u'Test Cycle',
+            organization=org,
+            start=datetime.datetime(2015, 1, 1),
+            end=datetime.datetime(2015, 12, 31),
+        )
+
+        ps.promote(cycle)
+
+    return ps
 
 
 class FakeRequest(object):
