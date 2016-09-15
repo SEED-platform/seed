@@ -40,6 +40,7 @@ from seed.data_importer.models import (
 from seed.decorators import get_prog_key
 from seed.decorators import lock_and_track
 from seed.green_button import xml_importer
+from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.data.ESPM import espm as espm_schema
 from seed.lib.mcm.data.SEED import seed as seed_schema
@@ -55,19 +56,15 @@ from seed.models import (
     PORTFOLIO_RAW,
     POSSIBLE_MATCH,
     SYSTEM_MATCH,
-)
-from seed.models import (
     Column,
-    TaxLotState
-)
-from seed.models import (
-    get_column_mappings,
+    ColumnMapping,
     find_canonical_building_values,
     initialize_canonical_building,
     save_snapshot_match,
     BuildingSnapshot,
     PropertyState,
     PropertyView,
+    TaxLotState,
     DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
@@ -159,31 +156,11 @@ def _build_cleaner(org):
             )
         units['types'][column.column_name] = column_type
 
-    # TODO(gavin): make this completely data-driven.
-    # Update with our predefined types for our BuildingSnapshot
-    # column types.
+    # TODO(gavin): make this completely data-driven. # NL !!!
+    # Update with our predefined types for our BuildingSnapshot column types.
     units['types'].update(seed_schema.schema['types'])
 
     return cleaners.Cleaner(units)
-
-
-def apply_extra_data(model, key, value):
-    """Function sent to MCM to apply mapped columns into extra_data."""
-    model.extra_data[key] = value
-
-
-def apply_data_func(mappable_columns):
-    """Returns a function that captures mappable_types in a closure
-       and will add a key to extra data if not in mappable_types else
-    """
-
-    def result_fn(model, key, value):
-        if key in mappable_columns:
-            setattr(model, key, value)
-        else:
-            apply_extra_data(model, key, value)
-
-    return result_fn
 
 
 def _normalize_tax_lot_id(value):
@@ -221,63 +198,82 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
     if source_type == ASSESSED_RAW:
         save_type = ASSESSED_BS
 
-    concats = []
+    org = Organization.objects.get(pk=import_file.import_record.super_organization.pk)
 
-    org = Organization.objects.get(
-        pk=import_file.import_record.super_organization.pk
-    )
-
-    mapping, concats = get_column_mappings(org)
+    mappings, _ = ColumnMapping.get_column_mappings(org)
+    logger.debug("Mappings are %s" % mappings)
     map_cleaner = _build_cleaner(org)
 
     # For those column mapping which are not db columns, we
     # need to let MCM know that we apply our mapping function to those.
-    apply_columns = []
+    md = MappingData()
 
-    mappable_columns = get_mappable_columns()
-    for item in mapping:
-        if mapping[item] not in mappable_columns:
-            apply_columns.append(item)
+    for table in ('PropertyState', 'TaxLotState'):
+        # apply_columns are extra_data columns (the raw column names)
+        extra_data_fields = []
+        for k, v in mappings.iteritems():
+            if not md.find_column(v[0], v[1]):
+                extra_data_fields.append(k)
+        logger.debug("extra data fields: {}".format(extra_data_fields))
 
-    logger.debug("apply columns: {}".format(apply_columns))
+        # All the data live in the extra_data field when the data are imported
+        if table == 'PropertyState':
+            model_obj = PropertyState
+            data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
+        elif table == 'TaxLotState':
+            model_obj = TaxLotState
+            # Data are still in the PropertyState object because it was imported into that table
+            data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
 
-    apply_func = apply_data_func(mappable_columns)
+        # Since we are importing CSV, then each extra_data field will have the same fields. So
+        # save the map_model_obj outside of for loop to pass into the `save_column_names` methods
+        map_model_obj = None
+        for row in data:
+            # TODO: during the mapping the data are saved back in the database
+            # If the user decided to not use the mapped data and go back and remap
+            # then the data will forever be in the property state table for
+            # no reason. FIX THIS!
+            map_model_obj = mapper.map_row(
+                row.extra_data,
+                mappings,
+                model_obj,
+                extra_data_fields,
+                cleaner=map_cleaner,
+                *args,
+                **kwargs
+            )
 
-    # All the data live in the extra_data field when the data are imported
-    data = PropertyState.objects.filter(id__in=ids).only(
-        'extra_data').iterator()
-    for row in data:
-        # TODO: during the mapping the data are saved back in the database
-        # If the user decided to not use the mapped data and go back and remap
-        # then the data will forever be in the property state table for
-        # no reason. FIX THIS!
-        property_state = mapper.map_row(
-            row.extra_data,
-            mapping,
-            PropertyState,
-            cleaner=map_cleaner,
-            concat=concats,
-            apply_columns=apply_columns,
-            apply_func=apply_func,
-            *args,
-            **kwargs
-        )
+            # Assign some other arguments here
+            map_model_obj.import_file = import_file
+            map_model_obj.source_type = save_type
+            map_model_obj.data_state = DATA_STATE_MAPPING
+            map_model_obj.super_organization = import_file.import_record.super_organization
+            if hasattr(map_model_obj, 'clean'):
+                map_model_obj.clean()
 
-        # Assign some other arguments here
-        property_state.import_file = import_file
-        property_state.source_type = save_type
-        property_state.data_state = DATA_STATE_MAPPING
-        property_state.clean()
-        property_state.super_organization = import_file.import_record.super_organization
-        property_state.save()
+            # --- BEGIN TEMP HACK ----
+            # TODO: fix these in the cleaner but for now, get things to work, yuck.
+            # It appears that the cleaner pulls from some schema somewhere that defines the
+            # data types... stay tuned.
+            if hasattr(map_model_obj, 'recent_sale_date') and map_model_obj.recent_sale_date == '':
+                logger.debug("recent_sale_date was an empty string, setting to None")
+                map_model_obj.recent_sale_date = None
+            if hasattr(map_model_obj, 'generation_date') and map_model_obj.generation_date == '':
+                logger.debug("generation_date was an empty string, setting to None")
+                map_model_obj.generation_date = None
+            if hasattr(map_model_obj, 'release_date') and map_model_obj.release_date == '':
+                logger.debug("release_date was an empty string, setting to None")
+                map_model_obj.release_date = None
+            if hasattr(map_model_obj, 'year_ending') and map_model_obj.year_ending == '':
+                logger.debug("year_ending was an empty string, setting to None")
+                map_model_obj.year_ending = None
+            # --- END TEMP HACK ----
 
-    if property_state:
-        # Make sure that we've saved all of the extra_data column names
-        Column.save_column_names(property_state, mapping=mapping)
+            map_model_obj.save()
 
-    # # TODO: Save tax lot state
-    # if tax_lot_state:
-    #     Column.save_column_names(tax_lot_state, mapping=mapping)
+        if map_model_obj:
+            # Make sure that we've saved all of the extra_data column names
+            Column.save_column_names(map_model_obj)
 
     increment_cache(prog_key, increment)
 
@@ -750,8 +746,6 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
     if not id_matches.exists():
         return
 
-    print id_matches
-
     # Check to see if there are any duplicates here
     for can_snap in id_matches:
         # check to see if this is a duplicate of a canonical building
@@ -982,12 +976,10 @@ def _match_buildings(file_pk, user_pk):
     # if the match is a duplicate of other existing data add it to a list
     # and indicate which existing record it is a duplicate of
     for unmatched in unmatched_buildings:
-        print "trying to match %s" % unmatched.__dict__
+        # print "trying to match %s" % unmatched.__dict__
         try:
             match = handle_id_matches(unmatched, import_file, user_pk)
-            print "My match was %s" % match
-            if match:
-                print "YESSSSSS"
+            # print "My match was %s" % match
         except DuplicateDataError as e:
             duplicates.append(unmatched.pk)
             unmatched.duplicate_id = e.id

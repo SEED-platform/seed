@@ -20,6 +20,7 @@ from seed.models import (
 )
 
 
+# TODO: Deprecate in favor of Column.create_mappings
 def make_fake_mappings(mappings, org):
     """Takes a dict and saves a ColumnMapping object for each key"""
     for mapped, raw in mappings.items():

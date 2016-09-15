@@ -4,10 +4,13 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import json
+
+import logging
 
 import matchers
 from cleaners import default_cleaner
+
+_log = logging.getLogger(__name__)
 
 
 def build_column_mapping(raw_columns, dest_columns, previous_mapping=None,
@@ -79,10 +82,7 @@ def apply_initial_data(model, initial_data):
         value = initial_data[item]
         if hasattr(model, item):
             setattr(model, item, value)
-        elif (
-            hasattr(model, 'extra_data') and isinstance(
-                model.extra_data, dict)
-        ):
+        elif hasattr(model, 'extra_data') and isinstance(model.extra_data, dict):
             model.extra_data[item] = value
 
     return model
@@ -97,43 +97,64 @@ def _concat_values(concat_columns, column_values, delimiter):
     return delimiter.join(values) or None
 
 
-def apply_column_value(item, value, model, mapping, cleaner, apply_func=None):
+def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner):
     """Set the column value as the target attr on our model.
 
-    :param item: str, the column name as the mapping understands it.
+    :param raw_field: str, the raw imported column name as the mapping understands it.
     :param value: dict, the value of that column for a given row.
     :param model: inst, the object we're mapping data to.
     :param mapping: dict, the mapping of row data to attribute data.
     :param cleaner: runnable, something to clean data values.
+    :param is_extra_data: bool, is the column supposed to be extra_data
     :param apply: (optional), function to apply value to our model.
     :rtype: model inst
 
     """
-    column_name = item
+    # _log.debug("item is %s" % item)
+    # _log.debug("value is %s" % value)
+    # _log.debug("model is %s" % model)
+    # _log.debug("mapping is %s" % mapping)
+    # _log.debug("is_extra_data is %s" % is_extra_data)
+
+    cleaned_value = None
+    tmp_field = raw_field
+
     if cleaner:
-        if item not in (cleaner.float_columns or cleaner.date_columns):
+        if tmp_field not in (cleaner.float_columns or cleaner.date_columns):
             # Try using a reverse mapping for dynamic maps;
             # default to row name if it's not mapped
-            column_name = mapping.get(item, column_name)
+            tmp_field = mapping.get(raw_field)
+            if tmp_field:
+                tmp_field = tmp_field[1]
+            else:
+                _log.warn("Could not find the field to clean: %s" % raw_field)
 
-        cleaned_value = cleaner.clean_value(value, column_name)
+        cleaned_value = cleaner.clean_value(value, tmp_field)
     else:
         cleaned_value = default_cleaner(value)
-    if item in mapping:
-        if apply_func and callable(apply_func):
-            # If we need to call a function to apply our value, do so.
-            # We use the 'mapped' name of the column, and the cleaned value.
-            apply_func(model, mapping.get(item), cleaned_value)
+
+    # If the item is the extra_data column, then make sure to save it to the
+    # extra_data field of the database
+    if raw_field in mapping:
+        table_name = mapping.get(raw_field)[0]
+        field_name = mapping.get(raw_field)[1]
+        # _log.debug("item is in the mapping: %s -- %s" % (table_name, field_name))
+
+        if is_extra_data:
+            if hasattr(model, 'extra_data'):
+                # only save it if the model and the mapping are the same
+                if model.__class__.__name__ == table_name:
+                    model.extra_data[raw_field] = cleaned_value
+                else:
+                    _log.debug(
+                        "model name (%s) is not the same as the mapped table name (%s) -- skipping" % (
+                        model.__class__.__name__, table_name))  # noqa
+            else:
+                _log.debug(
+                    "model object does not have extra_data field, skipping mapping for %s" % raw_field)  # noqa
         else:
-            setattr(model, mapping.get(item), cleaned_value)
-    elif hasattr(model, 'extra_data'):
-        if not isinstance(model.extra_data, dict):
-            # sometimes our dict is returned as JSON string.
-            # TODO: Need to resolve this upstream with djorm-ext-jsonfield.
-            model.extra_data = json.loads(model.extra_data)
-        model.extra_data[item] = cleaned_value
-    else:
-        model.extra_data = {item: cleaned_value}
+            # Simply set the field to the cleaned value
+            setattr(model, field_name, cleaned_value)
 
     return model
 
@@ -152,12 +173,13 @@ def _set_default_concat_config(concat):
     return concat
 
 
-def map_row(row, mapping, model_class, cleaner=None, concat=None, **kwargs):
+def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, concat=None, **kwargs):
     """Apply mapping of row data to model.
 
     :param row: dict, parsed row data from csv.
     :param mapping: dict, keys map row columns to model_class attrs.
     :param model_class: class, reference to model class we map against.
+    :param extra_data_fields: list, list of raw columns that are considered extra data (per mapping)
     :param cleaner: (optional) inst, cleaner instance for row values.
     :param concat: (optional) list of dict,
         config for concatenating rows into an attr.
@@ -165,53 +187,47 @@ def map_row(row, mapping, model_class, cleaner=None, concat=None, **kwargs):
 
     """
     initial_data = kwargs.get('initial_data', None)
-    apply_columns = kwargs.get('apply_columns', [])
-    apply_func = kwargs.get('apply_func', None)
     model = model_class()
     # If there are any initial states we need to set prior to mapping.
     if initial_data:
         model = apply_initial_data(model, initial_data)
 
-    concat = _set_default_concat_config(concat)
+    # concat is not used as of 2016-09-14
+    # concat = _set_default_concat_config(concat)
 
     # In case we need to look up cleaner by dynamic field mapping.
-    for item, value in row.items():
+    for raw_field, value in row.items():
+
         # Look through any of our concatenation configs to see if this row
         # needs to be set aside for merging with others at the end of the map.
-        for concat_column in concat:
-            if item in concat_column['concat_columns']:
-                concat_column['concat_values'][item] = value
-                continue
+        #
+        # concat is not used as of 2016-09-14
+        # for concat_column in concat:
+        #     if item in concat_column['concat_columns']:
+        #         concat_column['concat_values'][item] = value
+        #         continue
 
         # If our item is a column which requires that we apply the function
         # then, send_apply_func will reference this function and be sent
         # to the ``apply_column_value`` function.
-        send_apply_func = apply_func if item in apply_columns else None
+        is_extra_data = True if raw_field in extra_data_fields else False
 
         # Save the value if is is not None, keep empty fields.
         if value is not None:
-            model = apply_column_value(
-                item, value, model, mapping, cleaner,
-                apply_func=send_apply_func
-            )
+            model = apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
 
-    if concat and [c['concat_values'] for c in concat]:
-        # We've skipped mapping any columns which we're going to concat.
-        # Now we concatenate them all and save to their designated target.
-        for c in concat:
-            mapping[c['target']] = c['target']
-            concated_vals = _concat_values(
-                c['concat_columns'],
-                c['concat_values'],
-                c['delimiter']
-            )
-            model = apply_column_value(
-                c['target'],
-                concated_vals,
-                model,
-                mapping,
-                cleaner,
-                apply_func=apply_func,
-            )
+    # concat is not used as of 2016-09-14
+    # if concat and [c['concat_values'] for c in concat]:
+    #     # We've skipped mapping any columns which we're going to concat.
+    #     # Now we concatenate them all and save to their designated target.
+    #     for c in concat:
+    #         mapping[c['target']] = c['target']
+    #         concated_vals = _concat_values(
+    #             c['concat_columns'],
+    #             c['concat_values'],
+    #             c['delimiter']
+    #         )
+    #         model = apply_column_value(c['target'], concated_vals, model, mapping, apply_columns,
+    #                                    cleaner, apply_func=apply_func)
 
     return model

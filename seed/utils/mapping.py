@@ -5,8 +5,8 @@
 :author
 """
 
-from seed.utils import constants
 from seed.models import PropertyState
+from seed.utils import constants
 
 
 # TODO: deprecate method - use MappingData class
@@ -34,24 +34,26 @@ def get_mappable_types(exclude_fields=None):
 
     # Normalize the types for when we communicate with JS.
     for field in results:
-        results[field] = results[field].lower().replace(
-            'field', ''
-        ).replace(
-            'integer', 'float'
-        ).replace(
-            'time', ''
-        ).replace(
-            'text', ''
-        ).replace(
-            'char', ''
-        )
+        results[field] = results[field].lower().replace('field', '').replace(
+            'integer', 'float').replace('time', '').replace('text', '').replace('char', '')
 
     return results
 
 
+# TODO: check to see if we can delete this method as the
+# method _get_table_and_column_names is preferred
 def _get_column_names(column_mapping, attr_name='column_raw'):
     """Turns the Column.column_names into a serializable list of str."""
     attr = getattr(column_mapping, attr_name, None)
     if not attr:
         return attr
     return [t for t in attr.all().values_list('column_name', flat=True)]
+
+
+def _get_table_and_column_names(column_mapping, attr_name='column_raw'):
+    """Turns the Column.column_names into a serializable list of str."""
+    attr = getattr(column_mapping, attr_name, None)
+    if not attr:
+        return attr
+
+    return [t for t in attr.all().values_list('table_name', 'column_name')]

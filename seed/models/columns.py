@@ -67,9 +67,6 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
     return 'PropertyState', column_names, 100
 
 
-
-
-
 class Column(models.Model):
     """The name of a column for a given organization."""
     SOURCE_PROPERTY = 'P'
@@ -109,6 +106,12 @@ class Column(models.Model):
         """
         Create the mappings for an organization and a user based on a simple
         array of array object.
+
+        .. note:
+
+            Note that as of 09/15/2016 - extra data still needs to be defined in the mappings, it
+            will no longer magically appear in the extra_data field if the user did not specify how
+            to map it.
 
         Args:
             mappings: dictionary containing mapping information
@@ -257,7 +260,7 @@ class Column(models.Model):
             new_field = field
 
             # find the mapping data column (i.e. the database fields) that match, if it exists
-            # to set the extra data flag
+            # then set the extra data flag to true
             db_field = md.find_column(field['to_table_name'], field['to_field'])
             is_extra_data = False if db_field else True  # yes i am a db column, thus I am not extra_data
 
@@ -285,31 +288,32 @@ class Column(models.Model):
         return new_data
 
     @staticmethod
-    def save_column_names(property_state, mapping=None):
+    def save_column_names(model_obj):
         """Save unique column names for extra_data in this organization.
 
         Basically this is a record of all the extra_data keys we've ever seen
         for a particular organization.
 
-        :param property_state: PropertyState instance.
+        :param model_obj: model_obj instance (either PropertyState or TaxLotState).
         """
-        from seed.utils import mapping as mapping_utils
 
-        # TODO: Need to allow passing in the TaxLotState as well.
-        for key in property_state.extra_data:
+        md = MappingData()
+
+        for key in model_obj.extra_data:
             # Ascertain if our key is ``extra_data`` or not.
-            # TODO: The get_mappable_columns only returns for the PropertyState
-            # Need to expand this to the tax_lot_state to know which one to look
-            # in, or just rewrite this is_extra_data logic, because it is wrong!
-            is_extra_data = key not in mapping_utils.get_mappable_columns()
+
+            # This is doing way to much work to find if the fields are extra data, especially
+            # since that has been asked probably many times before.
+            db_field = md.find_column(model_obj.__class__.__name__, key)
+            is_extra_data = False if db_field else True  # yes i am a db column, thus I am not extra_data
+
+            # get the name of the model object as a string to save into the database
             Column.objects.get_or_create(
-                organization=property_state.super_organization,
                 column_name=key[:511],
                 is_extra_data=is_extra_data,
-                table_name='PropertyState'
+                organization=model_obj.super_organization,
+                table_name=model_obj.__class__.__name__
             )
-
-            # TODO: Save the tax lot extra data fields
 
 
 class ColumnMapping(models.Model):
@@ -391,12 +395,11 @@ class ColumnMapping(models.Model):
         call it after all of the mappings have been saved to the ``ColumnMapping``
         table.
         """
-        from seed.utils.mapping import _get_column_names, _get_table_and_column_names
+        from seed.utils.mapping import _get_table_and_column_names
 
         source_mappings = ColumnMapping.objects.filter(
             super_organization=organization
         )
-        concat_confs = []
         mapping = {}
         for item in source_mappings:
             if not item.column_mapped.all().exists():
@@ -416,4 +419,4 @@ class ColumnMapping(models.Model):
             # These should be lists of one element each.
             mapping[key[1]] = value
 
-        return mapping, concat_confs
+        return mapping, []

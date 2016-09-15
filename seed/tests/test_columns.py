@@ -93,7 +93,7 @@ class TestColumns(TestCase):
             u'raw_data_2': (u'TaxLotState', u'destination_0'),
         }
 
-        test_mapping, no_concat = seed_models.get_column_mappings(self.fake_org)
+        test_mapping, no_concat = ColumnMapping.get_column_mappings(self.fake_org)
         self.assertDictEqual(test_mapping, expected)
         self.assertEqual(no_concat, [])
 
@@ -110,7 +110,7 @@ class TestColumns(TestCase):
     #     seed_models.Column.create_mappings(test_map, self.fake_org,
     #                                        self.fake_user)
     #
-    #     test_mapping, _ = seed_models.get_column_mappings(self.fake_org)
+    #     test_mapping, _ = ColumnMapping.get_column_mappings(self.fake_org)
     #
     #     expected = {
     #         u'hawkins': u'best lab',
@@ -156,13 +156,13 @@ class TestColumns(TestCase):
         ]
 
         seed_models.Column.create_mappings(test_map, self.fake_org, self.fake_user)
-        test_mapping, _ = seed_models.get_column_mappings(self.fake_org)
+        test_mapping, _ = ColumnMapping.get_column_mappings(self.fake_org)
         expected = {
-            u'Wookiee': u'Dothraki',
-            u'address': u'address',
-            u'eui': u'site_eui',
-            # u'Ewok': u'Merovingian',
-            u'Ewok': u'Hattin',
+            u'Wookiee': (u'PropertyState', u'Dothraki'),
+            u'address': (u'TaxLotState', u'address'),
+            u'eui': (u'PropertyState', u'site_eui'),
+            # u'Ewok': (u'TaxLotState', u'Merovingian'), # this does not show up because it was set before the last one
+            u'Ewok': (u'TaxLotState', u'Hattin'),
         }
         self.assertDictEqual(expected, test_mapping)
         self.assertTrue(test_mapping['Ewok'], 'Hattin')
