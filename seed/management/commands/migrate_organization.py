@@ -86,16 +86,19 @@ def create_property_state_for_node(node, org, cb):
     taxlot_columns = get_taxlot_columns(org)
 
     # Check every key is mapped at least once.
-    for key in node.extra_data:
+    for key in node.extra_data.keys():
         if key.strip()=='':
-            if node.extra_data[key].strip() != '':
+            if node.extra_data[key] is not None and node.extra_data[key].strip() != '':
                 print "WARNING: key '{}' for organization={} has value={} (cb={})".format(key, org, node.extra_data[key], cb.pk)
             continue
 
         try:
             assert (key in taxlot_columns or key in property_columns)
         except AssertionError:
-            raise KeyError("Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key, node.extra_data[key], org))
+            #raise KeyError("Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key, node.extra_data[key], org))
+            print "WARNINGXXX: {}".format(KeyError("Every key must be mapped: '{}'=>'{}' for org={} missing!".format(key, node.extra_data[key], org)))
+            node.extra_data.pop(key)
+            continue
 
     property_state_extra_data = {x:y for (x,y) in node.extra_data.items() if y in property_columns}
     mapping = load_organization_property_field_mapping(org)
@@ -119,40 +122,41 @@ def create_property_state_for_node(node, org, cb):
         property_state_extra_data["prop_bs_id"] = node.pk
 
     property_state = seed.models.PropertyState(confidence = node.confidence,
-                                                       jurisdiction_property_identifier = None,
-                                                       lot_number = node.lot_number,
-                                                       property_name = node.property_name,
-                                                       address_line_1 = node.address_line_1,
-                                                       address_line_2 = node.address_line_2,
-                                                       city = node.city,
-                                                       state = node.state_province,
-                                                       postal_code = node.postal_code,
-                                                       building_count = node.building_count,
-                                                       property_notes = node.property_notes,
-                                                       use_description = node.use_description,
-                                                       gross_floor_area = node.gross_floor_area,
-                                                       year_built = node.year_built,
-                                                       recent_sale_date = node.recent_sale_date,
-                                                       conditioned_floor_area = node.conditioned_floor_area,
-                                                       occupied_floor_area = node.occupied_floor_area,
-                                                       owner = node.owner,
-                                                       owner_email = node.owner_email,
-                                                       owner_telephone = node.owner_telephone,
-                                                       owner_address = node.owner_address,
-                                                       owner_city_state = node.owner_city_state,
-                                                       owner_postal_code = node.owner_postal_code,
-                                                       building_portfolio_manager_identifier = node.pm_property_id,
-                                                       building_home_energy_score_identifier = None,
-                                                       energy_score = node.energy_score,
-                                                       site_eui = node.site_eui,
-                                                       generation_date = node.generation_date,
-                                                       release_date = node.release_date,
-                                                       site_eui_weather_normalized = node.site_eui_weather_normalized,
-                                                       source_eui = node.source_eui,
-                                                       energy_alerts = node.energy_alerts,
-                                                       space_alerts = node.space_alerts,
-                                                       building_certification = node.building_certification,
-                                                       extra_data = property_state_extra_data)
+                                               data_state=seed.models.DATA_STATE_MATCHING,
+                                               jurisdiction_property_identifier = None,
+                                               lot_number = node.lot_number,
+                                               property_name = node.property_name,
+                                               address_line_1 = node.address_line_1,
+                                               address_line_2 = node.address_line_2,
+                                               city = node.city,
+                                               state = node.state_province,
+                                               postal_code = node.postal_code,
+                                               building_count = node.building_count,
+                                               property_notes = node.property_notes,
+                                               use_description = node.use_description,
+                                               gross_floor_area = node.gross_floor_area,
+                                               year_built = node.year_built,
+                                               recent_sale_date = node.recent_sale_date,
+                                               conditioned_floor_area = node.conditioned_floor_area,
+                                               occupied_floor_area = node.occupied_floor_area,
+                                               owner = node.owner,
+                                               owner_email = node.owner_email,
+                                               owner_telephone = node.owner_telephone,
+                                               owner_address = node.owner_address,
+                                               owner_city_state = node.owner_city_state,
+                                               owner_postal_code = node.owner_postal_code,
+                                               building_portfolio_manager_identifier = node.pm_property_id,
+                                               building_home_energy_score_identifier = None,
+                                               energy_score = node.energy_score,
+                                               site_eui = node.site_eui,
+                                               generation_date = node.generation_date,
+                                               release_date = node.release_date,
+                                               site_eui_weather_normalized = node.site_eui_weather_normalized,
+                                               source_eui = node.source_eui,
+                                               energy_alerts = node.energy_alerts,
+                                               space_alerts = node.space_alerts,
+                                               building_certification = node.building_certification,
+                                               extra_data = property_state_extra_data)
 
     for (field_origin, field_dest) in mapping.items():
         value = get_value_for_key(node, field_origin)
@@ -591,7 +595,6 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                 taxlotview.save()
             else:
                 taxlotview, created = seed.models.TaxLotView.objects.get_or_create(taxlot=tax_lot, cycle=import_cycle, state=tax_lot_state)
-                taxlotview.ensure_audit_logs_initialized()
                 tax_lot_view_created += int(created)
                 assert created, "Should have created a tax lot."
                 taxlotview.save()
@@ -610,7 +613,6 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                 propertyview.save()
             else:
                 propertyview, created = seed.models.PropertyView.objects.get_or_create(property=property_obj, cycle=import_cycle, state=property_state)
-                propertyview.ensure_audit_logs_initialized()
                 assert created, "Should have created something"
                 property_view_created += int(created)
                 propertyview.save()
