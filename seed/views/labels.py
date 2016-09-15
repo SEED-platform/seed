@@ -75,12 +75,10 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
     # TODO update for new data model
     def get_serializer(self, *args, **kwargs):
         kwargs['super_organization'] = self.get_organization()
-        building_snapshots = BuildingFilterBackend().filter_queryset(
+        inventory = InventoryFilterBackend().filter_queryset(
             request=self.request,
-            queryset=BuildingSnapshot.objects.all(),
-            view=self,
         )
-        kwargs['building_snapshots'] = building_snapshots
+        kwargs['inventory'] = inventory
         return super(LabelViewSet, self).get_serializer(*args, **kwargs)
 
 
@@ -88,7 +86,6 @@ class UpdateInventoryLabelsAPIView(APIView):
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
     inventory_models = {'property': Property, 'taxlot': TaxLot}
-    # models = {'property': PropertyLabels, 'taxlot': TaxLotLayybels}
     errors = {
         'disjoint': ErrorState(
             status.HTTP_422_UNPROCESSABLE_ENTITY,

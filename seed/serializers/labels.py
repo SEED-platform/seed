@@ -29,7 +29,7 @@ class LabelSerializer(serializers.ModelSerializer):
 
         """
         super_organization = kwargs.pop('super_organization')
-        self.building_snapshots = kwargs.pop('building_snapshots')
+        self.inventory = kwargs.pop('inventory')
         super(LabelSerializer, self).__init__(*args, **kwargs)
         if getattr(self, 'initial_data', None):
             self.initial_data['super_organization'] = super_organization.pk
@@ -49,8 +49,8 @@ class LabelSerializer(serializers.ModelSerializer):
         model = Label
 
     def get_is_applied(self, obj):
-        return self.building_snapshots.filter(
-            canonical_building__labels=obj,
+        return self.inventory.filter(
+            labels=obj,
         ).exists()
 
 

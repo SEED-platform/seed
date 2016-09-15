@@ -21,6 +21,37 @@ class LabelFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
+class InventoryFilterBackend(filters.BaseFilterBackend):
+    """
+    Implements the filtering and searching of buildings as a Django Rest
+    Framework filter backend.
+    """
+
+    def filter_queryset(self, request):
+        params = request.query_params.dict()
+        # Since this is being passed in as a query string, the object ends up
+        # coming through as a string.
+        params['filter_params'] = json.loads(params.get('filter_params', '{}'))
+        inventory_type = params.pop('inventory_type')
+        params = search.process_search_params(
+            params=params,
+            user=request.user,
+            is_api_request=True,
+        )
+        queryset = search.inventory_search_filter_sort(
+            inventory_type,
+            params=params,
+            user=request.user,
+        )
+        if request.query_params.get('select_all_checkbox', 'false') == 'true':
+            pass
+        elif 'selected' in request.query_params:
+            return queryset.filter(
+                id__in=request.query_params.getlist('selected'),
+            )
+        return queryset
+
+
 class BuildingFilterBackend(filters.BaseFilterBackend):
     """
     Implements the filtering and searching of buildings as a Django Rest
