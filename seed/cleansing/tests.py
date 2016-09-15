@@ -87,7 +87,7 @@ class CleansingDataTestCoveredBuilding(TestCase):
         }
 
         tasks.save_raw_data(self.import_file.id)
-        util.make_fake_mappings(fake_mappings, self.org)
+        # util.make_fake_mappings(fake_mappings, self.org) -> convert to Column.create_mappings()
         tasks.map_data(self.import_file.id)
 
         qs = PropertyState.objects.filter(

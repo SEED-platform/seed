@@ -13,38 +13,9 @@ import json
 
 from seed.models import (
     PropertyState,
-    Column,
-    ColumnMapping,
     set_initial_sources,
     Cycle,
 )
-
-
-# TODO: Deprecate in favor of Column.create_mappings
-def make_fake_mappings(mappings, org):
-    """Takes a dict and saves a ColumnMapping object for each key"""
-    for mapped, raw in mappings.items():
-        if not isinstance(raw, list):
-            raw = [raw]
-
-        columns_raw = []
-        for col in raw:
-            column_raw, _ = Column.objects.get_or_create(
-                column_name=col, organization=org
-            )
-            columns_raw.append(column_raw)
-
-        column_mapped, _ = Column.objects.get_or_create(
-            column_name=mapped, organization=org
-        )
-
-        column_mapping = ColumnMapping.objects.create(
-            super_organization=org
-        )
-        # For some reason the splat operator was causing problems here, just add them one at a time
-        for col in columns_raw:
-            column_mapping.column_raw.add(col)
-        column_mapping.column_mapped.add(column_mapped)
 
 
 def make_fake_property(import_file, init_data, bs_type, is_canon=False,
