@@ -6,36 +6,21 @@
 """
 import datetime
 import logging
-from unittest import skip
 
-from dateutil import parser
 from django.test import TestCase
-from mock import patch
 
 from seed.data_importer import tasks
-from seed.data_importer.models import ImportFile
 from seed.data_importer.tests import util as test_util
 from seed.models import (
-    ASSESSED_RAW,
-    ASSESSED_BS,
-    PORTFOLIO_BS,
-    POSSIBLE_MATCH,
-    SYSTEM_MATCH,
-    DATA_STATE_IMPORT,
     Cycle,
     PropertyState,
-    PropertyView,
-    Column,
-    get_ancestors,
     DATA_STATE_MAPPING
 )
-from seed.tests import util
 
 logger = logging.getLogger(__name__)
 
 
 class TestCaseA(TestCase):
-
     def setUp(self):
         test_util.import_example_data(self, 'example-data-properties.xlsx')
 

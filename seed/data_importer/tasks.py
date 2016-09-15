@@ -71,7 +71,6 @@ from seed.models import (
 )
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache
-from seed.utils.mapping import get_mappable_columns
 
 logger = get_task_logger(__name__)
 
