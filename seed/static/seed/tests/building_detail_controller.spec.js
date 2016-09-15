@@ -4,7 +4,7 @@
 describe('controller: building_detail_controller', function(){
     // globals set up and used in each test scenario
     var mockService, scope, controller, ngFilter, delete_called;
-    var building_detail_ctrl, building_detail_ctrl_scope, modalInstance;
+    var building_detail_controller, building_detail_controller_scope, modalInstance;
     var mock_building_services, mock_project_service, mock_building, mock_default_columns;
 
 
@@ -35,7 +35,7 @@ describe('controller: building_detail_controller', function(){
             controller = $controller;
             scope = $rootScope;
             ngFilter = $filter;
-            building_detail_ctrl_scope = $rootScope.$new();
+            building_detail_controller_scope = $rootScope.$new();
             modal_state = '';
             delete_called = false;
             mock_default_columns = default_columns;
@@ -198,8 +198,8 @@ describe('controller: building_detail_controller', function(){
             sortable: true,
             checked: false
         }];
-        building_detail_ctrl = controller('building_detail_controller', {
-            $scope: building_detail_ctrl_scope,
+        building_detail_controller = controller('building_detail_controller', {
+            $scope: building_detail_controller_scope,
             $stateParams: {
                 building_id: 1,
                 project_id: 2
@@ -223,11 +223,11 @@ describe('controller: building_detail_controller', function(){
         create_building_detail_controller();
 
         // act
-        building_detail_ctrl_scope.$digest();
+        building_detail_controller_scope.$digest();
 
         // assertions
-        expect(building_detail_ctrl_scope.building.id).toBe(511);
-        expect(building_detail_ctrl_scope.imported_buildings[0].id).toBe(2);
+        expect(building_detail_controller_scope.building.id).toBe(511);
+        expect(building_detail_controller_scope.imported_buildings[0].id).toBe(2);
     });
 
 
@@ -237,15 +237,15 @@ describe('controller: building_detail_controller', function(){
         create_building_detail_controller();
 
         // act
-        building_detail_ctrl_scope.$digest();
+        building_detail_controller_scope.$digest();
 
         // assertions
-        expect(building_detail_ctrl_scope.is_active_project({id:33}))
+        expect(building_detail_controller_scope.is_active_project({id:33}))
         .toBe(true);
-        expect(building_detail_ctrl_scope.is_active_project({id:34}))
+        expect(building_detail_controller_scope.is_active_project({id:34}))
         .toBe(false);
-        building_detail_ctrl_scope.project = undefined;
-        expect(building_detail_ctrl_scope.is_active_project({id:34}))
+        building_detail_controller_scope.project = undefined;
+        expect(building_detail_controller_scope.is_active_project({id:34}))
         .toBe(false);
     });
 
@@ -254,12 +254,12 @@ describe('controller: building_detail_controller', function(){
         create_building_detail_controller();
 
         // act
-        building_detail_ctrl_scope.$digest();
-        building_detail_ctrl_scope.save_building_state();
-        building_detail_ctrl_scope.building.gross_floor_area = 43214;
+        building_detail_controller_scope.$digest();
+        building_detail_controller_scope.save_building_state();
+        building_detail_controller_scope.building.gross_floor_area = 43214;
 
         // assertions
-        expect(building_detail_ctrl_scope.building_copy.gross_floor_area)
+        expect(building_detail_controller_scope.building_copy.gross_floor_area)
         .toBe(123456);
     });
     it('should restore the copy of building if a user clicks cancel',
@@ -268,28 +268,28 @@ describe('controller: building_detail_controller', function(){
         create_building_detail_controller();
 
         // act
-        building_detail_ctrl_scope.$digest();
-        building_detail_ctrl_scope.save_building_state();
-        building_detail_ctrl_scope.building.gross_floor_area = 43214;
-        building_detail_ctrl_scope.restore_building();
+        building_detail_controller_scope.$digest();
+        building_detail_controller_scope.save_building_state();
+        building_detail_controller_scope.building.gross_floor_area = 43214;
+        building_detail_controller_scope.restore_building();
 
         // assertions
-        expect(building_detail_ctrl_scope.building.gross_floor_area)
+        expect(building_detail_controller_scope.building.gross_floor_area)
         .toBe(123456);
-        expect(building_detail_ctrl_scope.building.edit_form_showing).toBe(false);
+        expect(building_detail_controller_scope.building.edit_form_showing).toBe(false);
     });
     it('should save a building when a user clicks the save button', function() {
         // arrange
         create_building_detail_controller();
 
         // act
-        building_detail_ctrl_scope.$digest();
-        building_detail_ctrl_scope.building.gross_floor_area = 43214;
-        building_detail_ctrl_scope.save_building();
+        building_detail_controller_scope.$digest();
+        building_detail_controller_scope.building.gross_floor_area = 43214;
+        building_detail_controller_scope.save_building();
 
         // assertions
         expect(mock_building_services.update_building)
-        .toHaveBeenCalledWith(building_detail_ctrl_scope.building, 42);
+        .toHaveBeenCalledWith(building_detail_controller_scope.building, 42);
         expect(mock_building.gross_floor_area).toEqual(43214);
     });
 
@@ -299,13 +299,13 @@ describe('controller: building_detail_controller', function(){
         create_building_detail_controller();
 
         // act
-        building_detail_ctrl_scope.$digest();
-        building_detail_ctrl_scope.user.project_slug = 'project_1';
+        building_detail_controller_scope.$digest();
+        building_detail_controller_scope.user.project_slug = 'project_1';
 
         // assertions
-        expect(building_detail_ctrl_scope.is_project()).toEqual(true);
-        building_detail_ctrl_scope.user.project_slug = undefined;
-        expect(building_detail_ctrl_scope.is_project()).toEqual(false);
+        expect(building_detail_controller_scope.is_project()).toEqual(true);
+        building_detail_controller_scope.user.project_slug = undefined;
+        expect(building_detail_controller_scope.is_project()).toEqual(false);
 
     });
     it('should show the default projects table if a user has no compliance' +
@@ -314,12 +314,12 @@ describe('controller: building_detail_controller', function(){
         create_building_detail_controller();
 
         // act
-        building_detail_ctrl_scope.$digest();
+        building_detail_controller_scope.$digest();
 
         // assertions
-        expect(building_detail_ctrl_scope.user.has_projects()).toEqual(false);
-        building_detail_ctrl_scope.projects = [{id: 1, name: 'a'}];
-        expect(building_detail_ctrl_scope.user.has_projects()).toEqual(true);
+        expect(building_detail_controller_scope.user.has_projects()).toEqual(false);
+        building_detail_controller_scope.projects = [{id: 1, name: 'a'}];
+        expect(building_detail_controller_scope.user.has_projects()).toEqual(true);
 
     });
 
@@ -328,14 +328,14 @@ describe('controller: building_detail_controller', function(){
         create_building_detail_controller();
 
         // act
-        building_detail_ctrl_scope.$digest();
+        building_detail_controller_scope.$digest();
 
         // assertions
-        expect(building_detail_ctrl_scope.is_valid_key('id')).toEqual(false);
-        expect(building_detail_ctrl_scope.is_valid_key('pk')).toEqual(false);
-        expect(building_detail_ctrl_scope.is_valid_key('pk_source')).toEqual(false);
-        expect(building_detail_ctrl_scope.is_valid_key(' extra_data ')).toEqual(false);
-        expect(building_detail_ctrl_scope.is_valid_key('gross_floor_area'))
+        expect(building_detail_controller_scope.is_valid_key('id')).toEqual(false);
+        expect(building_detail_controller_scope.is_valid_key('pk')).toEqual(false);
+        expect(building_detail_controller_scope.is_valid_key('pk_source')).toEqual(false);
+        expect(building_detail_controller_scope.is_valid_key(' extra_data ')).toEqual(false);
+        expect(building_detail_controller_scope.is_valid_key('gross_floor_area'))
           .toEqual(true);
     });
 
@@ -344,18 +344,18 @@ describe('controller: building_detail_controller', function(){
         create_building_detail_controller();
 
         // act
-        building_detail_ctrl_scope.$digest();
-        building_detail_ctrl_scope.imported_buildings[0].is_master = true;
-        expect(building_detail_ctrl_scope.building.gross_floor_area_source)
-          .not.toEqual(building_detail_ctrl_scope.building.id);
-        building_detail_ctrl_scope.set_self_as_source('gross_floor_area');
-        building_detail_ctrl_scope.set_self_as_source('some other key', true);
-        building_detail_ctrl_scope.$digest();
+        building_detail_controller_scope.$digest();
+        building_detail_controller_scope.imported_buildings[0].is_master = true;
+        expect(building_detail_controller_scope.building.gross_floor_area_source)
+          .not.toEqual(building_detail_controller_scope.building.id);
+        building_detail_controller_scope.set_self_as_source('gross_floor_area');
+        building_detail_controller_scope.set_self_as_source('some other key', true);
+        building_detail_controller_scope.$digest();
 
         // assertions
-        expect(building_detail_ctrl_scope.building.gross_floor_area_source)
-          .toEqual(building_detail_ctrl_scope.building.id);
-        expect(building_detail_ctrl_scope.imported_buildings[0].is_master)
+        expect(building_detail_controller_scope.building.gross_floor_area_source)
+          .toEqual(building_detail_controller_scope.building.id);
+        expect(building_detail_controller_scope.imported_buildings[0].is_master)
           .toEqual(false);
     });
     it('should set a column as the dominant source when clicked', function() {
@@ -363,16 +363,16 @@ describe('controller: building_detail_controller', function(){
         create_building_detail_controller();
 
         // act
-        building_detail_ctrl_scope.$digest();
-        building_detail_ctrl_scope.imported_buildings[1].is_master = true;
-        building_detail_ctrl_scope.make_source_default(
-            building_detail_ctrl_scope.imported_buildings[0]);
-        building_detail_ctrl_scope.$digest();
+        building_detail_controller_scope.$digest();
+        building_detail_controller_scope.imported_buildings[1].is_master = true;
+        building_detail_controller_scope.make_source_default(
+            building_detail_controller_scope.imported_buildings[0]);
+        building_detail_controller_scope.$digest();
 
         // assertions
-        var b = building_detail_ctrl_scope.building,
-            i = building_detail_ctrl_scope.imported_buildings[0],
-            i_other = building_detail_ctrl_scope.imported_buildings[1];
+        var b = building_detail_controller_scope.building,
+            i = building_detail_controller_scope.imported_buildings[0],
+            i_other = building_detail_controller_scope.imported_buildings[1];
 
         expect(b.gross_floor_area_source).toEqual(i.id);
         expect(b.id).not.toEqual(i.id);
@@ -398,18 +398,18 @@ describe('controller: building_detail_controller', function(){
         create_building_detail_controller();
 
         // act
-        building_detail_ctrl_scope.$digest();
-        building_detail_ctrl_scope.imported_buildings[1].is_master = true;
-        building_detail_ctrl_scope.set_building_attribute(
-            building_detail_ctrl_scope.imported_buildings[0], 'city');
-        building_detail_ctrl_scope.set_building_attribute(
-            building_detail_ctrl_scope.imported_buildings[0], 'some other key', true);
-        building_detail_ctrl_scope.$digest();
+        building_detail_controller_scope.$digest();
+        building_detail_controller_scope.imported_buildings[1].is_master = true;
+        building_detail_controller_scope.set_building_attribute(
+            building_detail_controller_scope.imported_buildings[0], 'city');
+        building_detail_controller_scope.set_building_attribute(
+            building_detail_controller_scope.imported_buildings[0], 'some other key', true);
+        building_detail_controller_scope.$digest();
 
         // assertions
-        var b = building_detail_ctrl_scope.building,
-            i = building_detail_ctrl_scope.imported_buildings[0],
-            i_other = building_detail_ctrl_scope.imported_buildings[1];
+        var b = building_detail_controller_scope.building,
+            i = building_detail_controller_scope.imported_buildings[0],
+            i_other = building_detail_controller_scope.imported_buildings[1];
 
         expect(b.id).not.toEqual(i.id);
         expect(b.pk).not.toEqual(i.id);
@@ -430,10 +430,10 @@ describe('controller: building_detail_controller', function(){
         var keys;
 
         // act
-        building_detail_ctrl_scope.$digest();
+        building_detail_controller_scope.$digest();
 
         // assertions
-        var edc = building_detail_ctrl_scope.data_columns;
+        var edc = building_detail_controller_scope.data_columns;
 
         // should not duplicate keys
         expect(edc.length).toEqual(8);
@@ -448,11 +448,11 @@ describe('controller: building_detail_controller', function(){
         create_building_detail_controller();
 
         // act
-        building_detail_ctrl_scope.$digest();
-        building_detail_ctrl_scope.$digest();
+        building_detail_controller_scope.$digest();
+        building_detail_controller_scope.$digest();
 
         // assertions
-        var area_fields = building_detail_ctrl_scope.floor_area_fields;
+        var area_fields = building_detail_controller_scope.floor_area_fields;
         expect(area_fields.length).toEqual(1);
     });
 
@@ -461,14 +461,14 @@ describe('controller: building_detail_controller', function(){
         create_building_detail_controller();
 
         // act
-        building_detail_ctrl_scope.$digest();
+        building_detail_controller_scope.$digest();
 
         // assertions
-        expect(building_detail_ctrl_scope.get_number('')).toEqual(0);
-        expect(building_detail_ctrl_scope.get_number('123,123,123')).toEqual(123123123);
-        expect(building_detail_ctrl_scope.get_number('123,123,123.123')).toEqual(123123123.123);
-        expect(building_detail_ctrl_scope.get_number('-123,123,123')).toEqual(-123123123);
-        expect(building_detail_ctrl_scope.get_number(-123123123)).toEqual(-123123123);
+        expect(building_detail_controller_scope.get_number('')).toEqual(0);
+        expect(building_detail_controller_scope.get_number('123,123,123')).toEqual(123123123);
+        expect(building_detail_controller_scope.get_number('123,123,123.123')).toEqual(123123123.123);
+        expect(building_detail_controller_scope.get_number('-123,123,123')).toEqual(-123123123);
+        expect(building_detail_controller_scope.get_number(-123123123)).toEqual(-123123123);
 
 
     });

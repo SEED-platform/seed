@@ -52,6 +52,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.existing_members_modal',
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.export_modal',
+  'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_list',
   'BE.seed.controller.inventory_reports',
@@ -67,10 +68,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.organization',
   'BE.seed.controller.organization_settings',
   'BE.seed.controller.project',
-  'BE.seed.controller.property_detail',
   'BE.seed.controller.security',
-  'BE.seed.controller.taxlot_detail',
-  'BE.seed.controller.update_item_labels_modal_ctrl'
+  'BE.seed.controller.update_item_labels_modal'
 ]);
 angular.module('BE.seed.filters', [
   'district',
@@ -83,6 +82,7 @@ angular.module('BE.seed.filters', [
 angular.module('BE.seed.directives', [
   'sdBasicBuildingInfoChart',
   'sdBasicPropertyInfoChart',
+  'sdCheckCycleExists',
   'sdCheckLabelExists',
   'sdDropdown',
   'sdEnter',
@@ -235,9 +235,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
         }]
       }
     })
-    /* TO REMOVE */
-    /*
-    .state({
+    /*.state({
       name: 'projects',
       url: '/projects',
       templateUrl: static_url + 'seed/partials/projects.html',
@@ -250,7 +248,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'project_detail',
-      url: '/projects/:project_id',
+      url: '/projects/{project_id:int}',
       templateUrl: static_url + 'seed/partials/project_detail.html',
       controller: 'building_list_controller',
       resolve: {
@@ -307,7 +305,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'project_settings',
-      url: '/projects/:project_id/settings',
+      url: '/projects/{project_id:int}/settings',
       templateUrl: static_url + 'seed/partials/project_settings.html',
       controller: 'buildings_settings_controller',
       resolve: {
@@ -335,7 +333,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'building_detail_section',
-      url: '/projects/:project_id/:building_id',
+      url: '/projects/{project_id:int}/{building_id:int}',
       templateUrl: static_url + 'seed/partials/building_detail_section.html',
       controller: 'building_detail_controller',
       resolve: {
@@ -440,8 +438,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       templateUrl: static_url + 'seed/partials/inventory_reports.html',
       controller: 'inventory_reports_controller',
       resolve: {
-        cycles: ['inventory_service', function (inventory_service) {
-          return inventory_service.get_cycles();
+        cycles: ['cycle_service', function (cycle_service) {
+          return cycle_service.get_cycles();
         }]
       }
     })
@@ -492,7 +490,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'building_detail',
-      url: '/buildings/:building_id',
+      url: '/buildings/{building_id:int}',
       templateUrl: static_url + 'seed/partials/building_detail_section.html',
       controller: 'building_detail_controller',
       resolve: {
@@ -515,7 +513,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'building_projects',
-      url: '/buildings/:building_id/projects',
+      url: '/buildings/{building_id:int}/projects',
       templateUrl: static_url + 'seed/partials/building_projects_section.html',
       controller: 'building_detail_controller',
       resolve: {
@@ -538,7 +536,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'building_audit_log',
-      url: '/buildings/:building_id/audit',
+      url: '/buildings/{building_id:int}/audit',
       templateUrl: static_url + 'seed/partials/building_audit_log.html',
       controller: 'building_detail_controller',
       resolve: {
@@ -562,7 +560,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'building_energy',
-      url: '/buildings/:building_id/energy',
+      url: '/buildings/{building_id:int}/energy',
       templateUrl: static_url + 'seed/partials/building_energy_section.html',
       controller: 'building_detail_controller',
       resolve: {
@@ -585,7 +583,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'building_settings',
-      url: '/buildings/:building_id/settings',
+      url: '/buildings/{building_id:int}/settings',
       templateUrl: static_url + 'seed/partials/building_settings_section.html',
       controller: 'buildings_settings_controller',
       resolve: {
@@ -614,7 +612,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'mapping',
-      url: '/data/mapping/:importfile_id',
+      url: '/data/mapping/{importfile_id:int}',
       templateUrl: static_url + 'seed/partials/mapping.html',
       controller: 'mapping_controller',
       resolve: {
@@ -660,7 +658,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'matching',
-      url: '/data/matching/:importfile_id',
+      url: '/data/matching/{importfile_id:int}',
       templateUrl: static_url + 'seed/partials/matching.html',
       controller: 'matching_controller',
       resolve: {
@@ -720,7 +718,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'dataset_detail',
-      url: '/data/:dataset_id',
+      url: '/data/{dataset_id:int}',
       templateUrl: static_url + 'seed/partials/dataset_detail.html',
       controller: 'dataset_detail_controller',
       resolve: {
@@ -750,7 +748,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'api_docs',
-      url: '/api-docs',
+      url: '/api/swagger',
       templateUrl: static_url + 'seed/partials/api_docs.html',
       controller: 'api_controller'
     })
@@ -778,7 +776,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'organization_settings',
-      url: '/accounts/:organization_id',
+      url: '/accounts/{organization_id:int}',
       templateUrl: static_url + 'seed/partials/settings.html',
       controller: 'organization_settings_controller',
       resolve: {
@@ -814,7 +812,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'organization_sharing',
-      url: '/accounts/:organization_id/sharing',
+      url: '/accounts/{organization_id:int}/sharing',
       templateUrl: static_url + 'seed/partials/sharing.html',
       controller: 'organization_settings_controller',
       resolve: {
@@ -850,7 +848,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'organization_cleansing',
-      url: '/accounts/:organization_id/data_cleansing',
+      url: '/accounts/{organization_id:int}/data_cleansing',
       templateUrl: static_url + 'seed/partials/cleansing_admin.html',
       controller: 'cleansing_admin_controller',
       resolve: {
@@ -882,7 +880,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'organization_cycles',
-      url: '/accounts/:organization_id/cycles',
+      url: '/accounts/{organization_id:int}/cycles',
       templateUrl: static_url + 'seed/partials/cycle_admin.html',
       controller: 'cycle_admin_controller',
       resolve: {
@@ -910,7 +908,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'organization_labels',
-      url: '/accounts/:organization_id/labels',
+      url: '/accounts/{organization_id:int}/labels',
       templateUrl: static_url + 'seed/partials/label_admin.html',
       controller: 'label_admin_controller',
       resolve: {
@@ -939,7 +937,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'organization_sub_orgs',
-      url: '/accounts/:organization_id/sub_org',
+      url: '/accounts/{organization_id:int}/sub_org',
       templateUrl: static_url + 'seed/partials/sub_org.html',
       controller: 'organization_controller',
       resolve: {
@@ -975,7 +973,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'organization_members',
-      url: '/accounts/:organization_id/members',
+      url: '/accounts/{organization_id:int}/members',
       templateUrl: static_url + 'seed/partials/members.html',
       controller: 'members_controller',
       resolve: {
@@ -1007,7 +1005,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
     })
     .state({
       name: 'cycle_admin',
-      url: '/accounts/:organization_id/cycle_admin',
+      url: '/accounts/{organization_id:int}/cycle_admin',
       templateUrl: static_url + 'seed/partials/cycle_admin.html',
       controller: 'cycle_admin_controller',
       resolve: {
@@ -1029,8 +1027,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
             return inventory_service.get_taxlots(1);
           }
         }],
-        cycles: ['inventory_service', function (inventory_service) {
-          return inventory_service.get_cycles();
+        cycles: ['cycle_service', function (cycle_service) {
+          return cycle_service.get_cycles();
         }],
         columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
           if ($stateParams.inventory_type === 'properties') {
@@ -1048,47 +1046,36 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       template: '<ui-view>'
     })
     .state({
-      name: 'property',
-      url: '/properties/:property_id/cycles/:cycle_id',
+      name: 'inventory_detail',
+      url: '/{inventory_type:properties|taxlots}/{inventory_id:int}/cycles/{cycle_id:int}',
       templateUrl: static_url + 'seed/partials/inventory_detail.html',
-      controller: 'property_detail_controller',
+      controller: 'inventory_detail_controller',
       resolve: {
-        property_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
-          // load `get_building` before page is loaded to avoid
-          // page flicker.
-          var property_id = $stateParams.property_id;
+        inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+          // load `get_building` before page is loaded to avoid page flicker.
+          var inventory_id = $stateParams.inventory_id;
           var cycle_id = $stateParams.cycle_id;
-          return inventory_service.get_property(property_id, cycle_id);
+          var promise;
+          if ($stateParams.inventory_type == 'properties') promise = inventory_service.get_property(inventory_id, cycle_id);
+          else if ($stateParams.inventory_type == 'taxlots') promise = inventory_service.get_taxlot(inventory_id, cycle_id);
+          promise.catch(function (err) {
+            if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
+              // Inventory item not found for current organization, redirecting
+              $state.go('inventory_list', {inventory_type: $stateParams.inventory_type});
+            }
+          });
+          return promise;
         }],
-        all_property_columns: ['inventory_service', function (inventory_service) {
-          return inventory_service.get_property_columns();
+        all_columns: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
+          if ($stateParams.inventory_type == 'properties') return inventory_service.get_property_columns();
+          else if ($stateParams.inventory_type == 'taxlots') return inventory_service.get_taxlot_columns();
         }],
-        default_property_columns: ['user_service', function (user_service) {
+        default_columns: ['user_service', function (user_service) {
           //TODO: Return default Property columns
           return [];
-        }]
-      },
-      parent: 'detail'
-    })
-    .state({
-      name: 'taxlot',
-      url: '/taxlots/:taxlot_id/cycles/:cycle_id',
-      templateUrl: static_url + 'seed/partials/inventory_detail.html',
-      controller: 'taxlot_detail_controller',
-      resolve: {
-        taxlot_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
-          // load `get_building` before page is loaded to avoid
-          // page flicker.
-          var taxlot_id = $stateParams.taxlot_id;
-          var cycle_id = $stateParams.cycle_id;
-          return inventory_service.get_taxlot(taxlot_id, cycle_id);
         }],
-        all_taxlot_columns: ['inventory_service', function (inventory_service) {
-          return inventory_service.get_taxlot_columns();
-        }],
-        default_taxlot_columns: ['user_service', function (user_service) {
-          //TODO: Return default TaxLot columns
-          return [];
+        labels_payload: ['$stateParams', 'label_service', function ($stateParams, label_service) {
+          return label_service.get_labels([$stateParams.inventory_id], false, {});
         }]
       },
       parent: 'detail'

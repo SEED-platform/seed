@@ -72,7 +72,10 @@ describe('controller: members_controller', function(){
                     can_invite_member: true,
                     can_remove_member: true
                 }
-            }
+            },
+            user_profile_payload: ['user_service', function (user_service) {
+                return user_service.get_user_profile();
+            }]
         });
     }
 

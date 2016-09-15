@@ -3,7 +3,7 @@
  * :author
  */
 angular.module('BE.seed.controller.create_organization_modal', [])
-.controller('create_organization_modal_ctrl', [
+.controller('create_organization_modal_controller', [
     '$scope',
     '$uibModalInstance',
     'organization_service',

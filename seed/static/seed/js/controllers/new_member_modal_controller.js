@@ -3,7 +3,7 @@
  * :author
  */
 angular.module('BE.seed.controller.new_member_modal', [])
-.controller('new_member_modal_ctrl', [
+.controller('new_member_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'organization',
@@ -57,7 +57,7 @@ angular.module('BE.seed.controller.new_member_modal', [])
 }]);
 
 angular.module('BE.seed.controller.existing_members_modal', [])
-.controller('existing_members_modal_ctrl', [
+.controller('existing_members_modal_controller', [
   '$scope',
   '$uibModalInstance',
   function ($scope, $uibModalInstance) {

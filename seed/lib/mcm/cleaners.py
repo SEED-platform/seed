@@ -106,6 +106,7 @@ class Cleaner(object):
     """Cleans values for a given ontology."""
 
     def __init__(self, ontology):
+
         self.ontology = ontology
         self.schema = self.ontology.get(u'types', {})
         self.float_columns = filter(
@@ -114,6 +115,11 @@ class Cleaner(object):
         self.date_columns = filter(
             lambda x: self.schema[x] == u'date', self.schema
         )
+
+        # print self.ontology
+        # print self.schema
+        # print self.float_columns
+        # print self.date_columns
 
     def clean_value(self, value, column_name):
         """Clean the value, based on characteristics of its column_name."""

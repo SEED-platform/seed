@@ -23,12 +23,6 @@ urlpatterns = [
     # landing page
     url(r'^', include('seed.landing.urls', namespace="landing", app_name="landing")),
 
-    # accounts/orgs AJAX
-    url(r'^app/accounts/', include('seed.urls.accounts', namespace="accounts", app_name="accounts")),
-
-    # projects AJAX
-    url(r'^app/projects/', include('seed.urls.projects', namespace="projects", app_name="projects")),
-
     # audit_logs AJAX
     url(r'^audit_logs/', include('seed.audit_logs.urls', namespace="audit_logs", app_name="audit_logs")),
 

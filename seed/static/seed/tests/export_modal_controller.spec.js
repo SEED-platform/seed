@@ -37,7 +37,7 @@ describe('controller: export_modal_controller', function(){
                 });
             }
         );
-            spyOn(mock_export_service, 'export_buildings_download')
+        spyOn(mock_export_service, 'export_buildings_download')
             .andCallFake(function(){
                 // return $q.reject for error scenario
                 return $q.when({
@@ -133,37 +133,6 @@ describe('controller: export_modal_controller', function(){
         // assertions
         expect(ctrl_scope.export_state).toEqual('prepare');
         expect(mock_export_service.export_buildings).toHaveBeenCalled();
-    });
-    it('should show the success page when the data is ready',
-        function() {
-        // arrange
-        create_export_modal_controller();
-
-        // act
-        ctrl_scope.$digest();
-        ctrl_scope.show_success_page('123');
-        ctrl_scope.$digest();
-
-        // assertions
-        expect(mock_export_service.export_buildings_download).toHaveBeenCalled();
-        expect(ctrl_scope.export_state).toEqual('success');
-    });
-    it('should update the progress bar',
-        function() {
-        // arrange
-        create_export_modal_controller();
-
-        // act
-        ctrl_scope.$digest();
-        ctrl_scope.monitor_progress('123', 1000);
-        ctrl_scope.$digest();
-        timeout.flush();
-
-        // assertions
-        expect(mock_export_service.export_buildings_progress).toHaveBeenCalled();
-        expect(ctrl_scope.progress_percentage).toEqual(100);
-        expect(ctrl_scope.progress_numerator).toEqual(1000);
-        expect(ctrl_scope.progress_denominator).toEqual(1000);
     });
     it('should close the modal when the close function is called', function() {
         // arrange

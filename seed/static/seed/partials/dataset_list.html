@@ -33,7 +33,7 @@
                             <span class="view" id="data-link-{$ $index $}">
                                 <a ui-sref="dataset_detail({dataset_id: d.id})" class="import_name" ng-show="!d.edit_form_showing">{$d.name$}</a>
                                 <a href="" class="delete_link" ng-click="confirm_delete(d)" ng-show="!d.edit_form_showing"><i class='fa fa-trash-o'></i></a>
-                                <a href="" class="replace_file_button edit_file_name" ng-click="edit_dataset_name(d)" ng-show="!d.edit_form_showing"><i class="fa fa-pencil"></i></a>
+                                <a href="" class="replace_file_button edit_file_name" ng-click="edit_dataset_name(d)" ng-show="!d.edit_form_showing" style="margin-right: 8px;"><i class="fa fa-pencil"></i></a>
                             </span>
                             <div class="row action edit_file_name" ng-show="d.edit_form_showing">
                                 <form class="form form-inline edit_import_meta_form"

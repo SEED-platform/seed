@@ -67,15 +67,15 @@ class Rules(models.Model):
         missing_matching_field = [
             'address_line_1',
             # 'tax_lot_id',
-            # 'custom_id_1',
-            # 'pm_property_id'
+            'custom_id_1',
+            'pm_property_id'
         ]
         # Ignored fields
         missing_values = [
             'address_line_1',
             # 'tax_lot_id',
-            # 'custom_id_1',
-            # 'pm_property_id'
+            'custom_id_1',
+            'pm_property_id'
         ]
         # min/max range checks
         in_range_checking = [{
@@ -272,7 +272,6 @@ class Rules(models.Model):
 
 
 class Cleansing(object):
-
     def __init__(self, organization, *args, **kwargs):
         """
         Initialize the Cleansing class.
@@ -331,6 +330,8 @@ class Cleansing(object):
         """
         fields = self.get_fieldnames(record_type)
 
+        print fields
+
         for datum in data:
             # Initialize the ID if it doesn't exist yet. Add in the other
             # fields that are of interest to the GUI
@@ -378,9 +379,11 @@ class Cleansing(object):
         # TODO: NL: Should we check the extra_data field for the data?
         """
 
-        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_MISSING_MATCHING_FIELD,
-                                         enabled=True) \
-                .order_by('field', 'severity'):
+        for rule in Rules.objects.filter(
+                org=self.org,
+                category=CATEGORY_MISSING_MATCHING_FIELD,
+                enabled=True
+        ).order_by('field', 'severity'):
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
                 formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
@@ -410,9 +413,11 @@ class Cleansing(object):
         # TODO: Check the extra_data field for the data?
         """
 
-        for rule in Rules.objects.filter(org=self.org, category=CATEGORY_MISSING_VALUES,
-                                         enabled=True) \
-                .order_by('field', 'severity'):
+        for rule in Rules.objects.filter(
+                org=self.org,
+                category=CATEGORY_MISSING_VALUES,
+                enabled=True
+        ).order_by('field', 'severity'):
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
                 formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']

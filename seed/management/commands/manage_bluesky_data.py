@@ -45,6 +45,10 @@ class Command(BaseCommand):
         parser.add_argument('--create-missing-columns', dest='create_missing_columns', default=False, action="store_true")
 
         # Labels arguments
+
+        parser.add_argument('--clear-bluesky-labels', dest='clear_bluesky_labels', default=False, action="store_true",
+                            help="Delete all labels associated with all View objects")
+
         parser.add_argument('--labels-add-property-labels', dest='add_property_labels', default=True, action="store_true",
                             help="Create labels for PropertyView Objects")
         parser.add_argument('--labels-no-add-property-labels', dest='add_property_labels', default=True, action="store_false",
@@ -74,6 +78,8 @@ class Command(BaseCommand):
                 options['cb_whitelist_string'] = cbs
             else:
                 options['cb_whitelist_string'] = options['cb_whitelist_string'] + "," + cbs
+
+        options['clear_bluesky_labels'] = False
 
         destroy, migrate, campus, m2m, primarysecondary, migrate_columns, migrate_labels = map(lambda x: options[x], ("destroy", "migrate", "campus", "m2m", "primarysecondary", "migrate_columns", "migrate_labels"))
 

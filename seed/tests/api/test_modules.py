@@ -46,12 +46,8 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
     # Get the mapping suggestions
     print ('API Function: get_column_mapping_suggestions\n'),
     partmsg = 'get_column_mapping_suggestions'
-    payload = {'import_file_id': import_id,
-               'org_id': organization_id}
-
-    result = requests.get(main_url + '/app/get_column_mapping_suggestions/',
-                          headers=header,
-                          data=json.dumps(payload))
+    result = requests.get(main_url + '/api/v2/data_files/%s/mapping_suggestions/?organization_id=%s' % (import_id, organization_id),
+                          headers=header)
     check_status(result, partmsg, log, PIIDflag='mappings')
 
     # Save the column mappings
@@ -136,13 +132,13 @@ def search_and_project(header, main_url, organization_id, log):
     print ('API Function: create_project\n'),
     partmsg = 'create_project'
     time1 = dt.datetime.now()
-    newproject_payload = {'project': {'name': 'New Project_' + str(time1.day) + str(time1.second),
-                                      'compliance_type': 'describe compliance type',
-                                      'description': 'project description'},
-                          'organization_id': organization_id}
+    newproject_payload = {'name': 'New Project_' + str(time1.day) + str(time1.second),
+                          'compliance_type': 'describe compliance type',
+                          'description': 'project description'}
 
-    result = requests.post(main_url + '/app/projects/create_project/',
+    result = requests.post(main_url + '/api/v2/projects/',
                            headers=header,
+                           params=json.dumps({'organization_id': organization_id}),
                            data=json.dumps(newproject_payload))
     check_status(result, partmsg, log)
 
@@ -153,9 +149,9 @@ def search_and_project(header, main_url, organization_id, log):
     print ('API Function: get_project\n'),
     partmsg = 'get_project'
 
-    result = requests.get(main_url + '/app/projects/get_projects/',
+    result = requests.get(main_url + '/api/v2/projects/',
                           headers=header,
-                          params={'organization_id': organization_id})
+                          params=json.dumps({'project_slug': project_slug, 'organization_id': organization_id}))
     check_status(result, partmsg, log)
 
     # Populate project by search buildings result
@@ -226,17 +222,23 @@ def search_and_project(header, main_url, organization_id, log):
 
 
 def account(header, main_url, username, log):
+    # Retrieve the user id key for later retrievals
+    print ('API Function: current_user_id\n')
+    result = requests.get(main_url + '/api/v2/users/current_user_id/',
+                          headers=header)
+    user_pk = json.loads(result.content)['pk']
+
     # Retrieve the user profile
-    print ('API Function: get_user_profile\n'),
+    print ('API Function: get_user_profile\n')
     partmsg = 'get_user_profile'
-    result = requests.get(main_url + '/app/accounts/get_user_profile',
+    result = requests.get(main_url + '/api/v2/users/%s/' % user_pk,
                           headers=header)
     check_status(result, partmsg, log)
 
     # Retrieve the organizations
     print ('API Function: get_organizations\n'),
     partmsg = 'get_organizations'
-    result = requests.get(main_url + '/app/accounts/get_organizations/',
+    result = requests.get(main_url + '/api/v2/organizations/',
                           headers=header)
     check_status(result, partmsg, log, PIIDflag='organizations')
 
@@ -257,7 +259,7 @@ def account(header, main_url, username, log):
 
     # Get the organization details
     partmsg = 'get_organization (2)'
-    mod_url = main_url + '/app/accounts/get_organization/?organization_id=' + str(organization_id)
+    mod_url = main_url + '/api/v2/organizations/%s' % str(organization_id)
     result = requests.get(mod_url,
                           headers=header)
     check_status(result, partmsg, log)
@@ -266,37 +268,33 @@ def account(header, main_url, username, log):
     # NOTE: Make sure these credentials are ok.
     print ('API Function: update_user\n'),
     partmsg = 'update_user'
-    user_payload = {'user': {'first_name': 'Sherlock',
-                             'last_name': 'Holmes',
-                             'email': username}}
-    result = requests.post(main_url + '/app/accounts/update_user/',
-                           headers=header,
-                           data=json.dumps(user_payload))
+    user_payload = {'first_name': 'Sherlock',
+                    'last_name': 'Holmes',
+                    'email': username}
+    result = requests.put(main_url + '/api/v2/users/%s/' % user_pk,
+                          headers=header,
+                          data=user_payload)
     check_status(result, partmsg, log)
 
     # Get organization users
     print ('API Function: get_organizations_users\n'),
     partmsg = 'get_organizations_users'
-    org_payload = {'organization_id': organization_id}
-    result = requests.post(main_url + '/app/accounts/get_organizations_users/',
-                           headers=header,
-                           data=json.dumps(org_payload))
+    result = requests.get(main_url + '/api/v2/organizations/%s/users/' % organization_id,
+                          headers=header)
     check_status(result, partmsg, log, PIIDflag='users')
 
     # Get organizations settings
     print ('API Function: get_query_treshold\n'),
     partmsg = 'get_query_threshold'
-    result = requests.get(main_url + '/app/accounts/get_query_threshold/',
-                          headers=header,
-                          params={'organization_id': organization_id})
+    result = requests.get(main_url + '/api/v2/organizations/%s/query_threshold/' % organization_id,
+                          headers=header)
     check_status(result, partmsg, log)
 
     # Get shared fields
     print ('API Function: get_shared_fields\n'),
     partmsg = 'get_shared_fields'
-    result = requests.get(main_url + '/app/accounts/get_shared_fields/',
-                          headers=header,
-                          params={'organization_id': organization_id})
+    result = requests.get(main_url + '/api/v2/organizations/%s/shared_fields/' % organization_id,
+                          headers=header)
     check_status(result, partmsg, log)
 
     return organization_id

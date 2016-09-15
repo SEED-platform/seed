@@ -3,12 +3,12 @@
  * :author
  */
 /*
- * concat_modal_ctrl, controls selecting columns to concatenate together.
+ * concat_modal_controller, controls selecting columns to concatenate together.
  *
  */
 
 angular.module('BE.seed.controller.concat_modal', [])
-.controller('concat_modal_ctrl', [
+.controller('concat_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'building_column_types',

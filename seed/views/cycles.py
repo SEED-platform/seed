@@ -22,7 +22,7 @@ class CycleView(DecoratorMixin(drf_api_endpoint), ModelViewSet):
     def get_queryset(self):
         return Cycle.objects.filter(
             organization_id=self.request.GET['organization_id']
-        )
+        ).order_by('name')
 
     def get_object(self):
         """Override this so we can easily use the UpdateModelMixin."""

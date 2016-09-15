@@ -1,4 +1,8 @@
-
+# !/usr/bin/env python
+# encoding: utf-8
+#
+# :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+# :author
 
 from rest_framework.reverse import reverse
 from django.http import HttpResponse
@@ -54,6 +58,27 @@ class TestReverseViewSet(viewsets.ViewSet):
         # report it out prettified
         return HttpResponse(json.dumps(i, indent=4, sort_keys=True))
 
+    @list_route(methods=['GET'])
+    def one_arg_reverse(self, request):
+        """
+        Test a one arg reverse call easily
+        ---
+        parameters:
+            - name: reverse_string
+              description: The string to test a reverse on
+              type: string
+              required: true
+              paramType: query
+            - name: argument
+              description: the single argument to pass in to try to reverse on
+              type: string
+              required: true
+              paramType: query
+        """
+        reverse_string = request.query_params.get('reverse_string', None)
+        argument = request.query_params.get('argument', None)
+        reversed_url = reverse(reverse_string, args = [argument])
+        return HttpResponse(json.dumps({reverse_string: reversed_url}))
 
 @api_endpoint
 @ajax_request

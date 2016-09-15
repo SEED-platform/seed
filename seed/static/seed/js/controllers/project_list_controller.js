@@ -36,7 +36,7 @@ angular.module('BE.seed.controller.project', [])
         $scope.the_project = p;
         var modalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/edit_project_modal.html',
-            controller: 'edit_project_modal_ctrl',
+            controller: 'edit_project_modal_controller',
             resolve: {
                 project: function () {
                     return $scope.the_project;

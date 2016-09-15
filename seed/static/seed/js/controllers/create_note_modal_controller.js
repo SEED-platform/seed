@@ -3,7 +3,7 @@
  * :author
  */
 angular.module('BE.seed.controller.create_note_modal', [])
-.controller('create_note_modal_ctrl', [
+.controller('create_note_modal_controller', [
     '$scope',
     '$uibModalInstance',
     'audit_service',

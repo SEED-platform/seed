@@ -5,7 +5,6 @@
 :author
 """
 
-import datetime
 import json
 import logging
 import os
@@ -14,18 +13,19 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import DefaultStorage
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from rest_framework import viewsets
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import detail_route
 
 from seed import tasks
 from seed.audit_logs.models import AuditLog
+from seed.authentication import SEEDAuthentication
 from seed.common import views as vutil
 from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
 from seed.data_importer.tasks import (
@@ -67,8 +67,7 @@ from seed.utils.mapping import get_mappable_types
 from seed.utils.projects import (
     get_projects,
 )
-from seed.utils.time import convert_to_js_timestamp
-from seed.views.accounts import _get_js_role
+from seed.views.users import _get_js_role
 from .. import search
 
 DEFAULT_CUSTOM_COLUMNS = [
@@ -590,42 +589,6 @@ def get_building(request):
         'user_role': _get_js_role(ou.role_level) if ou else "",
         'user_org_id': ou.organization.pk if ou else "",
     }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-@require_organization_id
-def get_datasets_count(request):
-    """
-    Retrieves the number of datasets for an org.
-
-    :GET: Expects organization_id in the query string.
-
-    Returns::
-
-        {
-            'status': 'success',
-            'datasets_count': Number of datasets belonging to this org.
-        }
-
-    """
-    org_id = request.GET['organization_id']
-
-    # first make sure that the organization id exists
-    if Organization.objects.filter(pk=request.GET['organization_id']).exists():
-        datasets_count = Organization.objects.get(pk=org_id).import_records. \
-            all().distinct().count()
-        return {'status': 'success', 'datasets_count': datasets_count}
-    else:
-        message = {
-            'status': 'error',
-            'message': 'Could not find organization_id: {}'.format(org_id)
-        }
-        return HttpResponse(json.dumps(message),
-                            content_type='application/json',
-                            status=400)
 
 
 @ajax_request
@@ -1381,12 +1344,13 @@ def get_column_mapping_suggestions(request):
     return tmp_mapping_suggestions(import_file_id, org_id, request.user)
 
 
-class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
+class DataFileViewSet(viewsets.ViewSet):
     raise_exception = True
+    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['get'])
+    @detail_route(methods=['GET'])
     def mapping_suggestions(self, request, pk):
         """
         Returns suggested mappings from an uploaded file's headers to known
@@ -1408,7 +1372,7 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
             - name: pk
               description: import_file_id
               required: true
-              paramType: query
+              paramType: path
             - name: organization_id
               description: The organization_id for this user's organization
               required: true
@@ -1419,8 +1383,7 @@ class DataFileViewSet(LoginRequiredMixin, viewsets.ViewSet):
 
         result = tmp_mapping_suggestions(pk, org_id, request.user)
 
-        return HttpResponse(json.dumps(result),
-                            content_type='application/json')
+        return JsonResponse(result)
 
 
 @api_endpoint
@@ -1554,283 +1517,6 @@ def save_column_mappings(request):
         return {'status': 'success'}
     else:
         return {'status': 'error'}
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def create_dataset(request):
-    """
-    Creates a new empty dataset (ImportRecord).
-
-    Payload::
-
-        {
-            "name": Name of new dataset, e.g. "2013 city compliance dataset"
-            "organization_id": ID of the org this dataset belongs to
-        }
-
-    Returns::
-
-        {
-            'status': 'success',
-            'id': The ID of the newly-created ImportRecord,
-            'name': The name of the newly-created ImportRecord
-        }
-    """
-    body = json.loads(request.body)
-
-    # validate inputs
-    invalid = vutil.missing_request_keys(['organization_id'], body)
-    if invalid:
-        return vutil.api_error(invalid)
-    invalid = vutil.typeof_request_values({'organization_id': int}, body)
-    if invalid:
-        return vutil.api_error(invalid)
-
-    org_id = int(body['organization_id'])
-
-    try:
-        _log.info(
-            "create_dataset: getting Organization for id=({})".format(org_id))
-        org = Organization.objects.get(pk=org_id)
-    except Organization.DoesNotExist:
-        return {"status": 'error',
-                'message': 'organization_id not provided'}
-    record = ImportRecord.objects.create(
-        name=body['name'],
-        app="seed",
-        start_time=datetime.datetime.now(),
-        created_at=datetime.datetime.now(),
-        last_modified_by=request.user,
-        super_organization=org,
-        owner=request.user,
-    )
-
-    return {
-        'status': 'success',
-        'id': record.pk,
-        'name': record.name,
-    }
-
-
-@require_organization_id
-@api_endpoint
-@ajax_request
-@login_required
-def get_datasets(request):
-    """
-    Retrieves all datasets for the user's organization.
-
-    :GET: Expects 'organization_id' of org to retrieve datasets from
-        in query string.
-
-    Returns::
-
-        {
-            'status': 'success',
-            'datasets':  [
-                {
-                    'name': Name of ImportRecord,
-                    'number_of_buildings': Total number of buildings in all ImportFiles,
-                    'id': ID of ImportRecord,
-                    'updated_at': Timestamp of when ImportRecord was last modified,
-                    'last_modified_by': Email address of user making last change,
-                    'importfiles': [
-                        {
-                            'name': Name of associated ImportFile, e.g. 'buildings.csv',
-                            'number_of_buildings': Count of buildings in this file,
-                            'number_of_mappings': Number of mapped headers to fields,
-                            'number_of_cleanings': Number of fields cleaned,
-                            'source_type': Type of file (see source_types),
-                            'id': ID of ImportFile (needed for most operations)
-                        }
-                    ],
-                    ...
-                },
-                ...
-            ]
-        }
-    """
-    from seed.models import obj_to_dict
-
-    org = Organization.objects.get(pk=request.GET['organization_id'])
-    datasets = []
-    for d in ImportRecord.objects.filter(super_organization=org):
-        importfiles = [obj_to_dict(f) for f in d.files]
-        dataset = obj_to_dict(d)
-        dataset['importfiles'] = importfiles
-        if d.last_modified_by:
-            dataset['last_modified_by'] = d.last_modified_by.email
-        dataset['number_of_buildings'] = BuildingSnapshot.objects.filter(
-            import_file__in=d.files,
-            canonicalbuilding__active=True,
-        ).count()
-        dataset['updated_at'] = convert_to_js_timestamp(d.updated_at)
-        datasets.append(dataset)
-
-    return {
-        'status': 'success',
-        'datasets': datasets,
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def get_dataset(request):
-    """
-    Retrieves ImportFile objects for one ImportRecord.
-
-    :GET: Expects dataset_id for an ImportRecord in the query string.
-
-    Returns::
-
-        {
-            'status': 'success',
-            'dataset': {
-                'name': Name of ImportRecord,
-                'number_of_buildings': Total number of buildings in all ImportFiles for this dataset,
-                'id': ID of ImportRecord,
-                'updated_at': Timestamp of when ImportRecord was last modified,
-                'last_modified_by': Email address of user making last change,
-                'importfiles': [
-                    {
-                       'name': Name of associated ImportFile, e.g. 'buildings.csv',
-                       'number_of_buildings': Count of buildings in this file,
-                       'number_of_mappings': Number of mapped headers to fields,
-                       'number_of_cleanings': Number of fields cleaned,
-                       'source_type': Type of file (see source_types),
-                       'id': ID of ImportFile (needed for most operations)
-                    }
-                 ],
-                 ...
-            },
-                ...
-        }
-    """
-    from seed.models import obj_to_dict
-
-    dataset_id = request.GET.get('dataset_id', '')
-    orgs = request.user.orgs.all()
-    # check if user has access to the dataset
-    d = ImportRecord.objects.filter(
-        super_organization__in=orgs, pk=dataset_id
-    )
-    if d.exists():
-        d = d[0]
-    else:
-        return {
-            'status': 'success',
-            'dataset': {},
-        }
-
-    dataset = obj_to_dict(d)
-    importfiles = []
-    for f in d.files:
-        importfile = obj_to_dict(f)
-        importfile['name'] = f.filename_only
-        importfiles.append(importfile)
-
-    dataset['importfiles'] = importfiles
-    if d.last_modified_by:
-        dataset['last_modified_by'] = d.last_modified_by.email
-    dataset['number_of_buildings'] = BuildingSnapshot.objects.filter(
-        import_file__in=d.files
-    ).count()
-    dataset['updated_at'] = convert_to_js_timestamp(d.updated_at)
-
-    return {
-        'status': 'success',
-        'dataset': dataset,
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_member')
-def delete_dataset(request):
-    """
-    Deletes all files from a dataset and the dataset itself.
-
-    :DELETE: Expects organization id and dataset id.
-
-    Payload::
-
-        {
-            "dataset_id": 1,
-            "organization_id": 1
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'message': 'error message, if any'
-        }
-    """
-    body = json.loads(request.body)
-    dataset_id = body.get('dataset_id', '')
-    organization_id = body.get('organization_id')
-    # check if user has access to the dataset
-    d = ImportRecord.objects.filter(
-        super_organization_id=organization_id, pk=dataset_id
-    )
-    if not d.exists():
-        return {
-            'status': 'error',
-            'message': 'user does not have permission to delete dataset',
-        }
-    d = d[0]
-    d.delete()
-    return {
-        'status': 'success',
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def update_dataset(request):
-    """
-    Updates the name of a dataset.
-
-    Payload::
-
-        {
-            'dataset': {
-                'id': The ID of the Import Record,
-                'name': The new name for the ImportRecord
-            }
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'message': 'error message, if any'
-        }
-    """
-    body = json.loads(request.body)
-    orgs = request.user.orgs.all()
-    # check if user has access to the dataset
-    d = ImportRecord.objects.filter(
-        super_organization__in=orgs, pk=body['dataset']['id']
-    )
-    if not d.exists():
-        return {
-            'status': 'error',
-            'message': 'user does not have permission to update dataset',
-        }
-    d = d[0]
-    d.name = body['dataset']['name']
-    d.save()
-    return {
-        'status': 'success',
-    }
 
 
 @api_endpoint
@@ -2182,36 +1868,6 @@ def delete_organization_buildings(request):
         org_id
     )
     tasks.delete_organization_buildings.delay(org_id, deleting_cache_key)
-    return {
-        'status': 'success',
-        'progress': 0,
-        'progress_key': deleting_cache_key
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@permission_required('seed.can_access_admin')
-def delete_organization(request):
-    """
-    Starts a background task to delete an organization and all related data.
-
-    :GET: Expects 'org_id' for the organization.
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    org_id = request.GET.get('org_id', '')
-    deleting_cache_key = get_prog_key(
-        'delete_organization_buildings',
-        org_id
-    )
-    tasks.delete_organization.delay(org_id, deleting_cache_key)
     return {
         'status': 'success',
         'progress': 0,

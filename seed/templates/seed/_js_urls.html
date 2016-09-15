@@ -21,13 +21,8 @@
         window.BE.urls.delete_duplicates_from_import_file_url = '{% url "seed:delete_duplicates_from_import_file" %}';
         window.BE.urls.seed_home = '{% url "seed:home" %}';
 
-        window.BE.urls.create_dataset   = '{% url "seed:create_dataset" %}';
-        window.BE.urls.get_datasets     = '{% url "seed:get_datasets" %}';
-        window.BE.urls.get_dataset      = '{% url "seed:get_dataset" %}';
         window.BE.urls.get_import_file  = '{% url "seed:get_import_file" %}';
         window.BE.urls.delete_file      = '{% url "seed:delete_file" %}';
-        window.BE.urls.delete_dataset   = '{% url "seed:delete_dataset" %}';
-        window.BE.urls.update_dataset   = '{% url "seed:update_dataset" %}';
         {% comment %}
         // window.BE.urls.update_building  = '{% url "seed:update_building" %}';
         //reports URLs
@@ -45,8 +40,10 @@
         window.BE.urls.taxlot_labels            = '{% url "labels:taxlot_labels" %}';
         window.BE.urls.property_labels          = '{% url "labels:property_labels" %}';
 
-        //cycle management URLs
-        window.BE.urls.cycle_list               = '{% url "app:cycles" %}';
+        // cycle URLs
+        window.BE.urls.create_cycle             = '{% url "seed:create_cycle" %}';
+        window.BE.urls.get_cycles               = '{% url "seed:get_cycles" %}';
+        window.BE.urls.update_cycle             = '{% url "seed:update_cycle" %}';
 
         // uploader URLs
         window.BE.urls.uploader_signature_endpoint  = '{% url "data_importer:sign_policy_document" %}';
@@ -73,7 +70,6 @@
 
         // org
         window.BE.urls.delete_organization_buildings = '{% url "seed:delete_organization_buildings" %}';
-        window.BE.urls.delete_organization = '{% url "seed:delete_organization" %}';
 
 
 
