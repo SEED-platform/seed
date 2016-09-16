@@ -256,6 +256,7 @@ def setup_logger(filename, write_file=True):
 
     return logger
 
+
 def write_out_django_debug(partmsg, result):
     if result.status_code != 200:
         filename = '{}_fail.html'.format(partmsg)

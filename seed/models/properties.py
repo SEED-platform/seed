@@ -20,27 +20,17 @@ from seed.utils.generic import split_model_fields, obj_to_dict
 
 logger = logging.getLogger(__name__)
 
-# State of the data that was imported. This will be used to flag which
-# rows are orphaned and can be deleted.
-
-# TODO: There are a bunch of these states already defined in the data_importer/
-# models.py file. Should probably revert this and use those.
-DATA_STATE_UNKNOWN = 0
-DATA_STATE_IMPORT = 1
-DATA_STATE_MAPPING = 2
-DATA_STATE_MATCHING = 3
-DATA_STATE = (
-    (DATA_STATE_UNKNOWN, 'Unknown'),
-    (DATA_STATE_IMPORT, 'Post Import'),
-    (DATA_STATE_MAPPING, 'Post Mapping'),
-    (DATA_STATE_MATCHING, 'Post Matching'),
-)
 from django.db.models.fields.related import ManyToManyField
-from seed.models import Cycle
-from seed.models import StatusLabel
+from seed.models import (
+    Cycle,
+    StatusLabel,
+    DATA_STATE,
+    DATA_STATE_UNKNOWN
+)
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.utils.time import convert_datestr
+
 
 # Oops! we override a builtin in some of the models
 property_decorator = property

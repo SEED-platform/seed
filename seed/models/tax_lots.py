@@ -12,10 +12,13 @@ from django_pgjson.fields import JsonField
 
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
+from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Cycle,
     StatusLabel,
+    DATA_STATE,
+    DATA_STATE_UNKNOWN
 )
 
 
@@ -33,8 +36,14 @@ class TaxLotState(models.Model):
     # because these are the most 'public' fields in terms of
     # communicating with the cities.
 
-    # import_record = models.ForeignKey(ImportRecord)
     confidence = models.FloatField(default=0, null=True, blank=True)
+
+    # Support finding the property by the import_file
+    import_file = models.ForeignKey(ImportFile, null=True, blank=True)
+
+    # Add organization to the tax lot states
+    organization = models.ForeignKey(Organization, blank=True, null=True)
+    data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
 
     jurisdiction_tax_lot_id = models.CharField(max_length=255, null=True, blank=True)
     block_number = models.CharField(max_length=255, null=True, blank=True)

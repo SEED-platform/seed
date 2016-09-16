@@ -4,6 +4,28 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+
+import logging
+import os.path
+
+from django.core.files import File
+from django.test import TestCase
+
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.models import (
+    ColumnMapping,
+    Cycle,
+    PropertyState,
+)
+from seed.models import (
+    DATA_STATE_IMPORT,
+    # DATA_STATE_MAPPING,
+)
+
+logger = logging.getLogger(__name__)
+
 PROPERTIES_MAPPING = [
     {
         "from_field": u'jurisdiction_tax_lot_id',
@@ -69,6 +91,14 @@ PROPERTIES_MAPPING = [
         "from_field": u'year_ending',
         "to_table_name": u'PropertyState',
         "to_field": u'year_ending'
+    }, {
+        "from_field": u'extra_data_1',
+        "to_table_name": u'PropertyState',
+        "to_field": u'data_007'
+    }, {
+        "from_field": u'extra_data_2',
+        "to_table_name": u'TaxLotState',
+        "to_field": u'data_008'
     }
 ]
 
@@ -151,6 +181,51 @@ FAKE_MAPPINGS = {
         'year_built': u'Year Built'
     },
 }
+
+
+class DataMappingBaseTestCase(TestCase):
+    """Base Test Case Class to handle data import"""
+
+    def set_up(self, import_file_source_type):
+        # default_values
+        import_file_is_espm = getattr(self, 'import_file_is_espm', True)
+        import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
+
+        user = User.objects.create(username='test')
+        org = Organization.objects.create()
+
+        # Create an org user
+        OrganizationUser.objects.create(
+            user=user,
+            organization=org
+        )
+
+        import_record = ImportRecord.objects.create(
+            owner=user, last_modified_by=user, super_organization=org
+        )
+        import_file = ImportFile.objects.create(import_record=import_record)
+        import_file.is_espm = import_file_is_espm
+        import_file.source_type = import_file_source_type
+        import_file.data_state = import_file_data_state
+        import_file.save()
+        return user, org, import_file, import_record
+
+    def load_import_file_file(self, filename, import_file):
+        f = os.path.join(os.path.dirname(__file__), 'data', filename)
+        import_file.file = File(open(f))
+        import_file.save()
+        return import_file
+
+    def tearDown(self):
+        User.objects.all().delete()
+        ColumnMapping.objects.all().delete()
+        ImportFile.objects.all().delete()
+        ImportRecord.objects.all().delete()
+        OrganizationUser.objects.all().delete()
+        Organization.objects.all().delete()
+        User.objects.all().delete()
+        Cycle.objects.all().delete()
+        PropertyState.objects.all().delete()
 
 # import csv
 # import json

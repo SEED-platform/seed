@@ -245,13 +245,15 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
             # Assign some other arguments here
             map_model_obj.import_file = import_file
             map_model_obj.source_type = save_type
-            map_model_obj.data_state = DATA_STATE_MAPPING
-            map_model_obj.super_organization = import_file.import_record.super_organization
+            if hasattr(map_model_obj, 'data_state'):
+                map_model_obj.data_state = DATA_STATE_MAPPING
+            if hasattr(map_model_obj, 'organization'):
+                map_model_obj.organization = import_file.import_record.super_organization
             if hasattr(map_model_obj, 'clean'):
                 map_model_obj.clean()
 
             # --- BEGIN TEMP HACK ----
-            # TODO: fix these in the cleaner but for now, get things to work, yuck.
+            # TODO: fix these in the cleaner, but for now just get things to work, yuck.
             # It appears that the cleaner pulls from some schema somewhere that defines the
             # data types... stay tuned.
             if hasattr(map_model_obj, 'recent_sale_date') and map_model_obj.recent_sale_date == '':
@@ -1175,7 +1177,7 @@ def get_canonical_snapshots(org_id):
     """
 
     pvs = PropertyView.objects.filter(
-        state__super_organization=org_id,
+        state__organization=org_id,
         state__data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING]
     ).select_related('state')
 
