@@ -8,27 +8,27 @@
 
 :author nlong, Paul Munday<paul@paulmunday.net>
 """
+# from datetime import date
 import inspect
 import os
-from datetime import date
-from unittest import skip
 
-from selenium.webdriver.support.select import Select
+# from unittest import skip
 
+# from selenium.webdriver.support.select import Select
+
+from seed.functional.tests.browser_definitions import BROWSERS
+from seed.functional.tests.base import eprint
 from seed.functional.tests.base import LOGGED_IN_CLASSES
 from seed.functional.tests.base import LOGGED_OUT_CLASSES
-from seed.functional.tests.base import eprint
 from seed.functional.tests.base import mock_file_factory
-from seed.functional.tests.browser_definitions import BROWSERS
-from seed.functional.tests.pages import BuildingInfo, BuildingLabels
-from seed.functional.tests.pages import BuildingProjects, BuildingReports
-from seed.functional.tests.pages import BuildingsList, BuildingListSettings
-from seed.functional.tests.pages import LandingPage, MainPage
-from seed.functional.tests.pages import ProfilePage, ProjectBuildingInfo
-from seed.functional.tests.pages import ProjectsList, ProjectPage
 from seed.functional.tests.pages import AccountsPage
-from seed.functional.tests.pages import DataMapping
-from seed.functional.tests.pages import DataSetsList, DataSetInfo
+# from seed.functional.tests.pages importBuildingInfo,  BuildingLabels
+# from seed.functional.tests.pages import BuildingsList, BuildingListSettings
+# from seed.functional.tests.pages import BuildingProjects, BuildingReports
+from seed.functional.tests.pages import DataMapping, DataSetInfo, DataSetsList
+from seed.functional.tests.pages import LandingPage, MainPage
+from seed.functional.tests.pages import ProfilePage  # ,ProjectBuildingInfo
+# from seed.functional.tests.pages import ProjectsList, ProjectPage
 
 from seed.data_importer.models import ROW_DELIMITER
 
@@ -253,481 +253,481 @@ def loggedin_tests_generator():
                 address = row['ROW 1']
                 assert address.text == 'address.'
 
-            # TODO Update for Inventory
-            @skip("Fix for new data model")
-            def test_building_list(self):
-                """
-                Make sure you can click from the menu to the building list
-                page and it loads.
-                """
-                # load main page and create building snapshot
-                main_page = MainPage(self, use_url=True)
-                main_page.create_record(create_building=True)
+            # # TODO Update for Inventory
+            # @skip("Fix for new data model")
+            # def test_building_list(self):
+            #     """
+            #     Make sure you can click from the menu to the building list
+            #     page and it loads.
+            #     """
+            #     # load main page and create building snapshot
+            #     main_page = MainPage(self, use_url=True)
+            #     main_page.create_record(create_building=True)
 
-                # click on building in sidebar
-                main_page.find_element_by_id('sidebar-buildings').click()
+            #     # click on building in sidebar
+            #     main_page.find_element_by_id('sidebar-buildings').click()
 
-                # Make sure a building is present.
-                buildings_list = BuildingsList(self)
-                table = buildings_list.ensure_table_is_loaded()
-                address = table.first_row['ADDRESS LINE 1']
-                assert address.text == 'address'
+            #     # Make sure a building is present.
+            #     buildings_list = BuildingsList(self)
+            #     table = buildings_list.ensure_table_is_loaded()
+            #     address = table.first_row['ADDRESS LINE 1']
+            #     assert address.text == 'address'
 
-            # TODO Update for Inventory
-            @skip("Fix for new data model")
-            def test_building_list_tab_settings(self):
-                """Make sure building list settings tab loads."""
-                # load buildings list and create records
-                buildings_list = BuildingsList(self, url=True)
-                # locate setting link and click on it
-                settings_link = buildings_list.find_element_by_id(
-                    'list-settings'
-                )
-                settings_link.click()
+            # # TODO Update for Inventory
+            # @skip("Fix for new data model")
+            # def test_building_list_tab_settings(self):
+            #     """Make sure building list settings tab loads."""
+            #     # load buildings list and create records
+            #     buildings_list = BuildingsList(self, url=True)
+            #     # locate setting link and click on it
+            #     settings_link = buildings_list.find_element_by_id(
+            #         'list-settings'
+            #     )
+            #     settings_link.click()
 
-                # ensure settings page has loaded correctly.
-                settings_page = BuildingListSettings(self)
-                table = settings_page.ensure_table_is_loaded()
-                assert table.first_row['COLUMN NAME'].text == 'Address Line 1'
+            #     # ensure settings page has loaded correctly.
+            #     settings_page = BuildingListSettings(self)
+            #     table = settings_page.ensure_table_is_loaded()
+            #     assert table.first_row['COLUMN NAME'].text == 'Address Line 1'
 
-            # TODO Update for Inventory
-            @skip("Fix for new data model")
-            def test_building_list_tab_reports(self):
-                """Make sure building list reports tab loads."""
-                # load buildings list and create records
-                buildings_list = BuildingsList(self, url=True)
-                reports_link = buildings_list.find_element_by_id('reports')
-                reports_link.click()
+            # # TODO Update for Inventory
+            # @skip("Fix for new data model")
+            # def test_building_list_tab_reports(self):
+            #     """Make sure building list reports tab loads."""
+            #     # load buildings list and create records
+            #     buildings_list = BuildingsList(self, url=True)
+            #     reports_link = buildings_list.find_element_by_id('reports')
+            #     reports_link.click()
 
-                reports_page = BuildingReports(self)
-                form = reports_page.wait_for_element_by_class_name(
-                    'chart-inputs'
-                )
-                form_groups = form.find_elements_by_class_name('form-group')
-                button = form_groups[-1].find_element_by_tag_name('button')
-                assert button.text == 'Update Charts'
+            #     reports_page = BuildingReports(self)
+            #     form = reports_page.wait_for_element_by_class_name(
+            #         'chart-inputs'
+            #     )
+            #     form_groups = form.find_elements_by_class_name('form-group')
+            #     button = form_groups[-1].find_element_by_tag_name('button')
+            #     assert button.text == 'Update Charts'
 
-            # TODO Update for Inventory
-            @skip("Fix for new data model")
-            def test_building_list_tab_labels(self):
-                """Make sure building list labels tab loads."""
-                buildings_list = BuildingsList(self, url=True)
-                labels_link = buildings_list.find_element_by_id('labels')
-                labels_link.click()
+            # # TODO Update for Inventory
+            # @skip("Fix for new data model")
+            # def test_building_list_tab_labels(self):
+            #     """Make sure building list labels tab loads."""
+            #     buildings_list = BuildingsList(self, url=True)
+            #     labels_link = buildings_list.find_element_by_id('labels')
+            #     labels_link.click()
 
-                labels_page = BuildingLabels(self)
-                button = labels_page.find_element_by_id('btnCreateLabel')
-                assert button.text == 'Create label'
+            #     labels_page = BuildingLabels(self)
+            #     button = labels_page.find_element_by_id('btnCreateLabel')
+            #     assert button.text == 'Create label'
 
-            # TODO Update for Inventory
-            @skip("Fix for new data model")
-            def test_building_list_buildings_display(self):
-                """
-                Test to make sure user can set number of buildings to display.
+            # # TODO Update for Inventory
+            # @skip("Fix for new data model")
+            # def test_building_list_buildings_display(self):
+            #     """
+            #     Test to make sure user can set number of buildings to display.
 
-                Ensure page loads and settings stick to project.
-                See github issue #1005 pull request#1006
-                """
-                # This is used to check the number of pages to display
-                # we also test what shows up on the page.
-                # This is used to show skip the test is sessionStore
-                # goes missing, as this happens, intermittently,
-                # with  Firefox in this test
-                script = "return window.sessionStorage.getItem('{}')".format(
-                    '/buildings:seedBuildingNumberPerPage'
-                )
+            #     Ensure page loads and settings stick to project.
+            #     See github issue #1005 pull request#1006
+            #     """
+            #     # This is used to check the number of pages to display
+            #     # we also test what shows up on the page.
+            #     # This is used to show skip the test is sessionStore
+            #     # goes missing, as this happens, intermittently,
+            #     # with  Firefox in this test
+            #     script = "return window.sessionStorage.getItem('{}')".format(
+            #         '/buildings:seedBuildingNumberPerPage'
+            #     )
 
-                browser_name = self.browser_type.name
-                buildings_list = BuildingsList(self, url=True)
+            #     browser_name = self.browser_type.name
+            #     buildings_list = BuildingsList(self, url=True)
 
-                # set up project
-                buildings_list.create_project(name='test')
+            #     # set up project
+            #     buildings_list.create_project(name='test')
 
-                # select 100 in dropdown
-                display_count = buildings_list.wait_for_element_by_id(
-                    'number_per_page_select'
-                )
-                drop_down = Select(display_count)
-                # firefox doesn't want to select anything
-                # so send it 1 to select 100
-                if self.browser_type.name == 'Firefox':
-                    display_count.send_keys('1')
-                else:
-                    drop_down.select_by_visible_text('100')
-                assert drop_down.first_selected_option.text == '100'
+            #     # select 100 in dropdown
+            #     display_count = buildings_list.wait_for_element_by_id(
+            #         'number_per_page_select'
+            #     )
+            #     drop_down = Select(display_count)
+            #     # firefox doesn't want to select anything
+            #     # so send it 1 to select 100
+            #     if self.browser_type.name == 'Firefox':
+            #         display_count.send_keys('1')
+            #     else:
+            #         drop_down.select_by_visible_text('100')
+            #     assert drop_down.first_selected_option.text == '100'
 
-                # check value persists and page loads
-                buildings_list.reload()
-                display_count = buildings_list.wait_for_element_by_id(
-                    'number_per_page_select'
-                )
-                drop_down = Select(display_count)
-                assert drop_down.first_selected_option.text == '100'
+            #     # check value persists and page loads
+            #     buildings_list.reload()
+            #     display_count = buildings_list.wait_for_element_by_id(
+            #         'number_per_page_select'
+            #     )
+            #     drop_down = Select(display_count)
+            #     assert drop_down.first_selected_option.text == '100'
 
-                # click through to last record
-                last_record = buildings_list.wait_for_element_by_class_name(
-                    'pager'
-                ).find_elements_by_tag_name('a')[-1]
-                last_record.click()
-                # check value persists and page loads
-                buildings_list.reload()
-                display_count = buildings_list.wait_for_element_by_id(
-                    'number_per_page_select'
-                )
-                drop_down = Select(display_count)
-                # skip test if browser "loses" session store
-                result = self.browser.execute_script(script)
-                if not result:
-                    eprint('SessionStore missing from', browser_name)
-                    eprint('This is not the bug you are looking for')
-                    eprint('skipping assert...')
-                else:
-                    assert result == '100'
-                    assert drop_down.first_selected_option.text == '100'
+            #     # click through to last record
+            #     last_record = buildings_list.wait_for_element_by_class_name(
+            #         'pager'
+            #     ).find_elements_by_tag_name('a')[-1]
+            #     last_record.click()
+            #     # check value persists and page loads
+            #     buildings_list.reload()
+            #     display_count = buildings_list.wait_for_element_by_id(
+            #         'number_per_page_select'
+            #     )
+            #     drop_down = Select(display_count)
+            #     # skip test if browser "loses" session store
+            #     result = self.browser.execute_script(script)
+            #     if not result:
+            #         eprint('SessionStore missing from', browser_name)
+            #         eprint('This is not the bug you are looking for')
+            #         eprint('skipping assert...')
+            #     else:
+            #         assert result == '100'
+            #         assert drop_down.first_selected_option.text == '100'
 
-                # Navigate to projects page
-                projects_link = buildings_list.find_element_by_id(
-                    'sidebar-projects'
-                )
-                projects_link.click()
-                projects_list = ProjectsList(self)
+            #     # Navigate to projects page
+            #     projects_link = buildings_list.find_element_by_id(
+            #         'sidebar-projects'
+            #     )
+            #     projects_link.click()
+            #     projects_list = ProjectsList(self)
 
-                # locate project link and navigate to project page
-                table = projects_list.ensure_table_is_loaded()
-                project = table.find_row_by_field('PROJECT NAME', 'test')
-                project_cell = project['PROJECT NAME']
-                project_link = project_cell.find_element_by_class_name(
-                    'table_name_link'
-                )
-                project_link.click()
+            #     # locate project link and navigate to project page
+            #     table = projects_list.ensure_table_is_loaded()
+            #     project = table.find_row_by_field('PROJECT NAME', 'test')
+            #     project_cell = project['PROJECT NAME']
+            #     project_link = project_cell.find_element_by_class_name(
+            #         'table_name_link'
+            #     )
+            #     project_link.click()
 
-                # Navigate to project page
-                project_page = ProjectPage(self)
+            #     # Navigate to project page
+            #     project_page = ProjectPage(self)
 
-                # select 50 in dropdown
-                display_count = project_page.wait_for_element_by_id(
-                    'number_per_page_select'
-                )
-                drop_down = Select(display_count)
-                # firefox doesn't want to select anything
-                # so send it 1 to select 100
-                if self.browser_type.name == 'Firefox':
-                    display_count.send_keys('5')
-                else:
-                    drop_down.select_by_visible_text('50')
-                assert drop_down.first_selected_option.text == '50'
-                # navigate back to building list
-                buildings_link = project_page.find_element_by_id(
-                    'sidebar-buildings'
-                )
-                buildings_link.click()
+            #     # select 50 in dropdown
+            #     display_count = project_page.wait_for_element_by_id(
+            #         'number_per_page_select'
+            #     )
+            #     drop_down = Select(display_count)
+            #     # firefox doesn't want to select anything
+            #     # so send it 1 to select 100
+            #     if self.browser_type.name == 'Firefox':
+            #         display_count.send_keys('5')
+            #     else:
+            #         drop_down.select_by_visible_text('50')
+            #     assert drop_down.first_selected_option.text == '50'
+            #     # navigate back to building list
+            #     buildings_link = project_page.find_element_by_id(
+            #         'sidebar-buildings'
+            #     )
+            #     buildings_link.click()
 
-                # check value persists and page loads
-                buildings_list.reload()
-                display_count = buildings_list.wait_for_element_by_id(
-                    'number_per_page_select'
-                )
-                drop_down = Select(display_count)
-                # skip test if browser "loses" session store
-                result = self.browser.execute_script(script)
-                if not result:
-                    eprint('SessionStore missing from ', browser_name)
-                    eprint('This is not the bug you are looking for')
-                    eprint('skipping assert...')
-                else:
-                    assert result == '100'
-                    assert drop_down.first_selected_option.text == '100'
+            #     # check value persists and page loads
+            #     buildings_list.reload()
+            #     display_count = buildings_list.wait_for_element_by_id(
+            #         'number_per_page_select'
+            #     )
+            #     drop_down = Select(display_count)
+            #     # skip test if browser "loses" session store
+            #     result = self.browser.execute_script(script)
+            #     if not result:
+            #         eprint('SessionStore missing from ', browser_name)
+            #         eprint('This is not the bug you are looking for')
+            #         eprint('skipping assert...')
+            #     else:
+            #         assert result == '100'
+            #         assert drop_down.first_selected_option.text == '100'
 
-                # navigate to building details page
-                buildings_link = buildings_list.wait_for_element(
-                    'CSS_SELECTOR', 'td a')
-                buildings_link.click()
+            #     # navigate to building details page
+            #     buildings_link = buildings_list.wait_for_element(
+            #         'CSS_SELECTOR', 'td a')
+            #     buildings_link.click()
 
-                # Wait for details page
-                details_page = BuildingInfo(self)
+            #     # Wait for details page
+            #     details_page = BuildingInfo(self)
 
-                # Return to Buildings List
-                details_page.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
-                details_page.find_element_by_partial_link_text(
-                    'Buildings').click()
+            #     # Return to Buildings List
+            #     details_page.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
+            #     details_page.find_element_by_partial_link_text(
+            #         'Buildings').click()
 
-                # check value persists and page loads
-                buildings_list.reload()
-                display_count = buildings_list.wait_for_element_by_id(
-                    'number_per_page_select'
-                )
-                drop_down = Select(display_count)
-                result = self.browser.execute_script(script)
-                # skip test if browser "loses" session store
-                if not result:
-                    eprint('SessionStore missing from ', browser_name)
-                    eprint('This is not the bug you are looking for')
-                    eprint('skipping assert...')
-                else:
-                    assert result == '100'
-                    assert drop_down.first_selected_option.text == '100'
+            #     # check value persists and page loads
+            #     buildings_list.reload()
+            #     display_count = buildings_list.wait_for_element_by_id(
+            #         'number_per_page_select'
+            #     )
+            #     drop_down = Select(display_count)
+            #     result = self.browser.execute_script(script)
+            #     # skip test if browser "loses" session store
+            #     if not result:
+            #         eprint('SessionStore missing from ', browser_name)
+            #         eprint('This is not the bug you are looking for')
+            #         eprint('skipping assert...')
+            #     else:
+            #         assert result == '100'
+            #         assert drop_down.first_selected_option.text == '100'
 
-            # TODO Update for Inventory
-            @skip("Fix for new data model")
-            def test_building_list_buildings_retain_paging(self):
-                """
-                Test to make sure user ends up back in the same place
-                when clicking away and back.
+            # # TODO Update for Inventory
+            # @skip("Fix for new data model")
+            # def test_building_list_buildings_retain_paging(self):
+            #     """
+            #     Test to make sure user ends up back in the same place
+            #     when clicking away and back.
 
-                See github issue #836
-                """
-                buildings_list = BuildingsList(
-                    self, url=True, num_buildings=99
-                )
-                count = buildings_list.find_element_by_class_name('counts')
-                assert count.text == 'Showing 1 to 10 of 100 buildings'
+            #     See github issue #836
+            #     """
+            #     buildings_list = BuildingsList(
+            #         self, url=True, num_buildings=99
+            #     )
+            #     count = buildings_list.find_element_by_class_name('counts')
+            #     assert count.text == 'Showing 1 to 10 of 100 buildings'
 
-                # click through to next  record
-                next_record = buildings_list.wait_for_element_by_class_name(
-                    'pager'
-                ).find_elements_by_tag_name('a')[-2]
-                next_record.click()
-                buildings_list.reload()
+            #     # click through to next  record
+            #     next_record = buildings_list.wait_for_element_by_class_name(
+            #         'pager'
+            #     ).find_elements_by_tag_name('a')[-2]
+            #     next_record.click()
+            #     buildings_list.reload()
 
-                # click through to next  record
-                next_record = buildings_list.wait_for_element_by_class_name(
-                    'pager'
-                ).find_elements_by_tag_name('a')[-2]
-                next_record.click()
-                buildings_list.reload()
+            #     # click through to next  record
+            #     next_record = buildings_list.wait_for_element_by_class_name(
+            #         'pager'
+            #     ).find_elements_by_tag_name('a')[-2]
+            #     next_record.click()
+            #     buildings_list.reload()
 
-                # click through to next  record
-                next_record = buildings_list.wait_for_element_by_class_name(
-                    'pager'
-                ).find_elements_by_tag_name('a')[-2]
-                next_record.click()
+            #     # click through to next  record
+            #     next_record = buildings_list.wait_for_element_by_class_name(
+            #         'pager'
+            #     ).find_elements_by_tag_name('a')[-2]
+            #     next_record.click()
 
-                buildings_list.reload()
-                count = buildings_list.wait_for_element_by_class_name(
-                    'counts')
-                table = buildings_list.ensure_table_is_loaded()
-                address = table.first_row['ADDRESS LINE 1']
-                address_text = address.text
-                assert count.text == 'Showing 31 to 40 of 100 buildings'
+            #     buildings_list.reload()
+            #     count = buildings_list.wait_for_element_by_class_name(
+            #         'counts')
+            #     table = buildings_list.ensure_table_is_loaded()
+            #     address = table.first_row['ADDRESS LINE 1']
+            #     address_text = address.text
+            #     assert count.text == 'Showing 31 to 40 of 100 buildings'
 
-                # Click a building.
-                buildings_link = buildings_list.wait_for_element(
-                    'CSS_SELECTOR', 'td a')
-                buildings_link.click()
+            #     # Click a building.
+            #     buildings_link = buildings_list.wait_for_element(
+            #         'CSS_SELECTOR', 'td a')
+            #     buildings_link.click()
 
-                # Wait for details page
-                details_page = BuildingInfo(self)
-                table = details_page.ensure_table_is_loaded()
-                assert table.first_row['FIELD'].text == 'Address Line 1'
+            #     # Wait for details page
+            #     details_page = BuildingInfo(self)
+            #     table = details_page.ensure_table_is_loaded()
+            #     assert table.first_row['FIELD'].text == 'Address Line 1'
 
-                # Return to Buildings List
-                details_page.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
-                details_page.find_element_by_partial_link_text(
-                    'Buildings').click()
-                buildings_list.reload()
-                count = buildings_list.wait_for_element_by_class_name(
-                    'counts')
+            #     # Return to Buildings List
+            #     details_page.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
+            #     details_page.find_element_by_partial_link_text(
+            #         'Buildings').click()
+            #     buildings_list.reload()
+            #     count = buildings_list.wait_for_element_by_class_name(
+            #         'counts')
 
-                table = buildings_list.ensure_table_is_loaded()
-                address = table.first_row['ADDRESS LINE 1']
-                assert count.text == 'Showing 31 to 40 of 100 buildings'
-                assert address.text == address_text
+            #     table = buildings_list.ensure_table_is_loaded()
+            #     address = table.first_row['ADDRESS LINE 1']
+            #     assert count.text == 'Showing 31 to 40 of 100 buildings'
+            #     assert address.text == address_text
 
-                # click through to last record
-                last_record = buildings_list.wait_for_element_by_class_name(
-                    'pager'
-                ).find_elements_by_tag_name('a')[-1]
-                last_record.click()
+            #     # click through to last record
+            #     last_record = buildings_list.wait_for_element_by_class_name(
+            #         'pager'
+            #     ).find_elements_by_tag_name('a')[-1]
+            #     last_record.click()
 
-                buildings_list.reload()
-                count = buildings_list.wait_for_element_by_class_name(
-                    'counts')
-                table = buildings_list.ensure_table_is_loaded()
-                address = table.first_row['ADDRESS LINE 1']
-                address_text = address.text
-                assert count.text == 'Showing 91 to 100 of 100 buildings'
+            #     buildings_list.reload()
+            #     count = buildings_list.wait_for_element_by_class_name(
+            #         'counts')
+            #     table = buildings_list.ensure_table_is_loaded()
+            #     address = table.first_row['ADDRESS LINE 1']
+            #     address_text = address.text
+            #     assert count.text == 'Showing 91 to 100 of 100 buildings'
 
-                # Click a building.
-                buildings_link = buildings_list.wait_for_element(
-                    'CSS_SELECTOR', 'td a')
-                buildings_link.click()
+            #     # Click a building.
+            #     buildings_link = buildings_list.wait_for_element(
+            #         'CSS_SELECTOR', 'td a')
+            #     buildings_link.click()
 
-                # Wait for details page
-                details_page = BuildingInfo(self)
-                table = details_page.ensure_table_is_loaded()
-                assert table.first_row['FIELD'].text == 'Address Line 1'
+            #     # Wait for details page
+            #     details_page = BuildingInfo(self)
+            #     table = details_page.ensure_table_is_loaded()
+            #     assert table.first_row['FIELD'].text == 'Address Line 1'
 
-                # Return to Buildings List
-                details_page.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
-                details_page.find_element_by_partial_link_text(
-                    'Buildings').click()
-                buildings_list.reload()
-                count = buildings_list.wait_for_element_by_class_name(
-                    'counts')
+            #     # Return to Buildings List
+            #     details_page.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
+            #     details_page.find_element_by_partial_link_text(
+            #         'Buildings').click()
+            #     buildings_list.reload()
+            #     count = buildings_list.wait_for_element_by_class_name(
+            #         'counts')
 
-                table = buildings_list.ensure_table_is_loaded()
-                address = table.first_row['ADDRESS LINE 1']
-                assert count.text == 'Showing 91 to 100 of 100 buildings'
-                assert address.text == address_text
+            #     table = buildings_list.ensure_table_is_loaded()
+            #     address = table.first_row['ADDRESS LINE 1']
+            #     assert count.text == 'Showing 91 to 100 of 100 buildings'
+            #     assert address.text == address_text
 
-                # click through to first record
-                first_record = buildings_list.wait_for_element_by_class_name(
-                    'pager'
-                ).find_elements_by_tag_name('a')[0]
-                first_record.click()
+            #     # click through to first record
+            #     first_record = buildings_list.wait_for_element_by_class_name(
+            #         'pager'
+            #     ).find_elements_by_tag_name('a')[0]
+            #     first_record.click()
 
-                buildings_list.reload()
-                count = buildings_list.wait_for_element_by_class_name(
-                    'counts')
-                table = buildings_list.ensure_table_is_loaded()
-                address = table.first_row['ADDRESS LINE 1']
-                address_text = address.text
-                assert count.text == 'Showing 1 to 10 of 100 buildings'
+            #     buildings_list.reload()
+            #     count = buildings_list.wait_for_element_by_class_name(
+            #         'counts')
+            #     table = buildings_list.ensure_table_is_loaded()
+            #     address = table.first_row['ADDRESS LINE 1']
+            #     address_text = address.text
+            #     assert count.text == 'Showing 1 to 10 of 100 buildings'
 
-                # Click a building.
-                buildings_link = buildings_list.wait_for_element(
-                    'CSS_SELECTOR', 'td a')
-                buildings_link.click()
+            #     # Click a building.
+            #     buildings_link = buildings_list.wait_for_element(
+            #         'CSS_SELECTOR', 'td a')
+            #     buildings_link.click()
 
-                # Wait for details page
-                details_page = BuildingInfo(self)
-                table = details_page.ensure_table_is_loaded()
-                assert table.first_row['FIELD'].text == 'Address Line 1'
+            #     # Wait for details page
+            #     details_page = BuildingInfo(self)
+            #     table = details_page.ensure_table_is_loaded()
+            #     assert table.first_row['FIELD'].text == 'Address Line 1'
 
-                # Return to Buildings List
-                details_page.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
-                details_page.find_element_by_partial_link_text(
-                    'Buildings').click()
-                buildings_list.reload()
-                count = buildings_list.wait_for_element_by_class_name(
-                    'counts')
+            #     # Return to Buildings List
+            #     details_page.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
+            #     details_page.find_element_by_partial_link_text(
+            #         'Buildings').click()
+            #     buildings_list.reload()
+            #     count = buildings_list.wait_for_element_by_class_name(
+            #         'counts')
 
-                table = buildings_list.ensure_table_is_loaded()
-                address = table.first_row['ADDRESS LINE 1']
-                assert count.text == 'Showing 1 to 10 of 100 buildings'
-                assert address.text == address_text
+            #     table = buildings_list.ensure_table_is_loaded()
+            #     address = table.first_row['ADDRESS LINE 1']
+            #     assert count.text == 'Showing 1 to 10 of 100 buildings'
+            #     assert address.text == address_text
 
-            # TODO Update for Inventory
-            @skip("Fix for new data model")
-            def test_building_detail(self):
-                """Make sure building detail page loads."""
-                # load Buildings List
-                buildings_list = BuildingsList(self, url=True)
-                # Click a building.
-                buildings_link = buildings_list.wait_for_element(
-                    'CSS_SELECTOR', 'td a')
-                buildings_link.click()
+            # # TODO Update for Inventory
+            # @skip("Fix for new data model")
+            # def test_building_detail(self):
+            #     """Make sure building detail page loads."""
+            #     # load Buildings List
+            #     buildings_list = BuildingsList(self, url=True)
+            #     # Click a building.
+            #     buildings_link = buildings_list.wait_for_element(
+            #         'CSS_SELECTOR', 'td a')
+            #     buildings_link.click()
 
-                # Wait for details page
-                details_page = BuildingInfo(self)
-                table = details_page.ensure_table_is_loaded()
-                assert table.first_row['FIELD'].text == 'Address Line 1'
+            #     # Wait for details page
+            #     details_page = BuildingInfo(self)
+            #     table = details_page.ensure_table_is_loaded()
+            #     assert table.first_row['FIELD'].text == 'Address Line 1'
 
-            # TODO Update for Inventory
-            @skip("Fix for new data model")
-            def test_building_detail_tab_projects(self):
-                """Make sure building detail projects tab shows project."""
-                details_page = BuildingInfo(
-                    self,
-                    create_building=True,
-                    create_project=True
-                )
-                projects_link = details_page.find_element_by_id('projects')
-                projects_link.click()
-                project_list = BuildingProjects(self)
-                table = project_list.ensure_table_is_loaded()
-                project = table.last_row['PROJECT']
-                assert project.text == 'test'
+            # # TODO Update for Inventory
+            # @skip("Fix for new data model")
+            # def test_building_detail_tab_projects(self):
+            #     """Make sure building detail projects tab shows project."""
+            #     details_page = BuildingInfo(
+            #         self,
+            #         create_building=True,
+            #         create_project=True
+            #     )
+            #     projects_link = details_page.find_element_by_id('projects')
+            #     projects_link.click()
+            #     project_list = BuildingProjects(self)
+            #     table = project_list.ensure_table_is_loaded()
+            #     project = table.last_row['PROJECT']
+            #     assert project.text == 'test'
 
-            # TODO Update for Inventory
-            @skip("Fix for new data model")
-            def test_building_detail_edit_year_end_save(self):
-                """Make sure changes to Year Ending date propagate."""
-                # make sure Year Ending column will show
-                self.set_buildings_list_columns('year_ending')
+            # # TODO Update for Inventory
+            # @skip("Fix for new data model")
+            # def test_building_detail_edit_year_end_save(self):
+            #     """Make sure changes to Year Ending date propagate."""
+            #     # make sure Year Ending column will show
+            #     self.set_buildings_list_columns('year_ending')
 
-                # load Buildings List
-                buildings_list = BuildingsList(self, url=True)
-                # Click a building.
-                buildings_link = buildings_list.wait_for_element(
-                    'CSS_SELECTOR', 'td a')
-                buildings_link.click()
+            #     # load Buildings List
+            #     buildings_list = BuildingsList(self, url=True)
+            #     # Click a building.
+            #     buildings_link = buildings_list.wait_for_element(
+            #         'CSS_SELECTOR', 'td a')
+            #     buildings_link.click()
 
-                # Wait for details page and click the edit button
-                details_page = BuildingInfo(self)
-                details_page.find_element_by_partial_link_text('Edit').click()
+            #     # Wait for details page and click the edit button
+            #     details_page = BuildingInfo(self)
+            #     details_page.find_element_by_partial_link_text('Edit').click()
 
-                # Wait for form to load
-                details_page.wait_for_element('LINK_TEXT', 'Save Changes')
+            #     # Wait for form to load
+            #     details_page.wait_for_element('LINK_TEXT', 'Save Changes')
 
-                # Find Year Ending and set new value
-                details_table = details_page.ensure_table_is_loaded()
-                new_year_ending = date(2015, 12, 31)
-                row = details_table.find_row_by_field('FIELD', 'Year Ending')
-                year_ending = row['MASTER'].find_element_by_id(
-                    'edit_tax_lot_id'
-                )
-                year_ending.clear()
-                year_ending.send_keys(str(new_year_ending))
-                details_page.find_element_by_link_text('Save Changes').click()
+            #     # Find Year Ending and set new value
+            #     details_table = details_page.ensure_table_is_loaded()
+            #     new_year_ending = date(2015, 12, 31)
+            #     row = details_table.find_row_by_field('FIELD', 'Year Ending')
+            #     year_ending = row['MASTER'].find_element_by_id(
+            #         'edit_tax_lot_id'
+            #     )
+            #     year_ending.clear()
+            #     year_ending.send_keys(str(new_year_ending))
+            #     details_page.find_element_by_link_text('Save Changes').click()
 
-                # Return to Buildings List
-                details_page.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
-                details_page.find_element_by_partial_link_text(
-                    'Buildings').click()
-                buildings_list.reload()
+            #     # Return to Buildings List
+            #     details_page.wait_for_element('PARTIAL_LINK_TEXT', 'Buildings')
+            #     details_page.find_element_by_partial_link_text(
+            #         'Buildings').click()
+            #     buildings_list.reload()
 
-                # Assert new year ending values correctly set
-                table = buildings_list.ensure_table_is_loaded()
-                year_ending = table.last_row['YEAR ENDING']
-                assert year_ending.text == new_year_ending.strftime('%D')
+            #     # Assert new year ending values correctly set
+            #     table = buildings_list.ensure_table_is_loaded()
+            #     year_ending = table.last_row['YEAR ENDING']
+            #     assert year_ending.text == new_year_ending.strftime('%D')
 
-            # TODO Update for Inventory
-            @skip("Fix for new data model")
-            def test_building_detail_th_resize(self):
-                """Make sure building detail table headers are resizable."""
-                # This test was created for an issue that primarily
-                # affected Firefox & IE, however the current Firefox
-                # webdriver is limited in its capacities (in beta) so can't
-                # use action chains.
-                # See WARNING! HACK ALERT in base.py.
-                # At somepoint (Firefox version  >= 48.0?) the new webriver
-                # will land in the main branch and hopefully will be able to
-                # run the test, so this guard condition can be removed.
-                # Note the tests tests all functionality so its still
-                # useful to run it against Chrome.
-                # Its currently failing with Travis and Firefox as well
-                # (where it was passing, presumable because Sauce Labs
-                # browser version has updated.
-                # if (os.getenv('TRAVIS') == 'true') or (
-                if ((os.getenv('TRAVIS') == 'true') and
-                        (self.browser_type.name != 'Firefox')) or (
-                        self.browser_type.name == 'Chrome'):
-                    # load Building Details
-                    building_details = BuildingInfo(self, create_building=True)
+            # # TODO Update for Inventory
+            # @skip("Fix for new data model")
+            # def test_building_detail_th_resize(self):
+            #     """Make sure building detail table headers are resizable."""
+            #     # This test was created for an issue that primarily
+            #     # affected Firefox & IE, however the current Firefox
+            #     # webdriver is limited in its capacities (in beta) so can't
+            #     # use action chains.
+            #     # See WARNING! HACK ALERT in base.py.
+            #     # At somepoint (Firefox version  >= 48.0?) the new webriver
+            #     # will land in the main branch and hopefully will be able to
+            #     # run the test, so this guard condition can be removed.
+            #     # Note the tests tests all functionality so its still
+            #     # useful to run it against Chrome.
+            #     # Its currently failing with Travis and Firefox as well
+            #     # (where it was passing, presumable because Sauce Labs
+            #     # browser version has updated.
+            #     # if (os.getenv('TRAVIS') == 'true') or (
+            #     if ((os.getenv('TRAVIS') == 'true') and
+            #             (self.browser_type.name != 'Firefox')) or (
+            #             self.browser_type.name == 'Chrome'):
+            #         # load Building Details
+            #         building_details = BuildingInfo(self, create_building=True)
 
-                    # test to make sure we can resize table header
-                    fields = building_details.find_element_by_id(
-                        'building-fields')
-                    assert fields is not None
-                    size = fields.size['width']
-                    xoffset = fields.size['width']
-                    yoffset = 0
+            #         # test to make sure we can resize table header
+            #         fields = building_details.find_element_by_id(
+            #             'building-fields')
+            #         assert fields is not None
+            #         size = fields.size['width']
+            #         xoffset = fields.size['width']
+            #         yoffset = 0
 
-                    # move to right hand edge and click and drag
-                    building_details.action.move_to_element_with_offset(
-                        fields, xoffset, yoffset)
-                    building_details.action.click_and_hold()
-                    building_details.action.move_to_element_with_offset(
-                        fields, fields.location['x'] + 180, yoffset
-                    )
-                    building_details.action.release()
-                    building_details.perform_stored_actions()
+            #         # move to right hand edge and click and drag
+            #         building_details.action.move_to_element_with_offset(
+            #             fields, xoffset, yoffset)
+            #         building_details.action.click_and_hold()
+            #         building_details.action.move_to_element_with_offset(
+            #             fields, fields.location['x'] + 180, yoffset
+            #         )
+            #         building_details.action.release()
+            #         building_details.perform_stored_actions()
 
-                    # assert it has been resized
-                    assert size > fields.size['width']
-                    # crude test to test against #982
-                    assert fields.size['width'] > 80
+            #         # assert it has been resized
+            #         assert size > fields.size['width']
+            #         # crude test to test against #982
+            #         assert fields.size['width'] > 80
 
             def test_profile_page(self):
                 """
@@ -1031,77 +1031,77 @@ def loggedin_tests_generator():
                     assert "fa-check" in check_mark_class
                     assert "ng-hide" not in check_mark_class
 
-            # TODO Update for Inventory
-            @skip("Fix for new data model")
-            def test_project_list(self):
-                """
-                Make sure you can click from the menu to the project list
-                page and it loads.
-                """
-                # load main page and create building snapshot
-                main_page = MainPage(self, use_url=True)
-                main_page.create_record(create_building=True)
-                main_page.create_project()
+            # # TODO Update for Inventory
+            # @skip("Fix for new data model")
+            # def test_project_list(self):
+            #     """
+            #     Make sure you can click from the menu to the project list
+            #     page and it loads.
+            #     """
+            #     # load main page and create building snapshot
+            #     main_page = MainPage(self, use_url=True)
+            #     main_page.create_record(create_building=True)
+            #     main_page.create_project()
 
-                # click on projects in sidebar
-                main_page.wait_for_element_by_id('sidebar-projects').click()
-                projects_list = ProjectsList(self)
+            #     # click on projects in sidebar
+            #     main_page.wait_for_element_by_id('sidebar-projects').click()
+            #     projects_list = ProjectsList(self)
 
-                # Ensure project is visible
-                table = projects_list.ensure_table_is_loaded()
-                project = table.first_row['PROJECT NAME']
-                assert project.text == 'test'
+            #     # Ensure project is visible
+            #     table = projects_list.ensure_table_is_loaded()
+            #     project = table.first_row['PROJECT NAME']
+            #     assert project.text == 'test'
 
-            # TODO Update for Inventory
-            @skip("Fix for new data model")
-            def test_project_page(self):
-                """Make sure the project page loads"""
-                projects_list = ProjectsList(
-                    self, use_url=True,
-                    create_building=True, create_project='test'
-                )
-                canonical_building = projects_list.canonical_building
-                building_snapshot = canonical_building.canonical_snapshot
+            # # TODO Update for Inventory
+            # @skip("Fix for new data model")
+            # def test_project_page(self):
+            #     """Make sure the project page loads"""
+            #     projects_list = ProjectsList(
+            #         self, use_url=True,
+            #         create_building=True, create_project='test'
+            #     )
+            #     canonical_building = projects_list.canonical_building
+            #     building_snapshot = canonical_building.canonical_snapshot
 
-                # locate project link and navigate to project page
-                table = projects_list.ensure_table_is_loaded()
-                project = table.first_row['PROJECT NAME']
+            #     # locate project link and navigate to project page
+            #     table = projects_list.ensure_table_is_loaded()
+            #     project = table.first_row['PROJECT NAME']
 
-                project_link = project.find_element_by_class_name(
-                    'table_name_link'
-                )
-                project_link.click()
+            #     project_link = project.find_element_by_class_name(
+            #         'table_name_link'
+            #     )
+            #     project_link.click()
 
-                project_page = ProjectPage(self)
+            #     project_page = ProjectPage(self)
 
-                # inspect table to see if building is present
-                table = project_page.ensure_table_is_loaded()
-                address_cell = table[0]['ADDRESS LINE 1']
-                address = building_snapshot.address_line_1
-                assert address_cell.text == address
+            #     # inspect table to see if building is present
+            #     table = project_page.ensure_table_is_loaded()
+            #     address_cell = table[0]['ADDRESS LINE 1']
+            #     address = building_snapshot.address_line_1
+            #     assert address_cell.text == address
 
-            # TODO Update for Inventory
-            @skip("Fix for new data model")
-            def test_project_building_info(self):
-                """Make sure the project bulding info page loads"""
-                project_page = ProjectPage(
-                    self, name='test',
-                    create_building=True, create_project=True
-                )
-                canonical_building = project_page.canonical_building
-                canonical_snapshot = canonical_building.canonical_snapshot
+            # # TODO Update for Inventory
+            # @skip("Fix for new data model")
+            # def test_project_building_info(self):
+            #     """Make sure the project bulding info page loads"""
+            #     project_page = ProjectPage(
+            #         self, name='test',
+            #         create_building=True, create_project=True
+            #     )
+            #     canonical_building = project_page.canonical_building
+            #     canonical_snapshot = canonical_building.canonical_snapshot
 
-                # locate building and click on link
-                table = project_page.ensure_table_is_loaded()
-                address_cell = table[0]['ADDRESS LINE 1']
-                link = address_cell.find_element_by_tag_name('a')
-                link.click()
+            #     # locate building and click on link
+            #     table = project_page.ensure_table_is_loaded()
+            #     address_cell = table[0]['ADDRESS LINE 1']
+            #     link = address_cell.find_element_by_tag_name('a')
+            #     link.click()
 
-                # ensure Building Info page is loaded and building is there
-                building_info = ProjectBuildingInfo(self, name='test')
-                table = building_info.ensure_table_is_loaded()
-                row = table.find_row_by_field('FIELD', 'Address Line 1')
-                assert row[1].text == canonical_snapshot.address_line_1
+            #     # ensure Building Info page is loaded and building is there
+            #     building_info = ProjectBuildingInfo(self, name='test')
+            #     table = building_info.ensure_table_is_loaded()
+            #     row = table.find_row_by_field('FIELD', 'Address Line 1')
+            #     assert row[1].text == canonical_snapshot.address_line_1
 
         # ================= TESTS GO ABOVE THIS LINE ======================
 

@@ -37,6 +37,7 @@ from seed.models import (
     PropertyState,
     PropertyView,
     save_snapshot_match,
+    StatusLabel,
     TaxLot,
     TaxLotProperty,
     TaxLotState,
@@ -2818,12 +2819,16 @@ class InventoryViewTests(TestCase):
             user=self.user, organization=self.org
         )
         self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10))
+        self.status_label = StatusLabel.objects.create(
+            name='test', super_organization=self.org
+        )
         self.client.login(**user_details)
 
     def tearDown(self):
         self.user.delete()
         self.org.delete()
         self.org_user.delete()
+        self.status_label.delete()
         Column.objects.all().delete()
         Cycle.objects.all().delete()
         Property.objects.all().delete()
@@ -3014,6 +3019,8 @@ class InventoryViewTests(TestCase):
     def test_get_property(self):
         property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property()
+        property_property.labels.add(self.status_label)
+        property_property.save()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
@@ -3042,13 +3049,14 @@ class InventoryViewTests(TestCase):
 
         self.assertEqual(results['status'], 'success')
         self.assertEqual(results['history'], [])
-        self.assertEqual(results['labels'], [])
+        self.assertEqual(results['property']['labels'], [self.status_label.pk])
         self.assertEqual(results['source'], 'ImportFile')
         self.assertEqual(results['changed_fields'], None)
 
         expected_property = {
             'campus': False, 'id': property_property.pk,
             'organization': self.org.pk, 'parent_property': None,
+            'labels': [self.status_label.pk]
         }
         self.assertEquals(results['property'], expected_property)
 
@@ -3065,10 +3073,9 @@ class InventoryViewTests(TestCase):
 
         rtaxlot = results['taxlots'][0]
         self.assertEqual(rtaxlot['id'], taxlot.pk)
-        self.assertEqual(rtaxlot['labels'], [])
         self.assertEqual(
             rtaxlot['taxlot'],
-            {'id': taxlot.pk, 'organization': self.org.pk}
+            {'id': taxlot.pk, 'organization': self.org.pk, 'labels': []}
         )
 
         tcycle = rtaxlot['cycle']
@@ -3132,10 +3139,9 @@ class InventoryViewTests(TestCase):
 
         rtaxlot_1 = results['taxlots'][0]
         self.assertEqual(rtaxlot_1['id'], taxlot_1.pk)
-        self.assertEqual(rtaxlot_1['labels'], [])
         self.assertEqual(
             rtaxlot_1['taxlot'],
-            {'id': taxlot_1.pk, 'organization': self.org.pk}
+            {'id': taxlot_1.pk, 'organization': self.org.pk, 'labels': []}
         )
 
         tcycle_1 = rtaxlot_1['cycle']
@@ -3149,10 +3155,9 @@ class InventoryViewTests(TestCase):
 
         rtaxlot_2 = results['taxlots'][1]
         self.assertEqual(rtaxlot_2['id'], taxlot_2.pk)
-        self.assertEqual(rtaxlot_2['labels'], [])
         self.assertEqual(
             rtaxlot_2['taxlot'],
-            {'id': taxlot_2.pk, 'organization': self.org.pk}
+            {'id': taxlot_2.pk, 'organization': self.org.pk, 'labels': []}
         )
 
         tcycle_2 = rtaxlot_2['cycle']
@@ -3165,7 +3170,7 @@ class InventoryViewTests(TestCase):
         self.assertEqual(tstate_2['address'], taxlot_state_2.address)
 
         expected_property = {
-            'campus': False, 'id': property_property.pk,
+            'campus': False, 'id': property_property.pk, 'labels': [],
             'organization': self.org.pk, 'parent_property': None,
         }
         self.assertEquals(results['property'], expected_property)
@@ -3527,6 +3532,7 @@ class InventoryViewTests(TestCase):
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
         )
         taxlot = TaxLot.objects.create(organization=self.org)
+        taxlot.labels.add(self.status_label)
         taxlot_view = TaxLotView.objects.create(
             taxlot=taxlot, state=taxlot_state, cycle=self.cycle
         )
@@ -3591,9 +3597,12 @@ class InventoryViewTests(TestCase):
         state = result['state']
         self.assertEqual(state['id'], taxlot_state.pk)
         self.assertEqual(state['block_number'], taxlot_state.block_number)
-
         self.assertEqual(
-            result['taxlot'], {'id': taxlot.pk, 'organization': self.org.pk}
+            result['taxlot'], {
+                'id': taxlot.pk,
+                'labels': [self.status_label.pk],
+                'organization': self.org.pk
+            }
         )
 
     def test_get_cycles(self):
