@@ -20,7 +20,7 @@ from seed.decorators import (
 )
 from seed.filters import (
     LabelFilterBackend,
-    BuildingFilterBackend,
+    InventoryFilterBackend,
 )
 from seed.pagination import (
     FakePaginiation,
