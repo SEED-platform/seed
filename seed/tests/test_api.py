@@ -81,7 +81,6 @@ class ApiAuthenticationTests(TestCase):
 
 
 class SchemaGenerationTests(TestCase):
-
     def test_get_api_endpoints_utils(self):
         """
         Test of function that traverses all URLs looking for api endpoints.
@@ -110,7 +109,6 @@ class SchemaGenerationTests(TestCase):
 
 
 class TestApi(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',  # the username needs to be in the form of an email.
@@ -160,21 +158,39 @@ class TestApi(TestCase):
         self.assertEqual(r.status_code, 200)
 
         # {
-        # "organizations": [
-        #   { "sub_orgs": [], "num_buildings": 0, "owners": [{...}],
-        #     "number_of_users": 1, "name": "", "user_role": "owner", "is_parent": true, "org_id": 1, "id": 1,
-        #     "user_is_owner": true}
-        #   ]
+        #     "organizations": [{
+        #           "is_parent": true,
+        #           "user_role": "owner",
+        #           "sub_orgs": [],
+        #           "number_of_users": 1,
+        #           "id": 1,
+        #           "owners": [
+        #               {
+        #                   "first_name": "Jaqen",
+        #                   "last_name": "H'ghar",
+        #                   "email": "test_user@demo.com",
+        #                   "id": 1
+        #               }
+        #           ],
+        #           "name": "",
+        #           "created": "2016-09-16",
+        #           "org_id": 1,
+        #           "user_is_owner": true,
+        #           "parent_id": 1,
+        #           "cycles": []
+        #           }]
         # }
         r = json.loads(r.content)
+        # print json.dumps(r, indent=2)
         self.assertEqual(len(r['organizations']), 1)
         self.assertEqual(len(r['organizations'][0]['sub_orgs']), 0)
-        self.assertEqual(r['organizations'][0]['num_buildings'], 0)
+        # Num buildings is no longer valid. The count of properties are in the cycle
+        # self.assertEqual(r['organizations'][0]['num_buildings'], 0)
         self.assertEqual(len(r['organizations'][0]['owners']), 1)
         self.assertEqual(r['organizations'][0]['number_of_users'], 1)
         self.assertEqual(r['organizations'][0]['user_role'], 'owner')
         self.assertEqual(r['organizations'][0]['owners'][0]['first_name'], 'Jaqen')
-        self.assertEqual(r['organizations'][0]['num_buildings'], 0)
+        self.assertEqual(r['organizations'][0]['cycles'], [])
 
     def test_organization_details(self):
         r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
@@ -211,7 +227,6 @@ class TestApi(TestCase):
 
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
-        self.assertEqual(r['organization']['num_buildings'], 0)
         self.assertEqual(r['organization']['number_of_users'], 1)
         self.assertEqual(len(r['organization']['owners']), 1)
         self.assertEqual(r['organization']['user_is_owner'], True)
@@ -294,10 +309,11 @@ class TestApi(TestCase):
             'role': 'owner'
         }
 
-        r = self.client.put('/api/v2/users/%s/update_role/?organization_id=%s' % (user_id, organization_id),
-                            data=json.dumps(payload),
-                            content_type='application/json',
-                            **self.headers)
+        r = self.client.put(
+            '/api/v2/users/%s/update_role/?organization_id=%s' % (user_id, organization_id),
+            data=json.dumps(payload),
+            content_type='application/json',
+            **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
@@ -314,7 +330,8 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        r = self.client.get("/api/v2/organizations/%s/query_threshold/" % organization_id, follow=True,
+        r = self.client.get("/api/v2/organizations/%s/query_threshold/" % organization_id,
+                            follow=True,
                             **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
@@ -326,7 +343,8 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        r = self.client.get("/api/v2/organizations/%s/shared_fields/" % organization_id, follow=True,
+        r = self.client.get("/api/v2/organizations/%s/shared_fields/" % organization_id,
+                            follow=True,
                             **self.headers)
 
         self.assertEqual(r.status_code, 200)
@@ -512,7 +530,8 @@ class TestApi(TestCase):
 
         # # Get the mapping suggestions
         r = self.client.post(
-            '/api/v2/data_files/{}/mapping_suggestions/?organization_id={}'.format(import_file_id, organization_id),
+            '/api/v2/data_files/{}/mapping_suggestions/?organization_id={}'.format(import_file_id,
+                                                                                   organization_id),
             content_type='application/json',
             follow=True,
             **self.headers
