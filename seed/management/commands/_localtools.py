@@ -9,6 +9,21 @@ from IPython import embed
 import seed.models
 from seed.models import TaxLotView
 
+def logging_info(msg):
+    print "INFO: {}".format(msg)
+
+def logging_debug(msg):
+    print "DEBUG: {}".format(msg)
+    return
+
+def logging_warn(msg):
+    pdb.set_trace()
+    print "WARN: {}".format(msg)
+    return
+
+def logging_error(msg):
+    print "ERROR: {}".format(msg)
+    return
 
 def removeCommasToType(typ):
 
@@ -30,14 +45,19 @@ def removeCommasToInteger(val_string):
         return None
 
 def removeNoneStrings(val_string):
-    if val_string is None or val_string.lower() == 'none': return None
-    else:
-        return val_string
+    if val_string is None: return None
+
+    if not isinstance(val_string, str):
+        val_string = str(val_string)
+
+    if val_string.lower() == 'none': return None
+    return val_string
 
 
 # For converting between string and 'type' where the conversions are
 # more than the default.
 TYPE_MAPPER = collections.defaultdict(lambda : str)
+TYPE_MAPPER['CharField'] = removeNoneStrings
 TYPE_MAPPER['FloatField'] = removeCommasToType(float)
 TYPE_MAPPER['IntegerField'] = removeCommasToInteger
 TYPE_MAPPER['DateField'] = removeNoneStrings
@@ -267,8 +287,8 @@ def valid_id(s):
     else:
         #Rules for individual field:
         #Must start and end with alphanumeric (\w)
-        #May have any combination of whitespace, hyphens ("-") and alphanumerics in the middle
-        pattern = r"\w[\w\-\s]*\w$"
+        #May have any combination of whitespace, hyphens ("-"), periods or alphanumerics in the middle
+        pattern = r"\w[\w\-\s\.]*\w$"
     return re.match(pattern, s)
 
 def sanitize_delimiters(s, delimiter_to_use, other_delimiters):
@@ -287,18 +307,19 @@ def get_id_fields(parse_string):
     Raises an exception if string does not match
     """
 
-    if parse_string is None: raise TaxLotIDValueError(parse_string)
+    if parse_string is None: return []
 
     #The id field can use any of several delimiters so reduce it to just one
     #delimiter first to make things easier
     delimiter_to_use = ","
     other_delimiters = [";", ":"]
 
-    if not check_delimiter_sanity(parse_string, [delimiter_to_use] + other_delimiters):
-        raise TaxLotIDValueError(parse_string)
-
+    # if not check_delimiter_sanity(parse_string, [delimiter_to_use] + other_delimiters):
+    #     raise TaxLotIDValueError(parse_string)
 
     cleaned_str = sanitize_delimiters(parse_string, delimiter_to_use, other_delimiters)
+    while cleaned_str.strip().endswith(delimiter_to_use):
+        cleaned_str = cleaned_str.strip()[:-1].strip()
 
     #If there is nothing in the string return an empty list
     if not len(cleaned_str.strip()):

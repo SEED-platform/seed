@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 from django.core.management.base import BaseCommand
 
 from _localtools import get_core_organizations
+from _localtools import logging_info
+from _localtools import logging_debug
 from seed.models import *
 
 logging.basicConfig(level=logging.DEBUG)
@@ -18,6 +20,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Go through organization by organization and look for m2m."""
+
+        logging_info("RUN create_primarysecondary_taxlots with args={},kwds={}".format(args, options))
 
         if options['organization']:
             core_organization = map(int, options['organization'].split(","))
@@ -34,6 +38,7 @@ class Command(BaseCommand):
 
             self.assign_primarysecondary_tax_lots(org)
 
+        logging_info("END create_primarysecondary_taxlots")
         return
 
     def assign_primarysecondary_tax_lots(self, org):
@@ -41,7 +46,7 @@ class Command(BaseCommand):
             if TaxLotProperty.objects.filter(property_view=property_view).count() <= 1: continue
 
             links = list(TaxLotProperty.objects.filter(property_view=property_view).order_by(
-                'taxlotview__state__jurisdiction_taxlot_identifier').all())
+                'taxlot_view__state__jurisdiction_tax_lot_id').all())
 
             for ndx in xrange(1, len(links)):
                 print "Setting secondary"

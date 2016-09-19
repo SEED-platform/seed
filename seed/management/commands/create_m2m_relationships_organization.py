@@ -33,6 +33,9 @@ from _localtools import load_organization_property_extra_data_mapping_exclusions
 from _localtools import load_organization_taxlot_extra_data_mapping_exclusions
 from _localtools import load_organization_property_field_mapping
 from _localtools import load_organization_taxlot_field_mapping
+from _localtools import logging_info
+from _localtools import logging_debug
+from _localtools import logging_warn
 from seed.models import TaxLotView
 from seed.models import TaxLot
 from seed.models import TaxLotState
@@ -61,12 +64,13 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
+        logging_info("RUN create_m2m_relatinships_organization with args={},kwds={}".format(args, options))
         if options['organization']:
             core_organization = map(int, options['organization'].split(","))
         else:
             core_organization = get_core_organizations()
 
-        logging.info("Processing organization list: {}".format(core_organization))
+        logging_info("Processing organization list: {}".format(core_organization))
 
         if options['stats']:
             for org_id in core_organization:
@@ -90,16 +94,16 @@ class Command(BaseCommand):
 
                 taxlot_field_list = get_id_fields(view.state.jurisdiction_tax_lot_id)
                 if len(taxlot_field_list) > 1:
-                    print "Danger - tax lot '{}' still exists.".format(view.state.jurisdiction_tax_lot_id)
+                    logging_warn("Danger - tax lot '{}' still exists.".format(view.state.jurisdiction_tax_lot_id))
             except TaxLotIDValueError, e:
                 continue
 
-
+        logging_info("END create_m2m_relatinships_organization")
         return
 
     def split_taxlots_into_m2m_relationships(self, org_id, org_rules_map):
         org = Organization.objects.get(pk=org_id)
-        print "==== Splitting for organization {} - {}".format(org_id, org.name)
+        logging_info("Splitting tax lot lists for organization {}/{}".format(org_id, org.name))
 
         created_tax_lots = collections.defaultdict(lambda : False)
 
@@ -107,61 +111,63 @@ class Command(BaseCommand):
                                    TaxLotProperty.objects.filter(taxlot_view__taxlot__organization=org).all()):
             # aggregate_value_from_state(view.state, org_rules_map[org_id])
 
-            jurisdiction_taxlot_identifier = m2m.taxlot_view.state.jurisdiction_tax_lot_id
+            jurisdiction_tax_lot_id = m2m.taxlot_view.state.jurisdiction_tax_lot_id
             taxlot_id_list = []
             try:
                 taxlot_id_list = get_id_fields(m2m.taxlot_view.state.jurisdiction_tax_lot_id)
-                print taxlot_id_list # HOHO
             except TaxLotIDValueError, e:
-                print e # HOHO
+                logging_warn(e)
                 continue
 
             if len(taxlot_id_list) <= 1: continue
+            logging_info("Tax lot view {} w/ tax_lot id {} was split to {} elements: {}".format(m2m.taxlot_view.pk, m2m.taxlot_view.state.jurisdiction_tax_lot_id,
+                                                                                                len(taxlot_id_list), taxlot_id_list))
+
             original_taxlot_view = m2m.taxlot_view
 
             # Some have duplicates
-            for taxlot_id in set(taxlot_id_list):
-                print "Break up tax lot {} to {} for cycle {}".format(jurisdiction_tax_lot_id, taxlot_id_list, m2m.cycle)
+            for tax_lot_id in set(taxlot_id_list):
+                logging_info("Break up tax lot {} to {} for cycle {}".format(tax_lot_id, taxlot_id_list, m2m.cycle))
                 # Take tax lot and create a taxlot, a taxlot view, and a taxlot state.
                 # taxlot state, and an m2m for the view and installs each.
 
                 # Check to see if the tax lot exists
 
-                matching_views_qry = TaxLotView.objects.filter(taxlot__organization=org, state__jurisdiction_tax_lot_id=taxlot_id)
+                matching_views_qry = TaxLotView.objects.filter(taxlot__organization=org, state__jurisdiction_tax_lot_id=tax_lot_id)
                 if matching_views_qry.count():
                     tax_lot = matching_views_qry.first().taxlot
 
                     # FIXME: Yuck! Refactor me please!
-                    created_tax_lots[taxlot_id] = tax_lot
+                    created_tax_lots[tax_lot_id] = tax_lot
 
                     # Apparently this is how Django clones things?
                     taxlot_state = original_taxlot_view.state
                     taxlot_state.pk = None
-                    taxlot_state.jurisdiction_tax_lot_id = taxlot_id
+                    taxlot_state.jurisdiction_tax_lot_id = tax_lot_id
                     taxlot_state.save()
 
                 else:
                     tl = TaxLot(organization=m2m.taxlot_view.taxlot.organization)
                     tl.save()
-                    created_tax_lots[taxlot_id] = tl
+                    created_tax_lots[tax_lot_id] = tl
 
                     # Apparently this is how Django clones things?
                     taxlot_state = original_taxlot_view.state
                     taxlot_state.pk = None
-                    taxlot_state.jurisdiction_tax_lot_id = taxlot_id
+                    taxlot_state.jurisdiction_tax_lot_id = tax_lot_id
                     taxlot_state.save()
 
 
 
 
                 # Check and see if the Tax Lot View exists
-                qry = TaxLotView.objects.filter(taxlot = created_tax_lots[taxlot_id], cycle = m2m.cycle)
+                qry = TaxLotView.objects.filter(taxlot = created_tax_lots[tax_lot_id], cycle = m2m.cycle)
                 if qry.count():
                     taxlotview = qry.first()
                     taxlotview.state = taxlot_state
                     taxlotview.save()
                 else:
-                    taxlotview = TaxLotView(taxlot = created_tax_lots[taxlot_id], cycle = m2m.cycle, state = taxlot_state)
+                    taxlotview = TaxLotView(taxlot = created_tax_lots[tax_lot_id], cycle = m2m.cycle, state = taxlot_state)
                     # Clone the state from above
                     taxlotview.save()
 
@@ -177,7 +183,7 @@ class Command(BaseCommand):
                 pass
 
             # Go through each view, find all it's tax lot ids and make sure they don't look like lists of many things.
-            print "{} => {}".format(jurisdiction_tax_lot_id, taxlot_id_list)
+            logging_info("{} => {}".format(jurisdiction_tax_lot_id, taxlot_id_list))
 
 
         # Go through the tax Lots, collect any that are left, make
@@ -192,7 +198,7 @@ class Command(BaseCommand):
 
                 # Some have duplicates
                 for taxlot_id in set(taxlot_id_list):
-                    print "Break up tax lot {} to {} for cycle {}".format(jurisdiction_tax_lot_id, taxlot_id_list, m2m.cycle)
+                    logging_info("Break up tax lot {} to {} for cycle {}".format(jurisdiction_tax_lot_id, taxlot_id_list, m2m.cycle))
                     # Take tax lot and create a taxlot, a taxlot view, and a taxlot state.
                     # taxlot state, and an m2m for the view and installs each.
 
@@ -233,7 +239,7 @@ class Command(BaseCommand):
         # Go through and delete any orphaned Tax Lots with no Views
         for taxlot in TaxLot.objects.filter(organization_id=org_id).all():
             if TaxLotView.objects.filter(taxlot=taxlot).count() == 0:
-                print "Removing empty taxlot."
+                logging_info("Removing empty taxlot.")
                 taxlot.delete()
 
         return
@@ -242,7 +248,7 @@ class Command(BaseCommand):
     def display_stats(self, org_id):
         org = Organization.objects.get(pk=org_id)
 
-        logging.info("##########  PROCESSING ORGANIZATION {} - {} #################".format(org.id, org.name))
+        logging_info("##########  PROCESSING ORGANIZATION {} - {} #################".format(org.id, org.name))
         singleton_count = 0
         malformed_count = 0
         multiple_count = 0
@@ -256,7 +262,7 @@ class Command(BaseCommand):
             try:
                 fields = get_id_fields(tax_lot_id)
                 if len(fields) > 1:
-                    logging.info("Possible match: {}".format(tax_lot_id))
+                    logging_info("Possible match: {}".format(tax_lot_id))
                     multiple_count += 1
                 else:
                     singleton_count += 1
@@ -264,11 +270,11 @@ class Command(BaseCommand):
                 malformed_count += 1
                 invalid_strings.append(e.original_string)
 
-        logging.info("Processing {} total tax lots".format(int(base_query.count())))
-        logging.info("{} plain old tax lots.".format(singleton_count))
-        logging.info("{} malformed lots.".format(malformed_count))
-        logging.info("{} multiple.".format(multiple_count))
+        logging_info("Processing {} total tax lots".format(int(base_query.count())))
+        logging_info("{} plain old tax lots.".format(singleton_count))
+        logging_info("{} malformed lots.".format(malformed_count))
+        logging_info("{} multiple.".format(multiple_count))
 
-        logging.info("=====  Malformed =====")
+        logging_info("=====  Malformed =====")
         for (ndx, major_malfunction) in enumerate(sorted(set(invalid_strings))):
-            logging.info("   {}: {}".format(ndx, major_malfunction))
+            logging_info("   {}: {}".format(ndx, major_malfunction))

@@ -6,6 +6,8 @@ import logging
 from django.core.management.base import BaseCommand
 
 from _localtools import get_core_organizations
+from _localtools import logging_info
+from _localtools import logging_debug
 from seed.models import *
 
 logging.basicConfig(level=logging.DEBUG)
@@ -28,6 +30,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Do something."""
+
+        logging_info("RUN create_campus_relationships_organization with args={},kwds={}".format(args, options))
 
         if options['organization']:
             core_organization = map(int, options['organization'].split(","))
@@ -57,19 +61,16 @@ class Command(BaseCommand):
                 pm_parent_property_id = state.pm_parent_property_id
 
                 # What is the difference between these two fields?
-                if pm_parent_property_id == state.building_portfolio_manager_identifier or
-                    pm_parent_property_id == state.pm_property_id:
-
-                    print "Auto reference!"
+                if pm_parent_property_id == state.pm_property_id:
+                    logging_info("Auto reference: site id={}/pm_property_id={} is it's own campus (pm_parent_property_id={})".format(pv.property.id, state.pm_property_id, state.pm_parent_property_id))
                     prop = pv.property
                     prop.campus = True
                     prop.save()
                     continue
 
-                parent_property = find_property_associated_with_portfolio_manager_id(
-                    pm_parent_property_id)
+                parent_property = find_property_associated_with_portfolio_manager_id(pm_parent_property_id)
                 if not parent_property:
-                    print "Could not find parent property."
+                    logging_info("Could not find parent property with pm_property_id={}. Creating new Property/View/State for it.".format(pm_parent_property_id))
                     parent_property = Property(organization_id=org_id)
                     parent_property.campus = True
                     parent_property.save()
@@ -92,7 +93,7 @@ class Command(BaseCommand):
 
 
                 else:
-                    print "found campus relationship"
+                    logging_info("Found property matching pm_parent_property_id={}".format(pm_parent_property_id))
                     parent_property.campus = True
                     parent_property.save()
 
@@ -105,8 +106,7 @@ class Command(BaseCommand):
 
                     if not PropertyView.objects.filter(property=parent_property,
                                                        cycle=pv.cycle).count():
-                        parent_views = list(
-                            PropertyView.objects.filter(property=parent_property).all())
+                        parent_views = list(PropertyView.objects.filter(property=parent_property).all())
                         parent_views.sort(key=lambda pv: pv.cycle.start)
                         # parent_views = [ppv for ppv in parent_views if ppv.cycle.start <= pv.cycle.start]
                         assert len(parent_views), "This should always be true."
@@ -120,4 +120,5 @@ class Command(BaseCommand):
                                                    state=ps)
                         parent_view.save()
 
+        logging_info("END create_campus_relationships_organization")
         return

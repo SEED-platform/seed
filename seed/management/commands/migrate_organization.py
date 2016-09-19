@@ -28,6 +28,8 @@ from _localtools import load_organization_taxlot_field_mapping
 from _localtools import _load_raw_mapping_data
 from _localtools import get_value_for_key
 from _localtools import set_state_value
+from _localtools import logging_info
+from _localtools import logging_debug
 
 from _localtools import get_taxlot_columns
 from _localtools import get_property_columns
@@ -41,15 +43,6 @@ logging.basicConfig(level=logging.DEBUG)
 # added to the metadata.
 ADD_METADATA = True
 CURRENT_CANONICAL_BUILDING = False
-
-
-def logging_info(msg):
-    print msg
-
-
-def logging_debug(msg):
-    logging_info(msg)
-    return
 
 
 # These encode rules for how final values
@@ -119,7 +112,7 @@ def create_property_state_for_node(node, org, cb):
 
     property_state = seed.models.PropertyState(confidence=node.confidence,
                                                data_state=seed.models.DATA_STATE_MATCHING,
-                                               jurisdiction_property_identifier=None,
+                                               jurisdiction_property_id=None,
                                                lot_number=node.lot_number,
                                                property_name=node.property_name,
                                                address_line_1=node.address_line_1,
@@ -141,8 +134,8 @@ def create_property_state_for_node(node, org, cb):
                                                owner_address=node.owner_address,
                                                owner_city_state=node.owner_city_state,
                                                owner_postal_code=node.owner_postal_code,
-                                               building_portfolio_manager_identifier=node.pm_property_id,
-                                               building_home_energy_score_identifier=None,
+                                               pm_property_id=node.pm_property_id,
+                                               home_energy_score_id=None,
                                                energy_score=node.energy_score,
                                                site_eui=node.site_eui,
                                                generation_date=node.generation_date,
@@ -202,7 +195,7 @@ def create_tax_lot_state_for_node(node, org, cb):
                                                          jurisdiction_tax_lot_id=node.tax_lot_id,
                                                          block_number=node.block_number,
                                                          district=node.district,
-                                                         address=node.address_line_1,
+                                                         address_line_1=node.address_line_1,
                                                          city=node.city,
                                                          state=node.state_province,
                                                          postal_code=node.postal_code,
@@ -336,6 +329,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Migrate the CanonicalBuildings for one or more Organizations into
         the new 'BlueSky' data structures."""
+
+        logging_info("RUN migrate_organization with args={},kwds={}".format(args, options))
 
         # Process Arguments
         if options['organization']:
@@ -503,6 +498,7 @@ class Command(BaseCommand):
                                                              other_buildingsnapshots,
                                                              child_dictionary, parent_dictionary,
                                                              adj_matrix, cb)
+        logging_info("END migrate_organization")
         return
 
 
