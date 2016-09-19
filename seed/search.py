@@ -406,7 +406,7 @@ def process_search_params(params, user, is_api_request=False):
     other_search_params = params.get('filter_params', {})
     exclude = other_search_params.pop('exclude', {})
 
-    order_by = params.get('order_by', 'tax_lot_id')
+    order_by = params.get('order_by', 'parent_property_id')
     if order_by == '':
         order_by = 'tax_lot_id'
     sort_reverse = params.get('sort_reverse', False)
@@ -752,7 +752,7 @@ def search_inventory(inventory_type, q, fieldnames=None, queryset=None):
 
 def create_inventory_queryset(inventory_type, orgs, exclude, order_by,
                               other_orgs=None):
-    """creates a queryset of properties or taxlots  within orgs.
+    """creates a queryset of properties or taxlots within orgs.
     If ``other_orgs``, properties/taxlots in both orgs and other_orgs
     will be represented in the queryset.
 
@@ -766,20 +766,20 @@ def create_inventory_queryset(inventory_type, orgs, exclude, order_by,
     distinct_order_by = order_by.lstrip('-')
 
     if other_orgs:
-            return Model.objects.order_by(
-                order_by, 'pk'
-            ).filter(
-                (
-                    Q(super_organization__in=orgs) |
-                    Q(super_organization__in=other_orgs)
-                ),
-            ).exclude(**exclude).distinct(distinct_order_by, 'pk')
+        return Model.objects.order_by(
+            order_by, 'pk'
+        ).filter(
+            (
+                Q(super_organization__in=orgs) |
+                Q(super_organization__in=other_orgs)
+            ),
+        ).exclude(**exclude).distinct(distinct_order_by, 'pk')
     else:
-            result = Model.objects.order_by(
-                order_by, 'pk'
-            ).filter(
-                super_organization__in=orgs,
-            ).exclude(**exclude).distinct(distinct_order_by, 'pk')
+        result = Model.objects.order_by(
+            order_by, 'pk'
+        ).filter(
+            organization__in=orgs,
+        ).exclude(**exclude).distinct(distinct_order_by, 'pk')
 
     return result
 

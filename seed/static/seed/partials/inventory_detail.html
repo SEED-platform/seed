@@ -65,9 +65,9 @@
                     <i class="fa fa-tag"></i>Add/Remove Labels
                 </button>
                 <span style="display:inline-block; margin-top:9px; padding-left:15px; vertical-align: top;"><strong>Labels:</strong></span>
-                <span ng-if="!labels.length" style="color:#999">(no labels applied)</span>
+                <span ng-if="!labels.length" style="color:#999;display:inline-block;margin-top:7px;">(no labels applied)</span>
                 <div ng-if="labels.length" style="display: inline-block; width: calc(100vw - 570px); vertical-align: top;">
-                    <span ng-repeat="label in labels" class="label label-{$ label.label $}" style="display: inline-block; margin-top: 8px; padding: 4.6px 7px;">{$ label.name $}</span>
+                    <span ng-repeat="label in labels" class="label label-{$ label.label $}" style="display: inline-block; margin-top: 7px; padding: 4.6px 7px;">{$ label.name $}</span>
                 </div>
             </div>
 

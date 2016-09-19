@@ -30,7 +30,6 @@ from seed.utils.api import (
 )
 from seed.models import (
     StatusLabel as Label,
-    BuildingSnapshot,
     Property,
     # PropertyLabels,
     TaxLot,
@@ -57,6 +56,13 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
 
     _organization = None
 
+    def get_parent_organization(self):
+        org = self.get_organization()
+        if org.is_parent:
+            return org
+        else:
+            return org.parent_org
+
     def get_organization(self):
         if self._organization is None:
             try:
@@ -69,12 +75,12 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
 
     def get_queryset(self):
         return Label.objects.filter(
-            super_organization=self.get_organization()
+            super_organization=self.get_parent_organization()
         ).order_by("name").distinct()
 
     # TODO update for new data model
     def get_serializer(self, *args, **kwargs):
-        kwargs['super_organization'] = self.get_organization()
+        kwargs['super_organization'] = self.get_parent_organization()
         inventory = InventoryFilterBackend().filter_queryset(
             request=self.request,
         )
