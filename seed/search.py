@@ -406,9 +406,7 @@ def process_search_params(params, user, is_api_request=False):
     other_search_params = params.get('filter_params', {})
     exclude = other_search_params.pop('exclude', {})
 
-    order_by = params.get('order_by', 'parent_property_id')
-    if order_by == '':
-        order_by = 'tax_lot_id'
+    order_by = params.get('order_by', 'id')
     sort_reverse = params.get('sort_reverse', False)
     if isinstance(sort_reverse, basestring):
         sort_reverse = sort_reverse == 'true'

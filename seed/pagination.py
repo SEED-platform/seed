@@ -8,7 +8,7 @@ from rest_framework import pagination
 from rest_framework import response
 
 
-class FakePaginiation(pagination.PageNumberPagination):
+class FakePagination(pagination.PageNumberPagination):
     """
     DRF Paginator class that presents results in the same format as
     `PageNumberPagination` but always includes all results on the first page.
@@ -21,6 +21,14 @@ class FakePaginiation(pagination.PageNumberPagination):
             "count": len(data),
             "results": data,
         })
+
+    def paginate_queryset(self, queryset, request, view=None):
+        return queryset
+
+
+class NoPagination(pagination.PageNumberPagination):
+    def get_paginated_response(self, data):
+        return response.Response(data)
 
     def paginate_queryset(self, queryset, request, view=None):
         return queryset

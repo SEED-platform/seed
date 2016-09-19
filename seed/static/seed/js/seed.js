@@ -215,7 +215,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       name: 'admin',
       url: '/profile/admin',
       templateUrl: static_url + 'seed/partials/admin.html',
-      controller: 'seed_admin_controller',
+      controller: 'admin_controller',
       resolve: {
         auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
           var organization_id = user_service.get_organization().id;
@@ -1075,7 +1075,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           return [];
         }],
         labels_payload: ['$stateParams', 'label_service', function ($stateParams, label_service) {
-          return label_service.get_labels([$stateParams.inventory_id], false, {});
+          return label_service.get_labels([$stateParams.inventory_id], {
+            inventory_type: $stateParams.inventory_type
+          });
         }]
       },
       parent: 'detail'

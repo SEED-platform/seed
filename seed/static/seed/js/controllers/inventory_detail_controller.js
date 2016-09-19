@@ -27,7 +27,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
       $scope.cycle = inventory_payload.cycle;
       $scope.fields = all_columns.fields;
-      $scope.labels = _.filter(labels_payload.results, 'is_applied');
+      $scope.labels = _.filter(labels_payload, 'is_applied');
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
@@ -39,7 +39,9 @@ angular.module('BE.seed.controller.inventory_detail', [])
       // Let's remember this.
       $scope.all_extra_data_keys = inventory_payload.extra_data_keys;
 
-      $scope.item_title = 'Property : ' + ($scope.item_state.address_line_1 ? $scope.item_state.address_line_1 : '(no address 1)');
+      if ($scope.inventory_type == 'properties') $scope.item_title = 'Property : ' + ($scope.item_state.address_line_1 ? $scope.item_state.address_line_1 : '(no address 1)');
+      else if ($scope.inventory_type == 'taxlots') $scope.item_title = 'Tax Lot : ' + ($scope.item_state.address ? $scope.item_state.address : '(no address)');
+
       $scope.user = {};
       $scope.user_role = inventory_payload.user_role;
 

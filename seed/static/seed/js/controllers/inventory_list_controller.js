@@ -199,7 +199,9 @@ angular.module('BE.seed.controller.inventory_list', [])
       processData();
 
       var get_labels = function () {
-        label_service.get_labels().then(function (data) {
+        label_service.get_labels([], {
+          inventory_type: $scope.inventory_type
+        }).then(function (data) {
           $scope.labels = data.results;
           console.debug(data.results);
         });

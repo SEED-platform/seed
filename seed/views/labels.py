@@ -8,37 +8,28 @@ from collections import namedtuple
 from django.core.exceptions import ObjectDoesNotExist
 from django.apps import apps
 
-from rest_framework import response
-from rest_framework import status
-from rest_framework import viewsets
+from rest_framework import (
+    response,
+    status,
+    viewsets
+)
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
-from seed.decorators import (
-    DecoratorMixin,
-)
+from seed.decorators import DecoratorMixin
 from seed.filters import (
     LabelFilterBackend,
     InventoryFilterBackend,
 )
-from seed.pagination import (
-    FakePaginiation,
-)
-from seed.utils.api import (
-    drf_api_endpoint,
-)
+from seed.pagination import NoPagination
+from seed.utils.api import drf_api_endpoint
 from seed.models import (
     StatusLabel as Label,
     Property,
-    # PropertyLabels,
-    TaxLot,
-    # TaxLotLabels
+    TaxLot
 )
-
-from seed.serializers.labels import (
-    LabelSerializer,
-)
+from seed.serializers.labels import LabelSerializer
 
 # missing from DRF specified in requirements
 status.HTTP_422_UNPROCESSABLE_ENTITY = 422
@@ -52,35 +43,32 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
     serializer_class = LabelSerializer
     queryset = Label.objects.none()
     filter_backends = (LabelFilterBackend,)
-    pagination_class = FakePaginiation
+    pagination_class = NoPagination
 
     _organization = None
-
-    def get_parent_organization(self):
-        org = self.get_organization()
-        if org.is_parent:
-            return org
-        else:
-            return org.parent_org
 
     def get_organization(self):
         if self._organization is None:
             try:
-                self._organization = self.request.user.orgs.get(
-                    pk=self.request.query_params["organization_id"],
+                org = self.request.user.orgs.get(
+                    pk=self.request.query_params['organization_id'],
                 )
+                if org.is_parent:
+                    self._organization = org
+                else:
+                    self._organization = org.parent_org
             except (KeyError, ObjectDoesNotExist):
                 self._organization = self.request.user.orgs.all()[0]
         return self._organization
 
     def get_queryset(self):
         return Label.objects.filter(
-            super_organization=self.get_parent_organization()
+            super_organization=self.get_organization()
         ).order_by("name").distinct()
 
     # TODO update for new data model
     def get_serializer(self, *args, **kwargs):
-        kwargs['super_organization'] = self.get_parent_organization()
+        kwargs['super_organization'] = self.get_organization()
         inventory = InventoryFilterBackend().filter_queryset(
             request=self.request,
         )
@@ -110,7 +98,7 @@ class UpdateInventoryLabelsAPIView(APIView):
 
         Used for bulk_create operations.
         """
-        return{
+        return {
             'property': apps.get_model('seed', 'Property_labels'),
             'taxlot': apps.get_model('seed', 'TaxLot_labels')
         }
