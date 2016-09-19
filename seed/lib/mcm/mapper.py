@@ -188,6 +188,7 @@ def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, conca
     """
     initial_data = kwargs.get('initial_data', None)
     model = model_class()
+
     # If there are any initial states we need to set prior to mapping.
     if initial_data:
         model = apply_initial_data(model, initial_data)
@@ -197,7 +198,6 @@ def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, conca
 
     # In case we need to look up cleaner by dynamic field mapping.
     for raw_field, value in row.items():
-
         # Look through any of our concatenation configs to see if this row
         # needs to be set aside for merging with others at the end of the map.
         #
