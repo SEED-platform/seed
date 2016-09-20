@@ -792,7 +792,7 @@ def inventory_search_filter_sort(inventory_type, params, user):
     order_by = "-{}".format(order_by) if sort_reverse else order_by
 
     # get all buildings for a user's orgs and sibling orgs
-    orgs = user.orgs.all()
+    orgs = user.orgs.all().filter(pk=params['super_organization'])
     other_orgs = []
     if params['show_shared_buildings']:
         other_orgs = build_shared_buildings_orgs(orgs)

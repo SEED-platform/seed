@@ -64,7 +64,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
                 )
             except (KeyError, ObjectDoesNotExist):
                 self._organization = self.request.user.orgs.all()[0]
-    return self._organization
+        return self._organization
 
     def get_queryset(self):
         labels = Label.objects.filter(
