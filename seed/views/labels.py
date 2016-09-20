@@ -89,7 +89,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
             LabelSerializer(
                 q, super_organization=super_organization,
                 inventory=inventory
-            ) for q in qs
+            ).data for q in qs
         ]
         status_code = status.HTTP_200_OK
         result = {'status': 'sucess', 'labels': results, 'qs': len(qs), 'c': len(results)}
