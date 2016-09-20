@@ -13,6 +13,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'label_service',
     'inventory',
     'cycles',
+    'labels',
     'columns',
     'urls',
     function ($scope,
@@ -24,6 +25,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               label_service,
               inventory,
               cycles,
+              labels,
               columns,
               urls) {
       $scope.inventory_type = $stateParams.inventory_type;
@@ -32,7 +34,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.total = $scope.pagination.total;
       $scope.number_per_page = 999999999;
 
-      $scope.labels = [];
+      $scope.labels = labels;
       $scope.selected_labels = [];
 
       var localColumns = localStorage.getItem('grid.' + $scope.inventory_type + '.visible');
@@ -201,9 +203,10 @@ angular.module('BE.seed.controller.inventory_list', [])
       var get_labels = function () {
         label_service.get_labels([], {
           inventory_type: $scope.inventory_type
-        }).then(function (data) {
-          $scope.labels = data.results;
-          console.debug(data.results);
+        }).then(function (labels) {
+          $scope.labels = _.filter(labels, function (label) {
+            return !_.isEmpty(label.is_applied);
+          });
         });
       };
 
@@ -225,7 +228,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      get_labels();
       init_matching_dropdown();
 
       var defaults = {

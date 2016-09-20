@@ -50,4 +50,4 @@ class LabelSerializer(serializers.ModelSerializer):
     def get_is_applied(self, obj):
         return self.inventory.filter(
             labels=obj,
-        ).exists()
+        ).values_list('id', flat=True)
