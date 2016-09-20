@@ -320,3 +320,51 @@ def mock_file_factory(name, size=None, url=None, path=None):
     mock_closed = mock.PropertyMock(return_value=True)
     type(mock_file).closed = mock_closed
     return mock_file
+
+
+def mock_queryset_factory(model, flatten=False, **kwargs):
+    """
+    Supplied a model and a list of key values pairs, where key is a
+    field name on the model and value is a list of values to populate
+    that field, returns a list of namedtuples to use as mock model instances.
+
+    ..note::
+        You are responsible for ensuring lists are the same length.
+        The factory will attempt to set id/auto_field if not supplied,
+        with a value corresponding to the list index + 1.
+
+        If flatten == True append _id to the field_name in kwargs
+
+    Usage:
+    mock_queryset = mock_queryset_factory(
+        Model, field1=[...], field2=[...]
+    )
+    :param: model: Model to base queryset on
+    :flatten: append _id to  ForeignKey field names
+    :kwargs: field_name: list of values for model.field...
+
+    :return:
+        [namedtuple('ModelName', [field1, field2])...]
+
+    """
+    auto_populate = None
+    fields = list(model._meta.fields)
+    auto_field = model._meta.auto_field
+    if auto_field.name not in kwargs:
+        auto_populate = auto_field.name
+    field_names = [
+        "{}_id".format(field.name)
+        if field.get_internal_type() == 'ForeignKey' and flatten
+        else field.name for field in fields
+    ]
+    Instance = namedtuple(model.__name__, field_names)
+    count_name = field_names[0] if field_names[0] != auto_populate\
+        else field_names[1]
+    queryset = []
+    for i in range(len(kwargs[count_name])):
+        values = [
+            kwargs[field][i] if field != auto_populate else i
+            for field in field_names
+        ]
+        queryset.append(Instance(*values))
+    return queryset

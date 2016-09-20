@@ -20,7 +20,6 @@ from seed.utils.generic import split_model_fields, obj_to_dict
 
 logger = logging.getLogger(__name__)
 
-from django.db.models.fields.related import ManyToManyField
 from seed.models import (
     Cycle,
     StatusLabel,
@@ -30,7 +29,6 @@ from seed.models import (
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.utils.time import convert_datestr
-
 
 # Oops! we override a builtin in some of the models
 property_decorator = property
@@ -43,6 +41,7 @@ class Property(models.Model):
     # Handle properties that may have multiple properties (e.g. buildings)
     campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', blank=True, null=True)
+    labels = models.ManyToManyField(StatusLabel)
 
     class Meta:
         verbose_name_plural = 'properties'
@@ -258,10 +257,10 @@ class PropertyState(models.Model):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-            }
+                }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-            }
+                }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk
@@ -313,12 +312,12 @@ class PropertyState(models.Model):
 
 class PropertyView(models.Model):
     """Similar to the old world of canonical building"""
-    property = models.ForeignKey(Property,
-                                 related_name='views')  # different property views can be associated with each other (2012, 2013).
+    # different property views can be associated with each other (2012, 2013.
+    property = models.ForeignKey(Property, related_name='views')
     cycle = models.ForeignKey(Cycle)
     state = models.ForeignKey(PropertyState)
 
-    labels = ManyToManyField(StatusLabel)
+    # labels = models.ManyToManyField(StatusLabel)
 
     def __unicode__(self):
         return u'Property View - %s' % (self.pk)

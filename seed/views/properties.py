@@ -143,29 +143,6 @@ def get_properties(request):
         # All the related tax lot states.
         p['related'] = join_map.get(prop.pk, [])
 
-        # Start collapsed field data
-        # Map of fields in related model to unique list of values
-        # related_field_map = {}
-        #
-        # Iterate over related dicts and gather field values.
-        # Basically get a unique list off all related values for each field.
-        # for related in p['related']:
-        #     for k, v in related.items():
-        #         try:
-        #             related_field_map[k].add(v)
-        #         except KeyError:
-        #             try:
-        #                 related_field_map[k] = {v}
-        #             except TypeError:
-        #                 # Extra data field, ignore it
-        #                 pass
-        #
-        # for k, v in related_field_map.items():
-        #     related_field_map[k] = list(v)
-        #
-        # p['collapsed'] = related_field_map
-        # # End collapsed field data
-
         response['results'].append(p)
 
     return response

@@ -16,7 +16,9 @@ from seed.lib.superperms.orgs.models import Organization
 from .models import (
     BuildingSnapshot,
     ColumnMapping,
+    Property,
     PropertyState,
+    TaxLot,
     TaxLotState,
 )
 from .utils.mapping import get_mappable_types
@@ -404,7 +406,7 @@ def process_search_params(params, user, is_api_request=False):
     other_search_params = params.get('filter_params', {})
     exclude = other_search_params.pop('exclude', {})
 
-    order_by = params.get('order_by', 'tax_lot_id')
+    order_by = params.get('order_by', 'parent_property_id')
     if order_by == '':
         order_by = 'tax_lot_id'
     sort_reverse = params.get('sort_reverse', False)
@@ -713,3 +715,102 @@ def orchestrate_search_filter_sort(params, user, skip_sort=False):
         )
 
     return buildings_queryset
+
+
+def get_inventory_fieldnames(inventory_type):
+    """returns a list of field names that will be searched against
+    """
+    return {
+        'property': [
+            'address_line_1', 'pm_property_id',
+            'jurisdiction_property_identifier'
+        ],
+        'taxlot': ['jurisdiction_taxlot_id', 'address'],
+    }[inventory_type]
+
+
+def search_inventory(inventory_type, q, fieldnames=None, queryset=None):
+    """returns a queryset for matching Taxlots/Properties
+    :param str or unicode q: search string
+    :param list fieldnames: list of  model fieldnames
+    :param queryset: optional queryset to filter from, defaults to
+        BuildingSnapshot.objects.none()
+    :returns: :queryset: queryset of matching buildings
+    """
+    Model = {'property': Property, 'taxlot': TaxLot}[inventory_type]
+    if not fieldnames:
+        fieldnames = get_inventory_fieldnames(inventory_type)
+    if queryset is None:
+        queryset = Model.objects.none()
+    if q == '':
+        return queryset
+    qgroup = reduce(operator.or_, (
+        Q(**{fieldname + '__icontains': q}) for fieldname in fieldnames
+    ))
+    return queryset.filter(qgroup)
+
+
+def create_inventory_queryset(inventory_type, orgs, exclude, order_by,
+                              other_orgs=None):
+    """creates a queryset of properties or taxlots within orgs.
+    If ``other_orgs``, properties/taxlots in both orgs and other_orgs
+    will be represented in the queryset.
+
+    :param inventory_type: property or taxlot.
+    :param orgs: queryset of Organization inst.
+    :param exclude: django query exclude dict.
+    :param order_by: django query order_by str.
+    :param other_orgs: list of other orgs to ``or`` the query
+    """
+    Model = {'property': Property, 'taxlot': TaxLot}[inventory_type]
+    distinct_order_by = order_by.lstrip('-')
+
+    if other_orgs:
+        return Model.objects.order_by(
+            order_by, 'pk'
+        ).filter(
+            (
+                Q(super_organization__in=orgs) |
+                Q(super_organization__in=other_orgs)
+            ),
+        ).exclude(**exclude).distinct(distinct_order_by, 'pk')
+    else:
+        result = Model.objects.order_by(
+            order_by, 'pk'
+        ).filter(
+            organization__in=orgs,
+        ).exclude(**exclude).distinct(distinct_order_by, 'pk')
+
+    return result
+
+
+def inventory_search_filter_sort(inventory_type, params, user):
+    """
+    Given a parsed set of params, perform the search, filter, and sort for
+    Properties or Taxlots
+    """
+    sort_reverse = params['sort_reverse']
+    order_by = params['order_by']
+    order_by = "-{}".format(order_by) if sort_reverse else order_by
+
+    # get all buildings for a user's orgs and sibling orgs
+    orgs = user.orgs.all()
+    other_orgs = []
+    if params['show_shared_buildings']:
+        other_orgs = build_shared_buildings_orgs(orgs)
+
+    inventory = create_inventory_queryset(
+        inventory_type,
+        orgs,
+        params['exclude'],
+        order_by,
+        other_orgs=other_orgs,
+    )
+
+    if inventory:
+        # full text search across a couple common fields
+        inventory = search_inventory(
+            inventory_type, params['q'], queryset=inventory
+        )
+
+    return inventory

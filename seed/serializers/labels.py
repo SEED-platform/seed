@@ -29,7 +29,7 @@ class LabelSerializer(serializers.ModelSerializer):
 
         """
         super_organization = kwargs.pop('super_organization')
-        self.building_snapshots = kwargs.pop('building_snapshots')
+        self.inventory = kwargs.pop('inventory')
         super(LabelSerializer, self).__init__(*args, **kwargs)
         if getattr(self, 'initial_data', None):
             self.initial_data['super_organization'] = super_organization.pk
@@ -49,45 +49,6 @@ class LabelSerializer(serializers.ModelSerializer):
         model = Label
 
     def get_is_applied(self, obj):
-        return self.building_snapshots.filter(
-            canonical_building__labels=obj,
+        return self.inventory.filter(
+            labels=obj,
         ).exists()
-
-
-class UpdateBuildingLabelsSerializer(serializers.Serializer):
-    add_label_ids = serializers.ListSerializer(
-        child=fields.IntegerField(),
-        allow_empty=True,
-    )
-    remove_label_ids = serializers.ListSerializer(
-        child=fields.IntegerField(),
-        allow_empty=True,
-    )
-
-    def __init__(self, *args, **kwargs):
-        self.queryset = kwargs.pop('queryset')
-        self.super_organization = kwargs.pop('super_organization')
-        super(UpdateBuildingLabelsSerializer, self).__init__(*args, **kwargs)
-
-    def create(self, validated_data):
-        if validated_data['add_label_ids']:
-            add_labels = Label.objects.filter(
-                pk__in=validated_data['add_label_ids'],
-                super_organization=self.super_organization,
-            )
-        else:
-            add_labels = []
-
-        if validated_data['remove_label_ids']:
-            remove_labels = Label.objects.filter(
-                pk__in=validated_data['remove_label_ids'],
-                super_organization=self.super_organization,
-            )
-        else:
-            remove_labels = []
-
-        for cb in self.queryset:
-            cb.labels.remove(*remove_labels)
-            cb.labels.add(*add_labels)
-
-        return self.queryset

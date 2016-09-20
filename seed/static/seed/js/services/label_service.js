@@ -70,6 +70,7 @@ angular.module('BE.seed.service.label',
         var defer = $q.defer();
 
         var searchArgs = _.assignIn({
+            inventory_type: 'property',
             selected_properties: selected_properties,
             select_all_checkbox: select_all_checkbox,
             organization_id: org_id
