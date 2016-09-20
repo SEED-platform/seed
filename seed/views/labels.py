@@ -83,7 +83,6 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
 
     def list(self, request):
         qs = self.get_queryset()
-        assert qs is not None
         super_organization = self.get_organization()
         inventory = InventoryFilterBackend().filter_queryset(
             request=self.request,
@@ -95,7 +94,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
             ).data for q in qs
         ]
         status_code = status.HTTP_200_OK
-        result = {'status': 'sucess', 'labels': results, 'qs': len(qs), 'c': len(results)}
+        result = {'status': 'sucess', 'labels': results}
         return response.Response(result, status=status_code)
 
 
