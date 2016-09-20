@@ -49,23 +49,26 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
 
     _organization = None
 
+    def get_parent_organization(self):
+        org = self.get_organization()
+        if org.is_parent:
+            return org
+        else:
+            return org.parent_org
+
     def get_organization(self):
         if self._organization is None:
             try:
-                org = self.request.user.orgs.get(
-                    pk=self.request.query_params['organization_id'],
+                self._organization = self.request.user.orgs.get(
+                    pk=self.request.query_params["organization_id"],
                 )
-                if org.is_parent:
-                    self._organization = org
-                else:
-                    self._organization = org.parent_org
             except (KeyError, ObjectDoesNotExist):
                 self._organization = self.request.user.orgs.all()[0]
-        return self._organization
+    return self._organization
 
     def get_queryset(self):
         labels = Label.objects.filter(
-            super_organization=self.get_organization()
+            super_organization=self.get_parent_organization()
         ).order_by("name").distinct()
         return labels
 
