@@ -86,17 +86,14 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
             request=self.request,
         )
         results = [
-            LabelSerialzer(
+            LabelSerializer(
                 q, super_organization=super_organization,
                 inventory=inventory
             ) for q in qs
         ]
-        assert len(results) = len(qs)
         status_code = status.HTTP_200_OK
-        result = {'status': 'sucess', 'labels': results}
+        result = {'status': 'sucess', 'labels': results, 'qs': len(qs), 'c': len(results)}
         return response.Response(result, status=status_code)
-
-
 
 
 class UpdateInventoryLabelsAPIView(APIView):
