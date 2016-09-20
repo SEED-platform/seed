@@ -27,7 +27,10 @@ from config.utils import de_camel_case
 from seed.data_importer.managers import NotDeletedManager
 from seed.lib.mappings import mapper
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
-from seed.utils.cache import set_cache_raw, set_cache_state, get_cache, get_cache_raw, get_cache_state, delete_cache
+from seed.utils.cache import (
+    set_cache_raw, set_cache_state, get_cache, get_cache_raw,
+    get_cache_state, delete_cache
+)
 
 ROW_DELIMITER = "|#*#|"
 
@@ -89,13 +92,15 @@ class ImportRecord(NotDeletableModel):
     name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Name Your Dataset",
                             default="Unnamed Dataset")
     app = models.CharField(max_length=64, blank=False, null=False, verbose_name='Destination App',
-                           help_text='The application (e.g. BPD or SEED) for this dataset', default='seed')
+                           help_text='The application (e.g. BPD or SEED) for this dataset',
+                           default='seed')
     owner = models.ForeignKey('landing.SEEDUser', blank=True, null=True)
     start_time = models.DateTimeField(blank=True, null=True)
     finish_time = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True, auto_now=True)
-    last_modified_by = models.ForeignKey('landing.SEEDUser', related_name="modified_import_records", blank=True,
+    last_modified_by = models.ForeignKey('landing.SEEDUser', related_name="modified_import_records",
+                                         blank=True,
                                          null=True)
     notes = models.TextField(blank=True, null=True)
     merge_analysis_done = models.BooleanField(default=False)
@@ -350,7 +355,8 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def matched_buildings(self):
-        return self.buildingimportrecord_set.filter(was_in_database=True, is_missing_from_import=False)
+        return self.buildingimportrecord_set.filter(was_in_database=True,
+                                                    is_missing_from_import=False)
 
     @property
     def num_matched_buildings(self):
@@ -358,7 +364,8 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def new_buildings(self):
-        return self.buildingimportrecord_set.filter(was_in_database=False, is_missing_from_import=False)
+        return self.buildingimportrecord_set.filter(was_in_database=False,
+                                                    is_missing_from_import=False)
 
     @property
     def num_new_buildings(self):
@@ -483,7 +490,8 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def display_as_in_progress(self):
-        return self.status in [STATUS_MACHINE_MAPPING, STATUS_MACHINE_CLEANING, STATUS_PRE_MERGING, STATUS_MERGING]
+        return self.status in [STATUS_MACHINE_MAPPING, STATUS_MACHINE_CLEANING, STATUS_PRE_MERGING,
+                               STATUS_MERGING]
 
     @property
     def is_mapping_or_cleaning(self):
@@ -561,7 +569,8 @@ class ImportRecord(NotDeletableModel):
                 'name': self.name,
                 'app': self.app,
                 'last_modified_time_ago': timesince(self.updated_at).split(",")[0],
-                'last_modified_seconds_ago': -1 * (self.updated_at - datetime.datetime.now()).total_seconds(),
+                'last_modified_seconds_ago': -1 * (
+                    self.updated_at - datetime.datetime.now()).total_seconds(),
                 'last_modified_by': last_modified_by,
                 'notes': self.notes,
                 'merge_analysis_done': self.merge_analysis_done,
@@ -730,7 +739,8 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                 val = u"%s" % row[tcm.order - 1]
                 try:
                     if tcm.datacoercions.all().filter(source_string=val).count() > 0:
-                        cleaned_row.append(tcm.datacoercions.all().filter(source_string=val)[0].destination_value)
+                        cleaned_row.append(
+                            tcm.datacoercions.all().filter(source_string=val)[0].destination_value)
                     else:
                         cleaned_row.append(val)
                 except:
@@ -1035,6 +1045,26 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def force_restart_cleaning_url(self):
         return reverse("data_importer:force_restart_cleaning", args=(self.pk,))
 
+    def find_unmatched_property_states(self):
+        """Get unmatched property states' id info from an import file.
+
+        :rtype: list of tuples, field values specified in BS_VALUES_LIST.
+
+        NB: This does not return a queryset!
+
+        """
+
+        from seed.models import (
+            PropertyState,
+            DATA_STATE_MAPPING
+        )
+        return PropertyState.objects.filter(
+            # TODO: I would really like to remove this source_type field if at all possible
+            # source_type__in=[COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW],
+            data_state__in=[DATA_STATE_MAPPING],
+            import_file=self.id,
+        )
+
 
 class TableColumnMapping(models.Model):
     app = models.CharField(max_length=64, default='')
@@ -1187,7 +1217,8 @@ class DataCoercionMapping(models.Model):
             self.valid_destination_value = True
         except:
             self.valid_destination_value = False
-        self.is_mapped = (self.confidence > 0.6 or self.was_a_human_decision) and self.valid_destination_value
+        self.is_mapped = (
+            self.confidence > 0.6 or self.was_a_human_decision) and self.valid_destination_value
         super(DataCoercionMapping, self).save(*args, **kwargs)
 
     @property
@@ -1260,7 +1291,8 @@ def update_status_from_tcm(sender, instance, **kwargs):
 
 def update_status_from_dcm(sender, instance, **kwargs):
     try:
-        queue_update_status_for_import_record(instance.table_column_mapping.import_file.import_record.pk)
+        queue_update_status_for_import_record(
+            instance.table_column_mapping.import_file.import_record.pk)
     except ObjectDoesNotExist:
         pass
 

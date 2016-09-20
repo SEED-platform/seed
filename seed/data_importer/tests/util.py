@@ -195,10 +195,7 @@ class DataMappingBaseTestCase(TestCase):
         org = Organization.objects.create()
 
         # Create an org user
-        OrganizationUser.objects.create(
-            user=user,
-            organization=org
-        )
+        OrganizationUser.objects.create(user=user, organization=org)
 
         import_record = ImportRecord.objects.create(
             owner=user, last_modified_by=user, super_organization=org

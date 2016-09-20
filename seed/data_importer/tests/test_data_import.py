@@ -173,6 +173,7 @@ class TestMapping(DataMappingBaseTestCase):
 
 
 class TestMatching(DataMappingBaseTestCase):
+
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -231,6 +232,7 @@ class TestMatching(DataMappingBaseTestCase):
 
 
 class TestPromotingProperties(DataMappingBaseTestCase):
+
     def setUp(self):
         filename = 'propertystates-one-cycle.csv'
         import_file_source_type = ASSESSED_RAW,
@@ -400,7 +402,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
 #         assert psa.organization is not None
 #         psa.promote(cycle)
 #
-#         ps = tasks.get_canonical_snapshots(self.org)
+#         ps = tasks.list_canonical_property_states(self.org)
 #         from django.db.models.query import QuerySet
 #         self.assertTrue(isinstance(ps, QuerySet))
 #         logger.debug("There are %s properties" % len(ps))
@@ -418,7 +420,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
 #         # for promote_me in promote_mes:
 #         #     promote_me.promote(cycle)
 #         #
-#         # ps = tasks.get_canonical_snapshots(self.org)
+#         # ps = tasks.list_canonical_property_states(self.org)
 #         # from django.db.models.query import QuerySet
 #         # self.assertTrue(isinstance(ps, QuerySet))
 #         # logger.debug("There are %s properties" % len(ps))

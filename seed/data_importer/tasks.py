@@ -968,12 +968,17 @@ def _match_buildings(file_pk, user_pk):
     org = Organization.objects.filter(users=import_file.import_record.owner)[0]
 
     # Return a list of all the properties based on the import file
-    unmatched_buildings = PropertyState.find_unmatched(import_file)
-    # canonical_buildings =
-    # TODO: need to also return the taxlots and taxlotproperties (yuck)
+    unmatched_buildings = import_file.find_unmatched_property_states()
+
+    from seed.utils.generic import pp
+    for ub in unmatched_buildings:
+        pp(ub)
+
+    print len(unmatched_buildings)
+
+    # TODO: need to also return the taxlots
 
     duplicates = []
-
     newly_matched_building_pks = []
 
     # Filter out matches based on ID.
@@ -995,8 +1000,7 @@ def _match_buildings(file_pk, user_pk):
 
     # Remove any buildings we just did exact ID matches with.
     unmatched_buildings = unmatched_buildings.exclude(
-        pk__in=newly_matched_building_pks
-    ).values_list(*BS_VALUES_LIST)
+        pk__in=newly_matched_building_pks).values_list(*BS_VALUES_LIST)
 
     # If we don't find any unmatched buildings, there's nothing left to do.
     if not unmatched_buildings:
@@ -1162,11 +1166,9 @@ def remap_data(import_file_pk):
     return result
 
 
-# TODO: rename to get_canonical_properties
-def get_canonical_snapshots(org_id):
+def list_canonical_property_states(org_id):
     """
-    Return all of the PropertyStates from the PropertyView
-    for a specific cycle.
+    Return a QuerySet of the property states that are part of the inventory
 
     Args:
         org_id: Organization ID
@@ -1178,7 +1180,7 @@ def get_canonical_snapshots(org_id):
 
     pvs = PropertyView.objects.filter(
         state__organization=org_id,
-        state__data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING]
+        state__data_state__in=[DATA_STATE_MATCHING]
     ).select_related('state')
 
     ids = [p.state.id for p in pvs]
@@ -1189,7 +1191,7 @@ def get_canonical_snapshots(org_id):
 def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
     """Returns canonical snapshots that match at least one id."""
     params = []
-    can_snapshots = get_canonical_snapshots(org_id)
+    can_snapshots = list_canonical_property_states(org_id)
     if pm_id:
         params.append(Q(pm_property_id=pm_id))
         # params.append(Q(tax_lot_state__tax_lot_id=pm_id))
