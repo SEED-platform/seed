@@ -64,9 +64,10 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
         return self._organization
 
     def get_queryset(self):
-        return Label.objects.filter(
+        labels = Label.objects.filter(
             super_organization=self.get_organization()
         ).order_by("name").distinct()
+        return labels
 
     # TODO update for new data model
     def get_serializer(self, *args, **kwargs):

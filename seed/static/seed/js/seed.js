@@ -1030,6 +1030,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
         cycles: ['cycle_service', function (cycle_service) {
           return cycle_service.get_cycles();
         }],
+        labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
+          return label_service.get_labels([], {
+            inventory_type: $stateParams.inventory_type
+          }).then(function (labels) {
+            return _.filter(labels, function (label) {
+              return !_.isEmpty(label.is_applied);
+            });
+          });
+        }],
         columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
           if ($stateParams.inventory_type === 'properties') {
             return inventory_service.get_property_columns();
