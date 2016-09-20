@@ -41,6 +41,8 @@ ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 class LabelViewSet(DecoratorMixin(drf_api_endpoint),
                    viewsets.ModelViewSet):
     serializer_class = LabelSerializer
+    renderer_classes = (JSONRenderer,)
+    parser_classes = (JSONParser,)
     queryset = Label.objects.none()
     filter_backends = (LabelFilterBackend,)
     pagination_class = NoPagination
@@ -74,6 +76,26 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
         )
         kwargs['inventory'] = inventory
         return super(LabelViewSet, self).get_serializer(*args, **kwargs)
+
+    def list(self, request):
+        qs = self.get_queryset()
+        assert qs is not None
+        super_organization = self.get_organization()
+        inventory = InventoryFilterBackend().filter_queryset(
+            request=self.request,
+        )
+        results = [
+            LabelSerialzer(
+                q, super_organization=super_organization,
+                inventory=inventory
+            ) for q in qs
+        ]
+        assert len(results) = len(qs)
+        status_code = status.HTTP_200_OK
+        result = {'status': 'sucess', 'labels': results}
+        return response.Response(result, status=status_code)
+
+
 
 
 class UpdateInventoryLabelsAPIView(APIView):
