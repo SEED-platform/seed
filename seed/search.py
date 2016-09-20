@@ -88,7 +88,7 @@ def search_properties(q, fieldnames=None, queryset=None):
     if fieldnames is None:
         fieldnames = [
             'pm_parent_property_id'
-            'jurisdiction_property_identifier'
+            'jurisdiction_property_id'
             'address_line_1',
             'property_name',
         ]
@@ -100,7 +100,7 @@ def search_taxlots(q, fieldnames=None, queryset=None):
         return TaxLotState.objects.none()
     if fieldnames is None:
         fieldnames = [
-            'jurisdiction_taxlot_identifier',
+            'jurisdiction_tax_lot_id',
             'address'
             'block_number'
         ]

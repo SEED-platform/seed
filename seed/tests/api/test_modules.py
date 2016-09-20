@@ -12,7 +12,8 @@ import time
 import requests
 
 from seed_readingtools import (
-    check_status, read_map_file, upload_file  # , check_progress
+    check_status, read_map_file, upload_file,  # check_progress
+    write_out_django_debug
 )
 
 
@@ -60,6 +61,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
     result = requests.get(main_url + '/app/save_column_mappings/',
                           headers=header,
                           data=json.dumps(payload))
+
     check_status(result, partmsg, log)
 
     # Map the buildings with new column mappings.
@@ -132,14 +134,18 @@ def search_and_project(header, main_url, organization_id, log):
     print ('API Function: create_project\n'),
     partmsg = 'create_project'
     time1 = dt.datetime.now()
-    newproject_payload = {'name': 'New Project_' + str(time1.day) + str(time1.second),
-                          'compliance_type': 'describe compliance type',
-                          'description': 'project description'}
-
-    result = requests.post(main_url + '/api/v2/projects/',
-                           headers=header,
-                           params=json.dumps({'organization_id': organization_id}),
-                           data=json.dumps(newproject_payload))
+    newproject_payload = {
+        'name': 'New Project_' + str(time1.day) + str(time1.second),
+        'compliance_type': 'describe compliance type',
+        'description': 'project description'
+    }
+    result = requests.post(
+        main_url + '/api/v2/projects/',
+        headers=header,
+        params=json.dumps({'organization_id': organization_id}),
+        data=json.dumps(newproject_payload)
+    )
+    write_out_django_debug(partmsg, result)
     check_status(result, partmsg, log)
 
     # Get project slug

@@ -12,18 +12,19 @@ EXCLUDE_FIELDS = [
     'children',
     'confidence',
     'created',
+    'duplicate',
     'extra_data',
     'id',
     'import_file',
     'last_modified_by',
     'match_type',
     'modified',
+    'organization',
     'parents',
     'pk',
     'seed_org',
     'source_type',
     'super_organization',
-    'duplicate',
 ]
 
 META_FIELDS = [

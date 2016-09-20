@@ -37,13 +37,25 @@ SEED_DATA_SOURCES = (
     (GREEN_BUTTON_RAW, 'Green Button Raw'),
 )
 
+# State of the data that was imported. This will be used to flag which
+# rows are orphaned and can be deleted. TODO: There are a bunch of these states already
+# defined in the data_importer/models.py file. Should probably revert this and use those.
+DATA_STATE_UNKNOWN = 0
+DATA_STATE_IMPORT = 1
+DATA_STATE_MAPPING = 2
+DATA_STATE_MATCHING = 3
+DATA_STATE = (
+    (DATA_STATE_UNKNOWN, 'Unknown'),
+    (DATA_STATE_IMPORT, 'Post Import'),
+    (DATA_STATE_MAPPING, 'Post Mapping'),
+    (DATA_STATE_MATCHING, 'Post Matching'),
+)
 
 SEARCH_CONFIDENCE_RANGES = {
     'low': 0.4,
     'medium': 0.75,
     'high': 1.0,
 }
-
 
 NATURAL_GAS = 1
 ELECTRICITY = 2
@@ -286,9 +298,8 @@ class Project(TimeStampedModel):
     owner = models.ForeignKey(
         User, verbose_name=_('User'), blank=True, null=True
     )
-    last_modified_by = models.ForeignKey(
-        User, blank=True, null=True, related_name='last_modified_user'
-    )
+    last_modified_by = models.ForeignKey(User, blank=True, null=True,
+                                         related_name='last_modified_user')
     super_organization = models.ForeignKey(
         SuperOrganization,
         verbose_name=_('SeedOrg'),

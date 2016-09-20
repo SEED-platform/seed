@@ -8,6 +8,8 @@ from _localtools import get_static_extradata_mapping_file
 
 from _localtools import get_taxlot_columns
 from _localtools import get_property_columns
+from _localtools import logging_info
+from _localtools import logging_debug
 
 from IPython import embed
 from seed.models import BuildingSnapshot
@@ -27,15 +29,15 @@ class Command(BaseCommand):
             parser.add_argument('--no-update-columns', dest='update_columns', default=True, action="store_false")
             parser.add_argument('--update-columns', dest='update_columns', default=True, action="store_true")
 
-            parser.add_argument('--no-add-unmapped-columns', dest='add_unmapped_columns', default=False, action="store_false")
-            parser.add_argument('--add-unmapped-columns', dest='add_unmapped_columns', default=False, action="store_true")
+            parser.add_argument('--no-add-unmapped-columns', dest='add_unmapped_columns', default=True, action="store_false")
+            parser.add_argument('--add-unmapped-columns', dest='add_unmapped_columns', default=True, action="store_true")
 
-            parser.add_argument('--no-create-missing-columns', dest='create_missing_columns', default=False, action="store_true")
-            parser.add_argument('--create-missing-columns', dest='create_missing_columns', default=False, action="store_true")
+            parser.add_argument('--no-create-missing-columns', dest='create_missing_columns', default=True, action="store_false")
+            parser.add_argument('--create-missing-columns', dest='create_missing_columns', default=True, action="store_true")
             return
 
         def handle(self, *args, **options):
-            # Process Arguments
+            logging_info("RUN migrate_extradata_columns with args={},kwds={}".format(args, options))
             if options['organization']:
                 organization_ids = map(int, options['organization'].split(","))
             else:
@@ -56,10 +58,11 @@ class Command(BaseCommand):
                 self.update_columns(org, update_columns, add_unmapped_columns)
                 self.find_missing_columns(org, create=create_missing_columns)
 
+            logging_info("END migrate_extradata_columns")
             return
 
         def find_missing_columns(self, org, create):
-            print "Creating missing columns for {}".format(org)
+            logging_info("Creating missing columns for {}".format(org))
 
             property_views = PropertyView.objects.filter(property__organization=org).select_related('state').all()
             taxlot_views = TaxLotView.objects.filter(taxlot__organization=org).select_related('state').all()
@@ -73,11 +76,11 @@ class Command(BaseCommand):
 
                 if not cnt:
                     if create:
-                        print "Creating missing column {}".format(pk)
+                        logging_info("Creating missing column {} found in property extra_data keys".format(pk))
                         col = Column(organization = org, column_name = pk, is_extra_data=True, extra_data_source=Column.SOURCE_PROPERTY)
                         col.save()
                     else:
-                        print "Missing column {}".format(pk)
+                        logging_info("Missing column {} found in property extra_data keys".format(pk))
 
             for tlk in taxlot_keys:
                 qry = Column.objects.filter(organization=org,column_name=tlk)
@@ -85,16 +88,16 @@ class Command(BaseCommand):
 
                 if not cnt:
                     if create:
-                        print "Creating missing column {}".format(tlk)
+                        logging_info("Creating missing column {} found in tax lot extra data keys".format(tlk))
                         col = Column(organization = org, column_name = tlk, is_extra_data=True, extra_data_source=Column.SOURCE_PROPERTY)
                         col.save()
                     else:
-                        print "Missing column {}".format(tlk)
+                        logging_info("Missing column {} found in tax lot extra data keys.".format(tlk))
 
             return
 
         def update_columns(self, org, update_columnms = True, create_missing = False):
-            print "Updating  columns for org {}".format(org)
+            logging_info("Updating  columns for org {}".format(org))
             taxlot_columns = get_taxlot_columns(org)
             property_columns = get_property_columns(org)
             columns = Column.objects.filter(organization = org).all()
@@ -109,12 +112,12 @@ class Command(BaseCommand):
                     # Update the column
                     col = qry.first()
                     col.extra_data_source = Column.SOURCE_TAXLOT
-                    print "Setting Column {} to SOURCE_TAXLOT".format(col)
+                    logging_info("Setting Column {} to SOURCE_TAXLOT".format(col))
                     col.save()
                 elif create_missing:
                     # Create the missing column
                     col = Column(organization = org, column_name = tl_col, is_extra_data=True, extra_data_source=Column.SOURCE_TAXLOT)
-                    print "CREATING COLUMN {}".format(col)
+                    logging_info("CREATING COLUMN {}".format(col))
                     col.save()
 
             for prop_col in property_columns:
@@ -123,13 +126,13 @@ class Command(BaseCommand):
                 if cnt:
                     # Update the column
                     col = qry.first()
-                    print "Setting Column {} to SOURCE_TAXLOT".format(col)
+                    logging_info("Setting Column {} to SOURCE_TAXLOT".format(col))
                     col.extra_data_source = Column.SOURCE_PROPERTY
                     col.save()
                 elif create_missing:
                     # Create the missing column
                     col = Column(organization = org, column_name = prop_col, is_extra_data=True, extra_data_source=Column.SOURCE_PROPERTY)
-                    print "CREATING COLUMN {}".format(col)
+                    logging_info("CREATING COLUMN {}".format(col))
                     col.save()
             return
 
@@ -138,7 +141,7 @@ class Command(BaseCommand):
         #     property_columns = get_property_columns(org)
 
 
-        #     extra_data_columns = set(itertools.chain.from_iterable(map(lambda bs: bs.extra_data.keys(), BuildingSnapshot.objects.filter(super_organization=org, canonical_building__active=True).all())))
+        #     extra_data_columns = set(itertools.chain.from_iterable(map(lambda bs: bs.extra_data.keys(), BuildingSnapshot.objects.filter(organization=org, canonical_building__active=True).all())))
         #     mapped_columns = set(itertools.chain(taxlot_columns, property_columns))
 
         #     missing = [x for x in extra_data_columns if x not in mapped_columns and x.strip()]

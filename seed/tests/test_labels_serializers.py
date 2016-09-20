@@ -10,8 +10,9 @@ Unit tests for map.py
 
 from django.test import TestCase
 
+from seed.factory import SEEDFactory
 from seed.lib.superperms.orgs.models import (
-    Organization as SuperOrganization,
+    Organization as SuperOrganization
 )
 from seed.models import (
     BuildingSnapshot,
@@ -22,8 +23,6 @@ from seed.serializers.labels import (
     LabelSerializer,
     UpdateBuildingLabelsSerializer,
 )
-
-from seed.factory import SEEDFactory
 
 
 class TestLabelSerializer(TestCase):

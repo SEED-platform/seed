@@ -11,36 +11,24 @@ import logging
 from django.db import models
 from django_pgjson.fields import JsonField
 
-from auditlog import AUDIT_IMPORT
-from auditlog import DATA_UPDATE_TYPE
-
 from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (Cycle, StatusLabel)
 from seed.models import (
     COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW
 )
-from seed.utils.time import convert_datestr
-
 from seed.utils.generic import split_model_fields, obj_to_dict
 
 logger = logging.getLogger(__name__)
 
-# State of the data that was imported. This will be used to flag which
-# rows are orphaned and can be deleted.
-
-# TODO: There are a bunch of these states already defined in the data_importer/
-# models.py file. Should probably revert this and use those.
-DATA_STATE_UNKNOWN = 0
-DATA_STATE_IMPORT = 1
-DATA_STATE_MAPPING = 2
-DATA_STATE_MATCHING = 3
-DATA_STATE = (
-    (DATA_STATE_UNKNOWN, 'Unknown'),
-    (DATA_STATE_IMPORT, 'Post Import'),
-    (DATA_STATE_MAPPING, 'Post Mapping'),
-    (DATA_STATE_MATCHING, 'Post Matching'),
+from seed.models import (
+    Cycle,
+    StatusLabel,
+    DATA_STATE,
+    DATA_STATE_UNKNOWN
 )
+from auditlog import AUDIT_IMPORT
+from auditlog import DATA_UPDATE_TYPE
+from seed.utils.time import convert_datestr
 
 # Oops! we override a builtin in some of the models
 property_decorator = property
@@ -70,27 +58,23 @@ class PropertyState(models.Model):
     # FIXME: source_type needs to be a foreign key or make it import_file.source_type
     source_type = models.IntegerField(null=True, blank=True, db_index=True)
 
-    # TODO: super_organization is sometimes organization -- are these the same?
-    super_organization = models.ForeignKey(Organization, blank=True, null=True)
-    data_state = models.IntegerField(choices=DATA_STATE, default=0)
+    organization = models.ForeignKey(Organization, blank=True, null=True)
+    data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
 
     # Is this still being used during matching? Apparently so.
     confidence = models.FloatField(default=0, null=True, blank=True)
 
-    # TODO: hmm, name this jurisdiction_property_id to stay consistent?
-    jurisdiction_property_identifier = models.CharField(max_length=255, null=True, blank=True)
+    jurisdiction_property_id = models.CharField(max_length=255, null=True, blank=True)
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
 
     # If the property is a campus then the pm_parent_property_id is the same
-    # for all the properties. The master campus record (campus=True) the
-    # pm_property_id will be set the same as pm_parent_property_id
+    # for all the properties. The master campus record (campus=True on Property model) will
+    # have the pm_property_id set to be the same as the pm_parent_property_id
     pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True)
-    pm_property_id = models.CharField(max_length=255, null=True, blank=True)  # use this one
-    building_portfolio_manager_identifier = models.CharField(max_length=255, null=True, blank=True)
-    # hes_id?
-    # home_energy_score_id
-    building_home_energy_score_identifier = models.CharField(max_length=255, null=True, blank=True)
+    pm_property_id = models.CharField(max_length=255, null=True, blank=True)
+
+    home_energy_score_id = models.CharField(max_length=255, null=True, blank=True)
 
     # Tax Lot Number of the property
     lot_number = models.CharField(max_length=255, null=True, blank=True)
@@ -136,8 +120,7 @@ class PropertyState(models.Model):
     source_eui = models.FloatField(null=True, blank=True)
     energy_alerts = models.TextField(null=True, blank=True)
     space_alerts = models.TextField(null=True, blank=True)
-    building_certification = models.CharField(max_length=255, null=True,
-                                              blank=True)
+    building_certification = models.CharField(max_length=255, null=True, blank=True)
 
     extra_data = JsonField(default={}, blank=True)
 
@@ -164,12 +147,14 @@ class PropertyState(models.Model):
             # promote it to the view
 
             # Need to create a property for this state
+            if self.organization is None:
+                print "organization is None"
+
             prop = Property.objects.create(
-                organization=self.super_organization
+                organization=self.organization
             )
 
-            pv = PropertyView.objects.create(property=prop, cycle=cycle,
-                                             state=self)
+            pv = PropertyView.objects.create(property=prop, cycle=cycle, state=self)
 
             return pv
         elif len(pvs) == 1:
@@ -214,7 +199,7 @@ class PropertyState(models.Model):
         # # )
         # #
         # # tls, _ = TaxLotState.objects.get_or_create(
-        # #     jurisdiction_taxlot_identifier=tax_lot_id
+        # #     jurisdiction_tax_lot_id=tax_lot_id
         # # )
         # #
         # # tlv, _ = TaxLotView.objects.get_or_create(
@@ -272,10 +257,10 @@ class PropertyState(models.Model):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-            }
+                }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-            }
+                }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk

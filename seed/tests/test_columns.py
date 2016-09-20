@@ -186,7 +186,7 @@ class TestColumns(TestCase):
         # create
 
         ps = PropertyState.objects.create(
-            super_organization=self.fake_org,
+            organization=self.fake_org,
             extra_data={'a': 123, 'lab': 'hawkins national laboratory'}
         )
         Column.save_column_names(ps)

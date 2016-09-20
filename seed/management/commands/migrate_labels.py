@@ -10,6 +10,8 @@ from seed.models import PropertyView
 from seed.models import TaxLotView
 
 from _localtools import get_core_organizations
+from _localtools import logging_info
+from _localtools import logging_debug
 
 from django.core.management.base import BaseCommand
 from seed.lib.superperms.orgs.models import Organization
@@ -37,6 +39,7 @@ class Command(BaseCommand):
 
 
         def handle(self, *args, **options):
+            logging_info("RUN migrate_extradata_columns with args={},kwds={}".format(args, options))
             # Process Arguments
             if options['organization']:
                 organization_ids = map(int, options['organization'].split(","))
@@ -126,4 +129,5 @@ class Command(BaseCommand):
                 #
                 ##############################
 
+            logging_info("END migrate_extradata_columns")
             return

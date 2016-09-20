@@ -7,43 +7,65 @@
 import datetime
 import logging
 
-from django.test import TestCase
-
 from seed.data_importer import tasks
-from seed.data_importer.tests import util as test_util
+from seed.data_importer.tests.util import (
+    DataMappingBaseTestCase,
+    FAKE_EXTRA_DATA,
+    FAKE_MAPPINGS,
+    FAKE_ROW,
+)
+from seed.models import (
+    ASSESSED_RAW,
+)
 from seed.models import (
     Cycle,
+    Column,
     PropertyState,
-    DATA_STATE_MAPPING
+    DATA_STATE_MAPPING,
+    TaxLotState,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class TestCaseA(TestCase):
+class TestCaseA(DataMappingBaseTestCase):
+
     def setUp(self):
-        test_util.import_example_data(self, 'example-data-properties.xlsx')
+        filename = getattr(self, 'filename', 'example-data-properties.xlsx')
+        import_file_source_type = ASSESSED_RAW
+        self.fake_mappings = FAKE_MAPPINGS['portfolio']
+        self.fake_extra_data = FAKE_EXTRA_DATA
+        self.fake_row = FAKE_ROW
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record = selfvars
+        self.import_file = self.load_import_file_file(filename, self.import_file)
 
     def test_match_buildings(self):
         """Good case for testing our matching system."""
+        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        tasks.map_data(self.import_file.pk)
 
         cycle, _ = Cycle.objects.get_or_create(
             name=u'Test Hack Cycle 2015',
-            organization=self.fake_org,
+            organization=self.org,
             start=datetime.datetime(2015, 1, 1),
             end=datetime.datetime(2015, 12, 31),
         )
 
-        ps = PropertyState.objects.filter(data_state=DATA_STATE_MAPPING,
-                                          super_organization=self.fake_org)
-        print len(ps)
+        # Check to make sure all the properties imported
+        ps = PropertyState.objects.filter(
+            data_state=DATA_STATE_MAPPING,
+            organization=self.org
+        )
+        self.assertEqual(len(ps), 12)
 
         # Promote case A (one property <-> one tax lot)
-        ps = PropertyState.objects.filter(building_portfolio_manager_identifier=2264)[0]
+        ps = PropertyState.objects.filter(pm_property_id=2264)[0]
 
         ps.promote(cycle)
 
-        ps = tasks.get_canonical_snapshots(self.fake_org)
+        ps = tasks.get_canonical_snapshots(self.org)
         from django.db.models.query import QuerySet
         self.assertTrue(isinstance(ps, QuerySet))
         logger.debug("There are %s properties" % len(ps))
@@ -58,36 +80,43 @@ class TestCaseA(TestCase):
         self.assertEqual(ed['extra_data_1'], 'a')
         self.assertEqual('extra_data_2' in ed.keys(), False)
 
-        # # Promote 5 of these to views to test the remaining code
-        # promote_mes = PropertyState.objects.filter(
-        #     data_state=DATA_STATE_MAPPING,
-        #     super_organization=self.fake_org)[:5]
-        # for promote_me in promote_mes:
-        #     promote_me.promote(cycle)
-        #
-        # ps = tasks.get_canonical_snapshots(self.fake_org)
-        # from django.db.models.query import QuerySet
-        # self.assertTrue(isinstance(ps, QuerySet))
-        # logger.debug("There are %s properties" % len(ps))
-        # for p in ps:
-        #     print p
-        #
-        # self.assertEqual(len(ps), 5)
-        # self.assertEqual(ps[0].address_line_1, '1211 Bryant Street')
-        # self.assertEqual(ps[4].address_line_1, '1031 Ellis Lane')
+        ts = TaxLotState.objects.filter(
+            data_state=DATA_STATE_MAPPING,
+            organization=self.org
+        )
+        for t in ts:
+            pp(t)
 
-        # tasks.match_buildings(self.import_file.pk, self.fake_user.pk)
+            # # Promote 5 of these to views to test the remaining code
+            # promote_mes = PropertyState.objects.filter(
+            #     data_state=DATA_STATE_MAPPING,
+            #     super_organization=self.fake_org)[:5]
+            # for promote_me in promote_mes:
+            #     promote_me.promote(cycle)
+            #
+            # ps = tasks.get_canonical_snapshots(self.fake_org)
+            # from django.db.models.query import QuerySet
+            # self.assertTrue(isinstance(ps, QuerySet))
+            # logger.debug("There are %s properties" % len(ps))
+            # for p in ps:
+            #     print p
+            #
+            # self.assertEqual(len(ps), 5)
+            # self.assertEqual(ps[0].address_line_1, '1211 Bryant Street')
+            # self.assertEqual(ps[4].address_line_1, '1031 Ellis Lane')
 
-        # self.assertEqual(result.property_name, snapshot.property_name)
-        # self.assertEqual(result.property_name, new_snapshot.property_name)
-        # # Since these two buildings share a common ID, we match that way.
-        # # self.assertEqual(result.confidence, 0.9)
-        # self.assertEqual(
-        #     sorted([r.pk for r in result.parents.all()]),
-        #     sorted([new_snapshot.pk, snapshot.pk])
-        # )
-        # self.assertGreater(AuditLog.objects.count(), 0)
-        # self.assertEqual(
-        #     AuditLog.objects.first().action_note,
-        #     'System matched building ID.'
-        # )
+            # tasks.match_buildings(self.import_file.pk, self.fake_user.pk)
+
+            # self.assertEqual(result.property_name, snapshot.property_name)
+            # self.assertEqual(result.property_name, new_snapshot.property_name)
+            # # Since these two buildings share a common ID, we match that way.
+            # # self.assertEqual(result.confidence, 0.9)
+            # self.assertEqual(
+            #     sorted([r.pk for r in result.parents.all()]),
+            #     sorted([new_snapshot.pk, snapshot.pk])
+            # )
+            # self.assertGreater(AuditLog.objects.count(), 0)
+            # self.assertEqual(
+            #     AuditLog.objects.first().action_note,
+            #     'System matched building ID.'
+            # )

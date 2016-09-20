@@ -9,6 +9,21 @@ from IPython import embed
 import seed.models
 from seed.models import TaxLotView
 
+def logging_info(msg):
+    print "INFO: {}".format(msg)
+
+def logging_debug(msg):
+    print "DEBUG: {}".format(msg)
+    return
+
+def logging_warn(msg):
+    pdb.set_trace()
+    print "WARN: {}".format(msg)
+    return
+
+def logging_error(msg):
+    print "ERROR: {}".format(msg)
+    return
 
 def removeCommasToType(typ):
 
@@ -30,14 +45,19 @@ def removeCommasToInteger(val_string):
         return None
 
 def removeNoneStrings(val_string):
-    if val_string is None or val_string.lower() == 'none': return None
-    else:
-        return val_string
+    if val_string is None: return None
+
+    if not isinstance(val_string, str):
+        val_string = str(val_string)
+
+    if val_string.lower() == 'none': return None
+    return val_string
 
 
 # For converting between string and 'type' where the conversions are
 # more than the default.
 TYPE_MAPPER = collections.defaultdict(lambda : str)
+TYPE_MAPPER['CharField'] = removeNoneStrings
 TYPE_MAPPER['FloatField'] = removeCommasToType(float)
 TYPE_MAPPER['IntegerField'] = removeCommasToInteger
 TYPE_MAPPER['DateField'] = removeNoneStrings
@@ -117,7 +137,7 @@ def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
     reverse_mapping = {y:x for x,y in desired_field_mapping.items()}
 
     resolution_list = []
-    if "jurisdiction_taxlot_identifier" in reverse_mapping: resolution_list.append(reverse_mapping["jurisdiction_taxlot_identifier"])
+    if "jurisdiction_tax_lot_id" in reverse_mapping: resolution_list.append(reverse_mapping["jurisdiction_tax_lot_id"])
     resolution_list.append("tax_lot_id")
 
     bs_taxlot_val = aggregate_value_from_state(bs, (USE_FIRST_VALUE, resolution_list))
@@ -129,7 +149,7 @@ def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
         tax_lot.save()
         return tax_lot, True
 
-    qry = seed.models.TaxLotView.objects.filter(state__jurisdiction_taxlot_identifier=bs_taxlot_val)
+    qry = seed.models.TaxLotView.objects.filter(state__jurisdiction_tax_lot_id=bs_taxlot_val)
 
     # See if we have any tax lot views that have tax lot states
     # with that id, if yes, find/return associated property.
@@ -143,7 +163,7 @@ def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
         return tax_lot, True
 
 def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
-    mapping_field = 'building_portfolio_manager_identifier'
+    mapping_field = 'pm_property_id'
 
     # HOHO: TODO - Make sure this logic matches the logic in the tax lot code.
     # FIX ME - This needs to be updated to simply search on the field and be given a rule.
@@ -163,7 +183,7 @@ def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
         property.save()
         return property, True
 
-    qry = seed.models.PropertyView.objects.filter(state__building_portfolio_manager_identifier=bs_property_id)
+    qry = seed.models.PropertyView.objects.filter(state__pm_property_id=bs_property_id)
 
     if qry.count():
         return qry.first().property, False
@@ -267,8 +287,8 @@ def valid_id(s):
     else:
         #Rules for individual field:
         #Must start and end with alphanumeric (\w)
-        #May have any combination of whitespace, hyphens ("-") and alphanumerics in the middle
-        pattern = r"\w[\w\-\s]*\w$"
+        #May have any combination of whitespace, hyphens ("-"), periods or alphanumerics in the middle
+        pattern = r"\w[\w\-\s\.]*\w$"
     return re.match(pattern, s)
 
 def sanitize_delimiters(s, delimiter_to_use, other_delimiters):
@@ -287,18 +307,19 @@ def get_id_fields(parse_string):
     Raises an exception if string does not match
     """
 
-    if parse_string is None: raise TaxLotIDValueError(parse_string)
+    if parse_string is None: return []
 
     #The id field can use any of several delimiters so reduce it to just one
     #delimiter first to make things easier
     delimiter_to_use = ","
     other_delimiters = [";", ":"]
 
-    if not check_delimiter_sanity(parse_string, [delimiter_to_use] + other_delimiters):
-        raise TaxLotIDValueError(parse_string)
-
+    # if not check_delimiter_sanity(parse_string, [delimiter_to_use] + other_delimiters):
+    #     raise TaxLotIDValueError(parse_string)
 
     cleaned_str = sanitize_delimiters(parse_string, delimiter_to_use, other_delimiters)
+    while cleaned_str.strip().endswith(delimiter_to_use):
+        cleaned_str = cleaned_str.strip()[:-1].strip()
 
     #If there is nothing in the string return an empty list
     if not len(cleaned_str.strip()):

@@ -311,7 +311,7 @@ class Column(models.Model):
             Column.objects.get_or_create(
                 column_name=key[:511],
                 is_extra_data=is_extra_data,
-                organization=model_obj.super_organization,
+                organization=model_obj.organization,
                 table_name=model_obj.__class__.__name__
             )
 
@@ -360,8 +360,11 @@ class ColumnMapping(models.Model):
 
         """
         ColumnMapping.objects.filter(
-            **{'{0}__in'.format(m2m_type): qs, 'super_organization': self.super_organization
-               }).exclude(pk=self.pk).delete()
+            **{
+                '{0}__in'.format(m2m_type): qs,
+                'super_organization': self.super_organization
+            }
+        ).exclude(pk=self.pk).delete()
 
     def save(self, *args, **kwargs):
         """
