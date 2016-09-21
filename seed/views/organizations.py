@@ -11,7 +11,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
-from rest_framework import viewsets
+from rest_framework import viewsets, serializers
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import detail_route
 
@@ -195,6 +195,75 @@ def _save_fields(org, new_fields, old_fields, is_public=False):
 _log = logging.getLogger(__name__)
 
 
+class RulesSubSerializer(serializers.Serializer):
+    field = serializers.CharField(max_length=100)
+    severity = serializers.CharField(max_length=100)
+
+
+class RulesSubSerializerB(serializers.Serializer):
+    field = serializers.CharField(max_length=100)
+    enabled = serializers.BooleanField()
+    type = serializers.CharField(max_length=100)
+    min = serializers.FloatField()
+    max = serializers.FloatField()
+    severity = serializers.CharField(max_length=100)
+    units = serializers.CharField(max_length=100)
+
+
+class RulesIntermediateSerializer(serializers.Serializer):
+    missing_matching_field = RulesSubSerializer(many=True)
+    missing_values = RulesSubSerializer(many=True)
+    in_range_checking = RulesSubSerializerB(many=True)
+
+
+class RulesSerializer(serializers.Serializer):
+    cleansing_rules = RulesIntermediateSerializer()
+
+
+class SaveSettingsOrgFieldSerializer(serializers.Serializer):
+    sort_column = serializers.CharField()
+
+
+class SaveSettingsOrganizationSerializer(serializers.Serializer):
+    query_threshold = serializers.IntegerField()
+    name = serializers.CharField(max_length=100)
+    fields = SaveSettingsOrgFieldSerializer(many=True)
+    public_fields = SaveSettingsOrgFieldSerializer(many=True)
+
+
+class SaveSettingsSerializer(serializers.Serializer):
+    organization = SaveSettingsOrganizationSerializer()
+
+
+class SharedFieldSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=100)
+    sort_column = serializers.CharField(max_length=100)
+    field_class = serializers.CharField(max_length=100)
+    title_class = serializers.CharField(max_length=100)
+    type = serializers.CharField(max_length=100)
+    field_type = serializers.CharField(max_length=100)
+    sortable = serializers.CharField(max_length=100)
+
+
+class SharedFieldsReturnSerializer(serializers.Serializer):
+    status = serializers.CharField(max_length=100)
+    shared_fields = SharedFieldSerializer(many=True)
+    public_fields = SharedFieldSerializer(many=True)
+
+
+class OrganizationUserSerializer(serializers.Serializer):
+    email = serializers.CharField(max_length=100)
+    first_name = serializers.CharField(max_length=100)
+    last_name = serializers.CharField(max_length=100)
+    user_id = serializers.IntegerField()
+    role = serializers.CharField(max_length=100)
+
+
+class OrganizationUsersSerializer(serializers.Serializer):
+    status = serializers.CharField(max_length=100)
+    users = OrganizationUserSerializer(many=True)
+
+
 class OrganizationViewSet(viewsets.ViewSet):
     raise_exception = True
     authentication_classes = (SessionAuthentication, SEEDAuthentication)
@@ -204,32 +273,14 @@ class OrganizationViewSet(viewsets.ViewSet):
     def list(self, request):
         """
         Retrieves all orgs the user has access to.
-
-        Returns::
-
-            {'organizations': [
-                {'name': org name,
-                 'org_id': org's identifier (used with Authorization header),
-                 'id': org's identifier,
-                 'number_of_users': count of members of org,
-                 'user_is_owner': True if the user is owner of this org,
-                 'user_role': The role of user in this org (owner, viewer, member),
-                 'owners': [
-                             {
-                              'first_name': the owner's first name,
-                              'last_name': the owner's last name,
-                              'email': the owner's email address,
-                              'id': the owner's identifier (int)
-                             }
-                           ]
-                 'sub_orgs': [ a list of orgs having this org as parent, in
-                            the same format...],
-                 'is_parent': True if this org contains suborgs,
-                 'parent_id': id of this orgs parent (self.id if it is a parent)
-                 'num_buildings': Count of buildings belonging to this org
-                }...
-               ]
-            }
+        ---
+        type:
+            organizations:
+                required: true
+                type: array[organizations]
+                description: Returns an array where each item is a full organization structure, including
+                             keys ''name'', ''org_id'', ''number_of_users'', ''user_is_owner'',
+                             ''user_role'', ''sub_orgs'', ...
         """
         if request.user.is_superuser:
             qs = Organization.objects.all()
@@ -281,31 +332,17 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         Retrieves a single organization by id.
         ---
-
-        Returns::
-
-            {'status': 'success or error', 'message': 'error message, if any',
-             'organization':
-                {'name': org name,
-                 'org_id': org's identifier (used with Authorization header),
-                 'id': org's identifier,
-                 'number_of_users': count of members of org,
-                 'user_is_owner': True if the user is owner of this org,
-                 'user_role': The role of user in this org (owner, viewer, member),
-                 'owners': [
-                     {
-                      'first_name': the owner's first name,
-                      'last_name': the owner's last name,
-                      'email': the owner's email address,
-                      'id': the owner's identifier (int)
-                      }
-                     ]
-                  'sub_orgs': [ a list of orgs having this org as parent, in
-                                the same format...],
-                  'is_parent': True if this org contains suborgs,
-                  'num_buildings': Count of buildings belonging to this org
-                }
-            }
+        type:
+            status:
+                required: true
+                type: string
+                description: success, or error
+            organization:
+                required: true
+                type: array[organizations]
+                description: Returns an array where each item is a full organization structure, including
+                             keys ''name'', ''org_id'', ''number_of_users'', ''user_is_owner'',
+                             ''user_role'', ''sub_orgs'', ...
         """
         org_id = pk
 
@@ -348,25 +385,17 @@ class OrganizationViewSet(viewsets.ViewSet):
     def users(self, request, pk=None):
         """
         Retrieve all users belonging to an org.
-
-        Payload::
-
-            {'organization_id': org_id}
-
-        Returns::
-
-            {'status': 'success',
-             'users': [
-                {
-                 'first_name': the user's first name,
-                 'last_name': the user's last name,
-                 'email': the user's email address,
-                 'id': the user's identifier (int),
-                 'role': the user's role ('owner', 'member', 'viewer')
-                }
-              ]
-            }
-
+        ---
+        response_serializer: OrganizationUsersSerializer
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              type: integer
+              description: Organization ID (primary key)
+              required: true
+              paramType: path
+        """
+        """
         .. todo::
 
             check permissions that request.user is owner or admin
@@ -564,35 +593,28 @@ class OrganizationViewSet(viewsets.ViewSet):
     def save_settings(self, request, pk=None):
         """
         Saves an organization's settings: name, query threshold, shared fields
-
-        Payload::
-
-            {
-                'organization_id: 2,
-                'organization': {
-                    'query_threshold': 2,
-                    'name': 'demo org',
-                    'fields': [  # All internal sibling org shared fields
-                        {
-                            'sort_column': database/search field name,
-                                e.g. 'pm_property_id',
-                        }
-                    ],
-                    'public_fields': [  # All publicly shared fields
-                        {
-                            'sort_column': database/search field name,
-                                e.g. 'pm_property_id',
-                        }
-                    ],
-                }
-            }
-
-        Returns::
-
-            {
-                'status': 'success or error',
-                'message': 'error message, if any'
-            }
+        ---
+        type:
+            status:
+                description: success or error
+                type: string
+                required: true
+            message:
+                description: Error message, if any
+                type: string
+                required: false
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Organization ID (Primary key)
+              type: integer
+              required: true
+              paramType: path
+            - name: body
+              description: JSON body containing organization settings information
+              paramType: body
+              pytype: SaveSettingsSerializer
+              required: true
         """
         body = request.data
         org = Organization.objects.get(pk=pk)
@@ -662,12 +684,15 @@ class OrganizationViewSet(viewsets.ViewSet):
             'query_threshold': org.query_threshold
         })
 
+    # TODO: Shared fields structure has a "class" attribute that won't serialize
     @api_endpoint_class
     @ajax_request_class
     @detail_route(methods=['GET'])
     def shared_fields(self, request, pk=None):
         """
         Retrieves all fields marked as shared for this org tree.
+        DANGER!  Currently broken due to class attribute name in the body, do not use!
+        DANGER!  Swagger will not render the proper return type
         ---
         parameter_strategy: replace
         parameters:
@@ -676,43 +701,9 @@ class OrganizationViewSet(viewsets.ViewSet):
               type: integer
               required: true
               paramType: path
-        type: object
-        """
-        """
-            {
-             'status': 'success',
-             'shared_fields': [
-                 {
-                  "title": Display name of field,
-                  "sort_column": database/search name of field,
-                  "class": css used for field,
-                  "title_class": css used for title,
-                  "type": data type of field,
-                      (One of: 'date', 'floor_area', 'link', 'string', 'number')
-                  "field_type": classification of field.  One of:
-                      'contact_information', 'building_information',
-                      'assessor', 'pm',
-                  "sortable": True if buildings can be sorted on this field,
-                 }
-                 ...
-               ],
-               'public_fields': [
-                   {
-                      "title": Display name of field,
-                      "sort_column": database/search name of field,
-                      "class": css used for field,
-                      "title_class": css used for title,
-                      "type": data type of field,
-                        (One of: 'date', 'floor_area', 'link', 'string', 'number')
-                      "field_type": classification of field.  One of:
-                          'contact_information', 'building_information',
-                          'assessor', 'pm',
-                      "sortable": True if buildings can be sorted on this field,
-                     }
-                     ...
-               ]
-            }
-
+        type:
+            shared_fields:
+                type: SharedFieldsReturnSerializer
         """
         org_id = pk
         org = Organization.objects.get(pk=org_id)
@@ -860,34 +851,6 @@ class OrganizationViewSet(viewsets.ViewSet):
     def save_cleansing_rules(self, request, pk=None):
         """
         Saves an organization's settings: name, query threshold, shared fields
-        Body type is:
-        {
-            'cleansing_rules': {
-                'missing_matching_field': [
-                    {
-                        'field': 'address_line_1',
-                        'severity': 'error'
-                    }
-                ],
-                'missing_values': [
-                    {
-                        'field': 'address_line_1',
-                        'severity': 'error'
-                    }
-                ],
-                'in_range_checking': [
-                    {
-                        'field': 'conditioned_floor_area',
-                        'enabled': true,
-                        'type': 'number',
-                        'min': null,
-                        'max': 7000000,
-                        'severity': 'error',
-                        'units': 'square feet'
-                    },
-                ]
-            }
-        }
         ---
         parameter_strategy: replace
         parameters:
@@ -897,9 +860,9 @@ class OrganizationViewSet(viewsets.ViewSet):
               required: true
               paramType: path
             - name: body
-              description: body containing all the things
-              type: object
+              description: JSON body containing organization rules information
               paramType: body
+              pytype: RulesSerializer
               required: true
         type:
             status:

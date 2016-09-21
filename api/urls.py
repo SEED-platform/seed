@@ -22,7 +22,7 @@ api_v2_router.register(r'data_files', DataFileViewSet, base_name="data_files")
 api_v2_router.register(r'projects', ProjectsViewSet, base_name="projects")
 api_v2_router.register(r'users', UserViewSet, base_name="users")
 # api_v2_router.register(r'labels', LabelViewSet, base_name="labels")
-api_v2_router.register(r'reverse_test', TestReverseViewSet, base_name="reverse_test")
+api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
 
 urlpatterns = [
     # v2 api

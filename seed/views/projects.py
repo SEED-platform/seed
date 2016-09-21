@@ -35,7 +35,7 @@ from seed.utils.time import convert_to_js_timestamp
 
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import list_route
 from rest_framework.authentication import SessionAuthentication
 from seed.authentication import SEEDAuthentication
@@ -49,6 +49,25 @@ DEFAULT_CUSTOM_COLUMNS = [
 ]
 
 
+class LastModifiedSerializer(serializers.Serializer):
+    first_name = serializers.CharField(max_length=100)
+    last_name = serializers.CharField(max_length=100)
+    email = serializers.CharField(max_length=100)
+
+
+class ListProjectSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    slug = serializers.CharField(max_length=100)
+    status = serializers.CharField(max_length=100)
+    number_of_buildings = serializers.IntegerField()
+    last_modified = serializers.CharField(max_length=100)
+    last_modified_by = LastModifiedSerializer()
+    is_compliance = serializers.BooleanField()
+    compliance_type = serializers.CharField(max_length=100)
+    deadline_date = serializers.CharField(max_length=100)
+    end_date = serializers.CharField(max_length=100)
+
+
 class ProjectsViewSet(viewsets.ViewSet):
     raise_exception = True
     authentication_classes = (SessionAuthentication, SEEDAuthentication)
@@ -60,33 +79,16 @@ class ProjectsViewSet(viewsets.ViewSet):
     def list(self, request):
         """
         Retrieves all projects for a given organization.
-
-        :GET: Expects organization_id in query string.
-
-        Returns::
-
-            {
-                'status': 'success',
-                'projects': [
-                    {
-                        'name': project's name,
-                        'slug': project's identifier,
-                        'status': 'active',
-                        'number_of_buildings': Count of buildings associated with project
-                        'last_modified': Timestamp when project last changed
-                        'last_modified_by': {
-                            'first_name': first name of user that made last change,
-                            'last_name': last name,
-                            'email': email address,
-                        },
-                        'is_compliance': True if project is a compliance project,
-                        'compliance_type': Description of compliance type,
-                        'deadline_date': Timestamp of when compliance is due,
-                        'end_date': Timestamp of end of project
-                    }...
-                ]
-            }
         ---
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
+            projects:
+                required: true
+                type: ListProjectSerializer
+                description: List of projects
         parameters:
             - name: organization_id
               description: The organization_id for this user's organization
@@ -690,7 +692,7 @@ class ProjectsViewSet(viewsets.ViewSet):
               type: integer
               required: true
             - name: search_params
-              description: JSON body containing: filter_params__project_slug, project_slug, and q
+              description: JSON body containing filter_params__project_slug, project_slug, and q
               type: object
               required: true
         type:
