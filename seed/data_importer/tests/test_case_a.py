@@ -18,12 +18,12 @@ from seed.models import (
     ASSESSED_RAW,
 )
 from seed.models import (
-    Cycle,
     Column,
     PropertyState,
     DATA_STATE_MAPPING,
     TaxLotState,
 )
+from seed.utils.generic import pp
 
 logger = logging.getLogger(__name__)
 
@@ -37,24 +37,27 @@ class TestCaseA(DataMappingBaseTestCase):
         self.fake_extra_data = FAKE_EXTRA_DATA
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
-        self.user, self.org, self.import_file, self.import_record = selfvars
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         self.import_file = self.load_import_file_file(filename, self.import_file)
 
-    def test_match_buildings(self):
-        """Good case for testing our matching system."""
-
-        from seed.utils.generic import pp
-
+    def test_import_file(self):
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
         Column.create_mappings(self.fake_mappings, self.org, self.user)
         tasks.map_data(self.import_file.pk)
 
-        cycle, _ = Cycle.objects.get_or_create(
-            name=u'Test Hack Cycle 2015',
-            organization=self.org,
-            start=datetime.datetime(2015, 1, 1),
-            end=datetime.datetime(2015, 12, 31),
-        )
+        ps = PropertyState.objects.filter(pm_property_id='2264').first()
+        ps.promote(self.cycle)
+
+        ps = self.import_file.find_unmatched_property_states()
+        self.assertEqual(len(ps), 11)
+        for p in ps:
+            pp(p)
+
+    def test_match_buildings(self):
+        """Good case for testing our matching system."""
+        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        tasks.map_data(self.import_file.pk)
 
         # Check to make sure all the properties imported
         ps = PropertyState.objects.filter(
@@ -91,8 +94,8 @@ class TestCaseA(DataMappingBaseTestCase):
 
         # Promote case A (one property <-> one tax lot) for testing
         # Typically this method should not be called here, rather in the matching code.
-        ps.promote(cycle)
-        ts.promote(cycle)
+        ps.promote(self.cycle)
+        ts.promote(self.cycle)
 
         # Now try to match the properties and tax lots
         from django.db.models.query import QuerySet
@@ -103,7 +106,7 @@ class TestCaseA(DataMappingBaseTestCase):
         for p in ps:
             pp(p)
 
-        tasks.match_buildings(self.import_file.id, self.user.id)
+        # tasks.match_buildings(self.import_file.id, self.user.id)
 
         # M2M Matching
 

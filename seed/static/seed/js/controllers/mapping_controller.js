@@ -375,6 +375,7 @@ angular.module('BE.seed.controller.mapping', [])
           mapped_columns,
           $scope.search.column_prototype
         );
+        // console.log($scope.columns);
         // save as default columns
         user_service.set_default_columns(
           mapped_columns, $scope.user.show_shared_buildings
