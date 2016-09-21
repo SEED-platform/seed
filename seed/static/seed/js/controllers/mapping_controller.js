@@ -368,7 +368,7 @@ angular.module('BE.seed.controller.mapping', [])
       // refresh columns
       building_services.get_columns().then(function (new_columns) {
         var mapped_columns = get_untitle_cased_mappings().map(function(d){
-          return d[0];
+          return d['to_field_display_name'];
         });
         $scope.columns = $scope.search.generate_columns(
           new_columns.fields,
@@ -422,11 +422,10 @@ angular.module('BE.seed.controller.mapping', [])
                 {
                   "from_field": header,
                   "to_field": suggestion,
-                  "to_table_name": "PropertyState"
+                  "to_table_name": tcm.suggestion_table_name
                 }
             );
         }
-
         return mappings;
     };
 
@@ -457,6 +456,8 @@ angular.module('BE.seed.controller.mapping', [])
     var get_untitle_cased_mappings = function () {
         var mappings = $scope.get_mappings();
         _.forEach(mappings, function(m){
+          // Save the field display name here before changing it in the to_field
+          m['to_field_display_name'] = m["to_field"];
           var mapping = m["to_field"];
           mapping = angular.lowercase(mapping).replace(/ /g, '_');
           if (_.includes(original_columns, mapping)) {
@@ -464,15 +465,6 @@ angular.module('BE.seed.controller.mapping', [])
           }
         });
 
-        // var mappings = $scope.get_mappings().map(function (m) {
-        //     var mapping = m[0];
-        //     mapping = angular.lowercase(mapping).replace(/ /g, '_');
-        //     if (_.includes(original_columns, mapping)) {
-        //         m[0] = mapping;
-        //     }
-        //     return m;
-        // });
-      console.log(mappings);
         return mappings;
     };
 
