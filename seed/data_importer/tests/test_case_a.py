@@ -50,8 +50,6 @@ class TestCaseA(DataMappingBaseTestCase):
 
         ps = self.import_file.find_unmatched_property_states()
         self.assertEqual(len(ps), 11)
-        for p in ps:
-            pp(p)
 
     def test_match_buildings(self):
         """Good case for testing our matching system."""
