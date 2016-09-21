@@ -251,6 +251,10 @@ class SharedFieldsReturnSerializer(serializers.Serializer):
     public_fields = SharedFieldSerializer(many=True)
 
 
+class SharedFieldsActualReturnSerializer(serializers.Serializer):
+    shared_fields = SharedFieldsReturnSerializer(many=True)
+
+
 class OrganizationUserSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=100)
     first_name = serializers.CharField(max_length=100)
@@ -692,7 +696,6 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         Retrieves all fields marked as shared for this org tree.
         DANGER!  Currently broken due to class attribute name in the body, do not use!
-        DANGER!  Swagger will not render the proper return type
         ---
         parameter_strategy: replace
         parameters:
@@ -701,9 +704,7 @@ class OrganizationViewSet(viewsets.ViewSet):
               type: integer
               required: true
               paramType: path
-        type:
-            shared_fields:
-                type: SharedFieldsReturnSerializer
+        response_serializer: SharedFieldsActualReturnSerializer
         """
         org_id = pk
         org = Organization.objects.get(pk=org_id)
