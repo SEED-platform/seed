@@ -761,28 +761,17 @@ def handle_id_matches(unmatched_bs, test_property, import_file, user_pk):
 
     # Check to see if there are any duplicates here
     for match in id_matches:
-        # check to see if this is a duplicate of a canonical building
-        # if throwing incurs too much of a performance hit maybe just monkey-patch
-        # unmatched_bs and check it on the other side like
-        # unmatched_bs.duplicate_of_pk = snapshot.pk
-        # return unmatched_bs
         if is_same_snapshot(unmatched_bs, match):
             raise DuplicateDataError(match.pk)
 
-        # iterate through all of the parent records and see if there is a duplicate there
-        for snapshot in match.parent_tree:
-            if is_same_snapshot(unmatched_bs, snapshot):
-                raise DuplicateDataError(snapshot.pk)
-
     # merge save as system match with high confidence.
     for match in id_matches:
-        # Merge all matches together; updating "unmatched" pointer
-        # as we go.
+        # Merge all matches together; updating "unmatched" pointer as we go.
         unmatched_bs, changes = save_snapshot_match(
             match.pk,
             unmatched_bs.pk,
-            confidence=0.9,  # TODO(gavin) represent conf better.
-            match_type=SYSTEM_MATCH,
+            confidence=0.9,
+            match_type=SYSTEM_MATCH,  # TODO: we should and probably can remove this field, please :D
             user=import_file.import_record.owner,
             default_pk=unmatched_bs.pk
         )
@@ -791,7 +780,7 @@ def handle_id_matches(unmatched_bs, test_property, import_file, user_pk):
         canon.save()
         action_note = 'System matched building ID.'
         if changes:
-            action_note += "  Fields changed in cannonical building:\n"
+            action_note += "  Fields changed in canonical building:\n"
             for change in changes:
                 action_note += "\t{field}:\t".format(
                     field=change["field"].replace("_", " ").replace("-",
@@ -802,6 +791,7 @@ def handle_id_matches(unmatched_bs, test_property, import_file, user_pk):
 
                 action_note += "{value}\n".format(value=change["to"])
             action_note = action_note[:-1]
+
         AuditLog.objects.create(
             user_id=user_pk,
             content_object=canon,
@@ -1015,15 +1005,15 @@ def _match_buildings(file_pk, user_pk):
     if not unmatched_buildings:
         _finish_matching(import_file, prog_key)
         return
-        # here we are going to normalize the addresses to match on address_1
-        # field, this is not ideal because you could match on two locations
-        # with same address_1 but different city
-    #     unmatched_normalized_addresses=[]
 
+    # here we are going to normalize the addresses to match on address_1
+    # field, this is not ideal because you could match on two locations
+    # with same address_1 but different city
     unmatched_normalized_addresses = [
         _normalize_address_str(unmatched[4]) for unmatched in
         unmatched_buildings
         ]
+
     # Here we want all the values not related to the BS id for doing comps.
     # dont do this now
     #     unmatched_ngrams = [

@@ -104,7 +104,7 @@ class TestCaseA(DataMappingBaseTestCase):
         for p in ps:
             pp(p)
 
-        # tasks.match_buildings(self.import_file.id, self.user.id)
+        tasks.match_buildings(self.import_file.id, self.user.id)
 
         # M2M Matching
 
