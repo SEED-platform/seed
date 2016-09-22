@@ -34,7 +34,6 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
   'BE.seed.controller.api',
-  'BE.seed.controller.base_detail',
   'BE.seed.controller.building_list',
   'BE.seed.controller.buildings_settings',
   'BE.seed.controller.cleansing',
@@ -1049,12 +1048,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       }
     })
     .state({
-      name: 'detail',
-      abstract: true,
-      controller: 'base_detail_controller',
-      template: '<ui-view>'
-    })
-    .state({
       name: 'inventory_detail',
       url: '/{inventory_type:properties|taxlots}/{inventory_id:int}/cycles/{cycle_id:int}',
       templateUrl: static_url + 'seed/partials/inventory_detail.html',
@@ -1088,8 +1081,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
             inventory_type: $stateParams.inventory_type
           });
         }]
-      },
-      parent: 'detail'
+      }
     });
 }]);
 

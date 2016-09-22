@@ -44,35 +44,11 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.visible_columns = [];
       }
 
-      // Matching dropdown values
-      var SHOW_ALL = 'Show All';
-      var SHOW_MATCHED = 'Show Matched';
-      var SHOW_UNMATCHED = 'Show Unmatched';
-
       $scope.clear_labels = function () {
         $scope.selected_labels = [];
       };
 
-      $scope.update_show_matching_filter = function (optionValue) {
-        switch (optionValue) {
-          case SHOW_ALL:
-            $scope.search.filter_params.parents__isnull = undefined;
-            break;
-          case SHOW_MATCHED:
-            $scope.search.filter_params.parents__isnull = false;  //has parents therefore is matched
-            break;
-          case SHOW_UNMATCHED:
-            $scope.search.filter_params.parents__isnull = true;   //does not have parents therefore is unmatched
-            break;
-          default:
-            $log.error('#matching_controller: unexpected filter value: ', optionValue);
-            return;
-        }
-        //$scope.do_update_buildings_filters();
-      };
-
       $scope.loadLabelsForFilter = function (query) {
-        console.debug('loadLabelsForFilter query:', query);
         return _.filter($scope.labels, function (lbl) {
           if (_.isEmpty(query)) {
             // Empty query so return the whole list.
@@ -86,12 +62,15 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       $scope.$watchCollection('selected_labels', function () {
         // Only submit the `id` of the label to the API.
-        console.debug('selected_labels:', $scope.selected_labels);
-        // if ($scope.selected_labels.length) {
-        //   $scope.search.filter_params.canonical_building__labels = _.map($scope.selected_labels, 'id');
-        // } else {
-        //   delete $scope.search.filter_params.canonical_building__labels;
-        // }
+        var ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
+        if ($scope.selected_labels.length) {
+          _.forEach($scope.gridApi.grid.rows, function (row) {
+            if ((!_.includes(ids, row.entity.id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
+            else $scope.gridApi.core.clearRowInvisible(row);
+          });
+        } else {
+          _.forEach($scope.gridApi.grid.rows, $scope.gridApi.core.clearRowInvisible);
+        }
         _.delay($scope.updateHeight, 150);
       });
 
@@ -102,14 +81,12 @@ angular.module('BE.seed.controller.inventory_list', [])
        When the modal is closed, and refresh labels.
        */
       $scope.open_update_labels_modal = function () {
-
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/update_item_labels_modal.html',
           controller: 'update_item_labels_modal_controller',
           resolve: {
             inventory_ids: function () {
-              if ($scope.gridApi.selection.getSelectAllState()) return [];
-              return _.map($scope.gridApi.selection.getSelectedRows(), 'id');
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), {$$treeLevel: 0}), 'id');
             },
             inventory_type: function () {
               return $scope.inventory_type;
@@ -119,17 +96,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         modalInstance.result.then(function () {
           //dialog was closed with 'Done' button.
           get_labels();
-          //refresh_search();
         });
-      };
-
-      var init_matching_dropdown = function () {
-        $scope.matching_filter_options = [
-          {id: SHOW_ALL, value: SHOW_ALL},
-          {id: SHOW_MATCHED, value: SHOW_MATCHED},
-          {id: SHOW_UNMATCHED, value: SHOW_UNMATCHED}
-        ];
-        $scope.matching_filter_options_init = SHOW_ALL;
       };
 
 
@@ -228,8 +195,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      init_matching_dropdown();
-
       var defaults = {
         minWidth: 75,
         width: 150
@@ -325,6 +290,14 @@ angular.module('BE.seed.controller.inventory_list', [])
           angular.element($window).on('resize', _.debounce($scope.updateHeight, 150));
 
           gridApi.pinning.on.columnPinned($scope, savePinning);
+
+          var selectionChanged = function () {
+            $scope.selectedCount = gridApi.selection.getSelectedCount();
+            $scope.selectedParentCount = _.filter(gridApi.selection.getSelectedRows(), {$$treeLevel: 0}).length;
+          };
+
+          gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
+          gridApi.selection.on.rowSelectionChangedBatch($scope, selectionChanged);
 
           gridApi.core.on.rowsRendered($scope, _.debounce(function () {
             $scope.$apply(function () {

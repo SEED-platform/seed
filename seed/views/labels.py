@@ -94,8 +94,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
             ).data for q in qs
         ]
         status_code = status.HTTP_200_OK
-        result = {'status': 'sucess', 'labels': results}
-        return response.Response(result, status=status_code)
+        return response.Response(results, status=status_code)
 
 
 class UpdateInventoryLabelsAPIView(APIView):
@@ -204,7 +203,7 @@ class UpdateInventoryLabelsAPIView(APIView):
                 "add_label_ids": {array}        Array of label ids to add
                 "remove_label_ids": {array}     Array of label ids to remove
                 "inventory_ids": {array}        Array property/taxlot  ids
-                "organization_id": {integer}        The user's org ID
+                "organization_id": {integer}    The user's org ID
             }
 
         Returns::
@@ -212,8 +211,7 @@ class UpdateInventoryLabelsAPIView(APIView):
             {
                 'status': {string}              'success' or 'error'
                 'message': {string}             Error message if error
-                'num_updated': {integer}        Number of properties/taxlots
-                                                updated
+                'num_updated': {integer}        Number of properties/taxlots updated
                 'labels': [                     List of labels affected.
                     {
                         'color': {string}
@@ -228,7 +226,7 @@ class UpdateInventoryLabelsAPIView(APIView):
         add_label_ids = request.data.get('add_label_ids', [])
         remove_label_ids = request.data.get('remove_label_ids', [])
         inventory_ids = request.data.get('inventory_ids', None)
-        organization_id = request.data.get('organization_id', None)
+        organization_id = request.query_params['organization_id']
         error = None
         # ensure add_label_ids and remove_label_ids are different
         if not set(add_label_ids).isdisjoint(remove_label_ids):
@@ -245,9 +243,7 @@ class UpdateInventoryLabelsAPIView(APIView):
             qs = self.get_queryset(inventory_type, organization_id)
             qs = self.filter_by_inventory(qs, inventory_type, inventory_ids)
             removed = self.remove_labels(qs, inventory_type, remove_label_ids)
-            added = self.add_labels(
-                qs, inventory_type, inventory_ids, add_label_ids
-            )
+            added = self.add_labels(qs, inventory_type, inventory_ids, add_label_ids)
             num_updated = len(set(added).union(removed))
             labels = self.get_label_desc(add_label_ids, remove_label_ids)
             result = {

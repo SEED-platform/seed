@@ -26,10 +26,10 @@
                         type="button"
                         uib-dropdown-toggle
                         class="btn btn-default btn-sm"
-                        ng-disabled="gridApi.selection.getSelectedCount() == 0">
+                        ng-disabled="selectedCount == 0">
                     Actions <span class="caret"></span>
                 </button>
-                <ul uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
+                <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
                     <li ng-hide="menu.user.organization.user_role === 'viewer'">
                         <a ng-click="open_delete_modal()">Delete Selected</a>
                     </li>
@@ -37,20 +37,10 @@
                         <a ng-click="open_export_modal()">Export Selected</a>
                     </li>
                     <li>
-                        <a ng-click="open_update_labels_modal()">Add/Remove Labels</a>
+                        <a ng-click="open_update_labels_modal()" ng-disabled="selectedParentCount == 0">Add/Remove Labels</a>
                     </li>
                 </ul>
             </div>
-
-            <select id="showHideFilterSelect"
-                    class="btn btn-default btn-sm"
-                    ng-init="matching_filter_options.selected = matching_filter_options_init"
-                    ng-model="matching_filter_options.selected"
-                    ng-options="option.id as option.value for option in matching_filter_options"
-                    ng-change="update_show_matching_filter(matching_filter_options.selected)"
-                    ng-disabled="true">
-            </select>
-
         </div>
         <div class="form-group">
             <label for="tagsInput">Filter by label:</label>
@@ -59,19 +49,20 @@
                             ng-model="selected_labels"
                             placeholder="Add a label"
                             replace-spaces-with-dashes="false"
-                            add-from-autocomplete-only="true">
+                            add-from-autocomplete-only="true"
+                            ng-disabled="!labels.length">
                     <auto-complete source="loadLabelsForFilter($query)"
                                    max-results-to-show="255"
                                    min-length="0"
                                    load-on-empty="true"
                                    load-on-focus="true"
-                    >
+                                   ng-disabled="!labels.length">
                     </auto-complete>
                 </tags-input>
             </div>
         </div>
         <div class="btn-group building-list-filter-buttons">
-            <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm">Clear Labels</button>
+            <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-disabled="!labels.length">Clear Labels</button>
         </div>
     </form>
 
@@ -87,7 +78,8 @@
 
 <div class="inventory-list-tab-container">
     <div class="item-count">
-        <i class="fa fa-building-o"></i>
+        <i ng-show="inventory_type == 'properties'" class="fa fa-building-o"></i>
+        <i ng-show="inventory_type == 'taxlots'" class="fa fa-map-o"></i>
         {$ total | number:0 $}
         <span ng-show="inventory_type == 'properties'"><ng-pluralize count="total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize></span>
         <span ng-show="inventory_type == 'taxlots'"><ng-pluralize count="total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>

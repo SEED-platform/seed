@@ -220,10 +220,10 @@ angular.module('BE.seed.service.label',
             method: 'PUT',
             url: window.BE.urls.property_labels,
             params: _.assignIn({
-                selected: selected,
                 organization_id: user_service.get_organization().id
             }, search_params),
             data: {
+                inventory_ids: selected,
                 add_label_ids: add_label_ids,
                 remove_label_ids: remove_label_ids
             }
@@ -253,17 +253,17 @@ angular.module('BE.seed.service.label',
                                             (success or error).
 
     */
-    function update_taxlot_labels(add_label_ids, remove_label_ids, selected_taxlots, search_params) {
+    function update_taxlot_labels(add_label_ids, remove_label_ids, selected, search_params) {
 
         var defer = $q.defer();
         $http({
             method: 'PUT',
             url: window.BE.urls.taxlot_labels,
             params: _.assignIn({
-                selected: selected,
                 organization_id: user_service.get_organization().id
             }, search_params),
             data: {
+                inventory_ids: selected,
                 add_label_ids: add_label_ids,
                 remove_label_ids: remove_label_ids
             }
