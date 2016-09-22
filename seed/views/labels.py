@@ -195,7 +195,7 @@ class UpdateInventoryLabelsAPIView(APIView):
 
     def put(self, request, inventory_type):
         """
-        Updates label assignments to buildings.
+        Updates label assignments to inventory items.
 
         Payload::
 

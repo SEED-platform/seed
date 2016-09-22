@@ -115,6 +115,7 @@ angular.module('BE.seed.service.label',
             url: window.BE.urls.label_list,
             data: label,
             params: {
+                inventory_type: 'property',
                 organization_id: org_id
             }
         }).success(function(data, status, headers, config) {
