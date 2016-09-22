@@ -2554,3 +2554,8 @@ gs-input .tags .tag-item .remove-button {
     bottom: 0;
   }
 }
+
+#inventory-actions-dropdown a[disabled] {
+  color: gray;
+  pointer-events: none;
+}

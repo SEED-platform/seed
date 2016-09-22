@@ -34,7 +34,6 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
   'BE.seed.controller.api',
-  'BE.seed.controller.base_detail',
   'BE.seed.controller.building_list',
   'BE.seed.controller.buildings_settings',
   'BE.seed.controller.cleansing',
@@ -215,7 +214,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       name: 'admin',
       url: '/profile/admin',
       templateUrl: static_url + 'seed/partials/admin.html',
-      controller: 'seed_admin_controller',
+      controller: 'admin_controller',
       resolve: {
         auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
           var organization_id = user_service.get_organization().id;
@@ -1030,6 +1029,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
         cycles: ['cycle_service', function (cycle_service) {
           return cycle_service.get_cycles();
         }],
+        labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
+          return label_service.get_labels([], {
+            inventory_type: $stateParams.inventory_type
+          }).then(function (labels) {
+            return _.filter(labels, function (label) {
+              return !_.isEmpty(label.is_applied);
+            });
+          });
+        }],
         columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
           if ($stateParams.inventory_type === 'properties') {
             return inventory_service.get_property_columns();
@@ -1038,12 +1046,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           }
         }]
       }
-    })
-    .state({
-      name: 'detail',
-      abstract: true,
-      controller: 'base_detail_controller',
-      template: '<ui-view>'
     })
     .state({
       name: 'inventory_detail',
@@ -1075,10 +1077,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           return [];
         }],
         labels_payload: ['$stateParams', 'label_service', function ($stateParams, label_service) {
-          return label_service.get_labels([$stateParams.inventory_id], false, {});
+          return label_service.get_labels([$stateParams.inventory_id], {
+            inventory_type: $stateParams.inventory_type
+          });
         }]
-      },
-      parent: 'detail'
+      }
     });
 }]);
 

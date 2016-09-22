@@ -19,7 +19,7 @@ function ($scope, $log, urls, organization_payload, labels_payload, auth_payload
     $scope.auth = auth_payload.auth;
 
     $scope.available_colors = label_service.get_available_colors();
-    $scope.labels = labels_payload.results;
+    $scope.labels = labels_payload;
 
     function initialize_new_label() {
         $scope.new_label = {color:'gray', label:'default', name:''};
@@ -143,7 +143,7 @@ function ($scope, $log, urls, organization_payload, labels_payload, auth_payload
        // gets all labels for an org user
        label_service.get_labels_for_org($scope.org.id).then(function(data) {
            // resolve promise
-           $scope.labels = data.results;
+           $scope.labels = data;
        });
    }
 

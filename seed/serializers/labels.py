@@ -4,7 +4,6 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from rest_framework import fields
 from rest_framework import serializers
 
 from seed.models import (
@@ -51,4 +50,4 @@ class LabelSerializer(serializers.ModelSerializer):
     def get_is_applied(self, obj):
         return self.inventory.filter(
             labels=obj,
-        ).exists()
+        ).values_list('id', flat=True)
