@@ -39,7 +39,8 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
       $scope.updateHeight = function () {
         var height = 0;
         _.forEach(['.header', '.page_header_container', '.section_nav_container', '.section_header_container', '.section_content.with_padding'], function (selector) {
-          height += angular.element(selector)[0].offsetHeight;
+          var element = angular.element(selector)[0];
+          if (element) height += element.offsetHeight;
         });
         angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
         angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');
@@ -92,7 +93,11 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
           gridApi.draggableRows.on.rowDropped($scope, saveSettings);
 
           _.delay($scope.updateHeight, 150);
-          angular.element($window).on('resize', _.debounce($scope.updateHeight, 150));
+          var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
+          angular.element($window).on('resize', debouncedHeightUpdate);
+          $scope.$on('$destroy', function () {
+            angular.element($window).off('resize', debouncedHeightUpdate);
+          });
         }
       };
     }]);

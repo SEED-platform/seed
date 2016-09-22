@@ -28,6 +28,9 @@ angular.module('BE.seed.controller.inventory_list', [])
               labels,
               columns,
               urls) {
+      $scope.selectedCount = 0;
+      $scope.selectedParentCount = 0;
+
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.objects = inventory.results;
       $scope.pagination = inventory.pagination;
@@ -233,7 +236,8 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.updateHeight = function () {
         var height = 0;
         _.forEach(['.header', '.page_header_container', '.section_nav_container', '.inventory-list-controls', '.inventory-list-tab-container'], function (selector) {
-          height += angular.element(selector)[0].offsetHeight;
+          var element = angular.element(selector)[0];
+          if (element) height += element.offsetHeight;
         });
         angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
         angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');
@@ -287,7 +291,12 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.gridApi = gridApi;
 
           _.delay($scope.updateHeight, 150);
-          angular.element($window).on('resize', _.debounce($scope.updateHeight, 150));
+
+          var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
+          angular.element($window).on('resize', debouncedHeightUpdate);
+          $scope.$on('$destroy', function () {
+            angular.element($window).off('resize', debouncedHeightUpdate);
+          });
 
           gridApi.pinning.on.columnPinned($scope, savePinning);
 
