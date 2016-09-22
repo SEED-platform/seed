@@ -24,7 +24,7 @@ angular.module('BE.seed.controller.admin', [])
         ok: 'alert-success',
         error: 'alert-danger'
       },
-      css: $scope.alert.bootstrap_class.ok
+      css: 'alert-success'
     };
     $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
 
