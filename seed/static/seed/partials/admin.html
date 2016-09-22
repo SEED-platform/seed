@@ -175,7 +175,7 @@
                             </thead>
                             <tbody>
                                 <tr ng-repeat="org in org_user.organizations">
-                                    <td>{$ org.parent_id $}</td>
+                                    <td>{$ org.parent_id != org.org_id ? org.parent_id : '' $}</td>
                                     <td>{$ org.org_id $}</td>
                                     <td>{$ org.name $}</td>
                                     <td>{$ org.created $}</td>
