@@ -3,7 +3,7 @@
  * :author
  */
 angular.module('BE.seed.controller.menu', [])
-  .controller('seed_menu_controller', [
+  .controller('menu_controller', [
     '$rootScope',
     '$scope',
     '$http',

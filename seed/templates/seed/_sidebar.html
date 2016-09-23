@@ -1,5 +1,5 @@
 {% load compress %}
-{# requires seed_menu_controller angularjs controller and menu_controller.js #}
+{# requires menu_controller angularjs controller and menu_controller.js #}
     <div ng-class="{expanded: expanded_controller, collapsed: collapsed_controller, sidebar: true, hide_transition:is_initial_state}">
         <div class="menu" ng-click="reset_search_field()">
             <a id="sidebar-profile" ng-class="{item: true, active: is_active('/profile')}" href="{% url "seed:home" %}#/profile">

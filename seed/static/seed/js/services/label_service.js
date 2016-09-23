@@ -28,11 +28,9 @@ angular.module('BE.seed.service.label',
 
     /** Returns an array of labels.
 
-        @param {array} selected_properties      An array of properties ids corresponding to
+        @param {array} selected                 An array of properties ids corresponding to
                                                 selected properties (should be empty if
                                                 select_all_checkbox is true).
-        @param {boolean} select_all_checkbox    A boolean indicating whether user checked
-                                                'Select all' checkbox.
         @param {object} search_params           A reference to the Search object, which
                                                 includes properties for active filters.
 
@@ -62,31 +60,29 @@ angular.module('BE.seed.service.label',
         ]
     */
 
-    function get_labels(selected_properties, select_all_checkbox, search_params) {
-        return get_labels_for_org(user_service.get_organization().id, selected_properties, select_all_checkbox, search_params);
+    function get_labels(selected, search_params) {
+        return get_labels_for_org(user_service.get_organization().id, selected, search_params);
     }
 
-    function get_labels_for_org(org_id, selected_properties, select_all_checkbox, search_params) {
+    function get_labels_for_org(org_id, selected, search_params) {
         var defer = $q.defer();
 
         var searchArgs = _.assignIn({
-            inventory_type: 'property',
-            selected_properties: selected_properties,
-            select_all_checkbox: select_all_checkbox,
+            selected: selected,
             organization_id: org_id
         }, search_params);
+
+        // If no inventory_type specified use 'property' just to get the list of all labels
+        if (searchArgs.inventory_type == 'properties') searchArgs.inventory_type = 'property';
+        else if (searchArgs.inventory_type == 'taxlots') searchArgs.inventory_type = 'taxlot';
+        else searchArgs.inventory_type = 'property';
 
         $http({
             method: 'GET',
             url: window.BE.urls.label_list,
             params: searchArgs
         }).success(function(data, status, headers, config) {
-
-            if (_.isEmpty(data.results)) {
-                data.results = [];
-            }
-
-            data.results = _.map(data.results, update_label_w_local_props);
+            data = _.map(data, update_label_w_local_props);
             defer.resolve(data);
 
         }).error(function(data, status, headers, config) {
@@ -119,6 +115,7 @@ angular.module('BE.seed.service.label',
             url: window.BE.urls.label_list,
             data: label,
             params: {
+                inventory_type: 'property',
                 organization_id: org_id
             }
         }).success(function(data, status, headers, config) {
@@ -209,28 +206,25 @@ angular.module('BE.seed.service.label',
 
     @param {array} add_label_ids            An array of label ids to apply to selected properties.
     @param {array} remove_label_ids         An array of label ids to remove from selected properties.
-    @param {array} selected_properties      An array of Property ids corresponding to selected properties
-                                            (should be empty if select_all_checkbox is true).
-    @param {boolean} select_all_checkbox    A boolean indicating whether user checked 'Select all' checkbox.
+    @param {array} selected                 An array of inventory ids corresponding to selected properties or taxlots
+                                            (should be empty to get all).
     @param {object} search_params           A reference to the Search object, which includes
-                                            properties for active filters.
-
+                                            properties for active filters, and inventory_type.
     @return {object}                        A promise object that resolves server response
                                             (success or error).
 
     */
-    function update_property_labels(add_label_ids, remove_label_ids, selected_properties, select_all_checkbox, search_params) {
+    function update_property_labels(add_label_ids, remove_label_ids, selected, search_params) {
 
         var defer = $q.defer();
         $http({
             method: 'PUT',
             url: window.BE.urls.property_labels,
             params: _.assignIn({
-                selected_properties: selected_properties,
-                select_all_checkbox: select_all_checkbox,
                 organization_id: user_service.get_organization().id
             }, search_params),
             data: {
+                inventory_ids: selected,
                 add_label_ids: add_label_ids,
                 remove_label_ids: remove_label_ids
             }
@@ -250,7 +244,7 @@ angular.module('BE.seed.service.label',
 
     @param {array} add_label_ids            An array of label ids to apply to selected properties.
     @param {array} remove_label_ids         An array of label ids to remove from selected properties.
-    @param {array} selected_properties      An array of Tax Lot ids corresponding to selected Tax Lots
+    @param {array} selected                 An array of Tax Lot ids corresponding to selected Tax Lots
                                             (should be empty if select_all_checkbox is true).
     @param {boolean} select_all_checkbox    A boolean indicating whether user checked 'Select all' checkbox.
     @param {object} search_params           A reference to the Search object, which includes
@@ -260,18 +254,17 @@ angular.module('BE.seed.service.label',
                                             (success or error).
 
     */
-    function update_taxlot_labels(add_label_ids, remove_label_ids, selected_taxlots, select_all_checkbox, search_params) {
+    function update_taxlot_labels(add_label_ids, remove_label_ids, selected, search_params) {
 
         var defer = $q.defer();
         $http({
             method: 'PUT',
             url: window.BE.urls.taxlot_labels,
             params: _.assignIn({
-                selected_taxlots: selected_taxlots,
-                select_all_checkbox: select_all_checkbox,
                 organization_id: user_service.get_organization().id
             }, search_params),
             data: {
+                inventory_ids: selected,
                 add_label_ids: add_label_ids,
                 remove_label_ids: remove_label_ids
             }

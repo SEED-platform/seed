@@ -8,37 +8,28 @@ from collections import namedtuple
 from django.core.exceptions import ObjectDoesNotExist
 from django.apps import apps
 
-from rest_framework import response
-from rest_framework import status
-from rest_framework import viewsets
+from rest_framework import (
+    response,
+    status,
+    viewsets
+)
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
-from seed.decorators import (
-    DecoratorMixin,
-)
+from seed.decorators import DecoratorMixin
 from seed.filters import (
     LabelFilterBackend,
     InventoryFilterBackend,
 )
-from seed.pagination import (
-    FakePaginiation,
-)
-from seed.utils.api import (
-    drf_api_endpoint,
-)
+from seed.pagination import NoPagination
+from seed.utils.api import drf_api_endpoint
 from seed.models import (
     StatusLabel as Label,
     Property,
-    # PropertyLabels,
-    TaxLot,
-    # TaxLotLabels
+    TaxLot
 )
-
-from seed.serializers.labels import (
-    LabelSerializer,
-)
+from seed.serializers.labels import LabelSerializer
 
 # missing from DRF specified in requirements
 status.HTTP_422_UNPROCESSABLE_ENTITY = 422
@@ -50,9 +41,11 @@ ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 class LabelViewSet(DecoratorMixin(drf_api_endpoint),
                    viewsets.ModelViewSet):
     serializer_class = LabelSerializer
+    renderer_classes = (JSONRenderer,)
+    parser_classes = (JSONParser,)
     queryset = Label.objects.none()
     filter_backends = (LabelFilterBackend,)
-    pagination_class = FakePaginiation
+    pagination_class = NoPagination
 
     _organization = None
 
@@ -74,18 +67,34 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
         return self._organization
 
     def get_queryset(self):
-        return Label.objects.filter(
+        labels = Label.objects.filter(
             super_organization=self.get_parent_organization()
         ).order_by("name").distinct()
+        return labels
 
     # TODO update for new data model
     def get_serializer(self, *args, **kwargs):
-        kwargs['super_organization'] = self.get_parent_organization()
+        kwargs['super_organization'] = self.get_organization()
         inventory = InventoryFilterBackend().filter_queryset(
             request=self.request,
         )
         kwargs['inventory'] = inventory
         return super(LabelViewSet, self).get_serializer(*args, **kwargs)
+
+    def list(self, request):
+        qs = self.get_queryset()
+        super_organization = self.get_organization()
+        inventory = InventoryFilterBackend().filter_queryset(
+            request=self.request,
+        )
+        results = [
+            LabelSerializer(
+                q, super_organization=super_organization,
+                inventory=inventory
+            ).data for q in qs
+        ]
+        status_code = status.HTTP_200_OK
+        return response.Response(results, status=status_code)
 
 
 class UpdateInventoryLabelsAPIView(APIView):
@@ -110,7 +119,7 @@ class UpdateInventoryLabelsAPIView(APIView):
 
         Used for bulk_create operations.
         """
-        return{
+        return {
             'property': apps.get_model('seed', 'Property_labels'),
             'taxlot': apps.get_model('seed', 'TaxLot_labels')
         }
@@ -186,7 +195,7 @@ class UpdateInventoryLabelsAPIView(APIView):
 
     def put(self, request, inventory_type):
         """
-        Updates label assignments to buildings.
+        Updates label assignments to inventory items.
 
         Payload::
 
@@ -194,7 +203,7 @@ class UpdateInventoryLabelsAPIView(APIView):
                 "add_label_ids": {array}        Array of label ids to add
                 "remove_label_ids": {array}     Array of label ids to remove
                 "inventory_ids": {array}        Array property/taxlot  ids
-                "organization_id": {integer}        The user's org ID
+                "organization_id": {integer}    The user's org ID
             }
 
         Returns::
@@ -202,8 +211,7 @@ class UpdateInventoryLabelsAPIView(APIView):
             {
                 'status': {string}              'success' or 'error'
                 'message': {string}             Error message if error
-                'num_updated': {integer}        Number of properties/taxlots
-                                                updated
+                'num_updated': {integer}        Number of properties/taxlots updated
                 'labels': [                     List of labels affected.
                     {
                         'color': {string}
@@ -218,7 +226,7 @@ class UpdateInventoryLabelsAPIView(APIView):
         add_label_ids = request.data.get('add_label_ids', [])
         remove_label_ids = request.data.get('remove_label_ids', [])
         inventory_ids = request.data.get('inventory_ids', None)
-        organization_id = request.data.get('organization_id', None)
+        organization_id = request.query_params['organization_id']
         error = None
         # ensure add_label_ids and remove_label_ids are different
         if not set(add_label_ids).isdisjoint(remove_label_ids):
@@ -235,9 +243,7 @@ class UpdateInventoryLabelsAPIView(APIView):
             qs = self.get_queryset(inventory_type, organization_id)
             qs = self.filter_by_inventory(qs, inventory_type, inventory_ids)
             removed = self.remove_labels(qs, inventory_type, remove_label_ids)
-            added = self.add_labels(
-                qs, inventory_type, inventory_ids, add_label_ids
-            )
+            added = self.add_labels(qs, inventory_type, inventory_ids, add_label_ids)
             num_updated = len(set(added).union(removed))
             labels = self.get_label_desc(add_label_ids, remove_label_ids)
             result = {

@@ -156,18 +156,14 @@ def get_properties(request):
 @has_perm('requires_viewer')
 def get_taxlots(request):
     page = request.GET.get('page', 1)
-
-    # FIXME
-    # Temporarily disable paging on this view - does not seem to work.
-    # per_page = request.GET.get('per_page', 1)
-    per_page = 15000
+    per_page = request.GET.get('per_page', 1)
 
     cycle_id = request.GET.get('cycle')
     if cycle_id:
         cycle = Cycle.objects.get(organization_id=request.GET['organization_id'], pk=cycle_id)
     else:
-        cycle = Cycle.objects.filter(organization_id=request.GET['organization_id'])
-        cycle = cycle.latest() if cycle else None
+        cycle = Cycle.objects.filter(organization_id=request.GET['organization_id']).order_by('name')
+        cycle = cycle.first() if cycle else None
         # TODO: Need to catch if the cycle does not exist and return nice error
 
     taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
@@ -262,28 +258,6 @@ def get_taxlots(request):
             l[extra_data_field] = extra_data_value
 
         l['related'] = join_map.get(lot.pk, [])
-
-        # Start collapsed field data
-        # Map of fields in related model to unique list of values
-        # related_field_map = {}
-        #
-        # # Iterate over related dicts and gather field values
-        # for related in l['related']:
-        #     for k, v in related.items():
-        #         try:
-        #             related_field_map[k].add(v)
-        #         except KeyError:
-        #             try:
-        #                 related_field_map[k] = {v}
-        #             except TypeError:
-        #                 # Extra data field, ignore it
-        #                 pass
-        #
-        # for k, v in related_field_map.items():
-        #     related_field_map[k] = list(v)
-        #
-        # l['collapsed'] = related_field_map
-        # # End collapsed field data
 
         response['results'].append(l)
 

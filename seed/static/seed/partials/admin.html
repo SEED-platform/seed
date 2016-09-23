@@ -24,7 +24,7 @@
                     <h2><i class="fa fa-users"></i> Create an organization</h2>
                 </div>
             </div>
-            <div class="section_content_container org_form">
+            <div class="section_content_container org_form container-fluid">
                 <div class="section_content">
                     <form  name="orgForm" novalidate class="form-horizontal css-form" role="form">
                         <div class="form-group">
@@ -57,7 +57,7 @@
                     <h2><i class="fa fa-user"></i> Create a user</h2>
                 </div>
             </div>
-            <div class="section_content_container user_admin">
+            <div class="section_content_container user_admin container-fluid">
                 <div class="section_content">
                     <form name="userForm" novalidate class="form-horizontal css-form" role="form">
                         <div class="form-group">
@@ -108,9 +108,9 @@
                     <h2><i class="fa fa-plus-circle"></i> Add/Remove a user to an organization</h2>
                 </div>
             </div>
-            <div class="section_content_container org_user_admin">
+            <div class="section_content_container org_user_admin container-fluid">
                 <div class="section_content row">
-                    <div class="col-sm-6 col-md-6">
+                    <div class="col-sm-6">
                         <form name="addRemoveForm" novalidate class="form-horizontal css-form" role="form">
                             <div class="form-group">
                                 <label class="col-sm-4 control-label" for="orgs">Organizations:</label>
@@ -132,7 +132,7 @@
                             </div>
                         </form>
                     </div>
-                    <div class="table_list_container col-sm-5 col-md-5">
+                    <div class="table_list_container col-sm-5">
                         <table class="table table-striped">
                             <thead>
                                 <tr>
@@ -157,9 +157,9 @@
                     <h2><i class="fa fa-trash-o"></i> Remove buildings and organizations</h2>
                 </div>
             </div>
-            <div class="section_content_container org_user_admin">
+            <div class="section_content_container org_user_admin container-fluid">
                 <div class="section_content row">
-                    <div class="table_list_container remove_buildings_table col-sm-5 col-md-5">
+                    <div class="table_list_container remove_buildings_table col-sm-5" style="width: 100%;">
                         <table class="table table-striped">
                             <thead>
                                 <tr>
@@ -168,23 +168,32 @@
                                     <th>Organization</th>
                                     <th>Created</th>
                                     <th>User Count</th>
-                                    <th>Building Count</th>
+                                    <th>Property Count</th>
+                                    <th>Tax Lot Count</th>
                                     <th></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="o in org_user.organizations">
-                                    <td>{$ o.parent_id $}</td>
-                                    <td>{$ o.org_id $}</td>
-                                    <td>{$ o.name $}</td>
-                                    <td><strong>{$ o.created $}</strong></td>
-                                    <td><strong>{$ o.number_of_users | number:0 $}</strong></td>
-                                    <td><strong>{$ o.num_buildings | number:0 $}</strong></td>
+                                <tr ng-repeat="org in org_user.organizations">
+                                    <td>{$ org.parent_id != org.org_id ? org.parent_id : '' $}</td>
+                                    <td>{$ org.org_id $}</td>
+                                    <td>{$ org.name $}</td>
+                                    <td>{$ org.created $}</td>
+                                    <td>{$ org.number_of_users | number:0 $}</td>
+                                    <td>
+                                        <div ng-repeat="cycle in org.cycles" ng-if="cycle.num_properties">
+                                            {$ cycle.name $}: {$ cycle.num_properties $}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div ng-repeat="cycle in org.cycles" ng-if="cycle.num_taxlots">
+                                            {$ cycle.name $}: {$ cycle.num_taxlots $}
+                                        </div>
+                                    </td>
                                     <td>
                                         <div style="width: 285px;">
-                                            <button class="btn btn-default" ng-click="confirm_buildings_delete(o)" ng-hide="o.progress > -1 || o.total_buildings_count == 0">Remove Buildings</button>
-                                            <button class="btn btn-danger" style="margin-left:20px;" ng-click="confirm_org_delete(o)" ng-hide="o.progress > -1"><i class="fa fa-exclamation-triangle"></i> Delete Organization</button>
-                                            <uib-progressbar class="progress-striped active" value="o.progress" type="danger" ng-show="o.progress > -1">{$ o.remove_message $}</uib-progressbar>
+                                            <button class="btn btn-danger" style="margin-left:20px;" ng-click="confirm_org_delete(org)" ng-hide="org.progress > -1"><i class="fa fa-exclamation-triangle"></i> Delete Organization</button>
+                                            <uib-progressbar class="progress-striped active" value="org.progress" type="danger" ng-show="org.progress > -1">{$ org.remove_message $}</uib-progressbar>
                                         </div>
                                     </td>
                                 </tr>
