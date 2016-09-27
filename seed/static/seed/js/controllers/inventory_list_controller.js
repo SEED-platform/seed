@@ -126,6 +126,8 @@ angular.module('BE.seed.controller.inventory_list', [])
               };
             } else if ($scope.inventory_type == 'taxlots') {
               var map = {
+                address_line_1: 'property_address_line_1',
+                address_line_2: 'property_address_line_2',
                 city: 'property_city',
                 state: 'property_state',
                 postal_code: 'property_postal_code'

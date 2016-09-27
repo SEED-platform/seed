@@ -301,7 +301,7 @@ var sdUploaderFineUploader = function(scope, element, attrs, filename) {
     } else {
         throw 'dest ' + dest + ' not valid!';
     }
-    $('.qq-upload-button').addClass('btn button btn-primary col-lg-12');
+    $('.qq-upload-button').addClass('btn button btn-primary').css('display', 'block');
     return uploader;
 };
 

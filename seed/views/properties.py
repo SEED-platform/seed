@@ -644,7 +644,8 @@ def get_taxlot_columns(request):
             'displayName': 'Tax Lot City',
             'related': False
         }, {
-            'name': 'address_line_1',
+            # Modified field name
+            'name': 'property_address_line_1',
             'displayName': 'Property Address 1',
             'type': 'numberStr',
             'related': True
@@ -718,7 +719,8 @@ def get_taxlot_columns(request):
             'displayName': 'Owner Telephone',
             'related': True
         }, {
-            'name': 'address_line_2',
+            # Modified field name
+            'name': 'property_address_line_2',
             'displayName': 'Property Address 2',
             'type': 'numberStr',
             'related': True
