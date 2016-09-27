@@ -203,11 +203,13 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
     logger.debug("Mappings are %s" % mappings)
     map_cleaner = _build_cleaner(org)
 
-    # For those column mapping which are not db columns, we
-    # need to let MCM know that we apply our mapping function to those.
-    md = MappingData()
+    # create a set of tables that are being mapped to.
+    tables = set()
+    for k,v in mappings.iteritems():
+        tables.add(v[0])
 
-    for table in ('PropertyState', 'TaxLotState'):
+    md = MappingData()
+    for table in tables:
         # apply_columns are extra_data columns (the raw column names)
         extra_data_fields = []
         for k, v in mappings.iteritems():
@@ -393,7 +395,7 @@ def _cleanse_data(file_pk, record_type='property'):
     tasks = [
         cleanse_data_chunk.s(record_type, ids, file_pk, increment)
         for ids in id_chunks
-    ]
+        ]
 
     if tasks:
         # specify the chord as an immutable with .si
@@ -738,42 +740,40 @@ def match_buildings(file_pk, user_pk):
     }
 
 
-def handle_id_matches(unmatched_bs, import_file, user_pk):
-    """"Deals with exact matches in the IDs of buildings."""
+def handle_id_matches(unmatched_bs, test_property, import_file, user_pk):
+    """
+    Deals with exact matches in the IDs of buildings.
 
-    id_matches = get_canonical_id_matches(
-        unmatched_bs.super_organization_id,
-        unmatched_bs.pm_parent_property_id,
-        None,  # unmatched_bs.tax_lot_id, # TODO: this is now a relationship
-        unmatched_bs.custom_id_1
+    :param unmatched_bs:
+    :param test_property:
+    :param import_file:
+    :param user_pk:
+    :return:
+    """
+
+    # TODO: this only works for PropertyStates right now because the unmatched_bs is a QuerySet
+    # of PropertyState of which have the .pm_property_id and .custom_id_1 fields.
+    id_matches = query_property_matches(
+        unmatched_bs,
+        test_property.pm_property_id,
+        test_property.custom_id_1
     )
     if not id_matches.exists():
         return
 
     # Check to see if there are any duplicates here
-    for can_snap in id_matches:
-        # check to see if this is a duplicate of a canonical building
-        # if throwing incurs too much of a performance hit maybe just monkey-patch
-        # unmatched_bs and check it on the other side like
-        # unmatched_bs.duplicate_of_pk = snapshot.pk
-        # return unmatched_bs
-        if is_same_snapshot(unmatched_bs, can_snap):
-            raise DuplicateDataError(can_snap.pk)
-
-        # iterate through all of the parent records and see if there is a duplicate there
-        for snapshot in can_snap.parent_tree:
-            if is_same_snapshot(unmatched_bs, snapshot):
-                raise DuplicateDataError(snapshot.pk)
+    for match in id_matches:
+        if is_same_snapshot(unmatched_bs, match):
+            raise DuplicateDataError(match.pk)
 
     # merge save as system match with high confidence.
-    for can_snap in id_matches:
-        # Merge all matches together; updating "unmatched" pointer
-        # as we go.
+    for match in id_matches:
+        # Merge all matches together; updating "unmatched" pointer as we go.
         unmatched_bs, changes = save_snapshot_match(
-            can_snap.pk,
+            match.pk,
             unmatched_bs.pk,
-            confidence=0.9,  # TODO(gavin) represent conf better.
-            match_type=SYSTEM_MATCH,
+            confidence=0.9,
+            match_type=SYSTEM_MATCH,  # TODO: we should and probably can remove this field, please :D
             user=import_file.import_record.owner,
             default_pk=unmatched_bs.pk
         )
@@ -782,7 +782,7 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
         canon.save()
         action_note = 'System matched building ID.'
         if changes:
-            action_note += "  Fields changed in cannonical building:\n"
+            action_note += "  Fields changed in canonical building:\n"
             for change in changes:
                 action_note += "\t{field}:\t".format(
                     field=change["field"].replace("_", " ").replace("-",
@@ -793,6 +793,7 @@ def handle_id_matches(unmatched_bs, import_file, user_pk):
 
                 action_note += "{value}\n".format(value=change["to"])
             action_note = action_note[:-1]
+
         AuditLog.objects.create(
             user_id=user_pk,
             content_object=canon,
@@ -922,7 +923,7 @@ def _normalize_address_str(address_val):
                 addr['AddressNumber'])
 
         if 'StreetNamePreDirectional' in addr and addr[
-                'StreetNamePreDirectional'] is not None:
+            'StreetNamePreDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
                 addr['StreetNamePreDirectional'])  # NOQA
 
@@ -930,13 +931,13 @@ def _normalize_address_str(address_val):
             normalized_address = normalized_address + ' ' + addr['StreetName']
 
         if 'StreetNamePostType' in addr and addr[
-                'StreetNamePostType'] is not None:
+            'StreetNamePostType'] is not None:
             # remove any periods from abbreviations
             normalized_address = normalized_address + ' ' + _normalize_address_post_type(
                 addr['StreetNamePostType'])  # NOQA
 
         if 'StreetNamePostDirectional' in addr and addr[
-                'StreetNamePostDirectional'] is not None:
+            'StreetNamePostDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
                 addr['StreetNamePostDirectional'])  # NOQA
 
@@ -965,15 +966,13 @@ def _match_buildings(file_pk, user_pk):
     """ngram search against all of the propertystates for org."""
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
-    org = Organization.objects.filter(users=import_file.import_record.owner)[0]
+    org = Organization.objects.filter(users=import_file.import_record.owner).first()
 
     # Return a list of all the properties based on the import file
-    unmatched_buildings = PropertyState.find_unmatched(import_file)
-    # canonical_buildings =
-    # TODO: need to also return the taxlots and taxlotproperties (yuck)
+    unmatched_buildings = import_file.find_unmatched_property_states()
 
+    # TODO: need to also return the taxlots
     duplicates = []
-
     newly_matched_building_pks = []
 
     # Filter out matches based on ID.
@@ -982,7 +981,7 @@ def _match_buildings(file_pk, user_pk):
     for unmatched in unmatched_buildings:
         # print "trying to match %s" % unmatched.__dict__
         try:
-            match = handle_id_matches(unmatched, import_file, user_pk)
+            match = handle_id_matches(unmatched_buildings, unmatched, import_file, user_pk)
             # print "My match was %s" % match
         except DuplicateDataError as e:
             duplicates.append(unmatched.pk)
@@ -995,8 +994,7 @@ def _match_buildings(file_pk, user_pk):
 
     # Remove any buildings we just did exact ID matches with.
     unmatched_buildings = unmatched_buildings.exclude(
-        pk__in=newly_matched_building_pks
-    ).values_list(*BS_VALUES_LIST)
+        pk__in=newly_matched_building_pks).values_list(*BS_VALUES_LIST)
 
     # If we don't find any unmatched buildings, there's nothing left to do.
     if not unmatched_buildings:
@@ -1004,21 +1002,20 @@ def _match_buildings(file_pk, user_pk):
         return
 
     # here we deal with duplicates
-    unmatched_buildings = unmatched_buildings.exclude(
-        pk__in=duplicates,
-    ).values_list(*BS_VALUES_LIST)
+    unmatched_buildings = unmatched_buildings.exclude(pk__in=duplicates, ).values_list(
+        *BS_VALUES_LIST)
     if not unmatched_buildings:
         _finish_matching(import_file, prog_key)
         return
-        # here we are going to normalize the addresses to match on address_1
-        # field, this is not ideal because you could match on two locations
-        # with same address_1 but different city
-    #     unmatched_normalized_addresses=[]
 
+    # here we are going to normalize the addresses to match on address_1
+    # field, this is not ideal because you could match on two locations
+    # with same address_1 but different city
     unmatched_normalized_addresses = [
         _normalize_address_str(unmatched[4]) for unmatched in
         unmatched_buildings
-    ]
+        ]
+
     # Here we want all the values not related to the BS id for doing comps.
     # dont do this now
     #     unmatched_ngrams = [
@@ -1046,7 +1043,7 @@ def _match_buildings(file_pk, user_pk):
     can_rev_idx = {
         _normalize_address_str(value[4]): value[0] for value in
         canonical_buildings
-    }
+        }
     # (SD) This loads up an ngram object with all the canonical buildings. The
     # values are the lists of identifying data for each building
     #
@@ -1062,7 +1059,7 @@ def _match_buildings(file_pk, user_pk):
     # address_1 but different city
     canonical_buildings_addresses = [
         _normalize_address_str(values[4]) for values in canonical_buildings
-    ]
+        ]
     # For progress tracking
     # sd we now use the address
     #    num_unmatched = len(unmatched_ngrams) or 1
@@ -1162,11 +1159,9 @@ def remap_data(import_file_pk):
     return result
 
 
-# TODO: rename to get_canonical_properties
-def get_canonical_snapshots(org_id):
+def list_canonical_property_states(org_id):
     """
-    Return all of the PropertyStates from the PropertyView
-    for a specific cycle.
+    Return a QuerySet of the property states that are part of the inventory
 
     Args:
         org_id: Organization ID
@@ -1178,40 +1173,43 @@ def get_canonical_snapshots(org_id):
 
     pvs = PropertyView.objects.filter(
         state__organization=org_id,
-        state__data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING]
+        state__data_state__in=[DATA_STATE_MATCHING]
     ).select_related('state')
 
     ids = [p.state.id for p in pvs]
     return PropertyState.objects.filter(pk__in=ids)
 
 
-# TODO: delete this method
-def get_canonical_id_matches(org_id, pm_id, tax_id, custom_id):
-    """Returns canonical snapshots that match at least one id."""
+def query_property_matches(properties, pm_id, custom_id):
+    """
+    Returns query set of PropertyStates that match at least one of the specified ids
+
+    :param properties: QuerySet of PropertyStates
+    :param pm_id:
+    :param tax_id:
+    :param custom_id:
+    :return:
+    """
+
+    """"""
     params = []
-    can_snapshots = get_canonical_snapshots(org_id)
+    # Not sure what the point of this logic is here. If we are passing in a custom_id then
+    # why would we want to check pm_property_id against the custom_id, what if we pass both in?
+    # Seems like this favors pm_id
     if pm_id:
         params.append(Q(pm_property_id=pm_id))
-        # params.append(Q(tax_lot_state__tax_lot_id=pm_id))
         params.append(Q(custom_id_1=pm_id))
-    if tax_id:
-        params.append(Q(pm_property_id=tax_id))
-        # params.append(Q(tax_lot_state__tax_lot_id=tax_id))
-        params.append(Q(custom_id_1=tax_id))
     if custom_id:
         params.append(Q(pm_property_id=custom_id))
-        # params.append(Q(tax_lot_state__tax_lot_id=custom_id))
         params.append(Q(custom_id_1=custom_id))
 
     if not params:
         # Return an empty QuerySet if we don't have any params.
-        return can_snapshots.none()
+        return properties.none()
 
-    canonical_matches = can_snapshots.filter(
-        reduce(operator.or_, params)
-    )
+    matches = properties.filter(reduce(operator.or_, params))
 
-    return canonical_matches
+    return matches
 
 
 # TODO: Move this should be on the PropertyState (or property) class
