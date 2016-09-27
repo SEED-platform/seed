@@ -119,7 +119,11 @@
                     <tbody>
                         <tr>
                             <td></td>
-                            <td colspan="8"><h3>Mapped Fields</h3></td>
+                            <td style="border-right: 0 none;"><h3>Mapped Fields</h3></td>
+                            <td style="border-right: 0 none; padding-left: 46px;" colspan="2">Set all fields to:
+                                <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as item.name for item in setAllFieldsOptions track by item.value"></select>
+                            </td>
+                            <td colspan="5"></td>
                         </tr>
                     </tbody>
                     <thead>
@@ -127,8 +131,8 @@
                             <th class="sub_head is_aligned_center">Map <a uib-popover="{$MAP_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th>
                             <th class="mapping_field">SEED Header</th>
                             <!--th class="sub_head is_aligned_center">Duplicate <a uib-popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
-                            <th>Inventory Type</th>
                             <th class="import_column_name">Data File Header</th>
+                            <th>Inventory Type</th>
                             <th>Row 1</th>
                             <th>Row 2</th>
                             <th>Row 3</th>
@@ -144,18 +148,18 @@
                             <td ng-class="{'danger': tcm.is_duplicate == true, 'disable-mapping-btn': tcm.is_duplicate == true}" id="mapped-row-input-{$ $index $}">
                                 <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" ng-keyup="disable_mapping_button()" ng-blur="disable_mapping_button()" typeahead-on-select='change(tcm)' id="mapped-row-input-box-{$ $index $}"/>
                             </td>
-                            <td id="mapped-row-type-{$ $index $}">
-                                <select ng-model="tcm.suggestion_table_name">
-                                    <option value="PropertyState">Property</option>
-                                    <option value="TaxLotState">Tax Lot</option>
-                                </select>
-                            </td>
                             <!--td class="check is_aligned_center">
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="!tcm.is_duplicate">{$ tcm.validity $}</label>
                             </td-->
                             <td>
                                 <strong id="mapped-header-{$ $index $}">{$tcm.name$}</strong>
+                            </td>
+                            <td id="mapped-row-type-{$ $index $}">
+                                <select ng-model="tcm.suggestion_table_name" ng-change="setInventoryType()">
+                                    <option value="PropertyState">Property</option>
+                                    <option value="TaxLotState">Tax Lot</option>
+                                </select>
                             </td>
                             <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning', 'success': set_td_class(tcm, cell_value) == 'success'}">
                                 {$ cell_value $}

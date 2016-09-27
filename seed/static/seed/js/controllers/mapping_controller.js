@@ -182,6 +182,25 @@ angular.module('BE.seed.controller.mapping', [])
         }
     };
 
+    $scope.setAllFields = '';
+    $scope.setAllFieldsOptions = [{
+      name: 'Property',
+      value: 'PropertyState'
+    }, {
+      name: 'Tax Lot',
+      value: 'TaxLotState'
+    }];
+    $scope.setAllInventoryTypes = function () {
+      _.each($scope.valids, function (valid) {
+        valid.suggestion_table_name = $scope.setAllFields.value;
+      })
+    };
+    $scope.setInventoryType = function () {
+      var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
+      if (chosenTypes.length == 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
+      else $scope.setAllFields = '';
+    };
+
     $scope.find_duplicates = function (array, element) {
         var indices = [];
         var idx = array.indexOf(element);
@@ -271,7 +290,7 @@ angular.module('BE.seed.controller.mapping', [])
     var update_raw_columns = function() {
       var raw_columns_prototype = {
         building_columns: [''].concat(
-            original_columns
+            _.uniq(original_columns)
         ),
         suggestion: '',
         user_suggestion: false,
