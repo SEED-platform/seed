@@ -205,9 +205,15 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
 
     # For those column mapping which are not db columns, we
     # need to let MCM know that we apply our mapping function to those.
-    md = MappingData()
 
-    for table in ('PropertyState', 'TaxLotState'):
+    print mappings
+
+    tables = set()
+    for k,v in mappings.iteritems():
+        tables.add(v[0])
+
+    md = MappingData()
+    for table in tables:
         # apply_columns are extra_data columns (the raw column names)
         extra_data_fields = []
         for k, v in mappings.iteritems():
