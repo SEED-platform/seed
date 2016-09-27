@@ -1665,6 +1665,7 @@ def save_raw_data(request):
 
         {
             'status': 'success' or 'error',
+            'message': 'message about there error',
             'progress_key': ID of background job, for retrieving job progress
         }
     """
