@@ -115,11 +115,9 @@ class Cleaner(object):
         self.date_columns = filter(
             lambda x: self.schema[x] == u'date', self.schema
         )
-
-        # print self.ontology
-        # print self.schema
-        # print self.float_columns
-        # print self.date_columns
+        self.string_columns = filter(
+            lambda x: self.schema[x] == u'string', self.schema
+        )
 
     def clean_value(self, value, column_name):
         """Clean the value, based on characteristics of its column_name."""
@@ -129,5 +127,8 @@ class Cleaner(object):
 
         if column_name in self.date_columns:
             return date_cleaner(value)
+
+        if column_name in self.string_columns:
+            return str(value)
 
         return value
