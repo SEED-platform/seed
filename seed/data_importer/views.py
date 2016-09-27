@@ -4,25 +4,26 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import os
 import base64
-import json
-import hmac
 import hashlib
+import hmac
+import json
 import logging
+import os
 
+from ajaxuploader.backends.local import LocalUploadBackend
+from ajaxuploader.views import AjaxFileUploader
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from ajaxuploader.views import AjaxFileUploader
+from django.core.exceptions import ImproperlyConfigured
+from django.core.urlresolvers import reverse
+
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
 )
 from seed.decorators import ajax_request
-from ajaxuploader.backends.local import LocalUploadBackend
 from seed.utils.api import api_endpoint
-from django.core.urlresolvers import reverse
-from django.core.exceptions import ImproperlyConfigured
 
 _log = logging.getLogger(__name__)
 
@@ -110,8 +111,10 @@ class DataImportBackend(LocalUploadBackend):
         except ImportRecord.DoesNotExist:
             # clean up the uploaded file
             os.unlink(self.path)
-            return {'success': False,
-                    'message': "Import Record %s not found" % import_record_pk}
+            return {
+                'success': False,
+                'message': "Import Record %s not found" % import_record_pk
+            }
 
         source_type = request.POST.get('source_type', request.GET.get('source_type'))
 
@@ -128,6 +131,7 @@ class DataImportBackend(LocalUploadBackend):
                   .format(kw_fields, f.from_portfolio_manager))
 
         return {'success': True, "import_file_id": f.pk}
+
 
 # this actually creates the django view for handling local file uploads.
 # thus the use of decorators as functions instead of decorators.

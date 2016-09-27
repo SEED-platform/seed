@@ -315,6 +315,8 @@ class Column(models.Model):
                 table_name=model_obj.__class__.__name__
             )
 
+            # TODO: catch the MultipleObjectsReturns
+
 
 class ColumnMapping(models.Model):
     """Stores previous user-defined column mapping.
