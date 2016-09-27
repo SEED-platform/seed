@@ -18,6 +18,7 @@ schema = {
         u'energy_score': u'float',
         u'generation_date': u'date',
         u'gross_floor_area': u'float',
+        u'jurisdiction_tax_lot_id': u'string',
         u'occupied_floor_area': u'float',
         u'owner': u'',
         u'owner_email': u'',

@@ -23,27 +23,23 @@ from seed.data_importer.tests.util import (
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
     FAKE_ROW,
-    PROPERTIES_MAPPING,
 )
 from seed.models import (
     ASSESSED_RAW,
     ASSESSED_BS,
     DATA_STATE_IMPORT,
     PORTFOLIO_RAW,
-    DATA_STATE_MAPPING,
-)
-from seed.models import (
     Column,
     Cycle,
     PropertyState,
     PropertyView,
+    TaxLotState,
 )
-from seed.utils.generic import pp
 
 logger = logging.getLogger(__name__)
 
 
-class TestMapping(DataMappingBaseTestCase):
+class TestMappingPortfolioData(DataMappingBaseTestCase):
     """Tests for dealing with SEED related tasks for mapping data."""
 
     def setUp(self):
@@ -174,7 +170,7 @@ class TestMapping(DataMappingBaseTestCase):
         # )
 
 
-class TestMatching(DataMappingBaseTestCase):
+class TestMappingExampleData(DataMappingBaseTestCase):
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -182,27 +178,55 @@ class TestMatching(DataMappingBaseTestCase):
         self.fake_extra_data = FAKE_EXTRA_DATA
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
-        self.user, self.org, self.import_file, self.import_record = selfvars
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         self.import_file = self.load_import_file_file(filename, self.import_file)
-        save_raw_data(self.import_file.id)
-        Column.create_mappings(PROPERTIES_MAPPING, self.org, self.user)
-        map_data(self.import_file.id)
-        self.import_record.save()  # May not be needed here
-        self.psn = len(PropertyState.objects.all())
 
-    @skip('fix this soon')
-    def test_promote_properties(self):
-        """Good case for testing our matching system."""
+    def test_mapping_no_taxlot(self):
+        # update the mappings to not include any taxlot tables in the data
+        # note that save_data reads in from the propertystate table, so that will always
+        # have entries in the db (for now).
+        for m in self.fake_mappings:
+            if m["to_table_name"] == 'TaxLotState':
+                m["to_table_name"] = 'PropertyState'
+
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
         Column.create_mappings(self.fake_mappings, self.org, self.user)
         tasks.map_data(self.import_file.pk)
 
-        cycle, _ = Cycle.objects.get_or_create(
-            name=u'Hack Cycle 2015',
-            organization=self.org,
-            start=datetime.datetime(2015, 1, 1),
-            end=datetime.datetime(2015, 12, 31),
-        )
+        # make sure that no taxlot objects were created
+        ts = TaxLotState.objects.all()
+        self.assertEqual(len(ts), 0)
+
+        # make sure that the new data was loaded correctly
+        ps = PropertyState.objects.filter(address_line_1='2700 Welstone Ave NE')[0]
+        self.assertEqual(ps.site_eui, 1202)
+        # TODO: why is the jurisdiction_tax_lot_id an integer in the extra data field?
+        self.assertEqual(ps.extra_data['jurisdiction_tax_lot_id'], 11160509)
+
+    def test_mapping_no_properties(self):
+        # update the mappings to not include any taxlot tables in the data
+        for m in self.fake_mappings:
+            if m["to_table_name"] == 'PropertyState':
+                m["to_table_name"] = 'TaxLotState'
+
+        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        tasks.map_data(self.import_file.pk)
+
+        # make sure that no taxlot objects were created
+        ps = PropertyState.objects.all()
+        self.assertEqual(len(ps), 12)
+
+        # make sure that the new data was loaded correctly
+        ts = TaxLotState.objects.filter(address_line_1='2700 Welstone Ave NE')[0]
+        self.assertEqual(ts.extra_data['site_eui'], 1202)
+
+    @skip('fix this soon')
+    def test_promote_properties(self):
+        """Good case for testing our matching system."""
+        tasks.save_raw_data(self.import_file.id)
+        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        tasks.map_data(self.import_file.pk)
 
         cycle2, _ = Cycle.objects.get_or_create(
             name=u'Hack Cycle 2016',
@@ -217,8 +241,8 @@ class TestMatching(DataMappingBaseTestCase):
         self.assertEqual(ps.extra_data['CoStar Property ID'], '1575599')
 
         # Promote the PropertyState to a PropertyView
-        pv1 = ps.promote(cycle)
-        pv2 = ps.promote(cycle)  # should just return the same object
+        pv1 = ps.promote(self.cycle)
+        pv2 = ps.promote(self.cycle)  # should just return the same object
         self.assertEqual(pv1, pv2)
 
         # promote the same state for a new cycle, same data

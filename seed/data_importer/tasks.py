@@ -203,11 +203,13 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
     logger.debug("Mappings are %s" % mappings)
     map_cleaner = _build_cleaner(org)
 
-    # For those column mapping which are not db columns, we
-    # need to let MCM know that we apply our mapping function to those.
-    md = MappingData()
+    # create a set of tables that are being mapped to.
+    tables = set()
+    for k,v in mappings.iteritems():
+        tables.add(v[0])
 
-    for table in ('PropertyState', 'TaxLotState'):
+    md = MappingData()
+    for table in tables:
         # apply_columns are extra_data columns (the raw column names)
         extra_data_fields = []
         for k, v in mappings.iteritems():
