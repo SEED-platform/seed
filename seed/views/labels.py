@@ -31,9 +31,7 @@ from seed.utils.api import (
 from seed.models import (
     StatusLabel as Label,
     Property,
-    # PropertyLabels,
     TaxLot,
-    # TaxLotLabels
 )
 
 from seed.serializers.labels import (

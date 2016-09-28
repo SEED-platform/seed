@@ -7,6 +7,7 @@
 from seed.models import Project, ProjectBuilding
 from seed.utils.buildings import get_search_query
 
+# TODO REMOVE
 
 # TO REMOVE
 # OBSOLETED BY REMOVAL OF BUILDING VIEWS

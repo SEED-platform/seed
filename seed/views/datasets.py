@@ -22,6 +22,7 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import BuildingSnapshot
 from seed.utils.api import api_endpoint_class
 from seed.utils.time import convert_to_js_timestamp
+from seed.models import obj_to_dict
 
 _log = logging.getLogger(__name__)
 
@@ -81,7 +82,6 @@ class DatasetViewSet(viewsets.ViewSet):
         """
 
         org_id = request.query_params.get('organization_id', None)
-        from seed.models import obj_to_dict
         org = Organization.objects.get(pk=org_id)
         datasets = []
         for d in ImportRecord.objects.filter(super_organization=org):
@@ -208,8 +208,6 @@ class DatasetViewSet(viewsets.ViewSet):
             return JsonResponse({'status': 'error', 'message': 'Bad (non-numeric) organization_id'})
 
         dataset_id = pk
-
-        from seed.models import obj_to_dict
 
         # check if user has access to the dataset
         d = ImportRecord.objects.filter(

@@ -11,7 +11,7 @@ from api.views import TestReverseViewSet, test_view_with_arg
 from seed.views.datasets import DatasetViewSet
 from seed.views.main import DataFileViewSet
 from seed.views.organizations import OrganizationViewSet
-from seed.views.projects import ProjectsViewSet
+from seed.views.projects import ProjectViewSet
 from seed.views.users import UserViewSet
 
 
@@ -19,7 +19,7 @@ api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
 api_v2_router.register(r'data_files', DataFileViewSet, base_name="data_files")
-api_v2_router.register(r'projects', ProjectsViewSet, base_name="projects")
+api_v2_router.register(r'projects', ProjectViewSet, base_name="projects")
 api_v2_router.register(r'users', UserViewSet, base_name="users")
 # api_v2_router.register(r'labels', LabelViewSet, base_name="labels")
 api_v2_router.register(r'reverse_test', TestReverseViewSet, base_name="reverse_test")
@@ -27,7 +27,38 @@ api_v2_router.register(r'reverse_test', TestReverseViewSet, base_name="reverse_t
 urlpatterns = [
     # v2 api
     url(r'^', include(api_v2_router.urls)),
-
+    url(
+        r'projects-count/$',
+        ProjectViewSet.as_view({'get': 'count'}),
+        name='projects-count'
+    ),
+    url(
+        r'projects/(?P<pk>\d+)/add/$',
+        ProjectViewSet.as_view({'put': 'add'}),
+        name='projects-add-inventory'
+    ),
+    url(
+        r'projects/(?P<pk>\d+)/remove/$',
+        ProjectViewSet.as_view({'put': 'remove'}),
+        name='projects-remove-inventory'
+    ),
+    url(
+        r'projects/(?P<pk>\d+)/update/$',
+        ProjectViewSet.as_view({'put': 'update_details'}),
+        name='projects-update'
+    ),
+    url(
+        r'projects/(?P<pk>\d+)/move/$',
+        ProjectViewSet.as_view({'put': 'transfer'}),
+        {'action': 'move'},
+        name='projects-move'
+    ),
+    url(
+        r'projects/(?P<pk>\d+)/copy/$',
+        ProjectViewSet.as_view({'put': 'transfer'}),
+        {'action': 'copy'},
+        name='projects-copy'
+    ),
     url(
         r'^test_view_with_arg/([0-9]{1})/$',
         test_view_with_arg,

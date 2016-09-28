@@ -44,18 +44,23 @@ from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
+    get_ancestors,  # TO REMOVE
     get_column_mapping,
     save_snapshot_match,
+    unmatch_snapshot_tree as unmatch_snapshot,
+    obj_to_dict
+)
+from seed.models import (
     BuildingSnapshot,
+    CanonicalBuilding,
     Column,
     ProjectBuilding,
-    get_ancestors,  # TO REMOVE
-    unmatch_snapshot_tree as unmatch_snapshot,
-    CanonicalBuilding,
+    PropertyState
+)
+from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
-    GREEN_BUTTON_BS,
-    PropertyState,
+    GREEN_BUTTON_BS
 )
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.buildings import (
@@ -1554,7 +1559,6 @@ def get_import_file(request):
             }
         }
     """
-    from seed.models import obj_to_dict
 
     import_file_id = request.GET.get('import_file_id', '')
     orgs = request.user.orgs.all()
