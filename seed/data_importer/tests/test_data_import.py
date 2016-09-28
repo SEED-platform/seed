@@ -171,6 +171,7 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
 
 
 class TestMappingExampleData(DataMappingBaseTestCase):
+
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -254,6 +255,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
 
 class TestPromotingProperties(DataMappingBaseTestCase):
+
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -343,13 +345,10 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         # call the mapping function from the tasks file
         map_data(self.import_file.id)
 
-
-
         # TODO: figure out why this isn't working here
         # self.assertRaises(tasks.DuplicateDataError, tasks.handle_id_matches,
         #                   new_snapshot, duplicate_import_file,
         #                   self.user.pk)
-
 
         # @skip("Fix for new data model")
         # class TestOldMatching(TestCase):
