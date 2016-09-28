@@ -18,8 +18,10 @@ from .models import (
     ColumnMapping,
     Property,
     PropertyState,
+    PropertyView,
     TaxLot,
     TaxLotState,
+    TaxLotView,
 )
 from .utils.mapping import get_mappable_types
 from .utils import search as search_utils
@@ -725,11 +727,13 @@ def get_inventory_fieldnames(inventory_type):
             'jurisdiction_property_identifier'
         ],
         'taxlot': ['jurisdiction_taxlot_id', 'address'],
+        'property_view': ['property_id', 'cycle_id', 'state_id'],
+        'taxlot_view': ['taxlot_id', 'cycle_id', 'state_id'],
     }[inventory_type]
 
 
 def search_inventory(inventory_type, q, fieldnames=None, queryset=None):
-    """returns a queryset for matching Taxlots/Properties
+    """returns a queryset for matching Taxlot(View)s/Property(Views)s
     :param str or unicode q: search string
     :param list fieldnames: list of  model fieldnames
     :param queryset: optional queryset to filter from, defaults to
@@ -760,6 +764,11 @@ def create_inventory_queryset(inventory_type, orgs, exclude, order_by, other_org
     :param order_by: django query order_by str.
     :param other_orgs: list of other orgs to ``or`` the query
     """
+    # return immediately if no inventory type
+    # i.e. when called by get_serializer in labelviewset
+    # as there should be no inventory
+    if not inventory_type:
+        return []
     Model = {'property': Property, 'taxlot': TaxLot}[inventory_type]
     distinct_order_by = order_by.lstrip('-')
 

@@ -60,11 +60,7 @@ class TestLabelsViewSet(TestCase):
         response = client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], organization.labels.count())
-
-        results = response.data['results']
-
-        self.assertEqual(len(results), organization.labels.count())
+        self.assertEqual(len(response.data), organization.labels.count())
 
     def test_organization_query_param_is_used(self):
         """
@@ -103,12 +99,7 @@ class TestLabelsViewSet(TestCase):
 
         self.assertEqual(response_a.status_code, status.HTTP_200_OK)
         self.assertEqual(response_b.status_code, status.HTTP_200_OK)
-
-        results_a = set(result['organization_id'] for result in response_a.data['results'])
-        results_b = set(result['organization_id'] for result in response_b.data['results'])
-
-        assert results_a == {organization_a.pk}
-        assert results_b == {organization_b.pk}
+        assert response_a.data != response_b.data
 
 
 class TestUpdateInventoryLabelsAPIView(TestCase):
@@ -206,11 +197,11 @@ class TestUpdateInventoryLabelsAPIView(TestCase):
             password=self.user_details['password']
         )
         url = reverse('labels:property_labels')
+        url += '?organization_id={}'.format(self.org.id)
         post_params = {
             'add_label_ids': [self.status_label.id],
             'remove_label_ids': [],
             'inventory_ids': [1, 2, 3],
-            'organization_id': self.org.id
         }
         response = client.put(
             url, post_params, format='json'
@@ -230,7 +221,6 @@ class TestUpdateInventoryLabelsAPIView(TestCase):
             'add_label_ids': [],
             'remove_label_ids': [self.status_label.id],
             'inventory_ids': [1, 2, 3],
-            'organization_id': self.org.id
         }
         response = client.put(
             url, post_params, format='json'

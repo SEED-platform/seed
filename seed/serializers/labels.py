@@ -28,7 +28,7 @@ class LabelSerializer(serializers.ModelSerializer):
 
         """
         super_organization = kwargs.pop('super_organization')
-        self.inventory = kwargs.pop('inventory')
+        self.inventory = kwargs.pop('inventory', None)
         super(LabelSerializer, self).__init__(*args, **kwargs)
         if getattr(self, 'initial_data', None):
             self.initial_data['super_organization'] = super_organization.pk
@@ -48,6 +48,9 @@ class LabelSerializer(serializers.ModelSerializer):
         model = Label
 
     def get_is_applied(self, obj):
-        return self.inventory.filter(
-            labels=obj,
-        ).values_list('id', flat=True)
+        result = False
+        if self.inventory:
+            result = self.inventory.filter(
+                labels=obj,
+            ).exists()
+        return result
