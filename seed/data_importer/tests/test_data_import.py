@@ -173,6 +173,7 @@ class TestMapping(DataMappingBaseTestCase):
 
 
 class TestMatching(DataMappingBaseTestCase):
+
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -231,6 +232,7 @@ class TestMatching(DataMappingBaseTestCase):
 
 
 class TestPromotingProperties(DataMappingBaseTestCase):
+
     def setUp(self):
         filename = 'propertystates-one-cycle.csv'
         import_file_source_type = ASSESSED_RAW,
