@@ -217,6 +217,9 @@ angular.module('BE.seed.controller.menu', [])
           templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
           controller: 'data_upload_modal_controller',
           resolve: {
+            cycles: ['cycle_service', function (cycle_service) {
+              return cycle_service.get_cycles();
+            }],
             step: function () {
               return 1;
             },

@@ -38,11 +38,11 @@
                             <form class="row action edit_file_name form form-inline edit_import_meta_form"
                                           role="form" action="" method="PUT" ng-submit=""
                                           sd-enter="save_dataset_name(d)" ng-show="d.edit_form_showing">
-                                <div class="form-group col-sm-6">
+                                <div class="form-group col-sm-8">
                                     <label class="sr-only" for="editDatasetName">Edit Name</label>
-                                    <input class="form-control input-sm" id="editDatasetName" type="text" name="name" ng-model="d.name" />
+                                    <input class="form-control input-sm" id="editDatasetName" type="text" name="name" ng-model="d.name" style="width: 100%;">
                                 </div>
-                                <div class="form-group col-sm-5">
+                                <div class="form-group col-sm-4" style="text-align: right;">
                                     <button type="submit" class="cancel_button btn btn-sm" ng-click="cancel_edit_name(d)" value="Cancel">Cancel</button>
                                     <button type="submit" class="submit_button btn btn-sm btn-primary"  ng-click="save_dataset_name(d)"  value="Save">Save</button>
                                 </div>

@@ -1,8 +1,8 @@
 <div class="modal-header" ng-switch on="step.number">
     <h4 class="modal-title" ng-switch-when="1">Create a New Data Set.</h4>
-    <h4 class="modal-title" ng-switch-when="2">Uploading your data.</h4>
+    <h4 class="modal-title" ng-switch-when="2">Upload your data.</h4>
     <h4 class="modal-title" ng-switch-when="3">Successful upload!</h4>
-    <h4 class="modal-title" ng-switch-when="4">Uploading your energy data.</h4>
+    <h4 class="modal-title" ng-switch-when="4">Upload your energy data.</h4>
     <h4 class="modal-title" ng-switch-when="5">Successful upload!</h4>
     <h4 class="modal-title" ng-switch-when="6">What type of file would you like to upload?</h4>
     <h4 class="modal-title" ng-switch-when="7">Finding building matches.</h4>
@@ -34,49 +34,32 @@
             <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported.
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload a Spreadsheet" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
-        </div>
-        <div class="row">
             <div class="col-sm-10 col-sm-offset-1" ng-hide="uploader.in_progress">
                 <div class="row">
-                    <label class="col-sm-3 col-sm-offset-1 control-label" for="spreadsheet-cycle" style="margin-top: 5px;">Time Period:</label>
+                    <label class="col-sm-3 col-sm-offset-1 control-label" for="selected-cycle" style="margin-top: 5px;">Time Period:</label>
                     <div class="col-sm-7">
-                        <select id="spreadsheet-cycle" name="spreadsheet-cycle" class="form-control input-sm" ng-model="selectedSpreadsheetCycle" ng-options="cycle.name for cycle in cycles track by cycle.id"></select>
+                        <select id="selected-cycle" name="selected-cycle" class="form-control input-sm" ng-model="selectedCycle" ng-options="cycle.name for cycle in cycles track by cycle.id"></select>
                     </div>
                 </div>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Upload Portfolio Manager Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" style="padding-top: 20px;"></div>
+            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload a Spreadsheet" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle" style="padding-top: 20px;"></div>
         </div>
         <div class="row">
-            <div class="col-sm-10 col-sm-offset-1" ng-hide="uploader.in_progress">
+            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Upload Portfolio Manager Data" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle && !useField" ng-hide="uploader.in_progress"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-9 col-sm-offset-2" ng-hide="uploader.in_progress">
                 <div class="row">
-                    <input type="radio" id="time-period-option" name="pm-cycle-option" class="col-xs-1" style="margin-top: 6px;" ng-model="pmCycleOption" value="cycle">
-                    <label class="col-sm-3 control-label" for="time-period-option" style="margin-top: 5px;">Time Period:</label>
-                    <div class="col-sm-7">
-                        <select id="pm-cycle" name="pm-cycle" class="form-control input-sm" ng-model="selectedPMCycle" ng-options="cycle.name for cycle in cycles track by cycle.id"></select>
-                    </div>
-                </div>
-                <div class="row">
-                    <input type="radio" id="use-field-option" name="pm-cycle-option" class="col-xs-1" style="margin-top: 6px;" ng-model="pmCycleOption" value="field">
-                    <label class="col-sm-3 control-label" for="use-field-option" style="margin-top: 5px;">Use Field:</label>
-                    <span class="col-sm-8" style="margin-top: 5px;">Year Ending</span>
+                    <span class="col-xs-1"><input type="checkbox" id="use-field-option" name="pm-cycle-option" ng-model="useField" ng-init="useField = true" value="field"></span>
+                    <label class="col-sm-7 control-label" for="use-field-option">Determine Time Period from Field:</label>
+                    <span class="col-sm-4">Year Ending</span>
                 </div>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2 green_button" sd-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Green Button Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" style="padding-top: 20px;">Upload Green Button Data</div>
-        </div>
-        <div class="row">
-            <div class="col-sm-10 col-sm-offset-1" ng-hide="uploader.in_progress">
-                <div class="row">
-                    <label class="col-sm-3 col-sm-offset-1 control-label" for="spreadsheet-cycle" style="margin-top: 5px;">Time Period:</label>
-                    <div class="col-sm-7">
-                        <select id="spreadsheet-cycle" name="spreadsheet-cycle" class="form-control input-sm" ng-model="selectedSpreadsheetCycle" ng-options="cycle.name for cycle in cycles track by cycle.id"></select>
-                    </div>
-                </div>
-            </div>
+            <div class="col-sm-8 col-sm-offset-2 green_button" sd-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Green Button Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle" style="padding-top: 10px;">Upload Green Button Data</div>
         </div>
         <div class="progress_bar_container" ng-show="uploader.in_progress">
             <div class="progress_bar_copy_top">Uploading <strong>{$ dataset.filename $}</strong></div>

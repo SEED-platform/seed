@@ -174,11 +174,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           // Assessed Data
           if (current_step === 2) {
             var is_green_button = (file.source_type === 'Green Button Raw');
-            save_raw_assessed_data(file.file_id, is_green_button);
+            save_raw_assessed_data(file.file_id, file.cycle_id, is_green_button);
           }
           // Portfolio Data
           if (current_step === 4) {
-            save_map_match_PM_data(file.file_id);
+            save_map_match_PM_data(file.file_id, file.cycle_id);
           }
 
         }
@@ -199,10 +199,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *
        * @param {string} file_id: the id of the import file
        */
-      var save_map_match_PM_data = function (file_id) {
+      var save_map_match_PM_data = function (file_id, cycle_id) {
         $scope.uploader.status_message = 'saving energy data';
         $scope.uploader.progress = 25;
-        uploader_service.save_raw_data(file_id)
+        uploader_service.save_raw_data(file_id, cycle_id)
           .then(function (data) {
             // resolve save_raw_data promise
             monitor_save_raw_data(data.progress_key, file_id);
@@ -268,10 +268,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *
        * @param {string} file_id: the id of the import file
        */
-      var save_raw_assessed_data = function (file_id, is_green_button) {
+      var save_raw_assessed_data = function (file_id, cycle_id, is_green_button) {
         $scope.uploader.status_message = 'saving data';
         $scope.uploader.progress = 45;
-        uploader_service.save_raw_data(file_id)
+        uploader_service.save_raw_data(file_id, cycle_id)
           .then(function (data) {
             uploader_service.check_progress_loop(data.progress_key, 45, 0.55, function (data) {
               $scope.uploader.status_message = 'saving complete';
@@ -361,8 +361,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $scope.step = {
           number: step
         };
-
-        $scope.pmCycleOption = 'field';
 
         // goto matching progress
         if ($scope.step.number === 7) {
