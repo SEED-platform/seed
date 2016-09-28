@@ -24,7 +24,9 @@ from seed.models import (
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
     ASSESSED_BS,
+    TaxLotProperty,
 )
+
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.utils.time import convert_datestr
@@ -208,10 +210,10 @@ class PropertyState(models.Model):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-            }
+                }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-            }
+                }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk
@@ -241,8 +243,8 @@ class PropertyState(models.Model):
 
 
 class PropertyView(models.Model):
-    """Similar to the old world of canonical building"""
-    # different property views can be associated with each other (2012, 2013.
+    """Similar to the old world of canonical building."""
+    # different property views can be associated with each other (2012, 2013)
     property = models.ForeignKey(Property, related_name='views')
     cycle = models.ForeignKey(Cycle)
     state = models.ForeignKey(PropertyState)
@@ -300,6 +302,17 @@ class PropertyView(models.Model):
                 record_type=AUDIT_IMPORT,
                 import_filename=import_filename
             )
+
+    def tax_lots(self):
+        """
+        Return a list of tax lot objects that are associated with this object
+
+        :return: list of tax lot views
+        """
+
+        return list(
+            TaxLotProperty.objects.filter(cycle=self.cycle, property_view=self).select_related(
+                'taxlot_view'))
 
     @property_decorator
     def import_filename(self):

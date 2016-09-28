@@ -6,6 +6,8 @@
 """
 from __future__ import unicode_literals
 
+import logging
+
 from django.db import models
 from django_pgjson.fields import JsonField
 
@@ -17,8 +19,12 @@ from seed.models import (
     Cycle,
     StatusLabel,
     DATA_STATE,
-    DATA_STATE_UNKNOWN
+    DATA_STATE_UNKNOWN,
+    DATA_STATE_MATCHING,
+    ASSESSED_BS,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class TaxLot(models.Model):
@@ -62,27 +68,51 @@ class TaxLotState(models.Model):
 
     def promote(self, cycle):
         """
+            Promote the TaxLotState to the view table for the given cycle
 
-        Args:
-            cycle:
+            Args:
+                cycle: Cycle to assign the view
 
-        Returns:
+            Returns:
+                The resulting TaxLotView (note that it is not returning the
+                TaxLotState)
 
         """
-        return None
+        # First check if the cycle and the PropertyState already have a view
+        tlvs = TaxLotView.objects.filter(cycle=cycle, state=self)
 
-        # tls, _ = TaxLotState.objects.get_or_create(
-        #     jurisdiction_tax_lot_id=tax_lot_id
-        # )
-        #
-        # logger.debug("the cycle is {}".format(cycle))
-        # logger.debug("the taxlotstate is {}".format(tls))
-        # tlv, _ = TaxLotView.objects.get_or_create(
-        #     state=tls,
-        #     cycle=cycle,
-        # ).first()
-        #
-        # logger.debug("taxlotview is {}".format(tlv))
+        if len(tlvs) == 0:
+            logger.debug("Found 0 TaxLotViews, adding TaxLot, promoting")
+            # There are no PropertyViews for this property state and cycle.
+            # Most likely there is nothing to match right now, so just
+            # promote it to the view
+
+            # Need to create a property for this state
+            if self.organization is None:
+                print "organization is None"  # TODO: raise an exception
+
+            taxlot = TaxLot.objects.create(
+                organization=self.organization
+            )
+
+            tlv = TaxLotView.objects.create(taxlot=taxlot, cycle=cycle, state=self)
+
+            # Also set the data state on the promoted state to DATA_STATE_MATCHING
+            self.data_state = DATA_STATE_MATCHING
+            self.source_type = ASSESSED_BS
+            self.save()
+
+            return tlv
+        elif len(tlvs) == 1:
+            logger.debug("Found 1 PropertyView... Nothing to do")
+            # PropertyView already exists for cycle and state. Nothing to do.
+
+            return tlvs[0]
+        else:
+            logger.debug("Found %s PropertyView" % len(tlvs))
+            logger.debug("This should never occur, famous last words?")
+
+            return None
 
 
 class TaxLotView(models.Model):
