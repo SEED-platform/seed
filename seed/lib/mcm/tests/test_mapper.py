@@ -412,3 +412,46 @@ class TestMapper(TestCase):
         sale_expected = u'01/23/2012'
         self.assertEqual(modified_model.address1, st_expected)
         self.assertEqual(modified_model.sale_date, sale_expected)
+
+    def test_expand_field(self):
+        r = mapper.expand_field(10000)
+        self.assertEqual(r, [10000])
+        r = mapper.expand_field('1,2,3')
+        self.assertEqual(r, ['1', '2', '3'])
+        r = mapper.expand_field("123,15543;32132:321321;1231;")
+        self.assertEqual(r, ['123', '15543', '32132', '321321', '1231', ''])
+        r = mapper.expand_field("123,15543;32132:321321;1231;987")
+        self.assertEqual(r, ['123', '15543', '32132', '321321', '1231', '987'])
+        r = mapper.expand_field(u"123,15543;32132:321321;1231;987")
+        self.assertEqual(r, ['123', '15543', '32132', '321321', '1231', '987'])
+        r = mapper.expand_field(u"4815162342")
+        self.assertEqual(r, ['4815162342'])
+
+    def test_expand_rows(self):
+        data = {
+            u'city': u'Meereen',
+            u'country': u'Westeros',
+            u'jurisdiction_tax_lot_id': 1552813
+        }
+
+        r = mapper.expand_rows(data, 'jurisdiction_tax_lot_id')
+        self.assertEqual(r, [data])
+
+        data = {
+            u'city': u'Meereen',
+            u'country': u'Westeros',
+            u'jurisdiction_tax_lot_id': "1,2,3,4,5"
+        }
+        expected_0 = {
+            u'city': u'Meereen',
+            u'country': u'Westeros',
+            u'jurisdiction_tax_lot_id': "1"
+        }
+
+        r = mapper.expand_rows(data, 'jurisdiction_tax_lot_id')
+        self.assertEqual(len(r), 5)
+        self.assertEqual(r[0], expected_0)
+        self.assertEqual(r[2]['jurisdiction_tax_lot_id'], '3')
+        self.assertEqual(r[4]['jurisdiction_tax_lot_id'], '5')
+
+

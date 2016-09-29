@@ -62,7 +62,7 @@ class TestCaseB(DataMappingBaseTestCase):
             organization=self.org,
             import_file=self.import_file,
         )
-        self.assertEqual(len(ts), 6)  # there are only 6 unique tax lots in the test file
+        self.assertEqual(len(ts), 10)  # there are only 10 unique tax lots in the test file once splitting on delimiters # noqa
 
         # tasks.match_buildings(self.import_file.id, self.user.id)
         # tasks.pair_buildings(self.import_file.id, self.user.id)
