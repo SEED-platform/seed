@@ -18,6 +18,7 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Cycle,
     StatusLabel,
+    TaxLotProperty,
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
@@ -114,9 +115,20 @@ class TaxLotState(models.Model):
 
             return None
 
+    def save(self, *args, **kwargs):
+        # first check if the jurisdiction_tax_lot_id isn't already in the database for the
+        # organization - potential todo--move this to a unique constraint of the db.
+        # TODO: Decide if we should allow the user to define what the unique ID is for the taxlot
+        if TaxLotState.objects.filter(jurisdiction_tax_lot_id=self.jurisdiction_tax_lot_id,
+                                      organization=self.organization).exists():
+            logger.error("TaxLotState already exists for the same jurisdiction_tax_lot_id and org")
+            return False
+
+        return super(TaxLotState, self).save(*args, **kwargs)
+
 
 class TaxLotView(models.Model):
-    # TODO: Are all foreignkeys automatically indexed?
+    # TODO: Are all foreign keys automatically indexed?
     taxlot = models.ForeignKey(TaxLot, related_name='views', null=True)
     state = models.ForeignKey(TaxLotState)
     cycle = models.ForeignKey(Cycle)
@@ -174,6 +186,38 @@ class TaxLotView(models.Model):
                 record_type=AUDIT_IMPORT,
                 import_filename=import_filename
             )
+
+    def property_views(self):
+        """
+        Return a list of PropertyViews that are associated with this TaxLotView and Cycle
+
+        :return: list of PropertyViews
+        """
+
+        # forwent the use of list comprehension to make the code more readable.
+        # get the related property_view__state as well to save time, if needed.
+        result = []
+        for tlp in TaxLotProperty.objects.filter(
+                cycle=self.cycle,
+                taxlot_view=self).select_related('property_view', 'property_view__state'):
+            if tlp.taxlot_view:
+                result.append(tlp.property_view)
+
+        return result
+
+    def property_states(self):
+        """
+        Return a list of PropertyStates associated with this TaxLotView and Cycle
+
+        :return: list of PropertyStates
+        """
+        # forwent the use of list comprehension to make the code more readable.
+        result = []
+        for x in self.property_views():
+            if x.state:
+                result.append(x.state)
+
+        return result
 
     @property
     def import_filename(self):
