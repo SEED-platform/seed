@@ -124,7 +124,7 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
 
             # TODO: there are a lot of warnings right now because we iterate over the header
             # of the file instead of iterating over the fields that we want to map.
-                
+
             # else:
                 # _log.warn("Could not find the field to clean: %s" % raw_field)
 
@@ -241,6 +241,9 @@ def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, conca
     # concat = _set_default_concat_config(concat)
 
     # In case we need to look up cleaner by dynamic field mapping.
+    # TODO: we should flip this around and iterate over the mappings because there is a lot
+    # of extra work being done (sometimes) when the columns are being split across two
+    # different data base objects (i.e. taxlotstate and propertystate)
     for raw_field, value in row.items():
         # Look through any of our concatenation configs to see if this row
         # needs to be set aside for merging with others at the end of the map.
