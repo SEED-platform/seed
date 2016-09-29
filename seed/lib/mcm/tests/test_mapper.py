@@ -453,5 +453,3 @@ class TestMapper(TestCase):
         self.assertEqual(r[0], expected_0)
         self.assertEqual(r[2]['jurisdiction_tax_lot_id'], '3')
         self.assertEqual(r[4]['jurisdiction_tax_lot_id'], '5')
-
-

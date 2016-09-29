@@ -71,7 +71,7 @@ class TestCaseA(DataMappingBaseTestCase):
             organization=self.org,
             import_file=self.import_file,
         )
-        self.assertEqual(len(ts), 10) # 10 unique taxlots after duplicates and delimeters
+        self.assertEqual(len(ts), 10)  # 10 unique taxlots after duplicates and delimeters
 
         # Check a single case of the taxlotstate
         ts = TaxLotState.objects.filter(jurisdiction_tax_lot_id='1552813').first()
