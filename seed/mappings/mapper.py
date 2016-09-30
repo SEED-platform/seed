@@ -8,6 +8,7 @@ from collections import defaultdict
 
 from seed.mappings import seed_mappings
 from seed import models
+import pdb
 
 
 def save_variant(snapshot, attr, attribute_values):
@@ -97,19 +98,20 @@ def merge_extra_data(b1, b2, default=None):
     return extra_data, extra_data_sources
 
 
-def merge_building(snapshot, b1, b2, can_attrs, conf, default=None, match_type=None):
+def merge_propertystate(merged_state, ps1, ps2, can_attrs, conf, default=None, match_type=None):
     """Set attributes on our Canonical model, saving differences.
 
-    :param snapshot: BuildingSnapshot model inst.
-    :param b1: BuildingSnapshot model inst. Left parent.
-    :param b2: BuildingSnapshot model inst. Right parent.
+    :param merged_state: BuildingSnapshot model inst.
+    :param ps1: BuildingSnapshot model inst. Left parent.
+    :param ps2: BuildingSnapshot model inst. Right parent.
     :param can_attrs: dict of dicts, {'attr_name': {'dataset1': 'value'...}}.
     :param default: (optional), which dataset's value to default to.
     :rtype default: BuildingSnapshot
-    :return: inst(``snapshot``), updated.
+    :return: inst(``merged_state``), updated.
 
     """
-    default = default or b1
+
+    default = default or ps1
     match_type = match_type or models.SYSTEM_MATCH
     changes = []
     for attr in can_attrs:
@@ -124,52 +126,114 @@ def merge_building(snapshot, b1, b2, can_attrs, conf, default=None, match_type=N
             # If we have more than one value for this field,
             # save each of the field options in the DB,
             # but opt for the default when there is a difference.
-            save_variant(snapshot, attr, can_attrs[attr])
-            attr_source = default
+
+            # WTF is this?
+            # save_variant(merged_state, attr, can_attrs[attr])
+            # attr_source = default
             attr_value = can_attrs[attr][default]
 
-            if attr_values[0] != attr_values[1]:
-                changes.append({"field": attr, "from": attr_values[0], "to": attr_values[1]})
+            # if attr_values[0] != attr_values[1]:
+            #     changes.append({"field": attr, "from": attr_values[0], "to": attr_values[1]})
 
         # No values are set
         elif len(attr_values) < 1:
             attr_value = None
-            attr_source = None
+            # attr_source = None
 
         # There is only one value set.
         else:
             attr_value = attr_values.pop()
             # Get the correct key from the sub dictionary to indicate
             # the source of a field value.
-            attr_source = get_attr_source(can_attrs[attr], attr_value)
+            # attr_source = get_attr_source(can_attrs[attr], attr_value)
 
         if callable(attr):
             # This callable will be responsible for setting
             # the attribute value, not just returning it.
-            attr(snapshot, default)
+            attr(merged_state, default)
         else:
-            setattr(snapshot, attr, attr_value)
-            setattr(snapshot, '{0}_source'.format(attr), attr_source)
+            setattr(merged_state, attr, attr_value)
+            #setattr(merged_state, '{0}_source'.format(attr), attr_source)
 
-    snapshot.extra_data, snapshot.extra_data_sources = merge_extra_data(
-        b1, b2, default=default
-    )
-    snapshot.match_type = match_type
-    snapshot.source_type = models.COMPOSITE_BS
-    canonical_building = models.get_or_create_canonical(b1, b2)
-    snapshot.canonical_building = canonical_building
-    snapshot.confidence = conf
-    snapshot.save()
+    # TODO - deprecate extra_data_sources
+    # pdb.set_trace()
+    merged_extra_data, merged_extra_data_sources = merge_extra_data(ps1, ps2, default=default)
 
-    canonical_building.canonical_snapshot = snapshot
-    canonical_building.save()
-    b1.children.add(snapshot)
-    b2.children.add(snapshot)
+    merged_state.extra_data = merged_extra_data
 
-    return snapshot, changes
+    return merged_state, changes
 
-# TODO: fix for new data model!
 
+# def merge_building(snapshot, b1, b2, can_attrs, conf, default=None, match_type=None):
+#     """Set attributes on our Canonical model, saving differences.
+
+#     :param snapshot: BuildingSnapshot model inst.
+#     :param b1: BuildingSnapshot model inst. Left parent.
+#     :param b2: BuildingSnapshot model inst. Right parent.
+#     :param can_attrs: dict of dicts, {'attr_name': {'dataset1': 'value'...}}.
+#     :param default: (optional), which dataset's value to default to.
+#     :rtype default: BuildingSnapshot
+#     :return: inst(``snapshot``), updated.
+
+#     """
+#     default = default or b1
+#     match_type = match_type or models.SYSTEM_MATCH
+#     changes = []
+#     for attr in can_attrs:
+#         # Do we have any differences between these fields?
+#         attr_values = list(set([
+#             value for value in can_attrs[attr].values() if value
+#         ]))
+
+#         attr_value = None
+#         # Two, differing values are set.
+#         if len(attr_values) > 1:
+#             # If we have more than one value for this field,
+#             # save each of the field options in the DB,
+#             # but opt for the default when there is a difference.
+#             save_variant(snapshot, attr, can_attrs[attr])
+#             attr_source = default
+#             attr_value = can_attrs[attr][default]
+
+#             if attr_values[0] != attr_values[1]:
+#                 changes.append({"field": attr, "from": attr_values[0], "to": attr_values[1]})
+
+#         # No values are set
+#         elif len(attr_values) < 1:
+#             attr_value = None
+#             attr_source = None
+
+#         # There is only one value set.
+#         else:
+#             attr_value = attr_values.pop()
+#             # Get the correct key from the sub dictionary to indicate
+#             # the source of a field value.
+#             attr_source = get_attr_source(can_attrs[attr], attr_value)
+
+#         if callable(attr):
+#             # This callable will be responsible for setting
+#             # the attribute value, not just returning it.
+#             attr(snapshot, default)
+#         else:
+#             setattr(snapshot, attr, attr_value)
+#             setattr(snapshot, '{0}_source'.format(attr), attr_source)
+
+#     snapshot.extra_data, snapshot.extra_data_sources = merge_extra_data(
+#         b1, b2, default=default
+#     )
+#     snapshot.match_type = match_type
+#     snapshot.source_type = models.COMPOSITE_BS
+#     canonical_building = models.get_or_create_canonical(b1, b2)
+#     snapshot.canonical_building = canonical_building
+#     snapshot.confidence = conf
+#     snapshot.save()
+
+#     canonical_building.canonical_snapshot = snapshot
+#     canonical_building.save()
+#     b1.children.add(snapshot)
+#     b2.children.add(snapshot)
+
+#     return snapshot, changes
 
 def get_building_attrs(data_set_buildings):
     """Returns a dictionary of attributes from each data_set_building.
@@ -186,6 +250,7 @@ def get_building_attrs(data_set_buildings):
         }
 
     """
+
     can_attrs = defaultdict(dict)
     mapping = seed_mappings.BuildingSnapshot_to_BuildingSnapshot
     for data_set_building in data_set_buildings:
@@ -194,3 +259,7 @@ def get_building_attrs(data_set_buildings):
             can_attrs[can_attr][data_set_building] = data_set_value
 
     return can_attrs
+
+def get_propertystate_attrs(data_set_buildings):
+    # TODO: fix for new data model!
+    return get_building_attrs(data_set_buildings)

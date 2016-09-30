@@ -89,7 +89,7 @@ class Command(BaseCommand):
                 if not cnt:
                     if create:
                         logging_info("Creating missing column {} found in tax lot extra data keys".format(tlk))
-                        col = Column(organization = org, column_name = tlk, is_extra_data=True, extra_data_source=Column.SOURCE_PROPERTY)
+                        col = Column(organization = org, column_name = tlk, is_extra_data=True, extra_data_source=Column.SOURCE_TAXLOT)
                         col.save()
                     else:
                         logging_info("Missing column {} found in tax lot extra data keys.".format(tlk))
@@ -126,7 +126,7 @@ class Command(BaseCommand):
                 if cnt:
                     # Update the column
                     col = qry.first()
-                    logging_info("Setting Column {} to SOURCE_TAXLOT".format(col))
+                    logging_info("Setting Column {} to SOURCE_PROPERTY".format(col))
                     col.extra_data_source = Column.SOURCE_PROPERTY
                     col.save()
                 elif create_missing:

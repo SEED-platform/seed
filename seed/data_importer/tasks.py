@@ -7,8 +7,10 @@
 
 from __future__ import absolute_import
 
+import pdb
 import datetime
 import operator
+import itertools
 import re
 import string
 import time
@@ -25,6 +27,7 @@ from django.db.models import Q
 from streetaddress import StreetAddressFormatter
 
 from seed.audit_logs.models import AuditLog
+from seed.models import Cycle
 from seed.cleansing.models import Cleansing
 from seed.cleansing.tasks import (
     finish_cleansing,
@@ -47,6 +50,7 @@ from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
 from seed.lib.superperms.orgs.models import Organization
+from seed.utils.generic import pp
 from seed.models import (
     ASSESSED_BS,
     ASSESSED_RAW,
@@ -762,72 +766,154 @@ def match_buildings(file_pk, user_pk):
     }
 
 
-def handle_id_matches(unmatched_bs, test_property, import_file, user_pk):
+def handle_id_matches(unmatched_property_states, unmatched_property_state, import_file, user_pk):
     """
     Deals with exact matches in the IDs of buildings.
 
-    :param unmatched_bs:
-    :param test_property:
+    :param unmatched_property_states:
+    :param unmatched_property_state:
     :param import_file:
     :param user_pk:
     :return:
     """
 
-    # TODO: this only works for PropertyStates right now because the unmatched_bs is a QuerySet
+    # TODO: this only works for PropertyStates right now because the unmatched_property_states is a QuerySet
     # of PropertyState of which have the .pm_property_id and .custom_id_1 fields.
+    pdb.set_trace()
     id_matches = query_property_matches(
-        unmatched_bs,
-        test_property.pm_property_id,
-        test_property.custom_id_1
+        unmatched_property_states,
+        unmatched_property_state.pm_property_id,
+        unmatched_property_state.custom_id_1
     )
     if not id_matches.exists():
         return
 
+    # pdb.set_trace()
     # Check to see if there are any duplicates here
-    for match in id_matches:
-        if is_same_snapshot(unmatched_bs, match):
+    # for match in id_matches:
+    #     if is_same_snapshot(unmatched_property_states, match):
+    #         raise DuplicateDataError(match.pk)
+
+
+
+
+    # Reading the code, this appears to be the intention of the code.
+
+    # Combinations returns every combination once without regard to
+    # order and does not include self-combinations.
+    # e.g combinations(ABC) = AB, AC, BC
+    for (m1, m2) in itertools.combinations(id_matches, 2):
+        if is_same_snapshot(m1, m2):
             raise DuplicateDataError(match.pk)
 
-    # merge save as system match with high confidence.
+    # pdb.set_trace()
+    # Merge Everything Together
+    merged_result = id_matches[0]
     for match in id_matches:
+# <<<<<<< Updated upstream
+#         # Merge all matches together; updating "unmatched" pointer as we go.
+#         unmatched_bs, changes = save_snapshot_match(
+#             match.pk,
+#             unmatched_bs.pk,
+#             confidence=0.9,
+#             match_type=SYSTEM_MATCH,
+#             # TODO: we should and probably can remove this field, please :D
+#             user=import_file.import_record.owner,
+#             default_pk=unmatched_bs.pk
+#         )
+#         canon = unmatched_bs.canonical_building
+#         canon.canonical_snapshot = unmatched_bs
+#         canon.save()
+#         action_note = 'System matched building ID.'
+#         if changes:
+#             action_note += "  Fields changed in canonical building:\n"
+#             for change in changes:
+#                 action_note += "\t{field}:\t".format(
+#                     field=change["field"].replace("_", " ").replace("-",
+#                                                                     "").capitalize())
+#                 if "from" in change:
+#                     action_note += "From:\t{prev}\tTo:\t".format(
+#                         prev=change["from"])
+
+#                 action_note += "{value}\n".format(value=change["to"])
+#             action_note = action_note[:-1]
+
+#         AuditLog.objects.create(
+#             user_id=user_pk,
+#             content_object=canon,
+#             action_note=action_note,
+#             action='save_system_match',
+#             organization=unmatched_bs.super_organization,
+#         )
+# =======
+        merged_result, changes = save_propertystate_match(merged_result.pk,
+                                                          match.pk,
+                                                          confidence=0.9,
+                                                          match_type=SYSTEM_MATCH,
+                                                          user=import_file.import_record.owner
+                                                          # What does this param do?
+                                                          # default_pk=unmatched_property_states.pk
+                                                          )
+    else:
+        # TODO - coordinate with Nick on how to get the correct cycle,
+        # rather than the most recent one.
+        org = Organization.objects.filter(users=import_file.import_record.owner).first()
+        default_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
+        merged_result.promote(default_cycle)
+
+        # There is a caonical building here, so should we have a view,
+        # or should we create it at the end...?
+
+        # AuditLog.objects.create(
+        #     user_id=user_pk,
+        #     content_object=canon,
+        #     action_note=action_note,
+        #     action='save_system_match',
+        #     organization=unmatched_property_states.super_organization,
+        # )
+
+# >>>>>>> Stashed changes
+
         # Merge all matches together; updating "unmatched" pointer as we go.
-        unmatched_bs, changes = save_snapshot_match(
-            match.pk,
-            unmatched_bs.pk,
-            confidence=0.9,
-            match_type=SYSTEM_MATCH,
-            # TODO: we should and probably can remove this field, please :D
-            user=import_file.import_record.owner,
-            default_pk=unmatched_bs.pk
-        )
-        canon = unmatched_bs.canonical_building
-        canon.canonical_snapshot = unmatched_bs
-        canon.save()
-        action_note = 'System matched building ID.'
-        if changes:
-            action_note += "  Fields changed in canonical building:\n"
-            for change in changes:
-                action_note += "\t{field}:\t".format(
-                    field=change["field"].replace("_", " ").replace("-",
-                                                                    "").capitalize())
-                if "from" in change:
-                    action_note += "From:\t{prev}\tTo:\t".format(
-                        prev=change["from"])
+        # unmatched_property_states, changes = save_snapshot_match(
+        #     match.pk,
+        #     unmatched_property_states.pk,
+        #     confidence=0.9,
+        #     match_type=SYSTEM_MATCH,  # TODO: we should and probably can remove this field, please :D
+        #     user=import_file.import_record.owner,
+        #     default_pk=unmatched_property_states.pk
+        # )
+        # canon = unmatched_property_states.canonical_building
+        # canon.canonical_snapshot = unmatched_property_states
+        # canon.save()
+        # action_note = 'System matched building ID.'
+        # if changes:
+        #     action_note += "  Fields changed in canonical building:\n"
+        #     for change in changes:
+        #         action_note += "\t{field}:\t".format(
+        #             field=change["field"].replace("_", " ").replace("-",
+        #                                                             "").capitalize())
+        #         if "from" in change:
+        #             action_note += "From:\t{prev}\tTo:\t".format(
+        #                 prev=change["from"])
 
-                action_note += "{value}\n".format(value=change["to"])
-            action_note = action_note[:-1]
+        #         action_note += "{value}\n".format(value=change["to"])
+        #     action_note = action_note[:-1]
 
-        AuditLog.objects.create(
-            user_id=user_pk,
-            content_object=canon,
-            action_note=action_note,
-            action='save_system_match',
-            organization=unmatched_bs.super_organization,
-        )
+        # AuditLog.objects.create(
+        #     user_id=user_pk,
+        #     content_object=canon,
+        #     action_note=action_note,
+        #     action='save_system_match',
+        #     organization=unmatched_property_states.super_organization,
+        # )
 
+    # pdb.set_trace()
     # Returns the most recent child of all merging.
-    return unmatched_bs
+    return merged_result
 
+
+# def merge_property_matches(match.
 
 def _finish_matching(import_file, progress_key):
     import_file.matching_done = True
@@ -993,6 +1079,7 @@ def _match_buildings(file_pk, user_pk):
 
     # Return a list of all the properties based on the import file
     unmatched_buildings = import_file.find_unmatched_property_states()
+    unmatched_tax_lots = import_file.find_unmatched_tax_lot_states()
 
     # TODO: need to also return the taxlots
     duplicates = []
@@ -1018,6 +1105,8 @@ def _match_buildings(file_pk, user_pk):
     # Remove any buildings we just did exact ID matches with.
     unmatched_buildings = unmatched_buildings.exclude(
         pk__in=newly_matched_building_pks).values_list(*BS_VALUES_LIST)
+    print "XXX: From {} -> {}".format(before, after)
+
 
     # If we don't find any unmatched buildings, there's nothing left to do.
     if not unmatched_buildings:
@@ -1263,3 +1352,39 @@ def is_same_snapshot(s1, s2):
             return False
 
     return True
+
+
+def save_propertystate_match(ps1_pk, ps2_pk, confidence=None, user=None,
+                             match_type=None, default_pk=None):
+
+    from seed.mappings import mapper as seed_mapper
+    if ps1_pk > ps2_pk:
+        ps1_pk, ps2_pk = ps2_pk, ps1_pk
+
+    if ps1_pk == ps2_pk:
+        ps1 = PropertyState.objects.get(pk=ps1_pk)
+        return ps1, False
+
+    ps1 = PropertyState.objects.get(pk=ps1_pk)
+    ps2 = PropertyState.objects.get(pk=ps2_pk)
+
+    merged_property_state = PropertyState.objects.create()
+    merged_property_state, changes = seed_mapper.merge_propertystate(merged_property_state,
+                                                                     ps1, ps2,
+                                                                     seed_mapper.get_propertystate_attrs([ps1, ps2]),
+                                                                     conf=confidence,
+                                                                     default=ps2,
+                                                                     match_type=SYSTEM_MATCH)
+    # print "merging two properties {}/{}".format(ps1_pk, ps2_pk)
+    # pp(ps1)
+    # pp(ps2)
+    # pp(merged_property_state)
+
+    # Create Audit Log information here.
+    # TODO
+    # merged_property_state.last_modified_by = user
+    # merged_property_state.super_organization = b2.super_organization
+
+    merged_property_state.save()
+
+    return ps1, False
