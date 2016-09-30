@@ -112,20 +112,21 @@ angular.module('BE.seed.controller.inventory_list', [])
       var processData = function () {
         var data = angular.copy($scope.objects);
         var roots = data.length;
-        for (var i = 0, trueIndex = 0; i < roots; ++i) {
+        for (var i = 0, trueIndex = 0; i < roots; ++i, ++trueIndex) {
           data[trueIndex].$$treeLevel = 0;
           var related = data[trueIndex].related;
           var relatedIndex = trueIndex;
           for (var j = 0; j < related.length; ++j) {
             // Rename nested keys
+            var map = {};
             if ($scope.inventory_type == 'properties') {
-              var map = {
+              map = {
                 city: 'tax_city',
                 state: 'tax_state',
                 postal_code: 'tax_postal_code'
               };
             } else if ($scope.inventory_type == 'taxlots') {
-              var map = {
+              map = {
                 address_line_1: 'property_address_line_1',
                 address_line_2: 'property_address_line_2',
                 city: 'property_city',
@@ -134,8 +135,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               };
             }
             var updated = _.reduce(related[j], function (result, value, key) {
-              key = map[key] || key;
-              result[key] = value;
+              result[map[key] || key] = value;
               return result;
             }, {});
 
@@ -143,7 +143,6 @@ angular.module('BE.seed.controller.inventory_list', [])
           }
           // Remove unnecessary data
           delete data[relatedIndex].related;
-          ++trueIndex;
         }
         $scope.data = data;
       };
