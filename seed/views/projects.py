@@ -749,11 +749,10 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
               description: ID of organization to associate new project with
               type: integer
               required: true
-            - name: organization_id
+            - name: inventory_type
               description: type of inventory to add: 'property' or 'taxlot'
-              type: integer
+              type: string
               required: true
-              paramType: query
               paramType: query
             - name: project slug or pk
               description: The project slug identifier or primary key for this project
@@ -761,7 +760,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
               paramType: path
             - name:  selected
               description: ids of property or taxlot views to add
-              type: list
+              type: array[int]
               required: true
         Returns:
             {
@@ -834,11 +833,10 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
               description: ID of organization to associate new project with
               type: integer
               required: true
-            - name: organization_id
+            - name: inventory_type
               description: type of inventory to add: 'property' or 'taxlot'
-              type: integer
+              type: string
               required: true
-              paramType: query
               paramType: query
             - name: project slug or pk
               description: The project slug identifier or primary key for this project
@@ -846,7 +844,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
               paramType: path
             - name:  selected
               description: ids of property or taxlot views to add
-              type: list
+              type: array[int]
               required: true
         Returns:
             {
@@ -859,9 +857,15 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
         inventory_type = request.query_params.get(
             'inventory_type', request.data.get('inventory_type', None)
         )
+        selected = request.data.get('selected', None)
+        missing = []
         if not inventory_type:
+            missing.append('inventory_type')
+        if selected is None:
+            missing.append('selected')
+        if missing:
             error, status_code = self.get_error(
-                'missing param', 'inventory_type'
+                'missing param', ",".join(missing)
             )
         else:
             key = self.get_key(pk)
@@ -873,14 +877,13 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
         if not error:
             project = project[0]
             ViewModel = self.ViewModels[inventory_type]
-            if request.data.get('selected', None):
+            if selected:
                 filter_dict = {
-                    # "{}_view_id__in".format(inventory_type): request.data.get(
                     'id__in': request.data.get(
                         'selected'
                     )
                 }
-            else:
+            elif selected == []:
                 super_organization_id = self.get_organization()
                 filter_dict = {
                     "state__super_organization_id": super_organization_id
@@ -960,7 +963,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
               type: integer
               paramType: query
             - name: inventory_type
-              description: property or taxlot
+              description: type of inventory to add: 'property' or 'taxlot'
               required: true
               type: string
               paramType: query
@@ -985,8 +988,13 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
         error = None
         status_code = status.HTTP_200_OK
         params, missing = self.get_params(
-            ['inventory_type', 'id', 'compliant']
+            ['id', 'compliant']
         )
+        inventory_type = request.query_params.get(
+            'inventory_type', request.data.get('inventory_type', None)
+        )
+        if not inventory_type:
+            missing.append('inventory_type')
         if missing:
             error, status_code = self.get_error(
                 'missing param', key=", ".join(missing)
@@ -997,7 +1005,6 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
                     'misc', key='compliant must be of type bool',
                 )
         if not error:
-            inventory_type = params['inventory_type']
             key = self.get_key(pk)
             project = self.get_project(key, pk)
             if not project:
@@ -1048,7 +1055,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
               type: integer
               paramType: query
             - name: inventory_type
-              description: property or taxlot
+              description: type of inventory to add: 'property' or 'taxlot'
               required: true
               type: string
               paramType: query
@@ -1056,22 +1063,31 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
               description: Whether to move or copy inventory
               required: true
               paramType: path
+              required: true
+            -name: target
+              type: string or int
+              description: target project slug/id  to move/copy to.
+              required: true
             - name: selected
               description: JSON array, list of property/taxlot views to be transferred
-              many: array[int]
+              paramType: array[int]
               required: true
         """
         error = None
         status_code = status.HTTP_200_OK
         params, missing = self.get_params(
-            ['inventory_type', 'selected', 'target']
+            ['selected', 'target']
         )
+        inventory_type = request.query_params.get(
+            'inventory_type', request.data.get('inventory_type', None)
+        )
+        if not inventory_type:
+            missing.append('inventory_type')
         if missing:
             error, status_code = self.get_error(
                 'missing param', key=", ".join(missing)
             )
         else:
-            inventory_type = params['inventory_type']
             key = self.get_key(pk)
             project = self.get_project(key, pk)
             if not project:
@@ -1099,6 +1115,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
             old_project_views = ProjectViewModel.objects.filter(
                 **filter_dict
             )
+
             if action == 'copy':
                 new_project_views = []
                 # set pk to None to create a copy of the django instance
@@ -1122,6 +1139,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
             else:
                 try:
                     old_project_views.update(project=target)
+
                 except IntegrityError:
                     error, status_code = self.get_error(
                         'conflict',

@@ -7,27 +7,18 @@
 from rest_framework import serializers
 
 from seed.models import (
-    Project, ProjectPropertyView, ProjectTaxLotView
+    Project, ProjectPropertyView, ProjectTaxLotView, STATUS_CHOICES
 )
 
-
-# class PropertyLabelsField(serializers.RelatedField):
-
-#     def to_representation(self, value):
-#         return value.id
-
-
-# class PropertySerializer(serializers.ModelSerializer):
-#     # list of status labels (rather than the join field)
-#     labels = PropertyLabelsField(read_only=True, many=True)
-
-#     class Meta:
-#         model = Property
+STATUS_LOOKUP = {
+    choice[0]: unicode(choice[1]).lower() for choice in STATUS_CHOICES
+}
 
 
 class ProjectSerializer(serializers.ModelSerializer):
 
     last_modified_by = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
     is_compliance = serializers.SerializerMethodField()
     compliance_type = serializers.SerializerMethodField()
     deadline_date = serializers.SerializerMethodField()
@@ -36,8 +27,8 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = (
-            'id', 'name', 'slug', 'modified', 'last_modified_by',# was last_modified
-            'description', 'is_compliance',  # sic
+            'id', 'name', 'slug', 'modified', 'last_modified_by',
+            'description', 'status', 'is_compliance',
             'compliance_type', 'deadline_date', 'end_date',
             'property_count', 'taxlot_count'
         )
@@ -69,6 +60,9 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def get_is_compliance(self, obj):
         return self.get_compliance(obj) is not None
+
+    def get_status(self, obj):
+        return STATUS_LOOKUP[obj.status]
 
 
 class ProjectPropertyViewSerializer(serializers.ModelSerializer):

@@ -33,28 +33,28 @@ urlpatterns = [
         name='projects-count'
     ),
     url(
-        r'projects/(?P<pk>\d+)/add/$',
+        r'projects/(?P<pk>\w+)/add/$',
         ProjectViewSet.as_view({'put': 'add'}),
         name='projects-add-inventory'
     ),
     url(
-        r'projects/(?P<pk>\d+)/remove/$',
+        r'projects/(?P<pk>\w+)/remove/$',
         ProjectViewSet.as_view({'put': 'remove'}),
         name='projects-remove-inventory'
     ),
     url(
-        r'projects/(?P<pk>\d+)/update/$',
+        r'projects/(?P<pk>\w+)/update/$',
         ProjectViewSet.as_view({'put': 'update_details'}),
         name='projects-update'
     ),
     url(
-        r'projects/(?P<pk>\d+)/move/$',
+        r'projects/(?P<pk>\w+)/move/$',
         ProjectViewSet.as_view({'put': 'transfer'}),
         {'action': 'move'},
         name='projects-move'
     ),
     url(
-        r'projects/(?P<pk>\d+)/copy/$',
+        r'projects/(?P<pk>\w+)/copy/$',
         ProjectViewSet.as_view({'put': 'transfer'}),
         {'action': 'copy'},
         name='projects-copy'
