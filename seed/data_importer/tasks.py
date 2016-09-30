@@ -245,13 +245,15 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
             # Assign some other arguments here
             map_model_obj.import_file = import_file
             map_model_obj.source_type = save_type
-            map_model_obj.data_state = DATA_STATE_MAPPING
-            map_model_obj.super_organization = import_file.import_record.super_organization
+            if hasattr(map_model_obj, 'data_state'):
+                map_model_obj.data_state = DATA_STATE_MAPPING
+            if hasattr(map_model_obj, 'organization'):
+                map_model_obj.organization = import_file.import_record.super_organization
             if hasattr(map_model_obj, 'clean'):
                 map_model_obj.clean()
 
             # --- BEGIN TEMP HACK ----
-            # TODO: fix these in the cleaner but for now, get things to work, yuck.
+            # TODO: fix these in the cleaner, but for now just get things to work, yuck.
             # It appears that the cleaner pulls from some schema somewhere that defines the
             # data types... stay tuned.
             if hasattr(map_model_obj, 'recent_sale_date') and map_model_obj.recent_sale_date == '':
@@ -291,6 +293,7 @@ def _map_data(file_pk, *args, **kwargs):
     import_file = ImportFile.objects.get(pk=file_pk)
     # Don't perform this task if it's already been completed.
     if import_file.mapping_done:
+        logger.debug("_map_data mapping_done is true")
         result = {
             'status': 'warning',
             'progress': 100,
@@ -303,6 +306,7 @@ def _map_data(file_pk, *args, **kwargs):
     # If we haven't finished saving, we shouldn't proceed with mapping
     # Re-queue this task.
     if not import_file.raw_save_done:
+        logger.debug("_map_data raw_save_done is false, queueing the task until raw_save finishes")
         map_data.apply_async(args=[file_pk], countdown=60, expires=120)
         return {
             'status': 'error',
@@ -415,8 +419,8 @@ def map_data(file_pk, *args, **kwargs):
 def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
     """Save the raw data to the database."""
     import_file = ImportFile.objects.get(pk=file_pk)
-    # Save our "column headers" and sample rows for F/E.
 
+    # Save our "column headers" and sample rows for F/E.
     source_type = get_source_type(import_file)
     for c in chunk:
         raw_property = PropertyState()
@@ -428,8 +432,9 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
         # We require a save to get our PK
         # We save here to set our initial source PKs.
         raw_property.save()
+
         super_org = import_file.import_record.super_organization
-        raw_property.super_organization = super_org
+        raw_property.organization = super_org
 
         # set_initial_sources(raw_property)
         raw_property.save()
@@ -1172,7 +1177,7 @@ def get_canonical_snapshots(org_id):
     """
 
     pvs = PropertyView.objects.filter(
-        state__super_organization=org_id,
+        state__organization=org_id,
         state__data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING]
     ).select_related('state')
 

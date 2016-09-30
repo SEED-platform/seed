@@ -214,7 +214,7 @@ And a corresponding extra_data_sources that looks like
 All of the fields that look like _source_id are also populated
 with 73700 E.G. owner_postal_code_source_id.
 
-The other fields of interest are the super_organization field which
+The other fields of interest are the organization field which
 is populated with the user's default organization and the import_file_id
 field which is populated with a reference to a data_importer_importfile record.
 
@@ -234,7 +234,7 @@ with the "Save Mappings" button.  This second record has the following fields po
 - release_date
 - source_type (this is 2 instead of 0 as with the other record) 
 - import_file_id
-- super_organization_id.  
+- organization_id.
 
 That is all.  All other fields are empty.  In this case that is all that happens.
 
@@ -309,8 +309,9 @@ that is the result of merging the 2000 and 2001 data:  id = 73704.
 organization
 ^^^^^^^^^^^^
 
-BuildingSnapshots belong to an Organization by virtue of a super_organization
-field that is a foreign key into the organization model (orgs_organization in Postgres).
+BuildingSnapshots belong to an Organization field that is a foreign key into the organization
+model (orgs_organization in Postgres).
+
 Many endpoints filter the buildings based on the organizations the requesting user
 belongs to.  E.G. get_buildings changes which fields are returned based on the
 requesting user's membership in the BuildingSnapshot's organization.

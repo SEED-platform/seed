@@ -46,6 +46,7 @@ STATUS_LIVE = 9
 STATUS_UNKNOWN = 10
 STATUS_MATCHING = 11
 
+# TODO: use these instead of the others defined in models.py
 IMPORT_STATII = [
     (STATUS_UPLOADING, "Uploading"),
     (STATUS_MACHINE_MAPPING, "Machine Mapping"),

@@ -52,5 +52,9 @@ class LabelSerializer(serializers.ModelSerializer):
         if self.inventory:
             result = self.inventory.filter(
                 labels=obj,
-            ).exists()
+            ).values_list('id', flat=True)
+
+            # result = self.inventory.filter(
+            #     labels=obj,
+            # ).exists()
         return result

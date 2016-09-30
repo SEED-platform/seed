@@ -34,3 +34,8 @@ In prioritized order
 
 [20, 184, 49, 69, 10, 184, 156, 117, 124, 105, 126, 6]
 20,184,49,10,181,156,117,124,105,126,6
+
+
+## Example command
+COPY seed_buildingsnapshot_children TO '/Users/naddy/tmp.csv' DELIMITER ',' CSV HEADER;
+\copy my_table to 'filename' csv header

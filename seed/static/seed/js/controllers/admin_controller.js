@@ -3,7 +3,7 @@
  * :author
  */
 angular.module('BE.seed.controller.admin', [])
-.controller('seed_admin_controller', [
+.controller('admin_controller', [
   '$scope',
   '$state',
   'user_service',
@@ -17,13 +17,15 @@ angular.module('BE.seed.controller.admin', [])
     $scope.org_user = {};
     $scope.org_form = {};
     $scope.user_form = {};
-    $scope.alert = {};
-    $scope.alert.show = false;
-    $scope.alert.message = 'congrats';
-    $scope.alert.bootstrap_class = {};
-    $scope.alert.bootstrap_class.ok = 'alert-success';
-    $scope.alert.bootstrap_class.error = 'alert-danger';
-    $scope.alert.css = $scope.alert.bootstrap_class.ok;
+    $scope.alert = {
+      show: false,
+      message: 'congrats',
+      bootstrap_class: {
+        ok: 'alert-success',
+        error: 'alert-danger'
+      },
+      css: 'alert-success'
+    };
     $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
 
 
@@ -137,17 +139,6 @@ angular.module('BE.seed.controller.admin', [])
         });
     };
 
-    /**
-     * confirm_delete: checks with the user before kicking off the delete task
-     * for an org's buildings.
-     */
-    $scope.confirm_buildings_delete = function (org) {
-        var yes = confirm('Are you sure you want to PERMANENTLY delete \'' + org.name + '\'s buildings?');
-        if (yes) {
-            $scope.delete_org_buildings(org);
-        }
-    };
-
     $scope.confirm_org_delete = function (org) {
         var yes = confirm('Are you sure you want to PERMANENTLY delete the entire \'' + org.name + '\' organization?');
         if (yes) {
@@ -156,29 +147,6 @@ angular.module('BE.seed.controller.admin', [])
                 $scope.delete_org(org);
             }
         }
-    };
-
-    /**
-     * delete_org_buildings: kicks off the delete task for an org's buildings.
-     */
-    $scope.delete_org_buildings = function (org) {
-        org.progress = 0;
-        organization_service.delete_organization_buildings(org.org_id)
-        .then(function(data) {
-            // resolve promise
-            uploader_service.check_progress_loop(
-                data.progress_key,  // key
-                0, //starting prog bar percentage
-                1.0,  // progress multiplier
-                function(data){  //success fn
-                  org.remove_message = 'success';
-                  get_organizations();
-                }, function(data){  //failure fn
-                  // Do nothing
-                },
-                org  // progress bar obj
-            );
-        });
     };
 
     $scope.delete_org = function (org) {

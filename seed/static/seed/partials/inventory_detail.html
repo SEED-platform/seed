@@ -203,7 +203,7 @@
                     <tr ng-repeat="taxlot in inventory.related">
                         <td> {$ taxlot.taxlot.id $}</td>
                         <td>
-                            <a ui-sref="detail.inventory_detail({inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">
+                            <a ui-sref="inventory_detail({inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">
                                 {$ taxlot.state.address ? taxlot.state.address : '(no address)' $}
                             </a>
                         </td>
@@ -227,7 +227,7 @@
                     <tr ng-repeat="property in inventory.related">
                         <td> {$ property.property.id $}</td>
                         <td>
-                            <a ui-sref="detail.inventory_detail({inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">
+                            <a ui-sref="inventory_detail({inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">
                                 {$ property.state.address_line_1 ? property.state.address_line_1 : '(no address 1)' $}
                             </a>
                         </td>

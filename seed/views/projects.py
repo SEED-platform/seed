@@ -792,6 +792,8 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
             params = search.process_search_params(
                 request.data, request.user, is_api_request=False
             )
+            organization_id = self.get_organization()
+            params['organization_id'] = organization_id
             qs = search.inventory_search_filter_sort(
                 view_type, params=params, user=request.user
             )

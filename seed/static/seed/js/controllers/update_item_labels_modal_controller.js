@@ -19,7 +19,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', [])
     'inventory_type',
     'Notification',
     function ($scope, $uibModalInstance, label_service, inventory_ids, inventory_type, notification) {
-
+      $scope.inventory_ids = inventory_ids;
       //keep track of status of service call
       $scope.loading = false;
 
@@ -88,51 +88,41 @@ angular.module('BE.seed.controller.update_item_labels_modal', [])
         }
       };
 
+      $scope.modified = function () {
+        return Boolean(_.filter($scope.labels, 'is_checked_add').length || _.filter($scope.labels, 'is_checked_remove').length);
+      };
+
       /* User has indicated 'Done' so perform selected label operations */
       $scope.done = function () {
 
-        var addLabelIDs = _.chain($scope.labels)
-          .filter('is_checked_add')
-          .map('id')
-          .value();
-        var removeLabelIDs = _.chain($scope.labels)
-          .filter('is_checked_remove')
-          .map('id')
-          .value();
+        var addLabelIDs = _.chain($scope.labels).filter('is_checked_add').map('id').value().sort();
+        var removeLabelIDs = _.chain($scope.labels).filter('is_checked_remove').map('id').value().sort();
 
-
-        // TODO: refactor two service calls in if/else into one call
-        // if (inventory_type === 'properties') {
-        //   label_service.update_property_labels(addLabelIDs, removeLabelIDs, inventory_ids, false, {}).then(
-        //     function (data) {
-        //       console.info('success:', data);
-        //       if (data.num_properties_updated === 1) {
-        //         notification.primary(data.num_properties_updated + ' property updated.');
-        //       } else {
-        //         notification.primary(data.num_properties_updated + ' properties updated.');
-        //       }
-        //       $uibModalInstance.close();
-        //     },
-        //     function (data, status) {
-        //       console.error('error:', data, status);
-        //     }
-        //   );
-        // } else if (inventory_type === 'taxlots') {
-        //   label_service.update_taxlot_labels(addLabelIDs, removeLabelIDs, inventory_ids, false, {}).then(
-        //     function (data) {
-        //       console.info('success:', data);
-        //       if (data.num_taxlots_updated === 1) {
-        //         notification.primary(data.num_taxlots_updated + ' tax lot updated.');
-        //       } else {
-        //         notification.primary(data.num_taxlots_updated + ' tax lots updated.');
-        //       }
-        //       $uibModalInstance.close();
-        //     },
-        //     function (data, status) {
-        //       console.error('error:', data, status);
-        //     }
-        //   );
-        // }
+        if (inventory_type === 'properties') {
+          label_service.update_property_labels(addLabelIDs, removeLabelIDs, inventory_ids, {}).then(function (data) {
+              if (data.num_updated === 1) {
+                notification.primary(data.num_updated + ' property updated.');
+              } else {
+                notification.primary(data.num_updated + ' properties updated.');
+              }
+              $uibModalInstance.close();
+            }, function (data, status) {
+              console.error('error:', data, status);
+            }
+          );
+        } else if (inventory_type === 'taxlots') {
+          label_service.update_taxlot_labels(addLabelIDs, removeLabelIDs, inventory_ids, {}).then(function (data) {
+              if (data.num_updated === 1) {
+                notification.primary(data.num_updated + ' tax lot updated.');
+              } else {
+                notification.primary(data.num_updated + ' tax lots updated.');
+              }
+              $uibModalInstance.close();
+            }, function (data, status) {
+              console.error('error:', data, status);
+            }
+          );
+        }
 
 
       };
@@ -148,8 +138,10 @@ angular.module('BE.seed.controller.update_item_labels_modal', [])
         $scope.initialize_new_label();
         //get labels with 'is_applied' property by passing in current search state
         $scope.loading = true;
-        label_service.get_labels(inventory_ids, false, {}).then(function (data) {
-          $scope.labels = data.results;
+        label_service.get_labels(inventory_ids, {
+          inventory_type: inventory_type
+        }).then(function (labels) {
+          $scope.labels = labels;
           $scope.loading = false;
         });
       };

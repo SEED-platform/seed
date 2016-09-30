@@ -487,14 +487,11 @@ class ProjectViewTests(TestCase):
             ),
             content_type='application/json',
         )
-        project_view = ProjectPropertyView.objects.get(
-            project=proj, property_view=pv
-        )
         self.assertDictEqual(
             json.loads(resp.content),
             {
                 'status': 'success',
-                'added': [project_view.id]
+                'added': [pv.id]
             }
         )
         # test case where user is viewer
@@ -766,30 +763,29 @@ class ProjectViewTests(TestCase):
         project2 = json.loads(
             self._create_project(name='proj2', via_http=True).content
         )['project']
+        proj2 = Project.objects.get(pk=project2['id'])
+
         url = "{}?organization_id={}&inventory_type=property".format(
             reverse_lazy(
                 'apiv2:projects-copy', args=[project['slug']]
             ),
             str(self.org.id)
         )
-        project_view = ProjectPropertyView.objects.get(
-            project=proj, property_view=pv
-        )
         resp = self.client.put(
             url,
             data=json.dumps({
-                'selected': [project_view.id],
+                'selected': [pv.id],
                 'target': project2['id']
             }),
             content_type='application/json',
         )
+
         self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'success',
             }
         )
-        proj2 = Project.objects.get(pk=project2['id'])
         self.assertTrue(
             ProjectPropertyView.objects.filter(
                 project=proj, property_view=pv

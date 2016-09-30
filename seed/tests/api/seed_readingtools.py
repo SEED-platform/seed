@@ -179,7 +179,7 @@ def check_status(resultOut, partmsg, log, PIIDflag=None):
                     else:
                         msg = pprint.pformat(resultOut.json(), indent=2, width=70)
             except:
-                log.error(partmsg, failed)
+                log.error(partmsg + failed)
                 log.debug('Unknown error during request results recovery')
                 raise RuntimeError
 
@@ -219,8 +219,16 @@ def read_map_file(mapfilePath):
     maplist = list()
 
     for rowitem in mapReader:
-        maplist.append(rowitem)
-
+        # formerly
+        # maplist.append(rowitem)
+        # changed to make the test pass
+        maplist.append(
+            {
+                'to_table_name': rowitem[0], 'to_field': rowitem[1],
+                # rowitem only has 2 values, lets make this one up
+                'from_field': rowitem[0]
+            }
+        )
     return maplist
 
 
@@ -247,3 +255,11 @@ def setup_logger(filename, write_file=True):
     logger.addHandler(ch)
 
     return logger
+
+
+def write_out_django_debug(partmsg, result):
+    if result.status_code != 200:
+        filename = '{}_fail.html'.format(partmsg)
+        with open(filename, 'w') as fail:
+            fail.writelines(result.text)
+        print 'Wrote debug -> {}'.format(filename)

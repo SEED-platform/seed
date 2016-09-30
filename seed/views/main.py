@@ -1360,18 +1360,25 @@ class DataFileViewSet(viewsets.ViewSet):
         """
         Returns suggested mappings from an uploaded file's headers to known
         data fields.
-
-        Returns::
-            {
-                'status': 'success',
-                'suggested_column_mappings': {
-                    column header from file: [ (destination_column, score) ...]
-                    ...
-                },
-                'building_columns': [ a list of all possible columns ],
-                'building_column_types': [a list of column types corresponding to building_columns],
-            }
         ---
+        type:
+            status:
+                required: true
+                type: string
+                description: Either success or error
+            suggested_column_mappings:
+                required: true
+                type: dictionary
+                description: Dictionary where (key, value) = (the column header from the file,
+                      array of tuples (destination column, score))
+            building_columns:
+                required: true
+                type: array
+                description: A list of all possible columns
+            building_column_types:
+                required: true
+                type: array
+                description: A list of column types corresponding to the building_columns array
         parameter_strategy: replace
         parameters:
             - name: pk

@@ -8,7 +8,10 @@
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Project, Compliance, BuildingSnapshot, CanonicalBuilding
+from seed.models import(
+    Compliance, BuildingSnapshot, CanonicalBuilding, Project
+)
+from seed.models.projects import ACTIVE_STATUS
 from seed.utils.buildings import get_buildings_for_user_count
 from seed.utils.organizations import create_organization
 
@@ -31,7 +34,7 @@ class ProjectTestCase(TestCase):
         self.assertTrue('Test Project' in str(p))
         self.assertEqual(p.owner, user)
         self.assertEqual(p.super_organization, org)
-        self.assertEqual(p.status, Project.ACTIVE_STATUS)
+        self.assertEqual(p.status, ACTIVE_STATUS)
         self.assertEqual(p.description, 'A really great test organization.')
         self.assertEqual(p.slug, 'test-project')
         user.delete()

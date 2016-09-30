@@ -272,6 +272,7 @@ class Rules(models.Model):
 
 
 class Cleansing(object):
+
     def __init__(self, organization, *args, **kwargs):
         """
         Initialize the Cleansing class.
@@ -288,9 +289,8 @@ class Cleansing(object):
         # }
         # For old field names, TODO remove when appropriate
         self.required_fields = {
-            'property': ['address_line_1', 'pm_property_id',
-                         'jurisdiction_property_identifier'],
-            'taxlot': ['jurisdiction_taxlot_identifier', 'address'],
+            'property': ['address_line_1', 'pm_property_id', 'jurisdiction_property_id'],
+            'taxlot': ['jurisdiction_tax_lot_id', 'address_line_1'],
         }
         self.org = organization
         super(Cleansing, self).__init__(*args, **kwargs)

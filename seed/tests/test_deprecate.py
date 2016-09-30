@@ -308,7 +308,7 @@ class TestBuildingSnapshot(TestCase):
             is_canon=True
         )
 
-        fake_building.super_organization = self.fake_org
+        fake_building.organization = self.fake_org
         fake_building.extra_data = fake_building_extra
         fake_building.save()
 
