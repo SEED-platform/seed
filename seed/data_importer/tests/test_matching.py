@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 class TestMatching(DataMappingBaseTestCase):
+
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -164,8 +165,6 @@ class TestMatching(DataMappingBaseTestCase):
         for p in unmatched_properties_2:
             pp(p)
         print len(unmatched_properties_2)
-
-
 
         # TODO: figure out why this isn't working here
         # self.assertRaises(tasks.DuplicateDataError, tasks.handle_id_matches,

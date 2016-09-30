@@ -10,19 +10,13 @@ import logging
 
 from django.db import models
 
-from seed.models import (
-    Cycle,
-    PropertyView,
-    TaxLotView,
-)
-
 logger = logging.getLogger(__name__)
 
 
 class TaxLotProperty(models.Model):
-    property_view = models.ForeignKey(PropertyView)
-    taxlot_view = models.ForeignKey(TaxLotView)
-    cycle = models.ForeignKey(Cycle)
+    property_view = models.ForeignKey('PropertyView')
+    taxlot_view = models.ForeignKey('TaxLotView')
+    cycle = models.ForeignKey('Cycle')
 
     # If there is a complex TaxLot/Property association, this field
     # lists the "main" tax lot that Properties should be reported under.

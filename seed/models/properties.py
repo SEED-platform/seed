@@ -24,7 +24,9 @@ from seed.models import (
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
     ASSESSED_BS,
+    TaxLotProperty,
 )
+
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.utils.time import convert_datestr
@@ -239,10 +241,21 @@ class PropertyState(models.Model):
 
         return d
 
+    def save(self, *args, **kwargs):
+        # first check if the <unique id> isn't already in the database for the
+        # organization - potential todo--move this to a unique constraint of the db.
+        # TODO: Decide if we should allow the user to define what the unique ID is for the taxlot
+        # if PropertyState.objects.filter(jurisdiction_tax_lot_id=self.jurisdiction_tax_lot_id,
+        #                               organization=self.organization).exists():
+        #     logger.error("PropertyState already exists for the same <unique id> and org")
+        #     return False
+
+        return super(PropertyState, self).save(*args, **kwargs)
+
 
 class PropertyView(models.Model):
-    """Similar to the old world of canonical building"""
-    # different property views can be associated with each other (2012, 2013.
+    """Similar to the old world of canonical building."""
+    # different property views can be associated with each other (2012, 2013)
     property = models.ForeignKey(Property, related_name='views')
     cycle = models.ForeignKey(Cycle)
     state = models.ForeignKey(PropertyState)
@@ -300,6 +313,36 @@ class PropertyView(models.Model):
                 record_type=AUDIT_IMPORT,
                 import_filename=import_filename
             )
+
+    def tax_lot_views(self):
+        """
+        Return a list of TaxLotViews that are associated with this PropertyView and Cycle
+
+        :return: list of TaxLotViews
+        """
+        # forwent the use of list comprehension to make the code more readable.
+        # get the related taxlot_view.state as well to save time if needed.
+        result = []
+        for tlp in TaxLotProperty.objects.filter(
+                cycle=self.cycle,
+                property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
+            result.append(tlp.taxlot_view)
+
+        return result
+
+    def tax_lot_states(self):
+        """
+        Return a list of TaxLotStates associated with this PropertyView and Cycle
+
+        :return: list of TaxLotStates
+        """
+        # forwent the use of list comprehension to make the code more readable.
+        result = []
+        for x in self.tax_lot_views():
+            if x.state:
+                result.append(x.state)
+
+        return result
 
     @property_decorator
     def import_filename(self):

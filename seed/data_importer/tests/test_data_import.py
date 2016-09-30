@@ -171,6 +171,7 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
 
 
 class TestMappingExampleData(DataMappingBaseTestCase):
+
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -213,13 +214,17 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         Column.create_mappings(self.fake_mappings, self.org, self.user)
         tasks.map_data(self.import_file.pk)
 
-        # make sure that no taxlot objects were created
+        # make sure that no taxlot objects were created. the 12 here are the import extra_data.
         ps = PropertyState.objects.all()
         self.assertEqual(len(ps), 12)
 
         # make sure that the new data was loaded correctly
-        ts = TaxLotState.objects.filter(address_line_1='2700 Welstone Ave NE')[0]
-        self.assertEqual(ts.extra_data['site_eui'], 1202)
+        ts = TaxLotState.objects.filter(address_line_1='50 Willow Ave SE').first()
+        self.assertEqual(ts.extra_data['site_eui'], 125)
+
+        # note that this used to be 2700 Welstone Ave NE but needed to change the check because
+        # this has the same jurisdiction_tax_lot_id as others so it was never imported. So assigning
+        # the address was never happening because the tax_lot_id was already in use.
 
     @skip('fix this soon')
     def test_promote_properties(self):
@@ -254,6 +259,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
 
 class TestPromotingProperties(DataMappingBaseTestCase):
+
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -343,13 +349,10 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         # call the mapping function from the tasks file
         map_data(self.import_file.id)
 
-
-
         # TODO: figure out why this isn't working here
         # self.assertRaises(tasks.DuplicateDataError, tasks.handle_id_matches,
         #                   new_snapshot, duplicate_import_file,
         #                   self.user.pk)
-
 
         # @skip("Fix for new data model")
         # class TestOldMatching(TestCase):

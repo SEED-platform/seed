@@ -182,6 +182,20 @@ class TestColumns(TestCase):
         self.assertEqual(column.table_name, "PropertyState")
         self.assertEqual(column.column_name, "Dothraki")
 
+        # test by table name sorting
+        test_mapping = ColumnMapping.get_column_mappings_by_table_name(self.fake_org)
+        expected = {
+            u'PropertyState': {
+                u'Wookiee': (u'PropertyState', u'Dothraki'),
+                u'eui': (u'PropertyState', u'site_eui'),
+            },
+            u'TaxLotState': {
+                u'address': (u'TaxLotState', u'address'),
+                u'Ewok': (u'TaxLotState', u'Hattin'),
+            }
+        }
+        self.assertDictEqual(test_mapping, expected)
+
     def test_save_columns(self):
         # create
 

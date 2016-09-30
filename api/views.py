@@ -80,6 +80,21 @@ class TestReverseViewSet(viewsets.ViewSet):
         reversed_url = reverse(reverse_string, args = [argument])
         return HttpResponse(json.dumps({reverse_string: reversed_url}))
 
+    @list_route(methods=['GET'])
+    def show_file_type(self, request):
+        """
+        Show how to use a multipart file variable type
+        ---
+        parameters:
+            - name: file
+              type: file
+        consumes:
+            - application/json
+            - multipart/form-data
+        """
+        return HttpResponse("Hello, world")
+
+
 @api_endpoint
 @ajax_request
 def test_view_with_arg(request, pk=None):
