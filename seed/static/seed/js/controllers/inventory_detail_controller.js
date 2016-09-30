@@ -41,9 +41,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       // Let's remember this.
       $scope.all_extra_data_keys = inventory_payload.extra_data_keys;
 
-      if ($scope.inventory_type == 'properties') $scope.item_title = 'Property : ' + ($scope.item_state.address_line_1 ? $scope.item_state.address_line_1 : '(no address 1)');
-      else if ($scope.inventory_type == 'taxlots') $scope.item_title = 'Tax Lot : ' + ($scope.item_state.address ? $scope.item_state.address : '(no address)');
-
       $scope.user = {};
       $scope.user_role = inventory_payload.user_role;
 

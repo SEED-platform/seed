@@ -65,12 +65,13 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
     * data into BuildingSnapshot instances.
     * @param file_id: the pk of a ImportFile object we're going to save raw.
     */
-    uploader_factory.save_raw_data = function(file_id) {
+    uploader_factory.save_raw_data = function(file_id, cycle_id) {
         var defer = $q.defer();
         $http({
             method: 'POST',
             url: window.BE.urls.save_raw_data,
             data: {
+              cycle_id: cycle_id,
               file_id: file_id,
               organization_id: user_service.get_organization().id
             }

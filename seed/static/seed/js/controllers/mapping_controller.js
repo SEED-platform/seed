@@ -182,6 +182,25 @@ angular.module('BE.seed.controller.mapping', [])
         }
     };
 
+    $scope.setAllFields = '';
+    $scope.setAllFieldsOptions = [{
+      name: 'Property',
+      value: 'PropertyState'
+    }, {
+      name: 'Tax Lot',
+      value: 'TaxLotState'
+    }];
+    $scope.setAllInventoryTypes = function () {
+      _.each($scope.valids, function (valid) {
+        valid.suggestion_table_name = $scope.setAllFields.value;
+      })
+    };
+    $scope.setInventoryType = function () {
+      var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
+      if (chosenTypes.length == 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
+      else $scope.setAllFields = '';
+    };
+
     $scope.find_duplicates = function (array, element) {
         var indices = [];
         var idx = array.indexOf(element);
@@ -271,7 +290,7 @@ angular.module('BE.seed.controller.mapping', [])
     var update_raw_columns = function() {
       var raw_columns_prototype = {
         building_columns: [''].concat(
-            original_columns
+            _.uniq(original_columns)
         ),
         suggestion: '',
         user_suggestion: false,
@@ -368,13 +387,14 @@ angular.module('BE.seed.controller.mapping', [])
       // refresh columns
       building_services.get_columns().then(function (new_columns) {
         var mapped_columns = get_untitle_cased_mappings().map(function(d){
-          return d[0];
+          return d['to_field_display_name'];
         });
         $scope.columns = $scope.search.generate_columns(
           new_columns.fields,
           mapped_columns,
           $scope.search.column_prototype
         );
+        // console.log($scope.columns);
         // save as default columns
         user_service.set_default_columns(
           mapped_columns, $scope.user.show_shared_buildings
@@ -422,11 +442,10 @@ angular.module('BE.seed.controller.mapping', [])
                 {
                   "from_field": header,
                   "to_field": suggestion,
-                  "to_table_name": "PropertyState"
+                  "to_table_name": tcm.suggestion_table_name
                 }
             );
         }
-
         return mappings;
     };
 
@@ -457,6 +476,8 @@ angular.module('BE.seed.controller.mapping', [])
     var get_untitle_cased_mappings = function () {
         var mappings = $scope.get_mappings();
         _.forEach(mappings, function(m){
+          // Save the field display name here before changing it in the to_field
+          m['to_field_display_name'] = m["to_field"];
           var mapping = m["to_field"];
           mapping = angular.lowercase(mapping).replace(/ /g, '_');
           if (_.includes(original_columns, mapping)) {
@@ -464,15 +485,6 @@ angular.module('BE.seed.controller.mapping', [])
           }
         });
 
-        // var mappings = $scope.get_mappings().map(function (m) {
-        //     var mapping = m[0];
-        //     mapping = angular.lowercase(mapping).replace(/ /g, '_');
-        //     if (_.includes(original_columns, mapping)) {
-        //         m[0] = mapping;
-        //     }
-        //     return m;
-        // });
-      console.log(mappings);
         return mappings;
     };
 
@@ -630,6 +642,9 @@ angular.module('BE.seed.controller.mapping', [])
             templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
             controller: 'data_upload_modal_controller',
             resolve: {
+                cycles: ['cycle_service', function (cycle_service) {
+                    return cycle_service.get_cycles();
+                }],
                 step: function(){
                     return step;
                 },
