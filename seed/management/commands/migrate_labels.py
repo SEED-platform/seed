@@ -6,8 +6,11 @@ associates labels with PropertyViews and with TaxLotViews.
 from __future__ import unicode_literals
 
 from seed.models import CanonicalBuilding
+from seed.models import Property
 from seed.models import PropertyView
+from seed.models import TaxLot
 from seed.models import TaxLotView
+
 
 from _localtools import get_core_organizations
 from _localtools import logging_info
@@ -57,11 +60,11 @@ class Command(BaseCommand):
                 # Handle the clear case.  This is a bit inelegant the
                 # way the loop on org_ids is setup.
                 if clear_bluesky_labels:
-                    print "Org={}: Clearing all labels on PropertyView and TaxLotView objects.".format(org_id)
-                    for pv in PropertyView.objects.filter(property__organization = org_id).all():
-                        pv.labels.clear()
-                    for tlv in TaxLotView.objects.filter(taxlot__organization = org_id).all():
-                        tlv.labels.clear()
+                    print "Org={}: Clearing all labels on Property and TaxLot objects.".format(org_id)
+                    for prop in Property.objects.filter(organization = org_id).all():
+                        prop.labels.clear()
+                    for tax_lot in TaxLot.objects.filter(organization = org_id).all():
+                        tax_lot.labels.clear()
                     continue
 
                 # End Clear Case
@@ -76,6 +79,16 @@ class Command(BaseCommand):
                 # Copy Property
 
                 if add_property_labels:
+                    # This is inefficient, in that it does each
+                    # property/tax lot multiple times for each of it's
+                    # views - but it's clear and shouldn't be
+                    # prohibitively wasteful.
+
+                    # Alternatively you could grab the first
+                    # propertyview/taxlotview for each property/taxlot
+                    # and then use the state on that to populate the
+                    # property/taxlot.
+
                     for pv in PropertyView.objects.filter(property__organization = org_id).select_related('state').all():
                         if not "prop_cb_id" in pv.state.extra_data:
                             print "Warning: key 'prop_cb_id' was not found for PropertyView={}".format(pv)
@@ -90,20 +103,19 @@ class Command(BaseCommand):
                             continue
 
                         cb_labels = cb.labels.all()
-                        preexisting_pv_labels = set(map(lambda l: l.pk, pv.labels.all()))
+                        preexisting_pv_labels = set(map(lambda l: l.pk, pv.property.labels.all()))
 
                         for label in cb_labels:
                             if label.pk not in preexisting_pv_labels:
-                                pv.labels.add(label)
+                                pv.property.labels.add(label)
                         else:
-                            pv.save()
+                            pv.property.save()
                 #
                 ##############################
 
 
                 ##############################
                 # Copy Tax Lot labels
-
                 if add_taxlot_labels:
                     for tlv in TaxLotView.objects.filter(taxlot__organization = org_id).select_related('state').all():
                         if not "taxlot_cb_id" in tlv.state.extra_data:
@@ -119,13 +131,13 @@ class Command(BaseCommand):
                             continue
 
                         cb_labels = cb.labels.all()
-                        preexisting_tlv_labels = set(map(lambda l: l.pk, tlv.labels.all()))
+                        preexisting_tlv_labels = set(map(lambda l: l.pk, tlv.taxlot.labels.all()))
 
                         for label in cb_labels:
                             if label.pk not in preexisting_tlv_labels:
-                                tlv.labels.add(label)
+                                tlv.taxlot.labels.add(label)
                         else:
-                            tlv.save()
+                            tlv.taxlot.save()
                 #
                 ##############################
 
