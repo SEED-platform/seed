@@ -63,7 +63,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      $scope.$watchCollection('selected_labels', function () {
+      var filterUsingLabels = function () {
         // Only submit the `id` of the label to the API.
         var ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
         if ($scope.selected_labels.length) {
@@ -75,7 +75,9 @@ angular.module('BE.seed.controller.inventory_list', [])
           _.forEach($scope.gridApi.grid.rows, $scope.gridApi.core.clearRowInvisible);
         }
         _.delay($scope.updateHeight, 150);
-      });
+      };
+
+      $scope.$watchCollection('selected_labels', filterUsingLabels);
 
       /**
        Opens the update building labels modal.
@@ -145,6 +147,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           delete data[relatedIndex].related;
         }
         $scope.data = data;
+        $scope.updateQueued = true;
       };
 
       var refresh_objects = function () {
@@ -312,6 +315,10 @@ angular.module('BE.seed.controller.inventory_list', [])
           gridApi.core.on.rowsRendered($scope, _.debounce(function () {
             $scope.$apply(function () {
               $scope.total = _.filter($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), {treeLevel: 0}).length;
+              if ($scope.updateQueued) {
+                $scope.updateQueued = false;
+                if ($scope.selected_labels.length) filterUsingLabels();
+              }
             });
           }, 150));
         }
