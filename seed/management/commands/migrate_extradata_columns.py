@@ -58,15 +58,15 @@ class Command(BaseCommand):
 
             # Update
             if update_columns:
-                self.update_columns_based_on_mappings_file(org, add_unmapped_columns)
+                self.update_columns_based_on_mappings_file(org)
 
             if create_missing_columns:
-                self.find_missing_columns_based_on_extra_data(org, create=create_missing_columns)
+                self.find_missing_columns_based_on_extra_data(org)
 
         logging_info("END migrate_extradata_columns")
         return
 
-    def find_missing_columns_based_on_extra_data(self, org, create):
+    def find_missing_columns_based_on_extra_data(self, org):
         """Look through all the extra_data fields of the TaxLot and Property
         State objects and make sure there are columns that point to them.
         """
@@ -90,13 +90,12 @@ class Command(BaseCommand):
             if not cnt:
                 logging_info("Missing column '{}' found in PropertyState extra_data keys".format(key))
 
-                if create:
-                    logging_info("Creating missing column '{}'".format(key))
-                    col = Column(organization=org,
-                                 column_name=key,
-                                 is_extra_data=True,
-                                 table_name="PropertyState")
-                    col.save()
+                logging_info("Creating missing column '{}'".format(key))
+                col = Column(organization=org,
+                             column_name=key,
+                             is_extra_data=True,
+                             table_name="PropertyState")
+                col.save()
 
         # Iterate through each of the extra data fields associated with the TaxLotStates
         for key in taxlot_keys:
@@ -105,14 +104,13 @@ class Command(BaseCommand):
             if not cnt:
                 logging_info("Missing column '{}' found in TaxLotState extra_data keys.".format(key))
 
-                if create:
-                    logging_info("Creating missing column '{}'".format(key))
+                logging_info("Creating missing column '{}'".format(key))
 
-                    col = Column(organization=org,
-                                 column_name=key,
-                                 is_extra_data=True,
-                                 table_name="TaxLotState")
-                    col.save()
+                col = Column(organization=org,
+                             column_name=key,
+                             is_extra_data=True,
+                             table_name="TaxLotState")
+                col.save()
 
         return
 
