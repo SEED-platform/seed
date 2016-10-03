@@ -57,7 +57,6 @@ class Command(BaseCommand):
             org = Organization.objects.get(pk=org_id)
 
             # Update
-            pdb.set_trace()
             if update_columns:
                 self.update_columns_based_on_mappings_file(org, add_unmapped_columns)
 
