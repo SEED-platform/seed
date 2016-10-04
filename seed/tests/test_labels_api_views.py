@@ -98,14 +98,14 @@ class TestLabelsViewSet(TestCase):
 
         url = reverse('labels:label-list')
 
-        response_a = client.get(url, {'organization_id': organization_a.pk})
-        response_b = client.get(url, {'organization_id': organization_b.pk})
+        response_a = client.get(url, {'organization_id': organization_a.pk, 'inventory_type': 'property'})
+        response_b = client.get(url, {'organization_id': organization_b.pk, 'inventory_type': 'property'})
 
         self.assertEqual(response_a.status_code, status.HTTP_200_OK)
         self.assertEqual(response_b.status_code, status.HTTP_200_OK)
 
-        results_a = set(result['organization_id'] for result in response_a.data['results'])
-        results_b = set(result['organization_id'] for result in response_b.data['results'])
+        results_a = set([result['organization_id'] for result in response_a.data])
+        results_b = set([result['organization_id'] for result in response_b.data])
 
         assert results_a == {organization_a.pk}
         assert results_b == {organization_b.pk}
