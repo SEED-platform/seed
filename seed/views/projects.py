@@ -92,7 +92,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
 
     # helper methods
     def get_error(self, error, key=None, val=None):
-        """Return error mesage and correponding http status code."""
+        """Return error message and corresponding http status code."""
         errors = {
             'not found': (
                 'Could not find project with {}: {}'.format(key, val),
@@ -155,7 +155,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
         )
 
     def get_organization(self):
-        """Get org id from quiery param or request.user."""
+        """Get org id from query param or request.user."""
         if not getattr(self, '_organization', None):
             try:
                 self._organization = self.request.user.orgs.get(
