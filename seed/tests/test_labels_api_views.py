@@ -215,7 +215,7 @@ class TestUpdateInventoryLabelsAPIView(TestCase):
             'inventory_ids': [1, 2, 3],
         }
         response = client.put(
-            url + "?organization_id={}".format(self.org.id), post_params, format='json'
+            url, post_params, format='json'
         )
         result = response.data
 
