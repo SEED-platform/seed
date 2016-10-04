@@ -44,25 +44,20 @@ from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
+    ASSESSED_BS,
+    PORTFOLIO_BS,
+    GREEN_BUTTON_BS,
+    PropertyState,
+    Cycle,
+    BuildingSnapshot,
+    CanonicalBuilding,
+    Column,
+    ProjectBuilding,
     get_ancestors,  # TO REMOVE
     get_column_mapping,
     save_snapshot_match,
     unmatch_snapshot_tree as unmatch_snapshot,
     obj_to_dict
-)
-from seed.models import (
-    BuildingSnapshot,
-    CanonicalBuilding,
-    Column,
-    ProjectBuilding,
-    PropertyState
-)
-from seed.models import (
-    ASSESSED_BS,
-    PORTFOLIO_BS,
-    GREEN_BUTTON_BS
-    PropertyState,
-    Cycle,
 )
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.buildings import (
@@ -314,7 +309,7 @@ def export_buildings(request):
         for field in selected_fields:
             components = field.split("__", 1)
             if (components[0] == 'project_building_snapshots'
-                    and len(components) > 1):
+                and len(components) > 1):
                 _selected_fields.append(components[1])
             else:
                 _selected_fields.append("building_snapshot__%s" % field)
@@ -1277,7 +1272,7 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
     columns = list(Column.objects.select_related('unit').filter(
         Q(mapped_mappings__super_organization_id=org_id) |
         Q(organization__isnull=True)).exclude(column_name__in=md.keys())
-    )
+                   )
     md.add_extra_data(columns)
 
     # Portfolio manager files have their own mapping scheme
@@ -1482,7 +1477,7 @@ def get_first_five_rows(request):
             dict(
                 zip(import_file.first_row_columns, row)
             ) for row in rows
-        ]
+            ]
     }
 
 
