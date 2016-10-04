@@ -1763,6 +1763,13 @@ a:not([href]) {
   text-decoration: underline;
 }
 
+div[sd-uploader][disabled] {
+  pointer-events: none;
+  .qq-upload-button {
+    opacity: 0.3;
+  }
+}
+
 .qq-upload-button {
   font-weight: bold;
 }

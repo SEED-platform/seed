@@ -21,6 +21,7 @@
     "angular-ui-tree": "~2.10.0",
     "angular-xeditable": "~0.1.9",
     "bootstrap": "~3.3.5",
+    "d3": "3.5.2",
     "dimple": "~2.1.6",
     "fine-uploader": "git://github.com/FineUploader/fine-uploader.git#3.9.1",
     "font-awesome": "~4.4.0",
