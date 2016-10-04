@@ -220,7 +220,7 @@ class UserViewSet(viewsets.ViewSet):
             OrganizationUser.objects.filter(
                 organization_id=org.pk,
                 user_id=user.pk
-            ).update(role_level=_get_role_from_js(body['role']))
+            ).update(role_level=_get_role_from_js(body['role']['value']))
 
         if created:
             user.email = email
