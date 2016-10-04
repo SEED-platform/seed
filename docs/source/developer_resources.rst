@@ -29,12 +29,6 @@ To run flake locally call:
 
     tox -e flake8
 
-.. note::
-
-    tox will soon be removed from the development process. Instructions
-    will be updated.
-
-
 Django Notes
 ------------
 
