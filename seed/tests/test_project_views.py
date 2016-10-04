@@ -121,30 +121,30 @@ class ProjectViewTests(TestCase):
 
     def _expected_project(self, modified, pk, has_views, name=DEFAULT_NAME,
                           **kwargs):
-            expected = {
-                u'compliance_type': None,
-                u'deadline_date': None,
-                u'description': u'',
-                u'end_date': None,
-                u'id': pk,
-                u'is_compliance': False,
-                u'modified': modified,
-                u'last_modified_by': {u'email': u'test_user@demo.com',
-                                      u'first_name': u'Johnny',
-                                      u'last_name': u'Energy'},
-                u'name': name,
-                u'property_count': 0,
-                u'slug': slugify(name),
-                u'taxlot_count': 0,
-                u'status': u'active',
-            }
-            if has_views:
-                expected.update({
-                    u'property_views': [],
-                    u'taxlot_views': [],
-                })
-            expected.update(kwargs)
-            return expected
+        expected = {
+            u'compliance_type': None,
+            u'deadline_date': None,
+            u'description': u'',
+            u'end_date': None,
+            u'id': pk,
+            u'is_compliance': False,
+            u'modified': modified,
+            u'last_modified_by': {u'email': u'test_user@demo.com',
+                                  u'first_name': u'Johnny',
+                                  u'last_name': u'Energy'},
+            u'name': name,
+            u'property_count': 0,
+            u'slug': slugify(name),
+            u'taxlot_count': 0,
+            u'status': u'active',
+        }
+        if has_views:
+            expected.update({
+                u'property_views': [],
+                u'taxlot_views': [],
+            })
+        expected.update(kwargs)
+        return expected
 
     def test_create_project_perms(self):
         """ tests create_project perms"""

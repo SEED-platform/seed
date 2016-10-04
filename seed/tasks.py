@@ -38,10 +38,6 @@ from seed.models import (
     Compliance,
     Project,
     ProjectBuilding,
-    PropertyView,
-    ProjectPropertyView,
-    TaxLotView,
-    ProjectTaxLotView,
 )
 from seed.utils import time as time_utils
 from seed.utils.buildings import get_search_query

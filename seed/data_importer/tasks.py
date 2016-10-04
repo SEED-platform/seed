@@ -773,7 +773,7 @@ def handle_id_matches(unmatched_bs, test_property, import_file, user_pk):
             match.pk,
             unmatched_bs.pk,
             confidence=0.9,
-            match_type=SYSTEM_MATCH,  # TODO: we should and probably can remove this field, please :D
+            match_type=SYSTEM_MATCH,  # TODO: we should and probably can remove this field
             user=import_file.import_record.owner,
             default_pk=unmatched_bs.pk
         )

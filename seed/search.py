@@ -407,7 +407,7 @@ def process_search_params(params, user, is_api_request=False):
     q = params.get('q', '')
     other_search_params = params.get('filter_params', {})
     exclude = other_search_params.pop('exclude', {})
-    inventory_type = params.pop('inventory_type', None)
+    # inventory_type = params.pop('inventory_type', None)
     order_by = params.get('order_by', 'id')
     sort_reverse = params.get('sort_reverse', False)
     if isinstance(sort_reverse, basestring):

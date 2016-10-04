@@ -8,7 +8,7 @@
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
-from seed.models import(
+from seed.models import (
     Compliance, BuildingSnapshot, CanonicalBuilding, Project
 )
 from seed.models.projects import ACTIVE_STATUS
