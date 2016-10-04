@@ -28,7 +28,6 @@ logger = logging.getLogger(__name__)
 
 
 class TestCaseA(DataMappingBaseTestCase):
-
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -103,40 +102,40 @@ class TestCaseA(DataMappingBaseTestCase):
         for p in ps:
             pp(p)
 
-        tasks.match_buildings(self.import_file.id, self.user.id)
+            # tasks.match_buildings(self.import_file.id, self.user.id)
 
-        # M2M Matching
+            # M2M Matching
 
-        # # Promote 5 of these to views to test the remaining code
-        # promote_mes = PropertyState.objects.filter(
-        #     data_state=DATA_STATE_MAPPING,
-        #     super_organization=self.fake_org)[:5]
-        # for promote_me in promote_mes:
-        #     promote_me.promote(cycle)
-        #
-        # ps = tasks.list_canonical_property_states(self.fake_org)
-        # from django.db.models.query import QuerySet
-        # self.assertTrue(isinstance(ps, QuerySet))
-        # logger.debug("There are %s properties" % len(ps))
-        # for p in ps:
-        #     print p
-        #
-        # self.assertEqual(len(ps), 5)
-        # self.assertEqual(ps[0].address_line_1, '1211 Bryant Street')
-        # self.assertEqual(ps[4].address_line_1, '1031 Ellis Lane')
+            # # Promote 5 of these to views to test the remaining code
+            # promote_mes = PropertyState.objects.filter(
+            #     data_state=DATA_STATE_MAPPING,
+            #     super_organization=self.fake_org)[:5]
+            # for promote_me in promote_mes:
+            #     promote_me.promote(cycle)
+            #
+            # ps = tasks.list_canonical_property_states(self.fake_org)
+            # from django.db.models.query import QuerySet
+            # self.assertTrue(isinstance(ps, QuerySet))
+            # logger.debug("There are %s properties" % len(ps))
+            # for p in ps:
+            #     print p
+            #
+            # self.assertEqual(len(ps), 5)
+            # self.assertEqual(ps[0].address_line_1, '1211 Bryant Street')
+            # self.assertEqual(ps[4].address_line_1, '1031 Ellis Lane')
 
-        # tasks.match_buildings(self.import_file.pk, self.fake_user.pk)
+            # tasks.match_buildings(self.import_file.pk, self.fake_user.pk)
 
-        # self.assertEqual(result.property_name, snapshot.property_name)
-        # self.assertEqual(result.property_name, new_snapshot.property_name)
-        # # Since these two buildings share a common ID, we match that way.
-        # # self.assertEqual(result.confidence, 0.9)
-        # self.assertEqual(
-        #     sorted([r.pk for r in result.parents.all()]),
-        #     sorted([new_snapshot.pk, snapshot.pk])
-        # )
-        # self.assertGreater(AuditLog.objects.count(), 0)
-        # self.assertEqual(
-        #     AuditLog.objects.first().action_note,
-        #     'System matched building ID.'
-        # )
+            # self.assertEqual(result.property_name, snapshot.property_name)
+            # self.assertEqual(result.property_name, new_snapshot.property_name)
+            # # Since these two buildings share a common ID, we match that way.
+            # # self.assertEqual(result.confidence, 0.9)
+            # self.assertEqual(
+            #     sorted([r.pk for r in result.parents.all()]),
+            #     sorted([new_snapshot.pk, snapshot.pk])
+            # )
+            # self.assertGreater(AuditLog.objects.count(), 0)
+            # self.assertEqual(
+            #     AuditLog.objects.first().action_note,
+            #     'System matched building ID.'
+            # )

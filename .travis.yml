@@ -31,7 +31,7 @@ env:
   matrix:
     - TOX_ENV=python
     - TOX_ENV=flake8
-    - TOX_ENV=functional
+#    - TOX_ENV=functional
 #    - TOX_ENV=apitest
     - TOX_ENV=spelling
 
