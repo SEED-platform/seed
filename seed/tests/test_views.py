@@ -3621,18 +3621,19 @@ class InventoryViewTests(TestCase):
         self.assertEqual(results[0], pm_property_id_col)
 
         expected_property_extra_data_column = {
+            'extraData': True,
             'name': 'property_extra_data_column',
-            'displayName': 'property_extra_data_column (property)',
+            'displayName': 'property_extra_data_column',
             'related': False,
-            'source': 'property'
         }
+
         self.assertIn(expected_property_extra_data_column, results)
 
         expected_taxlot_extra_data_column = {
+            'extraData': True,
             'name': 'taxlot_extra_data_column',
-            'displayName': 'taxlot_extra_data_column (taxlot)',
+            'displayName': 'taxlot_extra_data_column',
             'related': True,
-            'source': 'taxlot'
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
 
