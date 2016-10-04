@@ -216,11 +216,12 @@ class UserViewSet(viewsets.ViewSet):
         # see Organization.add_member()
         if not org.is_member(user):
             org.add_member(user)
+
         if body.get('role'):
             OrganizationUser.objects.filter(
                 organization_id=org.pk,
                 user_id=user.pk
-            ).update(role_level=_get_role_from_js(body['role']['value']))
+            ).update(role_level=_get_role_from_js(body['role']))
 
         if created:
             user.email = email
