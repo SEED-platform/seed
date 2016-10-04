@@ -5,9 +5,10 @@
 :author 'Piper Merriam <pipermerriam@gmail.com>'
 """
 
+from unittest import skip
+
 from django.test import TestCase
 
-from unittest import skip
 from seed.factory import SEEDFactory
 from seed.lib.superperms.orgs.models import (
     Organization as SuperOrganization
@@ -19,11 +20,13 @@ from seed.models import (
 )
 from seed.serializers.labels import (
     LabelSerializer,
+    UpdateBuildingLabelsSerializer,
 )
 
 """
 Unit tests for map.py
 """
+
 
 @skip('BuildingSnapshot is referenced many times in this.')
 class TestLabelSerializer(TestCase):
