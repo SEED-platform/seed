@@ -220,7 +220,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         # make sure that the new data was loaded correctly
         ts = TaxLotState.objects.filter(address_line_1='2700 Welstone Ave NE')[0]
         self.assertEqual(ts.extra_data['site_eui'], 1202)
-        self.assertEqual(ts.extra_data['jurisdiction_property_identifier'], 1202)
+        self.assertEqual(ts.extra_data['pm_property_id'], 1154623)
 
     @skip('fix this soon')
     def test_promote_properties(self):
