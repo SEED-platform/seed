@@ -210,10 +210,9 @@ class TestUpdateInventoryLabelsAPIView(TestCase):
             'add_label_ids': [self.status_label.id],
             'remove_label_ids': [],
             'inventory_ids': [1, 2, 3],
-            'organization_id': self.org.id
         }
         response = client.put(
-            url, post_params, format='json'
+            url + "?organization_id={}".format(self.org.id), post_params, format='json'
         )
         result = response.data
 
@@ -230,10 +229,9 @@ class TestUpdateInventoryLabelsAPIView(TestCase):
             'add_label_ids': [],
             'remove_label_ids': [self.status_label.id],
             'inventory_ids': [1, 2, 3],
-            'organization_id': self.org.id
         }
         response = client.put(
-            url, post_params, format='json'
+            url + "?organization_id={}".format(self.org.id), post_params, format='json'
         )
         result = response.data
 
