@@ -112,6 +112,8 @@ def get_properties(request):
 
         # Add extra data fields right to this object.
         for extra_data_field, extra_data_value in taxlot_view.state.extra_data.items():
+            while extra_data_field in taxlot_state_data:
+                extra_data_field += '_extra'
             taxlot_state_data[extra_data_field] = extra_data_value
         taxlot_map[taxlot_view.pk] = taxlot_state_data
 
@@ -133,6 +135,9 @@ def get_properties(request):
         p = model_to_dict(prop.state, exclude=['extra_data'])
 
         for extra_data_field, extra_data_value in prop.state.extra_data.items():
+            while extra_data_field in p:
+                extra_data_field += '_extra'
+
             p[extra_data_field] = extra_data_value
 
         # Use property_id instead of default (state_id)
@@ -212,6 +217,8 @@ def get_taxlots(request):
 
         # Add extra data fields right to this object.
         for extra_data_field, extra_data_value in property_view.state.extra_data.items():
+            while extra_data_field in property_data:
+                extra_data_field += '_extra'
             property_data[extra_data_field] = extra_data_value
         property_map[property_view.pk] = property_data
 
@@ -255,6 +262,8 @@ def get_taxlots(request):
         l['id'] = lot.taxlot_id
 
         for extra_data_field, extra_data_value in lot.state.extra_data.items():
+            while extra_data_field in l:
+                extra_data_field += '_extra'
             l[extra_data_field] = extra_data_value
 
         l['related'] = join_map.get(lot.pk, [])
@@ -578,16 +587,19 @@ def get_property_columns(request):
 
     extra_data_columns = Column.objects.filter(
         organization_id=request.GET['organization_id'],
-        is_extra_data=True,
-        extra_data_source__isnull=False
+        is_extra_data=True
     )
 
     for c in extra_data_columns:
+        name = c.column_name
+        while any(col['name'] == name for col in columns):
+            name += '_extra'
+
         columns.append({
-            'name': c.column_name,
-            'displayName': '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source]),
+            'name': name,
+            'displayName': c.column_name,  # '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source])
             'related': c.extra_data_source == Column.SOURCE_TAXLOT,
-            'source': Column.SOURCE_CHOICES_MAP[c.extra_data_source],
+            'extraData': True
         })
 
     return columns
@@ -644,7 +656,8 @@ def get_taxlot_columns(request):
             'displayName': 'Tax Lot City',
             'related': False
         }, {
-            'name': 'address_line_1',
+            # Modified field name
+            'name': 'property_address_line_1',
             'displayName': 'Property Address 1',
             'type': 'numberStr',
             'related': True
@@ -718,7 +731,8 @@ def get_taxlot_columns(request):
             'displayName': 'Owner Telephone',
             'related': True
         }, {
-            'name': 'address_line_2',
+            # Modified field name
+            'name': 'property_address_line_2',
             'displayName': 'Property Address 2',
             'type': 'numberStr',
             'related': True
@@ -841,16 +855,19 @@ def get_taxlot_columns(request):
 
     extra_data_columns = Column.objects.filter(
         organization_id=request.GET['organization_id'],
-        is_extra_data=True,
-        extra_data_source__isnull=False
+        is_extra_data=True
     )
 
     for c in extra_data_columns:
+        name = c.column_name
+        while any(col['name'] == name for col in columns):
+            name += '_extra'
+
         columns.append({
-            'name': c.column_name,
-            'displayName': '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source]),
+            'name': name,
+            'displayName': c.column_name,  # '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source])
             'related': c.extra_data_source == Column.SOURCE_PROPERTY,
-            'source': Column.SOURCE_CHOICES_MAP[c.extra_data_source],
+            'extraData': True
         })
 
     return columns

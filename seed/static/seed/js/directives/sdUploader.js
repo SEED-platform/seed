@@ -258,6 +258,7 @@ var makeFileSystemUploader = function(scope, element, attrs, filename) {
                             file: {
                                 filename: fileName,
                                 file_id: responseJSON.import_file_id,
+                                cycle_id: (scope.sourceprog == 'PortfolioManager' && scope.$parent.useField) ? 'year_ending' : scope.$parent.selectedCycle.id,
                                 source_type: scope.sourcetype,
                                 source_program: scope.sourceprog,
                                 source_program_version: scope.sourcever
@@ -301,7 +302,7 @@ var sdUploaderFineUploader = function(scope, element, attrs, filename) {
     } else {
         throw 'dest ' + dest + ' not valid!';
     }
-    $('.qq-upload-button').addClass('btn button btn-primary col-lg-12');
+    $('.qq-upload-button').addClass('btn button btn-primary').css('display', 'block');
     return uploader;
 };
 

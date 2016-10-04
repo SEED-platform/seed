@@ -147,14 +147,19 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
                     model.extra_data[raw_field] = cleaned_value
                 else:
                     _log.debug(
-                        "model name (%s) is not the same as the mapped table name (%s) -- skipping" % (
-                        model.__class__.__name__, table_name))  # noqa
+                        "model name '%s' is not the same as the mapped table name '%s' -- skipping field '%s'" % (
+                        model.__class__.__name__, table_name, field_name))  # noqa
             else:
                 _log.debug(
                     "model object does not have extra_data field, skipping mapping for %s" % raw_field)  # noqa
         else:
-            # Simply set the field to the cleaned value
-            setattr(model, field_name, cleaned_value)
+            # Simply set the field to the cleaned value if it is the correct model
+            if model.__class__.__name__ == table_name:
+                setattr(model, field_name, cleaned_value)
+            else:
+                _log.debug(
+                    "model name '%s' is not the same as the mapped table name '%s' -- skipping field '%s'" % (
+                        model.__class__.__name__, table_name, field_name))  # noqa
 
     return model
 

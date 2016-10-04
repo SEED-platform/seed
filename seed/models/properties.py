@@ -11,20 +11,19 @@ import logging
 from django.db import models
 from django_pgjson.fields import JsonField
 
-from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (
-    COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW
-)
 from seed.utils.generic import split_model_fields, obj_to_dict
 
 logger = logging.getLogger(__name__)
 
+from seed.data_importer.models import ImportFile
 from seed.models import (
     Cycle,
     StatusLabel,
     DATA_STATE,
-    DATA_STATE_UNKNOWN
+    DATA_STATE_UNKNOWN,
+    DATA_STATE_MATCHING,
+    ASSESSED_BS,
 )
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
@@ -52,9 +51,9 @@ class Property(models.Model):
 
 class PropertyState(models.Model):
     """Store a single property"""
-    # import_record = models.ForeignKey(ImportRecord)
     # Support finding the property by the import_file and source_type
     import_file = models.ForeignKey(ImportFile, null=True, blank=True)
+
     # FIXME: source_type needs to be a foreign key or make it import_file.source_type
     source_type = models.IntegerField(null=True, blank=True, db_index=True)
 
@@ -156,6 +155,11 @@ class PropertyState(models.Model):
 
             pv = PropertyView.objects.create(property=prop, cycle=cycle, state=self)
 
+            # Also set the data state on the promoted state to DATA_STATE_MATCHING
+            self.data_state = DATA_STATE_MATCHING
+            self.source_type = ASSESSED_BS
+            self.save()
+
             return pv
         elif len(pvs) == 1:
             logger.debug("Found 1 PropertyView... Nothing to do")
@@ -170,59 +174,6 @@ class PropertyState(models.Model):
 
     def __unicode__(self):
         return u'Property State - %s' % (self.pk)
-
-    # TODO: deprecate this method, was hacked during mapping testing
-    def assign_cycle_and_tax_lot(self, org, start_date, end_date, tax_lot_id):
-        """
-
-        Args:
-            org: Organization object
-            start_date: Start date of the property cycle
-            end_date: End date of the property cycle
-            tax_lot_id: Tax lot id
-
-        Returns:
-
-        """
-
-        # # TODO: we should set the cycle before we iterate over *every* row
-        # cycle, _ = Cycle.objects.get_or_create(
-        #     name=u'Hack Cycle',
-        #     organization=org,
-        #     start=start_date,
-        #     end=end_date
-        # )
-        #
-        # # create 1 to 1 pointless taxlots for now
-        # # tl = TaxLot.objects.create(
-        # #     organization=org
-        # # )
-        # #
-        # # tls, _ = TaxLotState.objects.get_or_create(
-        # #     jurisdiction_tax_lot_id=tax_lot_id
-        # # )
-        # #
-        # # tlv, _ = TaxLotView.objects.get_or_create(
-        # #     taxlot=tl,
-        # #     state=tls,
-        # #     cycle=cycle,
-        # # )
-        #
-        # self.save()
-        #
-        # # set the property view here for now to make sure that the data
-        # # show up in the bluesky tables
-        # property = Property.objects.create(
-        #     organization=org
-        # )
-        #
-        # PropertyView.objects.get_or_create(
-        #     property=property,
-        #     cycle=cycle,
-        #     state=self
-        # )
-
-        return self
 
     def clean(self, *args, **kwargs):
         date_field_names = (
@@ -289,27 +240,6 @@ class PropertyState(models.Model):
         # d['co_parent'] = self.co_parent.pk if self.co_parent else None
 
         return d
-
-    # TODO: oops, this should be in the ImportFile world, not the property
-    @staticmethod
-    def find_unmatched(import_file):
-        """Get unmatched building snapshots' id info from an import file.
-
-        :param import_file: ImportFile inst.
-        :rtype: list of tuples, field values specified in BS_VALUES_LIST.
-
-        NB: This does not return a queryset!
-
-        """
-
-        return PropertyState.objects.filter(
-            ~models.Q(source_type__in=[
-                COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW
-            ]),
-            # match_type=None,
-            import_file=import_file,
-            # canonical_building=None, # I assume that this was causing the "unmatched building to be defined"
-        )
 
 
 class PropertyView(models.Model):

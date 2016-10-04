@@ -27,6 +27,7 @@ class FakePagination(pagination.PageNumberPagination):
 
 
 class NoPagination(pagination.PageNumberPagination):
+
     def get_paginated_response(self, data):
         return response.Response(data)
 

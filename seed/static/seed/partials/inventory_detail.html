@@ -19,8 +19,8 @@
             <div class="section_action_container left" style="width: 50%;">
                 <span>
                     <h2>
-                        <i ng-if="inventory_type==='properties'" class="fa fa-building-o"></i>
-                        <i ng-if="inventory_type==='taxlots'" class="fa fa-map-o"></i>
+                        <span ng-if="inventory_type==='properties'"><i class="fa fa-building-o"></i>Property : {$ item_state.address_line_1 ? item_state.address_line_1 : '(no address 1)' $}</span>
+                        <span ng-if="inventory_type==='taxlots'"><i class="fa fa-map-o"></i>Tax Lot : {$ item_state.address_line_1 ? item_state.address_line_1 : '(no address 1)' $}</span>
                         {$ item_title $}
                     </h2>
                 </span>
@@ -189,32 +189,8 @@
 </div>
 
 <div class="section_content_container" style="margin-bottom:200px;">
-    <!-- List of related Tax Lots -->
-    <div ng-if="inventory_type==='properties'" class="section_content">
-        <div class="table_list_container table_item_detail" style="max-width:700px;">
-            <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
-                <thead>
-                    <tr>
-                        <th sd-resizable width="80">ID</th>
-                        <th sd-resizable class="ellipsis-resizable">Address</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="taxlot in inventory.related">
-                        <td> {$ taxlot.taxlot.id $}</td>
-                        <td>
-                            <a ui-sref="inventory_detail({inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">
-                                {$ taxlot.state.address ? taxlot.state.address : '(no address)' $}
-                            </a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- List of related Properties -->
-    <div ng-if="inventory_type==='taxlots'" class="section_content">
+    <!-- List of related items -->
+    <div class="section_content">
         <div class="table_list_container table_item_detail" style="max-width:700px;">
             <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
                 <thead>
@@ -223,7 +199,17 @@
                         <th sd-resizable class="ellipsis-resizable">Address Line 1</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody ng-if="inventory_type==='properties'">
+                    <tr ng-repeat="taxlot in inventory.related">
+                        <td> {$ taxlot.taxlot.id $}</td>
+                        <td>
+                            <a ui-sref="inventory_detail({inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">
+                                {$ taxlot.state.address ? taxlot.state.address : '(no address 1)' $}
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody ng-if="inventory_type==='taxlots'">
                     <tr ng-repeat="property in inventory.related">
                         <td> {$ property.property.id $}</td>
                         <td>
@@ -236,5 +222,4 @@
             </table>
         </div>
     </div>
-
 </div>
