@@ -57,12 +57,12 @@ class TestLabelsViewSet(TestCase):
 
         url = reverse('labels:label-list')
 
-        response = client.get(url)
+        response = client.get(url, {'organization_id': organization.pk, 'inventory_type': 'property'})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], organization.labels.count())
+        self.assertEqual(len(response.data), organization.labels.count())
 
-        results = response.data['results']
+        results = response.data
 
         self.assertEqual(len(results), organization.labels.count())
 
