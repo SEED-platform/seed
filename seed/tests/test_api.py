@@ -269,7 +269,7 @@ class TestApi(TestCase):
             'first_name': 'Brienne',
             'last_name': 'Tarth',
             'email': 'test+1@demo.com',
-            'role': 'member'
+            'role': 'member',
         }
 
         r = self.client.post('/api/v2/users/?organization_id=' + str(organization_id),
