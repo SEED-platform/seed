@@ -48,7 +48,9 @@ def unique(lol):
     """Calculate unique elements in a list of lists."""
     return sorted(set(itertools.chain.from_iterable(lol)))
 
-#TODO  obsolete this by creating a list view on property
+# TODO  obsolete this by creating a list view on property
+
+
 @require_organization_id
 @require_organization_membership
 @api_endpoint
@@ -58,7 +60,7 @@ def unique(lol):
 def get_properties(request):
     page = request.GET.get('page', 1)
     per_page = request.GET.get('per_page', 1)  # TODO set a sensible number
-                                               # this is a list view
+    # this is a list view
 
     cycle_id = request.GET.get('cycle')
     if cycle_id:
@@ -154,7 +156,7 @@ def get_properties(request):
     return response
 
 
-#TODO  obsolete this by creating a list view on taxlot
+# TODO  obsolete this by creating a list view on taxlot
 @require_organization_id
 @require_organization_membership
 @api_endpoint
@@ -163,8 +165,8 @@ def get_properties(request):
 @has_perm('requires_viewer')
 def get_taxlots(request):
     page = request.GET.get('page', 1)
-    per_page = request.GET.get('per_page', 1)# TODO set a sensible default
-                                             # this is a list view
+    per_page = request.GET.get('per_page', 1)  # TODO set a sensible default
+    # this is a list view
     cycle_id = request.GET.get('cycle')
     if cycle_id:
         cycle = Cycle.objects.get(organization_id=request.GET['organization_id'], pk=cycle_id)

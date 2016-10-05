@@ -66,7 +66,6 @@ class TestLabelsViewSet(TestCase):
 
         self.assertEqual(len(results), organization.labels.count())
 
-
     def test_organization_query_param_is_used(self):
         """
         Ensure that when the organization_id query parameter is provided, that

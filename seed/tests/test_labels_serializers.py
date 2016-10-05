@@ -25,6 +25,7 @@ from seed.serializers.labels import (
 Unit tests for map.py
 """
 
+
 @skip('BuildingSnapshot is referenced many times in this.')
 class TestLabelSerializer(TestCase):
     """Test the label serializer"""
