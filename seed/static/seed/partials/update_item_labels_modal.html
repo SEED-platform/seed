@@ -32,7 +32,7 @@
             </form>
         </div>
 
-        <div class="edit_text">Add or remove labels from {$ number_matching_search $} selected properties</div>
+        <div class="edit_text">Add or remove labels from {$ number_matching_search $} selected {$ inventory_ids.length == 1 ? (inventory_type == 'properties' ? 'property' : 'tax lot') : (inventory_type == 'properties' ? inventory_type : 'tax lots') $}</div>
 
         <div class="table-list-container">
 

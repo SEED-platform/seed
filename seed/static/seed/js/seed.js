@@ -458,9 +458,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
             return inventory_service.get_taxlot_columns();
           }
         }],
-        default_columns: ['user_service', function (user_service) {
-          return user_service.get_default_columns();
-        }],
         shared_fields_payload: ['user_service', function (user_service) {
           return user_service.get_shared_buildings();
         }]
@@ -475,15 +472,22 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
         $uibModalInstance: function () {
           return {close: function () {}};
         },
-        all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+        columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
           if ($stateParams.inventory_type === 'properties') {
-            return inventory_service.get_property_columns();
+            return inventory_service.get_property_columns().then(function (columns) {
+              _.remove(columns, 'related');
+              return _.map(columns, function (col) {
+                return _.omit(col, ['pinnedLeft', 'related']);
+              });
+            });
           } else if ($stateParams.inventory_type === 'taxlots') {
-            return inventory_service.get_taxlot_columns();
+            return inventory_service.get_taxlot_columns().then(function (columns) {
+              _.remove(columns, 'related');
+              return _.map(columns, function (col) {
+                return _.omit(col, ['pinnedLeft', 'related']);
+              });
+            });
           }
-        }],
-        default_columns: ['user_service', function (user_service) {
-          return user_service.get_default_columns();
         }]
       }
     })
@@ -1068,13 +1072,22 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           });
           return promise;
         }],
-        all_columns: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
-          if ($stateParams.inventory_type == 'properties') return inventory_service.get_property_columns();
-          else if ($stateParams.inventory_type == 'taxlots') return inventory_service.get_taxlot_columns();
-        }],
-        default_columns: ['user_service', function (user_service) {
-          //TODO: Return default Property columns
-          return [];
+        columns: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
+          if ($stateParams.inventory_type == 'properties') {
+            return inventory_service.get_property_columns().then(function (columns) {
+              _.remove(columns, 'related');
+              return _.map(columns, function (col) {
+                return _.omit(col, ['pinnedLeft', 'related']);
+              });
+            });
+          } else if ($stateParams.inventory_type == 'taxlots') {
+            return inventory_service.get_taxlot_columns().then(function (columns) {
+              _.remove(columns, 'related');
+              return _.map(columns, function (col) {
+                return _.omit(col, ['pinnedLeft', 'related']);
+              });
+            });
+          }
         }],
         labels_payload: ['$stateParams', 'label_service', function ($stateParams, label_service) {
           return label_service.get_labels([$stateParams.inventory_id], {

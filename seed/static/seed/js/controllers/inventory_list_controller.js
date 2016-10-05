@@ -40,12 +40,9 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.labels = labels;
       $scope.selected_labels = [];
 
-      var localColumns = localStorage.getItem('grid.' + $scope.inventory_type + '.visible');
-      if (!_.isNull(localColumns)) {
-        $scope.visible_columns = JSON.parse(localColumns);
-      } else {
-        $scope.visible_columns = [];
-      }
+      var localStorageKey = 'grid.' + $scope.inventory_type;
+
+      $scope.columns = inventory_service.loadSettings(localStorageKey, angular.copy(columns));
 
       $scope.clear_labels = function () {
         $scope.selected_labels = [];
@@ -207,16 +204,14 @@ angular.module('BE.seed.controller.inventory_list', [])
         width: 150
         //type: 'string'
       };
-      _.map(columns, function (col) {
-        var filter = {}, aggregation = {};
-        if (!_.isEmpty($scope.visible_columns)) col.visible = _.includes($scope.visible_columns, col.name);
-        if (col.type == 'number') filter = {filter: inventory_service.numFilter()};
-        else filter = {filter: inventory_service.textFilter()};
-        if (col.related) aggregation.treeAggregationType = 'uniqueList';
-        return _.defaults(col, filter, aggregation, defaults);
+      _.map($scope.columns, function (col) {
+        var options = {};
+        if (col.type == 'number') options.filter = inventory_service.numFilter();
+        else options.filter = inventory_service.textFilter();
+        if (col.related) options.treeAggregationType = 'uniqueList';
+        return _.defaults(col, options, defaults);
       });
-      columns = inventory_service.reorderBySelected(columns, $scope.visible_columns);
-      columns.unshift({
+      $scope.columns.unshift({
         name: 'id',
         displayName: '',
         cellTemplate: '<div class="ui-grid-row-header-link">' +
@@ -266,10 +261,16 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      var savePinning = function () {
-        /*if (!$scope.restoring) {
-         localStorage.setItem('grid.properties', JSON.stringify($scope.gridApi.saveState.save()));
-         }*/
+      var saveSettings = function () {
+        // Save all columns except first 3
+        var cols = _.filter($scope.gridApi.grid.columns, function (col) {
+          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'id'], col.name);
+        });
+        _.map(cols, function (col) {
+          col.pinnedLeft = col.renderContainer == 'left' && col.visible;
+          return col;
+        });
+        inventory_service.saveSettings(localStorageKey, cols);
       };
 
       $scope.gridOptions = {
@@ -289,7 +290,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         saveSelection: false,
         saveTreeView: false,
         showTreeExpandNoChildren: false,
-        columnDefs: columns,
+        columnDefs: $scope.columns,
         treeCustomAggregations: inventory_service.aggregations(),
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
@@ -302,11 +303,14 @@ angular.module('BE.seed.controller.inventory_list', [])
             angular.element($window).off('resize', debouncedHeightUpdate);
           });
 
-          gridApi.pinning.on.columnPinned($scope, savePinning);
+          gridApi.colMovable.on.columnPositionChanged($scope, saveSettings);
+          gridApi.core.on.columnVisibilityChanged($scope, saveSettings);
+          gridApi.pinning.on.columnPinned($scope, saveSettings);
 
           var selectionChanged = function () {
-            $scope.selectedCount = gridApi.selection.getSelectedCount();
-            $scope.selectedParentCount = _.filter(gridApi.selection.getSelectedRows(), {$$treeLevel: 0}).length;
+            var selected = gridApi.selection.getSelectedRows();
+            $scope.selectedCount = selected.length;
+            $scope.selectedParentCount = _.filter(selected, {$$treeLevel: 0}).length;
           };
 
           gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);

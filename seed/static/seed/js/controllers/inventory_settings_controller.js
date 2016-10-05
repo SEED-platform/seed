@@ -11,9 +11,8 @@ angular.module('BE.seed.controller.inventory_settings', [])
     'inventory_service',
     'user_service',
     'all_columns',
-    'default_columns',
     'shared_fields_payload',
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, all_columns, default_columns, shared_fields_payload) {
+    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, all_columns, shared_fields_payload) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id
@@ -22,21 +21,34 @@ angular.module('BE.seed.controller.inventory_settings', [])
         id: $stateParams.cycle_id
       };
 
+      var localStorageKey = 'grid.' + $scope.inventory_type;
+
       $scope.showSharedBuildings = shared_fields_payload.show_shared_buildings;
 
       var restoreDefaults = function () {
-        $scope.data = angular.copy(all_columns);
-        _.defer($scope.gridApi.selection.selectAllRows);
+        localStorage.removeItem(localStorageKey);
+        $scope.data = inventory_service.loadSettings(localStorageKey, angular.copy(all_columns));
+        _.defer(function () {
+          // Set row selection
+          $scope.gridApi.selection.clearSelectedRows();
+          _.forEach($scope.gridApi.grid.rows, function (row) {
+            if (row.entity.visible === false) row.setSelected(false);
+            else row.setSelected(true);
+          });
+        });
       };
 
       var saveSettings = function () {
-        var cols = [];
-        var count = $scope.gridApi.grid.selection.selectedCount;
-        if (count > 0 && count < all_columns.length) {
-          cols = _.map($scope.gridApi.selection.getSelectedRows(), 'name');
-          $scope.data = inventory_service.reorderBySelected($scope.data, cols);
-        }
-        localStorage.setItem('grid.' + $scope.inventory_type + '.visible', JSON.stringify(cols));
+        $scope.data = inventory_service.reorderSettings($scope.data);
+        inventory_service.saveSettings(localStorageKey, $scope.data);
+      };
+
+      var rowSelectionChanged = function () {
+        _.forEach($scope.gridApi.grid.rows, function (row) {
+          row.entity.visible = row.isSelected;
+          if (!row.isSelected && row.entity.pinnedLeft) row.entity.pinnedLeft = false;
+        });
+        saveSettings();
       };
 
       $scope.updateHeight = function () {
@@ -54,15 +66,16 @@ angular.module('BE.seed.controller.inventory_settings', [])
         user_service.set_default_columns([], $scope.showSharedBuildings);
       };
 
-      $scope.data = angular.copy(all_columns);
-      // Temp code while localStorage is still used:
-      var localColumns = localStorage.getItem('grid.' + $scope.inventory_type + '.visible');
-      if (!_.isNull(localColumns)) {
-        default_columns.columns = JSON.parse(localColumns);
-      } else {
-        default_columns.columns = [];
-      }
-      $scope.data = inventory_service.reorderBySelected($scope.data, default_columns.columns);
+      $scope.togglePinned = function (row) {
+        row.entity.pinnedLeft = !row.entity.pinnedLeft;
+        if (row.entity.pinnedLeft) {
+          row.entity.visible = true;
+          row.setSelected(true);
+        }
+        saveSettings();
+      };
+
+      $scope.data = inventory_service.loadSettings(localStorageKey, angular.copy(all_columns));
 
       $scope.gridOptions = {
         data: 'data',
@@ -78,25 +91,35 @@ angular.module('BE.seed.controller.inventory_settings', [])
         minRowsToShow: 30,
         rowTemplate: '<div grid="grid" class="ui-grid-draggable-row" draggable="true"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader, \'custom\': true }" ui-grid-cell></div></div>',
         columnDefs: [{
+          name: 'pinnedLeft',
+          displayName: '',
+          cellTemplate: '<div class="ui-grid-row-header-link">' +
+          '  <a class="ui-grid-cell-contents pinnable" style="text-align: center;" ng-disabled="!COL_FIELD" ng-click="grid.appScope.togglePinned(row)">' +
+          '    <i class="fa fa-thumb-tack"></i>' +
+          '  </a>' +
+          '</div>',
+          enableColumnMenu: false,
+          enableFiltering: false,
+          enableSorting: false,
+          width: 30
+        }, {
           name: 'displayName',
           displayName: 'Column Name',
+          cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{$ COL_FIELD CUSTOM_FILTERS $} <span ng-if="row.entity.related" class="badge" style="margin-left: 10px;">{$ grid.appScope.inventory_type == "properties" ? "tax lot" : "property" $}</span></div>',
           enableHiding: false
         }],
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
-          if (_.isEmpty(default_columns.columns)) {
-            _.defer(gridApi.selection.selectAllRows);
-          } else {
-            _.defer(function () {
-              // Select default rows
-              _.forEach($scope.gridApi.grid.rows, function (row) {
-                if (row.entity.defaultSelection) row.setSelected(true);
-              });
+          _.defer(function () {
+            // Set row selection
+            _.forEach($scope.gridApi.grid.rows, function (row) {
+              if (row.entity.visible === false) row.setSelected(false);
+              else row.setSelected(true);
             });
-          }
+          });
 
-          gridApi.selection.on.rowSelectionChanged($scope, saveSettings);
-          gridApi.selection.on.rowSelectionChangedBatch($scope, saveSettings);
+          gridApi.selection.on.rowSelectionChanged($scope, rowSelectionChanged);
+          gridApi.selection.on.rowSelectionChangedBatch($scope, rowSelectionChanged);
           gridApi.draggableRows.on.rowDropped($scope, saveSettings);
 
           _.delay($scope.updateHeight, 150);
