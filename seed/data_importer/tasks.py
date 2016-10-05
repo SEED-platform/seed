@@ -226,6 +226,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
             model_obj = TaxLotState
             # Data are still in the PropertyState object because it was imported into that table
             data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
+        else:
+            logger.error("The defined table was empty, skipping importing object for table")
 
         # Since we are importing CSV, then each extra_data field will have the same fields. So
         # save the map_model_obj outside of for loop to pass into the `save_column_names` methods
