@@ -237,7 +237,7 @@ class UserViewSet(viewsets.ViewSet):
         try:
             domain = request.get_host()
         except Exception:
-            domain = 'buildingenergy.com'
+            domain = 'buildingenergy.com'  # TODO: What should this value be now?
         invite_to_seed(domain, user.email,
                        default_token_generator.make_token(user), user.pk,
                        first_name)
@@ -661,7 +661,7 @@ class UserViewSet(viewsets.ViewSet):
 
         return {
             action: PERMS['requires_owner'](ou) for action in actions
-            }
+        }
 
     @ajax_request_class
     @detail_route(methods=['GET'])

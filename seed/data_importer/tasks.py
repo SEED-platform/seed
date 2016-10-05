@@ -218,6 +218,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
         logger.debug("extra data fields: {}".format(extra_data_fields))
 
         # All the data live in the extra_data field when the data are imported
+        data = []  # initialize to no data
         if table == 'PropertyState':
             model_obj = PropertyState
             data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
