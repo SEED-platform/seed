@@ -17,6 +17,10 @@ from seed.models.models import (
     SEED_DATA_SOURCES,
 )
 
+import logging
+
+_log = logging.getLogger(__name__)
+
 
 def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
     """Callable provided to MCM to return a previously mapped field.
@@ -424,4 +428,5 @@ class ColumnMapping(models.Model):
             # These should be lists of one element each.
             mapping[key[1]] = value
 
+        _log.debug("Mappings from get_column_mappings is: {}".format(mapping))
         return mapping, []
