@@ -57,10 +57,15 @@ class TestLabelsViewSet(TestCase):
 
         url = reverse('labels:label-list')
 
-        response = client.get(url)
+        response = client.get(url, {'organization_id': organization.pk, 'inventory_type': 'property'})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), organization.labels.count())
+
+        results = response.data
+
+        self.assertEqual(len(results), organization.labels.count())
+
 
     def test_organization_query_param_is_used(self):
         """
@@ -94,12 +99,17 @@ class TestLabelsViewSet(TestCase):
 
         url = reverse('labels:label-list')
 
-        response_a = client.get(url, {'organization_id': organization_a.pk})
-        response_b = client.get(url, {'organization_id': organization_b.pk})
+        response_a = client.get(url, {'organization_id': organization_a.pk, 'inventory_type': 'property'})
+        response_b = client.get(url, {'organization_id': organization_b.pk, 'inventory_type': 'property'})
 
         self.assertEqual(response_a.status_code, status.HTTP_200_OK)
         self.assertEqual(response_b.status_code, status.HTTP_200_OK)
-        assert response_a.data != response_b.data
+
+        results_a = set(result['organization_id'] for result in response_a.data)
+        results_b = set(result['organization_id'] for result in response_b.data)
+
+        assert results_a == {organization_a.pk}
+        assert results_b == {organization_b.pk}
 
 
 class TestUpdateInventoryLabelsAPIView(TestCase):
@@ -196,8 +206,10 @@ class TestUpdateInventoryLabelsAPIView(TestCase):
             username=self.user_details['username'],
             password=self.user_details['password']
         )
-        url = reverse('labels:property_labels')
-        url += '?organization_id={}'.format(self.org.id)
+        url = "{}?organization_id={}".format(
+            reverse('labels:property_labels'), self.org.id
+        )
+
         post_params = {
             'add_label_ids': [self.status_label.id],
             'remove_label_ids': [],

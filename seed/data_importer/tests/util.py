@@ -7,6 +7,7 @@
 
 import logging
 import os.path
+import datetime
 
 from django.core.files import File
 from django.test import TestCase
@@ -39,6 +40,10 @@ PROPERTIES_MAPPING = [
         "from_field": u'pm_property_id',
         "to_table_name": u'PropertyState',
         "to_field": u'pm_property_id',
+    }, {
+        "from_field": u'custom_id_1',
+        "to_table_name": u'PropertyState',
+        "to_field": u'custom_id_1',
     }, {
         "from_field": u'pm_parent_property_id',
         "to_table_name": u'PropertyState',
@@ -195,10 +200,7 @@ class DataMappingBaseTestCase(TestCase):
         org = Organization.objects.create()
 
         # Create an org user
-        OrganizationUser.objects.create(
-            user=user,
-            organization=org
-        )
+        OrganizationUser.objects.create(user=user, organization=org)
 
         import_record = ImportRecord.objects.create(
             owner=user, last_modified_by=user, super_organization=org
@@ -208,7 +210,15 @@ class DataMappingBaseTestCase(TestCase):
         import_file.source_type = import_file_source_type
         import_file.data_state = import_file_data_state
         import_file.save()
-        return user, org, import_file, import_record
+
+        cycle, _ = Cycle.objects.get_or_create(
+            name=u'Test Hack Cycle 2015',
+            organization=org,
+            start=datetime.datetime(2015, 1, 1),
+            end=datetime.datetime(2015, 12, 31),
+        )
+
+        return user, org, import_file, import_record, cycle
 
     def load_import_file_file(self, filename, import_file):
         f = os.path.join(os.path.dirname(__file__), 'data', filename)

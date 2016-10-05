@@ -27,9 +27,12 @@ from seed.utils.api import drf_api_endpoint
 from seed.models import (
     StatusLabel as Label,
     Property,
-    TaxLot
+    TaxLot,
 )
-from seed.serializers.labels import LabelSerializer
+
+from seed.serializers.labels import (
+    LabelSerializer,
+)
 
 # missing from DRF specified in requirements
 status.HTTP_422_UNPROCESSABLE_ENTITY = 422

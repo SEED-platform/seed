@@ -1531,7 +1531,8 @@ class GetDatasetsViewsTests(TestCase):
         import_record.super_organization = self.org
         import_record.save()
         response = self.client.get(
-            reverse("apiv2:datasets-detail", args=[import_record.pk]) + '?organization_id=' + str(self.org.pk)
+            reverse("apiv2:datasets-detail", args=[import_record.pk]) + '?organization_id=' + str(
+                self.org.pk)
         )
         self.assertEqual('success', json.loads(response.content)['status'])
 
@@ -1541,7 +1542,8 @@ class GetDatasetsViewsTests(TestCase):
         import_record.save()
 
         response = self.client.delete(
-            reverse_lazy("apiv2:datasets-detail", args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
+            reverse_lazy("apiv2:datasets-detail",
+                         args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json'
         )
         self.assertEqual('success', json.loads(response.content)['status'])
@@ -1558,7 +1560,8 @@ class GetDatasetsViewsTests(TestCase):
         }
 
         response = self.client.put(
-            reverse_lazy("apiv2:datasets-detail", args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
+            reverse_lazy("apiv2:datasets-detail",
+                         args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
             data=json.dumps(post_data)
         )
@@ -2241,7 +2244,8 @@ class TestMCMViews(TestCase):
 
     def test_get_column_mapping_suggestions(self):
         response = self.client.get(
-            reverse_lazy("apiv2:data_files-mapping-suggestions", args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
+            reverse_lazy("apiv2:data_files-mapping-suggestions",
+                         args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json'
         )
         self.assertEqual('success', json.loads(response.content)['status'])
@@ -3223,7 +3227,6 @@ class InventoryViewTests(TestCase):
         self.assertIn('extra_data_field', related)
         self.assertEquals(related['extra_data_field'], 'edfval')
 
-    @skip("Fix for new data model")
     def test_get_taxlots_no_cycle_id(self):
         property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property()
@@ -3318,7 +3321,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'cycle': self.cycle.pk,
             'page': 1,
-            'per_page': 10,
+            'per_page': 256,
         }
         response = self.client.get(reverse("app:taxlots"), params)
         results = json.loads(response.content)['results']
@@ -3389,7 +3392,6 @@ class InventoryViewTests(TestCase):
         self.assertEquals(result['extra_data_field'], 'edfval')
         self.assertEquals(len(result['related']), 1)
 
-    @skip("Fix for new data model")
     def test_get_taxlots_page_not_an_integer(self):
         property_state = self.property_state_factory.get_property_state(
             extra_data=json.dumps({'extra_data_field': 'edfval'})
@@ -3621,18 +3623,19 @@ class InventoryViewTests(TestCase):
         self.assertEqual(results[0], pm_property_id_col)
 
         expected_property_extra_data_column = {
+            'extraData': True,
             'name': 'property_extra_data_column',
-            'displayName': 'property_extra_data_column (property)',
+            'displayName': 'property_extra_data_column',
             'related': False,
-            'source': 'property'
         }
+
         self.assertIn(expected_property_extra_data_column, results)
 
         expected_taxlot_extra_data_column = {
+            'extraData': True,
             'name': 'taxlot_extra_data_column',
-            'displayName': 'taxlot_extra_data_column (taxlot)',
+            'displayName': 'taxlot_extra_data_column',
             'related': True,
-            'source': 'taxlot'
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
 
@@ -3667,17 +3670,17 @@ class InventoryViewTests(TestCase):
         self.assertEqual(results[0], jurisdiction_tax_lot_id_col)
 
         expected_property_extra_data_column = {
+            'extraData': True,
             'name': 'property_extra_data_column',
-            'displayName': 'property_extra_data_column (property)',
+            'displayName': 'property_extra_data_column',
             'related': True,
-            'source': 'property'
         }
         self.assertIn(expected_property_extra_data_column, results)
 
         expected_taxlot_extra_data_column = {
+            'extraData': True,
             'name': 'taxlot_extra_data_column',
-            'displayName': 'taxlot_extra_data_column (taxlot)',
+            'displayName': 'taxlot_extra_data_column',
             'related': False,
-            'source': 'taxlot'
         }
         self.assertIn(expected_taxlot_extra_data_column, results)

@@ -5,7 +5,7 @@
 :author
 """
 """
-Utility methods pertaining to data import tasks.
+Utility methods pertaining to data import tasks (save, mapping, matching).
 """
 import datetime
 

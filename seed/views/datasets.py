@@ -22,6 +22,7 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import BuildingSnapshot
 from seed.utils.api import api_endpoint_class
 from seed.utils.time import convert_to_js_timestamp
+from seed.models import obj_to_dict
 
 _log = logging.getLogger(__name__)
 
@@ -36,52 +37,26 @@ class DatasetViewSet(viewsets.ViewSet):
     def list(self, request):
         """
         Retrieves all datasets for the user's organization.
-
-        Until we can get the nested JSON response working, here's what we're sending back as a response:
-
-           {
-                'status': 'success',
-                'datasets':  [
-                    {
-                        'name': Name of ImportRecord,
-                        'number_of_buildings': Total number of buildings in all ImportFiles,
-                        'id': ID of ImportRecord,
-                        'updated_at': Timestamp of when ImportRecord was last modified,
-                        'last_modified_by': Email address of user making last change,
-                        'importfiles': [
-                            {
-                                'name': Name of associated ImportFile, e.g. 'buildings.csv',
-                                'number_of_buildings': Count of buildings in this file,
-                                'number_of_mappings': Number of mapped headers to fields,
-                                'number_of_cleanings': Number of fields cleaned,
-                                'source_type': Type of file (see source_types),
-                                'id': ID of ImportFile (needed for most operations)
-                            }
-                        ],
-                        ...
-                    },
-                    ...
-                ]
-            }
         ---
+        type:
+            status:
+                required: true
+                type: string
+                description: Either success or error
+            datasets:
+                required: true
+                type: array[dataset]
+                description: Returns an array where each item is a full dataset structure, including
+                             keys ''name'', ''number_of_buildings'', ''id'', ''updated_at'',
+                             ''last_modified_by'', ''importfiles'', ...
         parameters:
             - name: organization_id
               description: The organization_id for this user's organization
               required: true
               paramType: query
-        type:
-            status:
-                required: true
-                type: string
-                description: "'success' if the call succeeds"
-            datasets:
-                required: true
-                description: The datasets
-                type: object
         """
 
         org_id = request.query_params.get('organization_id', None)
-        from seed.models import obj_to_dict
         org = Organization.objects.get(pk=org_id)
         datasets = []
         for d in ImportRecord.objects.filter(super_organization=org):
@@ -165,38 +140,28 @@ class DatasetViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         """
             Retrieves a dataset (ImportRecord).
-
-            Until we can get the nested JSON response working, here's what we're sending back as a response:
-
-            {
-                'status': 'success',
-                'dataset': {
-                    'name': Name of ImportRecord,
-                    'number_of_buildings': Total number of buildings in all ImportFiles for this dataset,
-                    'id': ID of ImportRecord,
-                    'updated_at': Timestamp of when ImportRecord was last modified,
-                    'last_modified_by': Email address of user making last change,
-                    'importfiles': [
-                        {
-                           'name': Name of associated ImportFile, e.g. 'buildings.csv',
-                           'number_of_buildings': Count of buildings in this file,
-                           'number_of_mappings': Number of mapped headers to fields,
-                           'number_of_cleanings': Number of fields cleaned,
-                           'source_type': Type of file (see source_types),
-                           'id': ID of ImportFile (needed for most operations)
-                        }
-                     ],
-                     ...
-                },
-                    ...
-            }
             ---
+            type:
+                status:
+                    required: true
+                    type: string
+                    description: Either success or error
+                dataset:
+                    required: true
+                    type: dictionary
+                    description: A dictionary of a full dataset structure, including
+                                 keys ''name'', ''number_of_buildings'', ''id'', ''updated_at'',
+                                 ''last_modified_by'', ''importfiles'', ...
             parameter_strategy: replace
             parameters:
                 - name: pk
                   description: "Primary Key"
                   required: true
                   paramType: path
+                - name: organization_id
+                  description: The organization_id for this user's organization
+                  required: true
+                  paramType: query
         """
 
         organization_id = request.query_params.get('organization_id', None)
@@ -208,8 +173,6 @@ class DatasetViewSet(viewsets.ViewSet):
             return JsonResponse({'status': 'error', 'message': 'Bad (non-numeric) organization_id'})
 
         dataset_id = pk
-
-        from seed.models import obj_to_dict
 
         # check if user has access to the dataset
         d = ImportRecord.objects.filter(

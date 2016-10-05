@@ -11,7 +11,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, serializers
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route, detail_route
 
@@ -104,6 +104,15 @@ def _get_severity_from_js(severity):
     """
     d = {v: k for k, v in dict(CLEANSING_SEVERITY).items()}
     return d.get(severity)
+
+
+class EmailAndIDSerializer(serializers.Serializer):
+    email = serializers.CharField(max_length=100)
+    user_id = serializers.IntegerField()
+
+
+class ListUsersResponseSerializer(serializers.Serializer):
+    users = EmailAndIDSerializer(many=True)
 
 
 class UserViewSet(viewsets.ViewSet):
@@ -207,6 +216,7 @@ class UserViewSet(viewsets.ViewSet):
         # see Organization.add_member()
         if not org.is_member(user):
             org.add_member(user)
+
         if body.get('role'):
             OrganizationUser.objects.filter(
                 organization_id=org.pk,
@@ -237,14 +247,7 @@ class UserViewSet(viewsets.ViewSet):
         Retrieves all users' email addresses and IDs.
         Only usable by superusers.
         ---
-        type:
-            users:
-                many: true
-                description: an array of email/user_id objects
-                email:
-                    description: email address
-                user_id:
-                    description: user_id
+        response_serializer: ListUsersResponseSerializer
         """
         users = []
         for u in User.objects.all():

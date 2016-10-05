@@ -36,7 +36,9 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
       $http({
         method: 'GET',
         url: '/api/v2/datasets/' + dataset_id + '/',
-        params: {}
+        params: {
+          organization_id: user_service.get_organization().id
+        }
       }).success(function (data, status, headers, config) {
         defer.resolve(data);
       }).error(function (data, status, headers, config) {
