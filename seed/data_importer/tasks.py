@@ -44,6 +44,7 @@ from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.data.ESPM import espm as espm_schema
 from seed.lib.mcm.data.SEED import seed as seed_schema
+from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
@@ -84,6 +85,8 @@ PORTFOLIO_CLEANER = cleaners.Cleaner(espm_schema.schema)
 PUNCT_REGEX = re.compile('[{0}]'.format(
     re.escape(string.punctuation)
 ))
+
+STR_TO_CLASS = {"TaxLotState": TaxLotState, "PropertyState": PropertyState}
 
 
 def get_cache_increment_value(chunk):
@@ -175,18 +178,16 @@ def _normalize_tax_lot_id(value):
 
 
 @shared_task
-def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
-                  **kwargs):
+def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwargs):
     """Does the work of matching a mapping to a source type and saving
 
     :param ids: list of PropertyState IDs to map.
     :param file_pk: int, the PK for an ImportFile obj.
-    :param source_type: int, represented by either ASSESSED_RAW, or
-        PORTFOLIO_RAW.
+    :param source_type: int, represented by either ASSESSED_RAW or PORTFOLIO_RAW.
     :param prog_key: string, key of the progress key
     :param increment: double, value by which to increment progress key
-    :param cleaner: (optional), the cleaner class you want to send
-    to mapper.map_row. (e.g. turn numbers into floats.).
+    :param cleaner: (optional), the cleaner class you want to send to mapper.map_row.
+                    (e.g. turn numbers into floats.).
     :param raw_ids: (optional kwarg), the list of ids in chunk order.
 
     """
@@ -199,83 +200,104 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args,
 
     org = Organization.objects.get(pk=import_file.import_record.super_organization.pk)
 
-    mappings, _ = ColumnMapping.get_column_mappings(org)
-    logger.debug("Mappings are %s" % mappings)
+    table_mappings = ColumnMapping.get_column_mappings_by_table_name(org)
+    logger.debug("Mappings are %s" % table_mappings)
     map_cleaner = _build_cleaner(org)
 
-    # create a set of tables that are being mapped to.
-    tables = set()
-    for k, v in mappings.iteritems():
-        tables.add(v[0])
-
+    # yes, there are three cascading for loops here. sorry :(
     md = MappingData()
-    for table in tables:
-        # apply_columns are extra_data columns (the raw column names)
+    for table, mappings in table_mappings.iteritems():
+        # This may be historic, but we need to pull out the extra_data_fields here to pass into
+        # mapper.map_row. apply_columns are extra_data columns (the raw column names)
         extra_data_fields = []
         for k, v in mappings.iteritems():
             if not md.find_column(v[0], v[1]):
                 extra_data_fields.append(k)
         logger.debug("extra data fields: {}".format(extra_data_fields))
+        logger.debug("table {} has the maps: {}".format(table, mappings))
+        # All the data live in the PropertyState.extra_data field when the data are imported
+        data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
 
-        # All the data live in the extra_data field when the data are imported
-        if table == 'PropertyState':
-            model_obj = PropertyState
-            data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
-        elif table == 'TaxLotState':
-            model_obj = TaxLotState
-            # Data are still in the PropertyState object because it was imported into that table
-            data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
+        # figure out which import field is defined as the unique field that may have a delimiter of
+        # individual values (e.g. tax lot ids). The definition of the delimited field is currently
+        # hard coded
+        try:
+            delimited_field = mappings.keys()[
+                mappings.values().index(('TaxLotState', 'jurisdiction_tax_lot_id'))]
+        except ValueError:
+            delimited_field = None
+            # field does not exist in mapping list, so ignoring
+
+        logger.debug("my delimited_field is {}".format(delimited_field))
+
+        # TODO: we probably need a way to allow for certain fields to be imported into all tables.
+        # for example the jurisdiction_tax_lot_id is useful on propertystate.extra_data too.
 
         # Since we are importing CSV, then each extra_data field will have the same fields. So
         # save the map_model_obj outside of for loop to pass into the `save_column_names` methods
         map_model_obj = None
-        for row in data:
-            # TODO: during the mapping the data are saved back in the database
-            # If the user decided to not use the mapped data and go back and remap
-            # then the data will forever be in the property state table for
-            # no reason. FIX THIS!
-            map_model_obj = mapper.map_row(
-                row.extra_data,
-                mappings,
-                model_obj,
-                extra_data_fields,
-                cleaner=map_cleaner,
-                *args,
-                **kwargs
-            )
 
-            # Assign some other arguments here
-            map_model_obj.import_file = import_file
-            map_model_obj.source_type = save_type
-            if hasattr(map_model_obj, 'data_state'):
-                map_model_obj.data_state = DATA_STATE_MAPPING
-            if hasattr(map_model_obj, 'organization'):
-                map_model_obj.organization = import_file.import_record.super_organization
-            if hasattr(map_model_obj, 'clean'):
-                map_model_obj.clean()
+        # Loop over all the rows
+        for original_row in data:
 
-            # --- BEGIN TEMP HACK ----
-            # TODO: fix these in the cleaner, but for now just get things to work, yuck.
-            # It appears that the cleaner pulls from some schema somewhere that defines the
-            # data types... stay tuned.
-            if hasattr(map_model_obj, 'recent_sale_date') and map_model_obj.recent_sale_date == '':
-                logger.debug("recent_sale_date was an empty string, setting to None")
-                map_model_obj.recent_sale_date = None
-            if hasattr(map_model_obj, 'generation_date') and map_model_obj.generation_date == '':
-                logger.debug("generation_date was an empty string, setting to None")
-                map_model_obj.generation_date = None
-            if hasattr(map_model_obj, 'release_date') and map_model_obj.release_date == '':
-                logger.debug("release_date was an empty string, setting to None")
-                map_model_obj.release_date = None
-            if hasattr(map_model_obj, 'year_ending') and map_model_obj.year_ending == '':
-                logger.debug("year_ending was an empty string, setting to None")
-                map_model_obj.year_ending = None
-            # --- END TEMP HACK ----
+            # expand the row into multiple rows if needed with the delimited_field replaced with a
+            # single value. This minimizes the need to rewrite the downstream code.
+            # Weeee... the data are in the extra_data column.
+            for row in expand_rows(original_row.extra_data, delimited_field):
 
-            map_model_obj.save()
+                # TODO: during the mapping the data are saved back in the database
+                # If the user decided to not use the mapped data and go back and remap
+                # then the data will forever be in the property state table for
+                # no reason. FIX THIS!
+                map_model_obj = mapper.map_row(
+                    row,
+                    mappings,
+                    STR_TO_CLASS[table],
+                    extra_data_fields,
+                    cleaner=map_cleaner,
+                    *args,
+                    **kwargs
+                )
 
+                # Assign some other arguments here
+                map_model_obj.import_file = import_file
+                map_model_obj.source_type = save_type
+                if hasattr(map_model_obj, 'data_state'):
+                    map_model_obj.data_state = DATA_STATE_MAPPING
+                if hasattr(map_model_obj, 'organization'):
+                    map_model_obj.organization = import_file.import_record.super_organization
+                if hasattr(map_model_obj, 'clean'):
+                    map_model_obj.clean()
+
+                # --- BEGIN TEMP HACK ----
+                # TODO: fix these in the cleaner, but for now just get things to work, yuck.
+                # It appears that the cleaner pulls from some schema somewhere that defines the
+                # data types... stay tuned.
+                if hasattr(map_model_obj,
+                           'recent_sale_date') and map_model_obj.recent_sale_date == '':
+                    logger.debug("recent_sale_date was an empty string, setting to None")
+                    map_model_obj.recent_sale_date = None
+                if hasattr(map_model_obj,
+                           'generation_date') and map_model_obj.generation_date == '':
+                    logger.debug("generation_date was an empty string, setting to None")
+                    map_model_obj.generation_date = None
+                if hasattr(map_model_obj, 'release_date') and map_model_obj.release_date == '':
+                    logger.debug("release_date was an empty string, setting to None")
+                    map_model_obj.release_date = None
+                if hasattr(map_model_obj, 'year_ending') and map_model_obj.year_ending == '':
+                    logger.debug("year_ending was an empty string, setting to None")
+                    map_model_obj.year_ending = None
+                # --- END TEMP HACK ----
+
+                # There is a potential thread safe issue here:
+                # This method is called in parallel on production systems, so we need to make
+                # sure that the object hasn't already been created.
+                # For example, in the test data the tax lot id is the same for many rows. Make sure
+                # to only create/save the object if it hasn't been created before.
+                map_model_obj.save()
+
+                # Make sure that we've saved all of the extra_data column names from the first item in list
         if map_model_obj:
-            # Make sure that we've saved all of the extra_data column names
             Column.save_column_names(map_model_obj)
 
     increment_cache(prog_key, increment)
@@ -773,7 +795,8 @@ def handle_id_matches(unmatched_bs, test_property, import_file, user_pk):
             match.pk,
             unmatched_bs.pk,
             confidence=0.9,
-            match_type=SYSTEM_MATCH,  # TODO: we should and probably can remove this field, please :D
+            match_type=SYSTEM_MATCH,
+            # TODO: we should and probably can remove this field, please :D
             user=import_file.import_record.owner,
             default_pk=unmatched_bs.pk
         )

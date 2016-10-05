@@ -425,3 +425,49 @@ class ColumnMapping(models.Model):
             mapping[key[1]] = value
 
         return mapping, []
+
+    @staticmethod
+    def get_column_mappings_by_table_name(organization):
+        """
+        Breaks up the get_column_mappings into another layer to provide access by the table
+        name as a key.
+
+        :param organization: instance, Organization
+        :return: dict
+
+        expected = {
+            u'PropertyState': {
+                u'Wookiee': (u'PropertyState', u'Dothraki'),
+                u'eui': (u'PropertyState', u'site_eui'),
+            },
+            u'TaxLotState': {
+                u'address': (u'TaxLotState', u'address'),
+                u'Ewok': (u'TaxLotState', u'Hattin'),
+            }
+        }
+
+        """
+
+        data, _ = ColumnMapping.get_column_mappings(organization)
+        # data will be in format
+        # {
+        #     u'Wookiee': (u'PropertyState', u'Dothraki'),
+        #     u'Ewok': (u'TaxLotState', u'Hattin'),
+        #     u'eui': (u'PropertyState', u'site_eui'),
+        #     u'address': (u'TaxLotState', u'address')
+        # }
+
+        tables = set()
+        for k, v in data.iteritems():
+            tables.add(v[0])
+
+        # initialize the new container to store the results
+        # (there has to be a better way of doing this... not enough time)
+        container = {}
+        for t in tables:
+            container[t] = {}
+
+        for k, v in data.iteritems():
+            container[v[0]][k] = v
+
+        return container

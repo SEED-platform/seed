@@ -12,9 +12,9 @@
 
 from .cycles import *  # noqa
 from .models import *  # noqa
+from .joins import *  # noqa
 from .properties import *  # noqa
 from .tax_lots import *  # noqa
 from .columns import *  # noqa
-from .joins import *  # noqa
 from .auditlog import *  # noqa
 from .deprecate import *  # noqa
