@@ -641,9 +641,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
             importfile_id
           );
         }],
-        all_columns: ['building_services', function (building_services) {
-          return building_services.get_columns();
-        }],
         auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
           var organization_id = user_service.get_organization().id;
           return auth_service.is_authorized(organization_id, ['requires_member'])

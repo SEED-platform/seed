@@ -670,6 +670,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
     };
 
+    inventory_service.removeSettings = function (key) {
+      key += '.' + user_service.get_organization().id;
+      localStorage.removeItem(key);
+    };
+
     // A list of which fields have date values. This will be used by controller
     // to format date value correctly. Ideally at some point this should be gathered
     // from the server rather than hardcoded here.

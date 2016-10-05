@@ -26,7 +26,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
       $scope.showSharedBuildings = shared_fields_payload.show_shared_buildings;
 
       var restoreDefaults = function () {
-        localStorage.removeItem(localStorageKey);
+        inventory_service.removeSettings(localStorageKey);
         $scope.data = inventory_service.loadSettings(localStorageKey, angular.copy(all_columns));
         _.defer(function () {
           // Set row selection

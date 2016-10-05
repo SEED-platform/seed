@@ -1299,13 +1299,16 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
             map_args=[organization],
             thresh=20  # percentage match we require
         )
-        # replace None with empty string for column names and tables
+        # replace None with empty string for column names and PropertyState for tables
         for m in suggested_mappings:
             table, dest, conf = suggested_mappings[m]
-            if table is None:
-                suggested_mappings[m][0] = u''
             if dest is None:
                 suggested_mappings[m][1] = u''
+
+    for m in suggested_mappings:
+        table, dest, conf = suggested_mappings[m]
+        if not table:
+            suggested_mappings[m][0] = 'PropertyState'
 
     result['suggested_column_mappings'] = suggested_mappings
     result['column_names'] = md.building_columns()
