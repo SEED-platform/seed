@@ -37,7 +37,6 @@ from seed.tasks import (
 from seed.utils.api import api_endpoint_class
 from seed.utils.organizations import create_organization
 
-
 _log = logging.getLogger(__name__)
 
 
@@ -123,11 +122,13 @@ class UserViewSet(viewsets.ViewSet):
         try:
             user = User.objects.get(pk=pk)
         except ObjectDoesNotExist:
-            return False, JsonResponse({'status': 'error', 'message': "Could not find user with pk = " + str(pk)},
-                                       status=status.HTTP_404_NOT_FOUND)
+            return False, JsonResponse(
+                {'status': 'error', 'message': "Could not find user with pk = " + str(pk)},
+                status=status.HTTP_404_NOT_FOUND)
         if not user == request.user:
-            return False, JsonResponse({'status': 'error', 'message': "Cannot access user with pk = " + str(pk)},
-                                       status=status.HTTP_403_FORBIDDEN)
+            return False, JsonResponse(
+                {'status': 'error', 'message': "Cannot access user with pk = " + str(pk)},
+                status=status.HTTP_403_FORBIDDEN)
         return True, user
 
     @api_endpoint_class
@@ -217,11 +218,16 @@ class UserViewSet(viewsets.ViewSet):
         if not org.is_member(user):
             org.add_member(user)
 
-        if body.get('role'):
+        if body['role']:
+            # check if this is a dict, if so, grab the value out of 'value'
+            role = body['role']
+            if isinstance(role, dict):
+                role = role['value']
+
             OrganizationUser.objects.filter(
                 organization_id=org.pk,
                 user_id=user.pk
-            ).update(role_level=_get_role_from_js(body['role']))
+            ).update(role_level=_get_role_from_js(role))
 
         if created:
             user.email = email
@@ -655,7 +661,7 @@ class UserViewSet(viewsets.ViewSet):
 
         return {
             action: PERMS['requires_owner'](ou) for action in actions
-        }
+            }
 
     @ajax_request_class
     @detail_route(methods=['GET'])
