@@ -201,8 +201,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         # make sure that the new data was loaded correctly
         ps = PropertyState.objects.filter(address_line_1='2700 Welstone Ave NE')[0]
         self.assertEqual(ps.site_eui, 1202)
-        # TODO: why is the jurisdiction_tax_lot_id an integer in the extra data field?
-        self.assertEqual(ps.extra_data['jurisdiction_tax_lot_id'], 11160509)
+        self.assertEqual(ps.extra_data['jurisdiction_tax_lot_id'], '11160509')
 
     def test_mapping_no_properties(self):
         # update the mappings to not include any taxlot tables in the data

@@ -29,7 +29,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
       $scope.defaultColors = ['#458cc8', '#779e1c', '#f2c41d', '#939495', '#c83737', '#f18630'];
 
       /* Setup models from "From" and "To" selectors */
-      $scope.cycles = cycles;
+      $scope.cycles = cycles.cycles;
 
       /* Model for pulldowns, initialized in init below */
       $scope.fromCycle = {};
@@ -270,12 +270,11 @@ angular.module('BE.seed.controller.inventory_reports', [])
        The chart will update automatically as it's watching the chartData property on the scope.
        */
       function getChartData() {
-
         var xVar = $scope.xAxisSelectedItem.varName;
         var yVar = $scope.yAxisSelectedItem.varName;
         $scope.chartIsLoading = true;
 
-        inventory_reports_service.get_report_data(xVar, yVar, $scope.toCycle.selected_cycle.start, $scope.fromCycle.selected_cycle.end)
+        inventory_reports_service.get_report_data(xVar, yVar, $scope.fromCycle.selected_cycle.start, $scope.toCycle.selected_cycle.end)
           .then(function (data) {
               data = data.data;
               var yAxisType = ( yVar === 'use_description' ? 'Category' : 'Measure');
@@ -327,8 +326,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
         $scope.aggChartIsLoading = true;
         inventory_reports_service.get_aggregated_report_data(
           xVar, yVar,
-          $scope.toCycle.selected_cycle.start,
-          $scope.fromCycle.selected_cycle.end
+          $scope.fromCycle.selected_cycle.start,
+          $scope.toCycle.selected_cycle.end
         ).then(function (data) {
             data = data.aggregated_data;
             $scope.aggPropertyCounts = data.property_counts;
@@ -372,9 +371,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
         var colorsArr = [];
         var numPropertyGroups = propertyCounts.length;
         for (var groupIndex = 0; groupIndex < numPropertyGroups; groupIndex++) {
-          var obj = {};
-          obj.seriesName = propertyCounts[groupIndex].yr_e;
-          obj.color = $scope.defaultColors[groupIndex];
+          var obj = {
+            color: $scope.defaultColors[groupIndex],
+            seriesName: propertyCounts[groupIndex].yr_e
+          };
           propertyCounts[groupIndex].color = obj.color;
           colorsArr.push(obj);
         }
@@ -389,10 +389,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
         // Initialize pulldowns
         $scope.fromCycle = {
-          selected_cycle: $scope.cycles.cycles[0]
+          selected_cycle: _.head($scope.cycles)
         };
         $scope.toCycle = {
-          selected_cycle: $scope.cycles.cycles[$scope.cycles.cycles.length - 1]
+          selected_cycle: _.last($scope.cycles)
         };
 
       }

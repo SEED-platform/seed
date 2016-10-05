@@ -460,6 +460,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           organization_id: organization_id
         }
       }).success(function (data, status, headers, config) {
+        // Remove empty columns
+        _.remove(data, function (datum) {
+          return _.isEmpty(datum.name);
+        });
         defer.resolve(data);
       }).error(function (data, status, headers, config) {
         defer.reject(data, status);
@@ -481,6 +485,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           organization_id: organization_id
         }
       }).success(function (data, status, headers, config) {
+        // Remove empty columns
+        _.remove(data, function (datum) {
+          return _.isEmpty(datum.name);
+        });
         defer.resolve(data);
       }).error(function (data, status, headers, config) {
         defer.reject(data, status);

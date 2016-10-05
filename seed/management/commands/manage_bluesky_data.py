@@ -36,13 +36,13 @@ class Command(BaseCommand):
 
         # Column migration arguments
         parser.add_argument('--no-update-columns', dest='update_columns', default=True, action="store_false")
-        parser.add_argument('--update-columns', dest='update_columns', default=True, action="store_true")
+        parser.add_argument('--update-columns',    dest='update_columns', default=True, action="store_true")
 
-        parser.add_argument('--no-add-unmapped-columns', dest='add_unmapped_columns', default=False, action="store_false")
-        parser.add_argument('--add-unmapped-columns', dest='add_unmapped_columns', default=False, action="store_true")
+        parser.add_argument('--no-add-unmapped-columns', dest='add_unmapped_columns', default=True, action="store_false")
+        parser.add_argument('--add-unmapped-columns',    dest='add_unmapped_columns', default=True, action="store_true")
 
         parser.add_argument('--no-create-missing-columns', dest='create_missing_columns', default=True, action="store_false")
-        parser.add_argument('--create-missing-columns', dest='create_missing_columns', default=True, action="store_true")
+        parser.add_argument('--create-missing-columns',    dest='create_missing_columns', default=True, action="store_true")
 
         # Labels arguments
 
