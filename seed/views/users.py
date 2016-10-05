@@ -218,7 +218,7 @@ class UserViewSet(viewsets.ViewSet):
         if not org.is_member(user):
             org.add_member(user)
 
-        if body['role']:
+        if body.get('role'):
             # check if this is a dict, if so, grab the value out of 'value'
             role = body['role']
             if isinstance(role, dict):
