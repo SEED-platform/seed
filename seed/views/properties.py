@@ -690,7 +690,7 @@ def get_taxlot_columns(request):
             'name': 'pm_parent_property_id',
             'displayName': 'PM Parent Property ID',
             'type': 'numberStr',
-            'related': False
+            'related': True
         }, {
             'name': 'gross_floor_area',
             'displayName': 'Property Floor Area',

@@ -506,10 +506,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           if (filterData) {
             var inverse = filterData[1] == '!';
             var value = filterData[2];
-            regex = new RegExp('^' + _.escapeRegExp(value) + '$');
+            regex = new RegExp('^' + value + '$');
             return inverse ? !regex.test(cellValue) : regex.test(cellValue);
           } else {
-            regex = new RegExp(_.escapeRegExp(searchTerm), 'i');
+            regex = new RegExp(searchTerm, 'i');
             return regex.test(cellValue);
           }
         }
