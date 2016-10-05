@@ -33,11 +33,11 @@ from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.utils import batch
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
+    BuildingSnapshot,
     CanonicalBuilding,
     Compliance,
     Project,
     ProjectBuilding,
-    BuildingSnapshot,
 )
 from seed.utils import time as time_utils
 from seed.utils.buildings import get_search_query

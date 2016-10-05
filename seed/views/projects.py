@@ -8,38 +8,50 @@
 import datetime
 import logging
 
-# django imports
-from seed.utils.cache import get_cache
-
 # vendor imports
 from dateutil import parser
 
-# config imports
-from seed.tasks import (
-    add_buildings,
-    remove_buildings,
-)
+# django imports
+from django.db import IntegrityError
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import viewsets, status
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
 
-from seed.decorators import ajax_request_class, require_organization_id_class
+# project imports
+from seed import search
+from seed.authentication import SEEDAuthentication
+
+from seed.decorators import (
+    DecoratorMixin
+)
 from seed.lib.superperms.orgs.decorators import has_perm_class
+
 from seed.models import (
     Compliance,
     Project,
-    ProjectBuilding,
-    StatusLabel,
+    ProjectPropertyView,
+    ProjectTaxLotView,
+    PropertyView,
+    TaxLotView,
 )
-from seed.utils.api import api_endpoint_class
 
-from seed.utils import projects as utils
-from seed.utils.time import convert_to_js_timestamp
+from seed.models import (
+    COMPLIANCE_CHOICES,
+    STATUS_CHOICES
+)
 
-from django.http import JsonResponse
-from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import viewsets, status, serializers
-from rest_framework.decorators import list_route
-from rest_framework.authentication import SessionAuthentication
-from seed.authentication import SEEDAuthentication
+from seed.serializers.projects import ProjectSerializer
+from seed.serializers.properties import PropertyViewSerializer
+from seed.serializers.taxlots import TaxLotViewSerializer
 
+
+from seed.utils.api import api_endpoint_class, drf_api_endpoint
+
+# missing from DRF
+status.HTTP_422_UNPROCESSABLE_ENTITY = 422
 
 _log = logging.getLogger(__name__)
 
@@ -48,97 +60,192 @@ DEFAULT_CUSTOM_COLUMNS = [
     'project_building_snapshots__status_label__name'
 ]
 
+COMPLIANCE_KEYS = ['compliance_type', 'end_date', 'deadline_date']
 
-class LastModifiedSerializer(serializers.Serializer):
-    first_name = serializers.CharField(max_length=100)
-    last_name = serializers.CharField(max_length=100)
-    email = serializers.CharField(max_length=100)
+PROJECT_KEYS = ['name', 'description', 'status', 'is_compliance']
 
+COMPLIANCE_LOOKUP = {
+    unicode(choice[1]).lower(): choice[0]
+    for choice in COMPLIANCE_CHOICES
+}
 
-class ListProjectSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=100)
-    slug = serializers.CharField(max_length=100)
-    status = serializers.CharField(max_length=100)
-    number_of_buildings = serializers.IntegerField()
-    last_modified = serializers.CharField(max_length=100)
-    last_modified_by = LastModifiedSerializer()
-    is_compliance = serializers.BooleanField()
-    compliance_type = serializers.CharField(max_length=100)
-    deadline_date = serializers.CharField(max_length=100)
-    end_date = serializers.CharField(max_length=100)
+STATUS_LOOKUP = {
+    unicode(choice[1]).lower(): choice[0] for choice in STATUS_CHOICES
+}
+
+PLURALS = {'property': 'properties', 'taxlot': 'taxlots'}
 
 
-class ListProjectsResponseSerializer(serializers.Serializer):
-    status = serializers.CharField(max_length=100)
-    projects = ListProjectSerializer(many=True)
-
-
-class ProjectsViewSet(viewsets.ViewSet):
-    raise_exception = True
+class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
+                     viewsets.ModelViewSet):
+    serializer_class = ProjectSerializer
+    renderer_classes = (JSONRenderer,)
+    parser_classes = (JSONParser,)
     authentication_classes = (SessionAuthentication, SEEDAuthentication)
+    query_set = Project.objects.none()
+    ProjectViewModels = {
+        'property': ProjectPropertyView, 'taxlot': ProjectTaxLotView
+    }
+    ViewModels = {
+        'property': PropertyView, 'taxlot': TaxLotView
+    }
 
-    @require_organization_id_class
+    # helper methods
+    def get_error(self, error, key=None, val=None):
+        """Return error message and corresponding http status code."""
+        errors = {
+            'not found': (
+                'Could not find project with {}: {}'.format(key, val),
+                status.HTTP_404_NOT_FOUND
+            ),
+            'permission denied': (
+                'Permission denied', status.HTTP_403_FORBIDDEN
+            ),
+            'bad request': (
+                'Incorrect {}'.format(key), status.HTTP_400_BAD_REQUEST
+            ),
+            'missing param': (
+                'Required parameter(s) missing: {}'.format(key),
+                status.HTTP_400_BAD_REQUEST
+            ),
+            'conflict': (
+                '{} already exists for {}'.format(key, val),
+                status.HTTP_409_CONFLICT
+            ),
+            'missing inventory': (
+                'No {} views found'.format(key),
+                status.HTTP_404_NOT_FOUND
+            ),
+            'missing instance': (
+                'Could not find instance of {} with pk {}'.format(key, val),
+                status.HTTP_404_NOT_FOUND
+            ),
+            'misc': (key, status.HTTP_400_BAD_REQUEST)
+        }
+        return errors[error]
+
+    def get_key(self, pk):
+        """Determine where to use slug or pk to identify project."""
+        try:
+            pk = int(pk)
+            key = 'id'
+        except ValueError:
+            key = 'slug'
+        return key
+
+    def get_params(self, keys):
+        """
+        Get required params from post etc body.
+
+        Returns dict of params and list of missing params.
+        """
+        rdict = {
+            key: self.request.data.get(key) for key in keys
+            if self.request.data.get(key, None) is not None
+        }
+        missing = [key for key in keys if key not in rdict]
+        return rdict, missing
+
+    def get_project(self, key, pk):
+        """Get project for view."""
+        # convert to int if number and look up by pk, otherwise slug
+        filter_dict = {key: pk}
+        return self.get_queryset().filter(
+            **filter_dict
+        )
+
+    def get_organization(self):
+        """Get org id from query param or request.user."""
+        if not getattr(self, '_organization', None):
+            try:
+                self._organization = self.request.user.orgs.get(
+                    pk=self.request.query_params["organization_id"],
+                ).pk
+            except (KeyError, ObjectDoesNotExist):
+                self._organization = self.request.user.orgs.all()[0].pk
+        return self._organization
+
+    def get_queryset(self):
+        return Project.objects.filter(
+            super_organization_id=self.get_organization()
+        ).order_by("name").distinct()
+
+    def get_status(self, status):
+        """Get status from string or int"""
+        try:
+            status = int(status)
+        except ValueError:
+            status = STATUS_LOOKUP[status.lower()]
+        return status
+
+    def project_view_factory(self, inventory_type, project_id, view_id):
+        """ProjectPropertyView/ProjectTaxLotView factory."""
+        Model = self.ProjectViewModels[inventory_type]
+        create_dict = {
+            'project_id': project_id,
+            '{}_view_id'.format(inventory_type): view_id
+        }
+        return Model(**create_dict)
+
+    # CRUD Views
     @api_endpoint_class
-    @ajax_request_class
     @has_perm_class('requires_viewer')
     def list(self, request):
         """
         Retrieves all projects for a given organization.
-        ---
-        response_serializer: ListProjectsResponseSerializer
+
+        :GET: Expects organization_id in query string.
+
         parameters:
             - name: organization_id
               description: The organization_id for this user's organization
               required: true
               paramType: query
-        """
-        organization_id = request.query_params.get('organization_id', None)
-        projects = []
 
-        for p in Project.objects.filter(
-            super_organization_id=organization_id,
-        ).distinct():
-            if p.last_modified_by:
-                first_name = p.last_modified_by.first_name
-                last_name = p.last_modified_by.last_name
-                email = p.last_modified_by.email
-            else:
-                first_name = None
-                last_name = None
-                email = None
-            p_as_json = {
-                'name': p.name,
-                'slug': p.slug,
-                'status': 'active',
-                'number_of_buildings': p.project_building_snapshots.count(),
-                # convert to JS timestamp
-                'last_modified': int(p.modified.strftime("%s")) * 1000,
-                'last_modified_by': {
-                    'first_name': first_name,
-                    'last_name': last_name,
-                    'email': email,
-                },
-                'is_compliance': p.has_compliance,
+        Returns::
+
+            {
+                'status': 'success',
+                'projects': [
+                    {
+                        'id': project's primary key,
+                        'name': project's name,
+                        'slug': project's identifier,
+                        'status': 'active',
+                        'number_of_buildings': Count of buildings associated with project
+                        'last_modified': Timestamp when project last changed
+                        'last_modified_by': {
+                            'first_name': first name of user that made last change,
+                            'last_name': last name,
+                            'email': email address,
+                        },
+                        'is_compliance': True if project is a compliance project,
+                        'compliance_type': Description of compliance type,
+                        'deadline_date': Timestamp of when compliance is due,
+                        'end_date': Timestamp of end of project,
+                        'property_count': number of property views associated with project,
+                        'taxlot_count':  number of taxlot views associated with project,
+                    }...
+                ]
             }
-            if p.has_compliance:
-                compliance = p.get_compliance()
-                p_as_json['end_date'] = convert_to_js_timestamp(
-                    compliance.end_date)
-                p_as_json['deadline_date'] = convert_to_js_timestamp(
-                    compliance.deadline_date)
-                p_as_json['compliance_type'] = compliance.compliance_type
-            projects.append(p_as_json)
+        """
+        projects = [
+            ProjectSerializer(proj).data for proj in self.get_queryset()
+        ]
+        status_code = status.HTTP_200_OK
+        result = {
+            'status': 'success',
+            'projects': projects
+        }
+        return Response(result, status=status_code)
 
-        return JsonResponse({'status': 'success', 'projects': projects})
-
-    @require_organization_id_class
     @api_endpoint_class
-    @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['GET'])
-    def get_project(self, request):
+    def retrieve(self, request, pk):
         """
         Retrieves details about a project.
+
+        :GET: Expects organization_id in query string.
         ---
         parameter_strategy: replace
         parameters:
@@ -146,86 +253,80 @@ class ProjectsViewSet(viewsets.ViewSet):
               description: The organization_id for this user's organization
               required: true
               paramType: query
-            - name: project_slug
-              description: The project slug identifier for this project
+            - name: project slug or pk
+              description: The project slug identifier or primary key for this project
               required: true
-              paramType: query
-        response_serializer: ListProjectSerializer
-        """
-        project_slug = request.query_params.get('project_slug', None)
-        if project_slug is None:
-            return JsonResponse({'status': 'error',
-                                 'message': 'project_slug needs to be included as a query parameter'},
-                                status=status.HTTP_400_BAD_REQUEST)
-        try:
-            project = Project.objects.get(slug=project_slug)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not access project with slug = ' + str(project_slug)},
-                                status=status.HTTP_404_NOT_FOUND)
-        if project.super_organization_id != int(request.query_params.get('organization_id', None)):
-            return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
-        project_dict = project.__dict__
-        project_dict['is_compliance'] = project.has_compliance
-        if project_dict['is_compliance']:
-            c = project.get_compliance()
-            project_dict['end_date'] = convert_to_js_timestamp(c.end_date)
-            project_dict['deadline_date'] = convert_to_js_timestamp(
-                c.deadline_date)
-            project_dict['compliance_type'] = c.compliance_type
-        del(project_dict['_state'])
-        del(project_dict['modified'])
-        del(project_dict['created'])
+              paramType: path
 
-        return JsonResponse({'status': 'success', 'project': project_dict})
+        Returns::
+
+            {
+             'id': project's primary key,
+             'name': project's name,
+             'slug': project's identifier,
+             'status': 'active',
+             'number_of_buildings': Count of buildings associated with project
+             'last_modified': Timestamp when project last changed
+             'last_modified_by': {
+                'first_name': first name of user that made last change,
+                'last_name': last name,
+                'email': email address,
+                },
+             'is_compliance': True if project is a compliance project,
+             'compliance_type': Description of compliance type,
+             'deadline_date': Timestamp of when compliance is due,
+             'end_date': Timestamp of end of project
+             'property_count': number of property views associated with project,
+             'taxlot_count':  number of taxlot views associated with project,
+             'property_views': [list of serialized property views associated with the project...],
+             'taxlot_views': [list of serialized taxlot views associated with the project...],
+            }
+
+        """
+
+        error = None
+        status_code = status.HTTP_200_OK
+        key = self.get_key(pk)
+        project = self.get_project(key, pk)
+        cycle = request.query_params.get('cycle', None)
+        if not project:
+            error, status_code = self.get_error(
+                'not found', key=key, val=pk
+            )
+            result = {'status': 'error', 'message': error}
+        else:
+            project = project[0]
+            property_views = project.property_views.all()
+            taxlot_views = project.taxlot_views.all()
+            if cycle:
+                property_views = property_views.filter(
+                    cycle_id=cycle
+                )
+                taxlot_views = taxlot_views.filter(
+                    cycle_id=cycle
+                )
+            project_data = ProjectSerializer(project).data
+            project_data['property_views'] = [
+                PropertyViewSerializer(property_view).data
+                for property_view in property_views
+            ]
+            project_data['taxlot_views'] = [
+                TaxLotViewSerializer(taxlot_view).data
+                for taxlot_view in taxlot_views
+            ]
+            result = {
+                'status': 'success',
+                'project': project_data,
+            }
+        return Response(result, status=status_code)
 
     @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_member')
-    @list_route(methods=['DELETE'])
-    def delete_project(self, request):
-        """
-        Deletes a project.
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: organization_id
-              description: "The organization_id"
-              required: true
-              paramType: query
-            - name: project_slug
-              description: The project slug identifier for this project
-              required: true
-              paramType: query
-        type:
-            status:
-                required: true
-                type: string
-                description: success or error
-            message:
-                required: false
-                description: An error message, if any
-                type: string
-        """
-        organization_id = request.query_params.get('organization_id', None)
-        project_slug = request.query_params.get('project_slug', None)
-        if organization_id is None or project_slug is None:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Needs organization_id and project_slug as query parameters.'},
-                                status=status.HTTP_400_BAD_REQUEST)
-        project = Project.objects.get(slug=project_slug)
-        if project.super_organization_id != int(organization_id):
-            return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
-        project.delete()
-        return JsonResponse({'status': 'success'})
-
-    # TODO: What's a compliance_type?
-    @api_endpoint_class
-    @ajax_request_class
     @has_perm_class('requires_member')
     def create(self, request):
         """
-        Creates a new project.
+        Creates a new project
+
+        :POST: Expects organization_id in query string.
         ---
         parameters:
             - name: organization_id
@@ -237,457 +338,832 @@ class ProjectsViewSet(viewsets.ViewSet):
               description: name of the new project
               type: string
               required: true
+            - name: is_compliance
+              description: add compliance data if true
+              type: bool
+              required: true
             - name: compliance_type
               description: description of type of compliance
               type: string
-              required: true
+              required: true if is_compliance else false
             - name: description
               description: description of new project
               type: string
-              required: true
+              required: true if is_compliance else false
             - name: end_date
               description: Timestamp for when project ends
               type: string
-              required: true
+              required: true if is_compliance else false
             - name: deadline_date
               description: Timestamp for compliance deadline
               type: string
-              required: true
-        type:
-            status:
-                required: true
-                type: string
-                description: "'success' if the call succeeds"
-            message:
-                required: false
-                type: string
-                description: error message, if any
-            project_slug:
-                required: true
-                type: string
-                description: identifier of new project, if successfully created
+              required: true if is_compliance else false
+        Returns::
+            {
+                'status': 'success',
+                'project': {
+                        'id': project's primary key,
+                        'name': project's name,
+                        'slug': project's identifier,
+                        'status': 'active',
+                        'number_of_buildings': Count of buildings associated with project
+                        'last_modified': Timestamp when project last changed
+                        'last_modified_by': {
+                            'first_name': first name of user that made last change,
+                            'last_name': last name,
+                            'email': email address,
+                        },
+                        'is_compliance': True if project is a compliance project,
+                        'compliance_type': Description of compliance type,
+                        'deadline_date': Timestamp of when compliance is due,
+                        'end_date': Timestamp of end of project,
+                        'property_count': 0,
+                        'taxlot_count':  0,
+                    }
+            }
         """
-        body = request.data
-        project_name = body.get('name')
-        org_id = request.query_params.get('organization_id', None)
-        project_description = body.get('description')
-
-        if Project.objects.filter(
-            name=project_name,
-            super_organization_id=org_id
-        ).exists():
-            return JsonResponse({
-                'status': 'error',
-                'message': 'project already exists for user'
-            }, status=status.HTTP_409_CONFLICT)
-
-        project, created = Project.objects.get_or_create(
-            name=project_name,
-            owner=request.user,
-            super_organization_id=org_id,
-        )
-        if not created:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'project already exists for the organization'
-            }, status=status.HTTP_409_CONFLICT)
-        project.last_modified_by = request.user
-        if project_description:
-            project.description = project_description
+        error = None
+        status_code = status.HTTP_200_OK
+        super_organization_id = self.get_organization()
+        project_data, missing = self.get_params(PROJECT_KEYS)
+        project_data.update({
+            'owner': request.user,
+            'super_organization_id': super_organization_id,
+        })
+        is_compliance = project_data.pop('is_compliance', None)
+        if missing:
+            error, status_code = self.get_error(
+                'missing param', key=", ".join(missing)
+            )
         else:
-            project.description = ""
-        project.save()
+            try:
+                # convert to int equivalent
+                project_data['status'] = self.get_status(project_data['status'])
+            except KeyError:
+                error, status_code = self.get_status(
+                    'bad request', key='status'
+                )
+            if not error and is_compliance:
+                compliance_data, missing = self.get_params(
+                    COMPLIANCE_KEYS
+                )
+                if missing:
+                    error, status_code = self.get_error(
+                        'missing param', key=", ".join(missing)
+                    )
+                else:
+                    compliance_data = convert_dates(
+                        compliance_data, ['end_date', 'deadline_date']
+                    )
+        if not error and Project.objects.filter(
+            name=project_data['name'],
+            super_organization_id=super_organization_id
+        ).exists():
+            error, status_code = self.get_error(
+                'conflict', key='project', val='organization'
+            )
+        if not error:
+            if Project.objects.filter(
+                name=project_data['name'], owner=request.user,
+                super_organization_id=super_organization_id,
+            ).exists():
+                error, status_code = self.get_error(
+                    'conflict', key='organization/user'
+                )
+            else:
+                project = Project.objects.create(**project_data)
+                if is_compliance:
+                    compliance_data['project'] = project
+                    Compliance.objects.create(**compliance_data)
+        if error:
+            result = {'status': 'error', 'message': error}
+        else:
+            result = {
+                'status': 'success',
+                'project': ProjectSerializer(project).data
+            }
 
-        project_compliance_type = body.get('compliance_type', None)
-        project_end_date = body.get('end_date', None)
-        project_deadline_date = body.get('deadline_date', None)
-
-        if all(v is not None for v in (project_compliance_type, project_end_date, project_deadline_date)):
-            c = Compliance(project=project)
-            c.compliance_type = project_compliance_type
-            c.end_date = parser.parse(project_end_date)
-            c.deadline_date = parser.parse(project_deadline_date)
-            c.save()
-
-        return JsonResponse({'status': 'success', 'project_slug': project.slug})
+        return Response(result, status=status_code)
 
     @api_endpoint_class
-    @ajax_request_class
     @has_perm_class('requires_member')
-    @list_route(methods=['PUT'])
-    def update_project(self, request):
+    def destroy(self, request, pk):
         """
-        Updates an existing project's details and compliance info.
+        Delete a project.
+
+        :DELETE: Expects organization_id in query string.
         ---
         parameter_strategy: replace
         parameters:
-            - name: project_slug
-              description: Project slug identifier
+            - name: organization_id
+              description: The organization_id for this user's organization
               required: true
               paramType: query
+            - name: project slug or pk
+              description: The project slug identifier or primary key for this project
+              required: true
+              paramType: path
+
+        Returns::
+            {
+                'status': 'success',
+            }
+        """
+        error = None
+        # DRF uses this, but it causes nothing to be returned
+        # status_code = status.HTTP_204_NO_CONTENT
+        status_code = status.HTTP_200_OK
+        organization_id = request.query_params.get('organization_id', None)
+        if not organization_id:
+            error, status_code = self.get_error(
+                'missing param', key='organization_id'
+            )
+        elif not int(organization_id) == self.get_organization():
+            error, status_code = self.get_error(
+                'bad request', key='organization_id'
+            )
+
+        if not error:
+            key = self.get_key(pk)
+            project = self.get_project(key, pk)
+            if not project:
+                error, status_code = self.get_error(
+                    'not found', key=key, val=pk
+                )
+            else:
+                project = project[0]
+        if not error:
+            if project.super_organization_id != int(organization_id):
+                error, status_code = self.get_error('permssion denied')
+            else:
+                ProjectPropertyView.objects.filter(project=project).delete()
+                ProjectTaxLotView.objects.filter(project=project).delete()
+                project.delete()
+
+        if error:
+            result = {'status': 'error', 'message': error}
+        else:
+            result = {'status': 'success'}
+        return Response(result, status=status_code)
+
+    @api_endpoint_class
+    @has_perm_class('requires_member')
+    def update(self, request, pk):
+        """
+        Updates a project
+
+        :PUT: Expects organization_id in query string.
+        ---
+        parameters:
+            - name: organization_id
+              description: ID of organization to associate new project with
+              type: integer
+              required: true
+              paramType: query
+            - name: project slug or pk
+              description: The project slug identifier or primary key for this project
+              required: true
+              paramType: path
             - name: name
-              description: updated name of the project, if rename is requested
+              description: name of the new project
+              type: string
+              required: true
+            - name: is_compliance
+              description: add compliance data if true
+              type: bool
+              required: true
+            - name: compliance_type
+              description: description of type of compliance
+              type: string
+              required: true if is_compliance else false
+            - name: description
+              description: description of new project
+              type: string
+              required: true if is_compliance else false
+            - name: end_date
+              description: Timestamp for when project ends
+              type: string
+              required: true if is_compliance else false
+            - name: deadline_date
+              description: Timestamp for compliance deadline
+              type: string
+              required: true if is_compliance else false
+        Returns::
+            {
+                'status': 'success',
+                'project': {
+                        'id': project's primary key,
+                        'name': project's name,
+                        'slug': project's identifier,
+                        'status': 'active',
+                        'number_of_buildings': Count of buildings associated with project
+                        'last_modified': Timestamp when project last changed
+                        'last_modified_by': {
+                            'first_name': first name of user that made last change,
+                            'last_name': last name,
+                            'email': email address,
+                        },
+                        'is_compliance': True if project is a compliance project,
+                        'compliance_type': Description of compliance type,
+                        'deadline_date': Timestamp of when compliance is due,
+                        'end_date': Timestamp of end of project,
+                        'property_count': number of property views associated with project,
+                        'taxlot_count':  number of taxlot views associated with project,
+                }
+            }
+        """
+        error = None
+        status_code = status.HTTP_200_OK
+        project_data, missing = self.get_params(PROJECT_KEYS)
+        project_data['last_modified_by'] = request.user
+        if missing:
+            error, status_code = self.get_error(
+                'missing param', key=", ".join(missing)
+            )
+        else:
+            # convert to int equivalent
+            project_data['status'] = self.get_status(project_data['status'])
+            is_compliance = project_data.pop('is_compliance')
+            if is_compliance:
+                compliance_data, missing = self.get_params(COMPLIANCE_KEYS)
+                compliance_data = convert_dates(
+                    compliance_data, ['end_date', 'deadline_date']
+                )
+            if missing:
+                error, status_code = self.get_error(
+                    'missing param', key=", ".join(missing)
+                )
+        if not error:
+            key = self.get_key(pk)
+            project = self.get_project(key, pk)
+            if not project:
+                error, status_code = self.get_error(
+                    'not found', key=key, val=pk
+                )
+            else:
+                project = project[0]
+                compliance = project.get_compliance()
+                if is_compliance:
+                    if not compliance:
+                        compliance = Compliance(project=project)
+                    compliance = update_model(
+                        compliance, compliance_data
+                    )
+                project = update_model(project, project_data)
+                if is_compliance:
+                    compliance.save()
+                # delete compliance if one exists
+                elif compliance:
+                    compliance.delete()
+                project.save()
+        if error:
+            result = {'status': 'error', 'message': error}
+        else:
+            result = {
+                'status': 'success',
+                'project': ProjectSerializer(project).data
+            }
+        return Response(result, status=status_code)
+
+    @api_endpoint_class
+    @has_perm_class('requires_member')
+    def partial_update(self, request, pk):
+        """
+        Updates a project. Allows partial update, i.e. only updated param s need be supplied.
+
+        :PUT: Expects organization_id in query string.
+        ---
+        parameters:
+            - name: organization_id
+              description: ID of organization to associate new project with
+              type: integer
+              required: true
+              paramType: query
+            - name: project slug or pk
+              description: The project slug identifier or primary key for this project
+              required: true
+              paramType: path
+            - name: name
+              description: name of the new project
               type: string
               required: false
             - name: is_compliance
-              description: true/false flag for whether this is a compliance project
+              description: add compliance data if true
               type: bool
-              required: true
-            - name: end_date
-              description: If is_compliance is true, this is the updated compliance end date
-              type: datetime
               required: false
-            - name: deadline_date
-              description: If is_compliance is true, this is the updated compliance deadline date
-              type: datetime
-              required: false
-        type:
-            status:
-                required: true
-                type: string
-                description: success or error
-            message:
-                required: false
-                description: An error message, if any
-                type: string
-        """
-        body = request.data
-        project_name = body.get('name', None)
-        project_slug = request.query_params.get('project_slug', None)
-        if project_slug is None:
-            return JsonResponse({'status': 'error',
-                                 'message': 'project_slug must be passed in as query argument'},
-                                status=status.HTTP_400_BAD_REQUEST)
-        try:
-            project = Project.objects.get(slug=project_slug)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not retrieve project with slug = ' + str(project_slug)},
-                                status=status.HTTP_404_NOT_FOUND)
-        if project_name:
-            project.name = project_name
-        project.last_modified_by = request.user
-        project.save()
-
-        project_compliance_type = body.get('is_compliance')
-        if project_compliance_type:  # don't do any changes if new compliance flag isn't included
-            if project_compliance_type.lower() == "true":
-                if project.has_compliance:
-                    c = project.get_compliance()
-                else:
-                    c = Compliance.objects.create(
-                        project=project,
-                    )
-                project_end_date = body.get('end_date')
-                project_deadline_date = body.get('deadline_date')
-                c.end_date = parser.parse(project_end_date)
-                c.deadline_date = parser.parse(project_deadline_date)
-                c.compliance_type = project_compliance_type
-                c.save()
-            elif project.has_compliance:
-                # delete compliance
-                c = project.get_compliance()
-                c.delete()
-
-        return JsonResponse({
-            'status': 'success',
-            'message': 'project %s updated' % project.name
-        })
-
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_member')
-    @list_route(methods=['PUT'])
-    def add_buildings(self, request):
-        """
-        Adds buildings to a project.
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: project_slug
-              required: true
-              description: Project slug identifier
-              paramType: query
-            - name: selected_buildings
-              required: true
-              description: JSON list of building IDs to add to this project
-              many: array[int]
-              paramType: body
-        type:
-            status:
-                required: true
-                type: string
-                description: success or error
-            message:
-                required: false
-                type: string
-                description: optional error message, if any
-            project_loading_cache_key:
-                required: false
-                type: string
-                description: if adding is initiated, this is an identifier for the
-                             background job, to determine the job's progress
-        """
-        body = request.data
-        project_slug = request.query_params.get('project_slug', None)
-        if project_slug is None:
-            return JsonResponse({'status': 'error',
-                                 'message': 'project_slug needs to be included as a query parameter'},
-                                status=status.HTTP_400_BAD_REQUEST)
-        try:
-            project = Project.objects.get(slug=project_slug)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not find project with project_slug = ' + str(project_slug)},
-                                status=status.HTTP_404_NOT_FOUND)
-        add_buildings.delay(
-            project_slug=project.slug, prpoject_dict=body,
-            user_pk=request.user.pk)
-
-        key = project.adding_buildings_status_percentage_cache_key
-        return JsonResponse({
-            'status': 'success',
-            'project_loading_cache_key': key
-        })
-
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_member')
-    @list_route(methods=['PUT'])
-    def remove_buildings(self, request):
-        """
-        Removes buildings from a project.
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: project_slug
-              required: true
-              description: Project slug identifier
-              paramType: query
-            - name: selected_buildings
-              required: true
-              description: JSON list of building IDs to remove from this project
-              many: array[int]
-              paramType: body
-        type:
-            status:
-                required: true
-                type: string
-                description: success or error
-            message:
-                required: false
-                type: string
-                description: optional error message, if any
-            project_removing_cache_key:
-                required: false
-                type: string
-                description: if removing is initiated, this is an identifier for the
-                             background job, to determine the job's progress
-        """
-        body = request.data
-        project_slug = request.query_params.get('project_slug', None)
-        if project_slug is None:
-            return JsonResponse({'status': 'error',
-                                 'message': 'project_slug needs to be included as a query parameter'},
-                                status=status.HTTP_400_BAD_REQUEST)
-        try:
-            project = Project.objects.get(slug=project_slug)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not find project with project_slug = ' + str(project_slug)},
-                                status=status.HTTP_404_NOT_FOUND)
-        remove_buildings.delay(
-            project_slug=project.slug, project_dict=body,
-            user_pk=request.user.pk)
-        key = project.removing_buildings_status_percentage_cache_key
-        return JsonResponse({
-            'status': 'success',
-            'project_removing_cache_key': key
-        })
-
-    # TODO: Broad except clause; what will redis return?
-    @api_endpoint_class
-    @ajax_request_class
-    @list_route(methods=['GET'])
-    def add_building_status(self, request):
-        """
-        Returns percentage complete of background task for adding building to project.
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: project_loading_cache_key
-              required: true
-              description:  Job identifier from add_buildings_to_project.
+            - name: compliance_type
+              description: description of type of compliance
               type: string
-              paramType: query
-        type:
-            status:
-                required: true
-                type: string
-                description: success or error
-            project_object:
-                required: false
-                type: object
-                description: descriptive object for progress status
+              required: true if is_compliance else false
+            - name: description
+              description: description of new project
+              type: string
+              required: true if is_compliance else false
+            - name: end_date
+              description: Timestamp for when project ends
+              type: string
+              required: true if is_compliance else false
+            - name: deadline_date
+              description: Timestamp for compliance deadline
+              type: string
+              required: true if is_compliance else false
+        Returns::
+            {
+                'status': 'success',
+                'project': {
+                        'id': project's primary key,
+                        'name': project's name,
+                        'slug': project's identifier,
+                        'status': 'active',
+                        'number_of_buildings': Count of buildings associated with project
+                        'last_modified': Timestamp when project last changed
+                        'last_modified_by': {
+                            'first_name': first name of user that made last change,
+                            'last_name': last name,
+                            'email': email address,
+                        },
+                        'is_compliance': True if project is a compliance project,
+                        'compliance_type': Description of compliance type,
+                        'deadline_date': Timestamp of when compliance is due,
+                        'end_date': Timestamp of end of project,
+                        'property_count': number of property views associated with project,
+                        'taxlot_count':  number of taxlot views associated with project,
+                }
+            }
         """
+        error = None
+        status_code = status.HTTP_200_OK
+        project_data, _ = self.get_params(PROJECT_KEYS)
+        project_data['last_modified_by'] = request.user
+        if 'status' in project_data:
+            # convert to int equivalent
+            project_data['status'] = self.get_status(project_data['status'])
+        is_compliance = project_data.pop('is_compliance', None)
+        if is_compliance:
+            compliance_data, _ = self.get_params(COMPLIANCE_KEYS)
+            compliance_data = convert_dates(
+                compliance_data, ['end_date', 'deadline_date']
+            )
+        key = self.get_key(pk)
+        project = self.get_project(key, pk)
+        if not project:
+            error, status_code = self.get_error(
+                'not found', key=key, val=pk
+            )
+        else:
+            project = project[0]
+            compliance = project.get_compliance()
+            if is_compliance:
+                if not compliance:
+                    compliance = Compliance(project=project)
+                compliance = update_model(
+                    compliance, compliance_data
+                )
+            project = update_model(project, project_data)
+            if is_compliance:
+                compliance.save()
+            # delete compliance if one exists
+            elif is_compliance == 'False':
+                compliance.delete()
+            project.save()
+        if error:
+            result = {'status': 'error', 'message': error}
+        else:
+            result = {
+                'status': 'success',
+                'project': ProjectSerializer(project).data
+            }
+        return Response(result, status=status_code)
 
-        body = request.data
-        project_loading_cache_key = body.get('project_loading_cache_key')
+    # Action views
 
-        try:
-            progress_object = get_cache(project_loading_cache_key)
-        except:
-            msg = "Couldn't find project loading key %s in cache " % project_loading_cache_key
-            _log.error(msg)
-            raise Exception(msg)
-
-        return JsonResponse({
-            'status': 'success',
-            'progress_object': progress_object
-        })
-
-    @require_organization_id_class
     @api_endpoint_class
-    @ajax_request_class
+    @has_perm_class('requires_member')
+    def add(self, request, pk):
+        """
+        Add inventory to project
+        :PUT: Expects organization_id in query string.
+        ---
+        parameters:
+            - name: organization_id
+              description: ID of organization to associate new project with
+              type: integer
+              required: true
+            - name: inventory_type
+              description: type of inventory to add: 'property' or 'taxlot'
+              type: string
+              required: true
+              paramType: query
+            - name: project slug or pk
+              description: The project slug identifier or primary key for this project
+              required: true
+              paramType: path
+            - name:  selected
+              description: ids of property or taxlot views to add
+              type: array[int]
+              required: true
+        Returns:
+            {
+                'status': 'success',
+                'added': [list of property/taxlot view ids added]
+            }
+        """
+        error = None
+        inventory = None
+        status_code = status.HTTP_200_OK
+        inventory_type = request.query_params.get(
+            'inventory_type', request.data.get('inventory_type', None)
+        )
+        if not inventory_type:
+            error, status_code = self.get_error(
+                'missing param', 'inventory_type'
+            )
+        else:
+            key = self.get_key(pk)
+            project = self.get_project(key, pk)
+            if not project:
+                error, status_code = self.get_error(
+                    'not found', key=key, val=pk
+                )
+        if not error:
+            project = project[0]
+            view_type = "{}_view".format(inventory_type)
+            request.data['inventory_type'] = view_type
+            params = search.process_search_params(
+                request.data, request.user, is_api_request=False
+            )
+            organization_id = self.get_organization()
+            params['organization_id'] = organization_id
+            qs = search.inventory_search_filter_sort(
+                view_type, params=params, user=request.user
+            )
+            if request.data.get('selected', None)\
+                    and isinstance(request.data.get('selected'), list):
+                inventory = qs.filter(pk__in=request.data.get('selected'))
+            # TODO is this still relevant
+            elif request.data.get('select_all_checkbox', None):
+                inventory = qs
+
+            if not inventory:
+                error, status_code = self.get_error(
+                    'missing inventory', key=inventory_type
+                )
+        if error:
+            result = {'status': 'error', 'message': error}
+        else:
+            Model = self.ProjectViewModels[inventory_type]
+            new_project_views = [
+                self.project_view_factory(inventory_type, project.id, view.id)
+                for view in inventory
+            ]
+            Model.objects.bulk_create(new_project_views)
+            added = [view.id for view in inventory]
+            project.last_modified_by = request.user
+            project.save()
+            result = {'status': 'success', 'added': added}
+        return Response(result, status=status_code)
+
+    @api_endpoint_class
+    @has_perm_class('requires_member')
+    def remove(self, request, pk):
+        """
+        Remove inventory from  project
+        :PUT: Expects organization_id in query string.
+        ---
+        parameters:
+            - name: organization_id
+              description: ID of organization to associate new project with
+              type: integer
+              required: true
+            - name: inventory_type
+              description: type of inventory to add: 'property' or 'taxlot'
+              type: string
+              required: true
+              paramType: query
+            - name: project slug or pk
+              description: The project slug identifier or primary key for this project
+              required: true
+              paramType: path
+            - name:  selected
+              description: ids of property or taxlot views to add
+              type: array[int]
+              required: true
+        Returns:
+            {
+                'status': 'success',
+                'removed': [list of property/taxlot view ids removed]
+            }
+        """
+        error = None
+        status_code = status.HTTP_200_OK
+        inventory_type = request.query_params.get(
+            'inventory_type', request.data.get('inventory_type', None)
+        )
+        selected = request.data.get('selected', None)
+        missing = []
+        if not inventory_type:
+            missing.append('inventory_type')
+        if selected is None:
+            missing.append('selected')
+        if missing:
+            error, status_code = self.get_error(
+                'missing param', ",".join(missing)
+            )
+        else:
+            key = self.get_key(pk)
+            project = self.get_project(key, pk)
+            if not project:
+                error, status_code = self.get_error(
+                    'not found', key=key, val=pk
+                )
+        if not error:
+            project = project[0]
+            ViewModel = self.ViewModels[inventory_type]
+            if selected:
+                filter_dict = {
+                    'id__in': request.data.get(
+                        'selected'
+                    )
+                }
+            elif selected == []:
+                super_organization_id = self.get_organization()
+                filter_dict = {
+                    "state__super_organization_id": super_organization_id
+                }
+                for key in [inventory_type, 'cycle', 'state']:
+                    val = request.data.get(key, None)
+                    if val:
+                        if isinstance(val, list):
+                            filter_dict['{}_id__in'.format(key)] = val
+                        else:
+                            filter_dict['{}_id'.format(key)] = val
+            views = ViewModel.objects.filter(**filter_dict).values_list('id')
+            if not views:
+                error, status_code = self.get_error(
+                    'missing inventory', key=inventory_type
+                )
+            else:
+                Model = self.ProjectViewModels[inventory_type]
+                filter_dict = {
+                    "project_id": project.pk,
+                    "{}_view__in".format(inventory_type): views
+                }
+                project_views = Model.objects.filter(**filter_dict)
+                removed = [view.pk for view in project_views]
+                project_views.delete()
+                project.last_modified_by = request.user
+                project.save()
+        if error:
+            result = {'status': 'error', 'message': error}
+        else:
+            result = {'status': 'success', 'removed': removed}
+        return Response(result, status=status_code)
+
+    @api_endpoint_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['GET'])
     def count(self, request):
         """
         Returns the number of projects within the org tree to which
         a user belongs.  Counts projects in parent orgs and sibling orgs.
+
+        :GET: Expects organization_id in query string.
         ---
         parameters:
             - name: organization_id
               description: The organization_id for this user's organization
               required: true
               paramType: query
-        type:
-            status:
-                required: true
-                type: string
-                description: "'success' if the call succeeds"
-            project_count:
-                required: true
-                type: integer
-                description: count of projects
+       Returns::
+            {
+                'status': 'success',
+                'count': number of projects
+            }
         """
-        org_id = request.query_params.get('organization_id', None)
-        projects_count = Project.objects.filter(super_organization_id=org_id).distinct().count()
-        return JsonResponse({'status': 'success', 'projects_count': projects_count})
+        status_code = status.HTTP_200_OK
+        super_organization_id = self.get_organization()
+        count = Project.objects.filter(
+            super_organization_id=super_organization_id
+        ).distinct().count()
+        result = {'status': 'success', 'count': count}
+        return Response(result, status=status_code)
 
     @api_endpoint_class
-    @ajax_request_class
-    @list_route(methods=['PUT'])
-    def update_building(self, request):
+    @has_perm_class('requires_member')
+    def update_details(self, request, pk):
         """
-        Updates extra information about the building/project relationship.
-        In particular, whether the building is compliant and who approved it.
+        Updates extra information about the inventory/project relationship.
+        In particular, whether the property/taxlot  is compliant
+        and who approved it.
+
+        :PUT: Expects organization_id in query string.
         ---
         parameter_strategy: replace
         parameters:
-            - name: project_slug
+            - name: organization_id
+              description: The organization_id for this user's organization
               required: true
-              description: Project slug identifier
+              type: integer
               paramType: query
-            - name: building_id
+            - name: inventory_type
+              description: type of inventory to add: 'property' or 'taxlot'
               required: true
-              description: id of building to update
-              type: integer
-            - name: label
-              required: true
-              description: Identifier of label to apply
               type: string
-        type:
-            status:
-                required: true
-                type: string
-                description: success or error
-            message:
-                required: false
-                type: string
-                description: error message, if any
-            approved_date:
-                required: false
-                type: string
-                description: Timestamp of change (now)
-            approver:
-                required: false
-                type: string
-                description: Email address of user making change
+              paramType: query
+            - name: id
+              description: id of property/taxlot  view to update
+              required: true
+              type: integer
+              paramType: string
+            - name: compliant
+              description: is compliant
+              required: true
+              type: bool
+              paramType: string
+
+        Returns::
+            {
+                 'status': 'success',
+                 'approved_date': Timestamp of change (now),
+                 'approver': Email address of user making change
+            }
         """
-        body = request.data
-        project_slug = request.query_params.get('project_slug', None)
-        if project_slug is None:
-            return JsonResponse({'status': 'error',
-                                 'message': 'project_slug needs to be included as a query parameter'},
-                                status=status.HTTP_400_BAD_REQUEST)
-        try:
-            pb = ProjectBuilding.objects.get(
-                project__slug=project_slug,
-                building_snapshot__pk=body['building_id'])
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not access project building with slug = ' + str(project_slug)},
-                                status=status.HTTP_404_NOT_FOUND)
-        pb.approved_date = datetime.datetime.now()
-        pb.approver = request.user
-        status_label = StatusLabel.objects.get(pk=body['label'])
-        pb.status_label = status_label
-        pb.save()
-        return JsonResponse({
-            'status': 'success',
-            'approved_date': pb.approved_date.strftime("%m/%d/%Y"),
-            'approver': pb.approver.email,
-        })
+        error = None
+        status_code = status.HTTP_200_OK
+        params, missing = self.get_params(
+            ['id', 'compliant']
+        )
+        inventory_type = request.query_params.get(
+            'inventory_type', request.data.get('inventory_type', None)
+        )
+        if not inventory_type:
+            missing.append('inventory_type')
+        if missing:
+            error, status_code = self.get_error(
+                'missing param', key=", ".join(missing)
+            )
+        else:
+            if not isinstance(params['compliant'], bool):
+                error, status_code = self.get_error(
+                    'misc', key='compliant must be of type bool',
+                )
+        if not error:
+            key = self.get_key(pk)
+            project = self.get_project(key, pk)
+            if not project:
+                error, status_code = self.get_error(
+                    'not found', key=key, val=pk
+                )
+        if not error:
+            project = project[0]
+            Model = self.ProjectViewModels[inventory_type]
+            filter_dict = {
+                "project_id": project.id,
+                "{}_view_id".format(inventory_type): params['id']
+            }
+            try:
+                view = Model.objects.get(**filter_dict)
+            except Model.DoesNotExist:
+                error, status_code = self.get_error(
+                    'missing inventory', key=inventory_type
+                )
+        if not error:
+            view.approved_date = datetime.datetime.now()
+            view.approver = request.user
+            view.compliant = params['compliant']
+            view.save()
+        if error:
+            result = {'status': 'error', 'message': error}
+        else:
+            result = {
+                'status': 'success',
+                'approved_date': view.approved_date.strftime("%m/%d/%Y"),
+                'approver': view.approver.email,
+            }
+        return Response(result, status=status_code)
 
     @api_endpoint_class
-    @ajax_request_class
-    @list_route(methods=['PUT'])
-    def move_buildings(self, request):
+    @has_perm_class('requires_member')
+    def transfer(self, request, pk, action):
         """
-        Moves buildings from one project to another.
+        Move or copy inventory from one project to another
+
+        :PUT: Expects organization_id in query string.
         ---
         parameter_strategy: replace
         parameters:
-            - name: buildings
-              description: JSON array, list of buildings to be moved
-              many: array[int]
+            - name: organization_id
+              description: The organization_id for this user's organization
               required: true
-            - name: copy
-              description: true to copy the buildings, false to move,
-              type: bool
-              required: true
-            - name: select_all_checkbox
-              description: true to select all checkboxes
-              type: bool
-              required: true
-            - name: source_project_slug
-              description: Source Project primary key
               type: integer
+              paramType: query
+            - name: inventory_type
+              description: type of inventory to add: 'property' or 'taxlot'
               required: true
-            - name: target_project_slug
-              description: Target Project primary key
-              type: integer
+              type: string
+              paramType: query
+            - name: copy or move
+              description: Whether to move or copy inventory
               required: true
-            - name: search_params
-              description: JSON body containing filter_params__project_slug, project_slug, and q
-              type: object
+              paramType: path
               required: true
-        type:
-            status:
-                type: string
-                description: success if successful
-                required: true
+            -name: target
+              type: string or int
+              description: target project slug/id  to move/copy to.
+              required: true
+            - name: selected
+              description: JSON array, list of property/taxlot views to be transferred
+              paramType: array[int]
+              required: true
         """
-        body = request.data
-
-        utils.transfer_buildings(
-            source_project_slug=body['source_project_slug'],
-            target_project_slug=body['target_project_slug'],
-            buildings=body['buildings'],
-            select_all=body['select_all_checkbox'],
-            search_params=body['search_params'],
-            user=request.user,
-            copy_flag=body['copy']
+        error = None
+        status_code = status.HTTP_200_OK
+        params, missing = self.get_params(
+            ['selected', 'target']
         )
-        return JsonResponse({'status': 'success'})
+        inventory_type = request.query_params.get(
+            'inventory_type', request.data.get('inventory_type', None)
+        )
+        if not inventory_type:
+            missing.append('inventory_type')
+        if missing:
+            error, status_code = self.get_error(
+                'missing param', key=", ".join(missing)
+            )
+        else:
+            key = self.get_key(pk)
+            project = self.get_project(key, pk)
+            if not project:
+                error, status_code = self.get_error(
+                    'not found', key=key, val=pk
+                )
+            else:
+                target_key = self.get_key(params['target'])
+                target = self.get_project(target_key, params['target'])
+                if not target:
+                    error, status_code = self.get_error(
+                        'not found', key=target_key, val=params['target']
+                    )
+                    error += 'for target'
+
+        if not error:
+            project = project[0]
+            target = target[0]
+            ProjectViewModel = self.ProjectViewModels[inventory_type]
+            filter_dict = {
+                "{}_view_id__in".format(inventory_type):
+                params['selected'],
+                'project_id': project.id
+            }
+            old_project_views = ProjectViewModel.objects.filter(
+                **filter_dict
+            )
+
+            if action == 'copy':
+                new_project_views = []
+                # set pk to None to create a copy of the django instance
+                for view in old_project_views:
+                    view.pk = None
+                    view.project = target
+                    new_project_views.append(view)
+                try:
+                    ProjectViewModel.objects.bulk_create(
+                        new_project_views
+                    )
+                except IntegrityError:
+                    error, status_code = self.get_error(
+                        'conflict',
+                        key="One or more {}".format(
+                            PLURALS[inventory_type]
+                        ),
+                        val='target project'
+                    )
+
+            else:
+                try:
+                    old_project_views.update(project=target)
+
+                except IntegrityError:
+                    error, status_code = self.get_error(
+                        'conflict',
+                        key="One or more {}".format(
+                            PLURALS[inventory_type]
+                        ),
+                        val='target project'
+                    )
+        if error:
+            result = {'status': 'error', 'message': error}
+        else:
+            result = {'status': 'success'}
+        return Response(result, status=status_code)
+
+
+def convert_dates(data, keys):
+    updated = {key: parser.parse(data[key]) for key in keys if key in data}
+    data.update(updated)
+    return data
+
+
+def update_model(model, data):
+    for key, val in data.items():
+        setattr(model, key, val)
+    return model

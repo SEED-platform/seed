@@ -196,6 +196,8 @@ class PropertyState(models.Model):
             if value and isinstance(value, basestring):
                 setattr(self, field, convert_datestr(value))
 
+    # TODO obsolete this method. AFAIK its unused and this model
+    # has a serializer
     def to_dict(self, fields=None, include_related_data=True):
         """
         Returns a dict version of the PropertyState, either with all fields

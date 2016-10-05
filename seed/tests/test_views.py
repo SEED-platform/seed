@@ -58,6 +58,7 @@ from seed.views.main import (
 
 
 class MainViewTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1427,6 +1428,7 @@ class SearchViewTests(TestCase):
 
 
 class SearchBuildingSnapshotsViewTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1481,6 +1483,7 @@ class SearchBuildingSnapshotsViewTests(TestCase):
 
 
 class GetDatasetsViewsTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1568,6 +1571,7 @@ class GetDatasetsViewsTests(TestCase):
 
 
 class ImportFileViewsTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1624,6 +1628,7 @@ class ImportFileViewsTests(TestCase):
 
 @skip("Fix for new data model")
 class ReportViewsTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -2798,6 +2803,7 @@ class MatchTreeTests(TestCase):
 
 
 class InventoryViewTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -3221,7 +3227,6 @@ class InventoryViewTests(TestCase):
         self.assertIn('extra_data_field', related)
         self.assertEquals(related['extra_data_field'], 'edfval')
 
-    @skip("Fix for new data model")
     def test_get_taxlots_no_cycle_id(self):
         property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property()
@@ -3316,7 +3321,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'cycle': self.cycle.pk,
             'page': 1,
-            'per_page': 10,
+            'per_page': 256,
         }
         response = self.client.get(reverse("app:taxlots"), params)
         results = json.loads(response.content)['results']
@@ -3388,7 +3393,6 @@ class InventoryViewTests(TestCase):
         self.assertEquals(result['extra_data_field'], 'edfval')
         self.assertEquals(len(result['related']), 1)
 
-    @skip("Fix for new data model")
     def test_get_taxlots_page_not_an_integer(self):
         property_state = self.property_state_factory.get_property_state(
             extra_data=json.dumps({'extra_data_field': 'edfval'})

@@ -48,6 +48,13 @@ class LabelSerializer(serializers.ModelSerializer):
         model = Label
 
     def get_is_applied(self, obj):
-        return self.inventory.filter(
-            labels=obj,
-        ).values_list('id', flat=True)
+        result = False
+        if self.inventory:
+            result = self.inventory.filter(
+                labels=obj,
+            ).values_list('id', flat=True)
+
+            # result = self.inventory.filter(
+            #     labels=obj,
+            # ).exists()
+        return result

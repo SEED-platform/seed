@@ -4,7 +4,6 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pipermerriam@gmail.com>'
 """
-
 from unittest import skip
 
 from django.test import TestCase
@@ -110,7 +109,6 @@ class TestLabelSerializer(TestCase):
             inventory='property',
         )
         self.assertFalse(serializer.data['is_applied'])
-
 
 # @skip('CanonicalBuilding is referenced many times in this.')
 # class TestUpdateBuildingLabelsSerializer(TestCase):

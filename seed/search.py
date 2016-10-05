@@ -18,8 +18,10 @@ from .models import (
     ColumnMapping,
     Property,
     PropertyState,
+    PropertyView,
     TaxLot,
     TaxLotState,
+    TaxLotView
 )
 from .utils.mapping import get_mappable_types
 from .utils import search as search_utils
@@ -405,7 +407,7 @@ def process_search_params(params, user, is_api_request=False):
     q = params.get('q', '')
     other_search_params = params.get('filter_params', {})
     exclude = other_search_params.pop('exclude', {})
-
+    # inventory_type = params.pop('inventory_type', None)
     order_by = params.get('order_by', 'id')
     sort_reverse = params.get('sort_reverse', False)
     if isinstance(sort_reverse, basestring):
@@ -725,18 +727,23 @@ def get_inventory_fieldnames(inventory_type):
             'jurisdiction_property_identifier'
         ],
         'taxlot': ['jurisdiction_taxlot_id', 'address'],
+        'property_view': ['property_id', 'cycle_id', 'state_id'],
+        'taxlot_view': ['taxlot_id', 'cycle_id', 'state_id'],
     }[inventory_type]
 
 
 def search_inventory(inventory_type, q, fieldnames=None, queryset=None):
-    """returns a queryset for matching Taxlots/Properties
+    """returns a queryset for matching Taxlot(View)/Property(View)
     :param str or unicode q: search string
     :param list fieldnames: list of  model fieldnames
     :param queryset: optional queryset to filter from, defaults to
         BuildingSnapshot.objects.none()
     :returns: :queryset: queryset of matching buildings
     """
-    Model = {'property': Property, 'taxlot': TaxLot}[inventory_type]
+    Model = {
+        'property': Property, 'property_view': PropertyView,
+        'taxlot': TaxLot, 'taxlot_view': TaxLotView,
+    }[inventory_type]
     if not fieldnames:
         fieldnames = get_inventory_fieldnames(inventory_type)
     if queryset is None:
@@ -760,23 +767,36 @@ def create_inventory_queryset(inventory_type, orgs, exclude, order_by, other_org
     :param order_by: django query order_by str.
     :param other_orgs: list of other orgs to ``or`` the query
     """
-    Model = {'property': Property, 'taxlot': TaxLot}[inventory_type]
+    # return immediately if no inventory type
+    # i.e. when called by get_serializer in LabelViewSet
+    # as there should be no inventory
+    if not inventory_type:
+        return []
+    Model = {
+        'property': Property, 'property_view': PropertyView,
+        'taxlot': TaxLot, 'taxlot_view': TaxLotView,
+    }[inventory_type]
+
     distinct_order_by = order_by.lstrip('-')
 
+    if inventory_type.endswith('view'):
+        filter_key = "{}__organization_id__in".format(
+            inventory_type.split('_')[0]
+        )
+    else:
+        filter_key = "organization_id__in"
+    orgs_filter_dict = {filter_key: orgs}
+    other_orgs_filter_dict = {filter_key: other_orgs}
+
     if other_orgs:
-        return Model.objects.order_by(
-            order_by, 'pk'
-        ).filter(
+        return Model.objects.order_by(order_by, 'pk').filter(
             (
-                Q(super_organization__in=orgs) |
-                Q(super_organization__in=other_orgs)
+                Q(**orgs_filter_dict) | Q(**other_orgs_filter_dict)
             ),
         ).exclude(**exclude).distinct(distinct_order_by, 'pk')
     else:
-        result = Model.objects.order_by(
-            order_by, 'pk'
-        ).filter(
-            organization__in=orgs,
+        result = Model.objects.order_by(order_by, 'pk').filter(
+            **orgs_filter_dict
         ).exclude(**exclude).distinct(distinct_order_by, 'pk')
 
     return result
@@ -794,6 +814,7 @@ def inventory_search_filter_sort(inventory_type, params, user):
     # get all buildings for a user's orgs and sibling orgs
     orgs = user.orgs.all().filter(pk=params['organization_id'])
     other_orgs = []
+    # this is really show all orgs TODO better param/func name?
     if params['show_shared_buildings']:
         other_orgs = build_shared_buildings_orgs(orgs)
 

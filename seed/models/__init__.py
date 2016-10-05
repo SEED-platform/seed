@@ -18,3 +18,11 @@ from .columns import *  # noqa
 from .joins import *  # noqa
 from .auditlog import *  # noqa
 from .deprecate import *  # noqa
+
+from .projects import (     # noqa
+    Project,
+    ProjectBuilding,
+    ProjectPropertyView,
+    ProjectTaxLotView,
+    STATUS_CHOICES
+)
