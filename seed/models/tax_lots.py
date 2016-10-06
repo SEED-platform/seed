@@ -15,6 +15,7 @@ from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
+from seed.utils.address import normalize_address_str
 from seed.models import (
     Cycle,
     StatusLabel,
@@ -22,6 +23,7 @@ from seed.models import (
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
+    DATA_STATE_DELETE,
     ASSESSED_BS,
 )
 
@@ -52,10 +54,14 @@ class TaxLotState(models.Model):
     organization = models.ForeignKey(Organization, blank=True, null=True)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
 
+    custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
+
     jurisdiction_tax_lot_id = models.CharField(max_length=255, null=True, blank=True)
     block_number = models.CharField(max_length=255, null=True, blank=True)
     district = models.CharField(max_length=255, null=True, blank=True)
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
+    normalized_address = models.CharField(max_length=255, null=True, blank=True, editable=False)
+
     address_line_2 = models.CharField(max_length=255, null=True, blank=True)
     city = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
@@ -123,6 +129,12 @@ class TaxLotState(models.Model):
                                       organization=self.organization).exists():
             logger.error("TaxLotState already exists for the same jurisdiction_tax_lot_id and org")
             return False
+
+        # Calculate and save the normalized address
+        if self.address_line_1 is not None:
+            self.normalized_address = normalize_address_str(self.address_line_1)
+        else:
+            self.normalize_address = None
 
         return super(TaxLotState, self).save(*args, **kwargs)
 

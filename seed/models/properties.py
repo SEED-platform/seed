@@ -13,6 +13,7 @@ from django_pgjson.fields import JsonField
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.utils.generic import split_model_fields, obj_to_dict
+from seed.utils.address import normalize_address_str
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ from seed.models import (
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
+    DATA_STATE_DELETE,
     ASSESSED_BS,
     TaxLotProperty,
 )
@@ -85,6 +87,8 @@ class PropertyState(models.Model):
     # use properties to assess from instances
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
     address_line_2 = models.CharField(max_length=255, null=True, blank=True)
+    normalized_address = models.CharField(max_length=255, null=True, blank=True, editable=False)
+
     city = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
     postal_code = models.CharField(max_length=255, null=True, blank=True)
@@ -249,6 +253,12 @@ class PropertyState(models.Model):
         #                               organization=self.organization).exists():
         #     logger.error("PropertyState already exists for the same <unique id> and org")
         #     return False
+
+        # Calculate and save the normalized address
+        if self.address_line_1 is not None:
+            self.normalized_address = normalize_address_str(self.address_line_1)
+        else:
+            self.normalize_address = None
 
         return super(PropertyState, self).save(*args, **kwargs)
 
