@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 class TestCaseA(DataMappingBaseTestCase):
+
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -86,6 +87,9 @@ class TestCaseA(DataMappingBaseTestCase):
         self.assertEqual(ps.address_line_1, '50 Willow Ave SE')
         self.assertEqual(ps.extra_data["extra_data_1"], 'a')
         self.assertEqual('extra_data_2' in ps.extra_data.keys(), False)
+
+        # verify that the lot_number has the tax_lot information. For this case it is one-to-one
+        self.assertEqual(ps.lot_number, ts.jurisdiction_tax_lot_id)
 
         # tasks.match_buildings(self.import_file.id, self.user.id)
         # tasks.pair_buildings(self.import_file.id, self.user.id)

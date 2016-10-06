@@ -58,6 +58,7 @@ from seed.views.main import (
 
 
 class MainViewTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1427,6 +1428,7 @@ class SearchViewTests(TestCase):
 
 
 class SearchBuildingSnapshotsViewTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1481,6 +1483,7 @@ class SearchBuildingSnapshotsViewTests(TestCase):
 
 
 class GetDatasetsViewsTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1568,6 +1571,7 @@ class GetDatasetsViewsTests(TestCase):
 
 
 class ImportFileViewsTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1624,6 +1628,7 @@ class ImportFileViewsTests(TestCase):
 
 @skip("Fix for new data model")
 class ReportViewsTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -2798,6 +2803,7 @@ class MatchTreeTests(TestCase):
 
 
 class InventoryViewTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',

@@ -77,7 +77,7 @@ class PropertyState(models.Model):
 
     home_energy_score_id = models.CharField(max_length=255, null=True, blank=True)
 
-    # Tax Lot Number of the property
+    # Tax Lot Number of the property - this field can be an unparsed list or just one string.
     lot_number = models.CharField(max_length=255, null=True, blank=True)
     property_name = models.CharField(max_length=255, null=True, blank=True)
 

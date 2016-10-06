@@ -64,6 +64,16 @@ class TestCaseB(DataMappingBaseTestCase):
         )
         self.assertEqual(len(ts), 10)  # there are only 10 unique tax lots in the test file once splitting on delimiters # noqa
 
+        # verify that the lot_number has the tax_lot information. For this case it is one-to-many
+        p_test = PropertyState.objects.filter(
+            pm_property_id='5233255',
+            organization=self.org,
+            data_state=DATA_STATE_MAPPING,
+            import_file=self.import_file,
+        ).first()
+        # TODO: normalize lot_number.
+        self.assertEqual(p_test.lot_number, "33366555; 33366125; 33366148")
+
         # tasks.match_buildings(self.import_file.id, self.user.id)
         # tasks.pair_buildings(self.import_file.id, self.user.id)
 

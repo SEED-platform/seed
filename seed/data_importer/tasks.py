@@ -204,6 +204,34 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     logger.debug("Mappings are %s" % table_mappings)
     map_cleaner = _build_cleaner(org)
 
+    # *** BREAK OUT INTO SEPARATE METHOD ***
+    # figure out which import field is defined as the unique field that may have a delimiter of
+    # individual values (e.g. tax lot ids). The definition of the delimited field is currently
+    # hard coded
+    try:
+        delimited_field = {}
+        if 'TaxLotState' in table_mappings.keys():
+            delimited_field = table_mappings['TaxLotState'].keys()[
+                table_mappings['TaxLotState'].values().index(
+                    ('TaxLotState', 'jurisdiction_tax_lot_id'))]
+            # put this into a dict for now. I would much rather have this as a new method. Only
+            # delimit if in the table listed below.
+            delimited_field = {'TaxLotState': delimited_field}
+    except ValueError:
+        delimited_field = {}
+        # field does not exist in mapping list, so ignoring
+
+    # logger.debug("my table mappings are {}".format(table_mappings))
+    # logger.debug("my delimited_field is {}".format(delimited_field))
+
+    # Add custom mappings for cross-related data. Right now these are hard coded, but could
+    # be a setting if so desired.
+    if delimited_field and 'PropertyState' in table_mappings.keys():
+        table_mappings['PropertyState'][delimited_field['TaxLotState']] = (
+            'PropertyState', 'lot_number')
+    # logger.debug("my mappings are {}".format(table_mappings))
+    # *** END BREAK OUT ***
+
     # yes, there are three cascading for loops here. sorry :(
     md = MappingData()
     for table, mappings in table_mappings.iteritems():
@@ -218,21 +246,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
         # All the data live in the PropertyState.extra_data field when the data are imported
         data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
 
-        # figure out which import field is defined as the unique field that may have a delimiter of
-        # individual values (e.g. tax lot ids). The definition of the delimited field is currently
-        # hard coded
-        try:
-            delimited_field = mappings.keys()[
-                mappings.values().index(('TaxLotState', 'jurisdiction_tax_lot_id'))]
-        except ValueError:
-            delimited_field = None
-            # field does not exist in mapping list, so ignoring
-
-        logger.debug("my delimited_field is {}".format(delimited_field))
-
-        # TODO: we probably need a way to allow for certain fields to be imported into all tables.
-        # for example the jurisdiction_tax_lot_id is useful on propertystate.extra_data too.
-
         # Since we are importing CSV, then each extra_data field will have the same fields. So
         # save the map_model_obj outside of for loop to pass into the `save_column_names` methods
         map_model_obj = None
@@ -242,9 +255,13 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
 
             # expand the row into multiple rows if needed with the delimited_field replaced with a
             # single value. This minimizes the need to rewrite the downstream code.
-            # Weeee... the data are in the extra_data column.
-            for row in expand_rows(original_row.extra_data, delimited_field):
+            if table in delimited_field.keys():
+                model_delimited_fields = delimited_field[table]
+            else:
+                model_delimited_fields = None
 
+            # Weeee... the data are in the extra_data column.
+            for row in expand_rows(original_row.extra_data, model_delimited_fields):
                 # TODO: during the mapping the data are saved back in the database
                 # If the user decided to not use the mapped data and go back and remap
                 # then the data will forever be in the property state table for
@@ -258,6 +275,9 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                     *args,
                     **kwargs
                 )
+
+                # save cross related data, that is data that needs to go into the other model's
+                # collection as well.
 
                 # Assign some other arguments here
                 map_model_obj.import_file = import_file
@@ -945,22 +965,19 @@ def _normalize_address_str(address_val):
             normalized_address = _normalize_address_number(
                 addr['AddressNumber'])
 
-        if 'StreetNamePreDirectional' in addr and addr[
-                'StreetNamePreDirectional'] is not None:
+        if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
                 addr['StreetNamePreDirectional'])  # NOQA
 
         if 'StreetName' in addr and addr['StreetName'] is not None:
             normalized_address = normalized_address + ' ' + addr['StreetName']
 
-        if 'StreetNamePostType' in addr and addr[
-                'StreetNamePostType'] is not None:
+        if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
             # remove any periods from abbreviations
             normalized_address = normalized_address + ' ' + _normalize_address_post_type(
                 addr['StreetNamePostType'])  # NOQA
 
-        if 'StreetNamePostDirectional' in addr and addr[
-                'StreetNamePostDirectional'] is not None:
+        if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
                 addr['StreetNamePostDirectional'])  # NOQA
 
