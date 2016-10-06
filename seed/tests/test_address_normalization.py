@@ -5,12 +5,12 @@
 :author
 """
 from django.test import TestCase
-from seed.data_importer.tasks import _normalize_address_str
+from seed.utils.address import normalize_address_str
 
 
 def make_method(message, expected):
     def run(self):
-        result = _normalize_address_str(message)
+        result = normalize_address_str(message)
         self.assertEquals(expected, result)
     return run
 
