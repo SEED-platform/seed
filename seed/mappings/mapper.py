@@ -8,6 +8,8 @@ from collections import defaultdict
 
 from seed.mappings import seed_mappings
 from seed import models
+from seed.models import PropertyState
+from seed.models import TaxLotState
 import pdb
 
 
@@ -98,20 +100,19 @@ def merge_extra_data(b1, b2, default=None):
     return extra_data, extra_data_sources
 
 
-def merge_propertystate(merged_state, ps1, ps2, can_attrs, conf, default=None, match_type=None):
+def merge_state(merged_state, state1, state2, can_attrs, conf, default=None, match_type=None):
     """Set attributes on our Canonical model, saving differences.
 
     :param merged_state: BuildingSnapshot model inst.
-    :param ps1: BuildingSnapshot model inst. Left parent.
-    :param ps2: BuildingSnapshot model inst. Right parent.
+    :param state1: PropertyState/TaxLotState model inst. Left parent.
+    :param state2: PropertyState/TaxLotState model inst. Right parent.
     :param can_attrs: dict of dicts, {'attr_name': {'dataset1': 'value'...}}.
     :param default: (optional), which dataset's value to default to.
     :rtype default: BuildingSnapshot
     :return: inst(``merged_state``), updated.
 
     """
-
-    default = default or ps1
+    default = default or state2
     match_type = match_type or models.SYSTEM_MATCH
     changes = []
     for attr in can_attrs:
@@ -157,7 +158,7 @@ def merge_propertystate(merged_state, ps1, ps2, can_attrs, conf, default=None, m
 
     # TODO - deprecate extra_data_sources
     # pdb.set_trace()
-    merged_extra_data, merged_extra_data_sources = merge_extra_data(ps1, ps2, default=default)
+    merged_extra_data, merged_extra_data_sources = merge_extra_data(state1, state2, default=default)
 
     merged_state.extra_data = merged_extra_data
 
@@ -236,6 +237,19 @@ def merge_propertystate(merged_state, ps1, ps2, can_attrs, conf, default=None, m
 #     return snapshot, changes
 
 def get_building_attrs(data_set_buildings):
+    mapping = seed_mappings.BuildingSnapshot_to_BuildingSnapshot
+    return get_attrs_with_mapping(data_set_buildings, mapping)
+
+def get_propertystate_attrs(data_set_buildings):
+    mapping = seed_mappings.PropertyState_to_PropertyState
+    return get_building_attrs(data_set_buildings)
+
+def get_taxlotstate_attrs(data_set_buildings):
+    # TODO: fix for new data model!
+    mapping = seed_mappings.TaxLotState_to_TaxLotState
+    return get_building_attrs(data_set_buildings)
+
+def get_attrs_with_mapping(data_set_buildings, mapping):
     """Returns a dictionary of attributes from each data_set_building.
 
     :param buildings: list, group of BS instances to merge.
@@ -252,7 +266,7 @@ def get_building_attrs(data_set_buildings):
     """
 
     can_attrs = defaultdict(dict)
-    mapping = seed_mappings.BuildingSnapshot_to_BuildingSnapshot
+    # mapping = seed_mappings.BuildingSnapshot_to_BuildingSnapshot
     for data_set_building in data_set_buildings:
         for data_set_attr, can_attr in mapping:
             data_set_value = getattr(data_set_building, data_set_attr)
@@ -260,6 +274,11 @@ def get_building_attrs(data_set_buildings):
 
     return can_attrs
 
-def get_propertystate_attrs(data_set_buildings):
-    # TODO: fix for new data model!
-    return get_building_attrs(data_set_buildings)
+def get_state_attrs(state_list):
+    if not state_list: return []
+
+    if isinstance(state_list[0], PropertyState):
+        # TODO: fix for new data model!
+        return get_building_attrs(state_list)
+    elif isinstance(state_list[0], TaxLotState):
+        return get_taxlot_attrs(state_list)
