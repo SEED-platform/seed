@@ -6,6 +6,7 @@
 """
 from __future__ import unicode_literals
 
+import pdb
 import logging
 
 from django.db import models
@@ -61,7 +62,7 @@ class PropertyState(models.Model):
     # FIXME: source_type needs to be a foreign key or make it import_file.source_type
     source_type = models.IntegerField(null=True, blank=True, db_index=True)
 
-    organization = models.ForeignKey(Organization, blank=True, null=True)
+    organization = models.ForeignKey(Organization)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
 
     # Is this still being used during matching? Apparently so.
@@ -154,6 +155,8 @@ class PropertyState(models.Model):
             # Need to create a property for this state
             if self.organization is None:
                 print "organization is None"
+
+            if not self.organization: pdb.set_trace()
 
             prop = Property.objects.create(
                 organization=self.organization

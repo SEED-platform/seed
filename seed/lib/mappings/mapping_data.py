@@ -33,36 +33,35 @@ class MappingData(object):
 
         # So bedes compliant fields are defined in the database? That is strange
         self.data = []
+        self.property_data = []
+        self.tax_lot_data = []
 
         for f in PropertyState._meta.fields:
             # _source have been removed from new data model
             if f.name not in exclude_fields:  # and '_source' not in f.name:
-                self.data.append(
-                    {
-                        'table': 'PropertyState',
-                        'name': f.name,
-                        'type': f.get_internal_type() if f.get_internal_type else 'string',
-                        'js_type': self.normalize_mappable_type(
-                            f.get_internal_type()),
-                        'schema': 'BEDES',
-                        'extra_data': False,
+                column = {
+                    'table': 'PropertyState',
+                    'name': f.name,
+                    'type': f.get_internal_type() if f.get_internal_type else 'string',
+                    'js_type': self.normalize_mappable_type(f.get_internal_type()),
+                    'schema': 'BEDES',
+                    'extra_data': False,
                     }
-                )
+                self.data.append(column)
 
         for f in TaxLotState._meta.fields:
             # _source have been removed from new data model
             if f.name not in exclude_fields:  # and '_source' not in f.name:
-                self.data.append(
-                    {
-                        'table': 'TaxLotState',
-                        'name': f.name,
-                        'type': f.get_internal_type() if f.get_internal_type else 'string',
-                        'js_type': self.normalize_mappable_type(
-                            f.get_internal_type()),
-                        'schema': 'BEDES',
-                        'extra_data': False,
-                    }
-                )
+                column = {
+                    'table': 'TaxLotState',
+                    'name': f.name,
+                    'type': f.get_internal_type() if f.get_internal_type else 'string',
+                    'js_type': self.normalize_mappable_type(f.get_internal_type()),
+                    'schema': 'BEDES',
+                    'extra_data': False,
+                }
+
+                self.data.append(column)
 
         self.sort_data()
 
@@ -172,6 +171,16 @@ class MappingData(object):
         """
         self.data = sorted(self.data,
                            key=lambda k: (k['table'].lower(), k['name']))
+
+        self.property_data = sorted([x for x in self.data if x['table'] == 'PropertyState'],
+                                    key=lambda k: (k['table'].lower(), k['name']))
+
+        self.tax_lot_data = sorted([x for x in self.data if x['table'] == 'TaxLotState'],
+                                   key=lambda k: (k['table'].lower(), k['name']))
+
+        # import pdb
+        # pdb.set_trace()
+        # a = 10
 
     def find_column(self, table_name, column_name):
         """

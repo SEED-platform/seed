@@ -199,17 +199,6 @@ class DataMappingBaseTestCase(TestCase):
         user = User.objects.create(username='test')
         org = Organization.objects.create()
 
-        # Create an org user
-        OrganizationUser.objects.create(user=user, organization=org)
-
-        import_record = ImportRecord.objects.create(
-            owner=user, last_modified_by=user, super_organization=org
-        )
-        import_file = ImportFile.objects.create(import_record=import_record)
-        import_file.is_espm = import_file_is_espm
-        import_file.source_type = import_file_source_type
-        import_file.data_state = import_file_data_state
-        import_file.save()
 
         cycle, _ = Cycle.objects.get_or_create(
             name=u'Test Hack Cycle 2015',
@@ -217,6 +206,21 @@ class DataMappingBaseTestCase(TestCase):
             start=datetime.datetime(2015, 1, 1),
             end=datetime.datetime(2015, 12, 31),
         )
+
+
+        # Create an org user
+        OrganizationUser.objects.create(user=user, organization=org)
+
+        import_record = ImportRecord.objects.create(
+            owner=user, last_modified_by=user, super_organization=org
+        )
+        import_file = ImportFile.objects.create(import_record=import_record,
+                                                cycle=cycle)
+        import_file.is_espm = import_file_is_espm
+        import_file.source_type = import_file_source_type
+        import_file.data_state = import_file_data_state
+        import_file.save()
+
 
         return user, org, import_file, import_record, cycle
 

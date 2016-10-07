@@ -271,6 +271,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 # Assign some other arguments here
                 map_model_obj.import_file = import_file
                 map_model_obj.source_type = save_type
+                map_model_obj.organization = import_file.import_record.super_organization # Not the best place..
                 if hasattr(map_model_obj, 'data_state'):
                     map_model_obj.data_state = DATA_STATE_MAPPING
                 if hasattr(map_model_obj, 'organization'):
@@ -456,7 +457,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
     # Save our "column headers" and sample rows for F/E.
     source_type = get_source_type(import_file)
     for c in chunk:
-        raw_property = PropertyState()
+        raw_property = PropertyState(organization=import_file.import_record.super_organization)
         raw_property.import_file = import_file  # not defined in new data model
         raw_property.extra_data = c
         raw_property.source_type = source_type  # not defined in new data model
@@ -1031,8 +1032,8 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import
     unmatched_tax_lot_states and returns a set of states that
     correspond to unmatched states."""
 
-    # current_match_cycle = import_file.cycle
-    current_match_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
+    current_match_cycle = import_file.cycle
+    # current_match_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
 
     # This removes any states that are duplicates,
     equivalence_classes = partitioner.calculate_equivalence_classes(unmatched_states)
@@ -1074,8 +1075,8 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
     # refactor the partitioner to use Query objects); it may require a
     # bit of thinking.
 
-    # current_match_cycle = import_file.cycle
-    current_match_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
+    current_match_cycle = import_file.cycle
+    # current_match_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
 
     if isinstance(unmatched_states[0], PropertyState):
         ObjectViewClass = PropertyView
@@ -1110,12 +1111,12 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
                     current_view = existing_view_states[key][current_match_cycle]
                     current_state = current_view.state
 
-                    # TODO: update to generic "save match" function.
-                    merged_state = save_state_match(current_state,
-                                                    unmatched,
-                                                    confidence=1.0,
-                                                    match_type=SYSTEM_MATCH,
-                                                    user=import_file.import_record.owner)
+                    pdb.set_trace()
+                    merged_state, change_ = save_state_match(current_state,
+                                                       unmatched,
+                                                       confidence=1.0,
+                                                       match_type=SYSTEM_MATCH,
+                                                       user=import_file.import_record.owner)
 
                     current_view.state = merged_state
                     current_view.save()
@@ -1145,8 +1146,10 @@ def _match_properties_and_taxlots(file_pk, user_pk):
     prog_key = get_prog_key('match_buildings', file_pk)
     org = Organization.objects.filter(users=import_file.import_record.owner).first()
 
-    # match_cycle = import_file.cycle
-    match_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
+    match_cycle = import_file.cycle
+    if match_cycle is None:
+        pdb.set_trace()
+    # match_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
 
     # Return a list of all the properties/tax lots based on the import file.
     unmatched_properties = import_file.find_unmatched_property_states()
@@ -1494,8 +1497,7 @@ def save_state_match(state1, state2, confidence=None, user=None,
     # ps2 = PropertyState.objects.get(pk=ps2_pk)
 
     # THis
-    merged_state = type(state1).objects.create()
-    # merged_property_state = PropertyState.objects.create()
+    merged_state = type(state1).objects.create(organization=state1.organization)
     merged_state, changes = seed_mapper.merge_state(merged_state,
                                                     state1, state2,
                                                     seed_mapper.get_state_attrs([state1, state2]),

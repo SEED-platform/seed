@@ -11,7 +11,7 @@ a model instance for that type of mapping (AssessedBuilding for
 AssessedBuilding_to_CanonicalBuilding, etc.)
 """
 from seed.utils.mapping import get_mappable_columns
-
+from seed.lib.mappings.mapping_data import MappingData
 
 # Keys are destination attributes in our model
 # Values are expected data types so we can present reasonable approximations
@@ -45,3 +45,10 @@ PortfolioRaw_to_BuildingSnapshot = (
 )
 
 BuildingSnapshot_to_BuildingSnapshot = tuple([(k, k) for k in get_mappable_columns()])
+
+md = MappingData()
+property_state_fields = [x['name'] for x in md.property_data]
+tax_lot_state_fields = [x['name'] for x in md.tax_lot_data]
+
+PropertyState_to_PropertyState = tuple([(k, k) for k in property_state_fields])
+TaxLotState_to_TaxLotState = tuple([(k, k) for k in tax_lot_state_fields])

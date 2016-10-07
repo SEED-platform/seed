@@ -10,8 +10,7 @@ from seed.mappings import seed_mappings
 from seed import models
 from seed.models import PropertyState
 from seed.models import TaxLotState
-import pdb
-
+from seed.lib.mappings.mapping_data import MappingData
 
 def save_variant(snapshot, attr, attribute_values):
     """Save different options from each dataset for a Canonical field value.
@@ -241,13 +240,16 @@ def get_building_attrs(data_set_buildings):
     return get_attrs_with_mapping(data_set_buildings, mapping)
 
 def get_propertystate_attrs(data_set_buildings):
-    mapping = seed_mappings.PropertyState_to_PropertyState
-    return get_building_attrs(data_set_buildings)
+    # Old school approach.
+    mapping = seed_mappings.BuildingSnapshot_to_BuildingSnapshot
+    return get_attrs_with_mapping(data_set_buildings, mapping)
 
 def get_taxlotstate_attrs(data_set_buildings):
-    # TODO: fix for new data model!
+    import pdb
+
+    md = MappingData()
     mapping = seed_mappings.TaxLotState_to_TaxLotState
-    return get_building_attrs(data_set_buildings)
+    return get_attrs_with_mapping(data_set_buildings, mapping)
 
 def get_attrs_with_mapping(data_set_buildings, mapping):
     """Returns a dictionary of attributes from each data_set_building.
@@ -278,7 +280,6 @@ def get_state_attrs(state_list):
     if not state_list: return []
 
     if isinstance(state_list[0], PropertyState):
-        # TODO: fix for new data model!
-        return get_building_attrs(state_list)
+        return get_propertystate_attrs(state_list)
     elif isinstance(state_list[0], TaxLotState):
-        return get_taxlot_attrs(state_list)
+        return get_taxlotstate_attrs(state_list)

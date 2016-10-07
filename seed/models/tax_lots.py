@@ -51,7 +51,7 @@ class TaxLotState(models.Model):
     import_file = models.ForeignKey(ImportFile, null=True, blank=True)
 
     # Add organization to the tax lot states
-    organization = models.ForeignKey(Organization, blank=True, null=True)
+    organization = models.ForeignKey(Organization)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
