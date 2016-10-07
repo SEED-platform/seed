@@ -1,3 +1,5 @@
+"""Make sure the columns are updated """
+
 from __future__ import unicode_literals
 
 import itertools
@@ -8,6 +10,7 @@ from _localtools import get_static_extradata_mapping_file
 
 from _localtools import get_taxlot_columns
 from _localtools import get_property_columns
+from _localtools import get_core_organizations
 from _localtools import logging_info
 from _localtools import logging_debug
 
@@ -21,134 +24,143 @@ from seed.models import TaxLotView
 from seed.models import TaxLotState
 import pdb
 
+
 class Command(BaseCommand):
-        def add_arguments(self, parser):
-            parser.add_argument('--org', dest='organization', default=False)
-            parser.add_argument('--stats', dest='stats', default=False, action="store_true")
 
-            parser.add_argument('--no-update-columns', dest='update_columns', default=True, action="store_false")
-            parser.add_argument('--update-columns', dest='update_columns', default=True, action="store_true")
+    def add_arguments(self, parser):
+        parser.add_argument('--org', dest='organization', default=False)
 
-            parser.add_argument('--no-add-unmapped-columns', dest='add_unmapped_columns', default=True, action="store_false")
-            parser.add_argument('--add-unmapped-columns', dest='add_unmapped_columns', default=True, action="store_true")
+        parser.add_argument('--no-update-columns', dest='update_columns', default=True, action="store_false")
+        parser.add_argument('--update-columns',    dest='update_columns', default=True, action="store_true")
 
-            parser.add_argument('--no-create-missing-columns', dest='create_missing_columns', default=True, action="store_false")
-            parser.add_argument('--create-missing-columns', dest='create_missing_columns', default=True, action="store_true")
-            return
+        parser.add_argument('--no-add-unmapped-columns', dest='add_unmapped_columns', default=True, action="store_false")
+        parser.add_argument('--add-unmapped-columns',    dest='add_unmapped_columns', default=True, action="store_true")
 
-        def handle(self, *args, **options):
-            logging_info("RUN migrate_extradata_columns with args={},kwds={}".format(args, options))
-            if options['organization']:
-                organization_ids = map(int, options['organization'].split(","))
+        parser.add_argument('--no-create-missing-columns', dest='create_missing_columns', default=True, action="store_false")
+        parser.add_argument('--create-missing-columns',    dest='create_missing_columns', default=True, action="store_true")
+        return
+
+    def handle(self, *args, **options):
+        logging_info(
+            "RUN migrate_extradata_columns with args={},kwds={}".format(args, options))
+
+        if options['organization']:
+            organization_ids = map(int, options['organization'].split(","))
+        else:
+            organization_ids = get_core_organizations()
+
+        update_columns = options['update_columns']
+        add_unmapped_columns = options['add_unmapped_columns']
+        create_missing_columns = options['create_missing_columns']
+
+        for org_id in organization_ids:
+            org = Organization.objects.get(pk=org_id)
+
+            # Update
+            if update_columns:
+                self.update_columns_based_on_mappings_file(org)
+
+            if create_missing_columns:
+                self.find_missing_columns_based_on_extra_data(org)
+
+        logging_info("END migrate_extradata_columns")
+        return
+
+    def find_missing_columns_based_on_extra_data(self, org):
+        """Look through all the extra_data fields of the TaxLot and Property
+        State objects and make sure there are columns that point to them.
+        """
+
+        logging_info("Creating any columns for non-mapped extra data fields for organization {}".format(org))
+
+        property_states = PropertyState.objects.filter(organization=org).all()
+        taxlot_states = TaxLotState.objects.filter(organization=org).all()
+
+        get_ed_keys = lambda state: state.extra_data.keys()
+
+        property_keys = set(itertools.chain.from_iterable(map(get_ed_keys, property_states)))
+        taxlot_keys = set(itertools.chain.from_iterable(map(get_ed_keys, taxlot_states)))
+
+        # Iterate through each of the extra data fields associated
+        # with the org's PropertyState objects and check to make sure
+        # there is Column with that key name.
+        for key in property_keys:
+            cnt = Column.objects.filter(organization=org, column_name=key).count()
+
+            if not cnt:
+                logging_info("Missing column '{}' found in PropertyState extra_data keys".format(key))
+
+                logging_info("Creating missing column '{}'".format(key))
+                col = Column(organization=org,
+                             column_name=key,
+                             is_extra_data=True,
+                             table_name="PropertyState")
+                col.save()
+
+        # Iterate through each of the extra data fields associated with the TaxLotStates
+        for key in taxlot_keys:
+            cnt = Column.objects.filter(organization=org, column_name=key).count()
+
+            if not cnt:
+                logging_info("Missing column '{}' found in TaxLotState extra_data keys.".format(key))
+
+                logging_info("Creating missing column '{}'".format(key))
+
+                col = Column(organization=org,
+                             column_name=key,
+                             is_extra_data=True,
+                             table_name="TaxLotState")
+                col.save()
+
+        return
+
+    def update_columns_based_on_mappings_file(self, org):
+        """Go through each of the organization columns as reported by the
+        'extradata.csv' mappings file and make sure it points to the
+        table specified in that file.
+        """
+
+        logging_info("Updating columns for org {} to match that in migration mapping file.".format(org))
+
+        taxlot_column_names = get_taxlot_columns(org)
+        property_column_names = get_property_columns(org)
+
+        found = 0
+        notfound = 0
+
+        for prop_col in property_column_names:
+            qry = Column.objects.filter(organization=org, column_name=prop_col)
+            cnt = qry.count()
+            if cnt:
+                # Update the column
+                col = qry.first()
+                logging_info("Setting Column '{}' to SOURCE_PROPERTY".format(col))
+                col.extra_data_source = Column.SOURCE_PROPERTY
+                col.save()
             else:
-                organization_ids = get_core_organizations()
+                logging_info("Creating Column '{}' based on missing from mappings file".format(col))
+                col = Column(organization=org,
+                             column_name=prop_col,
+                             is_extra_data=True,
+                             table_name = "PropertyState")
+                col.save()
 
-            display_stats = options['stats']
+        for tl_col in taxlot_column_names:
+            qry = Column.objects.filter(organization=org, column_name=tl_col)
+            cnt = qry.count()
 
-            update_columns = options['update_columns']
-            add_unmapped_columns = options['add_unmapped_columns']
-            create_missing_columns = options['create_missing_columns']
+            if cnt:
+                # Update the column
+                col = qry.first()
+                col.extra_data_source = Column.SOURCE_TAXLOT
+                logging_info("Setting Column '{}' to SOURCE_TAXLOT".format(col))
+                col.save()
+            else:
+                logging_info("Creating Column '{}' based on missing from mappings file".format(col))
+                col = Column(organization=org,
+                             column_name=tl_col,
+                             is_extra_data=True,
+                             table_name="TaxLotState")
+                col.save()
 
-            if display_stats:
-                update_columns, add_unmapped_columns, search_missing_columns = False * 3
-
-            for org_id in organization_ids:
-                org = Organization.objects.get(pk=org_id)
-
-                self.update_columns(org, update_columns, add_unmapped_columns)
-                self.find_missing_columns(org, create=create_missing_columns)
-
-            logging_info("END migrate_extradata_columns")
-            return
-
-        def find_missing_columns(self, org, create):
-            logging_info("Creating missing columns for {}".format(org))
-
-            property_views = PropertyView.objects.filter(property__organization=org).select_related('state').all()
-            taxlot_views = TaxLotView.objects.filter(taxlot__organization=org).select_related('state').all()
-
-            property_keys = set(itertools.chain.from_iterable(map(lambda v: v.state.extra_data.keys(), property_views)))
-            taxlot_keys = set(itertools.chain.from_iterable(map(lambda v: v.state.extra_data.keys(), taxlot_views)))
-
-            for pk in property_keys:
-                qry = Column.objects.filter(organization=org,column_name=pk)
-                cnt = qry.count()
-
-                if not cnt:
-                    if create:
-                        logging_info("Creating missing column {} found in property extra_data keys".format(pk))
-                        col = Column(organization = org, column_name = pk, is_extra_data=True, extra_data_source=Column.SOURCE_PROPERTY)
-                        col.save()
-                    else:
-                        logging_info("Missing column {} found in property extra_data keys".format(pk))
-
-            for tlk in taxlot_keys:
-                qry = Column.objects.filter(organization=org,column_name=tlk)
-                cnt = qry.count()
-
-                if not cnt:
-                    if create:
-                        logging_info("Creating missing column {} found in tax lot extra data keys".format(tlk))
-                        col = Column(organization = org, column_name = tlk, is_extra_data=True, extra_data_source=Column.SOURCE_TAXLOT)
-                        col.save()
-                    else:
-                        logging_info("Missing column {} found in tax lot extra data keys.".format(tlk))
-
-            return
-
-        def update_columns(self, org, update_columnms = True, create_missing = False):
-            logging_info("Updating  columns for org {}".format(org))
-            taxlot_columns = get_taxlot_columns(org)
-            property_columns = get_property_columns(org)
-            columns = Column.objects.filter(organization = org).all()
-
-            found = 0
-            notfound = 0
-
-            for tl_col in taxlot_columns:
-                qry = Column.objects.filter(organization=org,column_name=tl_col)
-                cnt = qry.count()
-                if cnt:
-                    # Update the column
-                    col = qry.first()
-                    col.extra_data_source = Column.SOURCE_TAXLOT
-                    logging_info("Setting Column {} to SOURCE_TAXLOT".format(col))
-                    col.save()
-                elif create_missing:
-                    # Create the missing column
-                    col = Column(organization = org, column_name = tl_col, is_extra_data=True, extra_data_source=Column.SOURCE_TAXLOT)
-                    logging_info("CREATING COLUMN {}".format(col))
-                    col.save()
-
-            for prop_col in property_columns:
-                qry = Column.objects.filter(organization=org,column_name=prop_col)
-                cnt = qry.count()
-                if cnt:
-                    # Update the column
-                    col = qry.first()
-                    logging_info("Setting Column {} to SOURCE_PROPERTY".format(col))
-                    col.extra_data_source = Column.SOURCE_PROPERTY
-                    col.save()
-                elif create_missing:
-                    # Create the missing column
-                    col = Column(organization = org, column_name = prop_col, is_extra_data=True, extra_data_source=Column.SOURCE_PROPERTY)
-                    logging_info("CREATING COLUMN {}".format(col))
-                    col.save()
-            return
-
-        # def display_stats(self, org):
-        #     taxlot_columns = get_taxlot_columns(org)
-        #     property_columns = get_property_columns(org)
-
-
-        #     extra_data_columns = set(itertools.chain.from_iterable(map(lambda bs: bs.extra_data.keys(), BuildingSnapshot.objects.filter(organization=org, canonical_building__active=True).all())))
-        #     mapped_columns = set(itertools.chain(taxlot_columns, property_columns))
-
-        #     missing = [x for x in extra_data_columns if x not in mapped_columns and x.strip()]
-
-        #     if len(missing):
-        #         print "== org {}-{}: {} missing == ".format(org.pk, org.name, len(missing))
-        #     for m in sorted(missing):
-        #         print m
-
-        #     return
+        return

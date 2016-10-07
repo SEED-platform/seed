@@ -176,6 +176,7 @@ seeddb
 seeduser
 sendmail
 serializable
+serializer
 serializers
 setUp
 setUpClass
@@ -187,6 +188,7 @@ Submodules
 Subpackages
 subtask
 sudo
+taxlots
 tastypie
 td
 tearDown

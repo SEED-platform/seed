@@ -28,6 +28,9 @@ angular.module('BE.seed.controller.inventory_list', [])
               labels,
               columns,
               urls) {
+      $scope.selectedCount = 0;
+      $scope.selectedParentCount = 0;
+
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.objects = inventory.results;
       $scope.pagination = inventory.pagination;
@@ -60,7 +63,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      $scope.$watchCollection('selected_labels', function () {
+      var filterUsingLabels = function () {
         // Only submit the `id` of the label to the API.
         var ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
         if ($scope.selected_labels.length) {
@@ -72,7 +75,9 @@ angular.module('BE.seed.controller.inventory_list', [])
           _.forEach($scope.gridApi.grid.rows, $scope.gridApi.core.clearRowInvisible);
         }
         _.delay($scope.updateHeight, 150);
-      });
+      };
+
+      $scope.$watchCollection('selected_labels', filterUsingLabels);
 
       /**
        Opens the update building labels modal.
@@ -109,28 +114,30 @@ angular.module('BE.seed.controller.inventory_list', [])
       var processData = function () {
         var data = angular.copy($scope.objects);
         var roots = data.length;
-        for (var i = 0, trueIndex = 0; i < roots; ++i) {
+        for (var i = 0, trueIndex = 0; i < roots; ++i, ++trueIndex) {
           data[trueIndex].$$treeLevel = 0;
           var related = data[trueIndex].related;
           var relatedIndex = trueIndex;
           for (var j = 0; j < related.length; ++j) {
             // Rename nested keys
+            var map = {};
             if ($scope.inventory_type == 'properties') {
-              var map = {
+              map = {
                 city: 'tax_city',
                 state: 'tax_state',
                 postal_code: 'tax_postal_code'
               };
             } else if ($scope.inventory_type == 'taxlots') {
-              var map = {
+              map = {
+                address_line_1: 'property_address_line_1',
+                address_line_2: 'property_address_line_2',
                 city: 'property_city',
                 state: 'property_state',
                 postal_code: 'property_postal_code'
               };
             }
             var updated = _.reduce(related[j], function (result, value, key) {
-              key = map[key] || key;
-              result[key] = value;
+              result[map[key] || key] = value;
               return result;
             }, {});
 
@@ -138,9 +145,9 @@ angular.module('BE.seed.controller.inventory_list', [])
           }
           // Remove unnecessary data
           delete data[relatedIndex].related;
-          ++trueIndex;
         }
         $scope.data = data;
+        $scope.updateQueued = true;
       };
 
       var refresh_objects = function () {
@@ -233,7 +240,8 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.updateHeight = function () {
         var height = 0;
         _.forEach(['.header', '.page_header_container', '.section_nav_container', '.inventory-list-controls', '.inventory-list-tab-container'], function (selector) {
-          height += angular.element(selector)[0].offsetHeight;
+          var element = angular.element(selector)[0];
+          if (element) height += element.offsetHeight;
         });
         angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
         angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');
@@ -287,7 +295,12 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.gridApi = gridApi;
 
           _.delay($scope.updateHeight, 150);
-          angular.element($window).on('resize', _.debounce($scope.updateHeight, 150));
+
+          var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
+          angular.element($window).on('resize', debouncedHeightUpdate);
+          $scope.$on('$destroy', function () {
+            angular.element($window).off('resize', debouncedHeightUpdate);
+          });
 
           gridApi.pinning.on.columnPinned($scope, savePinning);
 
@@ -302,6 +315,10 @@ angular.module('BE.seed.controller.inventory_list', [])
           gridApi.core.on.rowsRendered($scope, _.debounce(function () {
             $scope.$apply(function () {
               $scope.total = _.filter($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), {treeLevel: 0}).length;
+              if ($scope.updateQueued) {
+                $scope.updateQueued = false;
+                if ($scope.selected_labels.length) filterUsingLabels();
+              }
             });
           }, 150));
         }

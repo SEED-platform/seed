@@ -4,6 +4,7 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import datetime
 import json
 import os
 import time
@@ -15,7 +16,10 @@ from django.test import TestCase
 from seed.factory import SEEDFactory
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from seed.models import CanonicalBuilding
+from seed.models import (
+    CanonicalBuilding,
+    Cycle,
+)
 from seed.utils.api import get_api_endpoints
 
 
@@ -123,6 +127,12 @@ class TestApi(TestCase):
         self.user.generate_key()
         self.org = Organization.objects.create()
         OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.cycle, _ = Cycle.objects.get_or_create(
+            name=u'Test Hack Cycle 2015',
+            organization=self.org,
+            start=datetime.datetime(2015, 1, 1),
+            end=datetime.datetime(2015, 12, 31),
+        )
 
         self.headers = {'HTTP_AUTHORIZATION': '%s:%s' % (self.user.username, self.user.api_key)}
 
@@ -192,7 +202,7 @@ class TestApi(TestCase):
         self.assertEqual(r['organizations'][0]['number_of_users'], 1)
         self.assertEqual(r['organizations'][0]['user_role'], 'owner')
         self.assertEqual(r['organizations'][0]['owners'][0]['first_name'], 'Jaqen')
-        self.assertEqual(r['organizations'][0]['cycles'], [])
+        self.assertEqual(r['organizations'][0]['cycles'], [{u'name': u'Test Hack Cycle 2015', u'num_properties': 0, u'num_taxlots': 0}])
 
     def test_organization_details(self):
         r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
@@ -259,7 +269,7 @@ class TestApi(TestCase):
             'first_name': 'Brienne',
             'last_name': 'Tarth',
             'email': 'test+1@demo.com',
-            'role': 'member'
+            'role': 'member',
         }
 
         r = self.client.post('/api/v2/users/?organization_id=' + str(organization_id),
@@ -403,9 +413,11 @@ class TestApi(TestCase):
         # Save the data to BuildingSnapshots
         payload = {
             'file_id': import_file_id,
-            'organization_id': organization_id
+            'organization_id': organization_id,
+            'cycle_id': self.cycle.id,
         }
-        r = self.client.post('/app/save_raw_data/', data=json.dumps(payload),
+        r = self.client.post('/app/save_raw_data/',
+                             data=json.dumps(payload),
                              content_type='application/json',
                              follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)

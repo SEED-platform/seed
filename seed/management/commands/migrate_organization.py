@@ -283,9 +283,11 @@ def load_cycle(org, node, year_ending=True, fallback=True):
 
     time = datetime.datetime(year=time.year, month=time.month, day=time.day)
 
+    # TODO: Is this correct?  I like the idea but it appears to have
+    # never been used
+
     # Rules definitions for how to handle ambiguous data.
     remap_year = {}
-
     remap_year[20] = 2014
     remap_year[7] = 2015
     remap_year[49] = 2015
@@ -302,6 +304,17 @@ def load_cycle(org, node, year_ending=True, fallback=True):
 
     if time.year == 2016 and org.pk in remap_year:
         time = time.replace(year=remap_year[org.pk])
+
+    # This seems like a very inelegant way to handle city specific application rules.
+
+    # For Berkeley if this field is available, we always use it.
+    if org.pk == 117 and 'Label Date' in node.extra_data:
+        berkeley_datestr = node.extra_data['Label Date']
+        try:
+            if berkeley_datestr is not None:
+                time = datetime.datetime.strptime(berkeley_datestr, "%Y-%m-%d")
+        except ValueError:
+            pass # Bad value in extra_data; skip it and use the default.
 
     cycle_start = time.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
     cycle_end = cycle_start.replace(year=cycle_start.year + 1) - datetime.timedelta(seconds=1)

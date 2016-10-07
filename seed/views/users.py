@@ -216,6 +216,7 @@ class UserViewSet(viewsets.ViewSet):
         # see Organization.add_member()
         if not org.is_member(user):
             org.add_member(user)
+
         if body.get('role'):
             OrganizationUser.objects.filter(
                 organization_id=org.pk,
