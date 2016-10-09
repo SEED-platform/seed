@@ -238,10 +238,17 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
             delimited_field = None
             # field does not exist in mapping list, so ignoring
 
-        logger.debug("my delimited_field is {}".format(delimited_field))
-
-        # TODO: we probably need a way to allow for certain fields to be imported into all tables.
-        # for example the jurisdiction_tax_lot_id is useful on propertystate.extra_data too.
+        # All the data live in the extra_data field when the data are imported
+        data = []  # initialize to no data
+        if table == 'PropertyState':
+            model_obj = PropertyState
+            data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
+        elif table == 'TaxLotState':
+            model_obj = TaxLotState
+            # Data are still in the PropertyState object because it was imported into that table
+            data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
+        else:
+            logger.error("The defined table was empty, skipping importing object for table")
 
         # Since we are importing CSV, then each extra_data field will have the same fields. So
         # save the map_model_obj outside of for loop to pass into the `save_column_names` methods

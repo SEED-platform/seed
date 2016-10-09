@@ -7,9 +7,12 @@
 from seed.models import Project, ProjectBuilding
 from seed.utils.buildings import get_search_query
 
+# TODO REMOVE
 
 # TO REMOVE
 # OBSOLETED BY REMOVAL OF BUILDING VIEWS
+
+
 def get_projects(building, organization):
     """return an JSON friendly list of the building's projects
 

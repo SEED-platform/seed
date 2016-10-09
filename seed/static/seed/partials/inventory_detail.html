@@ -1,9 +1,7 @@
 <div class="page_header_container" ng-cloak>
     <div class="page_header">
         <div class="left page_action_container">
-            <a ui-sref="inventory_list({inventory_type: inventory_type})" class="page_action">
-                <i class="fa fa-chevron-left"></i> {$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $}
-            </a>
+            <a ui-sref="inventory_list({inventory_type: inventory_type})" class="page_action"><i class="fa fa-chevron-left"></i> {$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $}</a>
         </div>
         <div class="page_title">
             <h1>{$ inventory_type == 'taxlots' ? 'Tax Lot' : 'Property' $} Detail</h1>
@@ -25,25 +23,12 @@
                     </h2>
                 </span>
             </div>
-            <div class="section_action_container right"
-                 ng-hide="edit_form_showing">
-                <a ng-click="on_edit()"
-                   ng-show="user_role !== 'viewer'">
-                    <i class="fa fa-pencil"></i> Edit
-                </a>
+            <div id="inventory-detail-edit" class="section_action_container right" ng-hide="edit_form_showing">
+                <a ng-click="on_edit()" ng-show="user_role !== 'viewer'" ng-disabled="true"><i class="fa fa-pencil"></i> Edit </a>
             </div>
-            <div class="section_action_container right section_action_btn"
-                 ng-show="edit_form_showing">
-                <a roll="button"
-                   class="btn btn-default btn-sm"
-                   ng-click="on_cancel()">
-                    Cancel
-                </a>
-                <a roll="button"
-                   class="btn btn-primary btn-sm"
-                   ng-click="on_save()">
-                    Save Changes
-                </a>
+            <div class="section_action_container right section_action_btn" ng-show="edit_form_showing">
+                <a roll="button" class="btn btn-primary btn-sm" ng-click="on_save()">Save Changes</a>
+                <a roll="button" class="btn btn-default btn-sm" ng-click="on_cancel()">Cancel</a>
             </div>
         </div>
     </div>
@@ -51,18 +36,14 @@
         <div class="section_content">
 
             <div style="float:right; width:250px; text-align:right; margin: 10px 10px 0 0;" class="ellipsis">
-                 <span style="color:#777"
-                       popover-placement="top-left"
-                       popover-animation="false"
-                       popover-trigger="outsideClick"
-                       uib-popover="{$ cycle.name $}">
+                 <span style="color:#777" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ cycle.name $}">
                      Cycle: {$ cycle.name $}
                  </span>
             </div>
 
             <div style="margin:10px 250px 10px 0; padding:0 10px;">
                 <button type="button" class="btn btn-default" ng-click="open_update_labels_modal(inventory.id, inventory_type)" style="vertical-align: top;">
-                    <i class="fa fa-tag"></i>Add/Remove Labels
+                    <i class="fa fa-tag"></i> Add/Remove Labels
                 </button>
                 <span style="display:inline-block; margin-top:9px; padding-left:15px; vertical-align: top;"><strong>Labels:</strong></span>
                 <span ng-if="!labels.length" style="color:#999;display:inline-block;margin-top:7px;">(no labels applied)</span>
@@ -79,8 +60,7 @@
                             <th sd-resizable class="ellipsis-resizable">Current Value</th>
                             <!-- Historical values -->
                             <th ng-repeat="historical_item in historical_items" class="ellipsis">
-                                <div ng-if="historical_item.source=='ImportFile'"
-                                     uib-popover="{$ historical_item.filename $}">
+                                <div ng-if="historical_item.source=='ImportFile'" uib-popover="{$ historical_item.filename $}">
                                     {$ historical_item.filename $}
                                 </div>
                                 <div ng-if="historical_item.source=='UserEdit'">(User Edit)</div>
@@ -89,76 +69,42 @@
                     </thead>
                     <tbody>
 
-                        <tr ng-repeat="field in data_fields">
+                        <tr ng-repeat="field in columns" ng-if="field.visible">
 
                             <!-- Field name -->
-                            <td>{$ field.key | titleCase $}</td>
+                            <td>{$ field.displayName $}</td>
 
                             <!-- Show read-only current 'regular' field value -->
-                            <td ng-if="edit_form_showing===false && field.type !== 'extra_data'"
-                                ng-class="changed_fields.regular_fields.indexOf(field.key)>=0 ? 'highlight' : ''"
-                                class="ellipsis">
-                            <span class="sd-data-content"
-                                  popover-placement="top-left"
-                                  popover-animation="false"
-                                  popover-trigger="outsideClick"
-                                  uib-popover="{$ item_state[field.key] $}">
-                                {$ item_state[field.key] $}
+                            <td ng-if="edit_form_showing===false && !field.extraData" ng-class="changed_fields.regular_fields.indexOf(field.name)>=0 ? 'highlight' : ''" class="ellipsis">
+                            <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state[field.name] $}">
+                                {$ item_state[field.name] $}
                             </span>
                             </td>
 
                             <!-- Show read-only current 'extra_data' field value -->
-                            <td ng-if="edit_form_showing===false && field.type === 'extra_data'"
-                                ng-class="changed_fields.extra_data_fields.indexOf(field.key)>=0 ? 'highlight' : ''"
-                                class="ellipsis">
-                            <span class="sd-data-content"
-                                  popover-placement="top-left"
-                                  popover-animation="false"
-                                  popover-trigger="outsideClick"
-                                  uib-popover="{$ item_state.extra_data[field.key] $}">
-                                {$ item_state.extra_data[field.key]  $}
+                            <td ng-if="edit_form_showing===false && field.extraData" ng-class="changed_fields.extra_data_fields.indexOf(field.name)>=0 ? 'highlight' : ''" class="ellipsis">
+                            <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state.extra_data[field.name] $}">
+                                {$ item_state.extra_data[field.name] $}
                             </span>
                             </td>
 
                             <!-- Show input form to edit current field value -->
-                            <td ng-if="edit_form_showing"
-                                ng-class="(field.type !== 'extra_data' && changed_fields.extra_data_fields.indexOf(field.key)>=0) || changed_fields.regular_fields.indexOf(field.key)>=0 ? 'highlight' : ''"
-                            >
-                                <div ng-if="current_state_field.type !== 'extra_data'">
-                                    <input id="edit_attribute_id"
-                                           class="form-control input-sm"
-                                           type="text"
-                                           name="tax_lot_id"
-                                           ng-model="item_state[field.key]"/>
+                            <td ng-if="edit_form_showing" ng-class="(!field.extraData && changed_fields.extra_data_fields.indexOf(field.name)>=0) || changed_fields.regular_fields.indexOf(field.name)>=0 ? 'highlight' : ''">
+                                <div ng-if="!field.extraData">
+                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" name="tax_lot_id" ng-model="item_state[field.name]"/>
                                 </div>
-                                <div ng-if="current_state_field.type === 'extra_data'">
-                                    <input id="edit_property_attribute_id"
-                                           class="form-control input-sm"
-                                           type="text"
-                                           name="tax_lot_id"
-                                           ng-model="item_state.extra_data[field.key]"/>
+                                <div ng-if="field.extraData">
+                                    <input id="edit_property_attribute_id" class="form-control input-sm" type="text" name="tax_lot_id" ng-model="item_state.extra_data[field.name]"/>
                                 </div>
                             </td>
 
                             <!-- Show read-only historical field value -->
-                            <td ng-repeat="historical_item in historical_items"
-                                ng-class=" (field.type !== 'extra_data' && historical_item.changed_fields.extra_data_fields.indexOf(field.key)>=0) || historical_item.changed_fields.regular_fields.indexOf(field.key)>=0 ? 'highlight' : ''"
-                                class="ellipsis">
-                            <span ng-if="field.type !== 'extra_data'"
-                                  class="sd-data-content"
-                                  popover-placement="top-left"
-                                  popover-trigger="outsideClick"
-                                  popover-animation="false"
-                                  uib-popover="{$ historical_item.state[field.key] $}">
-                                {$ historical_item.state[field.key] $}
+                            <td ng-repeat="historical_item in historical_items" ng-class="(!field.extraData && historical_item.changed_fields.extra_data_fields.indexOf(field.name)>=0) || historical_item.changed_fields.regular_fields.indexOf(field.name)>=0 ? 'highlight' : ''" class="ellipsis">
+                            <span ng-if="!field.extraData" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$ historical_item.state[field.name] $}">
+                                {$ historical_item.state[field.name] $}
                             </span>
-                                <span ng-if="field.type === 'extra_data'"
-                                      class="sd-data-content"
-                                      popover-placement="top-left"
-                                      popover-trigger="outsideClick"
-                                      popover-animation="false"
-                                      uib-popover="{$ historical_item.state.extra_data[field.key]  $}">
-                                {$ historical_item.state.extra_data[field.key] $}
+                                <span ng-if="field.extraData" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$ historical_item.state.extra_data[field.name]  $}">
+                                {$ historical_item.state.extra_data[field.name] $}
                             </span>
                             </td>
 
@@ -203,9 +149,7 @@
                     <tr ng-repeat="taxlot in inventory.related">
                         <td> {$ taxlot.taxlot.id $}</td>
                         <td>
-                            <a ui-sref="inventory_detail({inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">
-                                {$ taxlot.state.address ? taxlot.state.address : '(no address 1)' $}
-                            </a>
+                            <a ui-sref="inventory_detail({inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">{$ taxlot.state.address_line_1 ? taxlot.state.address_line_1 : '(no address 1)' $}</a>
                         </td>
                     </tr>
                 </tbody>
@@ -213,9 +157,7 @@
                     <tr ng-repeat="property in inventory.related">
                         <td> {$ property.property.id $}</td>
                         <td>
-                            <a ui-sref="inventory_detail({inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">
-                                {$ property.state.address_line_1 ? property.state.address_line_1 : '(no address 1)' $}
-                            </a>
+                            <a ui-sref="inventory_detail({inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$ property.state.address_line_1 ? property.state.address_line_1 : '(no address 1)' $}</a>
                         </td>
                     </tr>
                 </tbody>

@@ -20,6 +20,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', [])
     'Notification',
     function ($scope, $uibModalInstance, label_service, inventory_ids, inventory_type, notification) {
       $scope.inventory_ids = inventory_ids;
+      $scope.inventory_type = inventory_type;
       //keep track of status of service call
       $scope.loading = false;
 

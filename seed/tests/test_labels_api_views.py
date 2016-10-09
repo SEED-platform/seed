@@ -104,8 +104,8 @@ class TestLabelsViewSet(TestCase):
         self.assertEqual(response_a.status_code, status.HTTP_200_OK)
         self.assertEqual(response_b.status_code, status.HTTP_200_OK)
 
-        results_a = set([result['organization_id'] for result in response_a.data])
-        results_b = set([result['organization_id'] for result in response_b.data])
+        results_a = set(result['organization_id'] for result in response_a.data)
+        results_b = set(result['organization_id'] for result in response_b.data)
 
         assert results_a == {organization_a.pk}
         assert results_b == {organization_b.pk}
@@ -205,14 +205,17 @@ class TestUpdateInventoryLabelsAPIView(TestCase):
             username=self.user_details['username'],
             password=self.user_details['password']
         )
-        url = reverse('labels:property_labels')
+        url = "{}?organization_id={}".format(
+            reverse('labels:property_labels'), self.org.id
+        )
+
         post_params = {
             'add_label_ids': [self.status_label.id],
             'remove_label_ids': [],
             'inventory_ids': [1, 2, 3],
         }
         response = client.put(
-            url + "?organization_id={}".format(self.org.id), post_params, format='json'
+            url, post_params, format='json'
         )
         result = response.data
 
@@ -231,7 +234,7 @@ class TestUpdateInventoryLabelsAPIView(TestCase):
             'inventory_ids': [1, 2, 3],
         }
         response = client.put(
-            url + "?organization_id={}".format(self.org.id), post_params, format='json'
+            url, post_params, format='json'
         )
         result = response.data
 

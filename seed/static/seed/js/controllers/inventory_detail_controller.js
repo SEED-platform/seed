@@ -15,21 +15,23 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'label_service',
     'inventory_service',
     'inventory_payload',
-    'all_columns',
-    'default_columns',
+    'columns',
     'labels_payload',
     function ($state, $scope, $uibModal, $log, $filter, $stateParams, urls, label_helper_service, label_service,
-              inventory_service, inventory_payload, all_columns, default_columns, labels_payload) {
+              inventory_service, inventory_payload, columns, labels_payload) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id,
         related: $scope.inventory_type == 'properties' ? inventory_payload.taxlots : inventory_payload.properties
       };
       $scope.cycle = inventory_payload.cycle;
-      $scope.fields = all_columns.fields;
       $scope.labels = _.filter(labels_payload, function (label) {
         return !_.isEmpty(label.is_applied);
       });
+
+      var localStorageKey = 'grid.' + $scope.inventory_type + '.detail';
+
+      $scope.columns = inventory_service.loadSettings(localStorageKey, angular.copy(columns));
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
@@ -92,82 +94,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
        */
       $scope.restore_copy = function () {
         $scope.item_state = $scope.item_copy;
-      };
-
-
-      /**
-       * generate_data_fields: returns a list of objects representing
-       * the data fields (fixed column and extra_data) to show for
-       * the current item in the detail view (Property or State).
-       *
-       * This method makes sure keys/fields are not duplicated.
-       * Also, it only adds columns that are in the
-       * default_columns property (if any exist).
-       *
-       * @param {Object}  state_obj              A 'state' object (for a Property or TaxLot) of key/value pairs
-       * @param {Array}   default_columns      An array of key names for columns selected by user for display
-       * @param {Array}   extra_data_keys      An array of key names for all extra_data fields
-       *                                        (in current state or past states)
-       *
-       * @returns {Array} data_fields: A list of data_field objects
-       *
-       */
-      $scope.generate_data_fields = function (state_obj, default_columns, extra_data_keys) {
-
-        var data_fields = [];
-        var key_list = [];
-        var check_defaults = (default_columns && default_columns.length > 0);
-        if (!extra_data_keys) {
-          extra_data_keys = [];
-        }
-
-        // add Property fixed_column properties to data_fields
-        angular.forEach(state_obj, function (val, key) {
-          // Duplicate check and check if default_columns is used and if field in columns
-          if (!_.isUndefined(val) && $scope.is_valid_data_column_key(key) && !_.includes(key_list, key) &&
-            (!check_defaults || (check_defaults && _.includes(default_columns, key)))) {
-            key_list.push(key);
-            data_fields.push({
-              key: key,
-              type: 'fixed_column'
-            });
-          }
-        });
-
-        // add Property extra_data from all states to data_fields
-        angular.forEach(extra_data_keys, function (key) {
-          // Duplicate check and check if default_columns is used and if field in columns
-          if ($scope.is_valid_data_column_key(key) && !_.includes(key_list, key) &&
-            (!check_defaults || (check_defaults && _.includes(default_columns, key)))) {
-            key_list.push(key);
-            data_fields.push({
-              key: key,
-              type: 'extra_data'
-            });
-          }
-        });
-
-        if (check_defaults) {
-          // Sort by user defined order.
-          data_fields.sort(function (a, b) {
-            if (default_columns.indexOf(a.key) < default_columns.indexOf(b.key)) {
-              return -1;
-            } else {
-              return 1;
-            }
-          });
-        } else {
-          // Sort alphabetically.
-          data_fields.sort(function (a, b) {
-            if (a.key.toLowerCase() < b.key.toLowerCase()) {
-              return -1;
-            } else {
-              return 1;
-            }
-          });
-        }
-
-        return data_fields;
       };
 
       /**
@@ -319,18 +245,13 @@ angular.module('BE.seed.controller.inventory_detail', [])
        *
        */
       var init = function () {
-
         if ($scope.inventory_type == 'properties') {
           $scope.format_date_values($scope.item_state, inventory_service.property_state_date_columns);
         } else if ($scope.inventory_type == 'taxlots') {
           $scope.format_date_values($scope.item_state, inventory_service.taxlot_state_date_columns);
         }
-
-
-        $scope.data_fields = $scope.generate_data_fields($scope.item_state, $scope.default_columns, $scope.all_extra_data_keys);
       };
 
-      // fired on controller loaded
       init();
 
     }]);

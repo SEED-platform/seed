@@ -91,6 +91,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         return defer.promise;
     };
 
+    /* Is this still needed? */
     user_factory.get_default_columns = function() {
         var defer = $q.defer();
         $http({

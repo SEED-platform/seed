@@ -39,6 +39,7 @@ class TaxLotStateSerializer(serializers.ModelSerializer):
 
 
 class TaxLotViewSerializer(serializers.ModelSerializer):
+    state = TaxLotStateSerializer()
 
     class Meta:
         model = TaxLotView

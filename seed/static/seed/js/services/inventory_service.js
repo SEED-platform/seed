@@ -506,10 +506,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           if (filterData) {
             var inverse = filterData[1] == '!';
             var value = filterData[2];
-            regex = new RegExp('^' + _.escapeRegExp(value) + '$');
+            regex = new RegExp('^' + value + '$');
             return inverse ? !regex.test(cellValue) : regex.test(cellValue);
           } else {
-            regex = new RegExp(_.escapeRegExp(searchTerm), 'i');
+            regex = new RegExp(searchTerm, 'i');
             return regex.test(cellValue);
           }
         }
@@ -631,44 +631,80 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return defer.promise;
     };
 
+    inventory_service.saveSettings = function (key, columns) {
+      key += '.' + user_service.get_organization().id;
+      var toSave = inventory_service.reorderSettings(_.map(columns, function (col) {
+        return _.pick(col, ['name', 'pinnedLeft', 'visible']);
+      }));
+      localStorage.setItem(key, JSON.stringify(toSave));
+    };
+
+    inventory_service.loadSettings = function (key, columns) {
+      key += '.' + user_service.get_organization().id;
+      // Hide extra data columns by default
+      _.forEach(columns, function (col) {
+        col.visible = !col.extraData;
+      });
+
+      var localColumns = localStorage.getItem(key);
+      if (!_.isNull(localColumns)) {
+        var existingColumnNames = _.map(columns, 'name');
+        localColumns = JSON.parse(localColumns);
+        // Remove nonexistent columns
+        _.remove(localColumns, function (col) {
+          return !_.includes(existingColumnNames, col.name);
+        });
+        // Use saved column settings with original data as defaults
+        localColumns = _.map(localColumns, function (col) {
+          return _.defaults(col, _.remove(columns, {name: col.name})[0])
+        });
+        // If no columns are visible, reset visibility only
+        if (!_.find(localColumns, 'visible')) {
+          _.forEach(localColumns, function (col) {
+            col.visible = !col.extraData;
+          });
+        }
+        return inventory_service.reorderSettings(localColumns.concat(columns));
+      } else {
+        return inventory_service.reorderSettings(columns);
+      }
+    };
+
+    inventory_service.removeSettings = function (key) {
+      key += '.' + user_service.get_organization().id;
+      localStorage.removeItem(key);
+    };
 
     // A list of which fields have date values. This will be used by controller
     // to format date value correctly. Ideally at some point this should be gathered
     // from the server rather than hardcoded here.
 
     // TODO: Identify Tax Lot specific values that have dates.
-    var property_state_date_columns = ["generation_date",
+    inventory_service.property_state_date_columns = [
+      "generation_date",
       "release_date",
       "recent_sale_date",
       "year_ending",
       "record_created",
       "record_modified",
-      "record_year_ending"];
-
-    inventory_service.property_state_date_columns = property_state_date_columns;
+      "record_year_ending"
+    ];
 
     // TODO: Identify Tax Lot specific values that have dates.
-    var taxlot_state_date_columns = ["generation_date",
+    inventory_service.taxlot_state_date_columns = [
+      "generation_date",
       "release_date",
       "recent_sale_date",
       "year_ending",
       "record_created",
       "record_modified",
-      "record_year_ending"];
-    inventory_service.taxlot_state_date_columns = taxlot_state_date_columns;
+      "record_year_ending"
+    ];
 
-    inventory_service.reorderBySelected = function (data, selected) {
-      _.forEach(data, function (row, index) {
-        var match = _.indexOf(selected, row.name);
-        if (match !== -1) {
-          row.index = match;
-          row.defaultSelection = true;
-        } else {
-          row.index = index + data.length;
-          row.defaultSelection = false;
-        }
-      });
-      return _.sortBy(data, 'index');
+    inventory_service.reorderSettings = function (columns) {
+      var pinned = _.remove(columns, 'pinnedLeft');
+      var selected = _.remove(columns, 'visible');
+      return pinned.concat(selected).concat(columns);
     };
 
     return inventory_service;

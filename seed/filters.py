@@ -32,7 +32,7 @@ class InventoryFilterBackend(filters.BaseFilterBackend):
         # Since this is being passed in as a query string, the object ends up
         # coming through as a string.
         params['filter_params'] = json.loads(params.get('filter_params', '{}'))
-        inventory_type = params.pop('inventory_type')
+        inventory_type = params.pop('inventory_type', None)
         params = search.process_search_params(
             params=params,
             user=request.user,

@@ -33,6 +33,7 @@ class PropertyStateSerializer(serializers.ModelSerializer):
 
 
 class PropertyViewSerializer(serializers.ModelSerializer):
+    state = PropertyStateSerializer()
 
     class Meta:
         model = PropertyView
