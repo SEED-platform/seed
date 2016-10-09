@@ -11,9 +11,10 @@ import pdb
 from IPython import embed
 import datetime
 import collections
+from collections import namedtuple
 import hashlib
 import operator
-import itertools
+from itertools import chain
 import re
 import string
 import time
@@ -779,6 +780,7 @@ def match_buildings(file_pk, user_pk):
             'progress_key': prog_key
         }
 
+    if import_file.cycle is None: print "DANGER"
     _match_properties_and_taxlots.delay(file_pk, user_pk)
 
     return {
@@ -888,7 +890,7 @@ md = MappingData()
 ALL_COMPARISON_FIELDS = sorted(list(set([field['name'] for field in md.data])))
 ALL_COMPARISON_FIELDS.pop(ALL_COMPARISON_FIELDS.index("data_state"))
 
-# all_comparison_fields = sorted(list(set(itertools.chain(tax_lot_comparison_fields, property_comparison_fields))))
+# all_comparison_fields = sorted(list(set(chain(tax_lot_comparison_fields, property_comparison_fields))))
 
 def hash_state_object(obj, include_extra_data=True):
     def _getFieldFromObj(obj, field):
@@ -937,7 +939,7 @@ def filter_duplicated_states(unmatched_states):
 
     def union_lol(lol):
         """Union of list of lists"""
-        return list(set(itertools.chain.from_iterable(lol)))
+        return list(set(chain.from_iterable(lol)))
 
     canonical_states = [unmatched_states[equality_list[0]] for equality_list in equality_classes.values()]
     canonical_state_ids = set([s.pk for s in unmatched_states])
@@ -990,6 +992,14 @@ class EquivalencePartitioner(object):
                 return False
         return cmp
 
+    @staticmethod
+    def calculate_key_equivalence(key1, key2):
+        for key1_value, key2_value in zip(key1, key2):
+            if key1_value == key2_value and key1_value is not None:
+                return True
+        else:
+            return False
+
     @classmethod
     def makePropertyStateEquivalence(kls):
         property_equivalence_fields = [("pm_property_id", "custom_id_1"),
@@ -1005,19 +1015,19 @@ class EquivalencePartitioner(object):
         return kls(tax_lot_equivalence_fields)
 
     def __init__(self, equivalence_class_description):
-        self.equiv_compare_func = self.makeKeyEquivalenceFunction(equivalence_class_description)
+        # self.equiv_compare_func = self.makeKeyEquivalenceFunction(equivalence_class_description)
         self.equiv_comparison_key_func = self.makeResolvedKeyCalculationFunction(equivalence_class_description)
         self.equiv_canonical_key_func = self.makeCanonicalKeyCalculationFunction(equivalence_class_description)
         return
 
-    def calculate_object_comparison_key(self, obj):
+    def calculate_comparison_key(self, obj):
         return self.equiv_comparison_key_func(obj)
 
-    def calculate_object_canonical_key(self, obj):
+    def calculate_canonical_key(self, obj):
         return self.equiv_canonical_key_func(obj)
 
-    def calculate_object_equivalence(self, key, obj):
-        return self.equiv_compare_func(key, obj)
+    # def calculate_object_equivalence(self, key, obj):
+    #     return self.equiv_compare_func(key, obj)
 
     def key_needs_merging(self, original_key, new_key):
         return True in [ not a and b for (a,b) in zip(original_key, new_key)]
@@ -1040,11 +1050,11 @@ class EquivalencePartitioner(object):
         # that has a blank pm_property, we would not want to say the
         # value in the custom_id must be the pm_property_id.
         for (ndx, obj) in enumerate(list_of_obj):
-            cmp_key = self.calculate_object_comparison_key(obj)
-            can_key = self.calculate_object_canonical_key(obj)
+            cmp_key = self.calculate_comparison_key(obj)
+            can_key = self.calculate_canonical_key(obj)
 
             for class_key in equivalence_classes:
-                if self.calculate_object_equivalence(class_key, cmp_key):
+                if self.calculate_key_equivalence(class_key, cmp_key):
                     equivalence_classes[class_key].append(ndx)
 
                     if self.key_needs_merging(class_key, cmp_key):
@@ -1118,7 +1128,7 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
     class_views = ObjectViewClass.objects.filter(state__organization=org).select_related('state')
     existing_view_states = collections.defaultdict(dict)
     for view in class_views:
-        equivalence_can_key = partitioner.calculate_object_canonical_key(view.state)
+        equivalence_can_key = partitioner.calculate_canonical_key(view.state)
         existing_view_states[equivalence_can_key][view.cycle] = view
 
 
@@ -1128,11 +1138,11 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
         # Look to see if there is a match among the property states of the object.
 
         equiv_key = False
-        equiv_can_key = partitioner.calculate_object_canonical_key(unmatched)
-        equiv_cmp_key = partitioner.calculate_object_comparison_key(unmatched)
+        equiv_can_key = partitioner.calculate_canonical_key(unmatched)
+        equiv_cmp_key = partitioner.calculate_comparison_key(unmatched)
 
         for key in existing_view_states:
-            if partitioner.calculate_object_equivalence(key, equiv_cmp_key):
+            if partitioner.calculate_key_equivalence(key, equiv_cmp_key):
                 if current_match_cycle in existing_view_states[key]:
                     # There is an existing View for the current cycle that matches us.
                     # Merge the new state in with the existing one and update the view, audit log.
@@ -1210,20 +1220,20 @@ def _match_properties_and_taxlots(file_pk, user_pk):
         merged_taxlot_views = []
 
 
-    # pair_new_states(merged_property_views, merged_taxlot_views)
+    pair_new_states(merged_property_views, merged_taxlot_views)
 
     # Mark all the unmatched objects as done with matching and mapping
     # There should be some kind of bulk-update/save thing we can do to
     # improve upon this.
-    for state in itertools.chain(all_unmatched_properties, all_unmatched_tax_lots):
+    for state in chain(all_unmatched_properties, all_unmatched_tax_lots):
         state.data_state = DATA_STATE_MATCHING
         state.save()
 
-    for state in map(lambda x: x.state, itertools.chain(merged_taxlot_views, merged_property_views)):
+    for state in map(lambda x: x.state, chain(merged_taxlot_views, merged_property_views)):
         state.data_state = DATA_STATE_MATCHING
         state.save()
 
-    for state in itertools.chain(duplicate_property_states, duplicate_tax_lot_states):
+    for state in chain(duplicate_property_states, duplicate_tax_lot_states):
         state.data_state = DATA_STATE_DELETE
         state.save()
 
@@ -1557,10 +1567,93 @@ def save_state_match(state1, state2, confidence=None, user=None,
     return merged_state, False
 
 
-# def pair_new_states(merged_property_views, merged_taxlot_views):
-#     # Search through all the new views to see if something matches.
+def pair_new_states(merged_property_views, merged_taxlot_views):
+    if not merged_property_views and not merged_taxlot_views:
+        return
 
-#     for prop_view in merged_taxlot_views
+    tax_cmp_fmt = [('jurisdiction_tax_lot_id', 'custom_id_1'),
+                   ('custom_id_1',),
+                   ('normalized_address',),
+                   ('custom_id_1',),
+                   ('custom_id_1',)]
+
+    prop_cmp_fmt = [('lot_number', 'custom_id_1'),
+                    ('custom_id_1',),
+                    ('normalized_address',),
+                    ('pm_property_id',),
+                    ('jurisdiction_property_id',)]
+
+    tax_comparison_fields = sorted(list(set(chain.from_iterable(tax_cmp_fmt))))
+    prop_comparison_fields = sorted(list(set(chain.from_iterable(prop_cmp_fmt))))
+
+    tax_comparison_field_names = map(lambda s: "state__{}".format(s), tax_comparison_fields)
+    prop_comparison_field_names = map(lambda s: "state__{}".format(s), prop_comparison_fields)
+
+    # This is a not so nice hack. but it's the only special case/field
+    # that isn't on the join to the State.
+    tax_comparison_fields.insert(0, 'pk')
+    prop_comparison_fields.insert(0, 'pk')
+    tax_comparison_field_names.insert(0, 'pk')
+    prop_comparison_field_names.insert(0, 'pk')
+
+    view = chain(merged_property_views, merged_taxlot_views).next()
+    cycle = view.cycle
+    org = view.state.organization
 
 
-#     return
+    global taxlot_m2m_keygen
+    global property_m2m_keygen
+
+    taxlot_m2m_keygen = EquivalencePartitioner(tax_cmp_fmt)
+    property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt)
+
+    import time
+    st = time.time()
+    property_views = PropertyView.objects.filter(state__organization=org, cycle=cycle).values_list(*prop_comparison_field_names)
+    taxlot_views = TaxLotView.objects.filter(state__organization=org, cycle=cycle).values_list(*tax_comparison_field_names)
+    et = time.time()
+    print "{} seconds.".format(et-st)
+
+    # For each of the view objects, make an
+    prop_type = namedtuple("Prop", prop_comparison_fields)
+    taxlot_type = namedtuple("TL", tax_comparison_fields)
+
+    pdb.set_trace()
+    # Makes object with field_name->val attributes on them.
+    property_objects = [prop_type(*attr) for attr in property_views]
+    taxlot_objects = [taxlot_type(*attr) for attr in taxlot_views]
+
+    # TODO: I believe this is incorrect, but doing this for simplicity
+    # now. The logic that is being missed is a pretty extreme corner
+    # case.
+
+    # property_keys = {property_m2m_keygen.calculate_comparison_key(p): p.pk for p in property_objects}
+    # taxlot_keys = [taxlot_m2m_keygen.calculate_comparison_key(tl): tl.pk for tl in taxlot_objects}
+    property_keys = dict([(property_m2m_keygen.calculate_comparison_key(p),p.pk) for p in property_objects])
+    taxlot_keys = dict([(taxlot_m2m_keygen.calculate_comparison_key(p),p.pk) for p in taxlot_objects])
+
+
+    # property_comparison_keys = {property_m2m_keygen.calculate_comparison_key_key(p): p.pk for p in property_objects}
+    # property_canonical_keys = {property_m2m_keygen.calculate_canonical_key(p): p.pk for p in property_objects}
+
+    possible_merges = [] # List of prop.id, tl.id merges.
+
+    for pv in merged_property_views:
+        pv_key = property_m2m_keygen.calculate_comparison_key(pv.state)
+        for tlk in taxlot_keys:
+            if property_m2m_keygen.calculate_key_equivalence(pv_key, tlk):
+                possible_merges.append((property_keys[pv_key], taxlot_keys[pv_key]))
+
+    pdb.set_trace()
+    for tlv in merged_taxlot_views:
+        tlv_key = taxlot_m2m_keygen.calculate_comparison_key(tlv.state)
+        for pv_key in property_keys:
+            if property_m2m_keygen.calculate_key_equivalence(tlv_key, pv_key):
+                possible_merges.append((property_keys[tlv_key], taxlot_keys[tlv_key]))
+
+    for m2m in set(possible_merges):
+        # see if m2m object already exists
+        # add m2m object
+        pass
+
+    return
