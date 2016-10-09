@@ -1618,7 +1618,6 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     prop_type = namedtuple("Prop", prop_comparison_fields)
     taxlot_type = namedtuple("TL", tax_comparison_fields)
 
-    pdb.set_trace()
     # Makes object with field_name->val attributes on them.
     property_objects = [prop_type(*attr) for attr in property_views]
     taxlot_objects = [taxlot_type(*attr) for attr in taxlot_views]
@@ -1644,7 +1643,6 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
             if property_m2m_keygen.calculate_key_equivalence(pv_key, tlk):
                 possible_merges.append((property_keys[pv_key], taxlot_keys[pv_key]))
 
-    pdb.set_trace()
     for tlv in merged_taxlot_views:
         tlv_key = taxlot_m2m_keygen.calculate_comparison_key(tlv.state)
         for pv_key in property_keys:
