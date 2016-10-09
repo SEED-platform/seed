@@ -1203,6 +1203,7 @@ def _match_properties_and_taxlots(file_pk, user_pk):
         merged_taxlot_views = []
 
 
+    # pair_new_states(merged_property_views, merged_taxlot_views)
 
     # Mark all the unmatched objects as done with matching and mapping
     # There should be some kind of bulk-update/save thing we can do to
@@ -1547,3 +1548,12 @@ def save_state_match(state1, state2, confidence=None, user=None,
     merged_state.save()
 
     return merged_state, False
+
+
+# def pair_new_states(merged_property_views, merged_taxlot_views):
+#     # Search through all the new views to see if something matches.
+
+#     for prop_view in merged_taxlot_views
+
+
+#     return
