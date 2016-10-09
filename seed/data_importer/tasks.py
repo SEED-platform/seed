@@ -78,6 +78,7 @@ from seed.models import (
     DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
+    DATA_STATE_DELETE,
 )
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache
@@ -304,7 +305,15 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 # sure that the object hasn't already been created.
                 # For example, in the test data the tax lot id is the same for many rows. Make sure
                 # to only create/save the object if it hasn't been created before.
-                map_model_obj.save()
+
+                # if isinstance(map_model_obj, TaxLotState):
+                #     pdb.set_trace()
+
+                if hash_state_object(map_model_obj, include_extra_data = False) == hash_state_object(STR_TO_CLASS[table](organization=map_model_obj.organization), include_extra_data = False):
+                    # Skip this object as it has no data...
+                    pass
+                else:
+                    map_model_obj.save()
 
                 # Make sure that we've saved all of the extra_data column names from the first item in list
         if map_model_obj:
@@ -866,31 +875,43 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
     return match_list
 
 
-def hash_state_object(obj):
-    fields_to_ignore = ["id",
-                        "created",
-                        "modified",
-                        "match_type",
-                        "confidence",
-                        "source_type",
-                        "canonical_building_id",
-                        "import_file_id",
-                        "_state",
-                        "_import_file_cache",
-                        "import_record"]
+
+# TODO: These are bad bad fields!
+md = MappingData()
+ALL_COMPARISON_FIELDS = sorted(list(set([field['name'] for field in md.data])))
+ALL_COMPARISON_FIELDS.pop(ALL_COMPARISON_FIELDS.index("data_state"))
+
+# all_comparison_fields = sorted(list(set(itertools.chain(tax_lot_comparison_fields, property_comparison_fields))))
+
+def hash_state_object(obj, include_extra_data=True):
+    def _getFieldFromObj(obj, field):
+        if not hasattr(obj, field):
+            return "FOO" # Return a random value so we can distinguish between this and None.
+        else:
+            return getattr(obj, field)
+
     m = hashlib.md5()
 
-    for k, v in obj.__dict__.items():
-        # ignore anything that starts with an underscore
-        if k[0] == "_":
-            continue
-        if k in fields_to_ignore:
-            continue
+    for field in ALL_COMPARISON_FIELDS:
+        obj_val = _getFieldFromObj(obj, field)
+        m.update(str(field))
+        m.update(str(obj_val))
 
-        m.update(str(k))
-        m.update(str(v))
+    if include_extra_data:
+        addDictionaryReprToHash(m, obj.extra_data)
 
     return m.hexdigest()
+
+def addDictionaryReprToHash(hash_obj, dict_obj):
+    assert isinstance(dict_obj, dict)
+
+    for (key, value) in sorted(dict_obj.items(), key = lambda (x,y): x):
+        if isinstance(value, dict):
+            addDictionaryReprToHash(hash_obj, value)
+        else:
+            hash_obj.update(str(key))
+            hash_obj.update(str(value))
+    return hash_obj
 
 
 def filter_duplicated_states(unmatched_states):
@@ -1111,7 +1132,6 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
                     current_view = existing_view_states[key][current_match_cycle]
                     current_state = current_view.state
 
-                    pdb.set_trace()
                     merged_state, change_ = save_state_match(current_state,
                                                        unmatched,
                                                        confidence=1.0,
@@ -1147,39 +1167,47 @@ def _match_properties_and_taxlots(file_pk, user_pk):
     org = Organization.objects.filter(users=import_file.import_record.owner).first()
 
     match_cycle = import_file.cycle
-    if match_cycle is None:
-        pdb.set_trace()
     # match_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
 
     # Return a list of all the properties/tax lots based on the import file.
-    unmatched_properties = import_file.find_unmatched_property_states()
+    all_unmatched_properties = import_file.find_unmatched_property_states()
+    if all_unmatched_properties:
 
-    # Filter out the duplicates.  Do we actually want to delete them
-    # here?  Mark their abandonment in the Audit Logs?
-    unmatched_properties, duplicate_property_states = filter_duplicated_states(unmatched_properties)
+        # Filter out the duplicates.  Do we actually want to delete them
+        # here?  Mark their abandonment in the Audit Logs?
+        unmatched_properties, duplicate_property_states = filter_duplicated_states(all_unmatched_properties)
 
-    property_partitioner = EquivalencePartitioner.makeDefaultStateEquivalence(PropertyState)
+        property_partitioner = EquivalencePartitioner.makeDefaultStateEquivalence(PropertyState)
 
-    # Merge everything together based on the notion of equivalence
-    # provided by the partitioner.
-    unmatched_properties, property_equivalence_keys = match_and_merge_unmatched_objects(unmatched_properties, property_partitioner, org, import_file)
+        # Merge everything together based on the notion of equivalence
+        # provided by the partitioner.
+        unmatched_properties, property_equivalence_keys = match_and_merge_unmatched_objects(unmatched_properties, property_partitioner, org, import_file)
 
-    # Take the final merged-on-import objects, and find Views that
-    # correspond to it and merge those together.
-    merged_property_views = merge_unmatched_into_views(unmatched_properties, property_partitioner, org, import_file)
+        # Take the final merged-on-import objects, and find Views that
+        # correspond to it and merge those together.
+        merged_property_views = merge_unmatched_into_views(unmatched_properties, property_partitioner, org, import_file)
+    else:
+        duplicate_property_states = []
+        merged_property_views = []
 
 
     # Do the same process with the TaxLots.
-    unmatched_tax_lots = import_file.find_unmatched_tax_lot_states()
-    unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(unmatched_tax_lots)
-    taxlot_partitioner = EquivalencePartitioner.makeDefaultStateEquivalence(TaxLotState)
-    unmatched_tax_lots, taxlot_equivalence_keys = match_and_merge_unmatched_objects(unmatched_tax_lots, taxlot_partitioner, org, import_file)
-    merged_taxlot_views = merge_unmatched_into_views(unmatched_tax_lots, taxlot_partitioner, org, import_file)
+    all_unmatched_tax_lots = import_file.find_unmatched_tax_lot_states()
+    if all_unmatched_tax_lots:
+        unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(all_unmatched_tax_lots)
+        taxlot_partitioner = EquivalencePartitioner.makeDefaultStateEquivalence(TaxLotState)
+        unmatched_tax_lots, taxlot_equivalence_keys = match_and_merge_unmatched_objects(unmatched_tax_lots, taxlot_partitioner, org, import_file)
+        merged_taxlot_views = merge_unmatched_into_views(unmatched_tax_lots, taxlot_partitioner, org, import_file)
+    else:
+        duplicate_tax_lot_states = []
+        merged_taxlot_views = []
+
+
 
     # Mark all the unmatched objects as done with matching and mapping
     # There should be some kind of bulk-update/save thing we can do to
     # improve upon this.
-    for state in itertools.chain(unmatched_properties, unmatched_tax_lots):
+    for state in itertools.chain(all_unmatched_properties, all_unmatched_tax_lots):
         state.data_state = DATA_STATE_MATCHING
         state.save()
 
@@ -1187,6 +1215,9 @@ def _match_properties_and_taxlots(file_pk, user_pk):
         state.data_state = DATA_STATE_MATCHING
         state.save()
 
+    for state in itertools.chain(duplicate_property_states, duplicate_tax_lot_states):
+        state.data_state = DATA_STATE_DELETE
+        state.save()
 
     # This is a kind of vestigial code that I do not particularly understand.
     import_file.mapping_completion = 0
@@ -1496,7 +1527,6 @@ def save_state_match(state1, state2, confidence=None, user=None,
     # ps1 = PropertyState.objects.get(pk=ps1_pk)
     # ps2 = PropertyState.objects.get(pk=ps2_pk)
 
-    # THis
     merged_state = type(state1).objects.create(organization=state1.organization)
     merged_state, changes = seed_mapper.merge_state(merged_state,
                                                     state1, state2,

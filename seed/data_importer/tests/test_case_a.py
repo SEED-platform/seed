@@ -16,8 +16,10 @@ from seed.data_importer.tests.util import (
 )
 from seed.models import (
     Column,
+    Property,
     PropertyState,
     PropertyView,
+    TaxLot,
     TaxLotState,
     TaxLotProperty,
     TaxLotView,
@@ -71,7 +73,7 @@ class TestCaseA(DataMappingBaseTestCase):
             organization=self.org,
             import_file=self.import_file,
         )
-        self.assertEqual(len(ts), 10)  # 10 unique taxlots after duplicates and delimeters
+        # self.assertEqual(len(ts), 10)  # 10 unique taxlots after duplicates and delimeters
 
         # Check a single case of the taxlotstate
         ts = TaxLotState.objects.filter(jurisdiction_tax_lot_id='1552813').first()
@@ -93,39 +95,52 @@ class TestCaseA(DataMappingBaseTestCase):
 
         # ------ TEMP CODE ------
         # Manually promote the properties
-        pv = ps.promote(self.cycle)
-        tlv = ts.promote(self.cycle)
+        # pv = ps.promote(self.cycle)
+        # tlv = ts.promote(self.cycle)
 
-        # Check the count of the canonical buildings
-        from django.db.models.query import QuerySet
-        ps = tasks.list_canonical_property_states(self.org)
-        self.assertTrue(isinstance(ps, QuerySet))
-        self.assertEqual(len(ps), 1)
+        # # Check the count of the canonical buildings
+        # from django.db.models.query import QuerySet
+        # ps = tasks.list_canonical_property_states(self.org)
+        # self.assertTrue(isinstance(ps, QuerySet))
+        # self.assertEqual(len(ps), 1)
 
         # Manually pair up the ts and ps until the match/pair properties works
-        TaxLotProperty.objects.create(cycle=self.cycle, property_view=pv, taxlot_view=tlv)
+        # TaxLotProperty.objects.create(cycle=self.cycle, property_view=pv, taxlot_view=tlv)
         # ------ END TEMP CODE ------
 
         # make sure the the property only has one tax lot and vice versa
-        ts = TaxLotState.objects.filter(jurisdiction_tax_lot_id='1552813').first()
-        pv = PropertyView.objects.filter(state__pm_property_id='2264', cycle=self.cycle).first()
-        tax_lots = pv.tax_lot_states()
-        self.assertEqual(len(tax_lots), 1)
-        tlv = tax_lots[0]
-        self.assertEqual(ts, tlv)
+        # ts = TaxLotState.objects.filter(jurisdiction_tax_lot_id='1552813').first()
+        # pv = PropertyView.objects.filter(state__pm_property_id='2264', cycle=self.cycle).first()
+        # tax_lots = pv.tax_lot_states()
+        # self.assertEqual(len(tax_lots), 1)
+        # tlv = tax_lots[0]
+        # self.assertEqual(ts, tlv)
 
-        ps = PropertyState.objects.filter(pm_property_id='2264').first()
-        tlv = TaxLotView.objects.filter(state__jurisdiction_tax_lot_id='1552813',
-                                        cycle=self.cycle).first()
-        properties = tlv.property_states()
-        self.assertEqual(len(properties), 1)
-        prop_state = properties[0]
-        self.assertEqual(ps, prop_state)
+        # ps = PropertyState.objects.filter(pm_property_id='2264').first()
+        # tlv = TaxLotView.objects.filter(state__jurisdiction_tax_lot_id='1552813',
+        #                                 cycle=self.cycle).first()
+        # properties = tlv.property_states()
+        # self.assertEqual(len(properties), 1)
+        # prop_state = properties[0]
+        # self.assertEqual(ps, prop_state)
 
         # for p in ps:
         #     pp(p)
 
         tasks.match_buildings(self.import_file.id, self.user.id)
+
+        self.assertEqual(TaxLot.objects.count(), 10)
+        self.assertEqual(Property.objects.count(), 10) # Two properties match on custom_id_1 for 7 and 9
+
+
+        qry = PropertyView.objects.filter(state__custom_id_1='7')
+        self.assertEqual(qry.count(), 1)
+
+        state = qry.first().state
+
+        self.assertEqual(state.address_line_1, "20 Tenth Street")
+        self.assertEqual(state.property_name, "Grange Hall")
+
 
         # M2M Matching
 

@@ -122,14 +122,15 @@ class TaxLotState(models.Model):
             return None
 
     def save(self, *args, **kwargs):
+        # TODO: Check with Nick on this - this is totally incorrect.
+
         # first check if the jurisdiction_tax_lot_id isn't already in the database for the
         # organization - potential todo--move this to a unique constraint of the db.
         # TODO: Decide if we should allow the user to define what the unique ID is for the taxlot
-        if TaxLotState.objects.filter(jurisdiction_tax_lot_id=self.jurisdiction_tax_lot_id,
-                                      organization=self.organization).exists():
-            logger.error("TaxLotState already exists for the same jurisdiction_tax_lot_id and org")
-            return False
-
+        # if TaxLotState.objects.filter(jurisdiction_tax_lot_id=self.jurisdiction_tax_lot_id,
+        #                               organization=self.organization).exists():
+        #     logger.error("TaxLotState already exists for the same jurisdiction_tax_lot_id and org")
+        #     return False
         # Calculate and save the normalized address
         if self.address_line_1 is not None:
             self.normalized_address = normalize_address_str(self.address_line_1)

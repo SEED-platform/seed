@@ -18,10 +18,13 @@ from seed.models import (
     Column,
     PropertyState,
     PropertyView,
+    Property,
     TaxLotState,
     TaxLotProperty,
     TaxLotView,
+    TaxLot,
     DATA_STATE_MAPPING,
+    DATA_STATE_MATCHING,
     ASSESSED_RAW,
 )
 
@@ -45,6 +48,27 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         tasks.map_data(self.import_file.pk)
 
     def test_hash(self):
+
+        # tasks.hash_state_object(TaxLotState())
+        # tasks.hash_state_object(TaxLotState(organization=self.org))
+
+        self.assertEqual(tasks.hash_state_object(PropertyState()),
+                         tasks.hash_state_object(PropertyState(organization=self.org)))
+
+        self.assertEqual(tasks.hash_state_object(TaxLotState()),
+                         tasks.hash_state_object(TaxLotState(organization=self.org)))
+
+        ps1 = PropertyState(address_line_1='123 fake st', extra_data={"a": "100"})
+        ps2 = PropertyState(address_line_1='123 fake st', extra_data={"a": "200"})
+        ps3 = PropertyState(extra_data={"a": "200"})
+        ps4 = PropertyState(extra_data={"a": "100"})
+        ps5 = PropertyState(address_line_1='123 fake st')
+
+        self.assertEqual(len(set(map(tasks.hash_state_object, [ps1, ps2, ps3, ps4, ps5]))), 5)
+
+        return
+
+    def test_importduplicates(self):
         import pdb
 
         # Check to make sure all the properties imported
@@ -54,118 +78,31 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
             import_file=self.import_file,
         )
 
-        self.assertEqual(len(ps), 8)
-        self.assertEqual(PropertyState.objects.filter(pm_property_id='2264').count(), 6)
+        self.assertEqual(len(ps), 9)
+        self.assertEqual(PropertyState.objects.filter(pm_property_id='2264').count(), 7)
 
         hashes = map(tasks.hash_state_object, ps)
-        self.assertEqual(len(hashes), 8)
-        self.assertEqual(len(set(hashes)), 3)
+        self.assertEqual(len(hashes), 9)
+        self.assertEqual(len(set(hashes)), 4)
 
         unique_property_states, _ = tasks.filter_duplicated_states(ps)
-        self.assertEqual(len(unique_property_states), 3)
+        self.assertEqual(len(unique_property_states), 4)
 
         tasks.match_buildings(self.import_file.id, self.user.id)
 
+        self.assertEqual(Property.objects.count(), 3)
+        self.assertEqual(PropertyView.objects.count(), 3)
 
-        import IPython
-        IPython.embed()
+        self.assertEqual(PropertyView.objects.filter(state__pm_property_id='2264').count(),1)
 
+        pv = PropertyView.objects.filter(state__pm_property_id='2264').first()
+        self.assertEqual(pv.state.pm_property_id, '2264')
+        self.assertEqual(pv.state.gross_floor_area, 12555)
+        self.assertEqual(pv.state.energy_score, 75)
+
+        self.assertEqual(TaxLot.objects.count(), 0)
+
+        self.assertEqual(self.import_file.find_unmatched_property_states().count(), 0)
+        self.assertEqual(self.import_file.find_unmatched_tax_lot_states().count(), 0)
 
         return
-
-
-        # # # Check to make sure the taxlots were imported
-        # # ts = TaxLotState.objects.filter(
-        # #     data_state=DATA_STATE_MAPPING,
-        # #     organization=self.org,
-        # #     import_file=self.import_file,
-        # # )
-        # # self.assertEqual(len(ts), 10)  # 10 unique taxlots after duplicates and delimeters
-
-        # # Check a single case of the taxlotstate
-        # # ts = TaxLotState.objects.filter(jurisdiction_tax_lot_id='1552813').first()
-        # # self.assertEqual(ts.jurisdiction_tax_lot_id, '1552813')
-        # # self.assertEqual(ts.address_line_1, None)
-        # # self.assertEqual(ts.extra_data["extra_data_2"], 1)
-
-        # pdb.set_trace()
-
-
-        # self.assertEqual(PropertyState.objects.count(), 8)
-
-        # tasks.match_buildings(self.import_file.id, self.user.id)
-
-        # tasks.match_buildings(self.import_file.id, self.user.id)
-        # tasks.pair_buildings(self.import_file.id, self.user.id)
-
-        # ------ TEMP CODE ------
-        # Manually promote the properties
-        # pv = ps.promote(self.cycle)
-        # tlv = ts.promote(self.cycle)
-
-        # Check the count of the canonical buildings
-        # from django.db.models.query import QuerySet
-        # ps = tasks.list_canonical_property_states(self.org)
-        # self.assertTrue(isinstance(ps, QuerySet))
-        # self.assertEqual(len(ps), 1)
-
-        # # Manually pair up the ts and ps until the match/pair properties works
-        # TaxLotProperty.objects.create(cycle=self.cycle, property_view=pv, taxlot_view=tlv)
-        # ------ END TEMP CODE ------
-
-        # make sure the the property only has one tax lot and vice versa
-        # ts = TaxLotState.objects.filter(jurisdiction_tax_lot_id='1552813').first()
-        # pv = PropertyView.objects.filter(state__pm_property_id='2264', cycle=self.cycle).first()
-
-        # tax_lots = pv.tax_lot_states()
-        # self.assertEqual(len(tax_lots), 1)
-        # tlv = tax_lots[0]
-        # self.assertEqual(ts, tlv)
-
-        # ps = PropertyState.objects.filter(pm_property_id='2264').first()
-        # tlv = TaxLotView.objects.filter(state__jurisdiction_tax_lot_id='1552813',
-        #                                 cycle=self.cycle).first()
-        # properties = tlv.property_states()
-        # self.assertEqual(len(properties), 1)
-        # prop_state = properties[0]
-        # self.assertEqual(ps, prop_state)
-
-        # for p in ps:
-        #     pp(p)
-
-
-        # M2M Matching
-
-        # # Promote 5 of these to views to test the remaining code
-        # promote_mes = PropertyState.objects.filter(
-        #     data_state=DATA_STATE_MAPPING,
-        #     super_organization=self.fake_org)[:5]
-        # for promote_me in promote_mes:
-        #     promote_me.promote(cycle)
-        #
-        # ps = tasks.list_canonical_property_states(self.fake_org)
-        # from django.db.models.query import QuerySet
-        # self.assertTrue(isinstance(ps, QuerySet))
-        # logger.debug("There are %s properties" % len(ps))
-        # for p in ps:
-        #     print p
-        #
-        # self.assertEqual(len(ps), 5)
-        # self.assertEqual(ps[0].address_line_1, '1211 Bryant Street')
-        # self.assertEqual(ps[4].address_line_1, '1031 Ellis Lane')
-
-        # tasks.match_buildings(self.import_file.pk, self.fake_user.pk)
-
-        # self.assertEqual(result.property_name, snapshot.property_name)
-        # self.assertEqual(result.property_name, new_snapshot.property_name)
-        # # Since these two buildings share a common ID, we match that way.
-        # # self.assertEqual(result.confidence, 0.9)
-        # self.assertEqual(
-        #     sorted([r.pk for r in result.parents.all()]),
-        #     sorted([new_snapshot.pk, snapshot.pk])
-        # )
-        # self.assertGreater(AuditLog.objects.count(), 0)
-        # self.assertEqual(
-        #     AuditLog.objects.first().action_note,
-        #     'System matched building ID.'
-        # )
