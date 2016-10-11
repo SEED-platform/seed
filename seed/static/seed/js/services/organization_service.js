@@ -73,7 +73,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         var defer = $q.defer();
         $http({
             method: 'DELETE',
-            url: '/api/v2/organizations/' + org_user.organization.org_id + '/remove_user/',
+            url: '/api/v2/organizations/' + org_id + '/remove_user/',
             data: {user_id: user_id}
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
