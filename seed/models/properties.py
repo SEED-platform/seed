@@ -80,7 +80,7 @@ class PropertyState(models.Model):
 
     home_energy_score_id = models.CharField(max_length=255, null=True, blank=True)
 
-    # Tax Lot Number of the property
+    # Tax Lot Number of the property - this field can be an unparsed list or just one string.
     lot_number = models.CharField(max_length=255, null=True, blank=True)
     property_name = models.CharField(max_length=255, null=True, blank=True)
 
@@ -156,7 +156,8 @@ class PropertyState(models.Model):
             if self.organization is None:
                 print "organization is None"
 
-            if not self.organization: pdb.set_trace()
+            if not self.organization:
+                pdb.set_trace()
 
             prop = Property.objects.create(
                 organization=self.organization

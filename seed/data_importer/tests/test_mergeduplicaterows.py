@@ -93,7 +93,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         self.assertEqual(Property.objects.count(), 3)
         self.assertEqual(PropertyView.objects.count(), 3)
 
-        self.assertEqual(PropertyView.objects.filter(state__pm_property_id='2264').count(),1)
+        self.assertEqual(PropertyView.objects.filter(state__pm_property_id='2264').count(), 1)
 
         pv = PropertyView.objects.filter(state__pm_property_id='2264').first()
         self.assertEqual(pv.state.pm_property_id, '2264')

@@ -48,6 +48,7 @@ logger = logging.getLogger(__name__)
 
 
 class TestCaseRobinDemo(DataMappingBaseTestCase):
+
     def set_up(self, import_file_source_type):
         """Override the base in DataMappingBaseTestCase."""
 
@@ -58,14 +59,12 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
         user = User.objects.create(username='test')
         org = Organization.objects.create()
 
-
         cycle, _ = Cycle.objects.get_or_create(
             name=u'Test Hack Cycle 2015',
             organization=org,
             start=datetime.datetime(2015, 1, 1),
             end=datetime.datetime(2015, 12, 31),
         )
-
 
         # Create an org user
         OrganizationUser.objects.create(user=user, organization=org)
@@ -74,13 +73,13 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
             owner=user, last_modified_by=user, super_organization=org
         )
         import_file_1 = ImportFile.objects.create(import_record=import_record_1,
-                                                cycle=cycle)
+                                                  cycle=cycle)
 
         import_record_2 = ImportRecord.objects.create(
             owner=user, last_modified_by=user, super_organization=org
         )
         import_file_2 = ImportFile.objects.create(import_record=import_record_2,
-                                                cycle=cycle)
+                                                  cycle=cycle)
 
         import_file_1.is_espm = import_file_is_espm
         import_file_1.source_type = import_file_source_type
@@ -94,7 +93,6 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
 
         return user, org, import_file_1, import_record_1, import_file_2, import_record_2, cycle
 
-
     def setUp(self):
         property_filename = getattr(self, 'filename', 'example-data-properties-V2-original-noID.xlsx')
         tax_lot_filename = getattr(self, 'filename', 'example-data-taxlots-V2-original-noID.xlsx')
@@ -105,13 +103,13 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
 
-        ( self.user,
-          self.org,
-          self.import_file_property,
-          self.import_record_property,
-          self.import_file_tax_lot,
-          self.import_record_tax_lot,
-          self.cycle) = selfvars
+        (self.user,
+         self.org,
+         self.import_file_property,
+         self.import_record_property,
+         self.import_file_tax_lot,
+         self.import_record_tax_lot,
+         self.cycle) = selfvars
 
         self.import_file_tax_lot = self.load_import_file_file(tax_lot_filename, self.import_file_tax_lot)
         self.import_file_property = self.load_import_file_file(property_filename, self.import_file_property)
@@ -235,9 +233,8 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
 
         # tasks.match_buildings(self.import_file.id, self.user.id)
 
-        # self.assertEqual(TaxLot.objects.count(), 10)
-        # self.assertEqual(Property.objects.count(), 10) # Two properties match on custom_id_1 for 7 and 9
-
+        self.assertEqual(TaxLot.objects.count(), 10)
+        self.assertEqual(Property.objects.count(), 10)  # Two properties match on custom_id_1 for 7 and 9
 
         # qry = PropertyView.objects.filter(state__custom_id_1='7')
         # self.assertEqual(qry.count(), 1)
@@ -246,7 +243,6 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
 
         # self.assertEqual(state.address_line_1, "20 Tenth Street")
         # self.assertEqual(state.property_name, "Grange Hall")
-
 
         # M2M Matching
 

@@ -225,14 +225,12 @@ class DataMappingBaseTestCase(TestCase):
         user = User.objects.create(username='test')
         org = Organization.objects.create()
 
-
         cycle, _ = Cycle.objects.get_or_create(
             name=u'Test Hack Cycle 2015',
             organization=org,
             start=datetime.datetime(2015, 1, 1),
             end=datetime.datetime(2015, 12, 31),
         )
-
 
         # Create an org user
         OrganizationUser.objects.create(user=user, organization=org)
@@ -246,7 +244,6 @@ class DataMappingBaseTestCase(TestCase):
         import_file.source_type = import_file_source_type
         import_file.data_state = import_file_data_state
         import_file.save()
-
 
         return user, org, import_file, import_record, cycle
 

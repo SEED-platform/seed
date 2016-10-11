@@ -12,7 +12,9 @@ import pdb
 
 logger = logging.getLogger(__name__)
 
+
 class EZState(object):
+
     def __init__(self, *args, **kwds):
         for arg in args:
             setattr(self, arg, None)
@@ -20,34 +22,39 @@ class EZState(object):
         for (k, v) in kwds.items():
             setattr(self, k, v)
 
+
 class PropertyState(EZState):
+
     def __init__(self, **kwds):
         super(PropertyState, self).__init__("pm_property_id", "custom_id_1", "normalized_address", **kwds)
 
+
 class TaxLotState(EZState):
+
     def __init__(self, **kwds):
         super(TaxLotState, self).__init__("jurisdiction_tax_lot_id", "custom_id_1", "normalized_address", **kwds)
 
+
 class TestEquivalenceClassGenerator(TestCase):
+
     def test_equivalence(self):
         partitioner = EquivalencePartitioner.makePropertyStateEquivalence()
 
-        p1 = PropertyState(pm_property_id = 100)
-        p2 = PropertyState(pm_property_id = 100)
-        p3 = PropertyState(pm_property_id = 200)
-        p4 = PropertyState(custom_id_1 = 100)
+        p1 = PropertyState(pm_property_id=100)
+        p2 = PropertyState(pm_property_id=100)
+        p3 = PropertyState(pm_property_id=200)
+        p4 = PropertyState(custom_id_1=100)
 
-        equivalence_classes = partitioner.calculate_equivalence_classes([p1,p2])
+        equivalence_classes = partitioner.calculate_equivalence_classes([p1, p2])
         self.assertEqual(len(equivalence_classes), 1)
 
-        equivalence_classes = partitioner.calculate_equivalence_classes([p1,p3])
+        equivalence_classes = partitioner.calculate_equivalence_classes([p1, p3])
         self.assertEqual(len(equivalence_classes), 2)
 
-        equivalence_classes = partitioner.calculate_equivalence_classes([p1,p4])
+        equivalence_classes = partitioner.calculate_equivalence_classes([p1, p4])
         self.assertEqual(len(equivalence_classes), 1)
 
         return
-
 
     def test_a_dummy_class_basics(self):
         tls1 = TaxLotState(jurisdiction_tax_lot_id="1")
@@ -64,6 +71,6 @@ class TestEquivalenceClassGenerator(TestCase):
 
         self.assertEqual(tls3.jurisdiction_tax_lot_id, "1")
         self.assertEqual(tls3.custom_id_1, "100")
-        self.assertEqual(tls3.normalized_address, "123 fake street" )
+        self.assertEqual(tls3.normalized_address, "123 fake street")
 
         return
