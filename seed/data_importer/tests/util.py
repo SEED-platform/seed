@@ -50,7 +50,7 @@ TAXLOT_MAPPING = [
         "to_table_name": u'TaxLotState',
         "to_field": u'number_properties'
     },
-    ]
+]
 
 PROPERTIES_MAPPING = [
     {

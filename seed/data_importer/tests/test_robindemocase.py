@@ -146,8 +146,6 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
         self.assertEqual(TaxLotState.objects.filter(address_line_1='050 Willow Ave SE').count(), 1)
         self.assertEqual(TaxLotView.objects.filter(state__address_line_1='050 Willow Ave SE').count(), 1)
 
-
-
         # Import the property data
         tasks._save_raw_data(self.import_file_property.pk, 'fake_cache_key', 1)
         tasks.map_data(self.import_file_property.pk)
@@ -194,8 +192,6 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
         # self.assertEqual(ps.address_line_1, '50 Willow Ave SE')
         # self.assertEqual(ps.extra_data["extra_data_1"], 'a')
         # self.assertEqual('extra_data_2' in ps.extra_data.keys(), False)
-
-
 
         # ------ TEMP CODE ------
         # Manually promote the properties

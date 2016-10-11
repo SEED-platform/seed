@@ -35,6 +35,8 @@ def convert_to_js_timestamp(timestamp):
     """
     return int(timestamp.strftime("%s")) * 1000
 
+# TODO: obsolete?
+
 
 def get_building_fieldnames():
     """returns a list of field names for the BuildingSnapshot class/model that
@@ -42,12 +44,13 @@ def get_building_fieldnames():
     """
     return [
         'pm_property_id',
-        'tax_lot_id',
+        # 'tax_lot_id',
         'address_line_1',
         'property_name',
     ]
 
 
+# TODO: remove reference to buildingsnapshot
 def search_buildings(q, fieldnames=None, queryset=None):
     """returns a queryset for matching buildings
     :param str or unicode q: search string

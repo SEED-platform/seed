@@ -1677,7 +1677,6 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
 
     possible_merges = []  # List of prop.id, tl.id merges.
 
-
     return
     for pv in merged_property_views:
         pv_key = property_m2m_keygen.calculate_comparison_key(pv.state)
