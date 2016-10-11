@@ -187,7 +187,7 @@ def expand_field(field):
     """
 
     if isinstance(field, str) or isinstance(field, unicode):
-        return re.split(",|;|:", field)
+        return [r.strip() for r in re.split(",|;|:", field)]
     else:
         return [field]
 

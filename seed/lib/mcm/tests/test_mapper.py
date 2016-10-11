@@ -414,6 +414,8 @@ class TestMapper(TestCase):
         self.assertEqual(modified_model.sale_date, sale_expected)
 
     def test_expand_field(self):
+        r = mapper.expand_field(None)
+        self.assertEqual(r, [None])
         r = mapper.expand_field(10000)
         self.assertEqual(r, [10000])
         r = mapper.expand_field('1,2,3')
@@ -426,6 +428,8 @@ class TestMapper(TestCase):
         self.assertEqual(r, ['123', '15543', '32132', '321321', '1231', '987'])
         r = mapper.expand_field(u"4815162342")
         self.assertEqual(r, ['4815162342'])
+        r = mapper.expand_field("33366555; 33366125; 33366148")
+        self.assertEqual(r, ["33366555", "33366125", "33366148"])
 
     def test_expand_rows(self):
         data = {
