@@ -1087,7 +1087,6 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         from seed.models import PropertyState
         return self.find_unmatched_states(PropertyState)
 
-
     def find_unmatched_tax_lot_states(self):
         """Get unmatched property states' id info from an import file.
 

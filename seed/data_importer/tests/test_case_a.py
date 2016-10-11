@@ -134,8 +134,7 @@ class TestCaseA(DataMappingBaseTestCase):
         tasks.match_buildings(self.import_file.id, self.user.id)
 
         self.assertEqual(TaxLot.objects.count(), 10)
-        self.assertEqual(Property.objects.count(), 10) # Two properties match on custom_id_1 for 7 and 9
-
+        self.assertEqual(Property.objects.count(), 10)  # Two properties match on custom_id_1 for 7 and 9
 
         qry = PropertyView.objects.filter(state__custom_id_1='7')
         self.assertEqual(qry.count(), 1)
@@ -144,7 +143,6 @@ class TestCaseA(DataMappingBaseTestCase):
 
         self.assertEqual(state.address_line_1, "20 Tenth Street")
         self.assertEqual(state.property_name, "Grange Hall")
-
 
         # M2M Matching
 

@@ -156,7 +156,8 @@ class PropertyState(models.Model):
             if self.organization is None:
                 print "organization is None"
 
-            if not self.organization: pdb.set_trace()
+            if not self.organization:
+                pdb.set_trace()
 
             prop = Property.objects.create(
                 organization=self.organization

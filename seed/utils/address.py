@@ -9,6 +9,7 @@ import usaddress
 from streetaddress import StreetAddressFormatter
 import re
 
+
 def _normalize_address_direction(direction):
     direction = direction.lower().replace('.', '')
     direction_map = {

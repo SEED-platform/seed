@@ -46,7 +46,7 @@ class MappingData(object):
                     'js_type': self.normalize_mappable_type(f.get_internal_type()),
                     'schema': 'BEDES',
                     'extra_data': False,
-                    }
+                }
                 self.data.append(column)
 
         for f in TaxLotState._meta.fields:
