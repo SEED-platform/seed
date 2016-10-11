@@ -48,10 +48,11 @@ def round_down_hundred_thousand(x):
 def obj_to_dict(obj, include_m2m=True):
     """serializes obj for a JSON friendly version
         tries to serialize JsonField
-
     """
+    # http://www.django-rest-framework.org/api-guide/fields/#jsonfield
 
     # TODO: Why aren't we using Django's model_to_dict method?
+    # model_to_dict is part of the private Django API not the public API
 
     if include_m2m:
         data = serializers.serialize('json', [obj, ])

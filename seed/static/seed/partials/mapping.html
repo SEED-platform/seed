@@ -13,46 +13,47 @@
 
 <div class="section">
     <div class="section_tab_container">
-      <uib-tabset>
-        <uib-tab heading="STEP 1: Map Your Data" active="tabs.one_active">
-            <div class="row">
-                <div class="col-lg-7 col-sm-7 tab_content wide">
-                <p><strong>MAPPING YOUR DATA TO SEED</strong></p>
-                <p>Mapping your data to the Building Energy Data Exchange Specification (BEDES) is an important step towards translating your data into a common set of terms that can take full advantage of aggregate building performance data.  The process is simple: 1) select the rows of data you want to map by checking the map checkbox, 2) uncheck the rows you want to ignore&mdash;the system will give you a head start by attempting to auto-map headers from the file you imported, 3) in the SEED Header input box, search for a standard BEDES field name to map your data to&mdash;if a corresponding standard BEDES field name can't be found or you would like to use your own custom field, just type the name of the field to replace a BEDES suggested terms.</p>
-                <p><span class="label label-info">Important:</span> to improve results in matching buildings across different data files, map as many of the following four (4) fields as possible: <strong>Tax Lot ID</strong>, <strong>PM Property ID</strong>, <strong>Custom ID 1</strong>, <strong>Address Line 1</strong>.</p>
+        <uib-tabset>
+            <uib-tab heading="STEP 1: Map Your Data" active="tabs.one_active">
+                <div class="row">
+                    <div class="col-sm-7 tab_content wide">
+                        <p><strong>MAPPING YOUR DATA TO SEED</strong></p>
+                        <p>It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile.</p>
+                        <p>In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view.</p>
+                        <p>
+                            <span class="label label-info">Field names for matching:</span> The following fields are used by SEED to match records:
+                            <strong>Tax Lot ID</strong>, <strong>PM Property ID</strong>, <strong>Custom ID 1</strong>,
+                            <strong>Address Line 1</strong>. If there are fields in a datafile mapped to these names, the program will attempt to match on those same names in existing records.
+                        </p>
+                        <p>For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired.</p>
+                        <p>When you click the <span class="label label-primary">Map Your Data</span> button, the program will show a grid with the new field names as the column headings and your data in the rows. In that view, you can still come back to the initial mapping screen and change the field mapping.</p>
+                    </div>
+                    <div class="col-sm-5 key tab_content wide">
+                        <p><label class="label label-danger">Duplicate</label> -- if fields are marked as duplicates they need to be resolved to have different names</p>
+                    </div>
                 </div>
-                <div class="col-lg-5 col-sm-5 key tab_content wide">
-                    <p><strong>MAPPING KEY:</strong></p>
-                    <p><label class="label label-success">valid</label> = data mapping successful.</p>
-                    <p><label class="label label-warning">semivalid</label> = data mapping successful but some data is not valid.</p>
-                    <p><label class="label label-danger">invalid</label> = data mapping unsuccessful.</p>
-                    <p><label class="label label-danger">duplicate</label> = data mapping a duplicate.</p>
+            </uib-tab>
+            <uib-tab heading="STEP 2: Review Your Data Mappings" active="tabs.two_active">
+                <div class="row">
+                    <div class="col-sm-7 tab_content wide">
+                        <p><strong>REVIEW YOUR DATA MAPPINGS</strong></p>
+                        <p>After you click the <span class="label label-primary">Map Your Data</span> button, you will see a view with the mapped fields and your data in a grid, so that you can verify the mapping is what you want. If you need to change the mapping, click the <span class="label label-primary">Back to Mapping</span> button and edit the field mapping. Make sure that the mappings are correct in this step. Once you have clicked on the <span class="label label-primary">Save Mappings</span> button, you will not be able to change the field mappings.</p>
+                    </div>
                 </div>
-            </div>
-        </uib-tab>
-        <uib-tab heading="STEP 2: Review Your Data Mappings" active="tabs.two_active">
-            <div class="row">
-                <div class="col-lg-7 col-sm-7 tab_content wide">
-                    <p><strong>REVIEW YOUR DATA MAPPINGS (Data holding pen)</strong></p>
-                    <p>Do the selected SEED headers map correctly to the data from your columns? If not, go back to mapping and edit your selections. It's important at this step that you are confident in your mapping decisions. When you move onto the next step: 'Data Matching', the buildings from this data set will be available in your buildings list but you will no longer be able to edit the data mappings.</p>
+            </uib-tab>
+            <uib-tab heading="BEDES" active="tabs.three_active">
+                <div class="row">
+                    <div class="col-sm-7 tab_content wide">
+                        <p><strong>BUILDING ENERGY DATA EXCHANGE SPECIFICATION (BEDES)</strong></p>
+                        <p>The Building Energy Data Exchange Specification (BEDES, pronounced "beads" or /bi:ds/) is designed to support analysis of the measured energy performance of commercial, multifamily, and residential buildings, by providing a common data format, definitions, and an exchange protocol for building characteristics, efficiency measures, and energy use.</p>
+                        <p>
+                            <a href="http://energy.gov/eere/buildings/building-energy-data-exchange-specification-bedes" target="_blank">Read more here.</a>
+                        </p>
+                    </div>
                 </div>
-                <div class="col-lg-5 col-sm-5 key tab_content wide">
-                    <p class="tip"><strong>EDIT COLUMNS</strong></p>
-                    <p>You can customize the columns displayed in the table below by clicking the 'Edit Columns' button and then selecting the column headers you want to review from the modal window.</p>
-                </div>
-            </div>
-        </uib-tab>
-        <uib-tab heading="Help: SEED Header Definitions" active="tabs.three_active">
-          <div class="row">
-              <div class="col-lg-7 col-sm-7 tab_content wide">
-                    <p><strong>BUILDING ENERGY DATA EXCHANGE SPECIFICATION (BEDES)</strong></p>
-                    <p>The Building Energy Data Exchange Specification (BEDES, pronounced "beads" or /bi:ds/) is designed to support analysis of the measured energy performance of commercial, multifamily, and residential buildings, by providing a common data format, definitions, and an exchange protocol for building characteristics, efficiency measures, and energy use.</p>
-                    <p><a href="http://energy.gov/eere/buildings/building-energy-data-exchange-specification-bedes" target="_blank">Read more here.</a></p>
-                </div>
-          </div>
-        </uib-tab>
-        <uib-tab class="pull-right" heading="Collapse Tabs"></uib-tab>
-      </uib-tabset>
+            </uib-tab>
+            <uib-tab class="pull-right" heading="Collapse Tabs"></uib-tab>
+        </uib-tabset>
     </div>
 
     <div class="section_header_container has_no_border" ng-hide="review_mappings">
@@ -76,10 +77,14 @@
                             <th colspan="99" class="source_data" colspan="4">{$ import_file.name $}</th>
                         </tr>
                         <tr ng-show="duplicates.length > 0">
-                            <th class="sub_head is_aligned_center">Map <a uib-popover="{$MAP_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th>
+                            <th class="sub_head is_aligned_center">Map
+                                <a uib-popover="{$MAP_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a>
+                            </th>
                             <th class="mapping_field">header</th>
                             <!--th class="sub_head is_aligned_center">BEDES <a uib-popover="{$BEDES_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
-                            <th class="sub_head is_aligned_center">Duplicate <a uib-popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th>
+                            <th class="sub_head is_aligned_center">Duplicate
+                                <a uib-popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a>
+                            </th>
                             <th class="import_column_name"> header</th>
                             <th>Row 1</th>
                             <th>Row 2</th>
@@ -129,7 +134,9 @@
                     </tbody>
                     <thead>
                         <tr>
-                            <th class="sub_head is_aligned_center">Map <a uib-popover="{$MAP_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th>
+                            <th class="sub_head is_aligned_center">Map
+                                <a uib-popover="{$MAP_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a>
+                            </th>
                             <th class="mapping_field">SEED Header</th>
                             <!--th class="sub_head is_aligned_center">Duplicate <a uib-popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
                             <th class="import_column_name">Data File Header</th>
@@ -184,18 +191,22 @@
     <div class="section_header_container" ng-show="show_mapped_buildings">
         <div class="section_header fixed_height">
             <div class="left_40 section_action_container">
-                <button type="button" class="btn btn-primary" ng-click="review_mappings=false; show_mapped_buildings=false"><i class="fa fa-chevron-left"></i> Back to Mapping</button>
+                <button type="button" class="btn btn-primary" ng-click="review_mappings=false; show_mapped_buildings=false">
+                    <i class="fa fa-chevron-left"></i> Back to Mapping
+                </button>
                 <div class="btn-group" style="margin-left:20px;">
-                    <button type="button"
-                            class="btn btn-primary btn-sm"
-                            ng-click="do_update_filters()">
+                    <button type="button" class="btn btn-primary btn-sm" ng-click="do_update_filters()">
                         Update Filters
                     </button>
                 </div>
             </div>
             <div class="right_60 section_action_container section_action_btn">
-                <button type="button" class="btn btn-default" ng-click="open_cleansing_modal()"><i class="fa fa-exclamation-triangle"></i>Data Cleansing Results</button>
-                <a ui-sref="mapping({importfile_id: import_file.id})"><button id="save-mapping" type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button></a>
+                <button type="button" class="btn btn-default" ng-click="open_cleansing_modal()">
+                    <i class="fa fa-exclamation-triangle"></i>Data Cleansing Results
+                </button>
+                <a ui-sref="mapping({importfile_id: import_file.id})">
+                    <button id="save-mapping" type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button>
+                </a>
             </div>
         </div>
     </div>
@@ -207,14 +218,18 @@
     <div class="section_bottom_container">
         <div class="col-lg-6 col-sm-6">
             <!--button type="button" class="btn btn-primary" ng-click="open_concat_modal(building_column_types, raw_columns)" ng-hide="show_mapped_buildings">Concatenate Headers</button-->
-            <button type="button" class="btn btn-primary" ng-click="review_mappings=false; show_mapped_buildings=false" ng-show="show_mapped_buildings"><i class="fa fa-chevron-left"></i> Back to Mapping</button>
+            <button type="button" class="btn btn-primary" ng-click="review_mappings=false; show_mapped_buildings=false" ng-show="show_mapped_buildings">
+                <i class="fa fa-chevron-left"></i> Back to Mapping
+            </button>
         </div>
         <div class="col-lg-6 col-sm-6" ng-hide="review_mappings">
-                <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="monitor_typeahead_list()" ng-click="remap_buildings()" ng-hide="import_file.matching_done" id="map-data-button">Map Your Data</button>
-                <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done">Review Mapped Data</button>
+            <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="monitor_typeahead_list()" ng-click="remap_buildings()" ng-hide="import_file.matching_done" id="map-data-button">Map Your Data</button>
+            <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done">Review Mapped Data</button>
         </div>
         <div class="col-lg-6 col-sm-6" ng-show="show_mapped_buildings">
-            <a ui-sref="mapping({importfile_id: import_file.id})"><button type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button></a>
+            <a ui-sref="mapping({importfile_id: import_file.id})">
+                <button type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button>
+            </a>
         </div>
     </div>
 </div>

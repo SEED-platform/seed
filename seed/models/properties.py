@@ -6,6 +6,7 @@
 """
 from __future__ import unicode_literals
 
+import pdb
 import logging
 
 from django.db import models
@@ -13,6 +14,7 @@ from django_pgjson.fields import JsonField
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.utils.generic import split_model_fields, obj_to_dict
+from seed.utils.address import normalize_address_str
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +25,7 @@ from seed.models import (
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
+    DATA_STATE_DELETE,
     ASSESSED_BS,
     TaxLotProperty,
 )
@@ -59,7 +62,7 @@ class PropertyState(models.Model):
     # FIXME: source_type needs to be a foreign key or make it import_file.source_type
     source_type = models.IntegerField(null=True, blank=True, db_index=True)
 
-    organization = models.ForeignKey(Organization, blank=True, null=True)
+    organization = models.ForeignKey(Organization)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
 
     # Is this still being used during matching? Apparently so.
@@ -85,6 +88,8 @@ class PropertyState(models.Model):
     # use properties to assess from instances
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
     address_line_2 = models.CharField(max_length=255, null=True, blank=True)
+    normalized_address = models.CharField(max_length=255, null=True, blank=True, editable=False)
+
     city = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
     postal_code = models.CharField(max_length=255, null=True, blank=True)
@@ -151,6 +156,8 @@ class PropertyState(models.Model):
             if self.organization is None:
                 print "organization is None"
 
+            if not self.organization: pdb.set_trace()
+
             prop = Property.objects.create(
                 organization=self.organization
             )
@@ -198,6 +205,8 @@ class PropertyState(models.Model):
             if value and isinstance(value, basestring):
                 setattr(self, field, convert_datestr(value))
 
+    # TODO obsolete this method. AFAIK its unused and this model
+    # has a serializer
     def to_dict(self, fields=None, include_related_data=True):
         """
         Returns a dict version of the PropertyState, either with all fields
@@ -249,6 +258,12 @@ class PropertyState(models.Model):
         #                               organization=self.organization).exists():
         #     logger.error("PropertyState already exists for the same <unique id> and org")
         #     return False
+
+        # Calculate and save the normalized address
+        if self.address_line_1 is not None:
+            self.normalized_address = normalize_address_str(self.address_line_1)
+        else:
+            self.normalize_address = None
 
         return super(PropertyState, self).save(*args, **kwargs)
 

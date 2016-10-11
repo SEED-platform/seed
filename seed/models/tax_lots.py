@@ -15,6 +15,7 @@ from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
+from seed.utils.address import normalize_address_str
 from seed.models import (
     Cycle,
     StatusLabel,
@@ -22,6 +23,7 @@ from seed.models import (
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
+    DATA_STATE_DELETE,
     ASSESSED_BS,
 )
 
@@ -49,13 +51,17 @@ class TaxLotState(models.Model):
     import_file = models.ForeignKey(ImportFile, null=True, blank=True)
 
     # Add organization to the tax lot states
-    organization = models.ForeignKey(Organization, blank=True, null=True)
+    organization = models.ForeignKey(Organization)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
+
+    custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
 
     jurisdiction_tax_lot_id = models.CharField(max_length=255, null=True, blank=True)
     block_number = models.CharField(max_length=255, null=True, blank=True)
     district = models.CharField(max_length=255, null=True, blank=True)
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
+    normalized_address = models.CharField(max_length=255, null=True, blank=True, editable=False)
+
     address_line_2 = models.CharField(max_length=255, null=True, blank=True)
     city = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
@@ -116,13 +122,20 @@ class TaxLotState(models.Model):
             return None
 
     def save(self, *args, **kwargs):
+        # TODO: Check with Nick on this - this is totally incorrect.
+
         # first check if the jurisdiction_tax_lot_id isn't already in the database for the
         # organization - potential todo--move this to a unique constraint of the db.
         # TODO: Decide if we should allow the user to define what the unique ID is for the taxlot
-        if TaxLotState.objects.filter(jurisdiction_tax_lot_id=self.jurisdiction_tax_lot_id,
-                                      organization=self.organization).exists():
-            logger.error("TaxLotState already exists for the same jurisdiction_tax_lot_id and org")
-            return False
+        # if TaxLotState.objects.filter(jurisdiction_tax_lot_id=self.jurisdiction_tax_lot_id,
+        #                               organization=self.organization).exists():
+        #     logger.error("TaxLotState already exists for the same jurisdiction_tax_lot_id and org")
+        #     return False
+        # Calculate and save the normalized address
+        if self.address_line_1 is not None:
+            self.normalized_address = normalize_address_str(self.address_line_1)
+        else:
+            self.normalize_address = None
 
         return super(TaxLotState, self).save(*args, **kwargs)
 

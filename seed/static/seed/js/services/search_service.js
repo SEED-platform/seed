@@ -292,6 +292,9 @@ angular.module('BE.seed.service.search', [])
     *   sets the page to the last in the results, and fetches that page
     */
     search_service.last_page = function() {
+        if (!_.isUndefined(Storage)) {
+            sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
+        }
       this.current_page = this.num_pages();
         if (!_.isUndefined(Storage)) {
             sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingPageNumber', this.current_page);

@@ -10,9 +10,8 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
     '$stateParams',
     'inventory_service',
     'user_service',
-    'all_columns',
-    'default_columns',
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, all_columns, default_columns) {
+    'columns',
+    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, columns) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id
@@ -21,19 +20,31 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         id: $stateParams.cycle_id
       };
 
+      var localStorageKey = 'grid.' + $scope.inventory_type + '.detail';
+
       var restoreDefaults = function () {
-        $scope.data = angular.copy(all_columns);
-        _.defer($scope.gridApi.selection.selectAllRows);
+        inventory_service.removeSettings(localStorageKey);
+        $scope.data = inventory_service.loadSettings(localStorageKey, angular.copy(columns));
+        _.defer(function () {
+          // Set row selection
+          $scope.gridApi.selection.clearSelectedRows();
+          _.forEach($scope.gridApi.grid.rows, function (row) {
+            if (row.entity.visible === false) row.setSelected(false);
+            else row.setSelected(true);
+          });
+        });
       };
 
       var saveSettings = function () {
-        var cols = [];
-        var count = $scope.gridApi.grid.selection.selectedCount;
-        if (count > 0 && count < all_columns.length) {
-          cols = _.map($scope.gridApi.selection.getSelectedRows(), 'name');
-          $scope.data = inventory_service.reorderBySelected($scope.data, cols);
-        }
-        localStorage.setItem('grid.' + $scope.inventory_type + '.detail.visible', JSON.stringify(cols));
+        $scope.data = inventory_service.reorderSettings($scope.data);
+        inventory_service.saveSettings(localStorageKey, $scope.data);
+      };
+
+      var rowSelectionChanged = function () {
+        _.forEach($scope.gridApi.grid.rows, function (row) {
+          row.entity.visible = row.isSelected;
+        });
+        saveSettings();
       };
 
       $scope.updateHeight = function () {
@@ -47,15 +58,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         $scope.gridApi.core.handleWindowResize();
       };
 
-      $scope.data = angular.copy(all_columns);
-      // Temp code while localStorage is still used:
-      var localColumns = localStorage.getItem('grid.' + $scope.inventory_type + '.detail.visible');
-      if (!_.isNull(localColumns)) {
-        default_columns.columns = JSON.parse(localColumns);
-      } else {
-        default_columns.columns = [];
-      }
-      $scope.data = inventory_service.reorderBySelected($scope.data, default_columns.columns);
+      $scope.data = inventory_service.loadSettings(localStorageKey, angular.copy(columns));
 
       $scope.gridOptions = {
         data: 'data',
@@ -77,19 +80,16 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         }],
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
-          if (_.isEmpty(default_columns.columns)) {
-            _.defer(gridApi.selection.selectAllRows);
-          } else {
-            _.defer(function () {
-              // Select default rows
-              _.forEach($scope.gridApi.grid.rows, function (row) {
-                if (row.entity.defaultSelection) row.setSelected(true);
-              });
+          _.defer(function () {
+            // Set row selection
+            _.forEach($scope.gridApi.grid.rows, function (row) {
+              if (row.entity.visible === false) row.setSelected(false);
+              else row.setSelected(true);
             });
-          }
+          });
 
-          gridApi.selection.on.rowSelectionChanged($scope, saveSettings);
-          gridApi.selection.on.rowSelectionChangedBatch($scope, saveSettings);
+          gridApi.selection.on.rowSelectionChanged($scope, rowSelectionChanged);
+          gridApi.selection.on.rowSelectionChangedBatch($scope, rowSelectionChanged);
           gridApi.draggableRows.on.rowDropped($scope, saveSettings);
 
           _.delay($scope.updateHeight, 150);

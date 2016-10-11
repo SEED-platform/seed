@@ -14,6 +14,12 @@ from seed.data_importer.tests.util import (
     FAKE_MAPPINGS,
     FAKE_ROW,
 )
+
+import datetime
+from django.core.files import File
+from django.test import TestCase
+import logging
+import os.path
 from seed.models import (
     Column,
     Property,
@@ -23,76 +29,131 @@ from seed.models import (
     TaxLotState,
     TaxLotProperty,
     TaxLotView,
+    DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
     ASSESSED_RAW,
 )
 
+from seed.models import (
+    ColumnMapping,
+    Cycle,
+    PropertyState,
+)
+
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+
 logger = logging.getLogger(__name__)
 
 
-class TestCaseA(DataMappingBaseTestCase):
+class TestCaseRobinDemo(DataMappingBaseTestCase):
+    def set_up(self, import_file_source_type):
+        """Override the base in DataMappingBaseTestCase."""
+
+        # default_values
+        import_file_is_espm = getattr(self, 'import_file_is_espm', True)
+        import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
+
+        user = User.objects.create(username='test')
+        org = Organization.objects.create()
+
+
+        cycle, _ = Cycle.objects.get_or_create(
+            name=u'Test Hack Cycle 2015',
+            organization=org,
+            start=datetime.datetime(2015, 1, 1),
+            end=datetime.datetime(2015, 12, 31),
+        )
+
+
+        # Create an org user
+        OrganizationUser.objects.create(user=user, organization=org)
+
+        import_record_1 = ImportRecord.objects.create(
+            owner=user, last_modified_by=user, super_organization=org
+        )
+        import_file_1 = ImportFile.objects.create(import_record=import_record_1,
+                                                cycle=cycle)
+
+        import_record_2 = ImportRecord.objects.create(
+            owner=user, last_modified_by=user, super_organization=org
+        )
+        import_file_2 = ImportFile.objects.create(import_record=import_record_2,
+                                                cycle=cycle)
+
+        import_file_1.is_espm = import_file_is_espm
+        import_file_1.source_type = import_file_source_type
+        import_file_1.data_state = import_file_data_state
+        import_file_1.save()
+
+        import_file_2.is_espm = import_file_is_espm
+        import_file_2.source_type = import_file_source_type
+        import_file_2.data_state = import_file_data_state
+        import_file_2.save()
+
+        return user, org, import_file_1, import_record_1, import_file_2, import_record_2, cycle
+
 
     def setUp(self):
-        filename = getattr(self, 'filename', 'example-data-properties.xlsx')
+        property_filename = getattr(self, 'filename', 'example-data-properties-V2-original-noID.xlsx')
+        tax_lot_filename = getattr(self, 'filename', 'example-data-taxlots-V2-original-noID.xlsx')
         import_file_source_type = ASSESSED_RAW
-        self.fake_mappings = FAKE_MAPPINGS['portfolio']
+        self.fake_portfolio_mappings = FAKE_MAPPINGS['portfolio']
+        self.fake_taxlot_mappings = FAKE_MAPPINGS['portfolio']
         self.fake_extra_data = FAKE_EXTRA_DATA
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
-        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        self.import_file = self.load_import_file_file(filename, self.import_file)
 
-    def test_import_file(self):
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        ( self.user,
+          self.org,
+          self.import_file_property,
+          self.import_record_property,
+          self.import_file_tax_lot,
+          self.import_record_tax_lot,
+          self.cycle) = selfvars
+
+        self.import_file_tax_lot = self.load_import_file_file(tax_lot_filename, self.import_file_tax_lot)
+        self.import_file_property = self.load_import_file_file(property_filename, self.import_file_property)
+
+    def test_robin_demo(self):
+        """ Robin's demo files """
+
+        tasks._save_raw_data(self.import_file_tax_lot.pk, 'fake_cache_key', 1)
         Column.create_mappings(self.fake_mappings, self.org, self.user)
-        tasks.map_data(self.import_file.pk)
+        tasks.map_data(self.import_file_tax_lot.pk)
 
-        ps = PropertyState.objects.filter(pm_property_id='2264').first()
-        ps.promote(self.cycle)
-
-        # should only be 11 unmatched_properties because one was promoted.
-        ps = self.import_file.find_unmatched_property_states()
-        self.assertEqual(len(ps), 11)
-
-    def test_match_buildings(self):
-        """ case A (one property <-> one tax lot) """
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
-        tasks.map_data(self.import_file.pk)
-
-        # Check to make sure all the properties imported
-        ps = PropertyState.objects.filter(
-            data_state=DATA_STATE_MAPPING,
-            organization=self.org,
-            import_file=self.import_file,
-        )
-        self.assertEqual(len(ps), 12)
+        # tls = PropertyState.objects.filter(
+        #     data_state=DATA_STATE_MAPPING,
+        #     organization=self.org,
+        #     import_file=self.import_file,
+        # )
+        # self.assertEqual(len(ps), 12)
 
         # Check to make sure the taxlots were imported
         ts = TaxLotState.objects.filter(
             data_state=DATA_STATE_MAPPING,
             organization=self.org,
-            import_file=self.import_file,
+            import_file=self.import_file_tax_lot,
         )
-        # self.assertEqual(len(ts), 10)  # 10 unique taxlots after duplicates and delimeters
+        self.assertEqual(len(ts), 9)
 
         # Check a single case of the taxlotstate
-        ts = TaxLotState.objects.filter(jurisdiction_tax_lot_id='1552813').first()
-        self.assertEqual(ts.jurisdiction_tax_lot_id, '1552813')
-        self.assertEqual(ts.address_line_1, None)
-        self.assertEqual(ts.extra_data["extra_data_2"], 1)
+        self.assertEqual(EqTaxLotState.objects.filter(jurisdiction_tax_lot_id='050 Willow Ave SE').first())
+        pdb.set_trace()
 
-        # Check a single case of the propertystate
-        ps = PropertyState.objects.filter(pm_property_id='2264')
-        self.assertEqual(len(ps), 1)
-        ps = ps.first()
-        self.assertEqual(ps.pm_property_id, '2264')
-        self.assertEqual(ps.address_line_1, '50 Willow Ave SE')
-        self.assertEqual(ps.extra_data["extra_data_1"], 'a')
-        self.assertEqual('extra_data_2' in ps.extra_data.keys(), False)
+        # self.assertEqual(ts.jurisdiction_tax_lot_id, '1552813')
+        # self.assertEqual(ts.address_line_1, None)
+        # self.assertEqual(ts.extra_data["extra_data_2"], 1)
 
-        # verify that the lot_number has the tax_lot information. For this case it is one-to-one
-        self.assertEqual(ps.lot_number, ts.jurisdiction_tax_lot_id)
+        # # Check a single case of the propertystate
+        # ps = PropertyState.objects.filter(pm_property_id='2264')
+        # self.assertEqual(len(ps), 1)
+        # ps = ps.first()
+        # self.assertEqual(ps.pm_property_id, '2264')
+        # self.assertEqual(ps.address_line_1, '50 Willow Ave SE')
+        # self.assertEqual(ps.extra_data["extra_data_1"], 'a')
+        # self.assertEqual('extra_data_2' in ps.extra_data.keys(), False)
 
         # tasks.match_buildings(self.import_file.id, self.user.id)
         # tasks.pair_buildings(self.import_file.id, self.user.id)

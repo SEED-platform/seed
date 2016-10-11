@@ -9,16 +9,13 @@ angular.module('BE.seed.controller.mapping', [])
   'suggested_mappings_payload',
   'raw_columns_payload',
   'first_five_rows_payload',
-  'all_columns',
   'building_services',
-  '$timeout',
   'mappingValidatorService',
   'mapping_service',
   'search_service',
   'urls',
   '$uibModal',
   'user_service',
-  'matching_service',
   'uploader_service',
   '$filter',
   'cleansing_service',
@@ -28,16 +25,13 @@ angular.module('BE.seed.controller.mapping', [])
     suggested_mappings_payload,
     raw_columns_payload,
     first_five_rows_payload,
-    all_columns,
     building_services,
-    $timeout,
     mappingValidatorService,
     mapping_service,
     search_service,
     urls,
     $uibModal,
     user_service,
-    matching_service,
     uploader_service,
     $filter,
     cleansing_service
@@ -614,13 +608,16 @@ angular.module('BE.seed.controller.mapping', [])
         });
     };
 
-    var init = function() {
-        update_raw_columns();
+    var init = function () {
+      update_raw_columns();
 
-        $scope.duplicates_present();
-        $scope.duplicates = $filter('filter')($scope.raw_columns, {is_duplicate: true});
-        $scope.duplicates = $filter('orderBy')($scope.duplicates, 'suggestion', false);
-        $scope.valids = $filter('filter')($scope.raw_columns, {is_duplicate: false});
+      $scope.duplicates_present();
+      $scope.duplicates = $filter('filter')($scope.raw_columns, {is_duplicate: true});
+      $scope.duplicates = $filter('orderBy')($scope.duplicates, 'suggestion', false);
+      $scope.valids = $filter('filter')($scope.raw_columns, {is_duplicate: false});
+
+      var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
+      if (chosenTypes.length == 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
     };
     init();
 

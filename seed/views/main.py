@@ -44,19 +44,20 @@ from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
-    get_column_mapping,
-    save_snapshot_match,
-    BuildingSnapshot,
-    Column,
-    ProjectBuilding,
-    get_ancestors,  # TO REMOVE
-    unmatch_snapshot_tree as unmatch_snapshot,
-    CanonicalBuilding,
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
     PropertyState,
     Cycle,
+    BuildingSnapshot,
+    CanonicalBuilding,
+    Column,
+    ProjectBuilding,
+    get_ancestors,  # TO REMOVE
+    get_column_mapping,
+    save_snapshot_match,
+    unmatch_snapshot_tree as unmatch_snapshot,
+    obj_to_dict
 )
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.buildings import (
@@ -104,7 +105,7 @@ def _get_default_org(user):
     org = user.default_organization
     # check if user is still in the org, i.e. s/he wasn't removed from his/her
     # default org or didn't have a set org and try to set the first one
-    if (not org or not user.orgs.exists()):
+    if not org or not user.orgs.exists():
         org = user.orgs.first()
         user.default_organization = org
         user.save()
@@ -1298,13 +1299,16 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
             map_args=[organization],
             thresh=20  # percentage match we require
         )
-        # replace None with empty string for column names and tables
+        # replace None with empty string for column names and PropertyState for tables
         for m in suggested_mappings:
             table, dest, conf = suggested_mappings[m]
-            if table is None:
-                suggested_mappings[m][0] = u''
             if dest is None:
                 suggested_mappings[m][1] = u''
+
+    for m in suggested_mappings:
+        table, dest, conf = suggested_mappings[m]
+        if not table:
+            suggested_mappings[m][0] = 'PropertyState'
 
     result['suggested_column_mappings'] = suggested_mappings
     result['column_names'] = md.building_columns()
@@ -1562,7 +1566,6 @@ def get_import_file(request):
             }
         }
     """
-    from seed.models import obj_to_dict
 
     import_file_id = request.GET.get('import_file_id', '')
     orgs = request.user.orgs.all()

@@ -2493,6 +2493,11 @@ gs-input .tags .tag-item .remove-button {
 
 .ui-grid-cell-contents {
   font-weight: normal;
+
+  &.pinnable[disabled] {
+    color: #222;
+    opacity: 0.1;
+  }
 }
 
 // Nested rows
@@ -2562,7 +2567,11 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
-#inventory-actions-dropdown a[disabled] {
-  color: gray;
-  pointer-events: none;
+#inventory-actions-dropdown, #inventory-detail-edit {
+  a[disabled] {
+    color: gray;
+    pointer-events: none;
+  }
 }
+
+

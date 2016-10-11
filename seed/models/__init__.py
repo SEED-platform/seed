@@ -18,3 +18,11 @@ from .tax_lots import *  # noqa
 from .columns import *  # noqa
 from .auditlog import *  # noqa
 from .deprecate import *  # noqa
+
+from .projects import (     # noqa
+    Project,
+    ProjectBuilding,
+    ProjectPropertyView,
+    ProjectTaxLotView,
+    STATUS_CHOICES
+)
