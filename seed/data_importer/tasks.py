@@ -1590,21 +1590,10 @@ def save_state_match(state1, state2, confidence=None, user=None,
                                  import_filename=import_filename,
                                  record_type=AUDIT_IMPORT)
 
-
-
     # print "merging two properties {}/{}".format(ps1_pk, ps2_pk)
     # pp(ps1)
     # pp(ps2)
     # pp(merged_property_state)
-
-    # Create Audit Log information here.
-    # AuditLogClass.objects.create(organization=state1.organization,
-    #                              parent1=state1,
-    #                              parent2=state2,
-    #                              name='System Match',
-    #                              description='Automatic Merge',
-    #                              import_filename=import_filename,
-    #                              record_type=AUDIT_IMPORT)
 
     merged_state.save()
 
@@ -1681,6 +1670,8 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
 
     possible_merges = [] # List of prop.id, tl.id merges.
 
+
+    return
     for pv in merged_property_views:
         pv_key = property_m2m_keygen.calculate_comparison_key(pv.state)
         for tlk in taxlot_keys:
