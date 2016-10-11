@@ -28,7 +28,10 @@ from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.db.models import Q
 
-from seed.audit_logs.models import AuditLog
+# from seed.audit_logs.models import AuditLog
+from seed.models.auditlog import AUDIT_IMPORT
+from seed.models import PropertyAuditLog
+from seed.models import TaxLotAuditLog
 from seed.models import Cycle
 from seed.cleansing.models import Cleansing
 from seed.cleansing.tasks import (
@@ -319,9 +322,23 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
 
                 if hash_state_object(map_model_obj, include_extra_data = False) == hash_state_object(STR_TO_CLASS[table](organization=map_model_obj.organization), include_extra_data = False):
                     # Skip this object as it has no data...
-                    pass
-                else:
-                    map_model_obj.save()
+                    continue
+
+
+                map_model_obj.save()
+
+                # Create an audit log record for the new
+                # map_model_obj that was created.
+
+                AuditLogClass = PropertyAuditLog if isinstance(map_model_obj, PropertyState) else TaxLotAuditLog
+                AuditLogClass.objects.create(organization=org,
+                                             state=map_model_obj,
+                                             name='Import Creation',
+                                             description='Creation from Import file.',
+                                             import_filename=import_file,
+                                             record_type=AUDIT_IMPORT)
+
+
 
                 # Make sure that we've saved all of the extra_data column names from the first item in list
         if map_model_obj:
@@ -790,72 +807,72 @@ def match_buildings(file_pk, user_pk):
     }
 
 
-def handle_id_matches(unmatched_property_states, unmatched_property_state, import_file, user_pk):
-    """
-    Deals with exact matches in the IDs of buildings.
+# def handle_id_matches(unmatched_property_states, unmatched_property_state, import_file, user_pk):
+#     """
+#     Deals with exact matches in the IDs of buildings.
 
-    :param unmatched_property_states:
-    :param unmatched_property_state:
-    :param import_file:
-    :param user_pk:
-    :return:
-    """
+#     :param unmatched_property_states:
+#     :param unmatched_property_state:
+#     :param import_file:
+#     :param user_pk:
+#     :return:
+#     """
 
-    # TODO: this only works for PropertyStates right now because the unmatched_property_states is a QuerySet
-    # of PropertyState of which have the .pm_property_id and .custom_id_1 fields.
-    id_matches = query_property_matches(
-        unmatched_property_states,
-        unmatched_property_state.pm_property_id,
-        unmatched_property_state.custom_id_1
-    )
-    if not id_matches.exists():
-        return
+#     # TODO: this only works for PropertyStates right now because the unmatched_property_states is a QuerySet
+#     # of PropertyState of which have the .pm_property_id and .custom_id_1 fields.
+#     id_matches = query_property_matches(
+#         unmatched_property_states,
+#         unmatched_property_state.pm_property_id,
+#         unmatched_property_state.custom_id_1
+#     )
+#     if not id_matches.exists():
+#         return
 
-    # pdb.set_trace()
-    # Check to see if there are any duplicates here
-    # for match in id_matches:
-    #     if is_same_snapshot(unmatched_property_states, match):
-    #         raise DuplicateDataError(match.pk)
+#     # pdb.set_trace()
+#     # Check to see if there are any duplicates here
+#     # for match in id_matches:
+#     #     if is_same_snapshot(unmatched_property_states, match):
+#     #         raise DuplicateDataError(match.pk)
 
-    # Reading the code, this appears to be the intention of the code.
+#     # Reading the code, this appears to be the intention of the code.
 
-    # Combinations returns every combination once without regard to
-    # order and does not include self-combinations.
-    # e.g combinations(ABC) = AB, AC, BC
-    for (m1, m2) in itertools.combinations(id_matches, 2):
-        if is_same_snapshot(m1, m2):
-            raise DuplicateDataError(match.pk)
+#     # Combinations returns every combination once without regard to
+#     # order and does not include self-combinations.
+#     # e.g combinations(ABC) = AB, AC, BC
+#     for (m1, m2) in itertools.combinations(id_matches, 2):
+#         if is_same_snapshot(m1, m2):
+#             raise DuplicateDataError(match.pk)
 
-    # Merge Everything Together
-    merged_result = id_matches[0]
-    for match in id_matches:
-        merged_result, changes = save_state_match(merged_result,
-                                                  match,
-                                                  confidence=0.9,
-                                                  match_type=SYSTEM_MATCH,
-                                                  user=import_file.import_record.owner
-                                                  # What does this param do?
-                                                  # default_pk=unmatched_property_states.pk
-        )
-    else:
-        # TODO - coordinate with Nick on how to get the correct cycle,
-        # rather than the most recent one.
+#     # Merge Everything Together
+#     merged_result = id_matches[0]
+#     for match in id_matches:
+#         merged_result, changes = save_state_match(merged_result,
+#                                                   match,
+#                                                   confidence=0.9,
+#                                                   match_type=SYSTEM_MATCH,
+#                                                   user=import_file.import_record.owner
+#                                                   # What does this param do?
+#                                                   # default_pk=unmatched_property_states.pk
+#         )
+#     else:
+#         # TODO - coordinate with Nick on how to get the correct cycle,
+#         # rather than the most recent one.
 
-        org = Organization.objects.filter(users=import_file.import_record.owner).first()
-        default_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
-        merged_result.promote(default_cycle) # Make sure this creates the View.
+#         org = Organization.objects.filter(users=import_file.import_record.owner).first()
+#         default_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
+#         merged_result.promote(default_cycle) # Make sure this creates the View.
 
-        # AuditLog.objects.create(
-        #     user_id=user_pk,
-        #     content_object=canon,
-        #     action_note=action_note,
-        #     action='save_system_match',
-        #     organization=unmatched_property_states.super_organization,
-        # )
+#         # AuditLog.objects.create(
+#         #     user_id=user_pk,
+#         #     content_object=canon,
+#         #     action_note=action_note,
+#         #     action='save_system_match',
+#         #     organization=unmatched_property_states.super_organization,
+#         # )
 
-    # pdb.set_trace()
-    # Returns the most recent child of all merging.
-    return merged_result
+#     # pdb.set_trace()
+#     # Returns the most recent child of all merging.
+#     return merged_result
 
 
 # def merge_property_matches(match.
@@ -886,6 +903,7 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
 
 
 # TODO: These are bad bad fields!
+#       Not quite sure what this means?
 md = MappingData()
 ALL_COMPARISON_FIELDS = sorted(list(set([field['name'] for field in md.data])))
 ALL_COMPARISON_FIELDS.pop(ALL_COMPARISON_FIELDS.index("data_state"))
@@ -1528,7 +1546,7 @@ def is_same_snapshot(s1, s2):
 
 
 def save_state_match(state1, state2, confidence=None, user=None,
-                     match_type=None, default_match=None):
+                     match_type=None, default_match=None, import_filename=None):
 
     from seed.mappings import mapper as seed_mapper
     # if ps1_pk > ps2_pk:
@@ -1552,15 +1570,41 @@ def save_state_match(state1, state2, confidence=None, user=None,
                                                     conf=confidence,
                                                     default=state2,
                                                     match_type=SYSTEM_MATCH)
+
+
+    AuditLogClass = PropertyAuditLog if isinstance(merged_state, PropertyState) else TaxLotAuditLog
+
+
+    assert AuditLogClass.objects.filter(state=state1).count() == 1
+    assert AuditLogClass.objects.filter(state=state2).count() == 1
+
+    state_1_audit_log = AuditLogClass.objects.filter(state=state1).first()
+    state_2_audit_log = AuditLogClass.objects.filter(state=state2).first()
+
+    AuditLogClass.objects.create(organization=state1.organization,
+                                 parent1=state_1_audit_log,
+                                 parent2=state_2_audit_log,
+                                 state=merged_state,
+                                 name='System Match',
+                                 description='Automatic Merge',
+                                 import_filename=import_filename,
+                                 record_type=AUDIT_IMPORT)
+
+
+
     # print "merging two properties {}/{}".format(ps1_pk, ps2_pk)
     # pp(ps1)
     # pp(ps2)
     # pp(merged_property_state)
 
     # Create Audit Log information here.
-    # TODO
-    # merged_property_state.last_modified_by = user
-    # merged_property_state.super_organization = b2.super_organization
+    # AuditLogClass.objects.create(organization=state1.organization,
+    #                              parent1=state1,
+    #                              parent2=state2,
+    #                              name='System Match',
+    #                              description='Automatic Merge',
+    #                              import_filename=import_filename,
+    #                              record_type=AUDIT_IMPORT)
 
     merged_state.save()
 
@@ -1652,6 +1696,8 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     for m2m in set(possible_merges):
         # see if m2m object already exists
         # add m2m object
+        pdb.set_trace()
+        print "In Matching"
         pass
 
     return
