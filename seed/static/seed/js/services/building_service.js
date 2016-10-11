@@ -92,7 +92,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         return defer.promise;
     };
 
-    building_factory.search_building_snapshots = function(query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id, project_id, project_slug) {
+    building_factory.search_mapping_results = function(query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id, project_id, project_slug) {
         spinner_utility.show();
         var defer = $q.defer();
         $http({
@@ -108,7 +108,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
                 import_file_id: import_file_id,
                 project_slug: project_slug
             },
-            url: urls.search_building_snapshots
+            url: urls.search_mapping_results
         }).success(function(data, status, headers, config){
             spinner_utility.hide();
             defer.resolve(data);
@@ -132,7 +132,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
                 filter_params: filter_params,
                 import_file_id: import_file_id
             },
-            url: urls.search_building_snapshots
+            url: urls.search_mapping_results
         }).success(function(data, status, headers, config){
             spinner_utility.hide();
             defer.resolve(data);

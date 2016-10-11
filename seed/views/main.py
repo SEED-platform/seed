@@ -693,9 +693,9 @@ def search_buildings(request):
 @api_endpoint
 @ajax_request
 @login_required
-def search_building_snapshots(request):
+def search_mapping_results(request):
     """
-    Retrieves a paginated list of BuildingSnapshots matching search params.
+    Retrieves a paginated list of Properties and Tax Lots for a specific import file after mapping.
 
     Payload::
 
@@ -714,15 +714,27 @@ def search_building_snapshots(request):
 
         {
             'status': 'success',
-            'buildings': [
+            'properties': [
                 {
                     'pm_property_id': ID of building (from Portfolio Manager),
                     'address_line_1': First line of building's address,
                     'property_name': Building's name, if any
-                }...
+                },
+                ...
+            ],
+            'tax_lots': [
+                {
+                    'pm_property_id': ID of building (from Portfolio Manager),
+                    'address_line_1': First line of building's address,
+                    'jurisdiction_tax_lot_id': Tax lot id,
+                    ...
+                },
+                ...
             ]
-            'number_matching_search': Total number of buildings matching search,
-            'number_returned': Number of buildings returned for this page
+            'number_properties_matching_search': Total number of properties matching search,
+            'number_properties_returned': Number of properties returned for this page,
+            'number_tax_lots_matching_search': Total number of tax lots matching search,
+            'number_tax_lots_returned': Number of tax lots returned for this page
         }
     """
     body = json.loads(request.body)
