@@ -100,7 +100,7 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
         tax_lot_filename = getattr(self, 'filename', 'example-data-taxlots-V2-original-noID.xlsx')
         import_file_source_type = ASSESSED_RAW
         self.fake_portfolio_mappings = FAKE_MAPPINGS['portfolio']
-        self.fake_taxlot_mappings = FAKE_MAPPINGS['portfolio']
+        self.fake_taxlot_mappings = FAKE_MAPPINGS['taxlot']
         self.fake_extra_data = FAKE_EXTRA_DATA
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
@@ -120,14 +120,10 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
         """ Robin's demo files """
 
         tasks._save_raw_data(self.import_file_tax_lot.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_taxlot_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_portfolio_mappings, self.org, self.user)
         tasks.map_data(self.import_file_tax_lot.pk)
 
-        # tls = PropertyState.objects.filter(
-        #     data_state=DATA_STATE_MAPPING,
-        #     organization=self.org,
-        #     import_file=self.import_file,
-        # )
         # self.assertEqual(len(ps), 12)
 
         # Check to make sure the taxlots were imported
@@ -136,11 +132,57 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
             organization=self.org,
             import_file=self.import_file_tax_lot,
         )
+
+        ps = PropertyState.objects.filter(
+            data_state=DATA_STATE_MAPPING,
+            organization=self.org,
+            import_file=self.import_file_property,
+        )
+
+        self.assertEqual(len(ps), 0)
         self.assertEqual(len(ts), 9)
 
+        tasks.match_buildings(self.import_file_tax_lot.id, self.user.id)
+
         # Check a single case of the taxlotstate
-        self.assertEqual(EqTaxLotState.objects.filter(jurisdiction_tax_lot_id='050 Willow Ave SE').first())
-        pdb.set_trace()
+        self.assertEqual(TaxLotState.objects.filter(address_line_1='050 Willow Ave SE').count(), 1)
+        self.assertEqual(TaxLotView.objects.filter(state__address_line_1='050 Willow Ave SE').count(), 1)
+
+
+
+        # Import the property data
+        tasks._save_raw_data(self.import_file_property.pk, 'fake_cache_key', 1)
+        tasks.map_data(self.import_file_property.pk)
+
+        ts = TaxLotState.objects.filter(
+            # data_state=DATA_STATE_MAPPING,
+            organization=self.org,
+            import_file=self.import_file_tax_lot,
+        )
+
+        ps = PropertyState.objects.filter(
+            data_state=DATA_STATE_MAPPING,
+            organization=self.org,
+            import_file=self.import_file_property,
+        )
+
+        self.assertEqual(len(ts), 9)
+        self.assertEqual(len(ps), 12)
+
+        tasks.match_buildings(self.import_file_property.id, self.user.id)
+
+        ps = PropertyState.objects.filter(
+            data_state=DATA_STATE_MAPPING,
+            organization=self.org,
+            import_file=self.import_file_property,
+        )
+
+        self.assertEqual(len(ps), 0)
+
+        ps = PropertyView.objects.filter(
+            state__organization=self.org)
+
+        self.assertEqual(len(ps), 12)
 
         # self.assertEqual(ts.jurisdiction_tax_lot_id, '1552813')
         # self.assertEqual(ts.address_line_1, None)
@@ -155,8 +197,7 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
         # self.assertEqual(ps.extra_data["extra_data_1"], 'a')
         # self.assertEqual('extra_data_2' in ps.extra_data.keys(), False)
 
-        # tasks.match_buildings(self.import_file.id, self.user.id)
-        # tasks.pair_buildings(self.import_file.id, self.user.id)
+
 
         # ------ TEMP CODE ------
         # Manually promote the properties
@@ -192,19 +233,19 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
         # for p in ps:
         #     pp(p)
 
-        tasks.match_buildings(self.import_file.id, self.user.id)
+        # tasks.match_buildings(self.import_file.id, self.user.id)
 
-        self.assertEqual(TaxLot.objects.count(), 10)
-        self.assertEqual(Property.objects.count(), 10) # Two properties match on custom_id_1 for 7 and 9
+        # self.assertEqual(TaxLot.objects.count(), 10)
+        # self.assertEqual(Property.objects.count(), 10) # Two properties match on custom_id_1 for 7 and 9
 
 
-        qry = PropertyView.objects.filter(state__custom_id_1='7')
-        self.assertEqual(qry.count(), 1)
+        # qry = PropertyView.objects.filter(state__custom_id_1='7')
+        # self.assertEqual(qry.count(), 1)
 
-        state = qry.first().state
+        # state = qry.first().state
 
-        self.assertEqual(state.address_line_1, "20 Tenth Street")
-        self.assertEqual(state.property_name, "Grange Hall")
+        # self.assertEqual(state.address_line_1, "20 Tenth Street")
+        # self.assertEqual(state.property_name, "Grange Hall")
 
 
         # M2M Matching
