@@ -1696,21 +1696,16 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
 
     # Do this inelegant step to make sure we are correctly splitting.
 
-    pdb.set_trace()
     property_keys = collections.defaultdict(list)
     for k in property_keys_orig:
         if ";" in k[0]:
             for lotnum in map(lambda x: x.strip(), k[0].split(";")):
                 k_copy = list(copy.deepcopy(k))
                 k_copy[0] = lotnum
-                property_keys[k_copy] = property_keys_orig[k]
+                property_keys[tuple(k_copy)] = property_keys_orig[k]
         else:
             property_keys[k] = property_keys_orig[k]
     print "Done"
-
-
-
-
     taxlot_keys = dict([(taxlot_m2m_keygen.calculate_comparison_key(p), p.pk) for p in taxlot_objects])
 
     # property_comparison_keys = {property_m2m_keygen.calculate_comparison_key_key(p): p.pk for p in property_objects}
