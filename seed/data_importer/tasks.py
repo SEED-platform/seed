@@ -1694,11 +1694,11 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
 
     # property_keys = copy.deepcopy(property_keys_orig)
 
+    # TODO: Refactor this somehow
     # Do this inelegant step to make sure we are correctly splitting.
-
     property_keys = collections.defaultdict(list)
     for k in property_keys_orig:
-        if ";" in k[0]:
+        if k[0] and ";" in k[0]:
             for lotnum in map(lambda x: x.strip(), k[0].split(";")):
                 k_copy = list(copy.deepcopy(k))
                 k_copy[0] = lotnum
@@ -1714,10 +1714,22 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     possible_merges = []  # List of prop.id, tl.id merges.
 
     for pv in merged_property_views:
+        # if pv.state.lot_number and ";" in pv.state.lot_number:
+        #     pdb.set_trace()
+
         pv_key = property_m2m_keygen.calculate_comparison_key(pv.state)
+        # TODO: Refactor pronto.  This iterating over the tax lot is totally bogus and I hate it.
         for tlk in taxlot_keys:
-            if property_m2m_keygen.calculate_key_equivalence(pv_key, tlk):
-                possible_merges.append((property_keys[pv_key], taxlot_keys[tlk]))
+            if pv_key[0] and ";" in pv_key[0]:
+                for lotnum in map(lambda x: x.strip(), pv_key[0].split(";")):
+                    pv_key_copy = list(copy.deepcopy(pv_key))
+                    pv_key_copy[0] = lotnum
+                    pv_key_copy = tuple(pv_key_copy)
+                    if property_m2m_keygen.calculate_key_equivalence(pv_key_copy, tlk):
+                        possible_merges.append((property_keys[pv_key_copy], taxlot_keys[tlk]))
+            else:
+                if property_m2m_keygen.calculate_key_equivalence(pv_key, tlk):
+                    possible_merges.append((property_keys[pv_key], taxlot_keys[tlk]))
 
     for tlv in merged_taxlot_views:
         tlv_key = taxlot_m2m_keygen.calculate_comparison_key(tlv.state)
@@ -1725,6 +1737,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
             if property_m2m_keygen.calculate_key_equivalence(tlv_key, pv_key):
                 possible_merges.append((property_keys[pv_key], taxlot_keys[tlv_key]))
 
+    print "Found {} merges".format(len(possible_merges))
     for m2m in set(possible_merges):
         pv_pk, tlv_pk = m2m
         pv = PropertyView.objects.get(pk=pv_pk)
@@ -1738,4 +1751,5 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
         m2m_join = TaxLotProperty(property_view_id=pv_pk, taxlot_view_id=tlv_pk, cycle=cycle, primary=is_primary)
         m2m_join.save()
 
+    print "Done with JOIN CODE"
     return
