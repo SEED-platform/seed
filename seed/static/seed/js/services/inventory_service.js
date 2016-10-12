@@ -354,16 +354,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       // Error checks
       if (angular.isUndefined(taxlot_id)) {
-        $log.error("#inventory_service.get_taxlot(): null taxlot_id parameter");
-        throw new Error("Invalid Parameter");
+        $log.error('#inventory_service.get_taxlot(): null taxlot_id parameter');
+        throw new Error('Invalid Parameter');
       }
       if (angular.isUndefined(cycle_id)) {
-        $log.error("#inventory_service.get_taxlot(): null cycle_id parameter");
-        throw new Error("Invalid Parameter");
+        $log.error('#inventory_service.get_taxlot(): null cycle_id parameter');
+        throw new Error('Invalid Parameter');
       }
 
       var defer = $q.defer();
-      var get_taxlot_url = "/app/taxlots/" + String(taxlot_id) + "/cycles/" + String(cycle_id);
+      var get_taxlot_url = '/app/taxlots/' + taxlot_id + '/cycles/' + cycle_id;
 
       spinner_utility.show();
       $http({

@@ -42,8 +42,8 @@
                         </div>
                         <div class="form-group">
                             <div class="col-sm-offset-2 col-sm-10">
-                                <button class="btn btn-default" type="button" ng-click="org_form.reset()">Reset</button>
-                                <button class="btn btn-primary" ng-click="org_form.add(org)" ng-disabled="orgForm.$invalid || org_form.not_ready()">Create</button>
+                                <button class="btn btn-default" type="reset" ng-click="org_form.reset()">Reset</button>
+                                <button class="btn btn-primary" type="submit" ng-click="org_form.add(org)" ng-disabled="orgForm.$invalid || org_form.not_ready()">Create</button>
                             </div>
                         </div>
                     </form>
@@ -81,7 +81,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="new_user_org_select">Choose Existing Organization:</label>
                             <div class="col-sm-4">
-                                <select name="new_user_orgs" class="form-control" id="orgs" ng-options="o as o.name for o in org_user.organizations" ng-model="user.organization" ng-change="get_organizations_users(org_user.organization)"></select>
+                                <select name="new_user_orgs" class="form-control" id="orgs" ng-options="o as o.name for o in org_user.organizations" ng-model="user.organization"></select>
                             </div>
                         </div>
                         <div class="form-group">
@@ -93,8 +93,8 @@
                         </div>
                         <div class="form-group">
                             <div class="col-sm-offset-2 col-sm-10">
-                                <button class="btn btn-default" ng-click="user_form.reset()">Reset</button>
-                                <button class="btn btn-primary" ng-click="user_form.add(user)" ng-disabled="userForm.$invalid">Create</button>
+                                <button class="btn btn-default" type="reset" ng-click="user_form.reset()">Reset</button>
+                                <button class="btn btn-primary" type="submit" ng-click="user_form.add(user)" ng-disabled="userForm.$invalid">Create</button>
                             </div>
                         </div>
                     </form>
@@ -127,7 +127,7 @@
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-offset-4 col-sm-8">
-                                    <button class="btn btn-primary" ng-click="org_user.add()">Add user</button>
+                                    <button class="btn btn-primary" type="submit" ng-click="org_user.add()">Add user</button>
                                 </div>
                             </div>
                         </form>
@@ -144,7 +144,7 @@
                             <tbody>
                                 <tr ng-repeat="user in org_user.users">
                                     <td>{$ user.email $}</td>
-                                    <td><button class="btn btn-default" ng-click="org_user.remove_user(user.user_id, org_user.organization.org_id)">Remove User</button></td>
+                                    <td><button class="btn btn-default" type="submit" ng-click="org_user.remove_user(user.user_id, org_user.organization.org_id)">Remove User</button></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -192,7 +192,7 @@
                                     </td>
                                     <td>
                                         <div style="width: 285px;">
-                                            <button class="btn btn-danger" style="margin-left:20px;" ng-click="confirm_org_delete(org)" ng-hide="org.progress > -1"><i class="fa fa-exclamation-triangle"></i> Delete Organization</button>
+                                            <button class="btn btn-danger" type="submit" style="margin-left:20px;" ng-click="confirm_org_delete(org)" ng-hide="org.progress > -1"><i class="fa fa-exclamation-triangle"></i> Delete Organization</button>
                                             <uib-progressbar class="progress-striped active" value="org.progress" type="danger" ng-show="org.progress > -1">{$ org.remove_message $}</uib-progressbar>
                                         </div>
                                     </td>

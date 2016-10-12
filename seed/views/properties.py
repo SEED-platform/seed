@@ -112,6 +112,8 @@ def get_properties(request):
 
         # Add extra data fields right to this object.
         for extra_data_field, extra_data_value in taxlot_view.state.extra_data.items():
+            if extra_data_field == 'id':
+                extra_data_field += '_extra'
             while extra_data_field in taxlot_state_data:
                 extra_data_field += '_extra'
             taxlot_state_data[extra_data_field] = extra_data_value
@@ -135,6 +137,8 @@ def get_properties(request):
         p = model_to_dict(prop.state, exclude=['extra_data'])
 
         for extra_data_field, extra_data_value in prop.state.extra_data.items():
+            if extra_data_field == 'id':
+                extra_data_field += '_extra'
             while extra_data_field in p:
                 extra_data_field += '_extra'
 
@@ -217,6 +221,8 @@ def get_taxlots(request):
 
         # Add extra data fields right to this object.
         for extra_data_field, extra_data_value in property_view.state.extra_data.items():
+            if extra_data_field == 'id':
+                extra_data_field += '_extra'
             while extra_data_field in property_data:
                 extra_data_field += '_extra'
             property_data[extra_data_field] = extra_data_value
@@ -262,6 +268,8 @@ def get_taxlots(request):
         l['id'] = lot.taxlot_id
 
         for extra_data_field, extra_data_value in lot.state.extra_data.items():
+            if extra_data_field == 'id':
+                extra_data_field += '_extra'
             while extra_data_field in l:
                 extra_data_field += '_extra'
             l[extra_data_field] = extra_data_value
@@ -592,6 +600,8 @@ def get_property_columns(request):
 
     for c in extra_data_columns:
         name = c.column_name
+        if name == 'id':
+            name += '_extra'
         while any(col['name'] == name for col in columns):
             name += '_extra'
 
@@ -860,6 +870,8 @@ def get_taxlot_columns(request):
 
     for c in extra_data_columns:
         name = c.column_name
+        if name == 'id':
+            name += '_extra'
         while any(col['name'] == name for col in columns):
             name += '_extra'
 

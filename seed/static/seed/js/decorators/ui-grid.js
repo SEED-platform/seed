@@ -125,4 +125,82 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
     };
     return $delegate;
   }]);
+
+  $provide.decorator('rowSearcher', ['$delegate', 'gridUtil', function ($delegate, gridUtil) {
+    $delegate.search = function (grid, rows, columns) {
+      if (!rows) {
+        return;
+      }
+
+      // don't filter if filtering currently disabled
+      if (!grid.options.enableFiltering) {
+        return rows;
+      }
+
+      // Build list of filters to apply
+      var filterData = [];
+
+      var colsLength = columns.length;
+
+      var hasTerm = function (filters) {
+        var hasTerm = false;
+
+        filters.forEach(function (filter) {
+          if (!gridUtil.isNullOrUndefined(filter.term) && filter.term !== '' || filter.noTerm) {
+            hasTerm = true;
+          }
+        });
+
+        return hasTerm;
+      };
+
+      for (var i = 0; i < colsLength; i++) {
+        var col = columns[i];
+
+        if (typeof(col.filters) !== 'undefined' && hasTerm(col.filters)) {
+          filterData.push({col: col, filters: $delegate.setupFilters(col.filters)});
+        }
+      }
+
+      if (filterData.length > 0) {
+        // define functions outside the loop, performance optimisation
+        var foreachRow = function (grid, row, col, filters) {
+          if (row.visible && !$delegate.searchColumn(grid, row, col, filters)) {
+            row.visible = false;
+          }
+        };
+
+        var foreachFilterCol = function (grid, filterData) {
+          var rowsLength = rows.length;
+          var lastVisibility = false;
+          for (var i = 0; i < rowsLength; i++) {
+            if (rows[i].treeLevel === 0) {
+              foreachRow(grid, rows[i], filterData.col, filterData.filters);
+              lastVisibility = rows[i].visible;
+            } else {
+              rows[i].visible = lastVisibility;
+            }
+          }
+        };
+
+        // nested loop itself - foreachFilterCol, which in turn calls foreachRow
+        var filterDataLength = filterData.length;
+        for (var j = 0; j < filterDataLength; j++) {
+          foreachFilterCol(grid, filterData[j]);
+        }
+
+        if (grid.api.core.raise.rowsVisibleChanged) {
+          grid.api.core.raise.rowsVisibleChanged();
+        }
+
+        // drop any invisible rows
+        // keeping these, as needed with filtering for trees - we have to come back and make parent nodes visible if child nodes are selected in the filter
+        // rows = rows.filter(function(row){ return row.visible; });
+
+      }
+
+      return rows;
+    };
+    return $delegate;
+  }]);
 }]);
