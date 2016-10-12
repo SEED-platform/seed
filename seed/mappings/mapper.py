@@ -120,6 +120,7 @@ def merge_state(merged_state, state1, state2, can_attrs, conf, default=None, mat
         attr_values = list(set([
             value for value in can_attrs[attr].values() if value
         ]))
+        attr_values = [v for v in attr_values if v is not None]
 
         attr_value = None
         # Two, differing values are set.

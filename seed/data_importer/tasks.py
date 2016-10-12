@@ -8,6 +8,7 @@
 from __future__ import absolute_import
 
 import pdb
+import copy
 from IPython import embed
 import datetime
 import collections
@@ -32,6 +33,7 @@ from django.db.models import Q
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
+from seed.models import TaxLotProperty
 from seed.models import Cycle
 from seed.cleansing.models import Cleansing
 from seed.cleansing.tasks import (
@@ -215,6 +217,18 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     org = Organization.objects.get(pk=import_file.import_record.super_organization.pk)
 
     table_mappings = ColumnMapping.get_column_mappings_by_table_name(org)
+
+    # TODO: **TOTAL TERRIBLE HACK HERE**
+    # For some reason the mappings that got created previously don't
+    # always have the table class in them.  To get this working for
+    # the demo this is an infix place, but is absolutely terrible and
+    # should be removed ASAP!!!!!
+    print "HACK"
+    # print table_mappings
+    if 'PropertyState' not in table_mappings and 'TaxLotState' in table_mappings and '' in table_mappings:
+        debug_inferred_prop_state_mapping = table_mappings['']
+        table_mappings['PropertyState'] = debug_inferred_prop_state_mapping
+
     logger.debug("Mappings are %s" % table_mappings)
     map_cleaner = _build_cleaner(org)
 
@@ -249,6 +263,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # yes, there are three cascading for loops here. sorry :(
     md = MappingData()
     for table, mappings in table_mappings.iteritems():
+        print "table: {}".format(table)
+        if not table: continue
         # This may be historic, but we need to pull out the extra_data_fields here to pass into
         # mapper.map_row. apply_columns are extra_data columns (the raw column names)
         extra_data_fields = []
@@ -280,6 +296,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 # If the user decided to not use the mapped data and go back and remap
                 # then the data will forever be in the property state table for
                 # no reason. FIX THIS!
+
                 map_model_obj = mapper.map_row(
                     row,
                     mappings,
@@ -322,6 +339,13 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 if hasattr(map_model_obj, 'year_ending') and map_model_obj.year_ending == '':
                     logger.debug("year_ending was an empty string, setting to None")
                     map_model_obj.year_ending = None
+
+
+                # TODO: Second temporary hack.  This should not happen but somehow it does.
+                if isinstance(map_model_obj, PropertyState):
+                    if map_model_obj.pm_property_id is None and map_model_obj.address_line_1 is None and map_model_obj.custom_id_1 is None:
+                        print "Skipping!"
+                        continue
                 # --- END TEMP HACK ----
 
                 # There is a potential thread safe issue here:
@@ -329,9 +353,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 # sure that the object hasn't already been created.
                 # For example, in the test data the tax lot id is the same for many rows. Make sure
                 # to only create/save the object if it hasn't been created before.
-
-                # if isinstance(map_model_obj, TaxLotState):
-                #     pdb.set_trace()
 
                 if hash_state_object(map_model_obj, include_extra_data=False) == hash_state_object(STR_TO_CLASS[table](organization=map_model_obj.organization), include_extra_data=False):
                     # Skip this object as it has no data...
@@ -697,6 +718,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
         result['message'] = 'Unhandled Error: ' + str(e.message)
         result['stacktrace'] = traceback.format_exc()
 
+    print "A"
     set_cache(prog_key, result['status'], result)
     logger.debug('Returning from end of _save_raw_data with state:')
     logger.debug(result)
@@ -839,7 +861,6 @@ def match_buildings(file_pk, user_pk):
 #     if not id_matches.exists():
 #         return
 
-#     # pdb.set_trace()
 #     # Check to see if there are any duplicates here
 #     # for match in id_matches:
 #     #     if is_same_snapshot(unmatched_property_states, match):
@@ -881,7 +902,6 @@ def match_buildings(file_pk, user_pk):
 #         #     organization=unmatched_property_states.super_organization,
 #         # )
 
-#     # pdb.set_trace()
 #     # Returns the most recent child of all merging.
 #     return merged_result
 
@@ -934,6 +954,8 @@ def hash_state_object(obj, include_extra_data=True):
         obj_val = _getFieldFromObj(obj, field)
         m.update(str(field))
         m.update(str(obj_val))
+        # print "{}: {} -> {}".format(field, obj_val, m.hexdigest())
+
 
     if include_extra_data:
         addDictionaryReprToHash(m, obj.extra_data)
@@ -1113,7 +1135,6 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import
     # object of that type.
     merged_objects = []
 
-    # pdb.set_trace()
     for (class_key, class_ndxs) in equivalence_classes.items():
         if len(class_ndxs) == 1:
             merged_objects.append(unmatched_states[class_ndxs[0]])
@@ -1206,7 +1227,7 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
             created_view = unmatched.promote(current_match_cycle)
             matched_views.append(created_view)
 
-    return matched_views
+    return list(set(matched_views))
 
 
 @shared_task
@@ -1560,19 +1581,6 @@ def save_state_match(state1, state2, confidence=None, user=None,
                      match_type=None, default_match=None, import_filename=None):
 
     from seed.mappings import mapper as seed_mapper
-    # if ps1_pk > ps2_pk:
-    #     ps1_pk, ps2_pk = ps2_pk, ps1_pk
-
-    # if ps1_pk == ps2_pk:
-    #     try:
-    #         ps1 = PropertyState.objects.get(pk=ps1_pk)
-    #     except:
-    #         pdb.set_trace()
-    #         a = 10
-    #     return ps1, False
-
-    # ps1 = PropertyState.objects.get(pk=ps1_pk)
-    # ps2 = PropertyState.objects.get(pk=ps2_pk)
 
     merged_state = type(state1).objects.create(organization=state1.organization)
     merged_state, changes = seed_mapper.merge_state(merged_state,
@@ -1584,8 +1592,8 @@ def save_state_match(state1, state2, confidence=None, user=None,
 
     AuditLogClass = PropertyAuditLog if isinstance(merged_state, PropertyState) else TaxLotAuditLog
 
-    assert AuditLogClass.objects.filter(state=state1).count() == 1
-    assert AuditLogClass.objects.filter(state=state2).count() == 1
+    assert AuditLogClass.objects.filter(state=state1).count() >= 1
+    assert AuditLogClass.objects.filter(state=state2).count() >= 1
 
     state_1_audit_log = AuditLogClass.objects.filter(state=state1).first()
     state_2_audit_log = AuditLogClass.objects.filter(state=state2).first()
@@ -1612,6 +1620,8 @@ def save_state_match(state1, state2, confidence=None, user=None,
 def pair_new_states(merged_property_views, merged_taxlot_views):
     if not merged_property_views and not merged_taxlot_views:
         return
+
+    cycle = chain(merged_property_views, merged_taxlot_views).next().cycle
 
     tax_cmp_fmt = [('jurisdiction_tax_lot_id', 'custom_id_1'),
                    ('custom_id_1',),
@@ -1652,6 +1662,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     st = time.time()
     property_views = PropertyView.objects.filter(state__organization=org, cycle=cycle).values_list(*prop_comparison_field_names)
     taxlot_views = TaxLotView.objects.filter(state__organization=org, cycle=cycle).values_list(*tax_comparison_field_names)
+
     et = time.time()
     print "{} seconds.".format(et - st)
 
@@ -1667,9 +1678,32 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     # now. The logic that is being missed is a pretty extreme corner
     # case.
 
+    # TODO: I should generate one key for each property for each thing
+    # in it's lot number state.
+
     # property_keys = {property_m2m_keygen.calculate_comparison_key(p): p.pk for p in property_objects}
     # taxlot_keys = [taxlot_m2m_keygen.calculate_comparison_key(tl): tl.pk for tl in taxlot_objects}
-    property_keys = dict([(property_m2m_keygen.calculate_comparison_key(p), p.pk) for p in property_objects])
+
+
+    # Calculate a key for each of the split fields.
+    print "prepk"
+    property_keys_orig = dict([(property_m2m_keygen.calculate_comparison_key(p), p.pk) for p in property_objects])
+    print "PK: {}".format(property_keys_orig)
+
+    # property_keys = copy.deepcopy(property_keys_orig)
+
+    # Do this inelegant step to make sure we are correctly splitting.
+
+    property_keys = collections.defaultdict(list)
+    for k in property_keys_orig:
+        if ";" in k[0]:
+            for lotnum in map(lambda x: x.strip(), k[0].split(";")):
+                k_copy = list(copy.deepcopy(k))
+                k_copy[0] = lotnum
+                property_keys[tuple(k_copy)] = property_keys_orig[k]
+        else:
+            property_keys[k] = property_keys_orig[k]
+    print "Done"
     taxlot_keys = dict([(taxlot_m2m_keygen.calculate_comparison_key(p), p.pk) for p in taxlot_objects])
 
     # property_comparison_keys = {property_m2m_keygen.calculate_comparison_key_key(p): p.pk for p in property_objects}
@@ -1677,24 +1711,29 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
 
     possible_merges = []  # List of prop.id, tl.id merges.
 
-    return
     for pv in merged_property_views:
         pv_key = property_m2m_keygen.calculate_comparison_key(pv.state)
         for tlk in taxlot_keys:
             if property_m2m_keygen.calculate_key_equivalence(pv_key, tlk):
-                possible_merges.append((property_keys[pv_key], taxlot_keys[pv_key]))
+                possible_merges.append((property_keys[pv_key], taxlot_keys[tlk]))
 
     for tlv in merged_taxlot_views:
         tlv_key = taxlot_m2m_keygen.calculate_comparison_key(tlv.state)
         for pv_key in property_keys:
             if property_m2m_keygen.calculate_key_equivalence(tlv_key, pv_key):
-                possible_merges.append((property_keys[tlv_key], taxlot_keys[tlv_key]))
+                possible_merges.append((property_keys[pv_key], taxlot_keys[tlv_key]))
 
     for m2m in set(possible_merges):
-        # see if m2m object already exists
-        # add m2m object
-        pdb.set_trace()
-        print "In Matching"
-        pass
+        pv_pk, tlv_pk = m2m
+        pv = PropertyView.objects.get(pk=pv_pk)
+        tlv = TaxLotView.objects.get(pk=tlv_pk)
+
+        connection = TaxLotProperty.objects.filter(property_view_id=pv_pk, taxlot_view_id=tlv_pk).count()
+        if connection: continue
+
+        is_primary = TaxLotProperty.objects.filter(property_view_id=pv_pk).count() == 0
+
+        m2m_join = TaxLotProperty(property_view_id=pv_pk, taxlot_view_id=tlv_pk, cycle=cycle, primary=is_primary)
+        m2m_join.save()
 
     return
