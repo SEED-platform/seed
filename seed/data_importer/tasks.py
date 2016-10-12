@@ -264,7 +264,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     md = MappingData()
     for table, mappings in table_mappings.iteritems():
         print "table: {}".format(table)
-        if not table: continue
+        if not table:
+            continue
         # This may be historic, but we need to pull out the extra_data_fields here to pass into
         # mapper.map_row. apply_columns are extra_data columns (the raw column names)
         extra_data_fields = []
@@ -339,7 +340,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 if hasattr(map_model_obj, 'year_ending') and map_model_obj.year_ending == '':
                     logger.debug("year_ending was an empty string, setting to None")
                     map_model_obj.year_ending = None
-
 
                 # TODO: Second temporary hack.  This should not happen but somehow it does.
                 if isinstance(map_model_obj, PropertyState):
@@ -955,7 +955,6 @@ def hash_state_object(obj, include_extra_data=True):
         m.update(str(field))
         m.update(str(obj_val))
         # print "{}: {} -> {}".format(field, obj_val, m.hexdigest())
-
 
     if include_extra_data:
         addDictionaryReprToHash(m, obj.extra_data)
@@ -1684,7 +1683,6 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     # property_keys = {property_m2m_keygen.calculate_comparison_key(p): p.pk for p in property_objects}
     # taxlot_keys = [taxlot_m2m_keygen.calculate_comparison_key(tl): tl.pk for tl in taxlot_objects}
 
-
     # Calculate a key for each of the split fields.
     print "prepk"
     property_keys_orig = dict([(property_m2m_keygen.calculate_comparison_key(p), p.pk) for p in property_objects])
@@ -1729,7 +1727,8 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
         tlv = TaxLotView.objects.get(pk=tlv_pk)
 
         connection = TaxLotProperty.objects.filter(property_view_id=pv_pk, taxlot_view_id=tlv_pk).count()
-        if connection: continue
+        if connection:
+            continue
 
         is_primary = TaxLotProperty.objects.filter(property_view_id=pv_pk).count() == 0
 
