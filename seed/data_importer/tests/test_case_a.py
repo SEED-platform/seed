@@ -94,43 +94,6 @@ class TestCaseA(DataMappingBaseTestCase):
         # verify that the lot_number has the tax_lot information. For this case it is one-to-one
         self.assertEqual(ps.lot_number, ts.jurisdiction_tax_lot_id)
 
-        # tasks.match_buildings(self.import_file.id, self.user.id)
-        # tasks.pair_buildings(self.import_file.id, self.user.id)
-
-        # ------ TEMP CODE ------
-        # Manually promote the properties
-        # pv = ps.promote(self.cycle)
-        # tlv = ts.promote(self.cycle)
-
-        # # Check the count of the canonical buildings
-        # from django.db.models.query import QuerySet
-        # ps = tasks.list_canonical_property_states(self.org)
-        # self.assertTrue(isinstance(ps, QuerySet))
-        # self.assertEqual(len(ps), 1)
-
-        # Manually pair up the ts and ps until the match/pair properties works
-        # TaxLotProperty.objects.create(cycle=self.cycle, property_view=pv, taxlot_view=tlv)
-        # ------ END TEMP CODE ------
-
-        # make sure the the property only has one tax lot and vice versa
-        # ts = TaxLotState.objects.filter(jurisdiction_tax_lot_id='1552813').first()
-        # pv = PropertyView.objects.filter(state__pm_property_id='2264', cycle=self.cycle).first()
-        # tax_lots = pv.tax_lot_states()
-        # self.assertEqual(len(tax_lots), 1)
-        # tlv = tax_lots[0]
-        # self.assertEqual(ts, tlv)
-
-        # ps = PropertyState.objects.filter(pm_property_id='2264').first()
-        # tlv = TaxLotView.objects.filter(state__jurisdiction_tax_lot_id='1552813',
-        #                                 cycle=self.cycle).first()
-        # properties = tlv.property_states()
-        # self.assertEqual(len(properties), 1)
-        # prop_state = properties[0]
-        # self.assertEqual(ps, prop_state)
-
-        # for p in ps:
-        #     pp(p)
-
         tasks.match_buildings(self.import_file.id, self.user.id)
 
         self.assertEqual(TaxLot.objects.count(), 10)
@@ -144,38 +107,3 @@ class TestCaseA(DataMappingBaseTestCase):
         self.assertEqual(state.address_line_1, "20 Tenth Street")
         self.assertEqual(state.property_name, "Grange Hall")
 
-        # M2M Matching
-
-        # # Promote 5 of these to views to test the remaining code
-        # promote_mes = PropertyState.objects.filter(
-        #     data_state=DATA_STATE_MAPPING,
-        #     super_organization=self.fake_org)[:5]
-        # for promote_me in promote_mes:
-        #     promote_me.promote(cycle)
-        #
-        # ps = tasks.list_canonical_property_states(self.fake_org)
-        # from django.db.models.query import QuerySet
-        # self.assertTrue(isinstance(ps, QuerySet))
-        # logger.debug("There are %s properties" % len(ps))
-        # for p in ps:
-        #     print p
-        #
-        # self.assertEqual(len(ps), 5)
-        # self.assertEqual(ps[0].address_line_1, '1211 Bryant Street')
-        # self.assertEqual(ps[4].address_line_1, '1031 Ellis Lane')
-
-        # tasks.match_buildings(self.import_file.pk, self.fake_user.pk)
-
-        # self.assertEqual(result.property_name, snapshot.property_name)
-        # self.assertEqual(result.property_name, new_snapshot.property_name)
-        # # Since these two buildings share a common ID, we match that way.
-        # # self.assertEqual(result.confidence, 0.9)
-        # self.assertEqual(
-        #     sorted([r.pk for r in result.parents.all()]),
-        #     sorted([new_snapshot.pk, snapshot.pk])
-        # )
-        # self.assertGreater(AuditLog.objects.count(), 0)
-        # self.assertEqual(
-        #     AuditLog.objects.first().action_note,
-        #     'System matched building ID.'
-        # )
