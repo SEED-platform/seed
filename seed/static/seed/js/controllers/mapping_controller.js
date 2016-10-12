@@ -90,7 +90,7 @@ angular.module('BE.seed.controller.mapping', [])
     $scope.show_mapped_buildings = false;
 
     $scope.search = angular.copy(search_service);
-    $scope.search.url = urls.search_building_snapshots;
+    $scope.search.url = urls.search_mapping_results;
     $scope.search.has_checkbox = false;
     $scope.search.update_results();
 

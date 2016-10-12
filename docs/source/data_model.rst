@@ -64,7 +64,7 @@ have *parents* BS0 and BS1.
     throughout most of the application, the ``search_buildings`` endpoint
     is used to search or list active building. This is to say, buildings that
     are pointed to by an active CanonicalBuilding.
-    The ``search_building_snapshots`` endpoint allows the search of buildings
+    The ``search_mapping_results`` endpoint allows the search of buildings
     regardless of whether the BuildingSnapshot is pointed to by an active
     CanonicalBuilding or not and this search is needed during the mapping
     preview and matching sections of the application.

@@ -206,8 +206,6 @@ class PropertyState(models.Model):
             if value and isinstance(value, basestring):
                 setattr(self, field, convert_datestr(value))
 
-    # TODO obsolete this method. AFAIK its unused and this model
-    # has a serializer
     def to_dict(self, fields=None, include_related_data=True):
         """
         Returns a dict version of the PropertyState, either with all fields
@@ -227,11 +225,6 @@ class PropertyState(models.Model):
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk
-
-            # TODO: I don't think this is needed anymore
-            result['canonical_building'] = (
-                self.canonical_building and self.canonical_building.pk
-            )
 
             # should probably also return children, parents, and coparent
             # result['children'] = map(lambda c: c.id, self.children.all())

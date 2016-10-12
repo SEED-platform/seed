@@ -15,7 +15,6 @@ from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
-from seed.utils.address import normalize_address_str
 from seed.models import (
     Cycle,
     StatusLabel,
@@ -23,9 +22,10 @@ from seed.models import (
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
-    DATA_STATE_DELETE,
     ASSESSED_BS,
 )
+from seed.utils.address import normalize_address_str
+from seed.utils.generic import split_model_fields, obj_to_dict
 
 logger = logging.getLogger(__name__)
 
@@ -120,6 +120,46 @@ class TaxLotState(models.Model):
             logger.debug("This should never occur, famous last words?")
 
             return None
+
+    def to_dict(self, fields=None, include_related_data=True):
+        """
+        Returns a dict version of the TaxLotState, either with all fields
+        or masked to just those requested.
+        """
+
+        # TODO: make this a serializer and/or merge with PropertyState.to_dict
+        if fields:
+            model_fields, ed_fields = split_model_fields(self, fields)
+            extra_data = self.extra_data
+            ed_fields = filter(lambda f: f in extra_data, ed_fields)
+
+            result = {
+                field: getattr(self, field) for field in model_fields
+            }
+            result['extra_data'] = {
+                field: extra_data[field] for field in ed_fields
+            }
+
+            # always return id's and canonical_building id's
+            result['id'] = result['pk'] = self.pk
+
+            # should probably also return children, parents, and coparent
+            # result['children'] = map(lambda c: c.id, self.children.all())
+            # result['parents'] = map(lambda p: p.id, self.parents.all())
+            # result['co_parent'] = (self.co_parent and self.co_parent.pk)
+            # result['coparent'] = (self.co_parent and {
+            #     field: self.co_parent.pk for field in ['pk', 'id']
+            #     })
+
+            return result
+
+        d = obj_to_dict(self, include_m2m=include_related_data)
+
+        # if include_related_data:
+        # d['parents'] = list(self.parents.values_list('id', flat=True))
+        # d['co_parent'] = self.co_parent.pk if self.co_parent else None
+
+        return d
 
     def save(self, *args, **kwargs):
         # TODO: Check with Nick on this - this is totally incorrect.

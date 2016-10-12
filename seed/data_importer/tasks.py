@@ -1618,10 +1618,8 @@ def save_state_match(state1, state2, confidence=None, user=None,
 
 
 def pair_new_states(merged_property_views, merged_taxlot_views):
-    print "DING"
     if not merged_property_views and not merged_taxlot_views:
         return
-    print "DONG!"
 
     cycle = chain(merged_property_views, merged_taxlot_views).next().cycle
 

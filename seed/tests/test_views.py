@@ -1441,7 +1441,7 @@ class SearchBuildingSnapshotsViewTests(TestCase):
         self.client.login(**user_details)
 
     @skip("Fix for new data model")
-    def test_search_building_snapshots(self):
+    def test_search_mapping_results(self):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
@@ -1475,7 +1475,7 @@ class SearchBuildingSnapshotsViewTests(TestCase):
 
         # act
         response = self.client.post(
-            reverse_lazy("seed:search_building_snapshots"),
+            reverse_lazy("seed:search_mapping_results"),
             content_type='application/json',
             data=json.dumps(post_data)
         )
