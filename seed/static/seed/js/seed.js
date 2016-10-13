@@ -20,7 +20,6 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.grid.moveColumns',
   'ui.grid.pinning',
   'ui.grid.resizeColumns',
-  'ui.grid.saveState',
   'ui.grid.selection',
   'ui.grid.treeView',
   'ui.router',
@@ -640,6 +639,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           return mapping_service.get_first_five_rows(
             importfile_id
           );
+        }],
+        property_columns: ['inventory_service', function (inventory_service) {
+          return inventory_service.get_property_columns();
+        }],
+        taxlot_columns: ['inventory_service', function (inventory_service) {
+          return inventory_service.get_taxlot_columns();
         }],
         auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
           var organization_id = user_service.get_organization().id;

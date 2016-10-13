@@ -153,8 +153,8 @@ def generate_paginated_results(queryset, number_per_page=25, page=1,
     #     parent_org = whitelist_orgs.first().parent_org
 
     page = page - 1 if page > 0 else 0  # zero index
-    MAX_RESULTS = 100
-    number_per_page = min(MAX_RESULTS, number_per_page)
+    # MAX_RESULTS = 100
+    # number_per_page = min(MAX_RESULTS, number_per_page)
     start = page * number_per_page
     end = start + number_per_page
     if isinstance(queryset, list):
