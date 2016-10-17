@@ -177,7 +177,7 @@ angular.module('BE.seed.service.search', [])
         this.query = query || this.query;
         var defer = $q.defer();
         var that = this;
-        var data = this.construct_search_query(query);
+        var data = _.defaults({number_per_page: 999999999}, this.construct_search_query(query));
         spinner_utility.show();
         $http({
             method: 'POST',

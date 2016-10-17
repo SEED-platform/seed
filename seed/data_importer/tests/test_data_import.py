@@ -201,8 +201,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         # make sure that the new data was loaded correctly
         ps = PropertyState.objects.filter(address_line_1='2700 Welstone Ave NE')[0]
         self.assertEqual(ps.site_eui, 1202)
-        # TODO: why is the jurisdiction_tax_lot_id an integer in the extra data field?
-        self.assertEqual(ps.extra_data['jurisdiction_tax_lot_id'], 11160509)
+        self.assertEqual(ps.extra_data['jurisdiction_tax_lot_id'], '11160509')
 
     def test_mapping_no_properties(self):
         # update the mappings to not include any taxlot tables in the data
@@ -214,13 +213,17 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         Column.create_mappings(self.fake_mappings, self.org, self.user)
         tasks.map_data(self.import_file.pk)
 
-        # make sure that no taxlot objects were created
+        # make sure that no taxlot objects were created. the 12 here are the import extra_data.
         ps = PropertyState.objects.all()
         self.assertEqual(len(ps), 12)
 
         # make sure that the new data was loaded correctly
-        ts = TaxLotState.objects.filter(address_line_1='2700 Welstone Ave NE')[0]
-        self.assertEqual(ts.extra_data['site_eui'], 1202)
+        ts = TaxLotState.objects.filter(address_line_1='50 Willow Ave SE').first()
+        self.assertEqual(ts.extra_data['site_eui'], 125)
+
+        # note that this used to be 2700 Welstone Ave NE but needed to change the check because
+        # this has the same jurisdiction_tax_lot_id as others so it was never imported. So assigning
+        # the address was never happening because the tax_lot_id was already in use.
 
     @skip('fix this soon')
     def test_promote_properties(self):

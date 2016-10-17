@@ -26,10 +26,14 @@
                             <strong>Address Line 1</strong>. If there are fields in a datafile mapped to these names, the program will attempt to match on those same names in existing records.
                         </p>
                         <p>For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired.</p>
-                        <p>When you click the <span class="label label-primary">Map Your Data</span> button, the program will show a grid with the new field names as the column headings and your data in the rows. In that view, you can still come back to the initial mapping screen and change the field mapping.</p>
+                        <p>When you click the
+                            <span class="label label-primary">Map Your Data</span> button, the program will show a grid with the new field names as the column headings and your data in the rows. In that view, you can still come back to the initial mapping screen and change the field mapping.
+                        </p>
                     </div>
                     <div class="col-sm-5 key tab_content wide">
-                        <p><label class="label label-danger">Duplicate</label> -- if fields are marked as duplicates they need to be resolved to have different names</p>
+                        <p>
+                            <label class="label label-danger">Duplicate</label> -- if fields are marked as duplicates they need to be resolved to have different names
+                        </p>
                     </div>
                 </div>
             </uib-tab>
@@ -37,7 +41,11 @@
                 <div class="row">
                     <div class="col-sm-7 tab_content wide">
                         <p><strong>REVIEW YOUR DATA MAPPINGS</strong></p>
-                        <p>After you click the <span class="label label-primary">Map Your Data</span> button, you will see a view with the mapped fields and your data in a grid, so that you can verify the mapping is what you want. If you need to change the mapping, click the <span class="label label-primary">Back to Mapping</span> button and edit the field mapping. Make sure that the mappings are correct in this step. Once you have clicked on the <span class="label label-primary">Save Mappings</span> button, you will not be able to change the field mappings.</p>
+                        <p>After you click the
+                            <span class="label label-primary">Map Your Data</span> button, you will see a view with the mapped fields and your data in a grid, so that you can verify the mapping is what you want. If you need to change the mapping, click the
+                            <span class="label label-primary">Back to Mapping</span> button and edit the field mapping. Make sure that the mappings are correct in this step. Once you have clicked on the
+                            <span class="label label-primary">Save Mappings</span> button, you will not be able to change the field mappings.
+                        </p>
                     </div>
                 </div>
             </uib-tab>
@@ -74,7 +82,7 @@
                         <tr>
                             <th class="source_data blank"></th>
                             <th class="source_data">SEED</th>
-                            <th colspan="99" class="source_data" colspan="4">{$ import_file.name $}</th>
+                            <th colspan="99" class="source_data">{$ import_file.name $}</th>
                         </tr>
                         <tr ng-show="duplicates.length > 0">
                             <th class="sub_head is_aligned_center">Map
@@ -94,7 +102,6 @@
                         </tr>
                     </thead>
                     <tbody ng-show="duplicates.length > 0">
-
                         <tr>
                             <td></td>
                             <td colspan="8"><h3>Duplicates</h3></td>
@@ -179,7 +186,7 @@
         </div>
     </div>
 
-    <div class="section_content_container" ng-show="save_mappings">
+    <div class="section_content_container" ng-if="save_mappings">
         <div class="section_content">
             <div class="progress_bar_container progressbar_fill_area">
                 <div class="progress_bar_copy_top">Mapping buildings for <strong>{$ import_file.name $}</strong></div>
@@ -188,17 +195,12 @@
             </div>
         </div>
     </div>
-    <div class="section_header_container" ng-show="show_mapped_buildings">
+    <div class="section_header_container" ng-if="show_mapped_buildings" style="border-bottom: 0;">
         <div class="section_header fixed_height">
             <div class="left_40 section_action_container">
                 <button type="button" class="btn btn-primary" ng-click="review_mappings=false; show_mapped_buildings=false">
                     <i class="fa fa-chevron-left"></i> Back to Mapping
                 </button>
-                <div class="btn-group" style="margin-left:20px;">
-                    <button type="button" class="btn btn-primary btn-sm" ng-click="do_update_filters()">
-                        Update Filters
-                    </button>
-                </div>
             </div>
             <div class="right_60 section_action_container section_action_btn">
                 <button type="button" class="btn btn-default" ng-click="open_cleansing_modal()">
@@ -210,23 +212,48 @@
             </div>
         </div>
     </div>
-    <div class="section_content_container" ng-show="show_mapped_buildings">
+    <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.number_properties_returned">
+        <div class="item-count">
+            <i class="fa fa-building-o"></i> {$ mappedData.number_properties_returned $} <span><ng-pluralize count="mappedData.number_properties_returned" when="{'one': 'Property', 'other': 'Properties'}">Properties</ng-pluralize></span>
+        </div>
+        <ul class="nav nav-tabs" style="margin-bottom:1px;">
+            <li heading="View by Property" class="active"><a>View by Property</a></li>
+        </ul>
+    </div>
+    <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.number_properties_returned">
         <div class="section_content">
-            <ng-include src="urls.static_url + 'seed/partials/buildings_table.html'"></ng-include>
+            <div>
+                <div ui-grid="propertiesGridOptions" ui-grid-resize-columns></div>
+            </div>
         </div>
     </div>
-    <div class="section_bottom_container">
-        <div class="col-lg-6 col-sm-6">
+    <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.number_tax_lots_returned" style="margin-top: 20px;">
+        <div class="item-count">
+            <i class="fa fa-map-o"></i> {$ mappedData.number_tax_lots_returned $} <span><ng-pluralize count="mappedData.number_tax_lots_returned" when="{'one': 'Tax Lot', 'other': 'Tax Lots'}">Tax Lots</ng-pluralize></span>
+        </div>
+        <ul class="nav nav-tabs" style="margin-bottom:1px;">
+            <li heading="View by Tax Lot" class="active"><a>View by Tax Lot</a></li>
+        </ul>
+    </div>
+    <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.number_tax_lots_returned">
+        <div class="section_content">
+            <div>
+                <div ui-grid="taxlotsGridOptions" ui-grid-resize-columns></div>
+            </div>
+        </div>
+    </div>
+    <div class="section_bottom_container row" style="margin: 16px auto;">
+        <div class="col-sm-6">
             <!--button type="button" class="btn btn-primary" ng-click="open_concat_modal(building_column_types, raw_columns)" ng-hide="show_mapped_buildings">Concatenate Headers</button-->
             <button type="button" class="btn btn-primary" ng-click="review_mappings=false; show_mapped_buildings=false" ng-show="show_mapped_buildings">
                 <i class="fa fa-chevron-left"></i> Back to Mapping
             </button>
         </div>
-        <div class="col-lg-6 col-sm-6" ng-hide="review_mappings">
+        <div class="col-sm-6" ng-hide="review_mappings">
             <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="monitor_typeahead_list()" ng-click="remap_buildings()" ng-hide="import_file.matching_done" id="map-data-button">Map Your Data</button>
             <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done">Review Mapped Data</button>
         </div>
-        <div class="col-lg-6 col-sm-6" ng-show="show_mapped_buildings">
+        <div class="col-sm-6" ng-show="show_mapped_buildings">
             <a ui-sref="mapping({importfile_id: import_file.id})">
                 <button type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button>
             </a>

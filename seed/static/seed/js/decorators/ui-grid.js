@@ -170,7 +170,7 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
           }
         };
 
-        var foreachFilterCol = function (grid, filterData) {
+        var foreachFilterColIgnoringChildren = function (grid, filterData) {
           var rowsLength = rows.length;
           var lastVisibility = false;
           for (var i = 0; i < rowsLength; i++) {
@@ -183,10 +183,19 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
           }
         };
 
+        var foreachFilterCol = function (grid, filterData) {
+          var rowsLength = rows.length;
+          for (var i = 0; i < rowsLength; i++) {
+            foreachRow(grid, rows[i], filterData.col, filterData.filters);
+          }
+        };
+
         // nested loop itself - foreachFilterCol, which in turn calls foreachRow
+        var gridHasTree = _.has(grid.api, 'treeBase');
         var filterDataLength = filterData.length;
         for (var j = 0; j < filterDataLength; j++) {
-          foreachFilterCol(grid, filterData[j]);
+          if (gridHasTree) foreachFilterColIgnoringChildren(grid, filterData[j]);
+          else foreachFilterCol(grid, filterData[j]);
         }
 
         if (grid.api.core.raise.rowsVisibleChanged) {

@@ -35,6 +35,8 @@ def convert_to_js_timestamp(timestamp):
     """
     return int(timestamp.strftime("%s")) * 1000
 
+# TODO: obsolete?
+
 
 def get_building_fieldnames():
     """returns a list of field names for the BuildingSnapshot class/model that
@@ -42,12 +44,13 @@ def get_building_fieldnames():
     """
     return [
         'pm_property_id',
-        'tax_lot_id',
+        # 'tax_lot_id',
         'address_line_1',
         'property_name',
     ]
 
 
+# TODO: remove reference to buildingsnapshot
 def search_buildings(q, fieldnames=None, queryset=None):
     """returns a queryset for matching buildings
     :param str or unicode q: search string
@@ -150,8 +153,8 @@ def generate_paginated_results(queryset, number_per_page=25, page=1,
     #     parent_org = whitelist_orgs.first().parent_org
 
     page = page - 1 if page > 0 else 0  # zero index
-    MAX_RESULTS = 100
-    number_per_page = min(MAX_RESULTS, number_per_page)
+    # MAX_RESULTS = 100
+    # number_per_page = min(MAX_RESULTS, number_per_page)
     start = page * number_per_page
     end = start + number_per_page
     if isinstance(queryset, list):

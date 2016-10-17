@@ -6,6 +6,7 @@
 """
 from __future__ import unicode_literals
 
+import pdb
 import logging
 
 from django.db import models
@@ -13,6 +14,7 @@ from django_pgjson.fields import JsonField
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.utils.generic import split_model_fields, obj_to_dict
+from seed.utils.address import normalize_address_str
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +25,11 @@ from seed.models import (
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
+    DATA_STATE_DELETE,
     ASSESSED_BS,
+    TaxLotProperty,
 )
+
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.utils.time import convert_datestr
@@ -57,7 +62,7 @@ class PropertyState(models.Model):
     # FIXME: source_type needs to be a foreign key or make it import_file.source_type
     source_type = models.IntegerField(null=True, blank=True, db_index=True)
 
-    organization = models.ForeignKey(Organization, blank=True, null=True)
+    organization = models.ForeignKey(Organization)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
 
     # Is this still being used during matching? Apparently so.
@@ -75,7 +80,7 @@ class PropertyState(models.Model):
 
     home_energy_score_id = models.CharField(max_length=255, null=True, blank=True)
 
-    # Tax Lot Number of the property
+    # Tax Lot Number of the property - this field can be an unparsed list or just one string.
     lot_number = models.CharField(max_length=255, null=True, blank=True)
     property_name = models.CharField(max_length=255, null=True, blank=True)
 
@@ -83,6 +88,8 @@ class PropertyState(models.Model):
     # use properties to assess from instances
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
     address_line_2 = models.CharField(max_length=255, null=True, blank=True)
+    normalized_address = models.CharField(max_length=255, null=True, blank=True, editable=False)
+
     city = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
     postal_code = models.CharField(max_length=255, null=True, blank=True)
@@ -149,6 +156,9 @@ class PropertyState(models.Model):
             if self.organization is None:
                 print "organization is None"
 
+            if not self.organization:
+                pdb.set_trace()
+
             prop = Property.objects.create(
                 organization=self.organization
             )
@@ -196,8 +206,6 @@ class PropertyState(models.Model):
             if value and isinstance(value, basestring):
                 setattr(self, field, convert_datestr(value))
 
-    # TODO obsolete this method. AFAIK its unused and this model
-    # has a serializer
     def to_dict(self, fields=None, include_related_data=True):
         """
         Returns a dict version of the PropertyState, either with all fields
@@ -218,11 +226,6 @@ class PropertyState(models.Model):
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk
 
-            # TODO: I don't think this is needed anymore
-            result['canonical_building'] = (
-                self.canonical_building and self.canonical_building.pk
-            )
-
             # should probably also return children, parents, and coparent
             # result['children'] = map(lambda c: c.id, self.children.all())
             # result['parents'] = map(lambda p: p.id, self.parents.all())
@@ -241,10 +244,27 @@ class PropertyState(models.Model):
 
         return d
 
+    def save(self, *args, **kwargs):
+        # first check if the <unique id> isn't already in the database for the
+        # organization - potential todo--move this to a unique constraint of the db.
+        # TODO: Decide if we should allow the user to define what the unique ID is for the taxlot
+        # if PropertyState.objects.filter(jurisdiction_tax_lot_id=self.jurisdiction_tax_lot_id,
+        #                               organization=self.organization).exists():
+        #     logger.error("PropertyState already exists for the same <unique id> and org")
+        #     return False
+
+        # Calculate and save the normalized address
+        if self.address_line_1 is not None:
+            self.normalized_address = normalize_address_str(self.address_line_1)
+        else:
+            self.normalize_address = None
+
+        return super(PropertyState, self).save(*args, **kwargs)
+
 
 class PropertyView(models.Model):
-    """Similar to the old world of canonical building"""
-    # different property views can be associated with each other (2012, 2013.
+    """Similar to the old world of canonical building."""
+    # different property views can be associated with each other (2012, 2013)
     property = models.ForeignKey(Property, related_name='views')
     cycle = models.ForeignKey(Cycle)
     state = models.ForeignKey(PropertyState)
@@ -302,6 +322,36 @@ class PropertyView(models.Model):
                 record_type=AUDIT_IMPORT,
                 import_filename=import_filename
             )
+
+    def tax_lot_views(self):
+        """
+        Return a list of TaxLotViews that are associated with this PropertyView and Cycle
+
+        :return: list of TaxLotViews
+        """
+        # forwent the use of list comprehension to make the code more readable.
+        # get the related taxlot_view.state as well to save time if needed.
+        result = []
+        for tlp in TaxLotProperty.objects.filter(
+                cycle=self.cycle,
+                property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
+            result.append(tlp.taxlot_view)
+
+        return result
+
+    def tax_lot_states(self):
+        """
+        Return a list of TaxLotStates associated with this PropertyView and Cycle
+
+        :return: list of TaxLotStates
+        """
+        # forwent the use of list comprehension to make the code more readable.
+        result = []
+        for x in self.tax_lot_views():
+            if x.state:
+                result.append(x.state)
+
+        return result
 
     @property_decorator
     def import_filename(self):

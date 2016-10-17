@@ -20,7 +20,6 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.grid.moveColumns',
   'ui.grid.pinning',
   'ui.grid.resizeColumns',
-  'ui.grid.saveState',
   'ui.grid.selection',
   'ui.grid.treeView',
   'ui.router',
@@ -641,6 +640,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
             importfile_id
           );
         }],
+        property_columns: ['inventory_service', function (inventory_service) {
+          return inventory_service.get_property_columns();
+        }],
+        taxlot_columns: ['inventory_service', function (inventory_service) {
+          return inventory_service.get_taxlot_columns();
+        }],
         auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
           var organization_id = user_service.get_organization().id;
           return auth_service.is_authorized(organization_id, ['requires_member'])
@@ -1133,7 +1138,7 @@ SEED_app.config(['$compileProvider', function ($compileProvider) {
  */
 SEED_app.constant('urls', {
   search_buildings: BE.urls.search_buildings_url,
-  search_building_snapshots: BE.urls.search_building_snapshots_url,
+  search_mapping_results: BE.urls.search_mapping_results,
   save_match: BE.urls.save_match_url,
   seed_home: BE.urls.seed_home,
   // update_building: BE.urls.update_building,

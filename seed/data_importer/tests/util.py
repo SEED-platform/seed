@@ -7,6 +7,8 @@
 
 import logging
 import os.path
+
+
 import datetime
 
 from django.core.files import File
@@ -26,6 +28,29 @@ from seed.models import (
 )
 
 logger = logging.getLogger(__name__)
+
+TAXLOT_MAPPING = [
+    {
+        "from_field": u'jurisdiction_tax_lot_id',
+        "to_table_name": u'TaxLotState',
+        "to_field": u'jurisdiction_tax_lot_id',
+    },
+    {
+        "from_field": u'address',
+        "to_table_name": u'TaxLotState',
+        "to_field": u'address_line_1'
+    },
+    {
+        "from_field": u'city',
+        "to_table_name": u'TaxLotState',
+        "to_field": u'city'
+    },
+    {
+        "from_field": u'number_buildings',
+        "to_table_name": u'TaxLotState',
+        "to_field": u'number_properties'
+    },
+]
 
 PROPERTIES_MAPPING = [
     {
@@ -141,6 +166,7 @@ FAKE_ROW = {
 
 FAKE_MAPPINGS = {
     'portfolio': PROPERTIES_MAPPING,
+    'taxlot': TAXLOT_MAPPING,
     'full': [
         {
             "from_field": u'Name',
@@ -199,24 +225,25 @@ class DataMappingBaseTestCase(TestCase):
         user = User.objects.create(username='test')
         org = Organization.objects.create()
 
-        # Create an org user
-        OrganizationUser.objects.create(user=user, organization=org)
-
-        import_record = ImportRecord.objects.create(
-            owner=user, last_modified_by=user, super_organization=org
-        )
-        import_file = ImportFile.objects.create(import_record=import_record)
-        import_file.is_espm = import_file_is_espm
-        import_file.source_type = import_file_source_type
-        import_file.data_state = import_file_data_state
-        import_file.save()
-
         cycle, _ = Cycle.objects.get_or_create(
             name=u'Test Hack Cycle 2015',
             organization=org,
             start=datetime.datetime(2015, 1, 1),
             end=datetime.datetime(2015, 12, 31),
         )
+
+        # Create an org user
+        OrganizationUser.objects.create(user=user, organization=org)
+
+        import_record = ImportRecord.objects.create(
+            owner=user, last_modified_by=user, super_organization=org
+        )
+        import_file = ImportFile.objects.create(import_record=import_record,
+                                                cycle=cycle)
+        import_file.is_espm = import_file_is_espm
+        import_file.source_type = import_file_source_type
+        import_file.data_state = import_file_data_state
+        import_file.save()
 
         return user, org, import_file, import_record, cycle
 
