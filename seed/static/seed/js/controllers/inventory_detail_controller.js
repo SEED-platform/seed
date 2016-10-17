@@ -187,7 +187,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
               $log.error(String(data));
             });
         } else if ($scope.inventory_type == 'taxlots') {
-          inventory_service.update_taxlot($scope.taxlot.id, $scope.cycle.id, $scope.item_state)
+          inventory_service.update_taxlot($scope.inventory.id, $scope.cycle.id, $scope.item_state)
             .then(function (data) {
               // In the short term, we're just refreshing the page after a save so the table
               // shows new history.

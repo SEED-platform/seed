@@ -290,7 +290,7 @@ class PropertyView(models.Model):
         })
         return PropertyAuditLog.objects.create(**kwargs)
 
-    def update_state(self, new_state, **kwds):
+    def update_state(self, new_state, **kwargs):
         view_audit_log = PropertyAuditLog.objects.filter(
             state=self.state
         ).first()
@@ -304,7 +304,7 @@ class PropertyView(models.Model):
             parent1=view_audit_log,
             state=new_state,
             view=self,
-            **kwds
+            **kwargs
         )
         self.state = new_state
         self.save()
