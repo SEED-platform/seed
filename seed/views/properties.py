@@ -622,6 +622,7 @@ def get_property_columns(request):
 @login_required
 @has_perm('requires_viewer')
 def get_taxlot_columns(request):
+    # TODO: Merge this with other schemas. Check https://github.com/SEED-platform/seed/blob/d2bfe96e7503f670300448d5967a2bd6d5863634/seed/lib/mcm/data/SEED/seed.py and  https://github.com/SEED-platform/seed/blob/41c104cd105161c949e9cb379aac946ea9202c74/seed/lib/mappings/mapping_data.py  # noqa
     columns = [
         {
             'name': 'jurisdiction_tax_lot_id',
