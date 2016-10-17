@@ -407,12 +407,12 @@ def get_property_columns(request):
             'related': True
         }, {
             'name': 'address_line_1',
-            'displayName': 'Property Address 1',
+            'displayName': 'Address Line 1 (Property)',
             'type': 'numberStr',
             'related': False
         }, {
             'name': 'city',
-            'displayName': 'Property City',
+            'displayName': 'City (Property)',
             'related': False
         }, {
             'name': 'property_name',
@@ -470,16 +470,16 @@ def get_property_columns(request):
             'related': False
         }, {
             'name': 'address_line_2',
-            'displayName': 'Property Address 2',
+            'displayName': 'Address Line 2 (Property)',
             'type': 'numberStr',
             'related': False
         }, {
             'name': 'state',
-            'displayName': 'Property State',
+            'displayName': 'State (Property)',
             'related': False
         }, {
             'name': 'postal_code',
-            'displayName': 'Property Postal Code',
+            'displayName': 'Postal Code (Property)',
             'type': 'number',
             'related': False
         }, {
@@ -562,17 +562,17 @@ def get_property_columns(request):
         }, {
             # Modified field name
             'name': 'tax_city',
-            'displayName': 'Tax Lot City',
+            'displayName': 'City (Tax Lot)',
             'related': True
         }, {
             # Modified field name
             'name': 'tax_state',
-            'displayName': 'Tax Lot State',
+            'displayName': 'State (Tax Lot)',
             'related': True
         }, {
             # Modified field name
             'name': 'tax_postal_code',
-            'displayName': 'Tax Lot Postal Code',
+            'displayName': 'Postal Code (Tax Lot)',
             'type': 'number',
             'related': True
         }, {
@@ -654,28 +654,28 @@ def get_taxlot_columns(request):
             'related': False
         }, {
             'name': 'address_line_1',
-            'displayName': 'Tax Lot Address Line 1',
+            'displayName': 'Address Line 1 (Tax Lot)',
             'type': 'numberStr',
             'related': False
         }, {
             'name': 'address_line_2',
-            'displayName': 'Tax Lot Address Line 2',
+            'displayName': 'Address Line 2 (Tax Lot)',
             'type': 'numberStr',
             'related': False
         }, {
             'name': 'city',
-            'displayName': 'Tax Lot City',
+            'displayName': 'City (Tax Lot)',
             'related': False
         }, {
             # Modified field name
             'name': 'property_address_line_1',
-            'displayName': 'Property Address 1',
+            'displayName': 'Address Line 1 (Property)',
             'type': 'numberStr',
             'related': True
         }, {
             # Modified field name
             'name': 'property_city',
-            'displayName': 'Property City',
+            'displayName': 'City (Property)',
             'related': True
         }, {
             'name': 'property_name',
@@ -744,18 +744,18 @@ def get_taxlot_columns(request):
         }, {
             # Modified field name
             'name': 'property_address_line_2',
-            'displayName': 'Property Address 2',
+            'displayName': 'Address Line 2 (Property)',
             'type': 'numberStr',
             'related': True
         }, {
             # Modified field name
             'name': 'property_state',
-            'displayName': 'Property State',
+            'displayName': 'State (Property)',
             'related': True
         }, {
             # Modified field name
             'name': 'property_postal_code',
-            'displayName': 'Property Postal Code',
+            'displayName': 'Postal Code (Property)',
             'type': 'number',
             'related': True
         }, {
@@ -837,11 +837,11 @@ def get_taxlot_columns(request):
             'related': True
         }, {
             'name': 'state',
-            'displayName': 'Tax Lot State',
+            'displayName': 'State (Tax Lot)',
             'related': False
         }, {
             'name': 'postal_code',
-            'displayName': 'Tax Lot Postal Code',
+            'displayName': 'Postal Code (Tax Lot)',
             'type': 'number',
             'related': False
         }, {
