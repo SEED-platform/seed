@@ -110,7 +110,8 @@ def create_property_state_for_node(node, org, cb):
         property_state_extra_data["prop_cb_id"] = cb.pk
         property_state_extra_data["prop_bs_id"] = node.pk
 
-    property_state = seed.models.PropertyState(confidence=node.confidence,
+    property_state = seed.models.PropertyState(organization=org,
+                                               confidence=node.confidence,
                                                data_state=seed.models.DATA_STATE_MATCHING,
                                                jurisdiction_property_id=None,
                                                lot_number=node.lot_number,
@@ -191,7 +192,8 @@ def create_tax_lot_state_for_node(node, org, cb):
         taxlot_extra_data["taxlot_cb_id"] = cb.pk
         taxlot_extra_data["taxlot_bs_id"] = node.pk
 
-    taxlotstate = seed.models.TaxLotState.objects.create(confidence=node.confidence,
+    taxlotstate = seed.models.TaxLotState.objects.create(organization=org,
+                                                         confidence=node.confidence,
                                                          jurisdiction_tax_lot_id=node.tax_lot_id,
                                                          block_number=node.block_number,
                                                          district=node.district,
