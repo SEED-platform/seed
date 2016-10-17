@@ -76,7 +76,8 @@ class Command(BaseCommand):
                     parent_property.save()
 
                     # Create a view and a state for the active cycle.
-                    parent_property_state = PropertyState(pm_property_id=pm_parent_property_id,
+                    parent_property_state = PropertyState(organization=org,
+                                                          pm_property_id=pm_parent_property_id,
                                                           pm_parent_property_id=pm_parent_property_id,
                                                           property_notes="Created by campus relations migration on {}".format(
                                                               datetime.datetime.now().strftime(
