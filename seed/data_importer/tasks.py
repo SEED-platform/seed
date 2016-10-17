@@ -1448,7 +1448,15 @@ def _remap_data(import_file_pk):
     """
     # Reset mapping progress cache as well.
     import_file = ImportFile.objects.get(pk=import_file_pk)
-    # Delete buildings already mapped for this file.
+
+    # Delete properties already mapped for this file.
+    PropertyState.objects.filter(
+        import_file=import_file,
+        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS)
+        # TODO: make these not hard coded integers
+    ).delete()
+
+    # Delete properties already mapped for this file.
     PropertyState.objects.filter(
         import_file=import_file,
         source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS)

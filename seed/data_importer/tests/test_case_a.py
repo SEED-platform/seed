@@ -106,4 +106,3 @@ class TestCaseA(DataMappingBaseTestCase):
 
         self.assertEqual(state.address_line_1, "20 Tenth Street")
         self.assertEqual(state.property_name, "Grange Hall")
-

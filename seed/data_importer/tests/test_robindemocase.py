@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 class TestCaseRobinDemo(DataMappingBaseTestCase):
+
     def set_up(self, import_file_source_type):
         """Override the base in DataMappingBaseTestCase."""
 
