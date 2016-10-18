@@ -7,9 +7,8 @@
 
 from __future__ import absolute_import
 
-import pdb
+# import pdb
 import copy
-from IPython import embed
 import datetime
 import collections
 from collections import namedtuple
@@ -34,7 +33,7 @@ from seed.models.auditlog import AUDIT_IMPORT
 from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
-from seed.models import Cycle
+# from seed.models import Cycle
 from seed.cleansing.models import Cleansing
 from seed.cleansing.tasks import (
     finish_cleansing,
@@ -45,7 +44,7 @@ from seed.data_importer.models import (
     ImportRecord,
     STATUS_READY_TO_MERGE,
     ROW_DELIMITER,
-    DuplicateDataError,
+    # DuplicateDataError,
 )
 from seed.decorators import get_prog_key
 from seed.decorators import lock_and_track
@@ -57,12 +56,13 @@ from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
 from seed.lib.superperms.orgs.models import Organization
-from seed.utils.generic import pp
-from seed.utils.address import normalize_address_str
+# from seed.utils.generic import pp
+# from seed.utils.address import normalize_address_str
 from seed.models import (
     ASSESSED_BS,
     ASSESSED_RAW,
-    BS_VALUES_LIST,
+    AuditLog,
+    # BS_VALUES_LIST,
     GREEN_BUTTON_BS,
     GREEN_BUTTON_RAW,
     PORTFOLIO_BS,
@@ -71,14 +71,12 @@ from seed.models import (
     SYSTEM_MATCH,
     Column,
     ColumnMapping,
-    find_canonical_building_values,
-    initialize_canonical_building,
+    # find_canonical_building_values,
+    # initialize_canonical_building,
     save_snapshot_match,
-    BuildingSnapshot,
-    Property,
+    # BuildingSnapshot,
     PropertyState,
     PropertyView,
-    TaxLot,
     TaxLotView,
     TaxLotState,
     DATA_STATE_IMPORT,
@@ -354,7 +352,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 # For example, in the test data the tax lot id is the same for many rows. Make sure
                 # to only create/save the object if it hasn't been created before.
 
-                if hash_state_object(map_model_obj, include_extra_data=False) == hash_state_object(STR_TO_CLASS[table](organization=map_model_obj.organization), include_extra_data=False):
+                if hash_state_object(map_model_obj, include_extra_data=False) == hash_state_object(
+                        STR_TO_CLASS[table](organization=map_model_obj.organization), include_extra_data=False):
                     # Skip this object as it has no data...
                     continue
 
@@ -492,7 +491,7 @@ def _cleanse_data(file_pk, record_type='property'):
     tasks = [
         cleanse_data_chunk.s(record_type, ids, file_pk, increment)
         for ids in id_chunks
-    ]
+        ]
 
     if tasks:
         # specify the chord as an immutable with .si
@@ -938,6 +937,7 @@ md = MappingData()
 ALL_COMPARISON_FIELDS = sorted(list(set([field['name'] for field in md.data])))
 ALL_COMPARISON_FIELDS.pop(ALL_COMPARISON_FIELDS.index("data_state"))
 
+
 # all_comparison_fields = sorted(list(set(chain(tax_lot_comparison_fields, property_comparison_fields))))
 
 
@@ -1003,7 +1003,6 @@ def filter_duplicated_states(unmatched_states):
 
 
 class EquivalencePartitioner(object):
-
     @classmethod
     def makeDefaultStateEquivalence(kls, equivalence_type):
         if equivalence_type == PropertyState:
@@ -1024,7 +1023,8 @@ class EquivalencePartitioner(object):
     def makeResolvedKeyCalculationFunction(kls, list_of_fieldlists):
         # This "resolves" the object to the best potential value in
         # each field.
-        return (lambda obj: tuple([kls._getResolvedValueFromObject(obj, list_of_fields) for list_of_fields in list_of_fieldlists]))
+        return (lambda obj: tuple(
+            [kls._getResolvedValueFromObject(obj, list_of_fields) for list_of_fields in list_of_fieldlists]))
 
     @staticmethod
     def _getResolvedValueFromObject(obj, list_of_fields):
@@ -1043,6 +1043,7 @@ class EquivalencePartitioner(object):
                     return True
             else:
                 return False
+
         return cmp
 
     @staticmethod
@@ -1124,7 +1125,7 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import
     unmatched_tax_lot_states and returns a set of states that
     correspond to unmatched states."""
 
-    current_match_cycle = import_file.cycle
+    # current_match_cycle = import_file.cycle
     # current_match_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
 
     # This removes any states that are duplicates,
@@ -1190,8 +1191,8 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
     for unmatched in unmatched_states:
         # Look to see if there is a match among the property states of the object.
 
-        equiv_key = False
-        equiv_can_key = partitioner.calculate_canonical_key(unmatched)
+        # equiv_key = False
+        # equiv_can_key = partitioner.calculate_canonical_key(unmatched)
         equiv_cmp_key = partitioner.calculate_comparison_key(unmatched)
 
         for key in existing_view_states:
@@ -1236,7 +1237,7 @@ def _match_properties_and_taxlots(file_pk, user_pk):
     prog_key = get_prog_key('match_buildings', file_pk)
     org = Organization.objects.filter(users=import_file.import_record.owner).first()
 
-    match_cycle = import_file.cycle
+    # match_cycle = import_file.cycle
     # match_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
 
     # Return a list of all the properties/tax lots based on the import file.
@@ -1251,7 +1252,9 @@ def _match_properties_and_taxlots(file_pk, user_pk):
 
         # Merge everything together based on the notion of equivalence
         # provided by the partitioner.
-        unmatched_properties, property_equivalence_keys = match_and_merge_unmatched_objects(unmatched_properties, property_partitioner, org, import_file)
+        unmatched_properties, property_equivalence_keys = match_and_merge_unmatched_objects(unmatched_properties,
+                                                                                            property_partitioner, org,
+                                                                                            import_file)
 
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.
@@ -1265,7 +1268,9 @@ def _match_properties_and_taxlots(file_pk, user_pk):
     if all_unmatched_tax_lots:
         unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(all_unmatched_tax_lots)
         taxlot_partitioner = EquivalencePartitioner.makeDefaultStateEquivalence(TaxLotState)
-        unmatched_tax_lots, taxlot_equivalence_keys = match_and_merge_unmatched_objects(unmatched_tax_lots, taxlot_partitioner, org, import_file)
+        unmatched_tax_lots, taxlot_equivalence_keys = match_and_merge_unmatched_objects(unmatched_tax_lots,
+                                                                                        taxlot_partitioner, org,
+                                                                                        import_file)
         merged_taxlot_views = merge_unmatched_into_views(unmatched_tax_lots, taxlot_partitioner, org, import_file)
     else:
         duplicate_tax_lot_states = []
@@ -1300,135 +1305,135 @@ def _match_properties_and_taxlots(file_pk, user_pk):
         'progress_key': prog_key
     }
 
-   #  # We merge down all the lists of unmatched buildings and unmatched
-   #  # tax lots until we have a minimal set of "new" objects, each of
-   #  # which is unique in the set, and which may or may not be
-   #  # associated with an existing objects.
+    #  # We merge down all the lists of unmatched buildings and unmatched
+    #  # tax lots until we have a minimal set of "new" objects, each of
+    #  # which is unique in the set, and which may or may not be
+    #  # associated with an existing objects.
 
-   #  # TODO: need to also return the taxlots
-   #  duplicates = []
-   #  newly_matched_building_pks = []
+    #  # TODO: need to also return the taxlots
+    #  duplicates = []
+    #  newly_matched_building_pks = []
 
-   #  # Filter out matches based on ID.
-   #  # if the match is a duplicate of other existing data add it to a list
-   #  # and indicate which existing record it is a duplicate of
-   #  for unmatched in unmatched_buildings:
-   #      # print "trying to match %s" % unmatched.__dict__
-   #      try:
-   #          match = handle_id_matches(unmatched_buildings, unmatched, import_file, user_pk)
-   #          # print "My match was %s" % match
-   #      except DuplicateDataError as e:
-   #          duplicates.append(unmatched.pk)
-   #          unmatched.duplicate_id = e.id
-   #          unmatched.save()
-   #          continue
+    #  # Filter out matches based on ID.
+    #  # if the match is a duplicate of other existing data add it to a list
+    #  # and indicate which existing record it is a duplicate of
+    #  for unmatched in unmatched_buildings:
+    #      # print "trying to match %s" % unmatched.__dict__
+    #      try:
+    #          match = handle_id_matches(unmatched_buildings, unmatched, import_file, user_pk)
+    #          # print "My match was %s" % match
+    #      except DuplicateDataError as e:
+    #          duplicates.append(unmatched.pk)
+    #          unmatched.duplicate_id = e.id
+    #          unmatched.save()
+    #          continue
 
-   #      if match:
-   #          newly_matched_building_pks.extend([match.pk, unmatched.pk])
+    #      if match:
+    #          newly_matched_building_pks.extend([match.pk, unmatched.pk])
 
-   # # Remove any buildings we just did exact ID matches with.
-   #  unmatched_buildings = unmatched_buildings.exclude(
-   #      pk__in=newly_matched_building_pks).values_list(*BS_VALUES_LIST)
+    # # Remove any buildings we just did exact ID matches with.
+    #  unmatched_buildings = unmatched_buildings.exclude(
+    #      pk__in=newly_matched_building_pks).values_list(*BS_VALUES_LIST)
 
-   #  # If we don't find any unmatched buildings, there's nothing left to do.
-   #  if not unmatched_buildings:
-   #      _finish_matching(import_file, prog_key)
-   #      return
+    #  # If we don't find any unmatched buildings, there's nothing left to do.
+    #  if not unmatched_buildings:
+    #      _finish_matching(import_file, prog_key)
+    #      return
 
-   #  # here we deal with duplicates
-   #  unmatched_buildings = unmatched_buildings.exclude(pk__in=duplicates, ).values_list(
-   #      *BS_VALUES_LIST)
-   #  if not unmatched_buildings:
-   #      _finish_matching(import_file, prog_key)
-   #      return
+    #  # here we deal with duplicates
+    #  unmatched_buildings = unmatched_buildings.exclude(pk__in=duplicates, ).values_list(
+    #      *BS_VALUES_LIST)
+    #  if not unmatched_buildings:
+    #      _finish_matching(import_file, prog_key)
+    #      return
 
-   #  # here we are going to normalize the addresses to match on address_1
-   #  # field, this is not ideal because you could match on two locations
-   #  # with same address_1 but different city
-   #  unmatched_normalized_addresses = [
-   #      normalize_address_str(unmatched[4]) for unmatched in
-   #      unmatched_buildings
-   #  ]
+    #  # here we are going to normalize the addresses to match on address_1
+    #  # field, this is not ideal because you could match on two locations
+    #  # with same address_1 but different city
+    #  unmatched_normalized_addresses = [
+    #      normalize_address_str(unmatched[4]) for unmatched in
+    #      unmatched_buildings
+    #  ]
 
-   #  # Here we want all the values not related to the BS id for doing comps.
-   #  # dont do this now
-   #  #     unmatched_ngrams = [
-   #  #         _stringify(list(values)[1:]) for values in unmatched_buildings
-   #  #     ]
+    #  # Here we want all the values not related to the BS id for doing comps.
+    #  # dont do this now
+    #  #     unmatched_ngrams = [
+    #  #         _stringify(list(values)[1:]) for values in unmatched_buildings
+    #  #     ]
 
-   #  canonical_buildings = find_canonical_building_values(org)
-   #  if not canonical_buildings:
-   #      # There are no canonical_buildings for this organization, all unmatched
-   #      # buildings will then become canonicalized.
-   #      hydrated_unmatched_buildings = BuildingSnapshot.objects.filter(
-   #          pk__in=[item[0] for item in unmatched_buildings]
-   #      )
-   #      num_unmatched = len(unmatched_normalized_addresses) or 1
-   #      increment = 1.0 / num_unmatched * 100
-   #      for (i, unmatched) in enumerate(hydrated_unmatched_buildings):
-   #          initialize_canonical_building(unmatched, user_pk)
-   #          if i % 100 == 0:
-   #              increment_cache(prog_key, increment * 100)
+    #  canonical_buildings = find_canonical_building_values(org)
+    #  if not canonical_buildings:
+    #      # There are no canonical_buildings for this organization, all unmatched
+    #      # buildings will then become canonicalized.
+    #      hydrated_unmatched_buildings = BuildingSnapshot.objects.filter(
+    #          pk__in=[item[0] for item in unmatched_buildings]
+    #      )
+    #      num_unmatched = len(unmatched_normalized_addresses) or 1
+    #      increment = 1.0 / num_unmatched * 100
+    #      for (i, unmatched) in enumerate(hydrated_unmatched_buildings):
+    #          initialize_canonical_building(unmatched, user_pk)
+    #          if i % 100 == 0:
+    #              increment_cache(prog_key, increment * 100)
 
-   #      _finish_matching(import_file, prog_key)
-   #      return
+    #      _finish_matching(import_file, prog_key)
+    #      return
 
-   #  # This allows us to retrieve the PK for a given NGram after a match.
-   #  can_rev_idx = {
-   #      normalize_address_str(value[4]): value[0] for value in
-   #      canonical_buildings
-   #  }
-   #  # (SD) This loads up an ngram object with all the canonical buildings. The
-   #  # values are the lists of identifying data for each building
-   #  #
-   #  # (SD) the stringify is given all but the first item in the values list and
-   #  # it concatenates each item with a space in the middle
+    #  # This allows us to retrieve the PK for a given NGram after a match.
+    #  can_rev_idx = {
+    #      normalize_address_str(value[4]): value[0] for value in
+    #      canonical_buildings
+    #  }
+    #  # (SD) This loads up an ngram object with all the canonical buildings. The
+    #  # values are the lists of identifying data for each building
+    #  #
+    #  # (SD) the stringify is given all but the first item in the values list and
+    #  # it concatenates each item with a space in the middle
 
-   #  # we no longer need to
-   #  #     n = ngram.NGram(
-   #  #         [_stringify(values[1:]) for values in canonical_buildings]
-   #  #     )
-   #  # here we are going to normalize the addresses to match on address_1 field,
-   #  # this is not ideal because you could match on two locations with same
-   #  # address_1 but different city
-   #  canonical_buildings_addresses = [
-   #      normalize_address_str(values[4]) for values in canonical_buildings
-   #  ]
-   #  # For progress tracking
-   #  # sd we now use the address
-   #  #    num_unmatched = len(unmatched_ngrams) or 1
-   #  num_unmatched = len(unmatched_normalized_addresses) or 1
-   #  # this code below seemed to be unclear when I was debugging so I added the brackets
-   #  increment = (1.0 / num_unmatched) * 100
+    #  # we no longer need to
+    #  #     n = ngram.NGram(
+    #  #         [_stringify(values[1:]) for values in canonical_buildings]
+    #  #     )
+    #  # here we are going to normalize the addresses to match on address_1 field,
+    #  # this is not ideal because you could match on two locations with same
+    #  # address_1 but different city
+    #  canonical_buildings_addresses = [
+    #      normalize_address_str(values[4]) for values in canonical_buildings
+    #  ]
+    #  # For progress tracking
+    #  # sd we now use the address
+    #  #    num_unmatched = len(unmatched_ngrams) or 1
+    #  num_unmatched = len(unmatched_normalized_addresses) or 1
+    #  # this code below seemed to be unclear when I was debugging so I added the brackets
+    #  increment = (1.0 / num_unmatched) * 100
 
-   #  # PKs when we have a match.
-   #  import_file.mapping_completion = 0
-   #  import_file.save()
-   #  # this section spencer changed to make the exact match
-   #  for i, un_m_address in enumerate(unmatched_normalized_addresses):
-   #      # If we have an address, try to match it
-   #      if un_m_address is not None:
-   #          results = _find_matches(un_m_address,
-   #                                  canonical_buildings_addresses)
-   #      else:
-   #          results = []
+    #  # PKs when we have a match.
+    #  import_file.mapping_completion = 0
+    #  import_file.save()
+    #  # this section spencer changed to make the exact match
+    #  for i, un_m_address in enumerate(unmatched_normalized_addresses):
+    #      # If we have an address, try to match it
+    #      if un_m_address is not None:
+    #          results = _find_matches(un_m_address,
+    #                                  canonical_buildings_addresses)
+    #      else:
+    #          results = []
 
-   #      if results:
-   #          handle_results(
-   #              results, i, can_rev_idx, unmatched_buildings, user_pk
-   #          )
-   #      else:
-   #          hydrated_building = BuildingSnapshot.objects.get(
-   #              pk=unmatched_buildings[i][0]
-   #          )
-   #          initialize_canonical_building(hydrated_building, user_pk)
+    #      if results:
+    #          handle_results(
+    #              results, i, can_rev_idx, unmatched_buildings, user_pk
+    #          )
+    #      else:
+    #          hydrated_building = BuildingSnapshot.objects.get(
+    #              pk=unmatched_buildings[i][0]
+    #          )
+    #          initialize_canonical_building(hydrated_building, user_pk)
 
-   #      if i % 100 == 0:
-   #          increment_cache(prog_key, increment * 100)
-   #          import_file.mapping_completion += int(increment * 100)
-   #          import_file.save()
+    #      if i % 100 == 0:
+    #          increment_cache(prog_key, increment * 100)
+    #          import_file.mapping_completion += int(increment * 100)
+    #          import_file.save()
 
-   #  _finish_matching(import_file, prog_key)
+    #  _finish_matching(import_file, prog_key)
 
     # return {
     #     'status': 'success',
@@ -1586,7 +1591,6 @@ def is_same_snapshot(s1, s2):
 
 def save_state_match(state1, state2, confidence=None, user=None,
                      match_type=None, default_match=None, import_filename=None):
-
     from seed.mappings import mapper as seed_mapper
 
     merged_state = type(state1).objects.create(organization=state1.organization)
@@ -1667,8 +1671,10 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
 
     import time
     st = time.time()
-    property_views = PropertyView.objects.filter(state__organization=org, cycle=cycle).values_list(*prop_comparison_field_names)
-    taxlot_views = TaxLotView.objects.filter(state__organization=org, cycle=cycle).values_list(*tax_comparison_field_names)
+    property_views = PropertyView.objects.filter(state__organization=org, cycle=cycle).values_list(
+        *prop_comparison_field_names)
+    taxlot_views = TaxLotView.objects.filter(state__organization=org, cycle=cycle).values_list(
+        *tax_comparison_field_names)
 
     et = time.time()
     print "{} seconds.".format(et - st)

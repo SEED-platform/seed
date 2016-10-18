@@ -5,8 +5,6 @@
 :author
 """
 import logging
-from IPython import embed
-
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
     DataMappingBaseTestCase,
@@ -21,8 +19,6 @@ from seed.models import (
     PropertyView,
     TaxLot,
     TaxLotState,
-    TaxLotProperty,
-    TaxLotView,
     DATA_STATE_MAPPING,
     ASSESSED_RAW,
 )

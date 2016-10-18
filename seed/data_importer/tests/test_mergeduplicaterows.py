@@ -5,8 +5,6 @@
 :author
 """
 import logging
-from IPython import embed
-
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
     DataMappingBaseTestCase,
@@ -20,11 +18,8 @@ from seed.models import (
     PropertyView,
     Property,
     TaxLotState,
-    TaxLotProperty,
-    TaxLotView,
     TaxLot,
     DATA_STATE_MAPPING,
-    DATA_STATE_MATCHING,
     ASSESSED_RAW,
 )
 
@@ -69,8 +64,6 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         return
 
     def test_importduplicates(self):
-        import pdb
-
         # Check to make sure all the properties imported
         ps = PropertyState.objects.filter(
             data_state=DATA_STATE_MAPPING,

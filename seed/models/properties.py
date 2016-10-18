@@ -25,9 +25,8 @@ from seed.models import (
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
-    DATA_STATE_DELETE,
     ASSESSED_BS,
-    TaxLotProperty,
+    TaxLotProperty
 )
 
 from auditlog import AUDIT_IMPORT
