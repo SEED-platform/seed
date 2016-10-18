@@ -1,4 +1,4 @@
-te  # !/usr/bin/env python
+# !/usr/bin/env python
 # encoding: utf-8
 """
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
@@ -35,7 +35,6 @@ logger = logging.getLogger(__name__)
 
 
 class TestCaseRobinDemo(DataMappingBaseTestCase):
-
     def set_up(self, import_file_source_type):
         """Override the base in DataMappingBaseTestCase."""
 
@@ -169,10 +168,10 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
 
         self.assertEqual(len(ps), 0)
 
-        psv = PropertyView.objects.filter(state__organization=self.org)
-        tlv = TaxLotView.objects.filter(state__organization=self.org)
-
+        # psv = PropertyView.objects.filter(state__organization=self.org)
         # self.assertEqual(len(psv), 12)
+
+        tlv = TaxLotView.objects.filter(state__organization=self.org)
         # self.assertEqual(len(tlv), 9)
 
         self.assertEqual(PropertyView.objects.filter(state__organization=self.org,

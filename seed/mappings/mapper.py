@@ -155,7 +155,7 @@ def merge_state(merged_state, state1, state2, can_attrs, conf, default=None, mat
             attr(merged_state, default)
         else:
             setattr(merged_state, attr, attr_value)
-            #setattr(merged_state, '{0}_source'.format(attr), attr_source)
+            # setattr(merged_state, '{0}_source'.format(attr), attr_source)
 
     # TODO - deprecate extra_data_sources
     # pdb.set_trace()
@@ -249,9 +249,7 @@ def get_propertystate_attrs(data_set_buildings):
 
 
 def get_taxlotstate_attrs(data_set_buildings):
-    import pdb
-
-    md = MappingData()
+    MappingData()
     mapping = seed_mappings.TaxLotState_to_TaxLotState
     return get_attrs_with_mapping(data_set_buildings, mapping)
 

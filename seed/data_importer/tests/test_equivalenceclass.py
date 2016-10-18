@@ -5,10 +5,8 @@
 :author
 """
 import logging
-from IPython import embed
 from seed.data_importer.tasks import EquivalencePartitioner
 from django.test import TestCase
-import pdb
 
 logger = logging.getLogger(__name__)
 

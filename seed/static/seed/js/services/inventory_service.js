@@ -163,42 +163,43 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return defer.promise;
     };
 
-    /** Update Property State on server for a specified Property, Cycle and Organization.
+    /** Update Property State for a specified property, cycle, and organization.
      *
      * @param property_id         Property ID of the property
      * @param cycle_id            Cycle ID for the cycle
-     * @param property_state      A Property state object, which should include key/values for
+     * @param state               A Property state object, which should include key/values for
      *                              all state values
      *
      * @returns {Promise}
      */
-    inventory_service.update_property = function (property_id, cycle_id, property_state) {
+    inventory_service.update_property = function (property_id, cycle_id, state) {
 
       // Error checks
-      if (angular.isUndefined(taxlot_id)) {
-        $log.error("#inventory_service.get_taxlot(): property_id is undefined");
-        throw new Error("Invalid Parameter");
+      if (_.isNil(property_id)) {
+        $log.error('#inventory_service.update_property(): property_id is undefined');
+        throw new Error('Invalid Parameter');
       }
-      if (angular.isUndefined(cycle_id)) {
-        $log.error("#inventory_service.get_taxlot(): null cycle_id is undefined");
-        throw new Error("Invalid Parameter");
+      if (_.isNil(cycle_id)) {
+        $log.error('#inventory_service.update_property(): cycle_id is undefined');
+        throw new Error('Invalid Parameter');
       }
-      if (angular.isUndefined(property_state)) {
-        $log.error("#inventory_service.update_property(): 'property_state' is undefined");
-        throw new Error("Invalid Parameter");
+      if (_.isNil(state)) {
+        $log.error('#inventory_service.update_property(): state is undefined');
+        throw new Error('Invalid Parameter');
       }
 
       var defer = $q.defer();
-      var organization_id = user_service.get_organization().id;
-      var update_property_url = "/app/properties/" + String(property_id) + "/cycles/" + String(cycle_id);
+      var update_property_url = '/app/properties/' + property_id + '/cycles/' + cycle_id + '/';
 
       spinner_utility.show();
       $http({
         method: 'PUT',
         url: update_property_url,
         data: {
-          organization_id: organization_id,
-          state: property_state
+          state: state
+        },
+        params: {
+          organization_id: user_service.get_organization().id
         }
       }).success(function (data, status, headers, config) {
         defer.resolve(data);
@@ -383,46 +384,43 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    /** Save TaxLot State for a specified Property and Cycle and Organization.
+    /** Update Tax Lot State for a specified Tax Lot, cycle, and organization.
      *
-     * @param taxlot_id           A Property object, which should include
-     * @param cycle_id            A Property object, which should include
-     * @param taxlot              A TaxLot State object, which should include key/values for
-     *                            all TaxLot State properties
+     * @param taxlot_id          Tax Lot ID of the tax lot
+     * @param cycle_id            Cycle ID for the cycle
+     * @param state               A Tax Lot state object, which should include key/values for
+     *                              all state values
      *
      * @returns {Promise}
      */
-    inventory_service.update_taxlot = function (taxlot_id, cycle_id, taxlot_state) {
+    inventory_service.update_taxlot = function (taxlot_id, cycle_id, state) {
 
       // Error checks
-      if (angular.isUndefined(taxlot_id)) {
-        $log.error("#inventory_service.update_taxlot(): null taxlot_id parameter");
-        throw new Error("Invalid Parameter");
+      if (_.isNil(taxlot_id)) {
+        $log.error('#inventory_service.update_taxlot(): taxlot_id is undefined');
+        throw new Error('Invalid Parameter');
       }
-      if (angular.isUndefined(cycle_id)) {
-        $log.error("#inventory_service.update_taxlot(): null cycle_id parameter");
-        throw new Error("Invalid Parameter");
+      if (_.isNil(cycle_id)) {
+        $log.error('#inventory_service.update_taxlot(): cycle_id is undefined');
+        throw new Error('Invalid Parameter');
       }
-      if (angular.isUndefined(organization_id)) {
-        $log.error("#inventory_service.update_taxlot(): null organization_id parameter");
-        throw new Error("Invalid Parameter");
-      }
-      if (angular.isUndefined(taxlot_state)) {
-        $log.error("#inventory_service.update_taxlot(): null 'taxlot_state' parameter");
-        throw new Error("Invalid Parameter");
+      if (_.isNil(state)) {
+        $log.error('#inventory_service.update_taxlot(): state is undefined');
+        throw new Error('Invalid Parameter');
       }
 
       var defer = $q.defer();
-      var update_taxlot_url = "/app/taxlots/" + String(taxlot_id) + "/cycles/" + String(cycle_id);
-      var organization_id = user_service.get_organization().id;
+      var update_taxlot_url = '/app/taxlots/' + taxlot_id + '/cycles/' + cycle_id + '/';
 
       spinner_utility.show();
       $http({
         method: 'PUT',
         url: update_taxlot_url,
         data: {
-          organization_id: organization_id,
-          state: taxlot_state
+          state: state
+        },
+        params: {
+          organization_id: user_service.get_organization().id
         }
       }).success(function (data, status, headers, config) {
         defer.resolve(data);
