@@ -629,6 +629,11 @@ angular.module('BE.seed.controller.mapping', [])
         }
       };
 
+      $scope.backToMapping = function () {
+        $scope.review_mappings = false;
+        $scope.show_mapped_buildings = false;
+      };
+
       /**
        * open_cleansing_modal: modal to present data cleansing warnings and errors
        */
