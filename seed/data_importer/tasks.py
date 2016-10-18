@@ -491,7 +491,7 @@ def _cleanse_data(file_pk, record_type='property'):
     tasks = [
         cleanse_data_chunk.s(record_type, ids, file_pk, increment)
         for ids in id_chunks
-        ]
+    ]
 
     if tasks:
         # specify the chord as an immutable with .si
@@ -1112,7 +1112,7 @@ class EquivalencePartitioner(object):
                     equivalence_classes[class_key].append(ndx)
 
                     if self.key_needs_merging(class_key, cmp_key):
-                        merged_key = merge_keys(class_key, cmp_key)
+                        merged_key = self.merge_keys(class_key, cmp_key)
                         equivalence_classes[merged_key] = equivalence_classes.pop(class_key)
                     break
             else:
@@ -1217,6 +1217,7 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
                     # the one we belong to.
                     cousin_view = existing_view_states[key].values()[0].values()[0][0]
                     view_parent = getattr(cousin_view, ParentAttrName)
+                    new_view = type(cousin_view)()
                     setattr(new_view, ParentAttrName, view_parent)
                     new_view.save()
                     matched_views.append(new_view)
