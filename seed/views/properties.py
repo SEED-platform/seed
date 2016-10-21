@@ -1013,8 +1013,10 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
                     result.update(
                         {'state': new_property_state_serializer.validated_data}
                     )
-                    # Removing organization key because it's not JSON-serializable - TODO find better solution
+                    # Removing organization key AND import_file key because they're not JSON-serializable
+                    # TODO find better solution
                     result['state'].pop('organization')
+                    result['state'].pop('import_file')
                     status_code = status.HTTP_201_CREATED
                 else:
                     result.update(
@@ -1148,8 +1150,10 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
                     result.update(
                         {'state': new_taxlot_state_serializer.validated_data}
                     )
-                    # Removing organization key because it's not JSON-serializable - TODO find better solution
+                    # Removing organization key AND import_file key because they're not JSON-serializable
+                    # TODO find better solution
                     result['state'].pop('organization')
+                    result['state'].pop('import_file')
                     status_code = status.HTTP_201_CREATED
                 else:
                     result.update(
