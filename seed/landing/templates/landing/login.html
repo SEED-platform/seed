@@ -16,7 +16,7 @@ $(document).ready(function () {
     <div class="page_section">
         {% include "landing/_marketing_bullets.html" %}
         <!-- END .section_marketing -->
-        <div class="section_forms"> 
+        <div class="section_forms">
             {% include "landing/_browser_supported.html" %}
             <div class="clearfix"></div>
             <div class="form_title">
@@ -26,7 +26,7 @@ $(document).ready(function () {
                     <table class="signup_table">
                         {{form.as_table}}
                     </table>
-                    <input type="submit" class="btn btn-primary" value="Log In"/>
+                    <input type="submit" class="btn btn-primary" value="Log In">
                     <a href="{% url "landing:landing_page" %}" type="submit" class="btn btn-default">Cancel</a>
                     <a class="forgot_password" href="{% url "landing:password_reset" %}">Forgot password?</a>
                 </form>

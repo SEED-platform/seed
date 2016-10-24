@@ -91,10 +91,10 @@
                             <!-- Show input form to edit current field value -->
                             <td ng-if="edit_form_showing" ng-class="(!field.extraData && changed_fields.extra_data_fields.indexOf(field.name)>=0) || changed_fields.regular_fields.indexOf(field.name)>=0 ? 'highlight' : ''">
                                 <div ng-if="!field.extraData">
-                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" name="tax_lot_id" ng-model="item_state[field.name]"/>
+                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" name="tax_lot_id" ng-model="item_state[field.name]">
                                 </div>
                                 <div ng-if="field.extraData">
-                                    <input id="edit_property_attribute_id" class="form-control input-sm" type="text" name="tax_lot_id" ng-model="item_state.extra_data[field.name]"/>
+                                    <input id="edit_property_attribute_id" class="form-control input-sm" type="text" name="tax_lot_id" ng-model="item_state.extra_data[field.name]">
                                 </div>
                             </td>
 

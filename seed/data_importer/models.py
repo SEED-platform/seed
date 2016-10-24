@@ -861,7 +861,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                 row_number += 1
                 error_message_text = ""
                 if tcm.error_message_text:
-                    error_message_text = tcm.error_message_text.replace("\n", "<br/>")
+                    error_message_text = tcm.error_message_text.replace("\n", "<br>")
 
                 first_rows = ["", "", "", "", ""]
                 if tcm.first_five_rows:
@@ -897,7 +897,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                 row_number += 1
                 error_message_text = ""
                 if tcm.error_message_text:
-                    error_message_text = tcm.error_message_text.replace("\n", "<br/>")
+                    error_message_text = tcm.error_message_text.replace("\n", "<br>")
 
                 tcms.append({
                     'row_number': row_number,

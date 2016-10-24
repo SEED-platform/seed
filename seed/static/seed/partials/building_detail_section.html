@@ -98,7 +98,7 @@
                                              type="text"
                                              name="tax_lot_id"
                                              ng-model="building.extra_data[f.key]"
-                                             ng-change="set_self_as_source(f.key,true)"/>
+                                             ng-change="set_self_as_source(f.key,true)">
                                 </div>
                                 <div  ng-show="building.edit_form_showing"
                                       ng-if="f.type !== 'extra_data'">
@@ -107,7 +107,7 @@
                                              type="text"
                                              name="tax_lot_id"
                                              ng-model="building[f.key]"
-                                             ng-change="set_self_as_source(f.key,false)"/>
+                                             ng-change="set_self_as_source(f.key,false)">
                                 </div>
                             </td>
                             <td class="ellipsis"

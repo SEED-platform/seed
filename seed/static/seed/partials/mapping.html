@@ -113,7 +113,7 @@
                                 <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
                             </td>
                             <td ng-class="{'danger': tcm.is_duplicate == true, 'disable-mapping-btn': tcm.is_duplicate == true}" id="duplicate-row-input-{$ $index $}">
-                                <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" ng-keyup="disable_mapping_button()" ng-blur="disable_mapping_button()" typeahead-on-select='change(tcm)' id="duplicate-row-input-box-{$ $index $}"/>
+                                <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" ng-keyup="disable_mapping_button()" ng-blur="disable_mapping_button()" typeahead-on-select='change(tcm)' id="duplicate-row-input-box-{$ $index $}">
                             </td>
                             <td class="check is_aligned_center">
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
@@ -161,7 +161,7 @@
                                 <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
                             </td>
                             <td ng-class="{'danger': tcm.is_duplicate == true, 'disable-mapping-btn': tcm.is_duplicate == true}" id="mapped-row-input-{$ $index $}">
-                                <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" ng-keyup="disable_mapping_button()" ng-blur="disable_mapping_button()" typeahead-on-select='change(tcm)' id="mapped-row-input-box-{$ $index $}"/>
+                                <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" ng-keyup="disable_mapping_button()" ng-blur="disable_mapping_button()" typeahead-on-select='change(tcm)' id="mapped-row-input-box-{$ $index $}">
                             </td>
                             <!--td class="check is_aligned_center">
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
@@ -204,7 +204,7 @@
             </div>
             <div class="right_60 section_action_container section_action_btn">
                 <button type="button" class="btn btn-default" ng-click="open_cleansing_modal()">
-                    <i class="fa fa-exclamation-triangle"></i>Data Cleansing Results
+                    <i class="fa fa-exclamation-triangle"></i> Data Cleansing Results
                 </button>
                 <a ui-sref="mapping({importfile_id: import_file.id})">
                     <button id="save-mapping" type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button>

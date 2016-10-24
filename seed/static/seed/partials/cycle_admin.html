@@ -27,7 +27,7 @@
                     <label for="from-date">From date:</label>
 
                     <div class="input-group date-input" style="padding-right:20px;">
-                        <input id="from-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="startDatePickerOpen" ng-model="new_cycle.start" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true"/>
+                        <input id="from-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="startDatePickerOpen" ng-model="new_cycle.start" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
                         <span class="input-group-btn">
                             <button type="button" class="btn btn-default" ng-click="openStartDatePicker($event)"><i class="fa fa-calendar"></i></button>
                         </span>
@@ -36,7 +36,7 @@
                 <div class="form-group">
                     <label for="to-date">To date:</label>
                     <div class="input-group date-input" style="padding-right:20px;">
-                        <input id="to-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="endDatePickerOpen" ng-model="new_cycle.end" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true"/>
+                        <input id="to-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="endDatePickerOpen" ng-model="new_cycle.end" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
                         <span class="input-group-btn">
                         <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa fa-calendar"></i></button>
                     </span>

@@ -38,10 +38,10 @@
                                 <a ui-sref="organization_members({organization_id: sub_org.id})">{$ sub_org.name $}</a>
                             </td>
                             <td>
-                                <span ng-repeat="owner in sub_org.owners">{$ owner.first_name $} {$ owner.last_name $}<br /></span>
+                                <span ng-repeat="owner in sub_org.owners">{$ owner.first_name $} {$ owner.last_name $}<br></span>
                             </td>
                             <td>
-                                <span ng-repeat="owner in sub_org.owners">{$ owner.email $}<br /></span>
+                                <span ng-repeat="owner in sub_org.owners">{$ owner.email $}<br></span>
                             </td>
                             <td ng-if="false">
                                 <a ng-click="remove_sub_org(sub_org)">Remove</a>
