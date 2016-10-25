@@ -56,7 +56,7 @@ class TaxLotState(models.Model):
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
 
-    jurisdiction_tax_lot_id = models.CharField(max_length=255, null=True, blank=True)
+    jurisdiction_tax_lot_id = models.CharField(max_length=2047, null=True, blank=True)
     block_number = models.CharField(max_length=255, null=True, blank=True)
     district = models.CharField(max_length=255, null=True, blank=True)
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
