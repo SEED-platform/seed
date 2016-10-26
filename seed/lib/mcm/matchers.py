@@ -54,7 +54,8 @@ def best_match(s, categories, top_n=5):
     scores = []
     for cat in categories:
         # verify that the category has two elements, if not, then just
-        # return _ for the first category
+        # return _ for the first category. Need this because fuzzy_in_set uses the
+        # same method
         table_name = '_'
         category = None
         if isinstance(cat, tuple):
