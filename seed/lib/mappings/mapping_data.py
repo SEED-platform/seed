@@ -19,6 +19,8 @@ class MappingData(object):
 
     Makes a dictionary of the column names and their respective types.
 
+    MappingData data property contains the list of fields in the database with the table name.
+
     .. todo:
 
         Build this dictionary from BEDES fields (the null organization columns,
@@ -67,8 +69,8 @@ class MappingData(object):
 
     def normalize_mappable_type(self, in_str):
         """
-        Normalize the data types for when we communicate the fields in
-        JavaScript.
+        Normalize the data types for when we communicate the fields in JavaScript. ensures that the data
+        types are consistent.
 
         Args:
             in_str: string to normalize
@@ -126,7 +128,20 @@ class MappingData(object):
         """
         Similar to keys, except it returns a list of tuples
 
-        Returns:
+        Returns: list of tuples
+
+        .. code:
+            [
+              ('PropertyState', 'address_line_1'),
+              ('PropertyState', 'address_line_2'),
+              ('PropertyState', 'building_certification'),
+              ('PropertyState', 'building_count'),
+              ('TaxLotState', 'address_line_1'),
+              ('TaxLotState', 'address_line_2'),
+              ('TaxLotState', 'block_number'),
+              ('TaxLotState', 'city'),
+              ('TaxLotState', 'jurisdiction_tax_lot_id'),
+            ]
 
         """
         result = set()

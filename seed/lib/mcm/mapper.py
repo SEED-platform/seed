@@ -15,8 +15,7 @@ from cleaners import default_cleaner
 _log = logging.getLogger(__name__)
 
 
-def build_column_mapping(raw_columns, dest_columns, previous_mapping=None,
-                         map_args=None, thresh=0):
+def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_args=None, thresh=0):
     """
     Build a probabilistic mapping structure for mapping raw to dest.
 
@@ -95,7 +94,7 @@ def _concat_values(concat_columns, column_values, delimiter):
     # Use the order of values that we got from concat_columns def.
     values = [
         column_values[item] for item in concat_columns if item in column_values
-    ]
+        ]
     return delimiter.join(values) or None
 
 
@@ -122,10 +121,10 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
             if tmp_field:
                 tmp_field = tmp_field[1]
 
-            # TODO: there are a lot of warnings right now because we iterate over the header
-            # of the file instead of iterating over the fields that we want to map.
+                # TODO: there are a lot of warnings right now because we iterate over the header
+                # of the file instead of iterating over the fields that we want to map.
 
-            # else:
+                # else:
                 # _log.warn("Could not find the field to clean: %s" % raw_field)
 
         cleaned_value = cleaner.clean_value(value, tmp_field)

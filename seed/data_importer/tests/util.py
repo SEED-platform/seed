@@ -8,7 +8,6 @@
 import logging
 import os.path
 
-
 import datetime
 
 from django.core.files import File
@@ -238,8 +237,7 @@ class DataMappingBaseTestCase(TestCase):
         import_record = ImportRecord.objects.create(
             owner=user, last_modified_by=user, super_organization=org
         )
-        import_file = ImportFile.objects.create(import_record=import_record,
-                                                cycle=cycle)
+        import_file = ImportFile.objects.create(import_record=import_record, cycle=cycle)
         import_file.is_espm = import_file_is_espm
         import_file.source_type = import_file_source_type
         import_file.data_state = import_file_data_state

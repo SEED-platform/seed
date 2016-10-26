@@ -7,6 +7,25 @@
 import jellyfish
 
 
+def sort_scores(a, b):
+    """
+    Custom sort method in order to create a bias around the use of PropertyState over TaxLotState. This just works
+    because the extra string comparison concats the table name with the field name. Since P is < T, it returns
+    the correct order.
+    """
+    if a[2] > b[2]:
+        return -1
+    elif a[2] == b[2]:  # Sort by the strings if they match up
+        com_a = '.'.join(a[0:2])  # so, 0:2 returns the first 2 elements, okay python, you win this time.
+        com_b = '.'.join(b[0:2])
+        if com_a > com_b:
+            return 1
+        else:
+            return -1
+    else:
+        return 1
+
+
 def best_match(s, categories, top_n=5):
     """
     Return the top N best matches from your categories with the best match
@@ -31,6 +50,7 @@ def best_match(s, categories, top_n=5):
 
     """
 
+    print 'starting match on {}'.format(s)
     scores = []
     for cat in categories:
         # verify that the category has two elements, if not, then just
@@ -48,16 +68,21 @@ def best_match(s, categories, top_n=5):
                 table_name,
                 category,
                 jellyfish.jaro_winkler(
-                    s.encode('ascii', 'replace').upper(),
-                    category.encode('ascii', 'replace').upper()
+                    s.encode('ascii', 'replace').lower(),
+                    category.encode('ascii', 'replace').lower()
                 )
             )
         )
 
-    scores = sorted(scores, key=lambda x: x[2])
-    scores = scores[-top_n:]
+        # sort first by the ones
+
+    # print 'all scores for {} are {}'.format(s, scores)
+    scores = sorted(scores, cmp=sort_scores)
+    # take the top n number of matches
+    scores = scores[:top_n]
+    # convert to hundreds
     scores = [(score[0], score[1], int(score[2] * 100)) for score in scores]
-    scores.reverse()
+    print 'ending all categories match of {} with scores {}'.format(s, scores)
 
     return scores
 
