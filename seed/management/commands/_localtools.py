@@ -17,7 +17,6 @@ def logging_debug(msg):
     return
 
 def logging_warn(msg):
-    pdb.set_trace()
     print "WARN: {}".format(msg)
     return
 
