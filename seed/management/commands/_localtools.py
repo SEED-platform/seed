@@ -311,7 +311,7 @@ def get_id_fields(parse_string):
     #The id field can use any of several delimiters so reduce it to just one
     #delimiter first to make things easier
     delimiter_to_use = ","
-    other_delimiters = [";", ":"]
+    other_delimiters = [";", ":", "/"]
 
     # if not check_delimiter_sanity(parse_string, [delimiter_to_use] + other_delimiters):
     #     raise TaxLotIDValueError(parse_string)
