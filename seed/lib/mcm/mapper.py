@@ -10,6 +10,7 @@ import logging
 import re
 
 import matchers
+from seed.lib.mappings.mapping_columns import MappingColumns
 from cleaners import default_cleaner
 
 _log = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ _log = logging.getLogger(__name__)
 
 def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_args=None, thresh=0):
     """
-    Build a probabilistic mapping structure for mapping raw to dest.
+    Wrapper around the MappingColumns class to create the list of suggested mappings
 
     Args:
         raw_columns: list of str. The column names we're trying to map.
@@ -40,67 +41,8 @@ def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_a
 
     """
 
-
-    mappings = []
-    for raw in raw_columns:
-        attempt_best_match = False
-        # We want previous mappings to be at the top of the list.
-        if previous_mapping and callable(previous_mapping):
-            args = map_args or []
-            mapping = previous_mapping(raw, *args)  # Mapping will look something like this -- [u'', u'', 100]
-            if mapping:
-                mappings.append((raw, True, mapping))
-            else:
-                attempt_best_match = True
-        else:
-            attempt_best_match = True
-
-        # Only enter this flow if we haven't already selected a result. Ignore blank columns with
-        # conf of 100 since a conf of 100 signifies the user has saved that mapping.
-        if attempt_best_match:
-            # convert raw fields spaces into underscores because that is what is in the database
-            raw_test = raw.replace(' ', '_')
-
-            # try some alternatives to the raw column in specific cases (e.g. zip => postal code).
-            # Hack for now, but should make this some global config or organization specific
-            # config
-            if raw_test.lower() == 'zip':
-                raw_test = 'postal_code'
-            if raw_test.lower() == 'gba':
-                raw_test = 'gross_floor_area'
-
-            # go get the top 5 matches. format will be [('PropertyState', 'building_count', 62), ...]
-
-            matches = matchers.best_match(raw_test, dest_columns, top_n=5)
-
-            mappings.append((raw, False, matches))
-
-
-    # Go through the mappings and figure out if there are any duplicates, if so, then pick the duplicate that has the
-    # next highest confidence. previous mappings that are 100% are set in the confident mapping as True because other
-    # mapping may be 100%, but not confident, weee!
-    probable_mapping = {}
-    for mapping in mappings:
-        probable_mapping[mapping[0]] = list(mapping[2][0])
-
-
-
-        # table, best_match, conf =
-
-
-        # if conf > thresh:
-        #     result = best_match
-        #     result_table = table
-        # else:
-        #     result = None
-        #     conf = 0
-
-
-        # probable_mapping[raw] = [result_table, result, conf]
-
-    print mappings
-    print probable_mapping
-    return probable_mapping
+    mc = MappingColumns(raw_columns, dest_columns, previous_mapping, map_args, thresh)
+    return mc.final_mappings
 
 
 def apply_initial_data(model, initial_data):
@@ -126,7 +68,7 @@ def _concat_values(concat_columns, column_values, delimiter):
     # Use the order of values that we got from concat_columns def.
     values = [
         column_values[item] for item in concat_columns if item in column_values
-        ]
+    ]
     return delimiter.join(values) or None
 
 

@@ -72,6 +72,7 @@ US_STATES = [
 
 
 class TestMatchers(TestCase):
+
     def test_case_insensitivity(self):
         """Make sure we disregard case when doing comparisons."""
         fake_comp = 'TeST'
@@ -119,4 +120,3 @@ class TestMatchers(TestCase):
         ]
         result = sorted(data, cmp=matchers.sort_scores)  # , reverse=True)
         self.assertListEqual(result, expected)
-

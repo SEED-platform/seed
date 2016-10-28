@@ -237,14 +237,6 @@ class TestMapper(TestCase):
             'UBI': ['PropertyState', 'building_count', 62]
         }
 
-        dyn_mapping = mapper.build_column_mapping(
-            raw_columns,
-            md.keys_with_table_names(),
-        )
-
-        print dyn_mapping
-        self.assertDictEqual(dyn_mapping, expected)
-
     def test_map_row_dynamic_mapping_with_cleaner(self):
         """Type-based cleaners on dynamic fields based on reverse-mapping."""
         mapper.build_column_mapping(

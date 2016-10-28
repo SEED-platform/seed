@@ -110,6 +110,7 @@ class MappingData(object):
 
         self.sort_data()
 
+    @property
     def keys(self):
         """
         Flatten the data set to a list of unique names independent of the
@@ -124,6 +125,7 @@ class MappingData(object):
 
         return list(sorted(result))
 
+    @property
     def keys_with_table_names(self):
         """
         Similar to keys, except it returns a list of tuples
@@ -144,12 +146,14 @@ class MappingData(object):
             ]
 
         """
+
         result = set()
         for d in self.data:
             result.add((d['table'], d['name']))
 
         return list(sorted(result))
 
+    @property
     def building_columns(self):
         """
         Return a set of the sorted keys which are the possible columns
@@ -158,8 +162,9 @@ class MappingData(object):
 
         """
 
-        return list(set(sorted(self.keys())))
+        return list(set(sorted(self.keys)))
 
+    @property
     def extra_data(self):
         """
         List only the extra_data columns, that is the columns that are not

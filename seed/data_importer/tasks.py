@@ -1003,6 +1003,7 @@ def filter_duplicated_states(unmatched_states):
 
 
 class EquivalencePartitioner(object):
+
     @classmethod
     def makeDefaultStateEquivalence(kls, equivalence_type):
         if equivalence_type == PropertyState:
