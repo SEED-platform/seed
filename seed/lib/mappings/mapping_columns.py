@@ -36,29 +36,11 @@ class MappingColumns(object):
     def __init__(self, raw_columns, dest_columns, previous_mapping=None, map_args=None,
                  threshold=0):
         """
-        Args:
-        raw_columns: list of str. The column names we're trying to map.
-        dest_columns: list of str. The columns we're mapping to.
-        previous_mapping:  callable. Used to return the previous mapping
-            for a given field.
-
-            .. code:
-
-                # The expectation is that our callable always gets passed a
-                # raw key. If it finds a match, it returns the raw_column and score.
-                previous_mapping('example field', *map_args) ->
-                    ('field_1', 0.93)
-
-        map_args: .. todo: document
-        thresh: .. todo: document
-
-        :param raw_columns:
-        :param dest_columns:
-        :param previous_mapping:
-        :param map_args: .. todo: document
-        :param thresh:
-
-        :return: dict: {'raw_column': [('dest_column', score)...],...}
+        :param raw_columns: list of str. The column names we're trying to map.
+        :param dest_columns: list of str. The columns we're mapping to.
+        :param previous_mapping: Method that contains previous mapped columns
+        :param map_args: .. todo: document as I have no idea what this is doing.
+        :param thresh: int, Minimum value of the matching confidence to allow for matching.
         """
         self.data = {}
         for raw in raw_columns:
