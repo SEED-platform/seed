@@ -778,7 +778,7 @@ def search_mapping_results(request):
 
     # search the query sets
     properties_queryset = search.search_buildings(
-        q, queryset=properties_initial_qs
+        q, fieldnames=fieldnames, queryset=properties_initial_qs
     )
     properties_queryset = search.filter_other_params(
         properties_queryset, other_search_params, db_columns
@@ -789,7 +789,7 @@ def search_mapping_results(request):
     )
 
     taxlots_queryset = search.search_buildings(
-        q, queryset=taxlots_initial_qs
+        q, fieldnames=fieldnames, queryset=taxlots_initial_qs
     )
     taxlots_queryset = search.filter_other_params(
         taxlots_queryset, other_search_params, db_columns
