@@ -151,7 +151,8 @@ def create_property_state_for_node(node, org, cb):
 
     for (field_origin, field_dest) in mapping.items():
         value = get_value_for_key(node, field_origin)
-        set_state_value(property_state, field_dest, value)
+        if value:
+            set_state_value(property_state, field_dest, value)
 
     property_state.save()
     return property_state
@@ -205,7 +206,9 @@ def create_tax_lot_state_for_node(node, org, cb):
                                                          extra_data=taxlot_extra_data)
 
     for (field_origin, field_dest) in mapping.items():
-        set_state_value(taxlotstate, field_dest, get_value_for_key(node, field_origin))
+        value = get_value_for_key(node, field_origin)
+        if value:
+            set_state_value(taxlotstate, field_dest, value)
 
     taxlotstate.save()
     return taxlotstate
@@ -240,10 +243,13 @@ def node_has_tax_lot_info(node, org):
 
 
 def node_has_property_info(node, org):
+    # pdb.set_trace()
+    # embed()
     property_fields = set(
         [x[0] for x in organization_extra_data_mapping[org.id].items() if x[1][0] == "Property"])
+
     has_property_extra_data = len(
-        {x: y for x, y in node.extra_data.items() if x in property_fields and y})
+        {x: y for x, y in node.extra_data.items() if x in property_fields and (y.strip() if isinstance(y, str) else y)})
     return bool(node.pm_property_id is not None or has_property_extra_data)
 
 

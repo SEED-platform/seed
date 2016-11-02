@@ -370,7 +370,10 @@ def get_value_for_key(state, field_string):
 
             return value
     else:
-        return getattr(state, field_string)
+        value = getattr(state, field_string)
+        if isinstance(value, str):
+            value = value.strip()
+        return value
 
 
 USE_FIRST_VALUE = 1

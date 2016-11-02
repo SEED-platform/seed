@@ -35,6 +35,9 @@ def delete_based_on_org(apps, org):
     apps.get_model("seed", "TaxLotView").objects.filter(cycle__organization__id=org).delete()
     apps.get_model("seed", "TaxLotProperty").objects.filter(cycle__organization__id=org).delete()
 
+    apps.get_model("seed", "PropertyState").objects.filter(organization__id=org).delete()
+    apps.get_model("seed", "TaxLotState").objects.filter(organization__id=org).delete()
+
     # apps.get_model("seed", "Cycle").objects.filter(organization__id=org).delete()
     apps.get_model("seed", "Property").objects.filter(organization__id=org).delete()
     apps.get_model("seed", "TaxLot").objects.filter(organization__id=org).delete()
