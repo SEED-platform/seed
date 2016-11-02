@@ -148,14 +148,14 @@ def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
         tax_lot.save()
         return tax_lot, True
 
-    qry = seed.models.TaxLotView.objects.filter(state__jurisdiction_tax_lot_id=bs_taxlot_val)
+    qry = seed.models.TaxLotView.objects.filter(state__jurisdiction_tax_lot_id=bs_taxlot_val,
+                                                state__organization=org)
 
     # See if we have any tax lot views that have tax lot states
     # with that id, if yes, find/return associated property.
 
     if qry.count():
         return qry.first().taxlot, False
-
     else:
         tax_lot = seed.models.TaxLot(organization=org)
         tax_lot.save()
@@ -182,7 +182,8 @@ def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
         property.save()
         return property, True
 
-    qry = seed.models.PropertyView.objects.filter(state__pm_property_id=bs_property_id)
+    qry = seed.models.PropertyView.objects.filter(state__pm_property_id=bs_property_id,
+                                                  state__organization=org)
 
     if qry.count():
         return qry.first().property, False
