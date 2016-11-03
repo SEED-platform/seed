@@ -1,12 +1,10 @@
 <div class="page_header_container">
     <div class="page_header">
-        <div class="left page_action_container">
-        </div>
+        <div class="left page_action_container"></div>
         <div class="page_title">
             <h1>{$ username $}</h1>
         </div>
-        <div class="right page_action_container">
-        </div>
+        <div class="right page_action_container"></div>
     </div>
 </div>
 <div class="section_nav_container">
@@ -26,18 +24,17 @@
             </div>
             <div class="section_content_container org_form container-fluid">
                 <div class="section_content">
-                    <form  name="orgForm" novalidate class="form-horizontal css-form" role="form">
+                    <form name="orgForm" novalidate class="form-horizontal css-form" role="form">
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="org_name">Organization Name:</label>
                             <div class="col-sm-4">
-                                <input type="text" class="form-control" id="org_name" ng-model="org.name" placeholder="Organization Name" required />
+                                <input type="text" class="form-control" id="org_name" ng-model="org.name" placeholder="Organization Name" required>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="user_emails">User E-mail:</label>
                             <div class="col-sm-4">
-                                <select class="form-control" name="user_emails" id="user_emails" ng-options="u as u.email for u in org.users" ng-model="org.email">
-                                </select>
+                                <select class="form-control" name="user_emails" id="user_emails" ng-options="u as u.email for u in org.users" ng-model="org.email"> </select>
                             </div>
                         </div>
                         <div class="form-group">
@@ -47,8 +44,7 @@
                             </div>
                         </div>
                     </form>
-                    <div ng-show="org_form.invalid">Error:
-                        <span>{$ org_form.message $}</span>
+                    <div ng-show="org_form.invalid">Error: <span>{$ org_form.message $}</span>
                     </div>
                 </div>
             </div>
@@ -63,19 +59,19 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="first_name">User First Name:</label>
                             <div class="col-sm-4">
-                                <input type="text" id="first_name" class="form-control" ng-model="user.first_name" placeholder="First Name" required />
+                                <input type="text" id="first_name" class="form-control" ng-model="user.first_name" placeholder="First Name" required>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="last_name">User Last Name:</label>
                             <div class="col-sm-4">
-                                <input type="text" id="last_name" class="form-control" ng-model="user.last_name" placeholder="Last Name" required />
+                                <input type="text" id="last_name" class="form-control" ng-model="user.last_name" placeholder="Last Name" required>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="user_email">User E-mail:</label>
                             <div class="col-sm-4">
-                                <input type="email" id="user_email" class="form-control" ng-model="user.email" placeholder="User Email" required />
+                                <input type="email" id="user_email" class="form-control" ng-model="user.email" placeholder="User Email" required>
                             </div>
                         </div>
                         <div class="form-group">
@@ -87,7 +83,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="org_name_from_user">Or Create New (With User as Head):</label>
                             <div class="col-sm-4">
-                                <input type="text" class="form-control" id="new_user_org_name" ng-model="user.org_name" placeholder="Organization Name" />
+                                <input type="text" class="form-control" id="new_user_org_name" ng-model="user.org_name" placeholder="Organization Name">
                             </div>
 
                         </div>
@@ -98,8 +94,7 @@
                             </div>
                         </div>
                     </form>
-                    <div ng-show="user_form.invalid">Error:
-                        <span>{$ user_form.message $}</span>
+                    <div ng-show="user_form.invalid">Error: <span>{$ user_form.message $}</span>
                     </div>
                 </div>
             </div>
@@ -144,7 +139,9 @@
                             <tbody>
                                 <tr ng-repeat="user in org_user.users">
                                     <td>{$ user.email $}</td>
-                                    <td><button class="btn btn-default" type="submit" ng-click="org_user.remove_user(user.user_id, org_user.organization.org_id)">Remove User</button></td>
+                                    <td>
+                                        <button class="btn btn-default" type="submit" ng-click="org_user.remove_user(user.user_id, org_user.organization.org_id)">Remove User</button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -154,7 +151,7 @@
 
             <div class="section_header_container has_btm_margin">
                 <div class="section_header">
-                    <h2><i class="fa fa-trash-o"></i> Remove buildings and organizations</h2>
+                    <h2><i class="fa fa-trash-o"></i> Remove inventory and organizations</h2>
                 </div>
             </div>
             <div class="section_content_container org_user_admin container-fluid">
@@ -192,7 +189,10 @@
                                     </td>
                                     <td>
                                         <div style="width: 285px;">
-                                            <button class="btn btn-danger" type="submit" style="margin-left:20px;" ng-click="confirm_org_delete(org)" ng-hide="org.progress > -1"><i class="fa fa-exclamation-triangle"></i> Delete Organization</button>
+                                            <button class="btn btn-default" ng-click="confirm_inventory_delete(org)" ng-disabled="org.progress > -1 || org.total_inventory == 0">Remove Inventory</button>
+                                            <button class="btn btn-danger" type="submit" style="margin-left:20px;" ng-click="confirm_org_delete(org)" ng-hide="org.progress > -1">
+                                                <i class="fa fa-exclamation-triangle"></i> Delete Organization
+                                            </button>
                                             <uib-progressbar class="progress-striped active" value="org.progress" type="danger" ng-show="org.progress > -1">{$ org.remove_message $}</uib-progressbar>
                                         </div>
                                     </td>

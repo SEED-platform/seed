@@ -31,7 +31,7 @@
                 </button>
                 <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
                     <li ng-hide="menu.user.organization.user_role === 'viewer'">
-                        <a ng-click="open_delete_modal()" ng-disabled="true">Delete Selected</a>
+                        <a ng-click="open_delete_modal()">Delete Selected</a>
                     </li>
                     <li>
                         <a ng-click="open_export_modal()">Export Selected</a>

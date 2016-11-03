@@ -1,19 +1,33 @@
 <div class="modal-header">
-  <button type="button" class="close" ng-click="cancel()"><i class="fa fa-times"></i></button>
-  <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state == 'delete'">Delete your Buildings</h4>
-  <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state == 'prepare'">Preparing your buildings for deletion</h4>
-  <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state == 'success'">Success!</h4>
+    <button type="button" class="close" ng-click="cancel()"><i class="fa fa-times"></i></button>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state == 'delete'">Delete your Inventory</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state == 'prepare'">Preparing your inventory for deletion</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state == 'success'">Success!</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state == 'incomplete'">Not all inventory items were successfully deleted</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state == 'fail'">Failed to delete inventory</h4>
 </div>
 <div class="modal-body row" style="padding-bottom: 0;">
     <div class="col-sm-12" ng-show="delete_state == 'delete'">
-        Are you sure you want to delete <strong>{$ number_to_delete() $}</strong> buildings?
+        Are you sure you want to delete
+        <span ng-if="property_states.length"><strong>{$ property_states.length $}</strong> propert{$ property_states.length > 1 ? 'ies' : 'y' $}</span><!--
+     --><span ng-if="property_states.length && taxlot_states.length"> and </span><!--
+     --><span ng-if="taxlot_states.length"><strong>{$ taxlot_states.length $}</strong> tax lot{$ taxlot_states.length > 1 ? 's' : '' $}</span>?
     </div>
-    <div class="col-sm-12" ng-show="delete_state == 'success'">
-            Your buildings have been deleted
+    <div class="col-sm-12" ng-show="delete_state == 'incomplete' || delete_state == 'success'">
+        <div ng-if="(deletedProperties + deletedTaxlots) > 0">
+            <span ng-if="deletedProperties"><strong>{$ deletedProperties $}</strong> propert{$ deletedProperties > 1 ? 'ies' : 'y' $}</span><!--
+         --><span ng-if="deletedProperties && deletedTaxlots"> and </span><!--
+         --><span ng-if="deletedTaxlots"><strong>{$ deletedTaxlots $}</strong> tax lot{$ deletedTaxlots > 1 ? 's' : '' $}</span>
+            ha{$ (deletedProperties + deletedTaxlots) == 1 ? 's' : 've' $} been deleted</div>
+        </div>
+        <div ng-if="(deletedProperties + deletedTaxlots) == 0">
+            <span>No action was taken</span>
+        </div>
     </div>
+    <div class="col-sm-12" ng-show="delete_state == 'fail'">{$ error $}</div>
 </div>
 <div class="modal-footer">
-  <button type="button" class="btn btn-default" ng-show="delete_state == 'delete'" ng-click="cancel()">Cancel</button>
-  <button type="button" class="btn btn-default" ng-show="delete_state == 'success'" ng-click="close()">Close</button>
-  <button type="button" class="btn btn-danger" ng-click="delete_buildings()" ng-show="delete_state == 'delete'">Yes, Delete Buildings</button>
+    <button type="button" class="btn btn-default" ng-show="delete_state == 'delete'" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-default" ng-show="delete_state == 'success' || delete_state == 'incomplete' || delete_state == 'fail'" ng-click="close()">Close</button>
+    <button type="button" class="btn btn-danger" ng-click="delete_inventory()" ng-show="delete_state == 'delete'">Yes, Delete Inventory</button>
 </div>

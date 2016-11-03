@@ -3,65 +3,68 @@
  * :author
  */
 angular.module('BE.seed.controller.delete_modal', [])
-.controller('delete_modal_controller', [
-  '$scope',
-  '$uibModalInstance',
-  'search',
-  'building_services',
-  function($scope, $uibModalInstance, search, building_services) {
-    $scope.delete_state = 'delete';
-    $scope.delete_payload = {};
-    $scope.delete_payload.selected_buildings = search.selected_buildings;
-    $scope.delete_payload.filter_params = search.filter_params;
-    $scope.delete_payload.select_all_checkbox = search.select_all_checkbox;
-    $scope.delete_payload.order_by = search.order_by;
-    $scope.delete_payload.sort_reverse = search.sort_reverse;
+  .controller('delete_modal_controller', [
+    '$scope',
+    '$q',
+    '$uibModalInstance',
+    'inventory_service',
+    'property_states',
+    'taxlot_states',
+    function ($scope, $q, $uibModalInstance, inventory_service, property_states, taxlot_states) {
+      $scope.property_states = _.uniq(property_states);
+      $scope.taxlot_states = _.uniq(taxlot_states);
+      $scope.delete_state = 'delete';
 
-    /**
-     * delete_buildings: calls the delete process
-     */
-    $scope.delete_buildings = function () {
-        $scope.progress_percentage = 0;
+      $scope.delete_inventory = function () {
         $scope.delete_state = 'prepare';
-        building_services.delete_buildings($scope.delete_payload).then(
-          function (data) {
-            // resolve promise
-            $scope.delete_state = 'success';
+
+        var promises = [];
+        if ($scope.property_states.length) promises.push(inventory_service.delete_property_states($scope.property_states));
+        if ($scope.taxlot_states.length) promises.push(inventory_service.delete_taxlot_states($scope.taxlot_states));
+
+        return $q.all(promises).then(function (results) {
+          $scope.deletedProperties = 0;
+          $scope.deletedTaxlots = 0;
+          _.forEach(results, function (result, index) {
+            if (result.data.status == 'success') {
+              if (index == 0 && $scope.property_states.length) $scope.deletedProperties = result.data.properties;
+              else $scope.deletedTaxlots = result.data.taxlots;
+            }
+          });
+          if ($scope.property_states.length != $scope.deletedProperties || $scope.taxlot_states.length != $scope.deletedTaxlots) {
+            $scope.delete_state = 'incomplete';
+            return;
           }
-        ).then(
-          function(){
-            //update building count.
-            building_services.get_total_number_of_buildings_for_user().then(
-              function (data){
-                //we don't need to do anything with the data as it's bound to relevant UI
-              });
+          $scope.delete_state = 'success';
+        }).catch(function (resp) {
+          $scope.delete_state = 'fail';
+          if (resp.status == 422) {
+            $scope.error = resp.data.message;
+          } else {
+            $scope.error = resp.data.message;
           }
-        );
-    };
+        });
+      };
 
-    /**
-     * returns the number of buildings that will be deleted
-     * @return {int} number of buildings that will be deleted
-     */
-    $scope.number_to_delete = function () {
-        if (search.select_all_checkbox) {
-            return search.number_matching_search - search.selected_buildings.length;
-        } else {
-            return search.selected_buildings.length;
-        }
-    };
+      /**
+       * cancel: dismisses the modal
+       */
+      $scope.cancel = function () {
+        $uibModalInstance.dismiss({
+          delete_state: $scope.delete_state,
+          property_states: $scope.property_states,
+          taxlot_states: $scope.taxlot_states
+        });
+      };
 
-    /**
-     * cancel: dismisses the modal
-     */
-    $scope.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
-    };
-
-    /**
-     * close: closes the modal
-     */
-    $scope.close = function () {
-        $uibModalInstance.close();
-    };
-}]);
+      /**
+       * close: closes the modal
+       */
+      $scope.close = function () {
+        $uibModalInstance.close({
+          delete_state: $scope.delete_state,
+          property_states: $scope.property_states,
+          taxlot_states: $scope.taxlot_states
+        });
+      };
+    }]);

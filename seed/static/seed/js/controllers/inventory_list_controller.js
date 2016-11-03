@@ -109,6 +109,8 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       var processData = function () {
+        var visibleColumns = _.map(_.filter($scope.columns, 'visible'), 'name')
+          .concat(['$$treeLevel', 'id', 'property_state_id', 'taxlot_state_id']);
         var data = angular.copy($scope.objects);
         var roots = data.length;
         for (var i = 0, trueIndex = 0; i < roots; ++i, ++trueIndex) {
@@ -138,10 +140,10 @@ angular.module('BE.seed.controller.inventory_list', [])
               return result;
             }, {});
 
-            data.splice(++trueIndex, 0, updated);
+            data.splice(++trueIndex, 0, _.pick(updated, visibleColumns));
           }
           // Remove unnecessary data
-          delete data[relatedIndex].related;
+          data[relatedIndex] = _.pick(data[relatedIndex], visibleColumns);
         }
         $scope.data = data;
         $scope.updateQueued = true;
@@ -186,16 +188,61 @@ angular.module('BE.seed.controller.inventory_list', [])
           templateUrl: urls.static_url + 'seed/partials/delete_modal.html',
           controller: 'delete_modal_controller',
           resolve: {
-            search: function () {
-              return $scope.search;
+            property_states: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type == 'properties') return row.$$treeLevel == 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'property_state_id');
+            },
+            taxlot_states: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type == 'taxlots') return row.$$treeLevel == 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'taxlot_state_id');
             }
           }
         });
 
-        modalInstance.result.then(function () {
-          // TODO
-        }, function (message) {
-          // TODO
+        modalInstance.result.then(function (result) {
+          if (_.includes(['fail', 'incomplete'], result.delete_state)) refresh_objects();
+          else if (result.delete_state == 'success') {
+            var selectedRows = $scope.gridApi.selection.getSelectedRows();
+            var selectedChildRows = _.remove(selectedRows, function (row) {
+              return !_.has(row, '$$treeLevel');
+            });
+            // Delete selected child rows first
+            _.forEach(selectedChildRows, function (row) {
+              var index = $scope.data.lastIndexOf(row);
+              var count = 1;
+              if (row.$$treeLevel == 0) {
+                // Count children to delete
+                var i = index + 1;
+                while (i < ($scope.data.length - 1) && !_.has($scope.data[i], '$$treeLevel')) {
+                  count++;
+                  i++;
+                }
+              }
+              // console.debug('Deleting ' + count + ' child rows');
+              $scope.data.splice(index, count);
+            });
+            // Delete parent rows and all child rows
+            _.forEach(selectedRows, function (row) {
+              var index = $scope.data.lastIndexOf(row);
+              var count = 1;
+              if (row.$$treeLevel == 0) {
+                // Count children to delete
+                var i = index + 1;
+                while (i < ($scope.data.length - 1) && !_.has($scope.data[i], '$$treeLevel')) {
+                  count++;
+                  i++;
+                }
+              }
+              // console.debug('Deleting ' + count + ' rows');
+              $scope.data.splice(index, count);
+            });
+          }
+        }, function (result) {
+          if (_.includes(['fail', 'incomplete'], result.delete_state)) refresh_objects();
         });
       };
 
@@ -320,5 +367,9 @@ angular.module('BE.seed.controller.inventory_list', [])
             });
           }, 150));
         }
-      }
+      };
+
+      // $scope.$on('$destroy', function () {
+      //   console.log('Destroying!');
+      // });
     }]);

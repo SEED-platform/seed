@@ -15,6 +15,7 @@ from django.forms.models import model_to_dict
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet
 from rest_framework import status
 
@@ -25,7 +26,7 @@ from seed.decorators import (
 
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import (
-    Column, Cycle, AUDIT_USER_EDIT, PropertyAuditLog, PropertyView,
+    Column, Cycle, AUDIT_USER_EDIT, PropertyAuditLog, PropertyState, PropertyView,
     TaxLotAuditLog, TaxLotView, TaxLotState, TaxLotProperty
 )
 
@@ -36,7 +37,6 @@ from seed.serializers.taxlots import (
     TaxLotViewSerializer, TaxLotStateSerializer
 )
 from seed.utils.api import api_endpoint, drf_api_endpoint
-
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -109,6 +109,7 @@ def get_properties(request):
     taxlot_map = {}
     for taxlot_view in taxlot_views:
         taxlot_state_data = model_to_dict(taxlot_view.state, exclude=['extra_data'])
+        taxlot_state_data['taxlot_state_id'] = taxlot_view.state.id
 
         # Add extra data fields right to this object.
         for extra_data_field, extra_data_value in taxlot_view.state.extra_data.items():
@@ -146,6 +147,8 @@ def get_properties(request):
 
         # Use property_id instead of default (state_id)
         p['id'] = prop.property_id
+
+        p['property_state_id'] = prop.state.id
 
         p['campus'] = prop.property.campus
 
@@ -217,6 +220,7 @@ def get_taxlots(request):
     property_map = {}
     for property_view in property_views:
         property_data = model_to_dict(property_view.state, exclude=['extra_data'])
+        property_data['property_state_id'] = property_view.state.id
         property_data['campus'] = property_view.property.campus
 
         # Add extra data fields right to this object.
@@ -264,9 +268,6 @@ def get_taxlots(request):
         # Each object in the response is built from the state data, with related data added on.
         l = model_to_dict(lot.state, exclude=['extra_data'])
 
-        # Use taxlot_id instead of default (state_id)
-        l['id'] = lot.taxlot_id
-
         for extra_data_field, extra_data_value in lot.state.extra_data.items():
             if extra_data_field == 'id':
                 extra_data_field += '_extra'
@@ -274,6 +275,12 @@ def get_taxlots(request):
                 extra_data_field += '_extra'
             l[extra_data_field] = extra_data_value
 
+        # Use taxlot_id instead of default (state_id)
+        l['id'] = lot.taxlot_id
+
+        l['taxlot_state_id'] = lot.state.id
+
+        # All the related property states.
         l['related'] = join_map.get(lot.pk, [])
 
         response['results'].append(l)
@@ -886,6 +893,28 @@ def get_taxlot_columns(request):
     return columns
 
 
+class PropertyStateEndpoint(DecoratorMixin(drf_api_endpoint), ViewSet):
+    def delete(self, request):
+        property_states = request.data.get('selected', [])
+        resp = PropertyState.objects.filter(pk__in=property_states).delete()
+
+        if resp[0] == 0:
+            return Response({'status': 'warning', 'message': 'No action was taken'})
+
+        return Response({'status': 'success', 'properties': resp[1]['seed.PropertyState']})
+
+
+class TaxLotStateEndpoint(DecoratorMixin(drf_api_endpoint), ViewSet):
+    def delete(self, request):
+        taxlot_states = request.data.get('selected', [])
+        resp = TaxLotState.objects.filter(pk__in=taxlot_states).delete()
+
+        if resp[0] == 0:
+            return Response({'status': 'warning', 'message': 'No action was taken'})
+
+        return Response({'status': 'success', 'taxlots': resp[1]['seed.TaxLotState']})
+
+
 class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
@@ -940,7 +969,7 @@ class Property(DecoratorMixin(drf_api_endpoint), ViewSet):
             view=property_view
         ).order_by('-created', '-state_id')
         for log in audit_logs:
-            changed_fields = json.loads(log.description)\
+            changed_fields = json.loads(log.description) \
                 if log.record_type == AUDIT_USER_EDIT else None
             record = {
                 'state': PropertyStateSerializer(log.state).data,
@@ -1067,7 +1096,7 @@ class TaxLot(DecoratorMixin(drf_api_endpoint), ViewSet):
             view=taxlot_view
         ).order_by('-created', '-state_id')
         for log in audit_logs:
-            changed_fields = json.loads(log.description)\
+            changed_fields = json.loads(log.description) \
                 if log.record_type == AUDIT_USER_EDIT else None
             record = {
                 'state': TaxLotStateSerializer(log.state).data,

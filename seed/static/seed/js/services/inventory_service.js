@@ -237,6 +237,36 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
+    inventory_service.delete_property_states = function (ids) {
+      return $http({
+        method: 'DELETE',
+        url: '/app/property-state/',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8'
+        },
+        data: {
+          organization_id: user_service.get_organization().id,
+          selected: ids
+        }
+      });
+    };
+
+
+    inventory_service.delete_taxlot_states = function (ids) {
+      return $http({
+        method: 'DELETE',
+        url: '/app/taxlot-state/',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8'
+        },
+        data: {
+          organization_id: user_service.get_organization().id,
+          selected: ids
+        }
+      });
+    };
+
+
     inventory_service.get_taxlots = function (page, per_page, cycle) {
 
       var params = {
