@@ -1208,7 +1208,7 @@
 1,49,,Borough,Tax,extra_data,,,
 1,49,,County,Tax,extra_data,,,
 1,49,,Lot,Tax,extra_data,,,
-1,49,,NYC Building Identification Number (BIN),Tax,extra_data,,"This is a building ID, but NYC doesn't trust it's accuracy; but for now let's call put it in the category of the property identifier; I think it comes from the Tax info -- but for now am assigning it to the property table",
+1,49,,NYC Building Identification Number (BIN),Property,extra_data,,"This is a building ID, but NYC doesn't trust it's accuracy; but for now let's call put it in the category of the property identifier; I think it comes from the Tax info -- but for now am assigning it to the property table",
 1,49,,Premises ZIP Code,Tax,extra_data,,,
 1,49,,Street Address,Property,extra_data,,Just the street name not the complete address,
 1,49,,Address 1,Property,extra_data,,Just the street name not the complete address,

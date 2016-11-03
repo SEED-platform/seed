@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 new tables.
 """
 
+from IPython import embed
 from django.core.management.base import BaseCommand
 from seed.lib.superperms.orgs.models import Organization
 import subprocess
@@ -121,7 +122,7 @@ def create_property_state_for_node(node, org, cb):
                                                city=node.city,
                                                state=node.state_province,
                                                postal_code=node.postal_code,
-                                               building_count=node.building_count,
+                                               #building_count=node.building_count,
                                                property_notes=node.property_notes,
                                                use_description=node.use_description,
                                                gross_floor_area=node.gross_floor_area,
@@ -151,7 +152,7 @@ def create_property_state_for_node(node, org, cb):
 
     for (field_origin, field_dest) in mapping.items():
         value = get_value_for_key(node, field_origin)
-        if value:
+        if value is not None and value != "":
             set_state_value(property_state, field_dest, value)
 
     property_state.save()
@@ -207,7 +208,7 @@ def create_tax_lot_state_for_node(node, org, cb):
 
     for (field_origin, field_dest) in mapping.items():
         value = get_value_for_key(node, field_origin)
-        if value:
+        if value is not None and value != "":
             set_state_value(taxlotstate, field_dest, value)
 
     taxlotstate.save()
@@ -515,6 +516,7 @@ class Command(BaseCommand):
 
                 logging_info("Creating Blue Sky Data for for CanonicalBuilding={}".format(cb.pk))
 
+                # embed()
                 create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, leaf,
                                                              other_buildingsnapshots,
                                                              child_dictionary, parent_dictionary,
@@ -745,7 +747,6 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
             property_state_created,
             m2m_created))
     return
-
 
 # FIXME: Remove this global variable
 organization_extra_data_mapping, _ = _load_raw_mapping_data()
