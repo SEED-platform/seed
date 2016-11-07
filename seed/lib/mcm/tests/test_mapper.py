@@ -9,6 +9,7 @@ from unittest import TestCase, skip
 
 from seed.lib.mcm import cleaners, mapper
 from seed.lib.mcm.tests.utils import FakeModel
+from seed.lib.mappings.mapping_data import MappingData
 
 
 class TestMapper(TestCase):
@@ -200,6 +201,41 @@ class TestMapper(TestCase):
         )
 
         self.assertDictEqual(dyn_mapping, expected)
+
+    def test_build_column_unique(self):
+        # Test to make sure that if there are only unique results returned (i.e. no duplicates)
+
+        # emulate columns from covered building sample
+        raw_columns = [
+            'UBI',
+            'GBA',
+            'BLDGS',
+            'Address',
+            'Owner',
+            'City',
+            'State',
+            'Zip',
+            'Property Type',
+            'AYB_YearBuilt',
+            'extra_data_1',
+            'extra_data_2',
+        ]
+
+        md = MappingData()
+        expected = {
+            'City': ['PropertyState', 'city', 100],
+            'Zip': ['PropertyState', 'postal_code', 100],
+            'GBA': ['PropertyState', 'gross_floor_area', 100],
+            'BLDGS': ['PropertyState', 'building_count', 69],
+            'AYB_YearBuilt': ['PropertyState', 'year_built', 82],
+            'State': ['PropertyState', 'state', 100],
+            'Address': ['PropertyState', 'address_line_1', 90],
+            'Owner': ['PropertyState', 'owner', 100],
+            'extra_data_1': ['PropertyState', 'extra_data_1', 100],
+            'extra_data_2': ['PropertyState', 'extra_data_2', 100],
+            'Property Type': ['PropertyState', 'property_notes', 92],
+            'UBI': ['PropertyState', 'building_count', 62]
+        }
 
     def test_map_row_dynamic_mapping_with_cleaner(self):
         """Type-based cleaners on dynamic fields based on reverse-mapping."""

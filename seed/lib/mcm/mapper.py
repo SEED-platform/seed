@@ -10,15 +10,15 @@ import logging
 import re
 
 import matchers
+from seed.lib.mappings.mapping_columns import MappingColumns
 from cleaners import default_cleaner
 
 _log = logging.getLogger(__name__)
 
 
-def build_column_mapping(raw_columns, dest_columns, previous_mapping=None,
-                         map_args=None, thresh=0):
+def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_args=None, thresh=0):
     """
-    Build a probabilistic mapping structure for mapping raw to dest.
+    Wrapper around the MappingColumns class to create the list of suggested mappings
 
     Args:
         raw_columns: list of str. The column names we're trying to map.
@@ -41,35 +41,8 @@ def build_column_mapping(raw_columns, dest_columns, previous_mapping=None,
 
     """
 
-    probable_mapping = {}
-    for raw in raw_columns:
-        result = []
-        result_table = None
-        conf = 0
-        # We want previous mappings to be at the top of the list.
-        if previous_mapping and callable(previous_mapping):
-            args = map_args or []
-            mapping = previous_mapping(raw, *args)
-            if mapping:
-                result_table, result, conf = mapping
-
-        # Only enter this flow if we haven't already selected a result. Ignore
-        # blank columns with conf of 100 since a conf of 100 signifies the user
-        # has saved that mapping.
-        if not result and result is not None and conf != 100:
-            table, best_match, conf = matchers.best_match(
-                raw, dest_columns, top_n=1
-            )[0]
-            if conf > thresh:
-                result = best_match
-                result_table = table
-            else:
-                result = None
-                conf = 0
-
-        probable_mapping[raw] = [result_table, result, conf]
-
-    return probable_mapping
+    mc = MappingColumns(raw_columns, dest_columns, previous_mapping, map_args, thresh)
+    return mc.final_mappings
 
 
 def apply_initial_data(model, initial_data):
@@ -122,10 +95,10 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
             if tmp_field:
                 tmp_field = tmp_field[1]
 
-            # TODO: there are a lot of warnings right now because we iterate over the header
-            # of the file instead of iterating over the fields that we want to map.
+                # TODO: there are a lot of warnings right now because we iterate over the header
+                # of the file instead of iterating over the fields that we want to map.
 
-            # else:
+                # else:
                 # _log.warn("Could not find the field to clean: %s" % raw_field)
 
         cleaned_value = cleaner.clean_value(value, tmp_field)

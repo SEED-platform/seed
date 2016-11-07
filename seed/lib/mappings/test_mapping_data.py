@@ -107,7 +107,7 @@ class TestMappingData(TestCase):
         self.assertDictEqual(c, expect_0)
 
     def test_keys_with_table_names(self):
-        c = self.obj.keys_with_table_names()
+        c = self.obj.keys_with_table_names
         c_1 = [x for x in c if x[0] == 'PropertyState' and x[1] == 'address_line_1'][0]
         self.assertEqual(c_1, ('PropertyState', 'address_line_1'))
 
@@ -115,7 +115,7 @@ class TestMappingData(TestCase):
         self.assertEqual(c_2, ('TaxLotState', 'address_line_1'))
 
     def test_null_extra_data(self):
-        self.assertEquals(self.obj.extra_data(), [])
+        self.assertEquals(self.obj.extra_data, [])
 
     def test_extra_data(self):
         # load up a bunch of columns
@@ -172,5 +172,5 @@ class TestMappingData(TestCase):
                 'schema': 'BEDES'
             }
         ]
-        c = self.obj.extra_data()
+        c = self.obj.extra_data
         self.assertListEqual(expected, c)

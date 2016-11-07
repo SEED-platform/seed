@@ -8,7 +8,6 @@ from unittest import TestCase
 
 from seed.lib.mcm import matchers
 
-
 US_STATES = [
     'federated states of micronesia',
     'colorado',
@@ -99,3 +98,25 @@ class TestMatchers(TestCase):
         self.assertEqual(first_match[1], 'illinois')
         self.assertGreater(first_match[2], 90)
         self.assertLess(second_match[2], 90)
+
+    def test_sort_scores(self):
+        data = [
+            ('PropertyState', 'pointless_3', 0.2),
+            ('TaxLotState', 'address_line_1', 0.9),
+            ('PropertyState', 'address_line_2', 0.9),
+            ('TaxLotState', 'pointless', 0.8),
+            ('TaxLotState', 'pointless_2', 0.2),
+            ('PropertyState', 'address_line_1', 0.9),
+            ('TaxLotState', 'address_line_2', 0.9),
+        ]
+        expected = [
+            ('PropertyState', 'address_line_1', 0.9),
+            ('PropertyState', 'address_line_2', 0.9),
+            ('TaxLotState', 'address_line_1', 0.9),
+            ('TaxLotState', 'address_line_2', 0.9),
+            ('TaxLotState', 'pointless', 0.8),
+            ('PropertyState', 'pointless_3', 0.2),
+            ('TaxLotState', 'pointless_2', 0.2),
+        ]
+        result = sorted(data, cmp=matchers.sort_scores)  # , reverse=True)
+        self.assertListEqual(result, expected)
