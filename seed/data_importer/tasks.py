@@ -221,8 +221,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # always have the table class in them.  To get this working for
     # the demo this is an infix place, but is absolutely terrible and
     # should be removed ASAP!!!!!
-    print "HACK"
-    # print table_mappings
     if 'PropertyState' not in table_mappings and 'TaxLotState' in table_mappings and '' in table_mappings:
         debug_inferred_prop_state_mapping = table_mappings['']
         table_mappings['PropertyState'] = debug_inferred_prop_state_mapping
@@ -340,10 +338,11 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                     map_model_obj.year_ending = None
 
                 # TODO: Second temporary hack.  This should not happen but somehow it does.
-                if isinstance(map_model_obj, PropertyState):
-                    if map_model_obj.pm_property_id is None and map_model_obj.address_line_1 is None and map_model_obj.custom_id_1 is None:
-                        print "Skipping!"
-                        continue
+                # Removing hack... this should be handled on the front end.
+                # if isinstance(map_model_obj, PropertyState):
+                #     if map_model_obj.pm_property_id is None and map_model_obj.address_line_1 is None and map_model_obj.custom_id_1 is None:
+                #         print "Skipping!"
+                #         continue
                 # --- END TEMP HACK ----
 
                 # There is a potential thread safe issue here:
@@ -351,7 +350,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 # sure that the object hasn't already been created.
                 # For example, in the test data the tax lot id is the same for many rows. Make sure
                 # to only create/save the object if it hasn't been created before.
-
                 if hash_state_object(map_model_obj, include_extra_data=False) == hash_state_object(
                         STR_TO_CLASS[table](organization=map_model_obj.organization), include_extra_data=False):
                     # Skip this object as it has no data...
@@ -1460,15 +1458,13 @@ def _remap_data(import_file_pk):
     # Delete properties already mapped for this file.
     PropertyState.objects.filter(
         import_file=import_file,
-        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS)
-        # TODO: make these not hard coded integers
+        data_state=DATA_STATE_MAPPING,
     ).delete()
 
     # Delete properties already mapped for this file.
-    PropertyState.objects.filter(
+    TaxLotState.objects.filter(
         import_file=import_file,
-        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS)
-        # TODO: make these not hard coded integers
+        data_state=DATA_STATE_MAPPING,
     ).delete()
 
     import_file.mapping_done = False
