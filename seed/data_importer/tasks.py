@@ -1447,6 +1447,7 @@ def _match_properties_and_taxlots(file_pk, user_pk):
 @lock_and_track
 def _remap_data(import_file_pk):
     """The delicate parts of deleting and remapping data for a file.
+    Deprecate this method and integrate the "delicate parts" of this into map_data.
 
     :param import_file_pk: int, the ImportFile primary key.
     :param mapping_cache_key: str, the cache key for this file's mapping prog.
