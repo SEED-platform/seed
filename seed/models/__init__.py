@@ -16,6 +16,12 @@ from .columns import *  # noqa
 from .auditlog import *  # noqa
 from .deprecate import *  # noqa
 
+from .certification import (    # noqa
+    GreenAssessment,
+    GreenAssessmentProperty,
+    GreenAssessmentURL
+)
+
 from .projects import (     # noqa
     Project,
     ProjectBuilding,
