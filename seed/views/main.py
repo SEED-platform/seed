@@ -1350,38 +1350,6 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
     return result
 
 
-@api_endpoint
-@ajax_request
-@login_required
-def get_column_mapping_suggestions(request):
-    """
-    Returns suggested mappings from an uploaded file's headers to known
-    data fields.
-    Payload::
-        {
-            'import_file_id': The ID of the ImportRecord to examine,
-            'org_id': The ID of the user's organization
-        }
-    Returns::
-        {
-            'status': 'success',
-            'suggested_column_mappings': {
-                column header from file: [ (destination_column, score) ...]
-                ...
-            },
-            'building_columns': [ a list of all possible columns ],
-            'building_column_types': [a list of column types corresponding to building_columns],
-        }
-    ..todo: The response of this method may not be correct. verify.
-
-    """
-    body = json.loads(request.body)
-    org_id = body.get('org_id')
-    import_file_id = body.get('import_file_id')
-
-    return tmp_mapping_suggestions(import_file_id, org_id, request.user)
-
-
 class DataFileViewSet(viewsets.ViewSet):
     raise_exception = True
     authentication_classes = (SessionAuthentication, SEEDAuthentication)

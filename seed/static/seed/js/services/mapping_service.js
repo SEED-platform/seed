@@ -28,10 +28,9 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            url: window.BE.urls.get_column_mapping_suggestions,
-            data: {
-              import_file_id: import_file_id,
-              org_id: user_service.get_organization().id
+            url: '/api/v2/data_files/' + import_file_id + '/mapping_suggestions/',
+            params: {
+              organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
