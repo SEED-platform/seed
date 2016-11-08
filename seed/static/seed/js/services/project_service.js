@@ -188,7 +188,7 @@ angular.module('BE.seed.service.project', [])
         var defer = $q.defer();
         $http({
             method: 'GET',
-            url: '/api/v2/projects/count/',
+            url: '/api/v2/projects-count/',
             params: {
                 organization_id: user_service.get_organization().id
             }
