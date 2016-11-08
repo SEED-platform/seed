@@ -1,5 +1,8 @@
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California,
+through Lawrence Berkeley National Laboratory (subject to receipt of any
+required approvals from the U.S. Department of Energy) and contributors.
+All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -117,7 +120,7 @@ INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
 # apps to auto load name spaced URLs for JS use (see seed.main.views.home)
 SEED_URL_APPS = (
-   # 'accounts',
+    # 'accounts',
     'ajaxuploader',
     'data_importer',
     'seed',
@@ -145,7 +148,8 @@ AWS_QUERYSTRING_AUTH = False
 # django-longer-username-and-email
 REQUIRE_UNIQUE_EMAIL = False
 
-# Create a log directory if it doesn't exist. This is not used in production, but is used in dev and test
+# Create a log directory if it doesn't exist.
+# This is not used in production, but is used in dev and test
 if not os.path.exists('log'):
     os.makedirs('log')
 
@@ -294,3 +298,9 @@ REST_FRAMEWORK = {
 SWAGGER_SETTINGS = {
     "exclude_namespaces": ["labels", "app"],  # List URL namespaces to ignore
 }
+
+# Certification
+# set this for a default validity_duration
+# should be a integer representing a number of days
+# GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION=5 * 365
+GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION = None
