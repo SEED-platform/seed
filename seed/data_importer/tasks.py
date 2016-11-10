@@ -931,10 +931,10 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
 
 # TODO: These are bad bad fields!
 #       Not quite sure what this means?
+# NL: yeah what does this mean?!
+
 md = MappingData()
 ALL_COMPARISON_FIELDS = sorted(list(set([field['name'] for field in md.data])))
-ALL_COMPARISON_FIELDS.pop(ALL_COMPARISON_FIELDS.index("data_state"))
-
 
 # all_comparison_fields = sorted(list(set(chain(tax_lot_comparison_fields, property_comparison_fields))))
 
