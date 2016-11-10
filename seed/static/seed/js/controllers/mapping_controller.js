@@ -209,15 +209,14 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.is_tcm_duplicate = function (tcm) {
         var suggestions = [];
         for (var i = 0; i < $scope.raw_columns.length; i++) {
-          var potential = $scope.raw_columns[i].suggestion;
-          if (_.isUndefined(potential) ||
-            _.isEmpty(potential) || !$scope.raw_columns[i].mapped_row
-          ) {
+
+          var potential = $scope.raw_columns[i].suggestion + '.' + $scope.raw_columns[i].suggestion_table_name;
+          if (_.isUndefined(potential) || _.isEmpty(potential) || !$scope.raw_columns[i].mapped_row) {
             continue;
           }
-          suggestions.push($scope.raw_columns[i].suggestion);
+          suggestions.push(potential);
         }
-        var dups = $scope.find_duplicates(suggestions, tcm.suggestion);
+        var dups = $scope.find_duplicates(suggestions, tcm.suggestion + '.' + tcm.suggestion_table_name);
         return dups.length > 1;
       };
 
