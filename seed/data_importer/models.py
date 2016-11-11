@@ -651,8 +651,6 @@ class ImportRecord(NotDeletableModel):
 class ImportFile(NotDeletableModel, TimeStampedModel):
     import_record = models.ForeignKey(ImportRecord)
     cycle = models.ForeignKey('seed.Cycle', blank=True, null=True)
-    # cycle = models.ForeignKey('seed.Cycle')
-
     file = models.FileField(
         upload_to="data_imports", max_length=500, blank=True, null=True
     )

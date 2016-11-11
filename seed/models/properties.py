@@ -15,9 +15,6 @@ from django_pgjson.fields import JsonField
 from seed.lib.superperms.orgs.models import Organization
 from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.address import normalize_address_str
-
-logger = logging.getLogger(__name__)
-
 from seed.data_importer.models import ImportFile
 from seed.models import (
     Cycle,
@@ -32,6 +29,8 @@ from seed.models import (
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.utils.time import convert_datestr
+
+logger = logging.getLogger(__name__)
 
 # Oops! we override a builtin in some of the models
 property_decorator = property
@@ -217,10 +216,10 @@ class PropertyState(models.Model):
 
             result = {
                 field: getattr(self, field) for field in model_fields
-            }
+                }
             result['extra_data'] = {
                 field: extra_data[field] for field in ed_fields
-            }
+                }
 
             # always return id's and canonical_building id's
             result['id'] = result['pk'] = self.pk

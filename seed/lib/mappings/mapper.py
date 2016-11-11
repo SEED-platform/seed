@@ -10,11 +10,12 @@ import os
 import re
 from fnmatch import fnmatchcase
 
+# TODO: Fix directory
 from config.settings.dev import SEED_DATADIR
 
-_log = logging.getLogger(__name__)
-
 LINEAR_UNITS = set([u'ft', u'm', u'in'])  # ??more??
+
+_log = logging.getLogger(__name__)
 
 
 def get_pm_mapping(version, columns, include_none=False):

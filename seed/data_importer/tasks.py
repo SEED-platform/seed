@@ -73,7 +73,7 @@ from seed.models import (
     ColumnMapping,
     # find_canonical_building_values,
     # initialize_canonical_building,
-    save_snapshot_match,
+    # save_snapshot_match,
     # BuildingSnapshot,
     PropertyState,
     PropertyView,
@@ -748,56 +748,56 @@ def _stringify(values):
     )
 
 
-def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
-    """Seek IDs and save our snapshot match.
-
-    :param results: list of tuples. [('match', 0.99999),...]
-    :param b_idx: int, the index of the current building in the unmatched_list.
-    :param can_rev_idx: dict, reverse index from match -> canonical PK.
-    :param user_pk: user ID, used for AuditLog logging
-    :unmatched_list: list of dicts, the result of a values_list query for
-        unmatched PropertyState.
-
-    """
-    match_string, confidence = results[0]  # We always care about closest match
-    match_type = SYSTEM_MATCH
-    # If we passed the minimum threshold, we're here, but we need to
-    # distinguish probable matches from good matches.
-    if confidence < getattr(settings, 'MATCH_MED_THRESHOLD', 0.7):
-        match_type = POSSIBLE_MATCH
-
-    can_snap_pk = can_rev_idx[match_string]
-    building_pk = unmatched_list[b_idx][0]  # First element is PK
-
-    bs, changes = save_snapshot_match(
-        can_snap_pk,
-        building_pk,
-        confidence=confidence,
-        match_type=match_type,
-        default_pk=building_pk,
-    )
-    canon = bs.canonical_building
-    action_note = 'System matched building.'
-    if changes:
-        action_note += "  Fields changed in cannonical building:\n"
-        for change in changes:
-            action_note += "\t{field}:\t".format(
-                field=change["field"].replace("_", " ").replace("-",
-                                                                "").capitalize(),
-            )
-            if "from" in change:
-                action_note += "From:\t{prev}\tTo:\t".format(
-                    prev=change["from"])
-
-            action_note += "{value}\n".format(value=change["to"])
-        action_note = action_note[:-1]
-    AuditLog.objects.create(
-        user_id=user_pk,
-        content_object=canon,
-        action_note=action_note,
-        action='save_system_match',
-        organization=bs.super_organization,
-    )
+# def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
+#     """Seek IDs and save our snapshot match.
+#
+#     :param results: list of tuples. [('match', 0.99999),...]
+#     :param b_idx: int, the index of the current building in the unmatched_list.
+#     :param can_rev_idx: dict, reverse index from match -> canonical PK.
+#     :param user_pk: user ID, used for AuditLog logging
+#     :unmatched_list: list of dicts, the result of a values_list query for
+#         unmatched PropertyState.
+#
+#     """
+#     match_string, confidence = results[0]  # We always care about closest match
+#     match_type = SYSTEM_MATCH
+#     # If we passed the minimum threshold, we're here, but we need to
+#     # distinguish probable matches from good matches.
+#     if confidence < getattr(settings, 'MATCH_MED_THRESHOLD', 0.7):
+#         match_type = POSSIBLE_MATCH
+#
+#     can_snap_pk = can_rev_idx[match_string]
+#     building_pk = unmatched_list[b_idx][0]  # First element is PK
+#
+#     bs, changes = save_snapshot_match(
+#         can_snap_pk,
+#         building_pk,
+#         confidence=confidence,
+#         match_type=match_type,
+#         default_pk=building_pk,
+#     )
+#     canon = bs.canonical_building
+#     action_note = 'System matched building.'
+#     if changes:
+#         action_note += "  Fields changed in cannonical building:\n"
+#         for change in changes:
+#             action_note += "\t{field}:\t".format(
+#                 field=change["field"].replace("_", " ").replace("-",
+#                                                                 "").capitalize(),
+#             )
+#             if "from" in change:
+#                 action_note += "From:\t{prev}\tTo:\t".format(
+#                     prev=change["from"])
+#
+#             action_note += "{value}\n".format(value=change["to"])
+#         action_note = action_note[:-1]
+#     AuditLog.objects.create(
+#         user_id=user_pk,
+#         content_object=canon,
+#         action_note=action_note,
+#         action='save_system_match',
+#         organization=bs.super_organization,
+#     )
 
 
 @shared_task
@@ -1590,12 +1590,12 @@ def is_same_snapshot(s1, s2):
 
 def save_state_match(state1, state2, confidence=None, user=None,
                      match_type=None, default_match=None, import_filename=None):
-    from seed.mappings import mapper as seed_mapper
+    from seed.lib.merging import merging as seed_merger
 
     merged_state = type(state1).objects.create(organization=state1.organization)
     merged_state, changes = seed_mapper.merge_state(merged_state,
                                                     state1, state2,
-                                                    seed_mapper.get_state_attrs([state1, state2]),
+                                                    seed_merger.get_state_attrs([state1, state2]),
                                                     conf=confidence,
                                                     default=state2,
                                                     match_type=SYSTEM_MATCH)
