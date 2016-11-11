@@ -14,6 +14,9 @@ from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.users import UserViewSet
 
+from seed.views.main import (
+    progress
+)
 
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
@@ -26,6 +29,7 @@ api_v2_router.register(r'users', UserViewSet, base_name="users")
 urlpatterns = [
     # v2 api
     url(r'^', include(api_v2_router.urls)),
+    url(r'progress/$', progress, name='progress'),
     url(
         r'projects-count/$',
         ProjectViewSet.as_view({'get': 'count'}),

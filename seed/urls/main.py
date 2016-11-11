@@ -26,7 +26,7 @@ from seed.views.main import (
     get_column_mapping_suggestions,
     get_raw_column_names,
     get_first_five_rows, save_column_mappings, start_mapping, remap_buildings,
-    start_system_matching, public_search, progress, export_buildings,
+    start_system_matching, public_search, export_buildings,
     export_buildings_progress,
     export_buildings_download, angular_js_tests, delete_organization_buildings,
     delete_buildings
@@ -166,7 +166,6 @@ urlpatterns = [
         public_search,
         name='public_search'
     ),
-    url(r'^' + apiv1 + r'progress/$', progress, name='progress'),
 
     # exporter routes
     url(r'^' + apiv1 + r'export_buildings/$', export_buildings,
