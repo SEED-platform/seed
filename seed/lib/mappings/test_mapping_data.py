@@ -50,7 +50,7 @@ class TestMappingData(TestCase):
                              self.obj.data[len(self.obj.data) - 1])
 
     def test_keys(self):
-        d = self.obj.keys()
+        d = self.obj.keys
         # _log.debug(d)
 
         # should only have one of each (3 of the fields are common in tax
@@ -67,7 +67,8 @@ class TestMappingData(TestCase):
                          'home_energy_score_id',
                          'jurisdiction_property_id',
                          'jurisdiction_tax_lot_id', 'lot_number',
-                         'number_properties', 'occupied_floor_area', 'owner',
+                         'normalized_address', 'number_properties',
+                         'occupied_floor_area', 'owner',
                          'owner_address', 'owner_city_state', 'owner_email',
                          'owner_postal_code', 'owner_telephone',
                          'pm_parent_property_id', 'pm_property_id',
@@ -122,9 +123,7 @@ class TestMappingData(TestCase):
         Column.objects.get_or_create(column_name="a_column", table_name="")
         u, _ = Unit.objects.get_or_create(unit_name="faraday", unit_type=FLOAT)
         Column.objects.get_or_create(column_name="z_column", table_name="PropertyState", unit=u)
-        columns = list(Column.objects.select_related('unit').exclude(
-            column_name__in=self.obj.keys()))
-
+        columns = list(Column.objects.select_related('unit').exclude(column_name__in=self.obj.keys))
         self.obj.add_extra_data(columns)
 
         # _log.debug(json.dumps(self.obj.data[0], indent=4, sort_keys=True))

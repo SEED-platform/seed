@@ -131,10 +131,11 @@ class TestMatching(DataMappingBaseTestCase):
         }
 
         # Setup mapped AS snapshot.
-        ps = PropertyState.objects.create(**bs_data)
-        ps.import_file = self.import_file
-        ps.organization = self.org
-        ps.save()
+        ps = PropertyState.objects.create(
+            organization=self.org,
+            import_file=self.import_file,
+            **bs_data
+        )
 
         # Different file, but same ImportRecord.
         # Setup mapped PM snapshot.
@@ -149,10 +150,11 @@ class TestMatching(DataMappingBaseTestCase):
             mapping_done=True
         )
 
-        ps = PropertyState.objects.create(**bs_data)
-        ps.import_file = duplicate_import_file
-        ps.organization = self.org
-        ps.save()
+        ps = PropertyState.objects.create(
+            organization=self.org,
+            import_file=duplicate_import_file,
+            **bs_data
+        )
 
         # get a list of unhandled
         unmatched_properties = self.import_file.find_unmatched_property_states()
