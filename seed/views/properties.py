@@ -894,6 +894,7 @@ def get_taxlot_columns(request):
 
 
 class PropertyStateEndpoint(DecoratorMixin(drf_api_endpoint), ViewSet):
+
     def delete(self, request):
         property_states = request.data.get('selected', [])
         resp = PropertyState.objects.filter(pk__in=property_states).delete()
@@ -905,6 +906,7 @@ class PropertyStateEndpoint(DecoratorMixin(drf_api_endpoint), ViewSet):
 
 
 class TaxLotStateEndpoint(DecoratorMixin(drf_api_endpoint), ViewSet):
+
     def delete(self, request):
         taxlot_states = request.data.get('selected', [])
         resp = TaxLotState.objects.filter(pk__in=taxlot_states).delete()
