@@ -715,7 +715,6 @@ def _save_raw_data(file_pk, *args, **kwargs):
         result['message'] = 'Unhandled Error: ' + str(e.message)
         result['stacktrace'] = traceback.format_exc()
 
-    print "A"
     set_cache(prog_key, result['status'], result)
     logger.debug('Returning from end of _save_raw_data with state:')
     logger.debug(result)
