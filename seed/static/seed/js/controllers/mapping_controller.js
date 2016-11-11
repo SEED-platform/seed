@@ -186,14 +186,15 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.setAllInventoryTypes = function () {
         _.each($scope.valids, function (valid) {
           valid.suggestion_table_name = $scope.setAllFields.value;
+          $scope.change(valid);
+          // Check if the mapping button should be disabled.
+          $scope.disable_mapping_button();
         })
       };
       $scope.setInventoryType = function (tcm) {
         var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
         if (chosenTypes.length == 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
         else $scope.setAllFields = '';
-        // $scope.change(tcm);
-        // $scope.duplicates_present();
       };
 
       $scope.find_duplicates = function (array, element) {
