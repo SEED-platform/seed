@@ -107,6 +107,7 @@ angular.module('BE.seed.controller.mapping', [])
 
       /*
        * Opens modal for making changes to concatenation changes.
+       * NL 2016-11-11: hasn't this been deprecated? Backend doesn't have this anymore.
        */
       $scope.open_concat_modal = function (building_column_types, raw_columns) {
         var concatModalInstance = $uibModal.open({
@@ -187,10 +188,12 @@ angular.module('BE.seed.controller.mapping', [])
           valid.suggestion_table_name = $scope.setAllFields.value;
         })
       };
-      $scope.setInventoryType = function () {
+      $scope.setInventoryType = function (tcm) {
         var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
         if (chosenTypes.length == 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
         else $scope.setAllFields = '';
+        // $scope.change(tcm);
+        // $scope.duplicates_present();
       };
 
       $scope.find_duplicates = function (array, element) {
@@ -260,7 +263,7 @@ angular.module('BE.seed.controller.mapping', [])
        * `change` should indicate to the user if a table column is already mapped
        * to another csv raw column header
        *
-       * @param tcm: table column mapping object. Represents the BS <-> raw
+       * @param tcm: table column mapping object. Represents the database fields <-> raw
        *  relationship.
        */
       $scope.change = function (tcm) {
@@ -598,7 +601,6 @@ angular.module('BE.seed.controller.mapping', [])
                 return $scope.duplicates_present();
               }
             });
-
           }
 
           else return true;
@@ -621,7 +623,7 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       $scope.disable_mapping_button = function () {
-        if (angular.element('.disable-mapping-btn').length > 0) {
+        if ($scope.duplicates_present()){
           angular.element('.mapping-button').prop('disabled', true);
         } else {
           angular.element('.mapping-button').prop('disabled', false);
