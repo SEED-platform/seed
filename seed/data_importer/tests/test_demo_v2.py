@@ -35,7 +35,6 @@ logger = logging.getLogger(__name__)
 
 
 class TestDemoV2(DataMappingBaseTestCase):
-
     def set_up(self, import_file_source_type):
         """Override the base in DataMappingBaseTestCase."""
 
@@ -179,8 +178,9 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.assertEqual(pv.state.property_name, 'University Inn')
         self.assertEqual(pv.state.address_line_1, '50 Willow Ave SE')
 
-        self.assertEqual(TaxLotView.objects.filter(state__organization=self.org,
-                                                   state__jurisdiction_tax_lot_id='13334485').count(),
+        self.assertEqual(TaxLotView.objects.filter(
+            state__organization=self.org,
+            state__jurisdiction_tax_lot_id='13334485').count(),
                          1)
         tlv = TaxLotView.objects.filter(state__organization=self.org,
                                         state__jurisdiction_tax_lot_id='13334485').first()
