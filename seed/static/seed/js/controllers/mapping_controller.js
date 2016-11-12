@@ -107,6 +107,7 @@ angular.module('BE.seed.controller.mapping', [])
 
       /*
        * Opens modal for making changes to concatenation changes.
+       * NL 2016-11-11: hasn't this been deprecated? Backend doesn't have this anymore.
        */
       $scope.open_concat_modal = function (building_column_types, raw_columns) {
         var concatModalInstance = $uibModal.open({
@@ -185,9 +186,12 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.setAllInventoryTypes = function () {
         _.each($scope.valids, function (valid) {
           valid.suggestion_table_name = $scope.setAllFields.value;
+          $scope.change(valid);
+          // Check if the mapping button should be disabled.
+          $scope.disable_mapping_button();
         })
       };
-      $scope.setInventoryType = function () {
+      $scope.setInventoryType = function (tcm) {
         var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
         if (chosenTypes.length == 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
         else $scope.setAllFields = '';
@@ -209,15 +213,14 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.is_tcm_duplicate = function (tcm) {
         var suggestions = [];
         for (var i = 0; i < $scope.raw_columns.length; i++) {
-          var potential = $scope.raw_columns[i].suggestion;
-          if (_.isUndefined(potential) ||
-            _.isEmpty(potential) || !$scope.raw_columns[i].mapped_row
-          ) {
+
+          var potential = $scope.raw_columns[i].suggestion + '.' + $scope.raw_columns[i].suggestion_table_name;
+          if (_.isUndefined(potential) || _.isEmpty(potential) || !$scope.raw_columns[i].mapped_row) {
             continue;
           }
-          suggestions.push($scope.raw_columns[i].suggestion);
+          suggestions.push(potential);
         }
-        var dups = $scope.find_duplicates(suggestions, tcm.suggestion);
+        var dups = $scope.find_duplicates(suggestions, tcm.suggestion + '.' + tcm.suggestion_table_name);
         return dups.length > 1;
       };
 
@@ -261,7 +264,7 @@ angular.module('BE.seed.controller.mapping', [])
        * `change` should indicate to the user if a table column is already mapped
        * to another csv raw column header
        *
-       * @param tcm: table column mapping object. Represents the BS <-> raw
+       * @param tcm: table column mapping object. Represents the database fields <-> raw
        *  relationship.
        */
       $scope.change = function (tcm) {
@@ -599,7 +602,6 @@ angular.module('BE.seed.controller.mapping', [])
                 return $scope.duplicates_present();
               }
             });
-
           }
 
           else return true;
@@ -622,7 +624,7 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       $scope.disable_mapping_button = function () {
-        if (angular.element('.disable-mapping-btn').length > 0) {
+        if ($scope.duplicates_present()){
           angular.element('.mapping-button').prop('disabled', true);
         } else {
           angular.element('.mapping-button').prop('disabled', false);

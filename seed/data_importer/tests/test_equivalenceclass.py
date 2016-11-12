@@ -5,8 +5,10 @@
 :author
 """
 import logging
-from seed.data_importer.tasks import EquivalencePartitioner
+
 from django.test import TestCase
+
+from seed.data_importer.tasks import EquivalencePartitioner
 
 logger = logging.getLogger(__name__)
 
