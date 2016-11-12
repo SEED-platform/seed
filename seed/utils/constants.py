@@ -12,6 +12,7 @@ EXCLUDE_FIELDS = [
     'children',
     'confidence',
     'created',
+    'data_state',
     'duplicate',
     'extra_data',
     'id',

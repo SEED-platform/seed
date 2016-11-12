@@ -95,6 +95,7 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
         import_file.save()
 
         fake_raw_bs = PropertyState.objects.create(
+            organization=self.org,
             import_file=import_file,
             extra_data=self.fake_row,
             source_type=ASSESSED_RAW,
@@ -146,6 +147,7 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
         )
         self.fake_row['City'] = 'Someplace Nice'
         PropertyState.objects.create(
+            organization=self.org,
             import_file=fake_import_file,
             source_type=ASSESSED_RAW,
             extra_data=self.fake_row,

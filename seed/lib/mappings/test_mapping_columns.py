@@ -59,6 +59,7 @@ class TestMappingColumns(TestCase):
             'extra_data_2': ['PropertyState', 'release_date', 67],
             'Property Type': ['PropertyState', 'property_notes', 92],
             'UBI': ['PropertyState', 'building_certification', 60],
+            'UBI_BBL': ['PropertyState', 'occupied_floor_area', 59],
         }
 
         self.md = mapping_data.MappingData()
@@ -68,6 +69,42 @@ class TestMappingColumns(TestCase):
 
         _log.debug(json.dumps(mc.final_mappings, indent=4))
         self.assertDictEqual(mc.final_mappings, self.expected)
+
+    def test_excluded_fields(self):
+        """Test to make sure excluded fields are not mapped to"""
+        raw_data = ['UBI', 'Data State', 'GBA', 'BLDGS', 'Address', 'Owner', 'City', 'State', 'Zip',
+                    'Property Type', 'AYB_YearBuilt', 'extra_data_1', 'extra_data_2', ]
+        expected = {
+            'AYB_YearBuilt': ['PropertyState', 'year_built', 82],
+            'Address': ['PropertyState', 'address_line_1', 90],
+            'BLDGS': ['PropertyState', 'building_count', 69],
+            'City': ['PropertyState', 'city', 100],
+            'Data State': ['PropertyState', 'recent_sale_date', 66],
+            'GBA': ['PropertyState', 'gross_floor_area', 100],
+            'Owner': ['PropertyState', 'owner', 100],
+            'Property Type': ['PropertyState', 'property_notes', 92],
+            'State': ['PropertyState', 'state', 100],
+            'UBI': ['PropertyState', 'building_certification', 60],
+            'Zip': ['PropertyState', 'postal_code', 100],
+            'extra_data_1': ['PropertyState', 'generation_date', 69],
+            'extra_data_2': ['PropertyState', 'release_date', 67]
+        }
+        mc = mapping_columns.MappingColumns(raw_data, self.md.keys_with_table_names)
+
+        # _log.debug(json.dumps(mc.final_mappings, indent=4))
+        self.assertDictEqual(mc.final_mappings, expected)
+
+    def test_duplicate_fields_across_models(self):
+        """Test to make sure that similar fields have different targets"""
+        raw_data = ['city 2015', 'city 2016', 'city 2017']
+        expected = {
+            'city 2015': ['PropertyState', 'city', 88],
+            'city 2016': ['TaxLotState', 'city', 88],
+            'city 2017': ['PropertyState', 'custom_id_1', 60],
+        }
+        mc = mapping_columns.MappingColumns(raw_data, self.md.keys_with_table_names)
+
+        self.assertDictEqual(mc.final_mappings, expected)
 
     def test_mapping_columns_with_threshold(self):
         expected = {

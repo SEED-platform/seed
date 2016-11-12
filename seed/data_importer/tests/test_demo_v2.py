@@ -34,7 +34,7 @@ from seed.models import (
 logger = logging.getLogger(__name__)
 
 
-class TestCaseRobinDemo(DataMappingBaseTestCase):
+class TestDemoV2(DataMappingBaseTestCase):
 
     def set_up(self, import_file_source_type):
         """Override the base in DataMappingBaseTestCase."""
@@ -104,15 +104,11 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
         self.import_file_property = self.load_import_file_file(property_filename,
                                                                self.import_file_property)
 
-    def test_robin_demo(self):
-        """ Robin's demo files """
-
+    def test_demo_v2(self):
         tasks._save_raw_data(self.import_file_tax_lot.pk, 'fake_cache_key', 1)
         Column.create_mappings(self.fake_taxlot_mappings, self.org, self.user)
         Column.create_mappings(self.fake_portfolio_mappings, self.org, self.user)
         tasks.map_data(self.import_file_tax_lot.pk)
-
-        # self.assertEqual(len(ps), 12)
 
         # Check to make sure the taxlots were imported
         ts = TaxLotState.objects.filter(
@@ -135,17 +131,17 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
         # Check a single case of the taxlotstate
         self.assertEqual(TaxLotState.objects.filter(address_line_1='050 Willow Ave SE').count(), 1)
         self.assertEqual(
-            TaxLotView.objects.filter(state__address_line_1='050 Willow Ave SE').count(), 1)
+            TaxLotView.objects.filter(state__address_line_1='050 Willow Ave SE').count(), 1
+        )
 
         self.assertEqual(TaxLotView.objects.count(), 9)
-        self.assertEqual(PropertyView.objects.count(), 0)
 
         # Import the property data
         tasks._save_raw_data(self.import_file_property.pk, 'fake_cache_key', 1)
         tasks.map_data(self.import_file_property.pk)
 
         ts = TaxLotState.objects.filter(
-            # data_state=DATA_STATE_MAPPING,
+            # data_state=DATA_STATE_MAPPING,  # Look at all taxlotstates
             organization=self.org,
             import_file=self.import_file_tax_lot,
         )
@@ -172,7 +168,7 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
         # psv = PropertyView.objects.filter(state__organization=self.org)
         # self.assertEqual(len(psv), 12)
 
-        tlv = TaxLotView.objects.filter(state__organization=self.org)
+        # tlv = TaxLotView.objects.filter(state__organization=self.org)
         # self.assertEqual(len(tlv), 9)
 
         self.assertEqual(PropertyView.objects.filter(state__organization=self.org,
@@ -183,9 +179,12 @@ class TestCaseRobinDemo(DataMappingBaseTestCase):
         self.assertEqual(pv.state.property_name, 'University Inn')
         self.assertEqual(pv.state.address_line_1, '50 Willow Ave SE')
 
-        self.assertEqual(TaxLotView.objects.filter(state__organization=self.org,
-                                                   state__jurisdiction_tax_lot_id='13334485').count(),
-                         1)
-        tlv = TaxLotView.objects.filter(state__organization=self.org,
-                                        state__jurisdiction_tax_lot_id='13334485').first()
-        self.assertEqual(tlv.state.address_line_1, '93029 Wellington Blvd')
+        # self.assertEqual(TaxLotView.objects.filter(
+        #     state__organization=self.org,
+        #     state__jurisdiction_tax_lot_id='13334485').count(),
+        #     1)
+        # tlv = TaxLotView.objects.filter(
+        #     state__organization=self.org,
+        #     state__jurisdiction_tax_lot_id='13334485'
+        # ).first()
+        # self.assertEqual(tlv.state.address_line_1, '93029 Wellington Blvd')
