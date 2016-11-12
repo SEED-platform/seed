@@ -7,20 +7,19 @@
 
 from __future__ import absolute_import
 
-# import pdb
+import collections
 import copy
 import datetime
-import collections
-from collections import namedtuple
 import hashlib
 import operator
-from itertools import chain
 import re
 import string
 import time
 import traceback
 from _csv import Error
+from collections import namedtuple
 from functools import reduce
+from itertools import chain
 
 from celery import chord
 from celery import shared_task
@@ -28,12 +27,6 @@ from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.db.models import Q
 
-# from seed.audit_logs.models import AuditLog
-from seed.models.auditlog import AUDIT_IMPORT
-from seed.models import PropertyAuditLog
-from seed.models import TaxLotAuditLog
-from seed.models import TaxLotProperty
-# from seed.models import Cycle
 from seed.cleansing.models import Cleansing
 from seed.cleansing.tasks import (
     finish_cleansing,
@@ -56,8 +49,6 @@ from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
 from seed.lib.superperms.orgs.models import Organization
-# from seed.utils.generic import pp
-# from seed.utils.address import normalize_address_str
 from seed.models import (
     ASSESSED_BS,
     ASSESSED_RAW,
@@ -84,6 +75,10 @@ from seed.models import (
     DATA_STATE_MATCHING,
     DATA_STATE_DELETE,
 )
+from seed.models import PropertyAuditLog
+from seed.models import TaxLotAuditLog
+from seed.models import TaxLotProperty
+from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache
 
@@ -221,8 +216,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # always have the table class in them.  To get this working for
     # the demo this is an infix place, but is absolutely terrible and
     # should be removed ASAP!!!!!
-    print "HACK"
-    # print table_mappings
     if 'PropertyState' not in table_mappings and 'TaxLotState' in table_mappings and '' in table_mappings:
         debug_inferred_prop_state_mapping = table_mappings['']
         table_mappings['PropertyState'] = debug_inferred_prop_state_mapping
@@ -340,10 +333,11 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                     map_model_obj.year_ending = None
 
                 # TODO: Second temporary hack.  This should not happen but somehow it does.
-                if isinstance(map_model_obj, PropertyState):
-                    if map_model_obj.pm_property_id is None and map_model_obj.address_line_1 is None and map_model_obj.custom_id_1 is None:
-                        print "Skipping!"
-                        continue
+                # Removing hack... this should be handled on the front end.
+                # if isinstance(map_model_obj, PropertyState):
+                #     if map_model_obj.pm_property_id is None and map_model_obj.address_line_1 is None and map_model_obj.custom_id_1 is None:
+                #         print "Skipping!"
+                #         continue
                 # --- END TEMP HACK ----
 
                 # There is a potential thread safe issue here:
@@ -351,7 +345,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 # sure that the object hasn't already been created.
                 # For example, in the test data the tax lot id is the same for many rows. Make sure
                 # to only create/save the object if it hasn't been created before.
-
                 if hash_state_object(map_model_obj, include_extra_data=False) == hash_state_object(
                         STR_TO_CLASS[table](organization=map_model_obj.organization), include_extra_data=False):
                     # Skip this object as it has no data...
@@ -717,7 +710,6 @@ def _save_raw_data(file_pk, *args, **kwargs):
         result['message'] = 'Unhandled Error: ' + str(e.message)
         result['stacktrace'] = traceback.format_exc()
 
-    print "A"
     set_cache(prog_key, result['status'], result)
     logger.debug('Returning from end of _save_raw_data with state:')
     logger.debug(result)
@@ -933,10 +925,10 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
 
 # TODO: These are bad bad fields!
 #       Not quite sure what this means?
+# NL: yeah what does this mean?!
+
 md = MappingData()
 ALL_COMPARISON_FIELDS = sorted(list(set([field['name'] for field in md.data])))
-ALL_COMPARISON_FIELDS.pop(ALL_COMPARISON_FIELDS.index("data_state"))
-
 
 # all_comparison_fields = sorted(list(set(chain(tax_lot_comparison_fields, property_comparison_fields))))
 
@@ -1003,6 +995,7 @@ def filter_duplicated_states(unmatched_states):
 
 
 class EquivalencePartitioner(object):
+
     @classmethod
     def makeDefaultStateEquivalence(kls, equivalence_type):
         if equivalence_type == PropertyState:
@@ -1447,6 +1440,7 @@ def _match_properties_and_taxlots(file_pk, user_pk):
 @lock_and_track
 def _remap_data(import_file_pk):
     """The delicate parts of deleting and remapping data for a file.
+    Deprecate this method and integrate the "delicate parts" of this into map_data.
 
     :param import_file_pk: int, the ImportFile primary key.
     :param mapping_cache_key: str, the cache key for this file's mapping prog.
@@ -1458,15 +1452,13 @@ def _remap_data(import_file_pk):
     # Delete properties already mapped for this file.
     PropertyState.objects.filter(
         import_file=import_file,
-        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS)
-        # TODO: make these not hard coded integers
+        data_state=DATA_STATE_MAPPING,
     ).delete()
 
     # Delete properties already mapped for this file.
-    PropertyState.objects.filter(
+    TaxLotState.objects.filter(
         import_file=import_file,
-        source_type__in=(ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS)
-        # TODO: make these not hard coded integers
+        data_state=DATA_STATE_MAPPING,
     ).delete()
 
     import_file.mapping_done = False

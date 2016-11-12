@@ -4,10 +4,10 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Paul Munday<paul@paulmunday.net>
 """
-from rest_framework.viewsets import ModelViewSet
+from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.viewsets import ModelViewSet
 
 from seed.decorators import DecoratorMixin
 from seed.models import Cycle

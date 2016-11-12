@@ -240,6 +240,16 @@ angular.module('BE.seed.controller.inventory_list', [])
               // console.debug('Deleting ' + count + ' rows');
               $scope.data.splice(index, count);
             });
+            // Delete any child rows that may have been duplicated due to a M2M relationship
+            if ($scope.inventory_type == 'properties') {
+              _.remove($scope.data, function (row) {
+                return !_.has(row, '$$treeLevel') && _.includes(result.taxlot_states, row.taxlot_state_id);
+              });
+            } else if ($scope.inventory_type == 'taxlots') {
+              _.remove($scope.data, function (row) {
+                return !_.has(row, '$$treeLevel') && _.includes(result.property_states, row.property_state_id);
+              });
+            }
           }
         }, function (result) {
           if (_.includes(['fail', 'incomplete'], result.delete_state)) refresh_objects();

@@ -178,6 +178,7 @@ def version(request):
 @ajax_request
 @login_required
 def create_pm_mapping(request):
+    # TODO: NLL - fix this today
     """Create a mapping for PortfolioManager input columns.
 
     Payload::
@@ -1303,7 +1304,7 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
     # list of mapping data.
     columns = list(Column.objects.select_related('unit').filter(
         Q(mapped_mappings__super_organization_id=org_id) |
-        Q(organization__isnull=True)).exclude(column_name__in=md.keys())
+        Q(organization__isnull=True)).exclude(column_name__in=md.keys)
     )
     md.add_extra_data(columns)
 
@@ -1326,10 +1327,10 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
         # All other input types
         suggested_mappings = mapper.build_column_mapping(
             import_file.first_row_columns,
-            md.keys_with_table_names(),
+            md.keys_with_table_names,
             previous_mapping=get_column_mapping,
             map_args=[organization],
-            thresh=20  # percentage match we require
+            thresh=80  # percentage match that we require. 80% is random value for now.
         )
         # replace None with empty string for column names and PropertyState for tables
         for m in suggested_mappings:
@@ -1343,7 +1344,7 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
             suggested_mappings[m][0] = 'PropertyState'
 
     result['suggested_column_mappings'] = suggested_mappings
-    result['column_names'] = md.building_columns()
+    result['column_names'] = md.building_columns
     result['columns'] = md.data
 
     return result

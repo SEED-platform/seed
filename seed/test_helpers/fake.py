@@ -249,11 +249,11 @@ class FakePropertyStateFactory(BaseFake):
             'owner_postal_code': owner.postal_code,
         }
 
-    def get_property_state(self, **kw):
+    def get_property_state(self, org, **kw):
         """Return a property state populated with pseudo random data"""
         property_details = self.get_details()
         property_details.update(kw)
-        return PropertyState.objects.create(**property_details)
+        return PropertyState.objects.create(organization=org, **property_details)
 
 
 class FakeTaxLotStateFactory(BaseFake):
@@ -273,11 +273,11 @@ class FakeTaxLotStateFactory(BaseFake):
         }
         return taxlot_details
 
-    def get_taxlot_state(self, **kw):
+    def get_taxlot_state(self, org, **kw):
         """Return a taxlot state populated with pseudo random data"""
         taxlot_details = self.get_details()
         taxlot_details.update(kw)
-        return TaxLotState.objects.create(**taxlot_details)
+        return TaxLotState.objects.create(organization=org, **taxlot_details)
 
 
 def mock_file_factory(name, size=None, url=None, path=None):

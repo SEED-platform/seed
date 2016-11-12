@@ -43,14 +43,14 @@ class TestMapper(TestCase):
         (u'PropertyState', u'address_line_1'),
         (u'PropertyState', u'name'),
         (u'PropertyState', u'city'),
-        (u'TaxLotState', u'tax_lot_id'),
+        (u'TaxLotState', u'jurisdiction_tax_lot_id'),
         (u'PropertyState', u'custom_id_1'),
     ]
 
     expected = {
         u'Address': [u'PropertyState', u'address_line_1', 90],
-        u'BBL': [u'TaxLotState', u'tax_lot_id', 47],
-        u'Building ID': [u'TaxLotState', u'tax_lot_id', 52],
+        u'BBL': [u'PropertyState', u'custom_id_1', 0],
+        u'Building ID': [u'TaxLotState', u'jurisdiction_tax_lot_id', 59],
         u'City': [u'PropertyState', u'city', 100],
         u'Name': [u'PropertyState', u'name', 100]
     }
@@ -120,17 +120,20 @@ class TestMapper(TestCase):
         dyn_mapping = mapper.build_column_mapping(
             self.raw_columns, self.dest_columns
         )
-
         self.assertDictEqual(dyn_mapping, self.expected)
 
     def test_build_column_mapping_w_callable(self):
         """Callable result at the begining of the list."""
-        expected = copy.deepcopy(self.expected)
-        # This should be the result of our "previous_mapping" call.
-        expected[u'Building ID'] = [u'PropertyState', u'custom_id_1', 27]
-
+        expected = {
+            u'Address': [u'PropertyState', u'address_line_1', 90],
+            u'BBL': [u'TaxLotState', u'jurisdiction_tax_lot_id', 0],
+            u'Building ID': [u'PropertyState', u'custom_id_1', 27],
+            u'City': [u'PropertyState', u'city', 100],
+            u'Name': [u'PropertyState', u'name', 100]
+        }
         # Here we pretend that we're doing a query and returning
         # relevant results.
+
         def get_mapping(raw, *args, **kwargs):
             if raw == u'Building ID':
                 return [u'PropertyState', u'custom_id_1', 27]
@@ -187,19 +190,30 @@ class TestMapper(TestCase):
         self.assertDictEqual(dyn_mapping, expected)
 
     def test_build_column_mapping_w_no_match(self):
-        """We return None if there's no good match."""
-        expected = copy.deepcopy(self.expected)
-        # This should be the result of our "previous_mapping" call.
-        null_result = [None, None, 0]
-        expected[u'BBL'] = null_result
+        """We return the raw column name if there's no good match."""
+        raw_columns = [
+            u'Address',
+            u'Name',
+            u'City',
+            u'BBL',
+            u'Building ID',
+        ]
+        dest_columns = [
+            (u'PropertyState', u'address_line_1'),
+            (u'PropertyState', u'name'),
+            (u'PropertyState', u'city'),
+            (u'TaxLotState', u'jurisdiction_tax_lot_id'),
+        ]
+        expected = {
+            u'Address': [u'PropertyState', u'address_line_1', 90],
+            u'BBL': [u'PropertyState', u'BBL', 100],
+            u'Building ID': [u'TaxLotState', u'jurisdiction_tax_lot_id', 59],
+            u'City': [u'PropertyState', u'city', 100],
+            u'Name': [u'PropertyState', u'name', 100]
+        }
 
-        dyn_mapping = mapper.build_column_mapping(
-            self.raw_columns,
-            self.dest_columns,
-            thresh=48
-        )
-
-        self.assertDictEqual(dyn_mapping, expected)
+        mapping = mapper.build_column_mapping(raw_columns, dest_columns, thresh=50)
+        self.assertDictEqual(mapping, expected)
 
     def test_map_row_dynamic_mapping_with_cleaner(self):
         """Type-based cleaners on dynamic fields based on reverse-mapping."""

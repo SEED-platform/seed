@@ -4,32 +4,28 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import datetime
 import itertools
 import json
 
-import datetime
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
-
+from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet
-from rest_framework import status
 
 from seed.decorators import (
     ajax_request, DecoratorMixin,
     require_organization_id, require_organization_membership,
 )
-
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import (
     Column, Cycle, AUDIT_USER_EDIT, PropertyAuditLog, PropertyState, PropertyView,
     TaxLotAuditLog, TaxLotView, TaxLotState, TaxLotProperty
 )
-
 from seed.serializers.properties import (
     PropertyStateSerializer, PropertyViewSerializer
 )
@@ -894,6 +890,7 @@ def get_taxlot_columns(request):
 
 
 class PropertyStateEndpoint(DecoratorMixin(drf_api_endpoint), ViewSet):
+
     def delete(self, request):
         property_states = request.data.get('selected', [])
         resp = PropertyState.objects.filter(pk__in=property_states).delete()
@@ -905,6 +902,7 @@ class PropertyStateEndpoint(DecoratorMixin(drf_api_endpoint), ViewSet):
 
 
 class TaxLotStateEndpoint(DecoratorMixin(drf_api_endpoint), ViewSet):
+
     def delete(self, request):
         taxlot_states = request.data.get('selected', [])
         resp = TaxLotState.objects.filter(pk__in=taxlot_states).delete()

@@ -5,9 +5,9 @@
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 from collections import namedtuple
-from django.core.exceptions import ObjectDoesNotExist
-from django.apps import apps
 
+from django.apps import apps
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import (
     response,
     status,
@@ -22,17 +22,16 @@ from seed.filters import (
     LabelFilterBackend,
     InventoryFilterBackend,
 )
-from seed.pagination import NoPagination
-from seed.utils.api import drf_api_endpoint
 from seed.models import (
     StatusLabel as Label,
     Property,
     TaxLot,
 )
-
+from seed.pagination import NoPagination
 from seed.serializers.labels import (
     LabelSerializer,
 )
+from seed.utils.api import drf_api_endpoint
 
 # missing from DRF specified in requirements
 status.HTTP_422_UNPROCESSABLE_ENTITY = 422
