@@ -7,20 +7,19 @@
 
 from __future__ import absolute_import
 
-# import pdb
+import collections
 import copy
 import datetime
-import collections
-from collections import namedtuple
 import hashlib
 import operator
-from itertools import chain
 import re
 import string
 import time
 import traceback
 from _csv import Error
+from collections import namedtuple
 from functools import reduce
+from itertools import chain
 
 from celery import chord
 from celery import shared_task
@@ -28,12 +27,6 @@ from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.db.models import Q
 
-# from seed.audit_logs.models import AuditLog
-from seed.models.auditlog import AUDIT_IMPORT
-from seed.models import PropertyAuditLog
-from seed.models import TaxLotAuditLog
-from seed.models import TaxLotProperty
-# from seed.models import Cycle
 from seed.cleansing.models import Cleansing
 from seed.cleansing.tasks import (
     finish_cleansing,
@@ -56,8 +49,6 @@ from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
 from seed.lib.superperms.orgs.models import Organization
-# from seed.utils.generic import pp
-# from seed.utils.address import normalize_address_str
 from seed.models import (
     ASSESSED_BS,
     ASSESSED_RAW,
@@ -84,6 +75,10 @@ from seed.models import (
     DATA_STATE_MATCHING,
     DATA_STATE_DELETE,
 )
+from seed.models import PropertyAuditLog
+from seed.models import TaxLotAuditLog
+from seed.models import TaxLotProperty
+from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache
 
@@ -715,7 +710,6 @@ def _save_raw_data(file_pk, *args, **kwargs):
         result['message'] = 'Unhandled Error: ' + str(e.message)
         result['stacktrace'] = traceback.format_exc()
 
-    print "A"
     set_cache(prog_key, result['status'], result)
     logger.debug('Returning from end of _save_raw_data with state:')
     logger.debug(result)
@@ -931,10 +925,10 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
 
 # TODO: These are bad bad fields!
 #       Not quite sure what this means?
+# NL: yeah what does this mean?!
+
 md = MappingData()
 ALL_COMPARISON_FIELDS = sorted(list(set([field['name'] for field in md.data])))
-ALL_COMPARISON_FIELDS.pop(ALL_COMPARISON_FIELDS.index("data_state"))
-
 
 # all_comparison_fields = sorted(list(set(chain(tax_lot_comparison_fields, property_comparison_fields))))
 
