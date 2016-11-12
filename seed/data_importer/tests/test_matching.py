@@ -131,7 +131,7 @@ class TestMatching(DataMappingBaseTestCase):
         }
 
         # Setup mapped AS snapshot.
-        ps = PropertyState.objects.create(
+        PropertyState.objects.create(
             organization=self.org,
             import_file=self.import_file,
             **bs_data
