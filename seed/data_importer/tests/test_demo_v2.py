@@ -168,7 +168,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         # psv = PropertyView.objects.filter(state__organization=self.org)
         # self.assertEqual(len(psv), 12)
 
-        tlv = TaxLotView.objects.filter(state__organization=self.org)
+        # tlv = TaxLotView.objects.filter(state__organization=self.org)
         # self.assertEqual(len(tlv), 9)
 
         self.assertEqual(PropertyView.objects.filter(state__organization=self.org,
