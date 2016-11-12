@@ -61,7 +61,7 @@ class TestMappingData(TestCase):
                          'building_certification',
                          'building_count',
                          'city',
-                         'conditioned_floor_area', 'custom_id_1', 'data_state',
+                         'conditioned_floor_area', 'custom_id_1',
                          'district', 'energy_alerts', 'energy_score',
                          'generation_date', 'gross_floor_area',
                          'home_energy_score_id',

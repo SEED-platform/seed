@@ -125,10 +125,13 @@ class TestMapper(TestCase):
 
     def test_build_column_mapping_w_callable(self):
         """Callable result at the begining of the list."""
-        expected = copy.deepcopy(self.expected)
-        # This should be the result of our "previous_mapping" call.
-        expected[u'Building ID'] = [u'PropertyState', u'custom_id_1', 27]
-
+        expected = {
+            u'Address': [u'PropertyState', u'address_line_1', 90],
+            u'BBL': [u'TaxLotState', u'jurisdiction_tax_lot_id', 0],
+            u'Building ID': [u'PropertyState', u'custom_id_1', 27],
+            u'City': [u'PropertyState', u'city', 100],
+            u'Name': [u'PropertyState', u'name', 100]
+        }
         # Here we pretend that we're doing a query and returning
         # relevant results.
         def get_mapping(raw, *args, **kwargs):
