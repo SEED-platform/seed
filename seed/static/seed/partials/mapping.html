@@ -113,7 +113,7 @@
                                 <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
                             </td>
                             <td ng-class="{'danger': tcm.is_duplicate == true, 'disable-mapping-btn': tcm.is_duplicate == true}" id="duplicate-row-input-{$ $index $}">
-                                <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" ng-keyup="disable_mapping_button()" ng-blur="disable_mapping_button()" typeahead-on-select='change(tcm)' id="duplicate-row-input-box-{$ $index $}">
+                                <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:30" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" ng-keyup="disable_mapping_button()" ng-blur="disable_mapping_button()" typeahead-on-select='change(tcm)' id="duplicate-row-input-box-{$ $index $}">
                             </td>
                             <td class="check is_aligned_center">
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
@@ -127,7 +127,6 @@
                             </td>
                         </tr>
                     </tbody>
-
                     <tbody>
                         <tr>
                             <td></td>
@@ -170,8 +169,8 @@
                             <td>
                                 <strong id="mapped-header-{$ $index $}">{$tcm.name$}</strong>
                             </td>
-                            <td id="mapped-row-type-{$ $index $}">
-                                <select ng-model="tcm.suggestion_table_name" ng-change="setInventoryType()">
+                            <td ng-class="{'danger': tcm.is_duplicate == true, 'disable-mapping-btn': tcm.is_duplicate == true}" id="mapped-row-type-{$ $index $}">
+                                <select ng-model="tcm.suggestion_table_name" ng-change="setInventoryType(tcm); change(tcm); disable_mapping_button()" ng-blur="disable_mapping_button()">
                                     <option value="PropertyState">Property</option>
                                     <option value="TaxLotState">Tax Lot</option>
                                 </select>

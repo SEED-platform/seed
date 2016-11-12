@@ -16,9 +16,7 @@ from seed.data_importer.tests.util import (
 from seed.models import (
     Column,
     PropertyState,
-    PropertyView,
     TaxLotState,
-    TaxLotProperty,
     TaxLotView,
     DATA_STATE_MAPPING,
     ASSESSED_RAW,
@@ -56,13 +54,13 @@ class TestCaseB(DataMappingBaseTestCase):
         )
         self.assertEqual(len(ps), 12)
 
-        # Check to make sure the taxlots were imported
+        # Check to make sure the tax lots were imported
         ts = TaxLotState.objects.filter(
             data_state=DATA_STATE_MAPPING,
             organization=self.org,
             import_file=self.import_file,
         )
-        self.assertEqual(len(ts), 10)  # there are only 10 unique tax lots in the test file once splitting on delimiters # noqa
+        self.assertEqual(len(ts), 17)
 
         # verify that the lot_number has the tax_lot information. For this case it is one-to-many
         p_test = PropertyState.objects.filter(
@@ -71,37 +69,9 @@ class TestCaseB(DataMappingBaseTestCase):
             data_state=DATA_STATE_MAPPING,
             import_file=self.import_file,
         ).first()
-        # TODO: normalize lot_number.
         self.assertEqual(p_test.lot_number, "33366555; 33366125; 33366148")
 
-        # tasks.match_buildings(self.import_file.id, self.user.id)
-        # tasks.pair_buildings(self.import_file.id, self.user.id)
-
-        # ------ TEMP CODE ------
-        # Manually promote the properties
-        tax_lots = TaxLotState.objects.filter(jurisdiction_tax_lot_id='11160509',
-                                              organization=self.org)
-        self.assertEqual(len(tax_lots), 1)
-        tax_lot_view = tax_lots[0].promote(self.cycle)
-
-        properties = PropertyState.objects.filter(
-            pm_property_id__in=['3020139', '4828379', '1154623'])
-        property_views = [p.promote(self.cycle) for p in properties]
-        self.assertEqual(len(property_views), 3)
-        self.assertTrue(isinstance(property_views[0], PropertyView))
-
-        # Check the count of the canonical buildings
-        from django.db.models.query import QuerySet
-        ps = tasks.list_canonical_property_states(self.org)
-        self.assertTrue(isinstance(ps, QuerySet))
-        self.assertEqual(len(ps), 3)
-
-        # Manually pair up the ts and ps until the match/pair properties works
-        for pv in property_views:
-            TaxLotProperty.objects.create(cycle=self.cycle, property_view=pv,
-                                          taxlot_view=tax_lot_view)
-
-        # ------ END TEMP CODE ------
+        tasks.match_buildings(self.import_file.id, self.user.id)
 
         # make sure the the property only has one tax lot and vice versa
         tlv = TaxLotView.objects.filter(state__jurisdiction_tax_lot_id='11160509', cycle=self.cycle)
