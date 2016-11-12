@@ -18,6 +18,7 @@ import unicodedata
 from unicodecsv import DictReader, Sniffer
 from xlrd import xldate, XLRDError, open_workbook, empty_cell
 from xlrd.xldate import XLDateAmbiguous
+
 from seed.lib.mcm import mapper, utils
 
 (

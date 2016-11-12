@@ -150,7 +150,7 @@ class TestMatching(DataMappingBaseTestCase):
             mapping_done=True
         )
 
-        ps = PropertyState.objects.create(
+        PropertyState.objects.create(
             organization=self.org,
             import_file=duplicate_import_file,
             **bs_data

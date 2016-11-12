@@ -16,9 +16,7 @@ from seed.data_importer.tests.util import (
 from seed.models import (
     Column,
     PropertyState,
-    PropertyView,
     TaxLotState,
-    TaxLotProperty,
     TaxLotView,
     DATA_STATE_MAPPING,
     ASSESSED_RAW,

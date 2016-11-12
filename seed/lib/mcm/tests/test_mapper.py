@@ -9,7 +9,6 @@ from unittest import TestCase, skip
 
 from seed.lib.mcm import cleaners, mapper
 from seed.lib.mcm.tests.utils import FakeModel
-from seed.lib.mappings.mapping_data import MappingData
 
 
 class TestMapper(TestCase):
@@ -134,6 +133,7 @@ class TestMapper(TestCase):
         }
         # Here we pretend that we're doing a query and returning
         # relevant results.
+
         def get_mapping(raw, *args, **kwargs):
             if raw == u'Building ID':
                 return [u'PropertyState', u'custom_id_1', 27]
