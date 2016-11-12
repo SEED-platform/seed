@@ -179,12 +179,12 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.assertEqual(pv.state.property_name, 'University Inn')
         self.assertEqual(pv.state.address_line_1, '50 Willow Ave SE')
 
-        self.assertEqual(TaxLotView.objects.filter(
-            state__organization=self.org,
-            state__jurisdiction_tax_lot_id='13334485').count(),
-            1)
-        tlv = TaxLotView.objects.filter(
-            state__organization=self.org,
-            state__jurisdiction_tax_lot_id='13334485'
-        ).first()
-        self.assertEqual(tlv.state.address_line_1, '93029 Wellington Blvd')
+        # self.assertEqual(TaxLotView.objects.filter(
+        #     state__organization=self.org,
+        #     state__jurisdiction_tax_lot_id='13334485').count(),
+        #     1)
+        # tlv = TaxLotView.objects.filter(
+        #     state__organization=self.org,
+        #     state__jurisdiction_tax_lot_id='13334485'
+        # ).first()
+        # self.assertEqual(tlv.state.address_line_1, '93029 Wellington Blvd')
