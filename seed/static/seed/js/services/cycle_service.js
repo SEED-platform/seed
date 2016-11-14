@@ -33,14 +33,18 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
 
     */
 
-    cycle_factory.get_cycles = function () {
+    cycle_factory.get_cycles = function() {
+      return cycle_factory.get_cycles_for_org(user_service.get_organization().id);
+    };
+
+    cycle_factory.get_cycles_for_org = function (org_id) {
       var defer = $q.defer();
 
       $http({
         method: 'GET',
         url: window.BE.urls.get_cycles,
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: org_id
         }
       }).success(function (data, status, headers, config) {
         defer.resolve(data);
