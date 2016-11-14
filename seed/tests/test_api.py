@@ -437,7 +437,7 @@ class TestApi(TestCase):
 
         # check the progress bar
         progress_key = r['progress_key']
-        r = self.client.post('/app/progress/', data=json.dumps({'progress_key': progress_key}),
+        r = self.client.post('/api/v2/progress/', data=json.dumps({'progress_key': progress_key}),
                              content_type='application/json', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 

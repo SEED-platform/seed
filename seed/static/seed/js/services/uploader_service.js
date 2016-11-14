@@ -91,7 +91,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            url: window.BE.urls.progress,
+            url: '/api/v2/progress/',
             data: {progress_key: progress_key}
         }).success(function(data, status) {
             if (data.status === 'error'){
