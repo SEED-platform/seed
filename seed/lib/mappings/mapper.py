@@ -9,11 +9,10 @@ import logging
 import os
 import re
 from fnmatch import fnmatchcase
+from os.path import realpath, join, dirname
 
-# TODO: Fix directory
-from config.settings.dev import SEED_DATADIR
-
-LINEAR_UNITS = set([u'ft', u'm', u'in'])  # ??more??
+LINEAR_UNITS = set([u'ft', u'm', u'in'])
+MAPPING_DATA_DIR = join(dirname(realpath(__file__)), 'data')
 
 _log = logging.getLogger(__name__)
 
@@ -62,7 +61,7 @@ class MappingConfiguration(object):
     """
 
     def __init__(self):
-        f = open(os.path.join(SEED_DATADIR, "mappings.conf"))
+        f = open(os.path.join(MAPPING_DATA_DIR, "mappings.conf"))
         self.conf = json.load(f)
 
     def pm(self, version):
@@ -78,7 +77,7 @@ class MappingConfiguration(object):
         if filename is None:
             raise ValueError("No PortfolioManager mapping found "
                              "for version {}".format(version))
-        path = os.path.join(SEED_DATADIR, filename)
+        path = os.path.join(MAPPING_DATA_DIR, filename)
         f = open(path, 'r')
         return Mapping(f)
 

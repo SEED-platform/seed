@@ -15,7 +15,7 @@ from django.test import TestCase
 from seed.lib.mappings import mapper
 
 
-class TestMapping(TestCase):
+class TestMapper(TestCase):
     """Test mapping methods."""
 
     def jsonfile(self):

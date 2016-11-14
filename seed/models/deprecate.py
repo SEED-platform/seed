@@ -277,11 +277,11 @@ def unmatch_snapshot_tree(building_pk):
     # re-merge parents whose children have been taken from them
     bachelor = root
     newborn_child = None
-    for bereaved_parent in coparents_to_keep:
-        newborn_child, _ = save_snapshot_match(
-            bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk,
-        )
-        bachelor = newborn_child
+    # for bereaved_parent in coparents_to_keep:
+    # newborn_child, _ = save_snapshot_match(
+    #     bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk,
+    # )
+    # bachelor = newborn_child
 
     # set canonical_snapshot for root's canonical building
     tip = newborn_child or root

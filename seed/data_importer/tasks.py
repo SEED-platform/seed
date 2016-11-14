@@ -24,7 +24,6 @@ from itertools import chain
 from celery import chord
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from django.conf import settings
 from django.db.models import Q
 
 from seed.cleansing.models import Cleansing
@@ -52,13 +51,11 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     ASSESSED_BS,
     ASSESSED_RAW,
-    AuditLog,
     # BS_VALUES_LIST,
     GREEN_BUTTON_BS,
     GREEN_BUTTON_RAW,
     PORTFOLIO_BS,
     PORTFOLIO_RAW,
-    POSSIBLE_MATCH,
     SYSTEM_MATCH,
     Column,
     ColumnMapping,

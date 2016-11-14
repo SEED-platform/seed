@@ -4,15 +4,7 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Dan Gunter <dkgunter@lbl.gov>
 """
-import json
 import logging
-import os
-import re
-from fnmatch import fnmatchcase
-
-# TODO: Fix directory
-from config.settings.dev import SEED_DATADIR
-
 from collections import defaultdict
 
 from seed.models import PropertyState

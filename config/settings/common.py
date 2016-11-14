@@ -14,8 +14,6 @@ from seed.serializers.celery import CeleryDatetimeSerializer
 
 SITE_ROOT = abspath(join(dirname(__file__), "..", ".."))
 
-SEED_DATADIR = join(SITE_ROOT, 'seed', 'data')
-
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
@@ -117,7 +115,7 @@ INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
 # apps to auto load name spaced URLs for JS use (see seed.main.views.home)
 SEED_URL_APPS = (
-   # 'accounts',
+    # 'accounts',
     'ajaxuploader',
     'data_importer',
     'seed',
