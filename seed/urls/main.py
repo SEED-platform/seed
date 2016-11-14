@@ -29,6 +29,7 @@ from seed.views.main import (
     start_system_matching, public_search, progress, export_buildings,
     export_buildings_progress,
     export_buildings_download, angular_js_tests, delete_organization_buildings,
+    delete_organization_inventory,
     delete_buildings
 )
 from seed.views.properties import (
@@ -190,6 +191,11 @@ urlpatterns = [
         r'^' + apiv1 + r'delete_organization_buildings/$',
         delete_organization_buildings,
         name='delete_organization_buildings'
+    ),
+    url(
+        r'^' + apiv1 + r'delete_organization_inventory/$',
+        delete_organization_inventory,
+        name='delete_organization_inventory'
     ),
 
     # delete
