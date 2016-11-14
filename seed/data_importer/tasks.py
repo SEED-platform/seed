@@ -1587,7 +1587,7 @@ def save_state_match(state1, state2, confidence=None, user=None,
     from seed.lib.merging import merging as seed_merger
 
     merged_state = type(state1).objects.create(organization=state1.organization)
-    merged_state, changes = seed_mapper.merge_state(merged_state,
+    merged_state, changes = seed_merger.merge_state(merged_state,
                                                     state1, state2,
                                                     seed_merger.get_state_attrs([state1, state2]),
                                                     conf=confidence,
