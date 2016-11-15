@@ -307,7 +307,9 @@ def create_cycle(request):
             'id': cycle.id,
             'name': cycle.name,
             'start': cycle.start,
-            'end': cycle.end
+            'end': cycle.end,
+            'num_properties': PropertyView.objects.filter(cycle=cycle).count(),
+            'num_taxlots': TaxLotView.objects.filter(cycle=cycle).count()
         })
 
     return {'status': 'success', 'cycles': return_cycles}
@@ -327,7 +329,9 @@ def get_cycles(request):
             'id': cycle.id,
             'name': cycle.name,
             'start': cycle.start,
-            'end': cycle.end
+            'end': cycle.end,
+            'num_properties': PropertyView.objects.filter(cycle=cycle).count(),
+            'num_taxlots': TaxLotView.objects.filter(cycle=cycle).count()
         })
 
     return {'status': 'success', 'cycles': return_cycles}
@@ -355,10 +359,47 @@ def update_cycle(request):
             'id': cycle.id,
             'name': cycle.name,
             'start': cycle.start,
-            'end': cycle.end
+            'end': cycle.end,
+            'num_properties': PropertyView.objects.filter(cycle=cycle).count(),
+            'num_taxlots': TaxLotView.objects.filter(cycle=cycle).count()
         })
 
     return {'status': 'success', 'cycles': return_cycles}
+
+
+@require_organization_id
+@require_organization_membership
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('can_modify_data')
+def delete_cycle(request):
+    body = json.loads(request.body)
+    org_id = request.GET['organization_id']
+    cycle = Cycle.objects.get(pk=body['id'], organization_id=org_id)
+
+    # Check that cycle is empty
+    num_properties = PropertyView.objects.filter(cycle=cycle).count()
+    num_taxlots = TaxLotView.objects.filter(cycle=cycle).count()
+
+    if num_properties > 0 or num_taxlots > 0:
+        return {'status': 'error', 'message': 'Cycle not empty'}
+    else:
+        cycle.delete()
+
+        cycles = Cycle.objects.filter(organization_id=org_id).order_by('name')
+        return_cycles = []
+        for cycle in cycles:
+            return_cycles.append({
+                'id': cycle.id,
+                'name': cycle.name,
+                'start': cycle.start,
+                'end': cycle.end,
+                'num_properties': PropertyView.objects.filter(cycle=cycle).count(),
+                'num_taxlots': TaxLotView.objects.filter(cycle=cycle).count()
+            })
+
+        return {'status': 'success', 'cycles': return_cycles}
 
 
 @require_organization_id
