@@ -2258,15 +2258,15 @@ class TestMCMViews(TestCase):
         )
 
         post_data = {
-            'import_file_id': import_file.pk,
-            'org_id': self.org.pk
+            'organization_id': self.org.pk
         }
 
-        response = self.client.post(
-            reverse_lazy("seed:get_column_mapping_suggestions"),
+        response = self.client.get(
+            reverse_lazy("apiv2:data_files-mapping-suggestions",
+                         args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
-            data=json.dumps(post_data)
         )
+        print(response)
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_column_mapping_suggestions_with_columns(self):
@@ -2289,15 +2289,15 @@ class TestMCMViews(TestCase):
         mapping.save()
 
         post_data = {
-            'import_file_id': self.import_file.pk,
-            'org_id': self.org.pk
+            'organization_id': self.org.pk
         }
 
-        response = self.client.post(
-            reverse_lazy("seed:get_column_mapping_suggestions"),
+        response = self.client.get(
+            reverse_lazy("apiv2:data_files-mapping-suggestions",
+                         args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
-            data=json.dumps(post_data)
         )
+        print(response)
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_raw_column_names(self):
