@@ -95,7 +95,6 @@ class TestReverseViewSet(viewsets.ViewSet):
         return HttpResponse("Hello, world")
 
 
-@api_endpoint
 @ajax_request
 def test_view_with_arg(request, pk=None):
     return {'value of pk': pk}

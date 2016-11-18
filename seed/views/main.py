@@ -1923,6 +1923,37 @@ def delete_organization_buildings(request):
 @api_endpoint
 @ajax_request
 @login_required
+@permission_required('seed.can_access_admin')
+def delete_organization_inventory(request):
+    """
+    Starts a background task to delete all properties & taxlots
+    in an org.
+
+    :GET: Expects 'org_id' for the organization.
+
+    Returns::
+
+        {
+            'status': 'success' or 'error',
+            'progress_key': ID of background job, for retrieving job progress
+        }
+    """
+    org_id = request.GET.get('org_id', '')
+    deleting_cache_key = get_prog_key(
+        'delete_organization_inventory',
+        org_id
+    )
+    tasks.delete_organization_inventory.delay(org_id, deleting_cache_key)
+    return {
+        'status': 'success',
+        'progress': 0,
+        'progress_key': deleting_cache_key
+    }
+
+
+@api_endpoint
+@ajax_request
+@login_required
 @has_perm('requires_member')
 def delete_buildings(request):
     """

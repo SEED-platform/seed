@@ -38,6 +38,8 @@ from seed.models import (
     Compliance,
     Project,
     ProjectBuilding,
+    Property, PropertyState,
+    TaxLot, TaxLotState
 )
 from seed.utils import time as time_utils
 from seed.utils.buildings import get_search_query
@@ -468,3 +470,102 @@ def log_deleted_buildings(ids, user_pk, chunk_size=300):
                 action='delete_building',
                 action_note='Deleted building.'
             )
+
+
+@shared_task
+@lock_and_track
+def delete_organization_inventory(org_pk, deleting_cache_key, chunk_size=100, *args, **kwargs):
+    """Deletes all properties & taxlots within an organization."""
+    result = {
+        'status': 'success',
+        'progress_key': deleting_cache_key,
+        'progress': 0
+    }
+
+    property_ids = list(
+        Property.objects.filter(organization_id=org_pk).values_list('id', flat=True)
+    )
+    property_state_ids = list(
+        PropertyState.objects.filter(organization_id=org_pk).values_list('id', flat=True)
+    )
+    taxlot_ids = list(
+        TaxLot.objects.filter(organization_id=org_pk).values_list('id', flat=True)
+    )
+    taxlot_state_ids = list(
+        TaxLotState.objects.filter(organization_id=org_pk).values_list('id', flat=True)
+    )
+
+    total = len(property_ids) + len(property_state_ids) + len(taxlot_ids) + len(taxlot_state_ids)
+
+    if total == 0:
+        result['progress'] = 100
+
+    set_cache(deleting_cache_key, result['status'], result)
+
+    if total == 0:
+        return
+
+    step = float(chunk_size) / total
+    tasks = []
+    for del_ids in batch(property_ids, chunk_size):
+        # we could also use .s instead of .subtask and not wrap the *args
+        tasks.append(
+            _delete_organization_property_chunk.subtask(
+                (del_ids, deleting_cache_key, step, org_pk)
+            )
+        )
+    for del_ids in batch(property_state_ids, chunk_size):
+        # we could also use .s instead of .subtask and not wrap the *args
+        tasks.append(
+            _delete_organization_property_state_chunk.subtask(
+                (del_ids, deleting_cache_key, step, org_pk)
+            )
+        )
+    for del_ids in batch(taxlot_ids, chunk_size):
+        # we could also use .s instead of .subtask and not wrap the *args
+        tasks.append(
+            _delete_organization_taxlot_chunk.subtask(
+                (del_ids, deleting_cache_key, step, org_pk)
+            )
+        )
+    for del_ids in batch(taxlot_state_ids, chunk_size):
+        # we could also use .s instead of .subtask and not wrap the *args
+        tasks.append(
+            _delete_organization_taxlot_state_chunk.subtask(
+                (del_ids, deleting_cache_key, step, org_pk)
+            )
+        )
+    chord(tasks, interval=15)(
+        _finish_delete.subtask([org_pk, deleting_cache_key]))
+
+
+@shared_task
+def _delete_organization_property_chunk(del_ids, prog_key, increment, org_pk, *args, **kwargs):
+    """deletes a list of ``del_ids`` and increments the cache"""
+    qs = Property.objects.filter(organization_id=org_pk)
+    qs.filter(pk__in=del_ids).delete()
+    increment_cache(prog_key, increment * 100)
+
+
+@shared_task
+def _delete_organization_property_state_chunk(del_ids, prog_key, increment, org_pk, *args, **kwargs):
+    """deletes a list of ``del_ids`` and increments the cache"""
+    qs = PropertyState.objects.filter(organization_id=org_pk)
+    qs.filter(pk__in=del_ids).delete()
+    increment_cache(prog_key, increment * 100)
+
+
+@shared_task
+def _delete_organization_taxlot_chunk(del_ids, prog_key, increment, org_pk, *args, **kwargs):
+    """deletes a list of ``del_ids`` and increments the cache"""
+    qs = TaxLot.objects.filter(organization_id=org_pk)
+    qs.filter(pk__in=del_ids).delete()
+    increment_cache(prog_key, increment * 100)
+
+
+@shared_task
+def _delete_organization_taxlot_state_chunk(del_ids, prog_key, increment, org_pk, *args, **kwargs):
+    """deletes a list of ``del_ids`` and increments the cache"""
+    qs = TaxLotState.objects.filter(organization_id=org_pk)
+    qs.filter(pk__in=del_ids).delete()
+    increment_cache(prog_key, increment * 100)
