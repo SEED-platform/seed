@@ -5,10 +5,9 @@
 :author
 """
 
+import datetime
 import logging
 import os.path
-
-import datetime
 
 from django.core.files import File
 from django.test import TestCase

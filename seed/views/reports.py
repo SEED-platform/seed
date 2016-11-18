@@ -7,17 +7,15 @@
 from collections import defaultdict
 
 import dateutil
-
+from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-from rest_framework import status
 
 from seed.decorators import (
     DecoratorMixin,
 )
-
 from seed.models import (
     Cycle,
     PropertyView

@@ -9,9 +9,8 @@ import copy
 import logging
 import re
 
-import matchers
-from seed.lib.mappings.mapping_columns import MappingColumns
 from cleaners import default_cleaner
+from seed.lib.mappings.mapping_columns import MappingColumns
 
 _log = logging.getLogger(__name__)
 

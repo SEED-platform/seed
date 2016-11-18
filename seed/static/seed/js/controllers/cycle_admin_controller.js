@@ -37,7 +37,7 @@ angular.module('BE.seed.controller.cycle_admin', [])
         if (form.$invalid) {
           return;
         }
-        cycle_service.create_cycle($scope.new_cycle).then(function (result) {
+        cycle_service.create_cycle_for_org($scope.new_cycle, $scope.org.id).then(function (result) {
             processCycles(result);
             var msg = 'Created new Cycle ' + getTruncatedName($scope.new_cycle.name);
             notification.primary(msg);
@@ -75,16 +75,23 @@ angular.module('BE.seed.controller.cycle_admin', [])
       $scope.saveCycle = function (cycle, id) {
         //Don't update $scope.cycle until a 'success' from server
         angular.extend(cycle, {id: id});
-        cycle_service.update_cycle(cycle).then(
-          function (data) {
-            var msg = 'Cycle updated.';
-            notification.primary(msg);
-            processCycles(data);
-          },
-          function (message) {
-            $log.error('Error saving cycle.', message);
-          }
-        );
+        cycle_service.update_cycle_for_org(cycle, $scope.org.id).then(function (data) {
+          var msg = 'Cycle updated.';
+          notification.primary(msg);
+          processCycles(data);
+        }, function (message) {
+          $log.error('Error saving cycle.', message);
+        });
+      };
+
+      $scope.deleteCycle = function (cycle) {
+        cycle_service.delete_cycle_for_org(cycle, $scope.org.id).then(function (data) {
+          var msg = 'Cycle deleted.';
+          notification.primary(msg);
+          processCycles(data);
+        }, function (message) {
+          $log.error('Error deleting cycle.', message);
+        });
       };
 
       $scope.opened = {};
@@ -126,37 +133,6 @@ angular.module('BE.seed.controller.cycle_admin', [])
       $scope.checkInvalidDate = function () {
         $scope.invalidDates = ($scope.endDate < $scope.startDate);
       };
-
-      //A delete operation has lots of consequences that are not completely defined. Not implementing at the moment.
-
-      // $scope.deleteCycle = function (cycle, index) {
-      //   var modalOptions = {
-      //     type: 'default',
-      //     okButtonText: 'OK',
-      //     cancelButtonText: 'Cancel',
-      //     headerText: 'Confirm delete',
-      //     bodyText: 'Delete cycle "' + cycle.name + '"?'
-      //   };
-      //   simple_modal_service.showModal(modalOptions).then(
-      //     function (result) {
-      //       //user confirmed delete, so go ahead and do it.
-      //       cycle_service.delete_cycle(cycle).then(
-      //         function (result) {
-      //           //server deleted cycle, so remove it locally
-      //           $scope.cycles.splice(index, 1);
-      //           var msg = 'Deleted cycle ' + getTruncatedName(cycle.name);
-      //           notification.primary(msg);
-      //         },
-      //         function (message) {
-      //           $log.error('Error deleting cycle.', message);
-      //         }
-      //       );
-      //     },
-      //     function (message) {
-      //       //user doesn't want to delete after all.
-      //     });
-      //
-      // };
 
       function getTruncatedName(name) {
         if (name && name.length > 20) {

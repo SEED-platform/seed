@@ -4,32 +4,28 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import datetime
 import itertools
 import json
 
-import datetime
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
-
+from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet
-from rest_framework import status
 
 from seed.decorators import (
     ajax_request, DecoratorMixin,
     require_organization_id, require_organization_membership,
 )
-
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import (
     Column, Cycle, AUDIT_USER_EDIT, PropertyAuditLog, PropertyState, PropertyView,
     TaxLotAuditLog, TaxLotView, TaxLotState, TaxLotProperty
 )
-
 from seed.serializers.properties import (
     PropertyStateSerializer, PropertyViewSerializer
 )
@@ -311,7 +307,9 @@ def create_cycle(request):
             'id': cycle.id,
             'name': cycle.name,
             'start': cycle.start,
-            'end': cycle.end
+            'end': cycle.end,
+            'num_properties': PropertyView.objects.filter(cycle=cycle).count(),
+            'num_taxlots': TaxLotView.objects.filter(cycle=cycle).count()
         })
 
     return {'status': 'success', 'cycles': return_cycles}
@@ -331,7 +329,9 @@ def get_cycles(request):
             'id': cycle.id,
             'name': cycle.name,
             'start': cycle.start,
-            'end': cycle.end
+            'end': cycle.end,
+            'num_properties': PropertyView.objects.filter(cycle=cycle).count(),
+            'num_taxlots': TaxLotView.objects.filter(cycle=cycle).count()
         })
 
     return {'status': 'success', 'cycles': return_cycles}
@@ -359,10 +359,47 @@ def update_cycle(request):
             'id': cycle.id,
             'name': cycle.name,
             'start': cycle.start,
-            'end': cycle.end
+            'end': cycle.end,
+            'num_properties': PropertyView.objects.filter(cycle=cycle).count(),
+            'num_taxlots': TaxLotView.objects.filter(cycle=cycle).count()
         })
 
     return {'status': 'success', 'cycles': return_cycles}
+
+
+@require_organization_id
+@require_organization_membership
+@api_endpoint
+@ajax_request
+@login_required
+@has_perm('can_modify_data')
+def delete_cycle(request):
+    body = json.loads(request.body)
+    org_id = request.GET['organization_id']
+    cycle = Cycle.objects.get(pk=body['id'], organization_id=org_id)
+
+    # Check that cycle is empty
+    num_properties = PropertyView.objects.filter(cycle=cycle).count()
+    num_taxlots = TaxLotView.objects.filter(cycle=cycle).count()
+
+    if num_properties > 0 or num_taxlots > 0:
+        return {'status': 'error', 'message': 'Cycle not empty'}
+    else:
+        cycle.delete()
+
+        cycles = Cycle.objects.filter(organization_id=org_id).order_by('name')
+        return_cycles = []
+        for cycle in cycles:
+            return_cycles.append({
+                'id': cycle.id,
+                'name': cycle.name,
+                'start': cycle.start,
+                'end': cycle.end,
+                'num_properties': PropertyView.objects.filter(cycle=cycle).count(),
+                'num_taxlots': TaxLotView.objects.filter(cycle=cycle).count()
+            })
+
+        return {'status': 'success', 'cycles': return_cycles}
 
 
 @require_organization_id
@@ -894,6 +931,7 @@ def get_taxlot_columns(request):
 
 
 class PropertyStateEndpoint(DecoratorMixin(drf_api_endpoint), ViewSet):
+
     def delete(self, request):
         property_states = request.data.get('selected', [])
         resp = PropertyState.objects.filter(pk__in=property_states).delete()
@@ -905,6 +943,7 @@ class PropertyStateEndpoint(DecoratorMixin(drf_api_endpoint), ViewSet):
 
 
 class TaxLotStateEndpoint(DecoratorMixin(drf_api_endpoint), ViewSet):
+
     def delete(self, request):
         taxlot_states = request.data.get('selected', [])
         resp = TaxLotState.objects.filter(pk__in=taxlot_states).delete()

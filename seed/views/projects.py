@@ -8,27 +8,25 @@
 import datetime
 import logging
 
-# vendor imports
 from dateutil import parser
-
-# django imports
-from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
 from rest_framework import viewsets, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
-# project imports
 from seed import search
 from seed.authentication import SEEDAuthentication
-
 from seed.decorators import (
     DecoratorMixin
 )
 from seed.lib.superperms.orgs.decorators import has_perm_class
-
+from seed.models import (
+    COMPLIANCE_CHOICES,
+    STATUS_CHOICES
+)
 from seed.models import (
     Compliance,
     Project,
@@ -37,17 +35,9 @@ from seed.models import (
     PropertyView,
     TaxLotView,
 )
-
-from seed.models import (
-    COMPLIANCE_CHOICES,
-    STATUS_CHOICES
-)
-
 from seed.serializers.projects import ProjectSerializer
 from seed.serializers.properties import PropertyViewSerializer
 from seed.serializers.taxlots import TaxLotViewSerializer
-
-
 from seed.utils.api import api_endpoint_class, drf_api_endpoint
 
 # missing from DRF

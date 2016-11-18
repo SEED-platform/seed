@@ -99,6 +99,9 @@
 
                     <!-- form -->
                     <form editable-form name="rowform" onbeforesave="saveCycle($data, cycle.id, $index)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == cycle">
+                        <!--<button type="button" ng-disabled="cycle.num_properties > 0 || cycle.num_taxlots > 0" ng-click="deleteCycle(cycle)" class="btn btn-danger btn-rowform">
+                            X
+                        </button>-->
                         <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary btn-rowform">
                             save
                         </button>

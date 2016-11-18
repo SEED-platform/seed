@@ -208,7 +208,11 @@ class MappingColumns(object):
         if len(self.data[raw_column]['mappings']) > 0:
             # update the compare string for detecting duplicates -- make method?
             new_map = self.data[raw_column]['mappings'][0]
-            self.data[raw_column]['initial_mapping_cmp'] = '.'.join([new_map[0], new_map[1]])
+            if new_map[0] is not None and new_map[1] is not None:
+                self.data[raw_column]['initial_mapping_cmp'] = '.'.join([new_map[0], new_map[1]])
+            else:
+                _log.info("The mappings have a None table or column name")
+                self.data[raw_column]['initial_mapping_cmp'] = None
         else:
             # if there are no mappings left, then the mapping suggestion will look like
             # extra data
