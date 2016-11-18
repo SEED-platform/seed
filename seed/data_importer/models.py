@@ -682,9 +682,9 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         null=True, blank=True, max_length=63,
     )
     # program names should match a value in common.mapper.Programs
-    source_program = models.CharField(blank=True, max_length=80)
+    source_program = models.CharField(blank=True, max_length=80)  # don't think that this is used
     # program version is in format "x.y[.z]"
-    source_program_version = models.CharField(blank=True, max_length=40)
+    source_program_version = models.CharField(blank=True, max_length=40)  # don't think this is used
 
     def __unicode__(self):
         return "%s" % self.file.name
@@ -700,7 +700,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @property
     def from_portfolio_manager(self):
-        return self._strcmp(self.source_program, mapper.Programs.PM)
+        return self._strcmp(self.source_program, 'PortfolioManager')
 
     def _strcmp(self, a, b, ignore_ws=True, ignore_case=True):
         """Easily controlled loose string-matching."""

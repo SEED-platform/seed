@@ -15,6 +15,16 @@ from seed.lib.mappings.mapping_columns import MappingColumns
 _log = logging.getLogger(__name__)
 
 
+def build_pm_mapping():
+    """
+    Build the Portfolio Manager mappings.
+
+    :return:
+    """
+
+    return True
+
+
 def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_args=None, thresh=0):
     """
     Wrapper around the MappingColumns class to create the list of suggested mappings
@@ -27,8 +37,8 @@ def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_a
 
             .. code:
 
-                # The expectation is that our callable always gets passed a
-                # raw key. If it finds a match, it returns the raw_column and score.
+                The expectation is that our callable always gets passed a raw key. If
+                it finds a match, it returns the raw_column and score.
                 previous_mapping('example field', *map_args) ->
                     ('field_1', 0.93)
 
@@ -36,12 +46,12 @@ def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_a
         thresh: .. todo: document
 
     Returns:
-        dict: {'raw_column': [('dest_column', score)...],...}
+        dict: {'raw_column': ('dest_column', score)
 
     """
 
-    mc = MappingColumns(raw_columns, dest_columns, previous_mapping, map_args, thresh)
-    return mc.final_mappings
+    return MappingColumns(raw_columns, dest_columns, previous_mapping, map_args,
+                          thresh).final_mappings
 
 
 def apply_initial_data(model, initial_data):

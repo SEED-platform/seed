@@ -240,6 +240,15 @@ class MappingColumns(object):
 
     @property
     def final_mappings(self):
+        """
+
+        Return the final mappings in a format that can be used downstream from this method
+        {
+            "raw_column_1": ('table', 'db_column_1', confidence),
+            "raw_column_2": ('table', 'db_column_1', confidence),
+        }
+
+        """
         result = {}
         for k, v in self.data.iteritems():
             result[k] = list(self.first_suggested_mapping(k))

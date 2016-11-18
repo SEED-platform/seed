@@ -17,7 +17,7 @@ from seed.views.main import (
     set_default_columns,
     get_default_building_detail_columns,
     set_default_building_detail_columns, get_columns,
-    # save_match,
+    save_match,
     get_match_tree,
     get_coparents,
     save_raw_data,
@@ -92,7 +92,7 @@ urlpatterns = [
         name='set_default_building_detail_columns'
     ),
     url(r'^' + apiv1 + r'get_columns/$', get_columns, name='get_columns'),
-    # url(r'^' + apiv1 + r'save_match/$', save_match, name='save_match'),
+    url(r'^' + apiv1 + r'save_match/$', save_match, name='save_match'),
     url(r'^' + apiv1 + r'get_match_tree/$', get_match_tree,
         name='get_match_tree'),
     url(r'^' + apiv1 + r'get_coparents/$', get_coparents,

@@ -912,7 +912,10 @@ def get_columns(request):
 # @ajax_request
 # @login_required
 # @has_perm('requires_member')
-# def save_match(request):
+def save_match(request):
+    return "DEPRECATE ME"
+
+
 #     """
 #     Adds or removes a match between two BuildingSnapshots.
 #     Creating a match creates a new BuildingSnapshot with merged data.
@@ -1311,19 +1314,9 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
     # Portfolio manager files have their own mapping scheme - yuck, really?
     if import_file.from_portfolio_manager:
         _log.info("map Portfolio Manager input file")
-        suggested_mappings = {}
-        ver = import_file.source_program_version
-
-        # if there is no pm mapping found but the file has already been matched
-        # then effectively the mappings are already known with a confidence of 100
-        no_pm_mappings_confidence = 100 if import_file.matching_done else 0
-
-        for col, item in simple_mapper.get_pm_mapping(ver,
-                                                      import_file.first_row_columns,
-                                                      include_none=True).items():
-            if item is None:
-                suggested_mappings[col] = (col, no_pm_mappings_confidence)
+        suggested_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns, True)
     else:
+        _log.info("custom mapping of input file")
         # All other input types
         suggested_mappings = mapper.build_column_mapping(
             import_file.first_row_columns,
@@ -1334,10 +1327,11 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
         )
         # replace None with empty string for column names and PropertyState for tables
         for m in suggested_mappings:
-            table, dest, conf = suggested_mappings[m]
-            if dest is None:
+            table, field, conf = suggested_mappings[m]
+            if field is None:
                 suggested_mappings[m][1] = u''
 
+    # Fix the table name, eventually move this to the build_column_mapping and build_pm_mapping
     for m in suggested_mappings:
         table, dest, conf = suggested_mappings[m]
         if not table:

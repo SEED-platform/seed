@@ -34,8 +34,8 @@ class TestMapper(TestCase):
             "super ft2": "value9"
         }
         for key in d:
-            d[key] = [d[key], {mapper.Mapping.META_BEDES: True,
-                               mapper.Mapping.META_TYPE: 'string'}]
+            d[key] = [d[key], {'bedes': True,
+                               'type': 'string'}]
         return StringIO(json.dumps(d))
 
     def setUp(self):
@@ -72,33 +72,35 @@ class TestMapper(TestCase):
         self.assertEqual(m['super ft_'].field, 'value9')
         self.assertEqual(m[(u"super ft" + u'\u00B2').encode('latin_1')].field, 'value9')
 
-    def test_mapping_conf(self):
-        conf = mapper.MappingConfiguration()
-        pm_mapping = conf.pm((1, 0))
-        self.assertIsInstance(pm_mapping, mapper.Mapping)
+    def test_mapping_pm_to_seed(self):
+        from_columns = [
+            "Address 1",
+            "Address_1",
+            "Property ID",
+            "Portfolio Manager Property ID",
+            "some_other_field_not_in_the_designated_PM_mapping",
+        ]
+        pm = mapper.get_pm_mapping(from_columns, False)
 
-    def test_mapping_pm_to_SEED(self):
-        expected = {"Address 1": "Address Line 1",
-                    "Property ID": "PM Property ID",
-                    "Portfolio Manager Property ID": "PM Property ID",
-                    "some_other_field_not_in_the_designated_PM_mapping": None}
-        pm = mapper.get_pm_mapping("1.0", expected.keys())
-        for src, tgt in expected.items():
-            if tgt:
-                self.assertEqual(pm[src].field, tgt)
-                self.assertEqual(pm[src].is_bedes, False)
-            else:
-                self.assertFalse(src in pm)
+        expected = {
+            u'Address 1': (u'PropertyState', u'address_line_1', 100),
+            u'Address_1': (u'PropertyState', u'address_line_1', 100),
+            u'Property ID': (u'PropertyState', u'pm_property_id', 100)
+        }
 
-    def test_mapping_pm_to_SEED_include_none(self):
-        expected = {"Address 1": "Address Line 1",
-                    "Property ID": "PM Property ID",
-                    "Portfolio Manager Property ID": "PM Property ID",
-                    "some_other_field_not_in_the_designated_PM_mapping": None}
-        pm = mapper.get_pm_mapping("1.0", expected.keys(), True)
-        for src, tgt in expected.items():
-            if tgt:
-                self.assertEqual(pm[src].field, tgt)
-                self.assertEqual(pm[src].is_bedes, False)
-            else:
-                self.assertIsNone(pm[src])
+        self.assertDictEqual(pm, expected)
+
+    # def test_mapping_pm_to_seed_include_none(self):
+    #     expected = {
+    #         "Address 1": "Address Line 1",
+    #         "Property id": "PM Property ID",
+    #         "Portfolio Manager Property ID": "PM Property ID",
+    #         "some_other_field_not_in_the_designated_PM_mapping": None
+    #     }
+    #     pm = mapper.get_pm_mapping(from_columns, True)
+    #     for src, tgt in expected.items():
+    #         if tgt:
+    #             self.assertEqual(pm[src].field, tgt)
+    #             self.assertEqual(pm[src].is_bedes, False)
+    #         else:
+    #             self.assertIsNone(pm[src])
