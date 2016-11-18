@@ -2262,7 +2262,6 @@ class TestMCMViews(TestCase):
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
         )
-        print(response)
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_column_mapping_suggestions_with_columns(self):
@@ -2289,7 +2288,6 @@ class TestMCMViews(TestCase):
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
         )
-        print(response)
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_raw_column_names(self):
