@@ -13,7 +13,7 @@ from seed.views.main import DataFileViewSet, version
 from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.users import UserViewSet
-
+from seed.views.api import get_api_schema
 
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
@@ -28,7 +28,12 @@ urlpatterns = [
     url(r'^', include(api_v2_router.urls)),
     # ajax routes
     url(r'^version/$', version, name='version'),
-
+    # api schema
+    url(
+        r'^schema/$',
+        get_api_schema,
+        name='schema'
+    ),
     url(
         r'projects-count/$',
         ProjectViewSet.as_view({'get': 'count'}),

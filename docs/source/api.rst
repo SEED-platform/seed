@@ -9,12 +9,12 @@ To request an API token, go to ``/app/#/profile/developer`` and click 'Get a New
 Every request must include an 'Authorization' http header made up of your username (email) and your API key,
 separated with a ':'.  For example, with curl::
 
-  curl -H Authorization:user@email_address.com:5edfd7f1f0696d4139118f8b95ab1f05d0dd418e https://seeddomain.com/app/api/get_api_schema/
+  curl -H Authorization:user@email_address.com:5edfd7f1f0696d4139118f8b95ab1f05d0dd418e https://seeddomain.com/api/v2/schema/
   
 Or using the Python Requests library::
 
   headers = {'authorization': 'user@email_address.com:5edfd7f1f0696d4139118f8b95ab1f05d0dd418e'}
-  result = requests.get('https://seeddomain.com/app/api/get_api_schema/', headers=headers)
+  result = requests.get('https://seeddomain.com/api/v2/schema/', headers=headers)
   print result.json()
 
 If authentication fails, the response's status code will be 302, redirecting the user to ``/app/login``.

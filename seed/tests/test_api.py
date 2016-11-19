@@ -105,7 +105,7 @@ class SchemaGenerationTests(TestCase):
         """
         Test of 'schema' generator.
         """
-        url = reverse('api:get_api_schema')
+        url = reverse('apiv2:schema')
         res = self.client.get(url)
         self.assertEqual(res.status_code, 200)
         endpoints = json.loads(res.content)
