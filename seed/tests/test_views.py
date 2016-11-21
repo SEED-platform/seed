@@ -1593,8 +1593,7 @@ class ImportFileViewsTests(TestCase):
         self.client.login(**user_details)
 
     def test_get_import_file(self):
-        response = self.client.get(reverse("seed:get_import_file"),
-                                   {'import_file_id': self.import_file.pk})
+        response = self.client.get(reverse("apiv2:import_files-detail", args=[self.import_file.pk]))
         self.assertEqual(self.import_file.pk,
                          json.loads(response.content)['import_file']['id'])
 

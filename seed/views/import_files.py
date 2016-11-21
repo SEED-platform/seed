@@ -18,7 +18,8 @@ from seed.authentication import SEEDAuthentication
 from seed.utils.api import api_endpoint_class
 from seed.decorators import ajax_request_class  # , require_organization_id_class
 # from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.data_importer.models import ImportFile, ROW_DELIMITER
+from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
+from seed.models import obj_to_dict
 
 _log = logging.getLogger(__name__)
 
@@ -29,9 +30,68 @@ class ImportFileViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
+    def retrieve(self, request, pk=None):
+        """
+        Retrieves details about an ImportFile.
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: either success or error
+            import_file:
+                type: ImportFile structure
+                description: full detail of import file
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: "Primary Key"
+              required: true
+              paramType: path
+        """
+
+        import_file_id = pk
+        orgs = request.user.orgs.all()
+        import_file = ImportFile.objects.get(
+            pk=import_file_id
+        )
+        d = ImportRecord.objects.filter(
+            super_organization__in=orgs, pk=import_file.import_record_id
+        )
+        # check if user has access to the import file
+        if not d.exists():
+            return JsonResponse({
+                'status': 'success',
+                'import_file': {},
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        f = obj_to_dict(import_file)
+        f['name'] = import_file.filename_only
+        f['dataset'] = obj_to_dict(import_file.import_record)
+        # add the importfiles for the matching select
+        f['dataset']['importfiles'] = []
+        files = f['dataset']['importfiles']
+        for i in import_file.import_record.files:
+            files.append({
+                'name': i.filename_only,
+                'id': i.pk
+            })
+        # make the first element in the list the current import file
+        i = files.index({
+            'name': import_file.filename_only,
+            'id': import_file.pk
+        })
+        files[0], files[i] = files[i], files[0]
+
+        return JsonResponse({
+            'status': 'success',
+            'import_file': f,
+        })
+
+    @api_endpoint_class
+    @ajax_request_class
     @detail_route(methods=['GET'])
     def first_five_rows(self, request, pk=None):
-
         """
         Retrieves the first five rows of an ImportFile.
         ---
