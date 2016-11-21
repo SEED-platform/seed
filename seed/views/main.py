@@ -1465,61 +1465,6 @@ def get_raw_column_names(request):
 @api_endpoint
 @ajax_request
 @login_required
-def get_first_five_rows(request):
-    """
-    Retrieves the first five rows of an ImportFile.
-
-    Payload::
-
-        {
-            'import_file_id': The ID of the ImportFile
-        }
-
-    Returns::
-
-        {
-            'status': 'success',
-            'first_five_rows': [
-                [list of strings of header row],
-                [list of strings of first data row],
-                ...
-                [list of strings of fifth data row]
-            ]
-        }
-    """
-    body = json.loads(request.body)
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
-
-    '''
-    import_file.cached_second_to_fifth_row is a field that contains the first
-    4 lines of data from the file, split on newlines, delimited by
-    ROW_DELIMITER. This becomes an issue when fields have newlines in them,
-    so the following is to handle newlines in the fields.
-    '''
-    lines = []
-    for l in import_file.cached_second_to_fifth_row.splitlines():
-        if ROW_DELIMITER in l:
-            lines.append(l)
-        else:
-            # Line caused by newline in data, concat it to previous line.
-            index = len(lines) - 1
-            lines[index] = lines[index] + '\n' + l
-
-    rows = [r.split(ROW_DELIMITER) for r in lines]
-
-    return {
-        'status': 'success',
-        'first_five_rows': [
-            dict(
-                zip(import_file.first_row_columns, row)
-            ) for row in rows
-        ]
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
 @has_perm('requires_member')
 def save_column_mappings(request):
     """

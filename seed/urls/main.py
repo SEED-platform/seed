@@ -25,7 +25,7 @@ from seed.views.main import (
     get_import_file, delete_file,
     get_column_mapping_suggestions,
     get_raw_column_names,
-    get_first_five_rows, save_column_mappings, start_mapping, remap_buildings,
+    save_column_mappings, start_mapping, remap_buildings,
     start_system_matching, public_search, export_buildings,
     export_buildings_progress,
     export_buildings_download, angular_js_tests, delete_organization_buildings,
@@ -141,11 +141,6 @@ urlpatterns = [
         r'^' + apiv1 + r'get_raw_column_names/$',
         get_raw_column_names,
         name='get_raw_column_names'
-    ),
-    url(
-        r'^' + apiv1 + r'get_first_five_rows/$',
-        get_first_five_rows,
-        name='get_first_five_rows'
     ),
     url(
         r'^' + apiv1 + r'save_column_mappings/$',

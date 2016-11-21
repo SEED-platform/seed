@@ -13,6 +13,7 @@ from seed.views.main import DataFileViewSet
 from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.users import UserViewSet
+from seed.views.import_files import ImportFileViewSet
 
 from seed.views.main import (
     progress
@@ -24,7 +25,8 @@ api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organiz
 api_v2_router.register(r'data_files', DataFileViewSet, base_name="data_files")
 api_v2_router.register(r'projects', ProjectViewSet, base_name="projects")
 api_v2_router.register(r'users', UserViewSet, base_name="users")
-# api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
+api_v2_router.register(r'import_files', ImportFileViewSet, base_name="import_files")
+api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
 
 urlpatterns = [
     # v2 api
