@@ -2253,7 +2253,7 @@ class TestMCMViews(TestCase):
         import_file = ImportFile.objects.create(
             import_record=self.import_record,
             cached_first_row=ROW_DELIMITER.join([u'name', u'address']),
-            source_program=mapper.Programs.PM
+            source_program='PortfolioManager'
         )
 
         post_data = {
