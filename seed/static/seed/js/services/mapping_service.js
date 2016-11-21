@@ -47,9 +47,8 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
         var defer = $q.defer();
 
         $http({
-            method: 'POST',
-            url: window.BE.urls.get_raw_column_names,
-            data: {import_file_id: import_file_id}
+            method: 'GET',
+            url: '/api/v2/import_files/' + import_file_id + '/raw_column_names/'
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {

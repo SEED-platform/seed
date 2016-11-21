@@ -9,6 +9,7 @@
 import logging
 
 from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
@@ -52,16 +53,23 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         import_file_id = pk
         orgs = request.user.orgs.all()
-        import_file = ImportFile.objects.get(
-            pk=import_file_id
-        )
-        d = ImportRecord.objects.filter(
-            super_organization__in=orgs, pk=import_file.import_record_id
-        )
+        try:
+            import_file = ImportFile.objects.get(
+                pk=import_file_id
+            )
+            d = ImportRecord.objects.filter(
+                super_organization__in=orgs, pk=import_file.import_record_id
+            )
+        except ObjectDoesNotExist as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Could not access an import file with this ID'
+            }, status=status.HTTP_403_FORBIDDEN)
         # check if user has access to the import file
         if not d.exists():
             return JsonResponse({
-                'status': 'success',
+                'status': 'error',
+                'message': 'Could not locate import file with this ID',
                 'import_file': {},
             }, status=status.HTTP_400_BAD_REQUEST)
 
@@ -142,4 +150,32 @@ class ImportFileViewSet(viewsets.ViewSet):
                     zip(import_file.first_row_columns, row)
                 ) for row in rows
             ]
+        })
+
+    @api_endpoint_class
+    @ajax_request_class
+    @detail_route(methods=['GET'])
+    def raw_column_names(self, request, pk=None):
+        """
+        Retrieves a list of all column names from an ImportFile.
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: either success or error
+            raw_columns:
+                type: array of strings
+                description: list of strings of the header row of the ImportFile
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: "Primary Key"
+              required: true
+              paramType: path
+        """
+        import_file = ImportFile.objects.get(pk=pk)
+        return JsonResponse({
+            'status': 'success',
+            'raw_columns': import_file.first_row_columns
         })

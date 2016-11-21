@@ -24,7 +24,6 @@ from seed.views.main import (
     delete_duplicates_from_import_file,
     delete_file,
     get_column_mapping_suggestions,
-    get_raw_column_names,
     save_column_mappings, start_mapping, remap_buildings,
     start_system_matching, public_search, export_buildings,
     export_buildings_progress,
@@ -134,11 +133,6 @@ urlpatterns = [
         r'^' + apiv1 + r'get_column_mapping_suggestions/$',
         get_column_mapping_suggestions,
         name='get_column_mapping_suggestions'
-    ),
-    url(
-        r'^' + apiv1 + r'get_raw_column_names/$',
-        get_raw_column_names,
-        name='get_raw_column_names'
     ),
     url(
         r'^' + apiv1 + r'save_column_mappings/$',

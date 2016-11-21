@@ -2301,11 +2301,8 @@ class TestMCMViews(TestCase):
 
     def test_get_raw_column_names(self):
         """Good case for ``get_raw_column_names``."""
-        resp = self.client.post(
-            reverse_lazy("seed:get_raw_column_names"),
-            data=json.dumps({
-                'import_file_id': self.import_file.id,
-            }),
+        resp = self.client.get(
+            reverse_lazy("apiv2:import_files-raw-column-names", args=[self.import_file.id]),
             content_type='application/json'
         )
 

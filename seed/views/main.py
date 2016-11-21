@@ -58,7 +58,6 @@ from seed.models import (
     get_column_mapping,
     save_snapshot_match,
     unmatch_snapshot_tree as unmatch_snapshot,
-    obj_to_dict,
     DATA_STATE_MAPPING,
 )
 from seed.utils.api import api_endpoint, api_endpoint_class
@@ -1429,37 +1428,6 @@ class DataFileViewSet(viewsets.ViewSet):
         result = tmp_mapping_suggestions(pk, org_id, request.user)
 
         return JsonResponse(result)
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def get_raw_column_names(request):
-    """
-    Retrieves a list of all column names from an ImportFile.
-
-    Payload::
-
-        {
-            'import_file_id': The ID of the ImportFile
-        }
-
-    Returns::
-
-        {
-            'status': 'success',
-            'raw_columns': [
-                list of strings of the header row of the ImportFile
-            ]
-        }
-    """
-    body = json.loads(request.body)
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
-
-    return {
-        'status': 'success',
-        'raw_columns': import_file.first_row_columns
-    }
 
 
 @api_endpoint
