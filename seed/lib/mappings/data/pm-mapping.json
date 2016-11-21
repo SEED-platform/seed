@@ -189,11 +189,11 @@
     "schema": ""
   },
   {
-    "display_name": "National Median Total GHG Emissions (Metric Tons CO2e)",
-    "to_field": "national_median_total_ghg_emissions_(metric_tons_co2e)",
+    "display_name": "National Median Total GHG Emissions",
+    "to_field": "national_median_total_ghg_emissions",
     "to_table_name": "PropertyState",
     "from_field": "medianTotalGHGEmissions",
-    "units": "",
+    "units": "Metric Tons CO2e",
     "type": "float",
     "schema": ""
   },
@@ -271,7 +271,7 @@
   },
   {
     "display_name": "Property Floor Area (Buildings and Parking)",
-    "to_field": "property_floor_area_(buildings_and_parking)",
+    "to_field": "property_floor_area_buildings_and_parking",
     "to_table_name": "PropertyState",
     "from_field": "propertyFloorAreaBuildingsAndParking",
     "units": "ft2",
@@ -289,7 +289,7 @@
   },
   {
     "display_name": "Property Floor Area (Parking)",
-    "to_field": "property_floor_area_(parking)",
+    "to_field": "property_floor_area_parking",
     "to_table_name": "PropertyState",
     "from_field": "propertyFloorAreaParking",
     "units": "ft2",
@@ -342,11 +342,11 @@
     "schema": ""
   },
   {
-    "display_name": "Site Energy Use (kBtu)",
-    "to_field": "site_energy_use_(kbtu)",
+    "display_name": "Site Energy Use",
+    "to_field": "site_energy_use",
     "to_table_name": "PropertyState",
     "from_field": "siteTotal",
-    "units": "",
+    "units": "kBtu",
     "type": "float",
     "schema": ""
   },
@@ -378,11 +378,11 @@
     "schema": ""
   },
   {
-    "display_name": "Source Energy Use (kBtu)",
-    "to_field": "source_energy_use_(kbtu)",
+    "display_name": "Source Energy Use",
+    "to_field": "source_energy_use",
     "to_table_name": "PropertyState",
     "from_field": "sourceTotal",
-    "units": "",
+    "units": "kBtu",
     "type": "float",
     "schema": ""
   },
