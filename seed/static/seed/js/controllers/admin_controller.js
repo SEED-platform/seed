@@ -102,7 +102,6 @@ angular.module('BE.seed.controller.admin', [])
               return sum + cycle.num_properties + cycle.num_taxlots;
             }, 0);
           });
-          console.debug($scope.org_user.organizations);
         }, function (data, status) {
           // reject promise
           console.log({message: 'error from data call', status: status, data: data});
@@ -161,21 +160,16 @@ angular.module('BE.seed.controller.admin', [])
        */
       $scope.delete_org_inventory = function (org) {
         org.progress = 0;
-        organization_service.delete_organization_buildings(org.org_id)
+        organization_service.delete_organization_inventory(org.org_id)
           .then(function (data) {
             // resolve promise
-            uploader_service.check_progress_loop(
-              data.progress_key,  // key
-              0, //starting prog bar percentage
-              1.0,  // progress multiplier
-              function (data) {  //success fn
+            uploader_service.check_progress_loop(data.progress_key, 0, 1, function (data) {
                 org.remove_message = 'success';
                 get_organizations();
               }, function (data) {  //failure fn
                 // Do nothing
               },
-              org  // progress bar obj
-            );
+              org);
           });
       };
 
