@@ -29,7 +29,6 @@ from seed.authentication import SEEDAuthentication
 from seed.common import views as vutil
 from seed.data_importer.models import ImportFile, ImportRecord  # , ROW_DELIMITER
 from seed.data_importer.tasks import (
-    map_data,
     remap_data,
     match_buildings,
     save_raw_data as task_save_raw,
@@ -1458,37 +1457,6 @@ def save_raw_data(request):
             }
 
     return task_save_raw(import_file_id)
-
-
-# Move to data_mapping
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def start_mapping(request):
-    """
-    Starts a background task to convert imported raw data into
-    BuildingSnapshots, using user's column mappings.
-
-    Payload::
-
-        {
-            'file_id': The ID of the ImportFile to be mapped
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    body = json.loads(request.body)
-    import_file_id = body.get('file_id')
-    if not import_file_id:
-        return {'status': 'error'}
-
-    return map_data(import_file_id)
 
 
 @api_endpoint

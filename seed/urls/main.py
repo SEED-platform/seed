@@ -23,7 +23,7 @@ from seed.views.main import (
     delete_duplicates_from_import_file,
     delete_file,
     get_column_mapping_suggestions,
-    save_column_mappings, start_mapping, remap_buildings,
+    save_column_mappings, remap_buildings,
     start_system_matching, public_search, export_buildings,
     export_buildings_progress,
     export_buildings_download, angular_js_tests, delete_organization_buildings,
@@ -133,8 +133,6 @@ urlpatterns = [
         save_column_mappings,
         name='save_column_mappings'
     ),
-    url(r'^' + apiv1 + r'start_mapping/$', start_mapping,
-        name='start_mapping'),
     url(r'^' + apiv1 + r'remap_buildings/$', remap_buildings,
         name='remap_buildings'),
     url(

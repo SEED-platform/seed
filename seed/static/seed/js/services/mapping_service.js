@@ -104,11 +104,7 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            url: window.BE.urls.start_mapping,
-            data: {
-                file_id: import_file_id,
-                organization_id: user_service.get_organization().id
-            }
+            url: '/api/v2/import_files/' + import_file_id + '/perform_mapping/'
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {

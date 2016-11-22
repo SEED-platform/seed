@@ -18,7 +18,7 @@ from rest_framework.decorators import detail_route  # , list_route
 from seed.authentication import SEEDAuthentication
 from seed.utils.api import api_endpoint_class
 from seed.decorators import ajax_request_class  # , require_organization_id_class
-# from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from django.contrib.postgres.fields import JSONField
 from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
 from seed.models import (
@@ -26,6 +26,9 @@ from seed.models import (
     PropertyState,
     TaxLotState,
     DATA_STATE_MAPPING,
+)
+from seed.data_importer.tasks import (
+    map_data,
 )
 from seed.utils.mapping import get_mappable_types
 from .. import search
@@ -309,3 +312,30 @@ class ImportFileViewSet(viewsets.ViewSet):
             'number_tax_lots_returned': len(tax_lots),
             'number_tax_lots_matching_search': tax_lots_count,
         }
+
+    # Move to data_mapping
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def perform_mapping(self, request, pk=None):
+        """
+        Starts a background task to convert imported raw data into
+        BuildingSnapshots, using user's column mappings.
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: either success or error
+            progress_key:
+                type: integer
+                description: ID of background job, for retrieving job progress
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Import file ID
+              required: true
+              paramType: path
+        """
+        return map_data(pk)
