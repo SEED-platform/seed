@@ -7,30 +7,32 @@
 
 # import datetime
 import logging
-
-from django.http import JsonResponse
+import csv
+from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework import viewsets, serializers
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import detail_route  # , list_route
 
 from seed.authentication import SEEDAuthentication
-from seed.utils.api import api_endpoint_class
-from seed.decorators import ajax_request_class  # , require_organization_id_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
-from django.contrib.postgres.fields import JSONField
+from seed.cleansing.models import Cleansing
 from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
+from seed.data_importer.tasks import (
+    map_data,
+    match_buildings,
+)
+from seed.decorators import ajax_request_class, get_prog_key
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     obj_to_dict,
     PropertyState,
     TaxLotState,
     DATA_STATE_MAPPING,
 )
-from seed.data_importer.tasks import (
-    map_data,
-    match_buildings,
-)
+from seed.utils.api import api_endpoint_class
+from seed.utils.cache import get_cache_raw, get_cache
 from seed.utils.mapping import get_mappable_types
 from .. import search
 
@@ -366,3 +368,113 @@ class ImportFileViewSet(viewsets.ViewSet):
               paramType: path
         """
         return match_buildings(pk, request.user.pk)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @detail_route(methods=['GET'], url_path='cleansing_results.json')
+    def get_cleansing_results(self, request, pk=None):
+        """
+        Retrieve the details of the cleansing script.
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: either success or error
+            message:
+                type: string
+                description: additional information, if any
+            progress:
+                type: integer
+                description: integer percent of completion
+            data:
+                type: JSON
+                description: object describing the results of the cleansing
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Import file ID
+              required: true
+              paramType: path
+        """
+        import_file_id = pk
+        cleansing_results = get_cache_raw(Cleansing.cache_key(import_file_id))
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Cleansing complete',
+            'progress': 100,
+            'data': cleansing_results
+        })
+
+    @api_endpoint_class
+    @ajax_request_class
+    @detail_route(methods=['GET'])
+    def cleansing_progress(self, request, pk=None):
+        """
+        Return the progress of the cleansing.
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: either success or error
+            progress:
+                type: integer
+                description: status of background cleansing task
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Import file ID
+              required: true
+              paramType: path
+        """
+
+        import_file_id = pk
+        prog_key = get_prog_key('get_progress', import_file_id)
+        cache = get_cache(prog_key)
+        return HttpResponse(cache['progress'])
+
+    @api_endpoint_class
+    @ajax_request_class
+    @detail_route(methods=['GET'], url_path='cleansing_results.csv')
+    def get_csv(self, request, pk=None):
+        """
+        Download a csv of the results.
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: either success or error
+            progress_key:
+                type: integer
+                description: ID of background job, for retrieving job progress
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Import file ID
+              required: true
+              paramType: path
+        """
+
+        import_file_id = pk
+        cleansing_results = get_cache_raw(Cleansing.cache_key(import_file_id))
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="Data Cleansing Results.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
+                         'Error Message', 'Severity'])
+        for row in cleansing_results:
+            for result in row['cleansing_results']:
+                writer.writerow([
+                    row['address_line_1'],
+                    row['pm_property_id'],
+                    row['tax_lot_id'],
+                    row['custom_id_1'],
+                    result['formatted_field'],
+                    result['detailed_message'],
+                    result['severity']
+                ])
+
+        return response
