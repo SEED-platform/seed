@@ -26,12 +26,14 @@ from seed.views.main import (
     public_search, export_buildings,
     export_buildings_progress,
     export_buildings_download, angular_js_tests, delete_organization_buildings,
+    delete_organization_inventory,
     delete_buildings
 )
 from seed.views.properties import (
     create_cycle,
     get_cycles,
-    update_cycle
+    update_cycle,
+    delete_cycle
 )
 
 # prefix, to revert back to original endpoints, leave this blank
@@ -43,6 +45,7 @@ urlpatterns = [
     url(r'^' + apiv1 + r'create_cycle/$', create_cycle, name='create_cycle'),
     url(r'^' + apiv1 + r'get_cycles/$', get_cycles, name='get_cycles'),
     url(r'^' + apiv1 + r'update_cycle/$', update_cycle, name='update_cycle'),
+    url(r'^' + apiv1 + r'delete_cycle/$', delete_cycle, name='delete_cycle'),
 
     # template routes
     url(r'^$', home, name='home'),
@@ -160,6 +163,11 @@ urlpatterns = [
         r'^' + apiv1 + r'delete_organization_buildings/$',
         delete_organization_buildings,
         name='delete_organization_buildings'
+    ),
+    url(
+        r'^' + apiv1 + r'delete_organization_inventory/$',
+        delete_organization_inventory,
+        name='delete_organization_inventory'
     ),
 
     # delete

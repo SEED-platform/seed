@@ -890,11 +890,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       controller: 'cycle_admin_controller',
       resolve: {
         organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-          var organization_id = $stateParams.organization_id;
-          return organization_service.get_organization(organization_id);
+          return organization_service.get_organization($stateParams.organization_id);
         }],
-        cycles_payload: ['cycle_service', function (cycle_service) {
-          return cycle_service.get_cycles();
+        cycles_payload: ['cycle_service', '$stateParams', function (cycle_service, $stateParams) {
+          return cycle_service.get_cycles_for_org($stateParams.organization_id);
         }],
         auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
           var organization_id = $stateParams.organization_id;
@@ -1005,17 +1004,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
         }],
         user_profile_payload: ['user_service', function (user_service) {
           return user_service.get_user_profile();
-        }]
-      }
-    })
-    .state({
-      name: 'cycle_admin',
-      url: '/accounts/{organization_id:int}/cycle_admin',
-      templateUrl: static_url + 'seed/partials/cycle_admin.html',
-      controller: 'cycle_admin_controller',
-      resolve: {
-        cycles_payload: ['cycle_service', function (cycle_service) {
-          return cycle_service.get_cycles();
         }]
       }
     })

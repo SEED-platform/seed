@@ -33,14 +33,18 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
 
     */
 
-    cycle_factory.get_cycles = function () {
+    cycle_factory.get_cycles = function() {
+      return cycle_factory.get_cycles_for_org(user_service.get_organization().id);
+    };
+
+    cycle_factory.get_cycles_for_org = function (org_id) {
       var defer = $q.defer();
 
       $http({
         method: 'GET',
         url: window.BE.urls.get_cycles,
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: org_id
         }
       }).success(function (data, status, headers, config) {
         defer.resolve(data);
@@ -62,13 +66,17 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
 
     */
     cycle_factory.create_cycle = function (cycle) {
+      return cycle_factory.create_cycle_for_org(cycle, user_service.get_organization().id);
+    };
+
+    cycle_factory.create_cycle_for_org = function (cycle, org_id) {
       var defer = $q.defer();
       $http({
         method: 'POST',
         url: window.BE.urls.create_cycle,
         data: cycle,
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: org_id
         }
       }).success(function (data, status, headers, config) {
         defer.resolve(data);
@@ -89,13 +97,38 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
                                 or an error if not.
     */
     cycle_factory.update_cycle = function (cycle) {
+      return cycle_factory.update_cycle_for_org(cycle, user_service.get_organization().id);
+    };
+
+    cycle_factory.update_cycle_for_org = function (cycle, org_id) {
       var defer = $q.defer();
       $http({
         method: 'PUT',
         url: window.BE.urls.update_cycle,
         data: cycle,
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: org_id
+        }
+      }).success(function (data, status, headers, config) {
+        defer.resolve(data);
+      }).error(function (data, status, headers, config) {
+        defer.reject(data, status);
+      });
+      return defer.promise;
+    };
+
+    cycle_factory.delete_cycle = function (cycle) {
+      return cycle_factory.delete_cycle_for_org(cycle, user_service.get_organization().id);
+    };
+
+    cycle_factory.delete_cycle_for_org = function (cycle, org_id) {
+      var defer = $q.defer();
+      $http({
+        method: 'DELETE',
+        url: window.BE.urls.delete_cycle,
+        data: cycle,
+        params: {
+          organization_id: org_id
         }
       }).success(function (data, status, headers, config) {
         defer.resolve(data);
