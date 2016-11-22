@@ -1469,13 +1469,12 @@ class SearchBuildingSnapshotsViewTests(TestCase):
             'page': 1,
             'q': '',
             'sort_reverse': False,
-            'project_id': None,
-            'import_file_id': import_file.pk
+            'project_id': None
         }
 
         # act
         response = self.client.post(
-            reverse_lazy("seed:search_mapping_results"),
+            reverse_lazy("apiv2:import_files-search-mapping-results", args=[import_file.pk]),
             content_type='application/json',
             data=json.dumps(post_data)
         )

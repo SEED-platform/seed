@@ -12,7 +12,6 @@ from seed.views.main import (
     get_total_number_of_buildings_for_user,         # TO REMOVE
     get_building,                                   # TO REMOVE
     search_buildings,                               # TO REMOVE
-    search_mapping_results,
     get_default_columns,
     set_default_columns,
     get_default_building_detail_columns,
@@ -64,11 +63,6 @@ urlpatterns = [
     url(r'^' + apiv1 + r'get_building/$', get_building, name='get_building'),
     url(r'^' + apiv1 + r'search_buildings/$', search_buildings,
         name='search_buildings'),
-    url(
-        r'^' + apiv1 + r'search_mapping_results/$',
-        search_mapping_results,
-        name='search_mapping_results'
-    ),
     url(
         r'^' + apiv1 + r'get_default_columns/$',
         get_default_columns,

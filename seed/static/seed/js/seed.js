@@ -1138,7 +1138,6 @@ SEED_app.config(['$compileProvider', function ($compileProvider) {
  */
 SEED_app.constant('urls', {
   search_buildings: BE.urls.search_buildings_url,
-  search_mapping_results: BE.urls.search_mapping_results,
   save_match: BE.urls.save_match_url,
   seed_home: BE.urls.seed_home,
   // update_building: BE.urls.update_building,

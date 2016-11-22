@@ -47,8 +47,6 @@ from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
-    PropertyState,
-    TaxLotState,
     Cycle,
     BuildingSnapshot,
     CanonicalBuilding,
@@ -58,7 +56,6 @@ from seed.models import (
     get_column_mapping,
     save_snapshot_match,
     unmatch_snapshot_tree as unmatch_snapshot,
-    DATA_STATE_MAPPING,
 )
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.buildings import (
@@ -66,7 +63,6 @@ from seed.utils.buildings import (
     get_buildings_for_user_count
 )
 from seed.utils.cache import get_cache, set_cache
-from seed.utils.mapping import get_mappable_types
 from seed.utils.projects import (
     get_projects,
 )
@@ -687,129 +683,6 @@ def search_buildings(request):
         'buildings': buildings,
         'number_matching_search': building_count,
         'number_returned': len(buildings)
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def search_mapping_results(request):
-    """
-    Retrieves a paginated list of Properties and Tax Lots for a specific import file after mapping.
-
-    Payload::
-
-        {
-            'q': a string to search on (optional),
-            'order_by': which field to order by (e.g. pm_property_id),
-            'import_file_id': ID of an import to limit search to,
-            'filter_params': {
-                a hash of Django-like filter parameters to limit query.  See seed.search.filter_other_params.
-            }
-            'page': Which page of results to retrieve (default: 1),
-            'number_per_page': Number of buildings to retrieve per page (default: 10),
-        }
-
-    Returns::
-
-        {
-            'status': 'success',
-            'properties': [
-                {
-                    'pm_property_id': ID of building (from Portfolio Manager),
-                    'address_line_1': First line of building's address,
-                    'property_name': Building's name, if any
-                },
-                ...
-            ],
-            'tax_lots': [
-                {
-                    'pm_property_id': ID of building (from Portfolio Manager),
-                    'address_line_1': First line of building's address,
-                    'jurisdiction_tax_lot_id': Tax lot id,
-                    ...
-                },
-                ...
-            ]
-            'number_properties_matching_search': Total number of properties matching search,
-            'number_properties_returned': Number of properties returned for this page,
-            'number_tax_lots_matching_search': Total number of tax lots matching search,
-            'number_tax_lots_returned': Number of tax lots returned for this page
-        }
-    """
-    body = json.loads(request.body)
-    q = body.get('q', '')
-    other_search_params = body.get('filter_params', {})
-    # order_by = body.get('order_by', 'pm_property_id')
-    # if not order_by or order_by == '':
-    #     order_by = 'pm_property_id'
-    order_by = 'id'
-    sort_reverse = body.get('sort_reverse', False)
-    page = int(body.get('page', 1))
-    number_per_page = int(body.get('number_per_page', 10))
-    import_file_id = body.get(
-        'import_file_id'
-    ) or other_search_params.get('import_file_id')
-    if sort_reverse:
-        order_by = "-%s" % order_by
-
-    properties_initial_qs = PropertyState.objects.order_by(order_by).filter(
-        import_file__pk=import_file_id,
-        data_state=DATA_STATE_MAPPING,
-    )
-    taxlots_initial_qs = TaxLotState.objects.order_by(order_by).filter(
-        import_file__pk=import_file_id,
-        data_state=DATA_STATE_MAPPING,
-    )
-
-    fieldnames = [
-        # 'pm_property_id',
-        'address_line_1',
-        'property_name',
-    ]
-    # add some filters to the dict of known column names so search_buildings
-    # doesn't parse them as extra_data
-    # TODO: remove the use of get_mappable_types and replace with MappingData.
-    db_columns = get_mappable_types()
-    db_columns['children__isnull'] = ''
-    db_columns['children'] = ''
-    db_columns['project__slug'] = ''
-    db_columns['import_file_id'] = ''
-
-    # search the query sets
-    properties_queryset = search.search_buildings(
-        q, fieldnames=fieldnames, queryset=properties_initial_qs
-    )
-    properties_queryset = search.filter_other_params(
-        properties_queryset, other_search_params, db_columns
-    )
-    properties, properties_count = search.generate_paginated_results(
-        properties_queryset, number_per_page=number_per_page, page=page,
-        matching=True
-    )
-
-    taxlots_queryset = search.search_buildings(
-        q, fieldnames=fieldnames, queryset=taxlots_initial_qs
-    )
-    taxlots_queryset = search.filter_other_params(
-        taxlots_queryset, other_search_params, db_columns
-    )
-    tax_lots, tax_lots_count = search.generate_paginated_results(
-        taxlots_queryset, number_per_page=number_per_page, page=page,
-        matching=True
-    )
-
-    _log.debug("I found {} properties".format(len(properties)))
-    _log.debug("I found {} tax lots".format(len(tax_lots)))
-
-    return {
-        'status': 'success',
-        'properties': properties,
-        'tax_lots': tax_lots,
-        'number_properties_returned': len(properties),
-        'number_properties_matching_search': properties_count,
-        'number_tax_lots_returned': len(tax_lots),
-        'number_tax_lots_matching_search': tax_lots_count,
     }
 
 

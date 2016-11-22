@@ -101,7 +101,6 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.show_mapped_buildings = false;
 
       $scope.search = angular.copy(search_service);
-      $scope.search.url = urls.search_mapping_results;
       $scope.search.has_checkbox = false;
       $scope.search.update_results();
 
@@ -392,7 +391,7 @@ angular.module('BE.seed.controller.mapping', [])
             q: '',
             sort_reverse: false
           },
-          url: urls.search_mapping_results
+          url: '/api/v2/import_files/' + $scope.import_file_id + '/filtered_mapping_results/'
         }).success(function (data, status, headers, config) {
           spinner_utility.hide();
 
