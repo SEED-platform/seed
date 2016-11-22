@@ -14,7 +14,7 @@ from django.http import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework import viewsets, serializers
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import detail_route  # , list_route
+from rest_framework.decorators import detail_route
 
 from seed.authentication import SEEDAuthentication
 from seed.cleansing.models import Cleansing
@@ -22,6 +22,7 @@ from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
 from seed.data_importer.tasks import (
     map_data,
     match_buildings,
+    save_raw_data as task_save_raw,
 )
 from seed.decorators import ajax_request_class, get_prog_key
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -30,6 +31,7 @@ from seed.models import (
     PropertyState,
     TaxLotState,
     DATA_STATE_MAPPING,
+    Cycle,
 )
 from seed.utils.api import api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
@@ -478,3 +480,73 @@ class ImportFileViewSet(viewsets.ViewSet):
                 ])
 
         return response
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def save_raw_data(self, request, pk=None):
+        """
+        Starts a background task to import raw data from an ImportFile
+        into PropertyState objects as extra_data. If the cycle_id is set to
+        year_ending then the cycle ID will be set to the year_ending column for each
+        record in the uploaded file. Note that the year_ending flag is not yet enabled.
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: either success or error
+            message:
+                required: false
+                type: string
+                description: error message, if any
+            progress_key:
+                type: integer
+                description: ID of background job, for retrieving job progress
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Import file ID
+              required: true
+              paramType: path
+            - name: cycle_id
+              description: The ID of the cycle or the string "year_ending"
+              paramType: string
+              required: true
+        """
+        body = request.data
+        import_file_id = pk
+        if not import_file_id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'must pass file_id of file to save'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        cycle_id = body.get('cycle_id')
+        if not cycle_id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'must pass cycle_id of the cycle to save the data'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        elif cycle_id == 'year_ending':
+            _log.error("NOT CONFIGURED FOR YEAR ENDING OPTION AT THE MOMENT")
+            return JsonResponse({
+                'status': 'error',
+                'message': 'SEED is unable to parse year_ending at the moment'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # find the cycle
+            cycle = Cycle.objects.get(id=cycle_id)
+            if cycle:
+                # assign the cycle id to the import file object
+                import_file = ImportFile.objects.get(id=import_file_id)
+                import_file.cycle = cycle
+                import_file.save()
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'cycle_id was invalid'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        return JsonResponse(task_save_raw(import_file_id))

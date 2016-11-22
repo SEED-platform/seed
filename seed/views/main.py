@@ -30,7 +30,6 @@ from seed.common import views as vutil
 from seed.data_importer.models import ImportFile, ImportRecord  # , ROW_DELIMITER
 from seed.data_importer.tasks import (
     remap_data,
-    save_raw_data as task_save_raw,
 )
 from seed.decorators import (
     ajax_request, ajax_request_class, get_prog_key, require_organization_id
@@ -45,7 +44,6 @@ from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
-    Cycle,
     BuildingSnapshot,
     CanonicalBuilding,
     Column,
@@ -1393,69 +1391,6 @@ def delete_file(request):
     return {
         'status': 'success',
     }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def save_raw_data(request):
-    """
-    Starts a background task to import raw data from an ImportFile
-    into PropertyState objects as extra_data. If the cycle_id is set to
-    year_ending then the cycle ID will be set to the year_ending column for each
-    record in the uploaded file. Note that the year_ending flag is not yet enabled.
-
-    Payload::
-
-        {
-            'file_id': The ID of the ImportFile to be saved
-            'cycle_id': The ID of the cycle or the string 'year_ending'
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'message': 'message about there error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    body = json.loads(request.body)
-    import_file_id = body.get('file_id')
-    if not import_file_id:
-        return {
-            'status': 'error',
-            'message': 'must pass file_id of file to save'
-        }
-
-    cycle_id = body.get('cycle_id')
-    if not cycle_id:
-        return {
-            'status': 'error',
-            'message': 'must pass cycle_id of the cycle to save the data'
-        }
-    elif cycle_id == 'year_ending':
-        _log.error("NOT CONFIGURED FOR YEAR ENDING OPTION AT THE MOMENT")
-        return {
-            'status': 'error',
-            'message': 'SEED is unable to parse year_ending at the moment'
-        }
-    else:
-        # find the cycle
-        cycle = Cycle.objects.get(id=cycle_id)
-        if cycle:
-            # assign the cycle id to the import file object
-            import_file = ImportFile.objects.get(id=import_file_id)
-            import_file.cycle = cycle
-            import_file.save()
-        else:
-            return {
-                'status': 'error',
-                'message': 'cycle_id was invalid'
-            }
-
-    return task_save_raw(import_file_id)
 
 
 @api_endpoint
