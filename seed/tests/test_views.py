@@ -2464,7 +2464,7 @@ class TestMCMViews(TestCase):
         }
         set_cache(progress_key, 'parsing', test_progress)
         resp = self.client.post(
-            reverse_lazy("seed:progress"),
+            reverse_lazy("apiv2:progress"),
             data=json.dumps({
                 'progress_key': progress_key,
             }),

@@ -9,7 +9,7 @@ from rest_framework import routers
 
 from api.views import TestReverseViewSet, test_view_with_arg
 from seed.views.datasets import DatasetViewSet
-from seed.views.main import DataFileViewSet, version
+from seed.views.main import DataFileViewSet, version, progress
 from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.users import UserViewSet
@@ -33,6 +33,11 @@ urlpatterns = [
         r'^schema/$',
         get_api_schema,
         name='schema'
+    ),
+    url(
+        r'^progress/$',
+        progress,
+        name='progress'
     ),
     url(
         r'projects-count/$',
