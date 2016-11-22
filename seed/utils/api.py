@@ -69,6 +69,7 @@ def get_all_urls(urllist, prefix=''):
         else:
             yield (prefix + entry.regex.pattern, entry.callback)
 
+
 # API endpoint decorator
 # simple list of all 'registered' endpoints
 endpoints = []

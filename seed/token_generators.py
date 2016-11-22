@@ -94,4 +94,5 @@ class SignupTokenGenerator(object):
         # Used for mocking in tests
         return date.today()
 
+
 signup_token_generator = SignupTokenGenerator()
