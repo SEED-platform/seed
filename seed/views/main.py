@@ -30,7 +30,6 @@ from seed.common import views as vutil
 from seed.data_importer.models import ImportFile, ImportRecord  # , ROW_DELIMITER
 from seed.data_importer.tasks import (
     remap_data,
-    match_buildings,
     save_raw_data as task_save_raw,
 )
 from seed.decorators import (
@@ -1489,36 +1488,6 @@ def remap_buildings(request):
         return {'status': 'error', 'message': 'Import File does not exist'}
 
     return remap_data(import_file_id)
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def start_system_matching(request):
-    """
-    Starts a background task to attempt automatic matching between buildings
-    in an ImportFile with other existing buildings within the same org.
-
-    Payload::
-
-        {
-            'file_id': The ID of the ImportFile to be matched
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    body = json.loads(request.body)
-    import_file_id = body.get('file_id')
-    if not import_file_id:
-        return {'status': 'error'}
-
-    return match_buildings(import_file_id, request.user.pk)
 
 
 @api_endpoint

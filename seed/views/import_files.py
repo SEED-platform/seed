@@ -29,6 +29,7 @@ from seed.models import (
 )
 from seed.data_importer.tasks import (
     map_data,
+    match_buildings,
 )
 from seed.utils.mapping import get_mappable_types
 from .. import search
@@ -226,7 +227,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @detail_route(methods=['POST'])
     def filtered_mapping_results(self, request, pk=None):
         """
-        Retrieves a paginated list of Properties and Tax Lots for a specific import file after mapping.
+        Retrieves a paginated list of Properties and Tax Lots for an import file after mapping.
         ---
         parameter_strategy: replace
         parameters:
@@ -339,3 +340,29 @@ class ImportFileViewSet(viewsets.ViewSet):
               paramType: path
         """
         return map_data(pk)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def start_system_matching(self, request, pk=None):
+        """
+        Starts a background task to attempt automatic matching between buildings
+        in an ImportFile with other existing buildings within the same org.
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: either success or error
+            progress_key:
+                type: integer
+                description: ID of background job, for retrieving job progress
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Import file ID
+              required: true
+              paramType: path
+        """
+        return match_buildings(pk, request.user.pk)
