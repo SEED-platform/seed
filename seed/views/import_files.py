@@ -98,7 +98,7 @@ class ImportFileViewSet(viewsets.ViewSet):
             d = ImportRecord.objects.filter(
                 super_organization__in=orgs, pk=import_file.import_record_id
             )
-        except ObjectDoesNotExist as e:
+        except ObjectDoesNotExist:
             return JsonResponse({
                 'status': 'error',
                 'message': 'Could not access an import file with this ID'
