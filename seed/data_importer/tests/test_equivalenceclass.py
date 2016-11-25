@@ -37,13 +37,15 @@ class TaxLotState(EZState):
 
 class TestEquivalenceClassGenerator(TestCase):
 
-    def test_equivalence(self):
+    def test_property_equivalence(self):
         partitioner = EquivalencePartitioner.makePropertyStateEquivalence()
 
         p1 = PropertyState(pm_property_id=100)
         p2 = PropertyState(pm_property_id=100)
         p3 = PropertyState(pm_property_id=200)
         p4 = PropertyState(custom_id_1=100)
+        p5 = PropertyState(pm_property_id=101, custom_id_1=100)
+
 
         equivalence_classes = partitioner.calculate_equivalence_classes([p1, p2])
         self.assertEqual(len(equivalence_classes), 1)
@@ -53,6 +55,14 @@ class TestEquivalenceClassGenerator(TestCase):
 
         equivalence_classes = partitioner.calculate_equivalence_classes([p1, p4])
         self.assertEqual(len(equivalence_classes), 1)
+
+        equivalence_classes = partitioner.calculate_equivalence_classes([PropertyState(pm_property_id=100),
+                                                                         PropertyState(pm_property_id=101, custom_id=100)])
+        self.assertEqual( len(equivalence_classes), 2)
+
+        equivalence_classes = partitioner.calculate_equivalence_classes([PropertyState(pm_property_id=100, normalized_address="123 Fake St"),
+                                                                         PropertyState(pm_property_id=101, normalized_address="123 Fake St")])
+        self.assertEqual(len(equivalence_classes), 2)
 
         return
 
