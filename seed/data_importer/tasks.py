@@ -1052,19 +1052,28 @@ class EquivalencePartitioner(object):
         property_equivalence_fields = [("pm_property_id", "custom_id_1"),
                                        ("custom_id_1",),
                                        ("normalized_address",)]
-        return kls(property_equivalence_fields)
+        property_noequivalence_fields = ["pm_property_id"]
+
+        return kls(property_equivalence_fields, property_noequivalence_fields)
 
     @classmethod
     def makeTaxLotStateEquivalence(kls):
         tax_lot_equivalence_fields = [("jurisdiction_tax_lot_id", "custom_id_1"),
                                       ("custom_id_1",),
                                       ("normalized_address",)]
-        return kls(tax_lot_equivalence_fields)
+        tax_lot_noequivalence_fields = ["jurisdiction_tax_lot_id"]
+        return kls(tax_lot_equivalence_fields, tax_lot_noequivalence_fields)
 
-    def __init__(self, equivalence_class_description):
+    def __init__(self, equivalence_class_description, identity_fields):
+        # If identify fields are not equal between two classes then we
+        # force the class to not be equivalent.
+
         # self.equiv_compare_func = self.makeKeyEquivalenceFunction(equivalence_class_description)
         self.equiv_comparison_key_func = self.makeResolvedKeyCalculationFunction(equivalence_class_description)
         self.equiv_canonical_key_func = self.makeCanonicalKeyCalculationFunction(equivalence_class_description)
+
+        self.identity_key_func = self.makeCanonicalKeyCalculationFunction([(x,) for x in identity_fields])
+
         return
 
     def calculate_comparison_key(self, obj):
@@ -1073,8 +1082,8 @@ class EquivalencePartitioner(object):
     def calculate_canonical_key(self, obj):
         return self.equiv_canonical_key_func(obj)
 
-    # def calculate_object_equivalence(self, key, obj):
-    #     return self.equiv_compare_func(key, obj)
+    def calculate_identity_key(self, obj):
+        return self.identity_key_func(obj)
 
     def key_needs_merging(self, original_key, new_key):
         return True in [not a and b for (a, b) in zip(original_key, new_key)]
@@ -1082,10 +1091,18 @@ class EquivalencePartitioner(object):
     def merge_keys(self, key1, key2):
         return [a if a else b for (a, b) in zip(key1, key2)]
 
+    def identities_are_different(self, key1, key2):
+        for (x,y) in zip(key1, key2):
+            if x is None or y is None: continue
+            if x != y: return True
+        else:
+            return False
+
     def calculate_equivalence_classes(self, list_of_obj):
         # TODO: Finish writing the equivalence class code.
 
         equivalence_classes = collections.defaultdict(list)
+        identities_for_equivalence = {}
 
         # There is some subtlety with whether we use "comparison" keys
         # or "canonical" keys.  This reflects the difference between
@@ -1099,17 +1116,23 @@ class EquivalencePartitioner(object):
         for (ndx, obj) in enumerate(list_of_obj):
             cmp_key = self.calculate_comparison_key(obj)
             can_key = self.calculate_canonical_key(obj)
+            identity_key = self.calculate_identity_key(obj)
 
             for class_key in equivalence_classes:
-                if self.calculate_key_equivalence(class_key, cmp_key):
+                if self.calculate_key_equivalence(class_key, cmp_key) and not self.identities_are_different(identities_for_equivalence[class_key],identity_key):
+
+
+                    # Must check the identities to make sure all is a-ok.
                     equivalence_classes[class_key].append(ndx)
 
                     if self.key_needs_merging(class_key, cmp_key):
                         merged_key = self.merge_keys(class_key, cmp_key)
                         equivalence_classes[merged_key] = equivalence_classes.pop(class_key)
+                        identities_for_equivalence[merged_key] = identity_key
                     break
             else:
                 equivalence_classes[can_key].append(ndx)
+                identities_for_equivalence[can_key] = identity_key
         return equivalence_classes  # TODO: Make sure return is correct on this.
 
 
@@ -1117,6 +1140,8 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import
     """Take a list of unmatched_property_states or
     unmatched_tax_lot_states and returns a set of states that
     correspond to unmatched states."""
+
+    logger.debug("Starting to map_and_merge_unmatched_objects")
 
     # current_match_cycle = import_file.cycle
     # current_match_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
@@ -1148,6 +1173,7 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import
         else:
             merged_objects.append(merged_result)
 
+    logger.debug("DONE with map_and_merge_unmatched_objects")
     return merged_objects, equivalence_classes.keys()
 
 
@@ -1259,6 +1285,7 @@ def _match_properties_and_taxlots(file_pk, user_pk):
 
     # Do the same process with the TaxLots.
     all_unmatched_tax_lots = import_file.find_unmatched_tax_lot_states()
+
     if all_unmatched_tax_lots:
         unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(all_unmatched_tax_lots)
         taxlot_partitioner = EquivalencePartitioner.makeDefaultStateEquivalence(TaxLotState)
@@ -1691,9 +1718,9 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     # taxlot_keys = [taxlot_m2m_keygen.calculate_comparison_key(tl): tl.pk for tl in taxlot_objects}
 
     # Calculate a key for each of the split fields.
-    print "prepk"
+    # print "prepk"
     property_keys_orig = dict([(property_m2m_keygen.calculate_comparison_key(p), p.pk) for p in property_objects])
-    print "PK: {}".format(property_keys_orig)
+    # print "PK: {}".format(property_keys_orig)
 
     # property_keys = copy.deepcopy(property_keys_orig)
 
@@ -1717,11 +1744,9 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     possible_merges = []  # List of prop.id, tl.id merges.
 
     for pv in merged_property_views:
-        # if pv.state.lot_number and ";" in pv.state.lot_number:
-        #     pdb.set_trace()
 
         pv_key = property_m2m_keygen.calculate_comparison_key(pv.state)
-        # TODO: Refactor pronto.  This iterating over the tax lot is totally bogus and I hate it.
+        # TODO: Refactor pronto.  Iterating over the tax lot is ad implementation.
         for tlk in taxlot_keys:
             if pv_key[0] and ";" in pv_key[0]:
                 for lotnum in map(lambda x: x.strip(), pv_key[0].split(";")):
@@ -1740,7 +1765,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
             if property_m2m_keygen.calculate_key_equivalence(tlv_key, pv_key):
                 possible_merges.append((property_keys[pv_key], taxlot_keys[tlv_key]))
 
-    print "Found {} merges".format(len(possible_merges))
+    # print "Found {} merges".format(len(possible_merges))
     for m2m in set(possible_merges):
         pv_pk, tlv_pk = m2m
         pv = PropertyView.objects.get(pk=pv_pk)

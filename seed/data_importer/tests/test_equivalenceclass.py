@@ -5,6 +5,7 @@
 :author
 """
 import logging
+import copy
 
 from django.test import TestCase
 
@@ -16,11 +17,23 @@ logger = logging.getLogger(__name__)
 class EZState(object):
 
     def __init__(self, *args, **kwds):
+
+        self.arglist = copy.deepcopy(args)
+
         for arg in args:
             setattr(self, arg, None)
 
         for (k, v) in kwds.items():
             setattr(self, k, v)
+
+    def __repr__(self):
+        repr_str = "{}(".format(self.__class__.__name__)
+
+        for nm in self.arglist:
+            repr_str += "{}={}, ".format(nm, getattr(self, nm))
+
+        repr_str = repr_str[:-2] + ")"
+        return repr_str
 
 
 class PropertyState(EZState):
@@ -56,12 +69,12 @@ class TestEquivalenceClassGenerator(TestCase):
         equivalence_classes = partitioner.calculate_equivalence_classes([p1, p4])
         self.assertEqual(len(equivalence_classes), 1)
 
-        equivalence_classes = partitioner.calculate_equivalence_classes([PropertyState(pm_property_id=100),
-                                                                         PropertyState(pm_property_id=101, custom_id=100)])
+        class_grp_1 = [PropertyState(pm_property_id=100),PropertyState(pm_property_id=101, custom_id_1=100)]
+        equivalence_classes = partitioner.calculate_equivalence_classes(class_grp_1)
         self.assertEqual( len(equivalence_classes), 2)
 
-        equivalence_classes = partitioner.calculate_equivalence_classes([PropertyState(pm_property_id=100, normalized_address="123 Fake St"),
-                                                                         PropertyState(pm_property_id=101, normalized_address="123 Fake St")])
+        class_grp_2 = [PropertyState(pm_property_id=100, normalized_address="123 Fake St"), PropertyState(pm_property_id=101, normalized_address="123 Fake St")]
+        equivalence_classes = partitioner.calculate_equivalence_classes(class_grp_2)
         self.assertEqual(len(equivalence_classes), 2)
 
         return
