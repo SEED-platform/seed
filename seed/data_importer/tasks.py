@@ -1150,6 +1150,17 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import
     # current_match_cycle = import_file.cycle
     # current_match_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
 
+    def getattrdef(obj, attr, default):
+        if hasattr(obj, attr):
+            return getattr(obj, attr)
+        else:
+            return default
+
+    keyfunction = lambda ndx: (getattrdef(unmatched_states[ndx], "release_date", None),
+                               getattrdef(unmatched_states[ndx], "generation_date", None),
+                               getattrdef(unmatched_states[ndx], "pk", None))
+
+
     # This removes any states that are duplicates,
     equivalence_classes = partitioner.calculate_equivalence_classes(unmatched_states)
 
@@ -1158,9 +1169,7 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import
     merged_objects = []
 
     for (class_key, class_ndxs) in equivalence_classes.items():
-        class_ndxs.sort(key = lambda ndx: (unmatched_states[ndx].release_date,
-                                           unmatched_states[ndx].generation_date,
-                                           unmatched_states[ndx].pk))
+        class_ndxs.sort(key = keyfunction)
 
         if len(class_ndxs) == 1:
             merged_objects.append(unmatched_states[class_ndxs[0]])
@@ -1203,7 +1212,7 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
         ParentAttrName = "property"
     elif isinstance(unmatched_states[0], TaxLotState):
         ObjectViewClass = TaxLotView
-        ParentAttrName = "tax_lot"
+        ParentAttrName = "taxlot"
     else:
         raise ValueError("Unknown class '{}' passed to merge_unmatched_into_views".format(type(unmatched_states[0])))
 
@@ -1242,10 +1251,12 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
                 else:
                     # Grab another view that has the same parent as
                     # the one we belong to.
-                    cousin_view = existing_view_states[key].values()[0].values()[0][0]
+                    cousin_view = existing_view_states[key].values()[0]
                     view_parent = getattr(cousin_view, ParentAttrName)
                     new_view = type(cousin_view)()
                     setattr(new_view, ParentAttrName, view_parent)
+                    new_view.cycle = current_match_cycle
+                    new_view.state = unmatched
                     new_view.save()
                     matched_views.append(new_view)
 
@@ -1697,17 +1708,11 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     taxlot_m2m_keygen = EquivalencePartitioner(tax_cmp_fmt)
     property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt)
 
-    import time
-    st = time.time()
     property_views = PropertyView.objects.filter(state__organization=org, cycle=cycle).values_list(
         *prop_comparison_field_names)
     taxlot_views = TaxLotView.objects.filter(state__organization=org, cycle=cycle).values_list(
         *tax_comparison_field_names)
 
-    et = time.time()
-    print "{} seconds.".format(et - st)
-
-    # For each of the view objects, make an
     prop_type = namedtuple("Prop", prop_comparison_fields)
     taxlot_type = namedtuple("TL", tax_comparison_fields)
 
