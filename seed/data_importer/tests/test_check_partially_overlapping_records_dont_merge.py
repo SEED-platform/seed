@@ -47,8 +47,6 @@ class TestCaseCheckHalfMatchDoesNotMerge(DataMappingBaseTestCase):
         self.import_file = self.load_import_file_file(filename, self.import_file)
 
 
-
-
     def test_importduplicates(self):
         self.assertEqual(TaxLotState.objects.count(), 0)
 

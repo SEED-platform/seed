@@ -1143,6 +1143,10 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import
 
     logger.debug("Starting to map_and_merge_unmatched_objects")
 
+
+    # Sort unmatched states/This shouldn't be happening!
+    unmatched_states.sort(key=lambda state: state.pk)
+
     # current_match_cycle = import_file.cycle
     # current_match_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
 
@@ -1154,6 +1158,10 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import
     merged_objects = []
 
     for (class_key, class_ndxs) in equivalence_classes.items():
+        class_ndxs.sort(key = lambda ndx: (unmatched_states[ndx].release_date,
+                                           unmatched_states[ndx].generation_date,
+                                           unmatched_states[ndx].pk))
+
         if len(class_ndxs) == 1:
             merged_objects.append(unmatched_states[class_ndxs[0]])
             continue
