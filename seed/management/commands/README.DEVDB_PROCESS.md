@@ -44,3 +44,7 @@ In prioritized order
 
 
 psql -U seeduser bluesky (w/ pw testing)
+
+
+## Other useful commands
+from nose.tools import set_trace;set_trace()
