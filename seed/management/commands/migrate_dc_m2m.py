@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 from _localtools import logging_info
 from _localtools import logging_debug
 
+from django.db.models import Q
 from django.core.management.base import BaseCommand
 from seed.lib.superperms.orgs.models import Organization
 from django.core.exceptions import ObjectDoesNotExist
@@ -51,7 +52,7 @@ class Command(BaseCommand):
         reader = csv.reader(open(DC_M2M_FN, 'rU'))
         reader.next() # Throw away header
 
-        pmids_taxlotids_m2m = [(y,z) for (x,y,z) in reader]
+        pmids_taxlotids_m2m = [(y,z) for (y,z) in reader]
 
         all_links = set(pmids_taxlotids_m2m)
 
@@ -71,27 +72,39 @@ class Command(BaseCommand):
 
         logging_info("Processing {} m2m links from {} file across {} cycles.".format(len(pmids_taxlotids_m2m), DC_M2M_FN, len(dc_cycles)))
 
-        for (ndx, (pm_id, tl_id)) in enumerate(all_links):
+        for (ndx, (tl_id, pm_id)) in enumerate(all_links):
             if ndx % 400 == 1:
                 percent_done = 100.0 * ndx / len(pmids_taxlotids_m2m)
                 print "{:.2f}% done.".format(percent_done)
-            for cycle in dc_cycles:
-                pv = PropertyView.objects.filter(state__organization=dc_org,
-                                                 state__pm_property_id=pm_id,
-                                                 cycle=cycle)
+            # for cycle in dc_cycles:
+            #     embed()
+            #     combined_q_obj =  Q(state__extra_data__contains=pm_id) | Q(state__extra_data__contains='{}-{}'.format(pm_id[:4], pm_id[4:]))
+            #     pdb.set_trace()
+            #     pv = PropertyView.objects.filter(state__organization=dc_org,cycle=cycle).filter(combined_q_obj)
 
-                tlv = TaxLotView.objects.filter(state__organization=dc_org,
-                                                state__jurisdiction_tax_lot_id=tl_id,
-                                                cycle=cycle)
 
-                if len(pv): found_properties.add(pm_id)
-                if len(tlv): found_taxlots.add(tl_id)
+            #     tlv = TaxLotView.objects.filter(state__organization=dc_org,
+            #                                     state__jurisdiction_tax_lot_id__contains=tl_id,
+            #                                     cycle=cycle)
 
-                if len(pv) and len(tlv):
-                    TaxLotProperty.objects.create(property_view=pv.first(),
-                                                  taxlot_view=tlv.first(),
-                                                  cycle=cycle)
-                    found_links.add((pm_id, tl_id))
+            #     if len(pv): found_properties.add(pm_id)
+            #     if len(tlv): found_taxlots.add(tl_id)
+
+            pv = pv = PropertyView.objects.filter(state__organization=dc_org).filter(state__pm_property_id__contains=pm_id)
+            tlv = TaxLotView.objects.filter(state__organization=dc_org,
+                                            state__jurisdiction_tax_lot_id__contains=tl_id)
+
+            pdb.set_trace()
+
+            if len(pv): found_properties.add(pm_id)
+            if len(tlv): found_taxlots.add(tl_id)
+
+
+                # if len(pv) and len(tlv):
+                    # TaxLotProperty.objects.create(property_view=pv.first(),
+                    #                               taxlot_view=tlv.first(),
+                    #                               cycle=cycle)
+                    # found_links.add((pm_id, tl_id))
 
 
         else:

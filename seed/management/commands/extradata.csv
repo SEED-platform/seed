@@ -427,7 +427,7 @@
 1,184,,Data Center - UPS System Redundancy,Property,extra_data,PM,,
 1,184,,Data Quality Checker - Date Run,Property,extra_data,PM,,
 1,184,,Data Quality Checker Run?,Property,extra_data,PM,,
-1,184,,DC Real Property Unique ID,Property,extra_data,PM,,
+1,184,,DC Real Property Unique ID,Tax,extra_data,PM,,
 1,184,,Default Data Flag - Multifamily,Property,extra_data,PM,,
 1,184,,Default Values,Property,extra_data,PM,,
 1,184,,Diesel #2 Use (kBtu),Property,extra_data,PM,,
