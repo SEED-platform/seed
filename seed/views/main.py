@@ -231,7 +231,7 @@ def create_pm_mapping(request):
         return vutil.api_error(invalid)
 
     try:
-        result = simple_mapper.get_pm_mapping('1.0', body['columns'])
+        result = simple_mapper.get_pm_mapping(body['columns'])
     except ValueError as err:
         return vutil.api_error(str(err))
     json_result = [[c] + v.as_json() for c, v in result.items()]
@@ -1314,7 +1314,7 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
     # Portfolio manager files have their own mapping scheme - yuck, really?
     if import_file.from_portfolio_manager:
         _log.info("map Portfolio Manager input file")
-        suggested_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns, True)
+        suggested_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns)
     else:
         _log.info("custom mapping of input file")
         # All other input types

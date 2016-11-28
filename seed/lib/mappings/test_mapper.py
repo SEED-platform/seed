@@ -8,69 +8,111 @@
 Unit tests for map.py
 """
 
-import json
-from StringIO import StringIO
+import re
 
 from django.test import TestCase
-from seed.lib.mappings import mapper
+from seed.lib.mappings.mapper import create_column_regexes, get_pm_mapping
 
 
 class TestMapper(TestCase):
     """Test mapping methods."""
 
-    def jsonfile(self):
-        return self._jsonfile()
-
-    def _jsonfile(self):
-        d = {
-            "Key1": "value1",
-            "key2": "value2",
-            "has spaces": "value3",
-            "has_underscores": "value4",
-            "has  multi spaces": "value5",
-            "has___multi  underscores": "value6",
-            "normal ft2": "value7",
-            "caret ft2": "value8",
-            "super ft2": "value9"
-        }
-        for key in d:
-            d[key] = [d[key], {'bedes': True,
-                               'type': 'string'}]
-        return StringIO(json.dumps(d))
-
     def setUp(self):
-        self.json_file = self.jsonfile()
+        self.test_keys = [
+            "Key1",
+            "KEY1",
+            "key1",
+            "key2",
+            "has spaces",
+            "has_spaces",
+            "has_underscores",
+            "has underscores",
+            "has___underscores",
+            "has  multiple     spaces",
+            "has___multiple spaces",
+            "normal ft2",
+            "normal ft^2",
+            "normal ft_",
+            u"normal ft" + u'\u00B2',
+        ]
 
-    def test_mapping_init(self):
-        self.assertRaises(Exception, mapper.Mapping, None)
-        m = mapper.Mapping(self.json_file)
-        self.assertIsNotNone(m)
+        self.test_mapping_data = [
+            {
+                "display_name": "Value 1",
+                "to_field": "value_1",
+                "to_table_name": "PropertyState",
+                "from_field": "Key1",
+                "units": "",
+                "type": "string",
+                "schema": ""
+            },
+            {
+                "display_name": "Value 2",
+                "to_field": "value_2",
+                "to_table_name": "PropertyState",
+                "from_field": "has_spaces",
+                "units": "",
+                "type": "string",
+                "schema": ""
+            },
+            {
+                "display_name": "Value 3",
+                "to_field": "value_3",
+                "to_table_name": "PropertyState",
+                "from_field": "has_underscores",
+                "units": "",
+                "type": "string",
+                "schema": ""
+            },
+            {
+                "display_name": "Value 4",
+                "to_field": "value_4",
+                "to_table_name": "PropertyState",
+                "from_field": "has_multiple_spaces",
+                "units": "",
+                "type": "string",
+                "schema": ""
+            },
+            {
+                "display_name": "Value 5",
+                "to_field": "value_5",
+                "to_table_name": "PropertyState",
+                "from_field": "normal_ft2",
+                "units": "",
+                "type": "string",
+                "schema": ""
+            }
 
-    def test_mapping_regex(self):
-        m = mapper.Mapping(self.json_file, regex=True)
-        self.assertEqual(m['.*1'].field, "value1")
+        ]
 
-    def test_mapping_case(self):
-        m = mapper.Mapping(self.json_file, ignore_case=True)
-        self.assertEqual(m['key1'].field, "value1")
-        self.assertEqual(m['KEY1'].field, "value1")
-        m = mapper.Mapping(self.jsonfile(), ignore_case=True, regex=True)
-        self.assertEqual(m["K..1"].field, "value1")
+    def test_column_regexes(self):
+        # test the cleaning of the compared columns
+        columns = create_column_regexes(self.test_keys)
 
-    def test_mapping_spc(self):
-        m = mapper.Mapping(self.json_file)
-        self.assertEqual(m['has_spaces'].field, 'value3')
-        self.assertEqual(m['has spaces'].field, 'value3')
-        self.assertEqual(m['has underscores'].field, 'value4')
-        self.assertEqual(m['has_multi spaces'].field, 'value5')
-        self.assertEqual(m['has_multi underscores'].field, 'value6')
+        self.assertListEqual([c['raw'] for c in columns], self.test_keys)
+        self.assertTrue(isinstance(columns[0]['regex'], re._pattern_type))
 
-    def test_units(self):
-        m = mapper.Mapping(self.json_file, encoding='latin_1')
-        self.assertEqual(m['normal ft2'].field, 'value7')
-        self.assertEqual(m['caret ft^2'].field, 'value8')
-        self.assertEqual(m['super ft_'].field, 'value9')
-        self.assertEqual(m[(u"super ft" + u'\u00B2').encode('latin_1')].field, 'value9')
+    def test_mapping(self):
+        mapping = get_pm_mapping(self.test_keys, False, mapping_data=self.test_mapping_data)
+
+        # casing
+        self.assertEqual(mapping['Key1'], ('PropertyState', 'value_1', 100))
+        self.assertEqual(mapping['key1'], ('PropertyState', 'value_1', 100))
+        self.assertEqual(mapping['KEY1'], ('PropertyState', 'value_1', 100))
+
+        # spaces and underscores
+        self.assertEqual(mapping['has spaces'], ('PropertyState', 'value_2', 100))
+        self.assertEqual(mapping['has_spaces'], ('PropertyState', 'value_2', 100))
+        self.assertEqual(mapping['has underscores'], ('PropertyState', 'value_3', 100))
+        self.assertEqual(mapping['has___underscores'], ('PropertyState', 'value_3', 100))
+        self.assertEqual(mapping['has  multiple     spaces'], ('PropertyState', 'value_4', 100))
+        self.assertEqual(mapping['has___multiple spaces'], ('PropertyState', 'value_4', 100))
+
+        # superscripts
+        self.assertEqual(mapping['normal ft2'], ('PropertyState', 'value_5', 100))
+        self.assertEqual(mapping['normal ft^2'], ('PropertyState', 'value_5', 100))
+        self.assertEqual(mapping['normal ft_'], ('PropertyState', 'value_5', 100))
+        self.assertEqual(mapping[u"normal ft" + u'\u00B2'], ('PropertyState', 'value_5', 100))
 
     def test_mapping_pm_to_seed(self):
         from_columns = [
@@ -80,27 +122,13 @@ class TestMapper(TestCase):
             "Portfolio Manager Property ID",
             "some_other_field_not_in_the_designated_PM_mapping",
         ]
-        pm = mapper.get_pm_mapping(from_columns, False)
+        pm = get_pm_mapping(from_columns, False)
 
         expected = {
-            u'Address 1': (u'PropertyState', u'address_line_1', 100),
-            u'Address_1': (u'PropertyState', u'address_line_1', 100),
-            u'Property ID': (u'PropertyState', u'pm_property_id', 100)
+            'Address 1': (u'PropertyState', u'address_line_1', 100),
+            'Property ID': (u'PropertyState', u'pm_property_id', 100),
+            'Portfolio Manager Property ID': (u'PropertyState', u'pm_property_id', 100),
+            'Address_1': (u'PropertyState', u'address_line_1', 100)
         }
 
         self.assertDictEqual(pm, expected)
-
-    # def test_mapping_pm_to_seed_include_none(self):
-    #     expected = {
-    #         "Address 1": "Address Line 1",
-    #         "Property id": "PM Property ID",
-    #         "Portfolio Manager Property ID": "PM Property ID",
-    #         "some_other_field_not_in_the_designated_PM_mapping": None
-    #     }
-    #     pm = mapper.get_pm_mapping(from_columns, True)
-    #     for src, tgt in expected.items():
-    #         if tgt:
-    #             self.assertEqual(pm[src].field, tgt)
-    #             self.assertEqual(pm[src].is_bedes, False)
-    #         else:
-    #             self.assertIsNone(pm[src])

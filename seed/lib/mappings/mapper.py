@@ -8,7 +8,6 @@ import json
 import logging
 import os
 import re
-from fnmatch import fnmatchcase
 from os.path import realpath, join, dirname
 
 LINEAR_UNITS = set([u'ft', u'm', u'in'])
@@ -53,8 +52,10 @@ def _sanitize_and_convert_keys_to_regex(key):
     for special in ('\\', '(', ')', '?', '*', '+', '.', '{', '}', '^', '$'):
         key = key.replace(special, '\\' + special)
 
-    # remove underscores and convert white space
+    # convert underscores to white space
     key = key.replace('_', ' ').replace('  ', ' ')
+    # collapse whitespace
+    key = re.sub('\s+', ' ', key).strip()
 
     # convert white space to regex for space or underscore (repeated)
     key = key.replace(' ', '( |_)+')
@@ -62,29 +63,70 @@ def _sanitize_and_convert_keys_to_regex(key):
     return re.compile(key, re.IGNORECASE)
 
 
-def get_pm_mapping(raw_columns, include_nones):
-    """Create and return Portfolio Manager (PM) mapping for
-    a given version of PM and the given list of column names.
+def create_column_regexes(raw_columns):
+    """
+    Take the columns in the format below and sanitize the keys and add
+    in the regex.
 
-    Args:
-      from_columns (list): A list of [column_name, field, {metadata}]
-    Return:
+    :param raw_data: list of strings (columns names from imported file)
+
+    :return: list of dict
+
+    .. code:
+
+        Result shall look like:
+
+        [
+            {'regex': <_sre.SRE_Pattern object at 0x10f151a50>, 'raw': 'has_underscores'},
+            {'regex': <_sre.SRE_Pattern object at 0x10f10e870>, 'raw': 'has  multi spaces'}
+        ]
+
+
     """
 
-    f = open(os.path.join(MAPPING_DATA_DIR, "pm-mapping.json"))
-    data = json.load(f)
-
     # clean up the comparing columns
-    from_columns = []
+    new_list = []
     for c in raw_columns:
         new_data = {}
         new_data['raw'] = c
         new_data['regex'] = _sanitize_and_convert_keys_to_regex(c)
-        from_columns.append(new_data)
+        new_list.append(new_data)
+
+    return new_list
+
+
+def get_pm_mapping(raw_columns, mapping_data=None):
+    """
+    Create and return Portfolio Manager (PM) mapping for a given version of PM and the given
+    list of column names.
+
+    The method will take the raw_columns (from the CSV/XLSX file) and attempt to normalize the
+    column names so that they can be mapped to the data in the pm-mapping.json['from_field'].
+
+    .. code:
+        [
+            {
+                "display_name": "Address Line 1",
+                "to_field": "address_line_1",
+                "to_table_name": "PropertyState",
+                "from_field": "Address 1",
+                "units": "",
+                "type": "string",
+                "schema": ""
+            }
+        ]
+
+    """
+
+    from_columns = create_column_regexes(raw_columns)
+
+    if not mapping_data:
+        f = open(os.path.join(MAPPING_DATA_DIR, "pm-mapping.json"))
+        mapping_data = json.load(f)
 
     # transform the data into the format expected by the mapper. (see mapping_columns.final_mappings)
     final_mappings = {}
-    for d in data:
+    for d in mapping_data:
         for c in from_columns:
             if c['regex'].match(d['from_field']):
                 # Assume that the mappings are 100% accurate for now.
@@ -94,35 +136,3 @@ def get_pm_mapping(raw_columns, include_nones):
     # verify that there are no duplicate matchings
 
     return final_mappings
-
-
-class Programs(object):
-    PM = "PortfolioManager"
-
-
-class MappingConfiguration(object):
-
-    def __init__(self):
-        print "DEPRECATED"
-
-
-class Mapping(object):
-
-    def __init__(self, fileobj, encoding=None, regex=False,
-                 spc_or_underscore=True,
-                 ignore_case=True, normalize_units=True):
-        print "DEPRECATED"
-
-
-class MapItem(object):
-    """Wrapper around a mapped item.
-
-    An object will be created with the following attributes:
-
-    - source => The source field from which we mapped
-    - table => The seed table to which we mapped
-    - field => The seed field to which we mapped
-    """
-
-    def __init__(self, key, item):
-        print "DEPRECATED!"

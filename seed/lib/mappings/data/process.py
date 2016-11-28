@@ -5,8 +5,10 @@ import re
 f = open(join(dirname(realpath(__file__)), "pm-mapping-orig.json"))
 data = json.load(f)
 
+
 def downcase(str):
     return str.replace(' ', '_').lower()
+
 
 def strip_units(str):
     m = re.search(r".*\((.*)\).*", str)
@@ -36,4 +38,3 @@ new_data = sorted(new_data, key=lambda k: k['to_field'])
 
 with open('outputfile.json', 'w') as out:
     json.dump(new_data, out)
-
