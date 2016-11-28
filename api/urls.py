@@ -13,7 +13,7 @@ from seed.views.main import DataFileViewSet
 from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.users import UserViewSet
-
+from seed.views.labels import LabelViewSet, UpdateInventoryLabelsAPIView
 
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
@@ -22,6 +22,7 @@ api_v2_router.register(r'data_files', DataFileViewSet, base_name="data_files")
 api_v2_router.register(r'projects', ProjectViewSet, base_name="projects")
 api_v2_router.register(r'users', UserViewSet, base_name="users")
 # api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
+api_v2_router.register(r'labels', LabelViewSet, base_name="labels")
 
 urlpatterns = [
     # v2 api
@@ -63,4 +64,16 @@ urlpatterns = [
         test_view_with_arg,
         name='testviewarg'
     ),
+    # url(
+    #     r'^property/',
+    #     UpdateInventoryLabelsAPIView.as_view(),
+    #     {'inventory_type': 'property'},
+    #     name="property_labels",
+    # ),
+    # url(
+    #     r'^taxlot/$',
+    #     UpdateInventoryLabelsAPIView.as_view(),
+    #     {'inventory_type': 'taxlot'},
+    #     name="taxlot_labels",
+    # ),
 ]
