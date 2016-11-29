@@ -32,9 +32,6 @@ urlpatterns = [
     # api section
     url(r'^app/api/', include('seed.urls.api', namespace="api", app_name="api")),
 
-    # labels section
-    url(r'^app/labels', include('seed.urls.labels', namespace="labels", app_name="labels")),
-
     # dataset section
     url(r'^data/', include('seed.data_importer.urls', namespace="data_importer", app_name="data_importer")),
 

@@ -206,7 +206,7 @@ class TestUpdateInventoryLabelsAPIView(TestCase):
             password=self.user_details['password']
         )
         url = "{}?organization_id={}".format(
-            reverse('labels:property_labels'), self.org.id
+            reverse('apiv2:property_labels'), self.org.id
         )
 
         post_params = {
