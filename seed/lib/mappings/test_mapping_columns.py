@@ -117,9 +117,6 @@ class TestMappingColumns(TestCase):
             'address line 6',
             'address line 7',
             'address line 8',
-            'address line 6',
-            'address line 6',
-            'address line 6',
         ]
 
         map_data = [
