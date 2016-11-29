@@ -343,7 +343,7 @@ class ImportFileViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
-        return map_data(pk)
+        return JsonResponse(map_data(pk))
 
     @api_endpoint_class
     @ajax_request_class

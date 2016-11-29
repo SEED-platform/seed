@@ -504,6 +504,8 @@ def _cleanse_data(file_pk, record_type='property'):
 def map_data(file_pk, *args, **kwargs):
     """Small wrapper to ensure we isolate our mapping process from requests."""
     _map_data.delay(file_pk)
+    prog_key = get_prog_key('map_data', file_pk)
+    return {'status': 'in process...', 'progress_key': prog_key}
 
 
 @shared_task
