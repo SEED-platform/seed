@@ -85,7 +85,7 @@ class ApiAuthenticationTests(TestCase):
 
 
 class SchemaGenerationTests(TestCase):
-
+    @skip('need to discuss whether to keep this or not in light of Swagger')
     def test_get_api_endpoints_utils(self):
         """
         Test of function that traverses all URLs looking for api endpoints.
@@ -101,6 +101,7 @@ class SchemaGenerationTests(TestCase):
                     "Endpoint %s doesn't end with / as expected" % url
                 )
 
+    @skip('need to discuss whether to keep this or not in light of Swagger')
     def test_get_api_schema(self):
         """
         Test of 'schema' generator.

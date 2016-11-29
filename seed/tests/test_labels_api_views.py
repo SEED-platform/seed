@@ -55,7 +55,7 @@ class TestLabelsViewSet(TestCase):
         client = APIClient()
         client.login(username=user.username, password='secret')
 
-        url = reverse('labels:label-list')
+        url = reverse('apiv2:labels-list')
 
         response = client.get(url, {'organization_id': organization.pk, 'inventory_type': 'property'})
 
@@ -96,7 +96,7 @@ class TestLabelsViewSet(TestCase):
         client = APIClient()
         client.login(username=user.username, password='secret')
 
-        url = reverse('labels:label-list')
+        url = reverse('apiv2:labels-list')
 
         response_a = client.get(url, {'organization_id': organization_a.pk, 'inventory_type': 'property'})
         response_b = client.get(url, {'organization_id': organization_b.pk, 'inventory_type': 'property'})

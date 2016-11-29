@@ -79,7 +79,7 @@ angular.module('BE.seed.service.label',
 
         $http({
             method: 'GET',
-            url: window.BE.urls.label_list,
+            url: '/api/v2/labels/',
             params: searchArgs
         }).success(function(data, status, headers, config) {
             data = _.map(data, update_label_w_local_props);
@@ -112,7 +112,7 @@ angular.module('BE.seed.service.label',
         var defer = $q.defer();
         $http({
             method: 'POST',
-            url: window.BE.urls.label_list,
+            url: '/api/v2/labels/',
             data: label,
             params: {
                 inventory_type: 'property',
@@ -149,7 +149,7 @@ angular.module('BE.seed.service.label',
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: window.BE.urls.label_list + label.id + '/',
+            url: '/api/v2/labels/' + label.id + '/',
             data: label,
             params: {
                 organization_id: org_id
@@ -182,7 +182,7 @@ angular.module('BE.seed.service.label',
         var defer = $q.defer();
         $http({
             method: 'DELETE',
-            url: window.BE.urls.label_list + label.id + '/',
+            url: '/api/v2/labels/' + label.id + '/',
             params: {
                 organization_id: org_id
             }
