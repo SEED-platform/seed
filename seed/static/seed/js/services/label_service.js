@@ -219,7 +219,7 @@ angular.module('BE.seed.service.label',
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: '/api/v2/labels/property',
+            url: '/api/v2/labels-property',
             params: _.assignIn({
                 organization_id: user_service.get_organization().id
             }, search_params),
@@ -259,7 +259,7 @@ angular.module('BE.seed.service.label',
         var defer = $q.defer();
         $http({
             method: 'PUT',
-            url: '/api/v2/labels/taxlot',
+            url: '/api/v2/labels-taxlot',
             params: _.assignIn({
                 organization_id: user_service.get_organization().id
             }, search_params),

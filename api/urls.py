@@ -60,16 +60,16 @@ urlpatterns = [
         name='projects-copy'
     ),
     url(
-        r'^labels/property/',
+        r'labels-property/$',
         UpdateInventoryLabelsAPIView.as_view(),
         {'inventory_type': 'property'},
-        name="property_labels",
+        name="property-labels",
     ),
     url(
-        r'^labels/taxlot/$',
+        r'labels-taxlot/$',
         UpdateInventoryLabelsAPIView.as_view(),
         {'inventory_type': 'taxlot'},
-        name="taxlot_labels",
+        name="taxlot-labels",
     ),
     url(
         r'^test_view_with_arg/([0-9]{1})/$',
