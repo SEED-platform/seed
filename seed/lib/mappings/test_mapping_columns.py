@@ -106,6 +106,44 @@ class TestMappingColumns(TestCase):
 
         self.assertDictEqual(mc.final_mappings, expected)
 
+    def test_no_more_matches(self):
+        """Test to make sure that similar fields have different targets"""
+        raw_data = [
+            'address line 1',
+            'address line 2',
+            'address line 3',
+            'address line 4',
+            'address line 5',
+            'address line 6',
+            'address line 7',
+            'address line 8',
+            'address line 6',
+            'address line 6',
+            'address line 6',
+        ]
+
+        map_data = [
+            ('PropertyState', 'address_line_1'),
+            ('PropertyState', 'address_line_2'),
+            ('TaxLotState', 'address_line_1'),
+            ('TaxLotState', 'address_line_2'),
+        ]
+
+        mc = mapping_columns.MappingColumns(raw_data, map_data)
+
+        expected = {
+            'address line 1': ['PropertyState', 'address_line_1', 100],
+            'address line 2': ['PropertyState', 'address_line_2', 100],
+            'address line 3': ['TaxLotState', 'address_line_1', 97],
+            'address line 4': ['TaxLotState', 'address_line_2', 97],
+            'address line 5': ['PropertyState', 'address line 5', 100],
+            'address line 6': ['PropertyState', 'address line 6', 100],
+            'address line 7': ['PropertyState', 'address line 7', 100],
+            'address line 8': ['PropertyState', 'address line 8', 100]
+        }
+
+        self.assertDictEqual(mc.final_mappings, expected)
+
     def test_mapping_columns_with_threshold(self):
         expected = {
             'City': ['PropertyState', 'city', 100],
