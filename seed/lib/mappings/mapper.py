@@ -9,6 +9,7 @@ import logging
 import os
 import re
 from os.path import realpath, join, dirname
+from collections import OrderedDict
 
 LINEAR_UNITS = set([u'ft', u'm', u'in'])
 MAPPING_DATA_DIR = join(dirname(realpath(__file__)), 'data')
@@ -147,32 +148,34 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
         mapping_data = json.load(f)
 
     # transform the data into the format expected by the mapper. (see mapping_columns.final_mappings)
-    final_mappings = {}
-    for d in mapping_data:
-        for c in from_columns:
+    final_mappings = OrderedDict()
+    for c in from_columns:
+        for d in mapping_data:
             if c['regex'].match(d['from_field']):
                 # Assume that the mappings are 100% accurate for now.
                 final_mappings[c['raw']] = (d['to_table_name'], d['to_field'], 100)
 
-    # TODO: resolve any duplicates here
     # verify that there are no duplicate matchings
-    expected = {
-        'Address 1': (u'PropertyState', u'address_line_1', 100),
-        'Property ID': (u'PropertyState', u'pm_property_id', 100),
-        'Portfolio Manager Property ID': (u'PropertyState', u'pm_property_id', 100),
-        'Address_1': (u'PropertyState', u'address_line_1', 100)
-    }
-
     if resolve_duplicates:
         # get the set of mappings
-        all_mappings = set()
-        for v in final_mappings.itervalues():
-            all_mappings.add(v)
 
+        mappings = []
+        for v in final_mappings.itervalues():
+            mappings.append(v)
+
+        unique_mappings = set()
         for k, v in final_mappings.iteritems():
-            if v in all_mappings:
-                all_mappings.remove(v)
+            if v not in unique_mappings:
+                unique_mappings.add(v)
             else:
-                final_mappings[k] = (v[0], k, v[2])
+                i = 1
+                base = v[1]
+                while v in unique_mappings:
+                    new_v = base + "_duplicate_{}".format(i)
+                    v = (v[0], new_v, v[2])
+                    i += 1
+
+                unique_mappings.add(v)
+                final_mappings[k] = v
 
     return final_mappings
