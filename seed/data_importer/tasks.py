@@ -949,17 +949,17 @@ def hash_state_object(obj, include_extra_data=True):
         # print "{}: {} -> {}".format(field, obj_val, m.hexdigest())
 
     if include_extra_data:
-        addDictionaryReprToHash(m, obj.extra_data)
+        add_dictionary_repr_to_hash(m, obj.extra_data)
 
     return m.hexdigest()
 
 
-def addDictionaryReprToHash(hash_obj, dict_obj):
+def add_dictionary_repr_to_hash(hash_obj, dict_obj):
     assert isinstance(dict_obj, dict)
 
     for (key, value) in sorted(dict_obj.items(), key=lambda x_y: x_y[0]):
         if isinstance(value, dict):
-            addDictionaryReprToHash(hash_obj, value)
+            add_dictionary_repr_to_hash(hash_obj, value)
         else:
             hash_obj.update(str(key))
             hash_obj.update(str(value))
