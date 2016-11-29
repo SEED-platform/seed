@@ -1269,7 +1269,7 @@ def delete_duplicates_from_import_file(request):
     }
 
 
-def tmp_mapping_suggestions(import_file_id, org_id, user):
+def _tmp_mapping_suggestions(import_file_id, org_id, user):
     """
     Temp function for allowing both api version for mapping suggestions to
     return the same data. Move this to the mapping_suggestions once we can
@@ -1394,7 +1394,7 @@ class DataFileViewSet(viewsets.ViewSet):
         """
         org_id = request.query_params.get('organization_id', None)
 
-        result = tmp_mapping_suggestions(pk, org_id, request.user)
+        result = _tmp_mapping_suggestions(pk, org_id, request.user)
 
         return JsonResponse(result)
 

@@ -2251,12 +2251,6 @@ class TestMCMViews(TestCase):
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_column_mapping_suggestions_pm_file(self):
-        ImportFile.objects.create(
-            import_record=self.import_record,
-            cached_first_row=ROW_DELIMITER.join([u'name', u'address']),
-            source_program=mapper.Programs.PM
-        )
-
         response = self.client.get(
             reverse_lazy("apiv2:data_files-mapping-suggestions",
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
