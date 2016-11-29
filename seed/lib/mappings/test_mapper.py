@@ -143,6 +143,3 @@ class TestMapper(TestCase):
         self.assertDictEqual(pm, expected)
         pm = get_pm_mapping(from_columns)
         self.assertDictEqual(pm, expected)
-
-
-

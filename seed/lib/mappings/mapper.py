@@ -163,7 +163,6 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
         'Address_1': (u'PropertyState', u'address_line_1', 100)
     }
 
-
     if resolve_duplicates:
         # get the set of mappings
         all_mappings = set()
