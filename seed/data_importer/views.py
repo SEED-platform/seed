@@ -17,6 +17,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
+from rest_framework.decorators import api_view
 
 from seed.data_importer.models import (
     ImportFile,
@@ -31,6 +32,7 @@ _log = logging.getLogger(__name__)
 @api_endpoint
 @ajax_request
 @login_required
+@api_view(['GET'])
 def handle_s3_upload_complete(request):
     """
     Notify the system that an upload to S3 has been completed. This is
@@ -174,6 +176,7 @@ local_uploader.__name__ = 'local_uploader'
 @api_endpoint
 @ajax_request
 @login_required
+@api_view(['GET'])
 def get_upload_details(request):
     """
     Retrieves details about how to upload files to this instance.
@@ -200,19 +203,20 @@ def get_upload_details(request):
     if 'S3' in settings.DEFAULT_FILE_STORAGE:
         # S3 mode
         ret['upload_mode'] = 'S3'
-        ret['upload_complete'] = reverse('data_importer:s3_upload_complete')
-        ret['signature'] = reverse('data_importer:sign_policy_document')
+        ret['upload_complete'] = reverse('apiv2:s3_upload_complete')
+        ret['signature'] = reverse('apiv2:sign_policy_document')
         ret['aws_bucket_name'] = settings.AWS_BUCKET_NAME
         ret['aws_client_key'] = settings.AWS_UPLOAD_CLIENT_KEY
     else:
         ret['upload_mode'] = 'filesystem'
-        ret['upload_path'] = reverse('data_importer:local_uploader')
+        ret['upload_path'] = reverse('apiv2:local_uploader')
     return ret
 
 
 @api_endpoint
 @ajax_request
 @login_required
+@api_view(['POST'])
 def sign_policy_document(request):
     """
     Sign and return the policy document for a simple upload.

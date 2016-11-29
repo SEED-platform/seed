@@ -14,7 +14,10 @@ from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.users import UserViewSet
 from seed.views.api import get_api_schema
-
+from seed.data_importer.views import (
+    handle_s3_upload_complete, get_upload_details, sign_policy_document,
+    local_uploader
+)
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
@@ -28,6 +31,11 @@ urlpatterns = [
     url(r'^', include(api_v2_router.urls)),
     # ajax routes
     url(r'^version/$', version, name='version'),
+    # data uploader related things
+    url(r's3_upload_complete/$', handle_s3_upload_complete, name='s3_upload_complete'),
+    url(r'get_upload_details/$', get_upload_details, name='get_upload_details'),
+    url(r'sign_policy_document/$', sign_policy_document, name='sign_policy_document'),
+    url(r'upload/$', local_uploader, name='local_uploader'),
     # api schema
     url(
         r'^schema/$',

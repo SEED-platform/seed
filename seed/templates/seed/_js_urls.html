@@ -47,9 +47,6 @@
         window.BE.urls.delete_cycle             = '{% url "seed:delete_cycle" %}';
 
         // uploader URLs
-        window.BE.urls.uploader_signature_endpoint  = '{% url "data_importer:sign_policy_document" %}';
-        window.BE.urls.uploader_success_endpoint    = '{% url "data_importer:s3_upload_complete" %}';
-        window.BE.urls.uploader_local_endpoint      = '{% url "data_importer:local_uploader" %}';
         window.BE.urls.save_raw_data                = '{% url "seed:save_raw_data" %}';
         window.BE.urls.get_raw_column_names         = '{% url "seed:get_raw_column_names" %}';
         window.BE.urls.get_first_five_rows          = '{% url "seed:get_first_five_rows" %}';

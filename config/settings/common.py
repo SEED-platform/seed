@@ -119,7 +119,6 @@ INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 SEED_URL_APPS = (
    # 'accounts',
     'ajaxuploader',
-    'data_importer',
     'seed',
     'audit_logs',
 )

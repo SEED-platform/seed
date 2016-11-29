@@ -52,7 +52,7 @@ var makeS3Uploader = function(scope, element, attrs, filename) {
         enableAuto: true
     },
     signature: {
-        endpoint: window.BE.urls.uploader_signature_endpoint,
+        endpoint: '/api/v2/sign_policy_document/',
         customHeaders: {
             'X-CSRFToken': BE.csrftoken
          }
@@ -64,7 +64,7 @@ var makeS3Uploader = function(scope, element, attrs, filename) {
      * SEED: a Portfolio Manager file or a covered assessor buildings file
      */
     uploadSuccess: {
-        endpoint: window.BE.urls.uploader_success_endpoint,
+        endpoint: '/api/v2/s3_upload_complete/',
         params: {
             csrfmiddlewaretoken: BE.csrftoken,
             import_record: scope.importrecord,

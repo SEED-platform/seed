@@ -392,7 +392,7 @@ class TestApi(TestCase):
         data_set_id = r['id']
 
         # retrieve the upload details
-        upload_details = self.client.get('/data/get_upload_details/', follow=True, **self.headers)
+        upload_details = self.client.get('/api/v2/get_upload_details/', follow=True, **self.headers)
         self.assertEqual(upload_details.status_code, 200)
         upload_details = json.loads(upload_details.content)
         self.assertEqual(upload_details['upload_mode'], 'filesystem')
