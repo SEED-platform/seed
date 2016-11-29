@@ -24,7 +24,6 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import detail_route
 
 from seed import tasks
-from seed.audit_logs.models import AuditLog
 from seed.authentication import SEEDAuthentication
 from seed.common import views as vutil
 from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
@@ -56,8 +55,6 @@ from seed.models import (
     ProjectBuilding,
     get_ancestors,  # TO REMOVE
     get_column_mapping,
-    # save_snapshot_match,
-    unmatch_snapshot_tree as unmatch_snapshot,
     obj_to_dict,
     DATA_STATE_MAPPING,
 )

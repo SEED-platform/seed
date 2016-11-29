@@ -275,7 +275,7 @@ def unmatch_snapshot_tree(building_pk):
         child.delete()
 
     # re-merge parents whose children have been taken from them
-    bachelor = root
+    # bachelor = root
     newborn_child = None
     # for bereaved_parent in coparents_to_keep:
     # newborn_child, _ = save_snapshot_match(

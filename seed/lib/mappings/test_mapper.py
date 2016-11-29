@@ -93,7 +93,7 @@ class TestMapper(TestCase):
         self.assertTrue(isinstance(columns[0]['regex'], re._pattern_type))
 
     def test_mapping(self):
-        mapping = get_pm_mapping(self.test_keys, False, mapping_data=self.test_mapping_data)
+        mapping = get_pm_mapping(self.test_keys, mapping_data=self.test_mapping_data)
 
         # casing
         self.assertEqual(mapping['Key1'], ('PropertyState', 'value_1', 100))
@@ -122,7 +122,7 @@ class TestMapper(TestCase):
             "Portfolio Manager Property ID",
             "some_other_field_not_in_the_designated_PM_mapping",
         ]
-        pm = get_pm_mapping(from_columns, False)
+        pm = get_pm_mapping(from_columns)
 
         expected = {
             'Address 1': (u'PropertyState', u'address_line_1', 100),

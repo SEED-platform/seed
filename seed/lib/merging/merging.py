@@ -14,6 +14,7 @@ LINEAR_UNITS = set([u'ft', u'm', u'in'])  # ??more??
 
 from seed.utils.mapping import get_mappable_columns
 from seed.lib.mappings.mapping_data import MappingData
+from seed.models.deprecate import SYSTEM_MATCH
 
 BuildingSnapshot_to_BuildingSnapshot = tuple([(k, k) for k in get_mappable_columns()])
 
@@ -128,7 +129,7 @@ def merge_state(merged_state, state1, state2, can_attrs, conf, default=None, mat
 
     """
     default = default or state2
-    match_type = match_type or models.SYSTEM_MATCH
+    match_type = match_type or SYSTEM_MATCH
     changes = []
     for attr in can_attrs:
         # Do we have any differences between these fields?

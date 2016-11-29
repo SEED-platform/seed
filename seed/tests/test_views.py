@@ -17,7 +17,6 @@ from seed.audit_logs.models import AuditLog, LOG
 from seed.data_importer.models import ROW_DELIMITER, ImportFile, ImportRecord
 from seed.factory import SEEDFactory
 from seed.landing.models import SEEDUser as User
-from seed.lib.mappings import mapper
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     ASSESSED_RAW,
@@ -30,7 +29,6 @@ from seed.models import (
     Cycle,
     FLOAT,
     PORTFOLIO_BS,
-    Project,
     Property,
     ProjectBuilding,
     PropertyState,
