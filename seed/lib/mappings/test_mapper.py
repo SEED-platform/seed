@@ -122,7 +122,7 @@ class TestMapper(TestCase):
             "Portfolio Manager Property ID",
             "some_other_field_not_in_the_designated_PM_mapping",
         ]
-        pm = get_pm_mapping(from_columns)
+        pm = get_pm_mapping(from_columns, resolve_duplicates=False)
 
         expected = {
             'Address 1': (u'PropertyState', u'address_line_1', 100),
@@ -132,3 +132,17 @@ class TestMapper(TestCase):
         }
 
         self.assertDictEqual(pm, expected)
+
+        pm = get_pm_mapping(from_columns, resolve_duplicates=True)
+        expected = {
+            'Address 1': (u'PropertyState', u'address_line_1', 100),
+            'Property ID': (u'PropertyState', u'pm_property_id', 100),
+            'Portfolio Manager Property ID': (u'PropertyState', 'Portfolio Manager Property ID', 100),
+            'Address_1': (u'PropertyState', 'Address_1', 100)
+        }
+        self.assertDictEqual(pm, expected)
+        pm = get_pm_mapping(from_columns)
+        self.assertDictEqual(pm, expected)
+
+
+

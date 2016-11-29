@@ -95,7 +95,7 @@ def create_column_regexes(raw_columns):
     return new_list
 
 
-def get_pm_mapping(raw_columns, mapping_data=None):
+def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
     """
     Create and return Portfolio Manager (PM) mapping for a given version of PM and the given
     list of column names.
@@ -116,6 +116,28 @@ def get_pm_mapping(raw_columns, mapping_data=None):
             }
         ]
 
+    .. code:
+
+        # Without duplicates
+
+        {
+            'Address 1': (u'PropertyState', u'address_line_1', 100),
+            'Property ID': (u'PropertyState', u'pm_property_id', 100),
+            'Portfolio Manager Property ID': (u'PropertyState', u'Portfolio Manager Property ID', 100),
+            'Address_1': (u'PropertyState', u'Address_1', 100)
+        }
+
+        # With duplicates
+
+        {
+            'Address 1': (u'PropertyState', u'address_line_1', 100),
+            'Property ID': (u'PropertyState', u'pm_property_id', 100),
+            'Portfolio Manager Property ID': (u'PropertyState', u'pm_property_id', 100),
+            'Address_1': (u'PropertyState', u'address_line_1', 100)
+        }
+
+
+
     """
 
     from_columns = create_column_regexes(raw_columns)
@@ -134,5 +156,24 @@ def get_pm_mapping(raw_columns, mapping_data=None):
 
     # TODO: resolve any duplicates here
     # verify that there are no duplicate matchings
+    expected = {
+        'Address 1': (u'PropertyState', u'address_line_1', 100),
+        'Property ID': (u'PropertyState', u'pm_property_id', 100),
+        'Portfolio Manager Property ID': (u'PropertyState', u'pm_property_id', 100),
+        'Address_1': (u'PropertyState', u'address_line_1', 100)
+    }
+
+
+    if resolve_duplicates:
+        # get the set of mappings
+        all_mappings = set()
+        for v in final_mappings.itervalues():
+            all_mappings.add(v)
+
+        for k, v in final_mappings.iteritems():
+            if v in all_mappings:
+                all_mappings.remove(v)
+            else:
+                final_mappings[k] = (v[0], k, v[2])
 
     return final_mappings
