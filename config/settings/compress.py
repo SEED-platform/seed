@@ -15,4 +15,4 @@ try:
     from config.settings.local_untracked import *  # noqa
 except ImportError:
     pass
-DEBUG = True 
+DEBUG = True

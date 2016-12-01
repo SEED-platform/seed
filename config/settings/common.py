@@ -117,7 +117,7 @@ INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
 # apps to auto load name spaced URLs for JS use (see seed.main.views.home)
 SEED_URL_APPS = (
-   # 'accounts',
+    # 'accounts',
     'ajaxuploader',
     'data_importer',
     'seed',
