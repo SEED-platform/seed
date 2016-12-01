@@ -70,6 +70,8 @@ class MappingColumns(object):
                     raw_test = 'postal_code'
                 if raw_test.lower() == 'gba':
                     raw_test = 'gross_floor_area'
+                if raw_test.lower() == 'building address'
+                    raw_test = 'address_line_1'
 
                 matches = matchers.best_match(raw_test, dest_columns, top_n=5)
 
