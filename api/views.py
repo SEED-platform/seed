@@ -10,7 +10,6 @@ from rest_framework import viewsets
 import json
 
 from seed.decorators import ajax_request
-from seed.utils.api import  api_endpoint
 from rest_framework.decorators import list_route
 
 
@@ -77,7 +76,7 @@ class TestReverseViewSet(viewsets.ViewSet):
         """
         reverse_string = request.query_params.get('reverse_string', None)
         argument = request.query_params.get('argument', None)
-        reversed_url = reverse(reverse_string, args = [argument])
+        reversed_url = reverse(reverse_string, args=[argument])
         return HttpResponse(json.dumps({reverse_string: reversed_url}))
 
     @list_route(methods=['GET'])

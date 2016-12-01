@@ -426,7 +426,7 @@ def get_property_columns(request):
             'related': False
         }, {
             'name': 'jurisdiction_tax_lot_id',
-            'displayName': 'Tax Lot ID',
+            'displayName': 'Jurisdiction Tax Lot ID',
             'type': 'numberStr',
             'related': True
         }, {
@@ -670,7 +670,7 @@ def get_taxlot_columns(request):
     columns = [
         {
             'name': 'jurisdiction_tax_lot_id',
-            'displayName': 'Tax Lot ID',
+            'displayName': 'Jurisdiction Tax Lot ID',
             'pinnedLeft': True,
             'type': 'numberStr',
             'related': False
