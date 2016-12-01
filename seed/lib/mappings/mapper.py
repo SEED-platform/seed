@@ -10,6 +10,7 @@ import os
 import re
 from os.path import realpath, join, dirname
 from collections import OrderedDict
+from unidecode import unidecode
 
 LINEAR_UNITS = set([u'ft', u'm', u'in'])
 MAPPING_DATA_DIR = join(dirname(realpath(__file__)), 'data')
@@ -28,11 +29,7 @@ def _sanitize_and_convert_keys_to_regex(key):
 
     # force unicode
     if not isinstance(key, unicode):
-        key = unicode(key)
-
-    # fix superscripts
-    key = key.replace(u'\u00B2', u'2')
-    key = key.replace(u'\u00B3', u'3')
+        key = unidecode(key)
 
     # fix superscripts - copied from old code
     found = False
@@ -81,8 +78,6 @@ def create_column_regexes(raw_columns):
             {'regex': <_sre.SRE_Pattern object at 0x10f151a50>, 'raw': 'has_underscores'},
             {'regex': <_sre.SRE_Pattern object at 0x10f10e870>, 'raw': 'has  multi spaces'}
         ]
-
-
     """
 
     # clean up the comparing columns
