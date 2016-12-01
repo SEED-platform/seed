@@ -26,7 +26,9 @@ from rest_framework.decorators import detail_route
 from seed import tasks
 from seed.authentication import SEEDAuthentication
 from seed.common import views as vutil
-from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.lib.mcm.reader import ROW_DELIMITER
+
 from seed.data_importer.tasks import (
     map_data,
     remap_data,

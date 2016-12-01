@@ -13,9 +13,9 @@ elsewhere.
 import mmap
 import operator
 import sys
-import unicodedata
 
 from unicodecsv import DictReader, Sniffer
+from unidecode import unidecode
 from xlrd import xldate, XLRDError, open_workbook, empty_cell
 from xlrd.xldate import XLDateAmbiguous
 
@@ -30,6 +30,8 @@ from seed.lib.mcm import mapper, utils
     XL_CELL_ERROR,
     XL_CELL_BLANK,  # for use in debugging, gathering stats, etc
 ) = range(7)
+
+ROW_DELIMITER = "|#*#|"
 
 
 class ExcelParser(object):
@@ -103,9 +105,7 @@ class ExcelParser(object):
                 return item.value
 
         if isinstance(item.value, unicode):
-            return unicodedata.normalize('NFKD', item.value).encode(
-                'ascii', 'ignore'
-            )
+            return unidecode(item.value)
 
         return item.value
 
@@ -179,14 +179,6 @@ class CSVParser(object):
             reader.seek_to_beginning()
             # rows.next() will return the first row
     """
-    # Character escape sequences to replace
-    CLEAN_DICT = {
-        u'\ufffd': u'',
-        u'\u00B2': u'2',
-        u'\u00B3': u'3',
-        u'\u2013': u'-',
-        u'\u2014': u'-'
-    }
 
     def __init__(self, csvfile, *args, **kwargs):
         self.csvfile = csvfile
@@ -214,25 +206,11 @@ class CSVParser(object):
             del kwargs['reader_type']
             return reader_type(self.csvfile, dialect, **kwargs)
 
-    def _clean_super(self, col):
-        """Cleans up various superscript unicode escapes. Reads from the self.CLEAN_DICT to determine what to replace
-
-        :param col: str, column name as read from the file.
-        :param replace: (optional) str, string to replace superscripts with.
-        :rtype: str, cleaned row name.
-
-        """
-
-        for item, replace in self.CLEAN_DICT.iteritems():
-            col = col.replace(item, unicode(replace))
-
-        return col
-
     def clean_super_scripts(self):
         """Replaces column names with clean ones."""
         new_fields = []
         for col in self.csvreader.unicode_fieldnames:
-            new_fields.append(self._clean_super(col))
+            new_fields.append(unidecode(col))
 
         self.csvreader.unicode_fieldnames = new_fields
 
@@ -285,7 +263,7 @@ class MCMParser(object):
         self.reader = self._get_reader(import_file)
         self.import_file = import_file
         if 'matching_func' not in kwargs:
-            # Special note, contains expects argumengs like the following
+            # Special note, contains expects arguments like the following
             # contains(a, b); tests outcome of ``b in a``
             self.matching_func = operator.contains
 
@@ -335,9 +313,52 @@ class MCMParser(object):
         """returns the number of columns of the file"""
         return self.reader.num_columns()
 
+    # TODO: return these are properties
     def headers(self):
         """original ordered list of spreadsheet headers"""
         return self.reader.headers()
+
+    @property
+    def first_five_rows(self):
+        """
+        Return the first five rows of the file.
+
+        Supposedly (NL 11/30/16) this is duplicated logic from data_importer,
+        but since data_importer makes many faulty assumptions we need to do
+        it differently.
+
+        :return: list of rows with ROW_DELIMITER
+        """
+        self.seek_to_beginning()
+        rows = self.next()
+
+        validation_rows = []
+        for i in range(5):
+            try:
+                row = rows.next()
+                if row:
+                    validation_rows.append(row)
+            except StopIteration:
+                """Less than 5 rows in file"""
+                break
+
+        # return the first row of the headers which are cleaned
+        first_row = self.headers()
+
+        tmp = []
+        for r in validation_rows:
+            row_arr = []
+            for x in first_row:
+                if isinstance(r[x], unicode):
+                    row_arr.append(unidecode(r[x]))
+                else:
+                    row_arr.append(str(r[x]))
+
+            tmp.append(ROW_DELIMITER.join(row_arr))
+
+        self.seek_to_beginning()
+
+        return tmp
 
 
 def main():

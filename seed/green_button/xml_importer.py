@@ -8,7 +8,8 @@ from collections import Iterable
 from datetime import datetime
 
 import xmltodict
-from seed.data_importer.models import ROW_DELIMITER
+from seed.lib.mcm.reader import ROW_DELIMITER
+
 from seed.models import (
     BuildingSnapshot,
     Meter,
