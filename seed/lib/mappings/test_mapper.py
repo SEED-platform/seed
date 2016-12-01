@@ -93,7 +93,9 @@ class TestMapper(TestCase):
         self.assertTrue(isinstance(columns[0]['regex'], re._pattern_type))
 
     def test_mapping(self):
-        mapping = get_pm_mapping(self.test_keys, mapping_data=self.test_mapping_data)
+        mapping = get_pm_mapping(self.test_keys, mapping_data=self.test_mapping_data,
+                                 resolve_duplicates=False
+                                 )
 
         # casing
         self.assertEqual(mapping['Key1'], ('PropertyState', 'value_1', 100))
