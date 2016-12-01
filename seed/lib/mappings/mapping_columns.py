@@ -192,7 +192,8 @@ class MappingColumns(object):
         # go through all but the first result and remove the first mapping suggestion. There
         # should always be two because it was found as a duplicate.
         for raw in raw_columns[1:]:
-            self.data[raw['raw_column']]['mappings'].pop(0)
+            if len(self.data[raw['raw_column']]['mappings']) > 0:
+                self.data[raw['raw_column']]['mappings'].pop(0)
             self.set_initial_mapping_cmp(raw['raw_column'])
 
     def set_initial_mapping_cmp(self, raw_column):
