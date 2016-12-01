@@ -14,7 +14,9 @@ from django.test import TestCase
 
 from seed import decorators
 from seed.audit_logs.models import AuditLog, LOG
-from seed.data_importer.models import ROW_DELIMITER, ImportFile, ImportRecord
+from seed.data_importer.models import ImportFile, ImportRecord
+
+from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.factory import SEEDFactory
 from seed.landing.models import SEEDUser as User
 from seed.lib.mappings import mapper
