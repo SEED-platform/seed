@@ -13,10 +13,9 @@ elsewhere.
 import mmap
 import operator
 import sys
-import unicodedata
 
-from unidecode import unidecode
 from unicodecsv import DictReader, Sniffer
+from unidecode import unidecode
 from xlrd import xldate, XLRDError, open_workbook, empty_cell
 from xlrd.xldate import XLDateAmbiguous
 
