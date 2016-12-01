@@ -33,7 +33,7 @@ class TestMapper(TestCase):
             "normal ft2",
             "normal ft^2",
             "normal ft_",
-            u"normal ft" + u'\u00B2',
+            u"normal ft\u00B2",
         ]
 
         self.test_mapping_data = [
@@ -93,9 +93,9 @@ class TestMapper(TestCase):
         self.assertTrue(isinstance(columns[0]['regex'], re._pattern_type))
 
     def test_mapping(self):
-        mapping = get_pm_mapping(self.test_keys, mapping_data=self.test_mapping_data,
-                                 resolve_duplicates=False
-                                 )
+        mapping = get_pm_mapping(self.test_keys,
+                                 mapping_data=self.test_mapping_data,
+                                 resolve_duplicates=False)
 
         # casing
         self.assertEqual(mapping['Key1'], ('PropertyState', 'value_1', 100))
@@ -114,7 +114,8 @@ class TestMapper(TestCase):
         self.assertEqual(mapping['normal ft2'], ('PropertyState', 'value_5', 100))
         self.assertEqual(mapping['normal ft^2'], ('PropertyState', 'value_5', 100))
         self.assertEqual(mapping['normal ft_'], ('PropertyState', 'value_5', 100))
-        self.assertEqual(mapping[u"normal ft" + u'\u00B2'], ('PropertyState', 'value_5', 100))
+        # Make sure the unicode square gets converted into ascii 2 (\u00B2 => \xb2)
+        self.assertEqual(mapping[u'normal ft\xb2'], ('PropertyState', 'value_5', 100))
 
     def test_mapping_pm_to_seed(self):
         from_columns = [

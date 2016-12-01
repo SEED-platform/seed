@@ -28,8 +28,10 @@ def _sanitize_and_convert_keys_to_regex(key):
     """
 
     # force unicode
-    if not isinstance(key, unicode):
+    if isinstance(key, unicode):
         key = unidecode(key)
+        _log.info("Mapping key was unicode, converted key to  {}".format(key))
+        # remove some ascii encoded items
 
     # fix superscripts - copied from old code
     found = False
