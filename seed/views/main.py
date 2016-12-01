@@ -24,7 +24,6 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import detail_route
 
 from seed import tasks
-from seed.audit_logs.models import AuditLog
 from seed.authentication import SEEDAuthentication
 from seed.common import views as vutil
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -58,8 +57,6 @@ from seed.models import (
     ProjectBuilding,
     get_ancestors,  # TO REMOVE
     get_column_mapping,
-    save_snapshot_match,
-    unmatch_snapshot_tree as unmatch_snapshot,
     obj_to_dict,
     DATA_STATE_MAPPING,
 )
@@ -180,7 +177,7 @@ def version(request):
 @ajax_request
 @login_required
 def create_pm_mapping(request):
-    # TODO: NLL - fix this today
+    # TODO: NLL - Deprecate
     """Create a mapping for PortfolioManager input columns.
 
     Payload::
@@ -233,7 +230,7 @@ def create_pm_mapping(request):
         return vutil.api_error(invalid)
 
     try:
-        result = simple_mapper.get_pm_mapping('1.0', body['columns'])
+        result = simple_mapper.get_pm_mapping(body['columns'], resolve_duplicates=True)
     except ValueError as err:
         return vutil.api_error(str(err))
     json_result = [[c] + v.as_json() for c, v in result.items()]
@@ -910,80 +907,83 @@ def get_columns(request):
     return utils_get_columns(request.GET['organization_id'], all_fields)
 
 
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_member')
+# @api_endpoint
+# @ajax_request
+# @login_required
+# @has_perm('requires_member')
 def save_match(request):
-    """
-    Adds or removes a match between two BuildingSnapshots.
-    Creating a match creates a new BuildingSnapshot with merged data.
+    return "DEPRECATE ME"
 
-    Payload::
 
-        {
-            'organization_id': current user organization id,
-            'source_building_id': ID of first BuildingSnapshot,
-            'target_building_id': ID of second BuildingSnapshot,
-            'create_match': True to create match, False to remove it,
-            'organization_id': ID of user's organization
-        }
-
-    Returns::
-
-        {
-            'status': 'success',
-            'child_id': The ID of the newly-created BuildingSnapshot
-                        containing merged data from the two parents.
-        }
-    """
-    body = json.loads(request.body)
-    create = body.get('create_match')
-    b1_pk = body['source_building_id']
-    b2_pk = body.get('target_building_id')
-    child_id = None
-
-    # check some perms
-    b1 = BuildingSnapshot.objects.get(pk=b1_pk)
-    if create:
-        b2 = BuildingSnapshot.objects.get(pk=b2_pk)
-        if b1.super_organization_id != b2.super_organization_id:
-            return {
-                'status': 'error',
-                'message': (
-                    'Only buildings within an organization can be matched'
-                )
-            }
-    if b1.super_organization_id != int(body.get('organization_id')):
-        return {
-            'status': 'error',
-            'message': (
-                'The source building does not belong to the organization'
-            )
-        }
-
-    if create:
-        child_id, changelist = save_snapshot_match(
-            b1_pk, b2_pk, user=request.user, match_type=2, default_pk=b2_pk
-        )
-        child_id = child_id.pk
-        cb = CanonicalBuilding.objects.get(buildingsnapshot__id=child_id)
-        AuditLog.objects.log_action(
-            request, cb, body['organization_id'],
-            action_note='Matched building.'
-        )
-    else:
-        cb = b1.canonical_building or b1.co_parent.canonical_building
-        AuditLog.objects.log_action(
-            request, cb, body['organization_id'],
-            action_note='Unmatched building.'
-        )
-        unmatch_snapshot(b1_pk)
-    resp = {
-        'status': 'success',
-        'child_id': child_id,
-    }
-    return resp
+#     """
+#     Adds or removes a match between two BuildingSnapshots.
+#     Creating a match creates a new BuildingSnapshot with merged data.
+#
+#     Payload::
+#
+#         {
+#             'organization_id': current user organization id,
+#             'source_building_id': ID of first BuildingSnapshot,
+#             'target_building_id': ID of second BuildingSnapshot,
+#             'create_match': True to create match, False to remove it,
+#             'organization_id': ID of user's organization
+#         }
+#
+#     Returns::
+#
+#         {
+#             'status': 'success',
+#             'child_id': The ID of the newly-created BuildingSnapshot
+#                         containing merged data from the two parents.
+#         }
+#     """
+#     body = json.loads(request.body)
+#     create = body.get('create_match')
+#     b1_pk = body['source_building_id']
+#     b2_pk = body.get('target_building_id')
+#     child_id = None
+#
+#     # check some perms
+#     b1 = BuildingSnapshot.objects.get(pk=b1_pk)
+#     if create:
+#         b2 = BuildingSnapshot.objects.get(pk=b2_pk)
+#         if b1.super_organization_id != b2.super_organization_id:
+#             return {
+#                 'status': 'error',
+#                 'message': (
+#                     'Only buildings within an organization can be matched'
+#                 )
+#             }
+#     if b1.super_organization_id != int(body.get('organization_id')):
+#         return {
+#             'status': 'error',
+#             'message': (
+#                 'The source building does not belong to the organization'
+#             )
+#         }
+#
+#     if create:
+#         child_id, changelist = save_snapshot_match(
+#             b1_pk, b2_pk, user=request.user, match_type=2, default_pk=b2_pk
+#         )
+#         child_id = child_id.pk
+#         cb = CanonicalBuilding.objects.get(buildingsnapshot__id=child_id)
+#         AuditLog.objects.log_action(
+#             request, cb, body['organization_id'],
+#             action_note='Matched building.'
+#         )
+#     else:
+#         cb = b1.canonical_building or b1.co_parent.canonical_building
+#         AuditLog.objects.log_action(
+#             request, cb, body['organization_id'],
+#             action_note='Unmatched building.'
+#         )
+#         unmatch_snapshot(b1_pk)
+#     resp = {
+#         'status': 'success',
+#         'child_id': child_id,
+#     }
+#     return resp
 
 
 @api_endpoint
@@ -1310,22 +1310,13 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
     )
     md.add_extra_data(columns)
 
-    # Portfolio manager files have their own mapping scheme
+    # Portfolio manager files have their own mapping scheme - yuck, really?
     if import_file.from_portfolio_manager:
         _log.info("map Portfolio Manager input file")
-        suggested_mappings = {}
-        ver = import_file.source_program_version
-
-        # if there is no pm mapping found but the file has already been matched
-        # then effectively the mappings are already known with a confidence of 100
-        no_pm_mappings_confidence = 100 if import_file.matching_done else 0
-
-        for col, item in simple_mapper.get_pm_mapping(ver,
-                                                      import_file.first_row_columns,
-                                                      include_none=True).items():
-            if item is None:
-                suggested_mappings[col] = (col, no_pm_mappings_confidence)
+        suggested_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns,
+                                                          resolve_duplicates=True)
     else:
+        _log.info("custom mapping of input file")
         # All other input types
         suggested_mappings = mapper.build_column_mapping(
             import_file.first_row_columns,
@@ -1336,10 +1327,11 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
         )
         # replace None with empty string for column names and PropertyState for tables
         for m in suggested_mappings:
-            table, dest, conf = suggested_mappings[m]
-            if dest is None:
+            table, field, conf = suggested_mappings[m]
+            if field is None:
                 suggested_mappings[m][1] = u''
 
+    # Fix the table name, eventually move this to the build_column_mapping and build_pm_mapping
     for m in suggested_mappings:
         table, dest, conf = suggested_mappings[m]
         if not table:

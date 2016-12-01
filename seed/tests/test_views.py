@@ -19,7 +19,6 @@ from seed.data_importer.models import ImportFile, ImportRecord
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.factory import SEEDFactory
 from seed.landing.models import SEEDUser as User
-from seed.lib.mappings import mapper
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     ASSESSED_RAW,
@@ -32,12 +31,10 @@ from seed.models import (
     Cycle,
     FLOAT,
     PORTFOLIO_BS,
-    Project,
     Property,
     ProjectBuilding,
     PropertyState,
     PropertyView,
-    save_snapshot_match,
     StatusLabel,
     TaxLot,
     TaxLotProperty,
@@ -1762,66 +1759,66 @@ class BuildingDetailViewTests(TestCase):
         self.parent_1 = parent_1
         self.parent_2 = parent_2
 
-    # TODO Replace with test_get_property, test_get_taxlot
-    @skip("Fix for new data model")
-    def test_get_building(self):
-        """ tests the get_building view which returns building detail and source
-            information from parent buildings.
-        """
-        # arrange
-        child, changelist = save_snapshot_match(self.parent_1.pk,
-                                                self.parent_2.pk)
-
-        url = reverse_lazy("seed:get_building")
-        get_data = {
-            'building_id': child.canonical_building.pk,
-            'organization_id': self.org.pk,
-        }
-
-        # act
-        response = self.client.get(
-            url,
-            get_data,
-            content_type='application/json',
-        )
-        json_string = response.content
-        data = json.loads(json_string)
-
-        # assert
-        self.assertEqual(data['status'], 'success')
-        self.assertEqual(len(data['imported_buildings']), 2)
-        # both parents have the same child
-        self.assertEqual(
-            data['imported_buildings'][0]['children'][0],
-            child.pk
-        )
-        self.assertEqual(
-            data['imported_buildings'][1]['children'][0],
-            child.pk
-        )
-        # both parents link to their import file
-        self.assertEqual(
-            data['imported_buildings'][0]['import_file'],
-            self.import_file_1.pk
-        )
-        self.assertEqual(
-            data['imported_buildings'][1]['import_file'],
-            self.import_file_2.pk
-        )
-        # child should get the first address
-        self.assertEqual(
-            data['building']['address_line_1'],
-            self.parent_1.address_line_1
-        )
-        self.assertEqual(
-            data['building']['address_line_1_source'],
-            self.parent_1.pk
-        )
-        # child should get second gross floor area since first is set to None
-        self.assertEqual(
-            data['building']['gross_floor_area_source'],
-            self.parent_2.pk
-        )
+    # # TODO Replace with test_get_property, test_get_taxlot
+    # @skip("Fix for new data model")
+    # def test_get_building(self):
+    #     """ tests the get_building view which returns building detail and source
+    #         information from parent buildings.
+    #     """
+    #     # arrange
+    #     child, changelist = save_snapshot_match(self.parent_1.pk,
+    #                                             self.parent_2.pk)
+    #
+    #     url = reverse_lazy("seed:get_building")
+    #     get_data = {
+    #         'building_id': child.canonical_building.pk,
+    #         'organization_id': self.org.pk,
+    #     }
+    #
+    #     # act
+    #     response = self.client.get(
+    #         url,
+    #         get_data,
+    #         content_type='application/json',
+    #     )
+    #     json_string = response.content
+    #     data = json.loads(json_string)
+    #
+    #     # assert
+    #     self.assertEqual(data['status'], 'success')
+    #     self.assertEqual(len(data['imported_buildings']), 2)
+    #     # both parents have the same child
+    #     self.assertEqual(
+    #         data['imported_buildings'][0]['children'][0],
+    #         child.pk
+    #     )
+    #     self.assertEqual(
+    #         data['imported_buildings'][1]['children'][0],
+    #         child.pk
+    #     )
+    #     # both parents link to their import file
+    #     self.assertEqual(
+    #         data['imported_buildings'][0]['import_file'],
+    #         self.import_file_1.pk
+    #     )
+    #     self.assertEqual(
+    #         data['imported_buildings'][1]['import_file'],
+    #         self.import_file_2.pk
+    #     )
+    #     # child should get the first address
+    #     self.assertEqual(
+    #         data['building']['address_line_1'],
+    #         self.parent_1.address_line_1
+    #     )
+    #     self.assertEqual(
+    #         data['building']['address_line_1_source'],
+    #         self.parent_1.pk
+    #     )
+    #     # child should get second gross floor area since first is set to None
+    #     self.assertEqual(
+    #         data['building']['gross_floor_area_source'],
+    #         self.parent_2.pk
+    #     )
 
     # TODO
     @skip("Fix for new data model")
@@ -1833,132 +1830,132 @@ class BuildingDetailViewTests(TestCase):
     def test_get_taxlot(self):
         pass
 
-    # TODO replace with test for inventory report
-    @skip("Fix for new data model")
-    def test_get_building_with_project(self):
-        """ tests get_building projects payload"""
-        # arrange
-        child, changelist = save_snapshot_match(self.parent_1.pk,
-                                                self.parent_2.pk)
-        # create project wtihout compliance
-        project = Project.objects.create(
-            name='test project',
-            owner=self.user,
-            super_organization=self.org,
-        )
-        ProjectBuilding.objects.create(
-            building_snapshot=child,
-            project=project
-        )
-
-        url = reverse_lazy("seed:get_building")
-        get_data = {
-            'building_id': child.canonical_building.pk,
-            'organization_id': self.org.pk,
-        }
-
-        # act
-        response = self.client.get(
-            url,
-            get_data,
-            content_type='application/json',
-        )
-        json_string = response.content
-        data = json.loads(json_string)
-
-        # assert that the project is returned with the building
-        self.assertEqual(data['status'], 'success')
-        self.assertEqual(len(data['projects']), 1)
-        self.assertEqual(
-            data['projects'][0]['name'],
-            'test project'
-        )
-
-    # TODO replace with test for inventory report
-    @skip("Fix for new data model")
-    def test_get_building_with_deleted_dataset(self):
-        """ tests the get_building view where the dataset has been deleted and
-            the building should load without showing the sources from deleted
-            import files.
-        """
-        # arrange
-        child, changelist = save_snapshot_match(self.parent_1.pk,
-                                                self.parent_2.pk)
-
-        url = reverse_lazy("seed:get_building")
-        get_data = {
-            'building_id': child.canonical_building.pk,
-            'organization_id': self.org.pk,
-        }
-
-        # act
-        self.import_record.delete()
-        response = self.client.get(
-            url,
-            get_data,
-            content_type='application/json',
-        )
-        json_string = response.content
-        data = json.loads(json_string)
-
-        # assert
-        self.assertEqual(data['status'], 'success')
-        # empty list of parents
-        self.assertEqual(len(data['imported_buildings']), 0)
-        # building should still have all its info
-        self.assertEqual(
-            data['building']['address_line_1'],
-            self.parent_1.address_line_1
-        )
-        self.assertEqual(
-            data['building']['address_line_1_source'],
-            self.parent_1.pk
-        )
-        self.assertEqual(
-            data['building']['gross_floor_area_source'],
-            self.parent_2.pk
-        )
-        self.assertAlmostEqual(
-            data['building']['gross_floor_area'],
-            self.parent_2.gross_floor_area,
-            places=1,
-        )
+    # # TODO replace with test for inventory report
+    # @skip("Fix for new data model")
+    # def test_get_building_with_project(self):
+    #     """ tests get_building projects payload"""
+    #     # arrange
+    #     child, changelist = save_snapshot_match(self.parent_1.pk,
+    #                                             self.parent_2.pk)
+    #     # create project wtihout compliance
+    #     project = Project.objects.create(
+    #         name='test project',
+    #         owner=self.user,
+    #         super_organization=self.org,
+    #     )
+    #     ProjectBuilding.objects.create(
+    #         building_snapshot=child,
+    #         project=project
+    #     )
+    #
+    #     url = reverse_lazy("seed:get_building")
+    #     get_data = {
+    #         'building_id': child.canonical_building.pk,
+    #         'organization_id': self.org.pk,
+    #     }
+    #
+    #     # act
+    #     response = self.client.get(
+    #         url,
+    #         get_data,
+    #         content_type='application/json',
+    #     )
+    #     json_string = response.content
+    #     data = json.loads(json_string)
+    #
+    #     # assert that the project is returned with the building
+    #     self.assertEqual(data['status'], 'success')
+    #     self.assertEqual(len(data['projects']), 1)
+    #     self.assertEqual(
+    #         data['projects'][0]['name'],
+    #         'test project'
+    #     )
 
     # TODO replace with test for inventory report
-    @skip("Fix for new data model")
-    def test_get_building_imported_buildings_includes_green_button(self):
-        # arrange
-        self.parent_2.source_type = 6
-        self.parent_2.save()
-        child, changelist = save_snapshot_match(self.parent_1.pk,
-                                                self.parent_2.pk)
-
-        url = reverse_lazy("seed:get_building")
-        get_data = {
-            'building_id': child.canonical_building.pk,
-            'organization_id': self.org.pk,
-        }
-
-        # act
-        response = self.client.get(
-            url,
-            get_data,
-            content_type='application/json',
-        )
-        json_string = response.content
-        data = json.loads(json_string)
-
-        self.assertEqual(2, len(data['imported_buildings']))
-
-        # both parents link to their import file
-        self.assertEqual(
-            data['imported_buildings'][0]['import_file'],
-            self.import_file_1.pk
-        )
-        self.assertEqual(
-            data['imported_buildings'][1]['import_file'],
-            self.import_file_2.pk
-        )
+    # @skip("Fix for new data model")
+    # def test_get_building_with_deleted_dataset(self):
+    #     """ tests the get_building view where the dataset has been deleted and
+    #         the building should load without showing the sources from deleted
+    #         import files.
+    #     """
+    #     # arrange
+    #     child, changelist = save_snapshot_match(self.parent_1.pk,
+    #                                             self.parent_2.pk)
+    #
+    #     url = reverse_lazy("seed:get_building")
+    #     get_data = {
+    #         'building_id': child.canonical_building.pk,
+    #         'organization_id': self.org.pk,
+    #     }
+    #
+    #     # act
+    #     self.import_record.delete()
+    #     response = self.client.get(
+    #         url,
+    #         get_data,
+    #         content_type='application/json',
+    #     )
+    #     json_string = response.content
+    #     data = json.loads(json_string)
+    #
+    #     # assert
+    #     self.assertEqual(data['status'], 'success')
+    #     # empty list of parents
+    #     self.assertEqual(len(data['imported_buildings']), 0)
+    #     # building should still have all its info
+    #     self.assertEqual(
+    #         data['building']['address_line_1'],
+    #         self.parent_1.address_line_1
+    #     )
+    #     self.assertEqual(
+    #         data['building']['address_line_1_source'],
+    #         self.parent_1.pk
+    #     )
+    #     self.assertEqual(
+    #         data['building']['gross_floor_area_source'],
+    #         self.parent_2.pk
+    #     )
+    #     self.assertAlmostEqual(
+    #         data['building']['gross_floor_area'],
+    #         self.parent_2.gross_floor_area,
+    #         places=1,
+    #     )
+    #
+    # # TODO replace with test for inventory report
+    # @skip("Fix for new data model")
+    # def test_get_building_imported_buildings_includes_green_button(self):
+    #     # arrange
+    #     self.parent_2.source_type = 6
+    #     self.parent_2.save()
+    #     child, changelist = save_snapshot_match(self.parent_1.pk,
+    #                                             self.parent_2.pk)
+    #
+    #     url = reverse_lazy("seed:get_building")
+    #     get_data = {
+    #         'building_id': child.canonical_building.pk,
+    #         'organization_id': self.org.pk,
+    #     }
+    #
+    #     # act
+    #     response = self.client.get(
+    #         url,
+    #         get_data,
+    #         content_type='application/json',
+    #     )
+    #     json_string = response.content
+    #     data = json.loads(json_string)
+    #
+    #     self.assertEqual(2, len(data['imported_buildings']))
+    #
+    #     # both parents link to their import file
+    #     self.assertEqual(
+    #         data['imported_buildings'][0]['import_file'],
+    #         self.import_file_1.pk
+    #     )
+    #     self.assertEqual(
+    #         data['imported_buildings'][1]['import_file'],
+    #         self.import_file_2.pk
+    #     )
 
     # TODO replace with test for inventory
     @skip("Fix for new data model")
@@ -2256,7 +2253,7 @@ class TestMCMViews(TestCase):
         import_file = ImportFile.objects.create(
             import_record=self.import_record,
             cached_first_row=ROW_DELIMITER.join([u'name', u'address']),
-            source_program=mapper.Programs.PM
+            source_program='PortfolioManager'
         )
 
         post_data = {
