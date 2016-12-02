@@ -49,7 +49,6 @@ from seed.test_helpers.fake import (
 )
 from seed.tests import util as test_util
 from seed.utils.cache import set_cache, get_cache
-from seed.utils.mapping import _get_column_names
 from seed.views.main import (
     DEFAULT_CUSTOM_COLUMNS,
     _parent_tree_coparents,
@@ -2364,32 +2363,6 @@ class TestMCMViews(TestCase):
         assert (eu_col.unit is not None)
         self.assertEqual(eu_col.unit.unit_name, "test energy use intensity")
         self.assertEqual(eu_col.unit.unit_type, FLOAT)
-
-    @skip("Concatenation never worked")
-    def test_save_column_mappings_w_concat(self):
-        """Concatenated payloads come back as lists."""
-        resp = self.client.post(
-            reverse_lazy("seed:save_column_mappings"),
-            data=json.dumps({
-                'import_file_id': self.import_file.id,
-                'mappings': [
-                    ["name", ["name", "other_name"]],
-                ]
-            }),
-            content_type='application/json',
-        )
-
-        self.assertDictEqual(json.loads(resp.content), {'status': 'success'})
-
-        test_mapping = ColumnMapping.objects.filter(
-            super_organization=self.org
-        ).first()
-
-        raw_names = _get_column_names(test_mapping)
-        self.assertEquals(
-            raw_names,
-            [u'name', u'other_name']
-        )
 
     def test_save_column_mappings_idempotent(self):
         """We need to make successive calls to save_column_mappings."""
