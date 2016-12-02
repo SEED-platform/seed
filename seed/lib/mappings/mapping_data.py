@@ -97,6 +97,7 @@ class MappingData(object):
         """
         for c in columns:
             unit = c.unit.get_unit_type_display().lower() if c.unit else 'string'
+            _log.debug("Adding extra data column for table {} and column {}".format(c.column_name, c.table_name))
             self.data.append(
                 {
                     'name': c.column_name,

@@ -251,7 +251,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # yes, there are three cascading for loops here. sorry :(
     md = MappingData()
     for table, mappings in table_mappings.iteritems():
-        print "table: {}".format(table)
         if not table:
             continue
         # This may be historic, but we need to pull out the extra_data_fields here to pass into
@@ -517,10 +516,12 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
         # sanitize c and remove any diacritics
         new_chunk = {}
         for k, v in c.iteritems():
+            # remove extra spaces surrounding keys
+            key = k.strip()
             if isinstance(v, unicode):
-                new_chunk[k] = unidecode(v)
+                new_chunk[key] = unidecode(v)
             else:
-                new_chunk[k] = v
+                new_chunk[key] = v
         raw_property.extra_data = new_chunk
         raw_property.source_type = source_type  # not defined in new data model
         raw_property.data_state = DATA_STATE_IMPORT

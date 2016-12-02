@@ -118,8 +118,8 @@ class ExcelParser(object):
         :returns: Generator yeilding a row as Dict
         """
 
-        # save off the headers into a member variable. Only do this once. If XLSDictReader is called later (which it is
-        # in `seek_to_beginning` then don't reparse the headers
+        # save off the headers into a member variable. Only do this once. If XLSDictReader is
+        # called later (which it is in `seek_to_beginning` then don't reparse the headers
         if not self.cache_headers:
             for j in range(sheet.ncols):
                 self.cache_headers.append(self.get_value(sheet.cell(header_row, j)))
@@ -349,10 +349,12 @@ class MCMParser(object):
         for r in validation_rows:
             row_arr = []
             for x in first_row:
-                if isinstance(r[x], unicode):
-                    row_arr.append(unidecode(r[x]))
+                row_field = r[x]
+                if isinstance(row_field, unicode):
+                    row_field = unidecode(r[x])
                 else:
-                    row_arr.append(str(r[x]))
+                    row_field = str(r[x])
+                row_arr.append(row_field.strip())
 
             tmp.append(ROW_DELIMITER.join(row_arr))
 

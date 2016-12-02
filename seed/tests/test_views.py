@@ -3679,7 +3679,7 @@ class InventoryViewTests(TestCase):
 
         jurisdiction_tax_lot_id_col = {
             'name': 'jurisdiction_tax_lot_id',
-            'displayName': 'Tax Lot ID',
+            'displayName': 'Jurisdiction Tax Lot ID',
             'pinnedLeft': True,
             'type': 'numberStr',
             'related': False,

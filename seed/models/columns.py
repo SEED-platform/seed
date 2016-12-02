@@ -34,10 +34,12 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
     :returns: list of mapped items, float representation of confidence.
 
     """
-    from seed.utils.mapping import _get_column_names
+    from seed.utils.mapping import _get_table_and_column_names
 
     if not isinstance(column_raw, list):
         column_raw = [column_raw]
+    else:
+        raise Exception("i am a LIST! Which makes no sense!")
 
     cols = Column.objects.filter(
         organization=organization, column_name__in=column_raw
@@ -62,13 +64,18 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
     except ColumnMapping.DoesNotExist:
         return None
 
-    column_names = _get_column_names(previous_mapping, attr_name=attr_name)
+    column_names = _get_table_and_column_names(previous_mapping, attr_name=attr_name)
 
+    # Check if the mapping is a one-to-one mapping, that is, there is only one mapping available.
+    # As far as I know, this should always be the case because of the MultipleObjectsReturned
+    # from above.
     if previous_mapping.is_direct():
         column_names = column_names[0]
+    else:
+        # NL 12/2/2016 - Adding this here for now as a catch. If we get here, then we have problems.
+        raise Exception("The mapping returned with not direct!")
 
-    # TODO: return the correct table name!
-    return 'PropertyState', column_names, 100
+    return column_names[0], column_names[1], 100
 
 
 class Column(models.Model):
