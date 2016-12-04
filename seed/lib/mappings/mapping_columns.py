@@ -66,7 +66,7 @@ class MappingColumns(object):
                 # try some alternatives to the raw column in specific cases
                 # (e.g. zip => postal code). Hack for now, but should make this some global
                 # config or organization specific config
-                if raw_test.lower() == 'zip':
+                if raw_test.lower() == 'zip' or raw_test.lower() == 'zip_code':
                     raw_test = 'postal_code'
                 if raw_test.lower() == 'gba':
                     raw_test = 'gross_floor_area'

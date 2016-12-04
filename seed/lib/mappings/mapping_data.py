@@ -97,7 +97,8 @@ class MappingData(object):
         """
         for c in columns:
             unit = c.unit.get_unit_type_display().lower() if c.unit else 'string'
-            _log.debug("Adding extra data column for table {} and column {}".format(c.column_name, c.table_name))
+            _log.debug("Adding extra data column for table {} and column {}".format(c.column_name,
+                                                                                    c.table_name))
             self.data.append(
                 {
                     'name': c.column_name,
@@ -198,10 +199,6 @@ class MappingData(object):
 
         self.tax_lot_data = sorted([x for x in self.data if x['table'] == 'TaxLotState'],
                                    key=lambda k: (k['table'].lower(), k['name']))
-
-        # import pdb
-        # pdb.set_trace()
-        # a = 10
 
     def find_column(self, table_name, column_name):
         """

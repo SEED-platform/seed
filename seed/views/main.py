@@ -1304,9 +1304,10 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
     # TODO: Move this to the MappingData class and remove calling add_extra_data
     # Check if there are any DB columns that are not defined in the
     # list of mapping data.
+    # NL 12/2/2016: Removed 'organization__isnull' Query because we only want the
+    # the ones belonging to the organization
     columns = list(Column.objects.select_related('unit').filter(
-        Q(mapped_mappings__super_organization_id=org_id) |
-        Q(organization__isnull=True)).exclude(column_name__in=md.keys)
+        mapped_mappings__super_organization_id=org_id).exclude(column_name__in=md.keys)
     )
     md.add_extra_data(columns)
 
