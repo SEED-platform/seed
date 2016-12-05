@@ -2251,21 +2251,10 @@ class TestMCMViews(TestCase):
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_column_mapping_suggestions_pm_file(self):
-        import_file = ImportFile.objects.create(
-            import_record=self.import_record,
-            cached_first_row=ROW_DELIMITER.join([u'name', u'address']),
-            source_program=mapper.Programs.PM
-        )
-
-        post_data = {
-            'import_file_id': import_file.pk,
-            'org_id': self.org.pk
-        }
-
-        response = self.client.post(
-            reverse_lazy("seed:get_column_mapping_suggestions"),
+        response = self.client.get(
+            reverse_lazy("apiv2:data_files-mapping-suggestions",
+                         args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
-            data=json.dumps(post_data)
         )
         self.assertEqual('success', json.loads(response.content)['status'])
 
@@ -2288,15 +2277,10 @@ class TestMCMViews(TestCase):
         mapping.column_mapped.add(model_col)
         mapping.save()
 
-        post_data = {
-            'import_file_id': self.import_file.pk,
-            'org_id': self.org.pk
-        }
-
-        response = self.client.post(
-            reverse_lazy("seed:get_column_mapping_suggestions"),
+        response = self.client.get(
+            reverse_lazy("apiv2:data_files-mapping-suggestions",
+                         args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
-            data=json.dumps(post_data)
         )
         self.assertEqual('success', json.loads(response.content)['status'])
 
