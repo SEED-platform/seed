@@ -1137,7 +1137,7 @@ def delete_duplicates_from_import_file(request):
     }
 
 
-def tmp_mapping_suggestions(import_file_id, org_id, user):
+def _tmp_mapping_suggestions(import_file_id, org_id, user):
     """
     Temp function for allowing both api version for mapping suggestions to
     return the same data. Move this to the mapping_suggestions once we can
@@ -1218,38 +1218,6 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
     return result
 
 
-@api_endpoint
-@ajax_request
-@login_required
-def get_column_mapping_suggestions(request):
-    """
-    Returns suggested mappings from an uploaded file's headers to known
-    data fields.
-    Payload::
-        {
-            'import_file_id': The ID of the ImportRecord to examine,
-            'org_id': The ID of the user's organization
-        }
-    Returns::
-        {
-            'status': 'success',
-            'suggested_column_mappings': {
-                column header from file: [ (destination_column, score) ...]
-                ...
-            },
-            'building_columns': [ a list of all possible columns ],
-            'building_column_types': [a list of column types corresponding to building_columns],
-        }
-    ..todo: The response of this method may not be correct. verify.
-
-    """
-    body = json.loads(request.body)
-    org_id = body.get('org_id')
-    import_file_id = body.get('import_file_id')
-
-    return tmp_mapping_suggestions(import_file_id, org_id, request.user)
-
-
 class DataFileViewSet(viewsets.ViewSet):
     raise_exception = True
     authentication_classes = (SessionAuthentication, SEEDAuthentication)
@@ -1294,7 +1262,7 @@ class DataFileViewSet(viewsets.ViewSet):
         """
         org_id = request.query_params.get('organization_id', None)
 
-        result = tmp_mapping_suggestions(pk, org_id, request.user)
+        result = _tmp_mapping_suggestions(pk, org_id, request.user)
 
         return JsonResponse(result)
 

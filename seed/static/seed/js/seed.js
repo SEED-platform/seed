@@ -135,8 +135,9 @@ var SEED_app = angular.module('BE.seed', [
 SEED_app.run([
   '$http',
   '$cookies',
+  '$rootScope',
   'editableOptions',
-  function ($http, $cookies, editableOptions) {
+  function ($http, $cookies, $rootScope, editableOptions) {
     var csrftoken = $cookies.get('csrftoken');
     BE.csrftoken = csrftoken;
     $http.defaults.headers.common['X-CSRFToken'] = csrftoken;
@@ -146,6 +147,9 @@ SEED_app.run([
 
     //config ANGULAR-XEDITABLE ... (this is the recommended place rather than in .config)...
     editableOptions.theme = 'bs3';
+
+    // Use lodash in views
+    $rootScope._ = window._;
   }
 ]);
 
