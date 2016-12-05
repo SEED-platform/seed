@@ -15,7 +15,6 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import DefaultStorage
-from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
