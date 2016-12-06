@@ -3600,9 +3600,8 @@ class InventoryViewTests(TestCase):
             'extraData': True,
             'name': 'property_extra_data_column',
             'displayName': 'property_extra_data_column',
-            'related': False,
+            'related': True,
         }
-
         self.assertIn(expected_property_extra_data_column, results)
 
         expected_taxlot_extra_data_column = {
@@ -3655,6 +3654,6 @@ class InventoryViewTests(TestCase):
             'extraData': True,
             'name': 'taxlot_extra_data_column',
             'displayName': 'taxlot_extra_data_column',
-            'related': False,
+            'related': True,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
