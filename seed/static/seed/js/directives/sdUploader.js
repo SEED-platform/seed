@@ -172,7 +172,7 @@ var makeFileSystemUploader = function(scope, element, attrs, filename) {
     var uploader = new qq.FineUploader({
         element: element[0],
         request: {
-            endpoint: window.BE.urls.uploader_local_endpoint,
+            endpoint: '/api/v2/upload/',
             paramsInBody: false,
             forceMultipart: false,
             customHeaders: {
