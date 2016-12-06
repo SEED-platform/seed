@@ -24,7 +24,6 @@ from seed.views.main import (
     get_PM_filter_by_counts,
     delete_duplicates_from_import_file,
     get_import_file, delete_file,
-    get_column_mapping_suggestions,
     get_raw_column_names,
     get_first_five_rows, save_column_mappings, start_mapping, remap_buildings,
     start_system_matching, public_search, progress, export_buildings,
@@ -136,11 +135,6 @@ urlpatterns = [
     # ),
 
     # New MCM endpoints
-    url(
-        r'^' + apiv1 + r'get_column_mapping_suggestions/$',
-        get_column_mapping_suggestions,
-        name='get_column_mapping_suggestions'
-    ),
     url(
         r'^' + apiv1 + r'get_raw_column_names/$',
         get_raw_column_names,
