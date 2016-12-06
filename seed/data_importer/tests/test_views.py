@@ -40,11 +40,9 @@ class DataImporterViewTests(TestCase):
         # Just make sure we were saved correctly
         self.assertEqual(import_file.cached_first_row, expected_saved_format)
 
-        url = reverse_lazy("seed:get_raw_column_names")
-        resp = self.client.post(
-            url, data=json.dumps(
-                {'import_file_id': import_file.pk}
-            ), content_type='application/json'
+        url = reverse_lazy("apiv2:import_files-raw-column-names", args=[import_file.pk])
+        resp = self.client.get(
+            url, content_type='application/json'
         )
 
         body = json.loads(resp.content)
@@ -79,11 +77,9 @@ class DataImporterViewTests(TestCase):
             import_file.cached_second_to_fifth_row, expected_saved_format
         )
 
-        url = reverse_lazy("seed:get_first_five_rows")
-        resp = self.client.post(
-            url, data=json.dumps(
-                {'import_file_id': import_file.pk}
-            ), content_type='application/json'
+        url = reverse_lazy("apiv2:import_files-first-five-rows", args=[import_file.pk])
+        resp = self.client.get(
+            url, content_type='application/json'
         )
 
         body = json.loads(resp.content)
@@ -115,11 +111,9 @@ class DataImporterViewTests(TestCase):
             import_file.cached_second_to_fifth_row, expected_saved_format
         )
 
-        url = reverse_lazy("seed:get_first_five_rows")
-        resp = self.client.post(
-            url, data=json.dumps(
-                {'import_file_id': import_file.pk}
-            ), content_type='application/json'
+        url = reverse_lazy("apiv2:import_files-first-five-rows", args=[import_file.pk])
+        resp = self.client.get(
+            url, content_type='application/json'
         )
 
         body = json.loads(resp.content)

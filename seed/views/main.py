@@ -27,12 +27,9 @@ from seed import tasks
 from seed.audit_logs.models import AuditLog
 from seed.authentication import SEEDAuthentication
 from seed.common import views as vutil
-from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
+from seed.data_importer.models import ImportFile, ImportRecord  # , ROW_DELIMITER
 from seed.data_importer.tasks import (
-    map_data,
     remap_data,
-    match_buildings,
-    save_raw_data as task_save_raw,
 )
 from seed.decorators import (
     ajax_request, ajax_request_class, get_prog_key, require_organization_id
@@ -47,9 +44,6 @@ from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
-    PropertyState,
-    TaxLotState,
-    Cycle,
     BuildingSnapshot,
     CanonicalBuilding,
     Column,
@@ -58,8 +52,6 @@ from seed.models import (
     get_column_mapping,
     save_snapshot_match,
     unmatch_snapshot_tree as unmatch_snapshot,
-    obj_to_dict,
-    DATA_STATE_MAPPING,
 )
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.buildings import (
@@ -67,7 +59,6 @@ from seed.utils.buildings import (
     get_buildings_for_user_count
 )
 from seed.utils.cache import get_cache, set_cache
-from seed.utils.mapping import get_mappable_types
 from seed.utils.projects import (
     get_projects,
 )
@@ -691,129 +682,6 @@ def search_buildings(request):
     }
 
 
-@api_endpoint
-@ajax_request
-@login_required
-def search_mapping_results(request):
-    """
-    Retrieves a paginated list of Properties and Tax Lots for a specific import file after mapping.
-
-    Payload::
-
-        {
-            'q': a string to search on (optional),
-            'order_by': which field to order by (e.g. pm_property_id),
-            'import_file_id': ID of an import to limit search to,
-            'filter_params': {
-                a hash of Django-like filter parameters to limit query.  See seed.search.filter_other_params.
-            }
-            'page': Which page of results to retrieve (default: 1),
-            'number_per_page': Number of buildings to retrieve per page (default: 10),
-        }
-
-    Returns::
-
-        {
-            'status': 'success',
-            'properties': [
-                {
-                    'pm_property_id': ID of building (from Portfolio Manager),
-                    'address_line_1': First line of building's address,
-                    'property_name': Building's name, if any
-                },
-                ...
-            ],
-            'tax_lots': [
-                {
-                    'pm_property_id': ID of building (from Portfolio Manager),
-                    'address_line_1': First line of building's address,
-                    'jurisdiction_tax_lot_id': Tax lot id,
-                    ...
-                },
-                ...
-            ]
-            'number_properties_matching_search': Total number of properties matching search,
-            'number_properties_returned': Number of properties returned for this page,
-            'number_tax_lots_matching_search': Total number of tax lots matching search,
-            'number_tax_lots_returned': Number of tax lots returned for this page
-        }
-    """
-    body = json.loads(request.body)
-    q = body.get('q', '')
-    other_search_params = body.get('filter_params', {})
-    # order_by = body.get('order_by', 'pm_property_id')
-    # if not order_by or order_by == '':
-    #     order_by = 'pm_property_id'
-    order_by = 'id'
-    sort_reverse = body.get('sort_reverse', False)
-    page = int(body.get('page', 1))
-    number_per_page = int(body.get('number_per_page', 10))
-    import_file_id = body.get(
-        'import_file_id'
-    ) or other_search_params.get('import_file_id')
-    if sort_reverse:
-        order_by = "-%s" % order_by
-
-    properties_initial_qs = PropertyState.objects.order_by(order_by).filter(
-        import_file__pk=import_file_id,
-        data_state=DATA_STATE_MAPPING,
-    )
-    taxlots_initial_qs = TaxLotState.objects.order_by(order_by).filter(
-        import_file__pk=import_file_id,
-        data_state=DATA_STATE_MAPPING,
-    )
-
-    fieldnames = [
-        # 'pm_property_id',
-        'address_line_1',
-        'property_name',
-    ]
-    # add some filters to the dict of known column names so search_buildings
-    # doesn't parse them as extra_data
-    # TODO: remove the use of get_mappable_types and replace with MappingData.
-    db_columns = get_mappable_types()
-    db_columns['children__isnull'] = ''
-    db_columns['children'] = ''
-    db_columns['project__slug'] = ''
-    db_columns['import_file_id'] = ''
-
-    # search the query sets
-    properties_queryset = search.search_buildings(
-        q, fieldnames=fieldnames, queryset=properties_initial_qs
-    )
-    properties_queryset = search.filter_other_params(
-        properties_queryset, other_search_params, db_columns
-    )
-    properties, properties_count = search.generate_paginated_results(
-        properties_queryset, number_per_page=number_per_page, page=page,
-        matching=True
-    )
-
-    taxlots_queryset = search.search_buildings(
-        q, fieldnames=fieldnames, queryset=taxlots_initial_qs
-    )
-    taxlots_queryset = search.filter_other_params(
-        taxlots_queryset, other_search_params, db_columns
-    )
-    tax_lots, tax_lots_count = search.generate_paginated_results(
-        taxlots_queryset, number_per_page=number_per_page, page=page,
-        matching=True
-    )
-
-    _log.debug("I found {} properties".format(len(properties)))
-    _log.debug("I found {} tax lots".format(len(tax_lots)))
-
-    return {
-        'status': 'success',
-        'properties': properties,
-        'tax_lots': tax_lots,
-        'number_properties_returned': len(properties),
-        'number_properties_matching_search': properties_count,
-        'number_tax_lots_returned': len(tax_lots),
-        'number_tax_lots_matching_search': tax_lots_count,
-    }
-
-
 @ajax_request
 @login_required
 def get_default_columns(request):
@@ -1402,92 +1270,6 @@ class DataFileViewSet(viewsets.ViewSet):
 @api_endpoint
 @ajax_request
 @login_required
-def get_raw_column_names(request):
-    """
-    Retrieves a list of all column names from an ImportFile.
-
-    Payload::
-
-        {
-            'import_file_id': The ID of the ImportFile
-        }
-
-    Returns::
-
-        {
-            'status': 'success',
-            'raw_columns': [
-                list of strings of the header row of the ImportFile
-            ]
-        }
-    """
-    body = json.loads(request.body)
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
-
-    return {
-        'status': 'success',
-        'raw_columns': import_file.first_row_columns
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def get_first_five_rows(request):
-    """
-    Retrieves the first five rows of an ImportFile.
-
-    Payload::
-
-        {
-            'import_file_id': The ID of the ImportFile
-        }
-
-    Returns::
-
-        {
-            'status': 'success',
-            'first_five_rows': [
-                [list of strings of header row],
-                [list of strings of first data row],
-                ...
-                [list of strings of fifth data row]
-            ]
-        }
-    """
-    body = json.loads(request.body)
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
-
-    '''
-    import_file.cached_second_to_fifth_row is a field that contains the first
-    4 lines of data from the file, split on newlines, delimited by
-    ROW_DELIMITER. This becomes an issue when fields have newlines in them,
-    so the following is to handle newlines in the fields.
-    '''
-    lines = []
-    for l in import_file.cached_second_to_fifth_row.splitlines():
-        if ROW_DELIMITER in l:
-            lines.append(l)
-        else:
-            # Line caused by newline in data, concat it to previous line.
-            index = len(lines) - 1
-            lines[index] = lines[index] + '\n' + l
-
-    rows = [r.split(ROW_DELIMITER) for r in lines]
-
-    return {
-        'status': 'success',
-        'first_five_rows': [
-            dict(
-                zip(import_file.first_row_columns, row)
-            ) for row in rows
-        ]
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
 @has_perm('requires_member')
 def save_column_mappings(request):
     """
@@ -1530,81 +1312,6 @@ def save_column_mappings(request):
         return {'status': 'success'}
     else:
         return {'status': 'error'}
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def get_import_file(request):
-    """
-    Retrieves details about an ImportFile.
-
-    :GET: Expects import_file_id in the query string.
-
-    Returns::
-
-        {
-            'status': 'success',
-            'import_file': {
-                "name": Name of the uploaded file,
-                "number_of_buildings": number of buildings in the file,
-                "number_of_mappings": number of mapped columns,
-                "number_of_cleanings": number of cleaned fields,
-                "source_type": type of data in file, e.g. 'Assessed Raw'
-                "number_of_matchings": Number of matched buildings in file,
-                "id": ImportFile ID,
-                'dataset': {
-                    'name': Name of ImportRecord file belongs to,
-                    'id': ID of ImportRecord file belongs to,
-                    'importfiles': [  # All ImportFiles in this ImportRecord, with
-                        # requested ImportFile first:
-                        {'name': Name of file,
-                         'id': ID of ImportFile
-                        }
-                        ...
-                    ]
-                }
-            }
-        }
-    """
-
-    import_file_id = request.GET.get('import_file_id', '')
-    orgs = request.user.orgs.all()
-    import_file = ImportFile.objects.get(
-        pk=import_file_id
-    )
-    d = ImportRecord.objects.filter(
-        super_organization__in=orgs, pk=import_file.import_record_id
-    )
-    # check if user has access to the import file
-    if not d.exists():
-        return {
-            'status': 'success',
-            'import_file': {},
-        }
-
-    f = obj_to_dict(import_file)
-    f['name'] = import_file.filename_only
-    f['dataset'] = obj_to_dict(import_file.import_record)
-    # add the importfiles for the matching select
-    f['dataset']['importfiles'] = []
-    files = f['dataset']['importfiles']
-    for i in import_file.import_record.files:
-        files.append({
-            'name': i.filename_only,
-            'id': i.pk
-        })
-    # make the first element in the list the current import file
-    i = files.index({
-        'name': import_file.filename_only,
-        'id': import_file.pk
-    })
-    files[0], files[i] = files[i], files[0]
-
-    return {
-        'status': 'success',
-        'import_file': f,
-    }
 
 
 @api_endpoint
@@ -1658,100 +1365,6 @@ def delete_file(request):
 @ajax_request
 @login_required
 @has_perm('can_modify_data')
-def save_raw_data(request):
-    """
-    Starts a background task to import raw data from an ImportFile
-    into PropertyState objects as extra_data. If the cycle_id is set to
-    year_ending then the cycle ID will be set to the year_ending column for each
-    record in the uploaded file. Note that the year_ending flag is not yet enabled.
-
-    Payload::
-
-        {
-            'file_id': The ID of the ImportFile to be saved
-            'cycle_id': The ID of the cycle or the string 'year_ending'
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'message': 'message about there error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    body = json.loads(request.body)
-    import_file_id = body.get('file_id')
-    if not import_file_id:
-        return {
-            'status': 'error',
-            'message': 'must pass file_id of file to save'
-        }
-
-    cycle_id = body.get('cycle_id')
-    if not cycle_id:
-        return {
-            'status': 'error',
-            'message': 'must pass cycle_id of the cycle to save the data'
-        }
-    elif cycle_id == 'year_ending':
-        _log.error("NOT CONFIGURED FOR YEAR ENDING OPTION AT THE MOMENT")
-        return {
-            'status': 'error',
-            'message': 'SEED is unable to parse year_ending at the moment'
-        }
-    else:
-        # find the cycle
-        cycle = Cycle.objects.get(id=cycle_id)
-        if cycle:
-            # assign the cycle id to the import file object
-            import_file = ImportFile.objects.get(id=import_file_id)
-            import_file.cycle = cycle
-            import_file.save()
-        else:
-            return {
-                'status': 'error',
-                'message': 'cycle_id was invalid'
-            }
-
-    return task_save_raw(import_file_id)
-
-
-# Move to data_mapping
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def start_mapping(request):
-    """
-    Starts a background task to convert imported raw data into
-    BuildingSnapshots, using user's column mappings.
-
-    Payload::
-
-        {
-            'file_id': The ID of the ImportFile to be mapped
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    body = json.loads(request.body)
-    import_file_id = body.get('file_id')
-    if not import_file_id:
-        return {'status': 'error'}
-
-    return map_data(import_file_id)
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
 def remap_buildings(request):
     """
     Re-run the background task to remap buildings as if it hadn't happened at
@@ -1778,36 +1391,6 @@ def remap_buildings(request):
         return {'status': 'error', 'message': 'Import File does not exist'}
 
     return remap_data(import_file_id)
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def start_system_matching(request):
-    """
-    Starts a background task to attempt automatic matching between buildings
-    in an ImportFile with other existing buildings within the same org.
-
-    Payload::
-
-        {
-            'file_id': The ID of the ImportFile to be matched
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    body = json.loads(request.body)
-    import_file_id = body.get('file_id')
-    if not import_file_id:
-        return {'status': 'error'}
-
-    return match_buildings(import_file_id, request.user.pk)
 
 
 @api_endpoint

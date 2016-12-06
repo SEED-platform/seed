@@ -108,7 +108,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
                 import_file_id: import_file_id,
                 project_slug: project_slug
             },
-            url: urls.search_mapping_results
+            url: '/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/'
         }).success(function(data, status, headers, config){
             spinner_utility.hide();
             defer.resolve(data);
@@ -132,7 +132,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
                 filter_params: filter_params,
                 import_file_id: import_file_id
             },
-            url: urls.search_mapping_results
+            url: '/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/'
         }).success(function(data, status, headers, config){
             spinner_utility.hide();
             defer.resolve(data);

@@ -1468,13 +1468,12 @@ class SearchBuildingSnapshotsViewTests(TestCase):
             'page': 1,
             'q': '',
             'sort_reverse': False,
-            'project_id': None,
-            'import_file_id': import_file.pk
+            'project_id': None
         }
 
         # act
         response = self.client.post(
-            reverse_lazy("seed:search_mapping_results"),
+            reverse_lazy("apiv2:import_files-search-mapping-results", args=[import_file.pk]),
             content_type='application/json',
             data=json.dumps(post_data)
         )
@@ -1592,8 +1591,7 @@ class ImportFileViewsTests(TestCase):
         self.client.login(**user_details)
 
     def test_get_import_file(self):
-        response = self.client.get(reverse("seed:get_import_file"),
-                                   {'import_file_id': self.import_file.pk})
+        response = self.client.get(reverse("apiv2:import_files-detail", args=[self.import_file.pk]))
         self.assertEqual(self.import_file.pk,
                          json.loads(response.content)['import_file']['id'])
 
@@ -2285,11 +2283,8 @@ class TestMCMViews(TestCase):
 
     def test_get_raw_column_names(self):
         """Good case for ``get_raw_column_names``."""
-        resp = self.client.post(
-            reverse_lazy("seed:get_raw_column_names"),
-            data=json.dumps({
-                'import_file_id': self.import_file.id,
-            }),
+        resp = self.client.get(
+            reverse_lazy("apiv2:import_files-raw-column-names", args=[self.import_file.id]),
             content_type='application/json'
         )
 
@@ -2447,7 +2442,7 @@ class TestMCMViews(TestCase):
         }
         set_cache(progress_key, 'parsing', test_progress)
         resp = self.client.post(
-            reverse_lazy("seed:progress"),
+            reverse_lazy("apiv2:progress"),
             data=json.dumps({
                 'progress_key': progress_key,
             }),
@@ -3663,7 +3658,7 @@ class InventoryViewTests(TestCase):
 
         jurisdiction_tax_lot_id_col = {
             'name': 'jurisdiction_tax_lot_id',
-            'displayName': 'Tax Lot ID',
+            'displayName': 'Jurisdiction Tax Lot ID',
             'pinnedLeft': True,
             'type': 'numberStr',
             'related': False,
