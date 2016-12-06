@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 import django.db.models.deletion
+from datetime import date, datetime, timedelta
 from seed.models import Cycle
 
 
@@ -13,11 +14,22 @@ class Migration(migrations.Migration):
         ('data_importer', '0005_importfile_cycle'),
     ]
 
+    if Cycle.objects.count() == 0:
+        year = date.today().year - 1
+        cycle_name = str(year) + ' Calendar Year'
+        if Cycle.objects.filter(name=cycle_name).exists():
+            c = Cycle.objects.get(name=cycle_name)
+        else:
+            c = Cycle.objects.create(name=cycle_name,
+                                     start=datetime(year, 1, 1),
+                                     end=datetime(year + 1, 1, 1) - timedelta(seconds=1)
+                                     )
+
     operations = [
         migrations.AlterField(
             model_name='importfile',
             name='cycle',
-            field=models.ForeignKey(default=370, on_delete=django.db.models.deletion.CASCADE, to='seed.Cycle'),
+            field=models.ForeignKey(default=Cycle.objects.first().pk, on_delete=django.db.models.deletion.CASCADE, to='seed.Cycle'),
             preserve_default=False,
         ),
     ]

@@ -22,24 +22,27 @@ import logging
 _log = logging.getLogger(__name__)
 
 
-def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
-    """Callable provided to MCM to return a previously mapped field.
+def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
+    """Find the ColumnMapping objects that exist in the database from a raw_column
 
-    :param column_raw: str, the column name of the raw data.
+    :param raw_column: str, the column name of the raw data.
     :param organization: Organization inst.
     :param attr_name: str, name of attribute on ColumnMapping to pull out.
         whether we're looking at a mapping from the perspective of
         a raw_column (like we do when creating a mapping), or mapped_column,
         (like when we're applying that mapping).
+        # TODO: Remove the use of this attr_name
     :returns: list of mapped items, float representation of confidence.
 
     """
     from seed.utils.mapping import _get_table_and_column_names
 
-    if not isinstance(column_raw, list):
-        column_raw = [column_raw]
+    if not isinstance(raw_column, list):
+        column_raw = [raw_column]
     else:
-        raise Exception("i am a LIST! Which makes no sense!")
+        # NL 12/6/2016 - We should never get here, if we see this then find out why and remove the
+        # list. Eventually delete this code.
+        raise Exception("I am a LIST! Which makes no sense!")
 
     cols = Column.objects.filter(
         organization=organization, column_name__in=column_raw
@@ -47,21 +50,20 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
 
     try:
         previous_mapping = ColumnMapping.objects.get(
-            super_organization=organization, column_raw__in=cols,
+            super_organization=organization,
+            column_raw__in=cols,
         )
     except ColumnMapping.MultipleObjectsReturned:
-        # # handle the special edge-case where remove dupes doesn't get
-        # # called by ``get_or_create``
-        ColumnMapping.objects.filter(
-            super_organization=organization,
-            column_raw__in=cols
-        ).delete()
+        _log.debug("ColumnMapping.MultipleObjectsReturned")
+        # handle the special edge-case where remove dupes doesn't get
+        # called by ``get_or_create``
+        ColumnMapping.objects.filter(super_organization=organization, column_raw__in=cols).delete()
 
-        previous_mapping, _ = ColumnMapping.objects.get_or_create(
-            super_organization=organization,
-            column_raw__in=cols
-        )
+        # Need to delete and then just allow for the system to re-attempt the match because
+        # the old matches are no longer valid.
+        return None
     except ColumnMapping.DoesNotExist:
+        _log.debug("ColumnMapping.DoesNotExist")
         return None
 
     column_names = _get_table_and_column_names(previous_mapping, attr_name=attr_name)
@@ -80,6 +82,9 @@ def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
 
 class Column(models.Model):
     """The name of a column for a given organization."""
+
+    # We have two concepts of the SOURCE. The table_name, which is mostly used, and the
+    # SOURCE_* fields. Need to converge on one or the other.
     SOURCE_PROPERTY = 'P'
     SOURCE_TAXLOT = 'T'
     SOURCE_CHOICES = (
