@@ -60,7 +60,7 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
         // timeout here for testing
         var defer = $q.defer();
         $http({
-            method: 'POST',
+            method: 'GET',
             url: '/api/v2/import_files/' + import_file_id + '/first_five_rows/'
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
