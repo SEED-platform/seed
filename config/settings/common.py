@@ -14,8 +14,6 @@ from seed.serializers.celery import CeleryDatetimeSerializer
 
 SITE_ROOT = abspath(join(dirname(__file__), "..", ".."))
 
-SEED_DATADIR = join(SITE_ROOT, 'seed', 'data')
-
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 

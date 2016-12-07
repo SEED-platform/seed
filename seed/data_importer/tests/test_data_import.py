@@ -217,7 +217,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
         # make sure that no taxlot objects were created. the 12 here are the import extra_data.
         ps = PropertyState.objects.all()
-        self.assertEqual(len(ps), 12)
+        self.assertEqual(len(ps), 14)
 
         # make sure that the new data was loaded correctly
         ts = TaxLotState.objects.filter(address_line_1='50 Willow Ave SE').first()
