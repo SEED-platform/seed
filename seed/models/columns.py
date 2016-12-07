@@ -44,6 +44,7 @@ def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
         # list. Eventually delete this code.
         raise Exception("I am a LIST! Which makes no sense!")
 
+    # Should only return one column
     cols = Column.objects.filter(
         organization=organization, column_name__in=column_raw
     )
@@ -54,7 +55,7 @@ def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
             column_raw__in=cols,
         )
     except ColumnMapping.MultipleObjectsReturned:
-        _log.debug("ColumnMapping.MultipleObjectsReturned")
+        _log.debug("ColumnMapping.MultipleObjectsReturned in get_column_mapping")
         # handle the special edge-case where remove dupes doesn't get
         # called by ``get_or_create``
         ColumnMapping.objects.filter(super_organization=organization, column_raw__in=cols).delete()
@@ -159,13 +160,13 @@ class Column(models.Model):
 
         for mapping in mappings:
             if isinstance(mapping, dict):
-
                 try:
                     column_mapping, _ = ColumnMapping.objects.get_or_create(
                         super_organization=organization,
                         column_raw__in=mapping['from_column_object'],
                     )
                 except ColumnMapping.MultipleObjectsReturned:
+                    _log.debug('ColumnMapping.MultipleObjectsReturned in create_mappings')
                     # handle the special edge-case where remove dupes doesn't get
                     # called by ``get_or_create``
                     ColumnMapping.objects.filter(
@@ -330,8 +331,6 @@ class Column(models.Model):
                 organization=model_obj.organization,
                 table_name=model_obj.__class__.__name__
             )
-
-            # TODO: catch the MultipleObjectsReturns
 
 
 class ColumnMapping(models.Model):

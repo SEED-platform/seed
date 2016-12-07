@@ -81,7 +81,7 @@
     "schema": ""
   },
   {
-    "display_name": "Energy Score",
+    "display_name": "ENERGY STAR Score",
     "to_field": "energy_score",
     "to_table_name": "PropertyState",
     "from_field": "ENERGY STAR Score",
@@ -90,7 +90,7 @@
     "schema": ""
   },
   {
-    "display_name": "Energy Score",
+    "display_name": "ENERGY STAR Score",
     "to_field": "energy_score",
     "to_table_name": "PropertyState",
     "from_field": "score",
@@ -195,6 +195,15 @@
     "from_field": "medianTotalGHGEmissions",
     "units": "Metric Tons CO2e",
     "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Organization",
+    "to_field": "organization",
+    "to_table_name": "PropertyState",
+    "from_field": "Organization",
+    "units": "",
+    "type": "string",
     "schema": ""
   },
   {
@@ -310,24 +319,6 @@
     "to_field": "property_name",
     "to_table_name": "PropertyState",
     "from_field": "name",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
-    "display_name": "Property Name",
-    "to_field": "property_name",
-    "to_table_name": "PropertyState",
-    "from_field": "Property Name",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
-    "display_name": "Property Notes",
-    "to_field": "property_notes",
-    "to_table_name": "PropertyState",
-    "from_field": "Organization",
     "units": "",
     "type": "string",
     "schema": ""
