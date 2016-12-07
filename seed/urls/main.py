@@ -8,27 +8,28 @@
 from django.conf.urls import url
 
 from seed.views.main import (
-    home, version, create_pm_mapping,
+    home, create_pm_mapping,
     get_total_number_of_buildings_for_user,         # TO REMOVE
     get_building,                                   # TO REMOVE
     search_buildings,                               # TO REMOVE
-    search_mapping_results,
     get_default_columns,
     set_default_columns,
     get_default_building_detail_columns,
-    set_default_building_detail_columns, get_columns,
+    set_default_building_detail_columns,
+    get_columns,
     save_match,
     get_match_tree,
     get_coparents,
-    save_raw_data,
     get_PM_filter_by_counts,
     delete_duplicates_from_import_file,
-    get_import_file, delete_file,
-    get_raw_column_names,
-    get_first_five_rows, save_column_mappings, start_mapping, remap_buildings,
-    start_system_matching, public_search, progress, export_buildings,
+    delete_file,
+    save_column_mappings,
+    remap_buildings,
+    public_search, export_buildings,
     export_buildings_progress,
-    export_buildings_download, angular_js_tests, delete_organization_buildings,
+    export_buildings_download,
+    angular_js_tests,
+    delete_organization_buildings,
     delete_organization_inventory,
     delete_buildings
 )
@@ -53,9 +54,6 @@ urlpatterns = [
     # template routes
     url(r'^$', home, name='home'),
 
-    # ajax routes
-    url(r'^' + apiv1 + r'version/$', version, name='version'),
-
     url(r'^' + apiv1 + r'create_pm_mapping/$', create_pm_mapping,
         name='create_pm_mapping'),
 
@@ -68,11 +66,6 @@ urlpatterns = [
     url(r'^' + apiv1 + r'get_building/$', get_building, name='get_building'),
     url(r'^' + apiv1 + r'search_buildings/$', search_buildings,
         name='search_buildings'),
-    url(
-        r'^' + apiv1 + r'search_mapping_results/$',
-        search_mapping_results,
-        name='search_mapping_results'
-    ),
     url(
         r'^' + apiv1 + r'get_default_columns/$',
         get_default_columns,
@@ -99,8 +92,6 @@ urlpatterns = [
         name='get_match_tree'),
     url(r'^' + apiv1 + r'get_coparents/$', get_coparents,
         name='get_coparents'),
-    url(r'^' + apiv1 + r'save_raw_data/$', save_raw_data,
-        name='save_raw_data'),
     url(
         r'^' + apiv1 + r'get_PM_filter_by_counts/$',
         get_PM_filter_by_counts,
@@ -111,8 +102,6 @@ urlpatterns = [
         delete_duplicates_from_import_file,
         name='delete_duplicates_from_import_file',
     ),
-    url(r'^' + apiv1 + r'get_import_file/$', get_import_file,
-        name='get_import_file'),
     url(r'^' + apiv1 + r'delete_file/$', delete_file, name='delete_file'),
     # url(r'^' + apiv1 + r'update_building/$', update_building,
     #     name='update_building'),
@@ -136,35 +125,17 @@ urlpatterns = [
 
     # New MCM endpoints
     url(
-        r'^' + apiv1 + r'get_raw_column_names/$',
-        get_raw_column_names,
-        name='get_raw_column_names'
-    ),
-    url(
-        r'^' + apiv1 + r'get_first_five_rows/$',
-        get_first_five_rows,
-        name='get_first_five_rows'
-    ),
-    url(
         r'^' + apiv1 + r'save_column_mappings/$',
         save_column_mappings,
         name='save_column_mappings'
     ),
-    url(r'^' + apiv1 + r'start_mapping/$', start_mapping,
-        name='start_mapping'),
     url(r'^' + apiv1 + r'remap_buildings/$', remap_buildings,
         name='remap_buildings'),
-    url(
-        r'^' + apiv1 + r'start_system_matching/$',
-        start_system_matching,
-        name='start_system_matching'
-    ),
     url(
         r'^' + apiv1 + r'public_search/$',
         public_search,
         name='public_search'
     ),
-    url(r'^' + apiv1 + r'progress/$', progress, name='progress'),
 
     # exporter routes
     url(r'^' + apiv1 + r'export_buildings/$', export_buildings,
