@@ -27,11 +27,10 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
     mapping_factory.get_column_mapping_suggestions = function(import_file_id) {
         var defer = $q.defer();
         $http({
-            method: 'POST',
-            url: window.BE.urls.get_column_mapping_suggestions,
-            data: {
-              import_file_id: import_file_id,
-              org_id: user_service.get_organization().id
+            method: 'GET',
+            url: '/api/v2/data_files/' + import_file_id + '/mapping_suggestions/',
+            params: {
+              organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
@@ -47,9 +46,8 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
         var defer = $q.defer();
 
         $http({
-            method: 'POST',
-            url: window.BE.urls.get_raw_column_names,
-            data: {import_file_id: import_file_id}
+            method: 'GET',
+            url: '/api/v2/import_files/' + import_file_id + '/raw_column_names/'
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -62,9 +60,8 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
         // timeout here for testing
         var defer = $q.defer();
         $http({
-            method: 'POST',
-            url: window.BE.urls.get_first_five_rows,
-            data: {import_file_id: import_file_id}
+            method: 'GET',
+            url: '/api/v2/import_files/' + import_file_id + '/first_five_rows/'
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {
@@ -106,11 +103,7 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            url: window.BE.urls.start_mapping,
-            data: {
-                file_id: import_file_id,
-                organization_id: user_service.get_organization().id
-            }
+            url: '/api/v2/import_files/' + import_file_id + '/perform_mapping/'
         }).success(function(data, status, headers, config) {
             defer.resolve(data);
         }).error(function(data, status, headers, config) {

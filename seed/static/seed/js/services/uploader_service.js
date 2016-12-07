@@ -69,10 +69,9 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            url: window.BE.urls.save_raw_data,
+            url: '/api/v2/import_files/' + file_id + '/save_raw_data/',
             data: {
               cycle_id: cycle_id,
-              file_id: file_id,
               organization_id: user_service.get_organization().id
             }
         }).success(function(data, status) {

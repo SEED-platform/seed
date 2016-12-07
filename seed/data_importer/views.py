@@ -18,6 +18,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from rest_framework.decorators import api_view
+from django.http import JsonResponse
 
 from seed.data_importer.models import (
     ImportFile,
@@ -85,7 +86,7 @@ def handle_s3_upload_complete(request):
                                   **kw_fields)
     _log.info("Created ImportFile. kw_fields={} from-PM={}"
               .format(kw_fields, f.from_portfolio_manager))
-    return {'success': True, "import_file_id": f.pk}
+    return JsonResponse({'success': True, "import_file_id": f.pk})
 
 
 class DataImportBackend(LocalUploadBackend):
@@ -210,7 +211,7 @@ def get_upload_details(request):
     else:
         ret['upload_mode'] = 'filesystem'
         ret['upload_path'] = reverse('apiv2:local_uploader')
-    return ret
+    return JsonResponse(ret)
 
 
 @api_endpoint
@@ -255,7 +256,7 @@ def sign_policy_document(request):
             settings.AWS_UPLOAD_CLIENT_SECRET_KEY, policy, hashlib.sha1
         ).digest()
     )
-    return {
+    return JsonResponse({
         'policy': policy,
         'signature': signature
-    }
+    })

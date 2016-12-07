@@ -17,7 +17,6 @@ from seed.audit_logs.models import AuditLog, LOG
 from seed.data_importer.models import ROW_DELIMITER, ImportFile, ImportRecord
 from seed.factory import SEEDFactory
 from seed.landing.models import SEEDUser as User
-from seed.lib.mappings import mapper
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     ASSESSED_RAW,
@@ -1469,13 +1468,12 @@ class SearchBuildingSnapshotsViewTests(TestCase):
             'page': 1,
             'q': '',
             'sort_reverse': False,
-            'project_id': None,
-            'import_file_id': import_file.pk
+            'project_id': None
         }
 
         # act
         response = self.client.post(
-            reverse_lazy("seed:search_mapping_results"),
+            reverse_lazy("apiv2:import_files-search-mapping-results", args=[import_file.pk]),
             content_type='application/json',
             data=json.dumps(post_data)
         )
@@ -1593,8 +1591,7 @@ class ImportFileViewsTests(TestCase):
         self.client.login(**user_details)
 
     def test_get_import_file(self):
-        response = self.client.get(reverse("seed:get_import_file"),
-                                   {'import_file_id': self.import_file.pk})
+        response = self.client.get(reverse("apiv2:import_files-detail", args=[self.import_file.pk]))
         self.assertEqual(self.import_file.pk,
                          json.loads(response.content)['import_file']['id'])
 
@@ -2251,21 +2248,10 @@ class TestMCMViews(TestCase):
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_column_mapping_suggestions_pm_file(self):
-        import_file = ImportFile.objects.create(
-            import_record=self.import_record,
-            cached_first_row=ROW_DELIMITER.join([u'name', u'address']),
-            source_program=mapper.Programs.PM
-        )
-
-        post_data = {
-            'import_file_id': import_file.pk,
-            'org_id': self.org.pk
-        }
-
-        response = self.client.post(
-            reverse_lazy("seed:get_column_mapping_suggestions"),
+        response = self.client.get(
+            reverse_lazy("apiv2:data_files-mapping-suggestions",
+                         args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
-            data=json.dumps(post_data)
         )
         self.assertEqual('success', json.loads(response.content)['status'])
 
@@ -2288,25 +2274,17 @@ class TestMCMViews(TestCase):
         mapping.column_mapped.add(model_col)
         mapping.save()
 
-        post_data = {
-            'import_file_id': self.import_file.pk,
-            'org_id': self.org.pk
-        }
-
-        response = self.client.post(
-            reverse_lazy("seed:get_column_mapping_suggestions"),
+        response = self.client.get(
+            reverse_lazy("apiv2:data_files-mapping-suggestions",
+                         args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
-            data=json.dumps(post_data)
         )
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_raw_column_names(self):
         """Good case for ``get_raw_column_names``."""
-        resp = self.client.post(
-            reverse_lazy("seed:get_raw_column_names"),
-            data=json.dumps({
-                'import_file_id': self.import_file.id,
-            }),
+        resp = self.client.get(
+            reverse_lazy("apiv2:import_files-raw-column-names", args=[self.import_file.id]),
             content_type='application/json'
         )
 
@@ -3680,7 +3658,7 @@ class InventoryViewTests(TestCase):
 
         jurisdiction_tax_lot_id_col = {
             'name': 'jurisdiction_tax_lot_id',
-            'displayName': 'Tax Lot ID',
+            'displayName': 'Jurisdiction Tax Lot ID',
             'pinnedLeft': True,
             'type': 'numberStr',
             'related': False,

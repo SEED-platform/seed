@@ -69,6 +69,7 @@ def get_all_urls(urllist, prefix=''):
         else:
             yield (prefix + entry.regex.pattern, entry.callback)
 
+
 # API endpoint decorator
 # simple list of all 'registered' endpoints
 endpoints = []
@@ -88,13 +89,13 @@ def api_endpoint(fn):
 
     @wraps(fn)
     def _wrapped(request, *args, **kwargs):
-
         user = get_api_request_user(request)
         if user:
             request.is_api_request = True
             request.user = user
 
         return fn(request, *args, **kwargs)
+
     return _wrapped
 
 
@@ -112,13 +113,13 @@ def api_endpoint_class(fn):
 
     @wraps(fn)
     def _wrapped(self, request, *args, **kwargs):
-
         user = get_api_request_user(request)
         if user:
             request.is_api_request = True
             request.user = user
 
         return fn(self, request, *args, **kwargs)
+
     return _wrapped
 
 

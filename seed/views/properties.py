@@ -426,7 +426,7 @@ def get_property_columns(request):
             'related': False
         }, {
             'name': 'jurisdiction_tax_lot_id',
-            'displayName': 'Tax Lot ID',
+            'displayName': 'Jurisdiction Tax Lot ID',
             'type': 'numberStr',
             'related': True
         }, {
@@ -652,7 +652,9 @@ def get_property_columns(request):
         columns.append({
             'name': name,
             'displayName': c.column_name,  # '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source])
-            'related': c.extra_data_source == Column.SOURCE_TAXLOT,
+            # Set related = True for extra data to ensure that it always aggregates
+            'related': True,
+            # 'related': c.extra_data_source == Column.SOURCE_TAXLOT or c.table_name == 'TaxLotState',
             'extraData': True
         })
 
@@ -670,7 +672,7 @@ def get_taxlot_columns(request):
     columns = [
         {
             'name': 'jurisdiction_tax_lot_id',
-            'displayName': 'Tax Lot ID',
+            'displayName': 'Jurisdiction Tax Lot ID',
             'pinnedLeft': True,
             'type': 'numberStr',
             'related': False
@@ -923,7 +925,9 @@ def get_taxlot_columns(request):
         columns.append({
             'name': name,
             'displayName': c.column_name,  # '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source])
-            'related': c.extra_data_source == Column.SOURCE_PROPERTY,
+            # Set related = True for extra data to ensure that it always aggregates
+            'related': True,
+            # 'related': c.extra_data_source == Column.SOURCE_PROPERTY or c.table_name == 'PropertyState',
             'extraData': True
         })
 

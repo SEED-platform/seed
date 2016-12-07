@@ -416,11 +416,10 @@ class TestApi(TestCase):
 
         # Save the data to BuildingSnapshots
         payload = {
-            'file_id': import_file_id,
             'organization_id': organization_id,
             'cycle_id': self.cycle.id,
         }
-        r = self.client.post('/app/save_raw_data/',
+        r = self.client.post('/api/v2/import_files/' + str(import_file_id) + '/save_raw_data/',
                              data=json.dumps(payload),
                              content_type='application/json',
                              follow=True, **self.headers)
