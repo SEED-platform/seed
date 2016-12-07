@@ -197,7 +197,7 @@ def check_status(resultOut, partmsg, log, PIIDflag=None):
 def check_progress(mainURL, Header, progress_key):
     """Delays the sequence until progress is at 100 percent."""
     time.sleep(5)
-    progressResult = requests.get(mainURL + '/app/progress/',
+    progressResult = requests.get(mainURL + '/api/v2/progress/',
                                   headers=Header,
                                   data=json.dumps({'progress_key': progress_key}))
 

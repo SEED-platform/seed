@@ -30,7 +30,7 @@ from seed.functional.tests.pages import LandingPage, MainPage
 from seed.functional.tests.pages import ProfilePage  # ,ProjectBuildingInfo
 # from seed.functional.tests.pages import ProjectsList, ProjectPage
 
-from seed.data_importer.models import ROW_DELIMITER
+from seed.lib.mcm.reader import ROW_DELIMITER
 
 
 def loggedout_tests_generator():

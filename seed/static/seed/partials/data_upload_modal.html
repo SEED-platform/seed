@@ -47,15 +47,15 @@
             <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload a Spreadsheet" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle" style="padding-top: 20px;"></div>
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Upload Portfolio Manager Data" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle && !useField" ng-hide="uploader.in_progress"></div>
+            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Upload Portfolio Manager Data" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress"></div>
         </div>
         <div class="row">
             <div class="col-sm-9 col-sm-offset-2" ng-hide="uploader.in_progress">
-                <div class="row">
-                    <span class="col-xs-1"><input type="checkbox" id="use-field-option" name="pm-cycle-option" ng-model="useField" ng-init="useField = true" value="field"></span>
-                    <label class="col-sm-7 control-label" for="use-field-option">Determine Time Period from Field:</label>
-                    <span class="col-sm-4">Year Ending</span>
-                </div>
+                <!--<div class="row">-->
+                    <!--<span class="col-xs-1"><input type="checkbox" id="use-field-option" name="pm-cycle-option" ng-model="useField" ng-init="useField = true" value="field"></span>-->
+                    <!--<label class="col-sm-7 control-label" for="use-field-option">Determine Time Period from Field:</label>-->
+                    <!--<span class="col-sm-4">Year Ending</span>-->
+                <!--</div>-->
             </div>
         </div>
         <div class="row">

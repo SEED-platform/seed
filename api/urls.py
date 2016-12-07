@@ -9,16 +9,19 @@ from rest_framework import routers
 
 from api.views import test_view_with_arg
 from seed.views.datasets import DatasetViewSet
-from seed.views.main import DataFileViewSet
+from seed.views.main import DataFileViewSet, version, progress
 from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.users import UserViewSet
+from seed.views.api import get_api_schema
+from seed.data_importer.views import (
+    handle_s3_upload_complete, get_upload_details, sign_policy_document,
+    local_uploader
+)
 from seed.views.import_files import ImportFileViewSet
-
 from seed.views.main import (
     progress
 )
-
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
@@ -31,6 +34,24 @@ api_v2_router.register(r'import_files', ImportFileViewSet, base_name="import_fil
 urlpatterns = [
     # v2 api
     url(r'^', include(api_v2_router.urls)),
+    # ajax routes
+    url(r'^version/$', version, name='version'),
+    # data uploader related things
+    url(r's3_upload_complete/$', handle_s3_upload_complete, name='s3_upload_complete'),
+    url(r'get_upload_details/$', get_upload_details, name='get_upload_details'),
+    url(r'sign_policy_document/$', sign_policy_document, name='sign_policy_document'),
+    url(r'upload/$', local_uploader, name='local_uploader'),
+    # api schema
+    url(
+        r'^schema/$',
+        get_api_schema,
+        name='schema'
+    ),
+    url(
+        r'^progress/$',
+        progress,
+        name='progress'
+    ),
     url(r'progress/$', progress, name='progress'),
     url(
         r'projects-count/$',

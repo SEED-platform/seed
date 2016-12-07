@@ -66,10 +66,12 @@ class MappingColumns(object):
                 # try some alternatives to the raw column in specific cases
                 # (e.g. zip => postal code). Hack for now, but should make this some global
                 # config or organization specific config
-                if raw_test.lower() == 'zip':
+                if raw_test.lower() == 'zip' or raw_test.lower() == 'zip_code':
                     raw_test = 'postal_code'
                 if raw_test.lower() == 'gba':
                     raw_test = 'gross_floor_area'
+                if raw_test.lower() == 'building_address':
+                    raw_test = 'address_line_1'
 
                 matches = matchers.best_match(raw_test, dest_columns, top_n=5)
 
@@ -192,7 +194,8 @@ class MappingColumns(object):
         # go through all but the first result and remove the first mapping suggestion. There
         # should always be two because it was found as a duplicate.
         for raw in raw_columns[1:]:
-            self.data[raw['raw_column']]['mappings'].pop(0)
+            if len(self.data[raw['raw_column']]['mappings']) > 0:
+                self.data[raw['raw_column']]['mappings'].pop(0)
             self.set_initial_mapping_cmp(raw['raw_column'])
 
     def set_initial_mapping_cmp(self, raw_column):
@@ -208,7 +211,8 @@ class MappingColumns(object):
         if len(self.data[raw_column]['mappings']) > 0:
             # update the compare string for detecting duplicates -- make method?
             new_map = self.data[raw_column]['mappings'][0]
-            if new_map[0] is not None and new_map[1] is not None:
+            # If anyone can figure out why new_map[1] could be a list then I will buy you a burrito
+            if new_map[0] is not None and new_map[1] is not None and not isinstance(new_map[1], list):
                 self.data[raw_column]['initial_mapping_cmp'] = '.'.join([new_map[0], new_map[1]])
             else:
                 _log.info("The mappings have a None table or column name")
@@ -240,6 +244,15 @@ class MappingColumns(object):
 
     @property
     def final_mappings(self):
+        """
+
+        Return the final mappings in a format that can be used downstream from this method
+        {
+            "raw_column_1": ('table', 'db_column_1', confidence),
+            "raw_column_2": ('table', 'db_column_1', confidence),
+        }
+
+        """
         result = {}
         for k, v in self.data.iteritems():
             result[k] = list(self.first_suggested_mapping(k))

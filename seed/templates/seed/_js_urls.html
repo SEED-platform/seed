@@ -45,10 +45,6 @@
         window.BE.urls.delete_cycle             = '{% url "seed:delete_cycle" %}';
 
         // uploader URLs
-        window.BE.urls.uploader_signature_endpoint  = '{% url "data_importer:sign_policy_document" %}';
-        window.BE.urls.uploader_success_endpoint    = '{% url "data_importer:s3_upload_complete" %}';
-        window.BE.urls.uploader_local_endpoint      = '{% url "data_importer:local_uploader" %}';
-
         window.BE.urls.save_column_mappings     = '{% url "seed:save_column_mappings" %}';
         window.BE.urls.remap_buildings          = '{% url "seed:remap_buildings" %}';
 
@@ -56,9 +52,6 @@
         window.BE.urls.export_buildings             = '{% url "seed:export_buildings" %}';
         window.BE.urls.export_buildings_progress    = '{% url "seed:export_buildings_progress" %}';
         window.BE.urls.export_buildings_download    = '{% url "seed:export_buildings_download" %}';
-
-        // main urls
-        window.BE.urls.version = '{% url "seed:version" %}';
 
         // org
         window.BE.urls.delete_organization_buildings = '{% url "seed:delete_organization_buildings" %}';
