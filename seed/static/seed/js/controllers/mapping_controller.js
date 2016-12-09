@@ -381,16 +381,7 @@ angular.module('BE.seed.controller.mapping', [])
         spinner_utility.show();
         $http({
           method: 'POST',
-          data: {
-            filter_params: {
-              import_file_id: $scope.import_file.id
-            },
-            number_per_page: 999999999,
-            order_by: '',
-            page: 1,
-            q: '',
-            sort_reverse: false
-          },
+          data: {},
           url: '/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/'
         }).success(function (data, status, headers, config) {
           spinner_utility.hide();

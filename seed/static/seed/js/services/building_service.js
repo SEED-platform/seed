@@ -92,55 +92,37 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         return defer.promise;
     };
 
-    building_factory.search_mapping_results = function(query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id, project_id, project_slug) {
-        spinner_utility.show();
-        var defer = $q.defer();
-        $http({
-            method: 'POST',
-            data: {
-                q: query_string,
-                number_per_page: number_per_page,
-                page: page_number,
-                order_by: order_by,
-                sort_reverse: sort_reverse,
-                filter_params: filter_params,
-                project_id: project_id,
-                import_file_id: import_file_id,
-                project_slug: project_slug
-            },
-            url: '/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/'
-        }).success(function(data, status, headers, config){
-            spinner_utility.hide();
-            defer.resolve(data);
-        }).error(function(data, status, headers, config){
-            defer.reject(data, status);
-        });
-        return defer.promise;
-    };
-
-    building_factory.search_matching_buildings = function(query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id) {
-        spinner_utility.show({top: '75%'}, $('.section_content')[0]);
-        var defer = $q.defer();
-        $http({
-            method: 'POST',
-            data: {
-                q: query_string,
-                number_per_page: number_per_page,
-                page: page_number,
-                order_by: order_by,
-                sort_reverse: sort_reverse,
-                filter_params: filter_params,
-                import_file_id: import_file_id
-            },
-            url: '/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/'
-        }).success(function(data, status, headers, config){
-            spinner_utility.hide();
-            defer.resolve(data);
-        }).error(function(data, status, headers, config){
-            defer.reject(data, status);
-        });
-        return defer.promise;
-    };
+    // building_factory.search_mapping_results = function(query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id, project_id, project_slug) {
+    //     spinner_utility.show();
+    //     var defer = $q.defer();
+    //     $http({
+    //         method: 'POST',
+    //         data: {},
+    //         url: '/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/'
+    //     }).success(function(data, status, headers, config){
+    //         spinner_utility.hide();
+    //         defer.resolve(data);
+    //     }).error(function(data, status, headers, config){
+    //         defer.reject(data, status);
+    //     });
+    //     return defer.promise;
+    // };
+    //
+    // building_factory.search_matching_buildings = function(query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id) {
+    //     spinner_utility.show({top: '75%'}, $('.section_content')[0]);
+    //     var defer = $q.defer();
+    //     $http({
+    //         method: 'POST',
+    //         data: {},
+    //         url: '/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/'
+    //     }).success(function(data, status, headers, config){
+    //         spinner_utility.hide();
+    //         defer.resolve(data);
+    //     }).error(function(data, status, headers, config){
+    //         defer.reject(data, status);
+    //     });
+    //     return defer.promise;
+    // };
 
     building_factory.save_match = function(source_building_id, target_building_id, create_match) {
         var defer = $q.defer();

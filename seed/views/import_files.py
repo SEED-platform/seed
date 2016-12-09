@@ -240,26 +240,10 @@ class ImportFileViewSet(viewsets.ViewSet):
               type: integer
               required: true
               paramType: path
-            - name: body
-              description: JSON body with filter information:
-              paramType: body
-              pytype: MappingResultsPayloadSerializer
-              required: true
         response_serializer: MappingResultsResponseSerializer
         """
 
-        # TODO: clean up the unused variables in this method and update the frontend to not
-        # pass the data.
-        body = request.data
-        q = body.get('q', '')
-        other_search_params = body.get('filter_params', {})
-        order_by = 'id'
-        sort_reverse = body.get('sort_reverse', False)
-        page = int(body.get('page', 1))
-        number_per_page = int(body.get('number_per_page', 10))
         import_file_id = pk
-        if sort_reverse:
-            order_by = "-%s" % order_by
 
         # get the field names that were in the mapping
         import_file = ImportFile.objects.get(id=import_file_id)
