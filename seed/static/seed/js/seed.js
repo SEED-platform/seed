@@ -1123,6 +1123,8 @@ SEED_app.config(['$httpProvider', function ($httpProvider) {
  */
 SEED_app.config(['$compileProvider', function ($compileProvider) {
   $compileProvider.debugInfoEnabled(window.BE.debug);
+  $compileProvider.commentDirectivesEnabled(false);
+  $compileProvider.cssClassDirectivesEnabled(false);
 }]);
 
 /**
