@@ -137,7 +137,6 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
 
 
     """
-
     from_columns = create_column_regexes(raw_columns)
 
     if not mapping_data:
@@ -147,15 +146,23 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
     # transform the data into the format expected by the mapper. (see mapping_columns.final_mappings)
     final_mappings = OrderedDict()
     for c in from_columns:
+        column_found = False
         for d in mapping_data:
             if c['regex'].match(d['from_field']):
                 # Assume that the mappings are 100% accurate for now.
                 final_mappings[c['raw']] = (d['to_table_name'], d['to_field'], 100)
+                column_found = True
+                continue
+
+        if not column_found:
+            # if we get here then the columns was never found
+            _log.debug("Could not find applicable mappings, resorting to raw field ({}) in PropertyState".format(c['raw']))
+            # final_mappings[c['raw']] = ('PropertyState', c['raw'], 100)
 
     # verify that there are no duplicate matchings
     if resolve_duplicates:
-        # get the set of mappings
 
+        # get the set of mappings
         mappings = []
         for v in final_mappings.itervalues():
             mappings.append(v)
