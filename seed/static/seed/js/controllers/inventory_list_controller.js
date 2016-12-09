@@ -108,15 +108,61 @@ angular.module('BE.seed.controller.inventory_list', [])
         cycles: cycles.cycles
       };
 
+      // Columns
+      var defaults = {
+        minWidth: 75,
+        width: 150
+        //type: 'string'
+      };
+      _.map($scope.columns, function (col) {
+        var options = {};
+        if (col.type == 'number') options.filter = inventory_service.numFilter();
+        else options.filter = inventory_service.textFilter();
+        if (col.name == 'number_properties' && col.related) options.treeAggregationType = 'sum';
+        else if (col.related || col.extraData) options.treeAggregationType = 'uniqueList';
+        return _.defaults(col, options, defaults);
+      });
+      $scope.columns.unshift({
+        name: 'id',
+        displayName: '',
+        cellTemplate: '<div class="ui-grid-row-header-link">' +
+        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.inventory_type == \'properties\' ? \'properties\' : \'taxlots\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
+        '    <i class="ui-grid-icon-info-circled"></i>' +
+        '  </a>' +
+        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.inventory_type == \'properties\' ? \'taxlots\' : \'properties\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
+        '    <i class="ui-grid-icon-info-circled"></i>' +
+        '  </a>' +
+        '</div>',
+        enableColumnMenu: false,
+        enableColumnResizing: false,
+        enableFiltering: false,
+        enableHiding: false,
+        enableSorting: false,
+        exporterSuppressExport: true,
+        pinnedLeft: true,
+        width: 30
+      });
+
+      // Data
       var processData = function () {
         var visibleColumns = _.map(_.filter($scope.columns, 'visible'), 'name')
           .concat(['$$treeLevel', 'id', 'property_state_id', 'taxlot_state_id']);
+
+        var columnsToAggregate = _.filter($scope.columns, function (col) {
+          return col.treeAggregationType && _.includes(visibleColumns, col.name);
+        }).reduce(function (obj, col) {
+          obj[col.name] = col.treeAggregationType;
+          return obj;
+        }, {});
+        var columnNamesToAggregate = _.keys(columnsToAggregate);
+
         var data = $scope.data;
         var roots = data.length;
         for (var i = 0, trueIndex = 0; i < roots; ++i, ++trueIndex) {
           data[trueIndex].$$treeLevel = 0;
           var related = data[trueIndex].related;
           var relatedIndex = trueIndex;
+          var aggregations = {};
           for (var j = 0; j < related.length; ++j) {
             // Rename nested keys
             var map = {};
@@ -136,14 +182,24 @@ angular.module('BE.seed.controller.inventory_list', [])
               };
             }
             var updated = _.reduce(related[j], function (result, value, key) {
-              result[map[key] || key] = value;
+              key = map[key] || key;
+              if (_.includes(columnNamesToAggregate, key)) aggregations[key] = (aggregations[key] || []).concat(value);
+              result[key] = value;
               return result;
             }, {});
 
             data.splice(++trueIndex, 0, _.pick(updated, visibleColumns));
           }
+          aggregations = _.pickBy(_.mapValues(aggregations, function(values, key) {
+            return _.join(_.uniq(_.without(values, undefined, null, '')), '; ');
+          }), function (str) {
+            return str.length;
+          });
+
           // Remove unnecessary data
           data[relatedIndex] = _.pick(data[relatedIndex], visibleColumns);
+          // Insert aggregated child values into parent row
+          _.merge(data[relatedIndex], aggregations);
         }
         $scope.data = data;
         $scope.updateQueued = true;
@@ -256,39 +312,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      var defaults = {
-        minWidth: 75,
-        width: 150
-        //type: 'string'
-      };
-      _.map($scope.columns, function (col) {
-        var options = {};
-        if (col.type == 'number') options.filter = inventory_service.numFilter();
-        else options.filter = inventory_service.textFilter();
-        if (col.related || col.extraData) options.treeAggregationType = 'uniqueList';
-        return _.defaults(col, options, defaults);
-      });
-      $scope.columns.unshift({
-        name: 'id',
-        displayName: '',
-        cellTemplate: '<div class="ui-grid-row-header-link">' +
-        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.inventory_type == \'properties\' ? \'properties\' : \'taxlots\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
-        '    <i class="ui-grid-icon-info-circled"></i>' +
-        '  </a>' +
-        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.inventory_type == \'properties\' ? \'taxlots\' : \'properties\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
-        '    <i class="ui-grid-icon-info-circled"></i>' +
-        '  </a>' +
-        '</div>',
-        enableColumnMenu: false,
-        enableColumnResizing: false,
-        enableFiltering: false,
-        enableHiding: false,
-        enableSorting: false,
-        exporterSuppressExport: true,
-        pinnedLeft: true,
-        width: 30
-      });
-
       $scope.updateHeight = function () {
         var height = 0;
         _.forEach(['.header', '.page_header_container', '.section_nav_container', '.inventory-list-controls', '.inventory-list-tab-container'], function (selector) {
@@ -342,7 +365,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         gridMenuShowHideColumns: false,
         showTreeExpandNoChildren: false,
         columnDefs: $scope.columns,
-        treeCustomAggregations: inventory_service.aggregations(),
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
 

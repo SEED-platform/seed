@@ -444,7 +444,7 @@ def get_property_columns(request):
         }, {
             'name': 'lot_number',
             'displayName': 'Associated Building Tax Lot ID',
-            'type': 'number',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'address',
@@ -526,7 +526,7 @@ def get_property_columns(request):
         }, {
             'name': 'postal_code',
             'displayName': 'Postal Code (Property)',
-            'type': 'number',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'building_count',
@@ -536,6 +536,7 @@ def get_property_columns(request):
         }, {
             'name': 'year_built',
             'displayName': 'Year Built',
+            'type': 'number',
             'related': False
         }, {
             'name': 'recent_sale_date',
@@ -624,7 +625,6 @@ def get_property_columns(request):
         }, {
             'name': 'number_properties',
             'displayName': 'Number Properties',
-            'treeAggregationType': 'sum',
             'type': 'number',
             'related': True
         }, {
@@ -698,7 +698,7 @@ def get_taxlot_columns(request):
             # INCOMPLETE, FIELD DOESN'T EXIST
             'name': 'associated_building_tax_lot_id',
             'displayName': 'Associated Building Tax Lot ID',
-            'type': 'number',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'address_line_1',
@@ -814,6 +814,7 @@ def get_taxlot_columns(request):
         }, {
             'name': 'year_built',
             'displayName': 'Year Built',
+            'type': 'number',
             'related': True
         }, {
             'name': 'recent_sale_date',
@@ -890,7 +891,7 @@ def get_taxlot_columns(request):
         }, {
             'name': 'postal_code',
             'displayName': 'Postal Code (Tax Lot)',
-            'type': 'number',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'number_properties',
