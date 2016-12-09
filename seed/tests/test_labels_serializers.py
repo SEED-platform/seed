@@ -32,15 +32,8 @@ class TestLabelSerializer(TestCase):
 
     def test_initialization_requires_organization_as_argument(self):
         with self.assertRaises(KeyError):
-            LabelSerializer(building_snapshots=BuildingSnapshot.objects.none())
+            LabelSerializer()
 
-        organization = SuperOrganization.objects.create(name='test-org')
-        LabelSerializer(
-            super_organization=organization,
-            building_snapshots=BuildingSnapshot.objects.none(),
-        )
-
-    def test_initialization_requires_building_snapshots_as_argument(self):
         organization = SuperOrganization.objects.create(name='test-org')
 
         with self.assertRaises(KeyError):
