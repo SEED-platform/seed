@@ -36,7 +36,6 @@ from seed.models import (
 from seed.utils.api import api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
 from seed.lib.mappings.mapping_data import MappingData
-from .. import search
 
 _log = logging.getLogger(__name__)
 
