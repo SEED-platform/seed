@@ -115,13 +115,14 @@ def get_properties(request):
                 extra_data_field += '_extra'
             taxlot_state_data[extra_data_field] = extra_data_value
         taxlot_map[taxlot_view.pk] = taxlot_state_data
+        # Replace taxlot_view id with taxlot id
+        taxlot_map[taxlot_view.pk]['id'] = taxlot_view.taxlot.id
 
     # A mapping of property view pk to a list of taxlot state info for a taxlot view
     join_map = {}
     for join in joins:
         join_dict = taxlot_map[join.taxlot_view_id].copy()
         join_dict.update({
-            'id': join.taxlot_view.taxlot_id,
             'primary': 'P' if join.primary else 'S'
         })
         try:
@@ -227,6 +228,8 @@ def get_taxlots(request):
                 extra_data_field += '_extra'
             property_data[extra_data_field] = extra_data_value
         property_map[property_view.pk] = property_data
+        # Replace property_view id with property id
+        property_map[property_view.pk]['id'] = property_view.property.id
 
     # A mapping of taxlot view pk to a list of property state info for a property view
     join_map = {}
@@ -251,7 +254,6 @@ def get_taxlots(request):
 
         join_dict = property_map[join.property_view_id].copy()
         join_dict.update({
-            'id': join.property_view.property_id,
             'primary': 'P' if join.primary else 'S',
             'calculated_taxlot_ids': '; '.join(jurisdiction_tax_lot_ids)
         })
