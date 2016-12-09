@@ -32,7 +32,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.selectedParentCount = 0;
 
       $scope.inventory_type = $stateParams.inventory_type;
-      $scope.objects = inventory.results;
+      $scope.data = inventory.results;
       $scope.pagination = inventory.pagination;
       $scope.total = $scope.pagination.total;
       $scope.number_per_page = 999999999;
@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       var localStorageKey = 'grid.' + $scope.inventory_type;
 
-      $scope.columns = inventory_service.loadSettings(localStorageKey, angular.copy(columns));
+      $scope.columns = inventory_service.loadSettings(localStorageKey, columns);
 
       $scope.clear_labels = function () {
         $scope.selected_labels = [];
@@ -111,7 +111,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       var processData = function () {
         var visibleColumns = _.map(_.filter($scope.columns, 'visible'), 'name')
           .concat(['$$treeLevel', 'id', 'property_state_id', 'taxlot_state_id']);
-        var data = angular.copy($scope.objects);
+        var data = $scope.data;
         var roots = data.length;
         for (var i = 0, trueIndex = 0; i < roots; ++i, ++trueIndex) {
           data[trueIndex].$$treeLevel = 0;
@@ -152,13 +152,13 @@ angular.module('BE.seed.controller.inventory_list', [])
       var refresh_objects = function () {
         if ($scope.inventory_type == 'properties') {
           inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle).then(function (properties) {
-            $scope.objects = properties.results;
+            $scope.data = properties.results;
             $scope.pagination = properties.pagination;
             processData();
           });
         } else if ($scope.inventory_type == 'taxlots') {
           inventory_service.get_taxlots($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle).then(function (taxlots) {
-            $scope.objects = taxlots.results;
+            $scope.data = taxlots.results;
             $scope.pagination = taxlots.pagination;
             processData();
           });
@@ -265,7 +265,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         var options = {};
         if (col.type == 'number') options.filter = inventory_service.numFilter();
         else options.filter = inventory_service.textFilter();
-        if (col.related) options.treeAggregationType = 'uniqueList';
+        if (col.related || col.extraData) options.treeAggregationType = 'uniqueList';
         return _.defaults(col, options, defaults);
       });
       $scope.columns.unshift({
