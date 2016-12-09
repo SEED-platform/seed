@@ -497,6 +497,10 @@ def get_property_columns(request):
             'displayName': 'Property Notes',
             'related': False
         }, {
+            'name': 'property_type',
+            'displayName': 'Property Type',
+            'related': False
+        }, {
             'name': 'year_ending',
             'displayName': 'Benchmarking year',
             'related': False

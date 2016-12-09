@@ -96,6 +96,7 @@ class PropertyState(models.Model):
     building_count = models.IntegerField(null=True, blank=True)
 
     property_notes = models.TextField(null=True, blank=True)
+    property_type = models.TextField(null=True, blank=True)
     year_ending = models.DateField(null=True, blank=True)
 
     # Tax IDs are often stuck here.

@@ -10,6 +10,7 @@ Search methods pertaining to buildings.
 import operator
 import json
 import re
+import logging
 
 from django.db.models import Q
 from seed.lib.superperms.orgs.models import Organization
@@ -27,6 +28,8 @@ from .utils.mapping import get_mappable_types
 from .utils import search as search_utils
 from seed.public.models import PUBLIC
 from functools import reduce
+
+_log = logging.getLogger(__name__)
 
 
 def convert_to_js_timestamp(timestamp):

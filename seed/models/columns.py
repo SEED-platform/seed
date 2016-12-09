@@ -157,7 +157,6 @@ class Column(models.Model):
         # Take the existing object and return the same object with the db column objects added to
         # the dictionary (to_column_object and from_column_object)
         mappings = Column._column_fields_to_columns(mappings, organization)
-
         for mapping in mappings:
             if isinstance(mapping, dict):
                 try:

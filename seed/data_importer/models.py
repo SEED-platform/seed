@@ -657,6 +657,9 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     )
     file_size_in_bytes = models.IntegerField(blank=True, null=True)
     cached_first_row = models.TextField(blank=True, null=True)
+    # Save a list of the final column mapping names that were used for this file.
+    # This should really be a many-to-many with the column/ColumnMapping table.
+    cached_mapped_columns = models.TextField(blank=True, null=True)
     cached_second_to_fifth_row = models.TextField(blank=True, null=True)
     num_columns = models.IntegerField(blank=True, null=True)
     num_rows = models.IntegerField(blank=True, null=True)
@@ -773,6 +776,20 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         if not hasattr(self, "_first_row_columns"):
             self._first_row_columns = self.cached_first_row.split(ROW_DELIMITER)
         return self._first_row_columns
+
+    def save_cached_mapped_columns(self, columns):
+        self.cached_mapped_columns = json.dumps(columns)
+        self.save()
+
+    @property
+    def get_cached_mapped_columns(self):
+        # create a list of tuples
+        data = json.loads(self.cached_mapped_columns)
+        result = []
+        for d in data:
+            result.append((d['to_table_name'], d['to_field']))
+
+        return result
 
     @property
     def second_to_fifth_rows(self):
