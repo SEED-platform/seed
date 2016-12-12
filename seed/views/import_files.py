@@ -35,8 +35,7 @@ from seed.models import (
 )
 from seed.utils.api import api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
-from seed.utils.mapping import get_mappable_types
-from .. import search
+from seed.lib.mappings.mapping_data import MappingData
 
 _log = logging.getLogger(__name__)
 
@@ -240,82 +239,54 @@ class ImportFileViewSet(viewsets.ViewSet):
               type: integer
               required: true
               paramType: path
-            - name: body
-              description: JSON body with filter information; q is search string, order_by is the field to sort by,
-                           filter_params is a hash of Django-like filter params
-              paramType: body
-              pytype: MappingResultsPayloadSerializer
-              required: true
         response_serializer: MappingResultsResponseSerializer
         """
-        body = request.data
-        q = body.get('q', '')
-        other_search_params = body.get('filter_params', {})
-        order_by = 'id'
-        sort_reverse = body.get('sort_reverse', False)
-        page = int(body.get('page', 1))
-        number_per_page = int(body.get('number_per_page', 10))
+
         import_file_id = pk
-        if sort_reverse:
-            order_by = "-%s" % order_by
 
-        properties_initial_qs = PropertyState.objects.order_by(order_by).filter(
+        # get the field names that were in the mapping
+        import_file = ImportFile.objects.get(id=import_file_id)
+        field_names = import_file.get_cached_mapped_columns
+
+        # get the columns in the db...
+        md = MappingData()
+        _log.debug(md.keys_with_table_names)
+
+        raw_db_fields = []
+        for db_field in md.keys_with_table_names:
+            if db_field in field_names:
+                raw_db_fields.append(db_field)
+
+        # go through the list and find the ones that are properties
+        fields = {'PropertyState': ['extra_data'], 'TaxLotState': ['extra_data']}
+        for f in raw_db_fields:
+            fields[f[0]].append(f[1])
+
+        _log.debug("Field names that will be returned are: {}".format(fields))
+
+        properties = PropertyState.objects.order_by('id').filter(
             import_file__pk=import_file_id,
             data_state=DATA_STATE_MAPPING,
-        )
-        taxlots_initial_qs = TaxLotState.objects.order_by(order_by).filter(
+        ).values(*fields['PropertyState'])
+        properties = list(properties)
+
+        tax_lots = TaxLotState.objects.order_by('id').filter(
             import_file__pk=import_file_id,
             data_state=DATA_STATE_MAPPING,
-        )
+        ).values(*fields['TaxLotState'])
+        tax_lots = list(tax_lots)
 
-        fieldnames = [
-            # 'pm_property_id',
-            'address_line_1',
-            'property_name',
-        ]
-        # add some filters to the dict of known column names so search_buildings
-        # doesn't parse them as extra_data
-        # TODO: remove the use of get_mappable_types and replace with MappingData.
-        db_columns = get_mappable_types()
-        db_columns['children__isnull'] = ''
-        db_columns['children'] = ''
-        db_columns['project__slug'] = ''
-        db_columns['import_file_id'] = ''
-
-        # search the query sets
-        properties_queryset = search.search_buildings(
-            q, fieldnames=fieldnames, queryset=properties_initial_qs
-        )
-        properties_queryset = search.filter_other_params(
-            properties_queryset, other_search_params, db_columns
-        )
-        properties, properties_count = search.generate_paginated_results(
-            properties_queryset, number_per_page=number_per_page, page=page,
-            matching=True
-        )
-
-        taxlots_queryset = search.search_buildings(
-            q, fieldnames=fieldnames, queryset=taxlots_initial_qs
-        )
-        taxlots_queryset = search.filter_other_params(
-            taxlots_queryset, other_search_params, db_columns
-        )
-        tax_lots, tax_lots_count = search.generate_paginated_results(
-            taxlots_queryset, number_per_page=number_per_page, page=page,
-            matching=True
-        )
-
-        _log.debug("I found {} properties".format(len(properties)))
-        _log.debug("I found {} tax lots".format(len(tax_lots)))
+        _log.debug("Found {} properties".format(len(properties)))
+        _log.debug("Found {} tax lots".format(len(tax_lots)))
 
         return {
             'status': 'success',
             'properties': properties,
             'tax_lots': tax_lots,
             'number_properties_returned': len(properties),
-            'number_properties_matching_search': properties_count,
+            'number_properties_matching_search': len(properties),
             'number_tax_lots_returned': len(tax_lots),
-            'number_tax_lots_matching_search': tax_lots_count,
+            'number_tax_lots_matching_search': len(tax_lots),
         }
 
     # Move to data_mapping

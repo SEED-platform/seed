@@ -36,6 +36,7 @@ schema = {
         u'postal_code': u'',
         u'property_name': u'',
         u'property_notes': u'',
+        u'property_type': u'',
         u'recent_sale_date': u'date',
         u'release_date': u'date',
         u'site_eui': u'float',
