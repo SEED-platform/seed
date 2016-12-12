@@ -121,7 +121,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         var options = {};
         if (col.type == 'number') options.filter = inventory_service.numFilter();
         else options.filter = inventory_service.textFilter();
-        if (col.name == 'number_properties' && col.related) options.treeAggregationType = 'sum';
+        if (col.name == 'number_properties' && col.related) options.treeAggregationType = 'total';
         else if (col.related || col.extraData) options.treeAggregationType = 'uniqueList';
         return _.defaults(col, options, defaults);
       });
@@ -193,10 +193,13 @@ angular.module('BE.seed.controller.inventory_list', [])
 
             data.splice(++trueIndex, 0, _.pick(updated, visibleColumns));
           }
+
           aggregations = _.pickBy(_.mapValues(aggregations, function (values, key) {
-            return _.join(_.uniq(_.without(values, undefined, null, '')), '; ');
-          }), function (str) {
-            return str.length;
+            var cleanedValues = _.without(values, undefined, null, '');
+            if (key == 'number_properties') return _.sum(cleanedValues) || null;
+            else return _.join(_.uniq(cleanedValues), '; ');
+          }), function (result) {
+            return _.isNumber(result) || !_.isEmpty(result);
           });
 
           // Remove unnecessary data
