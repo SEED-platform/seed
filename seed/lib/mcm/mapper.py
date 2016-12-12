@@ -77,7 +77,7 @@ def _concat_values(concat_columns, column_values, delimiter):
     # Use the order of values that we got from concat_columns def.
     values = [
         column_values[item] for item in concat_columns if item in column_values
-    ]
+        ]
     return delimiter.join(values) or None
 
 
@@ -159,6 +159,27 @@ def _set_default_concat_config(concat):
     return concat
 
 
+def _normalize_expanded_field(value):
+    """
+    Fields that are expanded (typically tax lot id) are also in need of normalization to remove
+    characters that prevent easy matching.
+
+    This method will remove unwanted characters from the jurisdiction tax lot id.
+
+    :param value: string
+    :return: string
+    """
+    return value.strip().upper().replace(
+        '-', ''
+    ).replace(
+        ' ', ''
+    ).replace(
+        '/', ''
+    ).replace(
+        '\\', ''
+    )
+
+
 def expand_field(field):
     """
     take a field from the csv and expand/split on a delimiter and return a list of individual values
@@ -169,7 +190,7 @@ def expand_field(field):
     """
 
     if isinstance(field, str) or isinstance(field, unicode):
-        return [r.strip() for r in re.split(",|;|:", field)]
+        return [_normalize_expanded_field(r) for r in re.split(",|;|:", field)]
     else:
         return [field]
 
