@@ -44,4 +44,3 @@ before_script:
 
 script:
   - tox -e $TOX_ENV
-
