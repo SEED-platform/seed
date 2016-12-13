@@ -171,18 +171,6 @@ def _build_cleaner(org):
     return cleaners.Cleaner(units)
 
 
-def _normalize_tax_lot_id(value):
-    return value.strip().lstrip('0').upper().replace(
-        '-', ''
-    ).replace(
-        ' ', ''
-    ).replace(
-        '/', ''
-    ).replace(
-        '\\', ''
-    )
-
-
 @shared_task
 def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwargs):
     """Does the work of matching a mapping to a source type and saving
@@ -238,7 +226,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
         # field does not exist in mapping list, so ignoring
 
     # _log.debug("my table mappings are {}".format(table_mappings))
-    # _log.debug("my delimited_field is {}".format(delimited_field))
+    _log.debug("delimited_field that will be expanded and normalized: {}".format(delimited_field))
 
     # Add custom mappings for cross-related data. Right now these are hard coded, but could
     # be a setting if so desired.
@@ -359,7 +347,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                                              import_filename=import_file,
                                              record_type=AUDIT_IMPORT)
 
-                # Make sure that we've saved all of the extra_data column names from the first item in list
+        # Make sure that we've saved all of the extra_data column names from the first item in list
         if map_model_obj:
             Column.save_column_names(map_model_obj)
 
