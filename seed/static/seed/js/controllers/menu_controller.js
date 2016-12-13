@@ -21,6 +21,7 @@ angular.module('BE.seed.controller.menu', [])
     '$timeout',
     '$state',
     '$cookies',
+    'spinner_utility',
     function ($rootScope,
               $scope,
               $http,
@@ -37,7 +38,8 @@ angular.module('BE.seed.controller.menu', [])
               dataset_service,
               $timeout,
               $state,
-              $cookies) {
+              $cookies,
+              spinner_utility) {
 
       // initial state of css classes for menu and sidebar
       $scope.expanded_controller = false;
@@ -69,13 +71,16 @@ angular.module('BE.seed.controller.menu', [])
         if (error === 'not authorized' || error === 'Your page could not be located!') {
           $scope.menu.error_message = error;
         }
+        spinner_utility.hide();
       });
       $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams, options) {
         $scope.menu.loading = toState.controller === 'mapping_controller';
+        spinner_utility.show();
       });
       $rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
         $scope.menu.loading = false;
         $scope.menu.route_load_error = false;
+        spinner_utility.hide();
       });
       $rootScope.$on('$stateNotFound', function (event, unfoundState, fromState, fromParams) {
         $log.error('State not found:', unfoundState.to);

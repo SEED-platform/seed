@@ -381,16 +381,7 @@ angular.module('BE.seed.controller.mapping', [])
         spinner_utility.show();
         $http({
           method: 'POST',
-          data: {
-            filter_params: {
-              import_file_id: $scope.import_file.id
-            },
-            number_per_page: 999999999,
-            order_by: '',
-            page: 1,
-            q: '',
-            sort_reverse: false
-          },
+          data: {},
           url: '/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/'
         }).success(function (data, status, headers, config) {
           spinner_utility.hide();
@@ -423,6 +414,16 @@ angular.module('BE.seed.controller.mapping', [])
             }
             return _.defaults(col, options, defaults);
           });
+          _.forEach(existing_extra_property_keys, function (name) {
+            if (!_.find(property_columns, {name: name})) {
+              property_columns.push(_.defaults({
+                name: name,
+                displayName: _.startCase(_.toLower(name)),
+                filter: inventory_service.textFilter(),
+                related: false
+              }, defaults));
+            }
+          });
           _.map(taxlot_columns, function (col) {
             var options = {};
             if (!_.includes(existing_taxlot_keys, col.name) && !_.includes(existing_extra_taxlot_keys, col.name)) col.visible = false;
@@ -431,6 +432,16 @@ angular.module('BE.seed.controller.mapping', [])
               else options.filter = inventory_service.textFilter();
             }
             return _.defaults(col, options, defaults);
+          });
+          _.forEach(existing_extra_taxlot_keys, function (name) {
+            if (!_.find(taxlot_columns, {name: name})) {
+              taxlot_columns.push(_.defaults({
+                name: name,
+                displayName: _.startCase(_.toLower(name)),
+                filter: inventory_service.textFilter(),
+                related: false
+              }, defaults));
+            }
           });
 
           $scope.propertiesGridOptions = angular.copy(gridOptions);

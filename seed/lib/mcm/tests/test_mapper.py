@@ -85,8 +85,8 @@ class TestMapper(TestCase):
 
         # empty columns should not result in entries in extra_data
         expected_extra = {
-            u'heading3': u'value3',
-            u'heading4': u''
+            u'heading_3': u'value3',
+            u'heading_4': u''
         }
 
         self.assertEqual(getattr(modified_model, u'property_id'), u'234235423')
@@ -108,7 +108,7 @@ class TestMapper(TestCase):
             fake_row, self.fake_mapping, fake_model_class
         )
 
-        expected_extra = {u'heading3': u'value3', u'heading4': u''}
+        expected_extra = {u'heading_3': u'value3', u'heading_4': u''}
 
         self.assertTrue(
             isinstance(getattr(modified_model, 'extra_data'), dict)

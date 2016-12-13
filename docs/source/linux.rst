@@ -45,7 +45,7 @@ Configure PostgreSQL
     $ createuser -P DBUsername
     $ psql
     postgres=# GRANT ALL PRIVILEGES ON DATABASE "seed-deploy" TO DBUsername;
-    postgres=# \q;
+    postgres=# \q
     $ exit
 
 .. note:: Any database name and username can be used here in place of "seed-deploy" and DBUsername
