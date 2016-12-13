@@ -169,15 +169,7 @@ def _normalize_expanded_field(value):
     :param value: string
     :return: string
     """
-    return value.strip().upper().replace(
-        '-', ''
-    ).replace(
-        ' ', ''
-    ).replace(
-        '/', ''
-    ).replace(
-        '\\', ''
-    )
+    return re.sub(r'[-\s/\\]', '', value).upper()
 
 
 def expand_field(field):
