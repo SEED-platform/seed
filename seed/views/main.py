@@ -20,7 +20,7 @@ from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, api_view
 
 from seed import tasks
 from seed.authentication import SEEDAuthentication
@@ -143,6 +143,7 @@ def home(request):
 
 @api_endpoint
 @ajax_request
+@api_view(['GET'])
 def version(request):
     """
     Returns the SEED version and current git sha
@@ -155,10 +156,10 @@ def version(request):
     sha = subprocess.check_output(
         ['git', 'rev-parse', '--short', 'HEAD']).strip()
 
-    return {
+    return JsonResponse({
         'version': manifest['version'],
         'sha': sha
-    }
+    })
 
 
 @api_endpoint
@@ -1263,53 +1264,6 @@ class DataFileViewSet(viewsets.ViewSet):
 @ajax_request
 @login_required
 @has_perm('requires_member')
-def save_column_mappings(request):
-    """
-    Saves the mappings between the raw headers of an ImportFile and the
-    destination fields in the `to_table_name` model which should be either
-    PropertyState or TaxLotState
-
-    Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
-
-    Payload::
-
-        {
-            "import_file_id": ID of the ImportFile record,
-            "mappings": [
-                {
-                    'from_field': 'eui',  # raw field in import file
-                    'to_field': 'energy_use_intensity',
-                    'to_table_name': 'PropertyState',
-                },
-                {
-                    'from_field': 'gfa',
-                    'to_field': 'gross_floor_area',
-                    'to_table_name': 'PropertyState',
-                }
-            ]
-        }
-
-    Returns::
-
-        {'status': 'success'}
-    """
-
-    body = json.loads(request.body)
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
-    organization = import_file.import_record.super_organization
-    mappings = body.get('mappings', [])
-    status = Column.create_mappings(mappings, organization, request.user)
-
-    if status:
-        return {'status': 'success'}
-    else:
-        return {'status': 'error'}
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_member')
 def delete_file(request):
     """
     Deletes an ImportFile from a dataset.
@@ -1388,6 +1342,7 @@ def remap_buildings(request):
 @api_endpoint
 @ajax_request
 @login_required
+@api_view(['GET'])
 def progress(request):
     """
     Get the progress (percent complete) for a task.
@@ -1406,16 +1361,16 @@ def progress(request):
         }
     """
 
-    progress_key = json.loads(request.body).get('progress_key')
+    progress_key = request.data.get('progress_key')
 
     if get_cache(progress_key):
-        return get_cache(progress_key)
+        return JsonResponse(get_cache(progress_key))
     else:
-        return {
+        return JsonResponse({
             'progress_key': progress_key,
             'progress': 0,
             'status': 'waiting'
-        }
+        })
 
 
 # @api_endpoint

@@ -19,9 +19,7 @@ from seed.data_importer.views import (
     local_uploader
 )
 from seed.views.import_files import ImportFileViewSet
-from seed.views.main import (
-    progress
-)
+
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
@@ -51,12 +49,6 @@ urlpatterns = [
         r'^progress/$',
         progress,
         name='progress'
-    ),
-    url(r'progress/$', progress, name='progress'),
-    url(
-        r'projects-count/$',
-        ProjectViewSet.as_view({'get': 'count'}),
-        name='projects-count'
     ),
     url(
         r'projects/(?P<pk>\w+)/add/$',

@@ -114,10 +114,10 @@ class DataImportBackend(LocalUploadBackend):
         except ImportRecord.DoesNotExist:
             # clean up the uploaded file
             os.unlink(self.path)
-            return {
+            return JsonResponse({
                 'success': False,
                 'message': "Import Record %s not found" % import_record_pk
-            }
+            })
 
         source_type = request.POST.get('source_type', request.GET.get('source_type'))
 
@@ -133,7 +133,7 @@ class DataImportBackend(LocalUploadBackend):
         _log.info("Created ImportFile. kw_fields={} from-PM={}"
                   .format(kw_fields, f.from_portfolio_manager))
 
-        return {'success': True, "import_file_id": f.pk}
+        return JsonResponse({'success': True, "import_file_id": f.pk})
 
 
 # this actually creates the django view for handling local file uploads.
@@ -141,6 +141,7 @@ class DataImportBackend(LocalUploadBackend):
 local_uploader = AjaxFileUploader(backend=DataImportBackend)
 local_uploader = login_required(local_uploader)
 local_uploader = api_endpoint(local_uploader)
+local_uploader = api_view(['POST'])(local_uploader)
 
 # API documentation and method name fix
 local_uploader.__doc__ = \
