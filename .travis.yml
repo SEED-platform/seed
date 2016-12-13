@@ -45,7 +45,3 @@ before_script:
 script:
   - tox -e $TOX_ENV
 
-after_script:
-  - coveralls
-
-
