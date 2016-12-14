@@ -437,7 +437,7 @@ class TestApi(TestCase):
         # check the progress bar
         progress_key = r['progress_key']
         r = self.client.post('/api/v2/progress/', data=json.dumps({'progress_key': progress_key}),
-                            content_type='application/json', follow=True, **self.headers)
+                             content_type='application/json', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 
         r = json.loads(r.content)
@@ -451,7 +451,6 @@ class TestApi(TestCase):
 
         # Save the column mappings.
         payload = {
-            'import_file_id': import_file_id,
             'organization_id': organization_id,
             'mappings': [
                 {
@@ -497,9 +496,11 @@ class TestApi(TestCase):
                 }
             ]
         }
-
-        r = self.client.post('/app/save_column_mappings/', data=json.dumps(payload),
-                             content_type='application/json', follow=True, **self.headers)
+        r = self.client.post('/api/v2/import_files/' + str(import_file_id) + '/save_column_mappings/',
+                             data=json.dumps(payload),
+                             content_type='application/json',
+                             follow=True,
+                             **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
 
