@@ -30,7 +30,7 @@ class CycleView(DecoratorMixin(drf_api_endpoint), ModelViewSet):
         pk = getattr(self, 'cycle_pk', None)
         return Cycle.objects.get(pk=pk)
 
-    def list_cycle(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         qs = self.get_queryset()
         if not qs:
             result = {'status': 'error', 'message': 'No cycles found.'}
