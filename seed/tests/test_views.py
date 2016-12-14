@@ -3549,7 +3549,7 @@ class InventoryViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("app:cycles"), params
+            reverse("apiv2:cycles-list"), params
         )
         results = json.loads(response.content)
         self.assertEqual(results['status'], 'success')
