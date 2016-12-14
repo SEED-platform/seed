@@ -8,7 +8,6 @@ from seed.decorators import ajax_request
 from seed.utils.api import (
     get_api_endpoints, format_api_docstring, api_endpoint
 )
-from rest_framework.decorators import api_view
 from django.http import JsonResponse
 
 
