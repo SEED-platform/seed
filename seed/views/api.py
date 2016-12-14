@@ -14,7 +14,6 @@ from django.http import JsonResponse
 
 @api_endpoint
 @ajax_request
-@api_view(['GET'])
 def get_api_schema(request):
     """
     Returns a hash of all API endpoints and their descriptions.
