@@ -2382,7 +2382,7 @@ class TestMCMViews(TestCase):
         self.client.login(**user_2_details)
 
         self.client.post(
-            reverse_lazy("apiv2:import-files-save-column-mappings", args=[self.import_file.id]),
+            reverse_lazy("apiv2:import_files-save-column-mappings", args=[self.import_file.id]),
             data=json.dumps({
                 'import_file_id': self.import_file.id,
                 'mappings': [
