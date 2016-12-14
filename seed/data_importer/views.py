@@ -133,7 +133,7 @@ class DataImportBackend(LocalUploadBackend):
         _log.info("Created ImportFile. kw_fields={} from-PM={}"
                   .format(kw_fields, f.from_portfolio_manager))
 
-        return JsonResponse({'success': True, "import_file_id": f.pk})
+        return {'success': True, "import_file_id": f.pk}
 
 
 # this actually creates the django view for handling local file uploads.

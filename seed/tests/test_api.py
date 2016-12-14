@@ -431,13 +431,13 @@ class TestApi(TestCase):
         # }
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
-        self.assertNotEqual(r['progress_key'], None)
+        self.assertIsNotNone(r['progress_key'])
         time.sleep(15)
 
         # check the progress bar
         progress_key = r['progress_key']
         r = self.client.post('/api/v2/progress/', data=json.dumps({'progress_key': progress_key}),
-                             content_type='application/json', follow=True, **self.headers)
+                            content_type='application/json', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 
         r = json.loads(r.content)

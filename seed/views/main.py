@@ -1342,7 +1342,7 @@ def remap_buildings(request):
 @api_endpoint
 @ajax_request
 @login_required
-@api_view(['GET'])
+@api_view(['POST'])
 def progress(request):
     """
     Get the progress (percent complete) for a task.

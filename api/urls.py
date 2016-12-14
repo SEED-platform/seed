@@ -7,7 +7,7 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 
-from api.views import test_view_with_arg
+from api.views import test_view_with_arg, TestReverseViewSet
 from seed.views.datasets import DatasetViewSet
 from seed.views.main import DataFileViewSet, version, progress
 from seed.views.organizations import OrganizationViewSet
@@ -27,7 +27,7 @@ api_v2_router.register(r'data_files', DataFileViewSet, base_name="data_files")
 api_v2_router.register(r'projects', ProjectViewSet, base_name="projects")
 api_v2_router.register(r'users', UserViewSet, base_name="users")
 api_v2_router.register(r'import_files', ImportFileViewSet, base_name="import_files")
-# api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
+api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
 
 urlpatterns = [
     # v2 api
