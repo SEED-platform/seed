@@ -442,10 +442,12 @@ class TestMapper(TestCase):
         self.assertEqual(r, ['123', '15543', '32132', '321321', '1231', '987'])
         r = mapper.expand_field(u"4815162342")
         self.assertEqual(r, ['4815162342'])
-        r = mapper.expand_field("33366555; 33366125; 33366148")
+        r = mapper.expand_field("33366555;         33366125; 33366148")
         self.assertEqual(r, ["33366555", "33366125", "33366148"])
         r = mapper.expand_field("000064545; 0000--34-23492-0; 00///1234: //12  34\\1234")
         self.assertEqual(r, ['000064545', '000034234920', '001234', '12341234'])
+        r = mapper.expand_field(u"4\\//\\//\\\\-815162342")
+        self.assertEqual(r, ['4815162342'])
 
     def test_expand_rows(self):
         data = {
