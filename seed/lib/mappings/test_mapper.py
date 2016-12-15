@@ -123,7 +123,7 @@ class TestMapper(TestCase):
             "Address_1",
             "Property ID",
             "Portfolio Manager Property ID",
-            "some_other_field_not_in_the_designated_PM_mapping",
+            "random",
             "site eui",
             "site Eui (kBTU/ft2)",
             "site EUI",
@@ -135,10 +135,13 @@ class TestMapper(TestCase):
             'Address_1': (u'PropertyState', u'address_line_1', 100),
             'Property ID': (u'PropertyState', u'pm_property_id', 100),
             'Portfolio Manager Property ID': (u'PropertyState', u'pm_property_id', 100),
+            'random': (u'PropertyState', u'random', 100),
             'site eui': (u'PropertyState', u'site_eui', 100),
             'site Eui (kBTU/ft2)': (u'PropertyState', u'site_eui', 100),
             'site EUI': (u'PropertyState', u'site_eui', 100)
         }
+        print pm
+
         self.assertDictEqual(pm, expected)
 
         pm = get_pm_mapping(from_columns, resolve_duplicates=True)
@@ -147,6 +150,7 @@ class TestMapper(TestCase):
             'Address_1': (u'PropertyState', u'address_line_1_duplicate_1', 100),
             'Property ID': (u'PropertyState', u'pm_property_id', 100),
             'Portfolio Manager Property ID': (u'PropertyState', u'pm_property_id_duplicate_1', 100),
+            'random': (u'PropertyState', u'random', 100),
             'site eui': (u'PropertyState', u'site_eui', 100),
             'site Eui (kBTU/ft2)': (u'PropertyState', u'site_eui_duplicate_1', 100),
             'site EUI': (u'PropertyState', u'site_eui_duplicate_2', 100)
