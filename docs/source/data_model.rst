@@ -1,6 +1,8 @@
 Data Model
 ==========
 
+.. todo:: This is out of date and needs updated.
+
 Our primary data model is based on a tree structure with BuildingSnapshot
 instances as nodes of the tree and the tip of the tree referenced by a
 CanonicalBuilding.
@@ -61,6 +63,7 @@ In our case here, BS0 and BS1 would both have *children* BS2, and BS2 would
 have *parents* BS0 and BS1.
 
 .. note::
+
     throughout most of the application, the ``search_buildings`` endpoint
     is used to search or list active building. This is to say, buildings that
     are pointed to by an active CanonicalBuilding.

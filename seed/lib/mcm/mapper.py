@@ -104,13 +104,6 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
             tmp_field = mapping.get(raw_field)
             if tmp_field:
                 tmp_field = tmp_field[1]
-
-                # TODO: there are a lot of warnings right now because we iterate over the header
-                # of the file instead of iterating over the fields that we want to map.
-
-                # else:
-                # _log.warn("Could not find the field to clean: %s" % raw_field)
-
         cleaned_value = cleaner.clean_value(value, tmp_field)
     else:
         cleaned_value = default_cleaner(value)
@@ -126,22 +119,11 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
             if hasattr(model, 'extra_data'):
                 # only save it if the model and the mapping are the same
                 if model.__class__.__name__ == table_name:
-                    model.extra_data[raw_field] = cleaned_value
-                    # else:
-                    #     _log.debug(
-                    #         "model name '%s' is not the same as the mapped table name '%s' -- skipping field '%s'" % (
-                    #         model.__class__.__name__, table_name, field_name))  # noqa
-                    # else:
-                    #     _log.debug(
-                    #         "model object does not have extra_data field, skipping mapping for %s" % raw_field)  # noqa
+                    model.extra_data[field_name] = cleaned_value
         else:
             # Simply set the field to the cleaned value if it is the correct model
             if model.__class__.__name__ == table_name:
                 setattr(model, field_name, cleaned_value)
-                # else:
-                #     _log.debug(
-                #         "model name '%s' is not the same as the mapped table name '%s' -- skipping field '%s'" % (
-                #             model.__class__.__name__, table_name, field_name))  # noqa
 
     return model
 
@@ -259,6 +241,8 @@ def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, conca
     initial_data = kwargs.get('initial_data', None)
     model = model_class()
 
+    # _log.debug("map_row's mappings {}".format(mapping))
+
     # If there are any initial states we need to set prior to mapping.
     if initial_data:
         model = apply_initial_data(model, initial_data)
@@ -266,10 +250,6 @@ def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, conca
     # concat is not used as of 2016-09-14
     # concat = _set_default_concat_config(concat)
 
-    # In case we need to look up cleaner by dynamic field mapping.
-    # TODO: we should flip this around and iterate over the mappings because there is a lot
-    # of extra work being done (sometimes) when the columns are being split across two
-    # different data base objects (i.e. taxlotstate and propertystate)
     for raw_field, value in row.items():
         # Look through any of our concatenation configs to see if this row
         # needs to be set aside for merging with others at the end of the map.

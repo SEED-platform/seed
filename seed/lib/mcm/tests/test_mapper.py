@@ -85,8 +85,8 @@ class TestMapper(TestCase):
 
         # empty columns should not result in entries in extra_data
         expected_extra = {
-            u'heading3': u'value3',
-            u'heading4': u''
+            u'heading_3': u'value3',
+            u'heading_4': u''
         }
 
         self.assertEqual(getattr(modified_model, u'property_id'), u'234235423')
@@ -108,7 +108,7 @@ class TestMapper(TestCase):
             fake_row, self.fake_mapping, fake_model_class
         )
 
-        expected_extra = {u'heading3': u'value3', u'heading4': u''}
+        expected_extra = {u'heading_3': u'value3', u'heading_4': u''}
 
         self.assertTrue(
             isinstance(getattr(modified_model, 'extra_data'), dict)
@@ -436,6 +436,8 @@ class TestMapper(TestCase):
         r = mapper.expand_and_normalize_field("123,15543;32132:321321;1231;:,::", False)
         self.assertEqual(r, "123;15543;32132;321321;1231")
         r = mapper.expand_and_normalize_field(u"4815162342")
+        self.assertEqual(r, '4815162342')
+        r = mapper.expand_and_normalize_field(u"4\\//\\//\\\\-815162342")
         self.assertEqual(r, '4815162342')
 
         # Returning lists

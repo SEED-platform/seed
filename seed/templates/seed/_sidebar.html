@@ -5,7 +5,6 @@
             <a id="sidebar-profile" class="item" ui-sref="profile" ui-sref-active="active">
                 <div class="icon"><i class="fa fa-cog"></i></div>
                 <div ng-show="!is_initial_state" class="item_name">{$ username $}</div>
-                <div ng-show="!is_initial_state" class="badge badge_menu" ng-click="href('{% url "landing:logout" %}'); $event.stopImmediatePropagation();">Log Out</div>
             </a>
             <div class="divider"></div>
             <a id="sidebar-projects" ng-class="{item: true, active: is_active('/projects')}" href="{% url "seed:home" %}#/projects" disabled>
@@ -50,6 +49,10 @@
             <a id="sidebar-about" ng-class="{item: true, active: is_active('/about')}" title="About" href="{% url "seed:home" %}#/about">
                 <div class="icon"><i class="fa fa-info-circle"></i></div>
                 <div ng-show="!is_initial_state" class="item_name">About</div>
+            </a>
+            <a id="sidebar-logout" class="item" title="Log Out" href="{% url "landing:logout" %}">
+                <div class="icon"><i class="fa fa-sign-out"></i></div>
+                <div ng-show="!is_initial_state" class="item_name">Log Out</div>
             </a>
         </div>
     </div>

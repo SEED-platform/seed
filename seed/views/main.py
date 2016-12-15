@@ -1300,7 +1300,10 @@ def save_column_mappings(request):
     mappings = body.get('mappings', [])
     status = Column.create_mappings(mappings, organization, request.user)
 
+    # extract the to_table_name and to_field
+    column_mappings = [{'from_field': m['from_field'], 'to_field': m['to_field'], 'to_table_name': m['to_table_name']} for m in mappings]
     if status:
+        import_file.save_cached_mapped_columns(column_mappings)
         return {'status': 'success'}
     else:
         return {'status': 'error'}

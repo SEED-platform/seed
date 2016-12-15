@@ -16,6 +16,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'labels',
     'columns',
     'urls',
+    'spinner_utility',
     function ($scope,
               $window,
               $log,
@@ -27,7 +28,9 @@ angular.module('BE.seed.controller.inventory_list', [])
               cycles,
               labels,
               columns,
-              urls) {
+              urls,
+              spinner_utility) {
+      spinner_utility.show();
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
 
@@ -118,7 +121,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         var options = {};
         if (col.type == 'number') options.filter = inventory_service.numFilter();
         else options.filter = inventory_service.textFilter();
-        if (col.name == 'number_properties' && col.related) options.treeAggregationType = 'sum';
+        if (col.name == 'number_properties' && col.related) options.treeAggregationType = 'total';
         else if (col.related || col.extraData) options.treeAggregationType = 'uniqueList';
         return _.defaults(col, options, defaults);
       });
@@ -190,10 +193,13 @@ angular.module('BE.seed.controller.inventory_list', [])
 
             data.splice(++trueIndex, 0, _.pick(updated, visibleColumns));
           }
-          aggregations = _.pickBy(_.mapValues(aggregations, function(values, key) {
-            return _.join(_.uniq(_.without(values, undefined, null, '')), '; ');
-          }), function (str) {
-            return str.length;
+
+          aggregations = _.pickBy(_.mapValues(aggregations, function (values, key) {
+            var cleanedValues = _.without(values, undefined, null, '');
+            if (key == 'number_properties') return _.sum(cleanedValues) || null;
+            else return _.join(_.uniq(cleanedValues), '; ');
+          }), function (result) {
+            return _.isNumber(result) || !_.isEmpty(result);
           });
 
           // Remove unnecessary data
@@ -334,11 +340,11 @@ angular.module('BE.seed.controller.inventory_list', [])
           }
         });
 
-        modalInstance.result.then(function () {
-        }, function (message) {
-          console.info(message);
-          console.info('Modal dismissed at: ' + new Date());
-        });
+        // modalInstance.result.then(function () {
+        // }, function (message) {
+        //   console.info(message);
+        //   console.info('Modal dismissed at: ' + new Date());
+        // });
       };
 
       var saveSettings = function () {
@@ -391,6 +397,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
           gridApi.core.on.rowsRendered($scope, _.debounce(function () {
             $scope.$apply(function () {
+              spinner_utility.hide();
               $scope.total = _.filter($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), {treeLevel: 0}).length;
               if ($scope.updateQueued) {
                 $scope.updateQueued = false;

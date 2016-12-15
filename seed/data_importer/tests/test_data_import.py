@@ -207,7 +207,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         # make sure that the new data was loaded correctly
         ps = PropertyState.objects.filter(address_line_1='2700 Welstone Ave NE')[0]
         self.assertEqual(ps.site_eui, 1202)
-        self.assertEqual(ps.extra_data['jurisdiction tax lot id'], '11160509')
+        self.assertEqual(ps.extra_data['jurisdiction_tax_lot_id'], '11160509')
 
     def test_mapping_no_properties(self):
         # update the mappings to not include any taxlot tables in the data
@@ -225,7 +225,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
         # make sure that the new data was loaded correctly
         ts = TaxLotState.objects.filter(address_line_1='50 Willow Ave SE').first()
-        self.assertEqual(ts.extra_data['site eui'], 125)
+        self.assertEqual(ts.extra_data['site_eui'], 125)
 
         # note that this used to be 2700 Welstone Ave NE but needed to change the check because
         # this has the same jurisdiction_tax_lot_id as others so it was never imported. So assigning
