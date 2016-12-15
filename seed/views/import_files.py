@@ -250,7 +250,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         # get the columns in the db...
         md = MappingData()
-        _log.debug(md.keys_with_table_names)
+        _log.debug("md.keys_with_table_names are: {}".format(md.keys_with_table_names))
 
         raw_db_fields = []
         for db_field in md.keys_with_table_names:
@@ -258,7 +258,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 raw_db_fields.append(db_field)
 
         # go through the list and find the ones that are properties
-        fields = {'PropertyState': ['extra_data'], 'TaxLotState': ['extra_data']}
+        fields = {'PropertyState': ['extra_data', 'lot_number'], 'TaxLotState': ['extra_data']}
         for f in raw_db_fields:
             fields[f[0]].append(f[1])
 
