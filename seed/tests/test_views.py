@@ -72,12 +72,6 @@ class MainViewTests(TestCase):
         response = self.client.get(reverse('seed:home'))
         self.assertEqual(200, response.status_code)
 
-    def test_create_pm_mapping(self):
-        response = self.client.post(reverse('seed:create_pm_mapping'),
-                                    '{"columns": ["name1", "name2"]}',
-                                    content_type='application/json')
-        self.assertTrue(json.loads(response.content)['success'])
-
     def test_export_buildings(self):
         cb = CanonicalBuilding(active=True)
         cb.save()

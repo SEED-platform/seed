@@ -24,7 +24,6 @@ from rest_framework.decorators import detail_route
 
 from seed import tasks
 from seed.authentication import SEEDAuthentication
-from seed.common import views as vutil
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import (
     remap_data,
@@ -159,70 +158,6 @@ def version(request):
         'version': manifest['version'],
         'sha': sha
     }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def create_pm_mapping(request):
-    # TODO: NLL - Deprecate
-    """Create a mapping for PortfolioManager input columns.
-
-    Payload::
-
-        {
-            columns: [ "name1", "name2", ... , "nameN"],
-        }
-
-    Returns::
-
-        {
-            success: true,
-            mapping: [
-                [
-                    "name1",
-                    "mapped1", {
-                        bedes: true|false,
-                        numeric: true|false
-                    }
-                ],
-                [
-                    "name2",
-                    "mapped2", {
-                        bedes: true|false,
-                        numeric: true|false
-                    }
-                ],
-                ...
-                [
-                    "nameN",
-                    "mappedN", {
-                        bedes: true|false,
-                        numeric: true|false
-                    }
-                ]
-            ]
-        }
-        -- OR --
-        {
-            success: false,
-            reason: "message goes here"
-        }
-    """
-    _log.info("create_pm_mapping: request.body='{}'".format(request.body))
-    body = json.loads(request.body)
-
-    # validate inputs
-    invalid = vutil.missing_request_keys(['columns'], body)
-    if invalid:
-        return vutil.api_error(invalid)
-
-    try:
-        result = simple_mapper.get_pm_mapping(body['columns'], resolve_duplicates=True)
-    except ValueError as err:
-        return vutil.api_error(str(err))
-    json_result = [[c] + v.as_json() for c, v in result.items()]
-    return vutil.api_success(mapping=json_result)
 
 
 @api_endpoint
