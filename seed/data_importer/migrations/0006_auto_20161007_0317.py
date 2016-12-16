@@ -6,6 +6,7 @@ from django.db import migrations, models
 import django.db.models.deletion
 from seed.models import Cycle
 
+CYCLE_ID = Cycle.objects.first().pk
 
 class Migration(migrations.Migration):
 
@@ -17,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='importfile',
             name='cycle',
-            field=models.ForeignKey(default=370, on_delete=django.db.models.deletion.CASCADE, to='seed.Cycle'),
+            field=models.ForeignKey(default=CYCLE_ID, on_delete=django.db.models.deletion.CASCADE, to='seed.Cycle'),
             preserve_default=False,
         ),
     ]
