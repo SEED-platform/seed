@@ -138,11 +138,11 @@ class Command(BaseCommand):
                 col.extra_data_source = Column.SOURCE_PROPERTY
                 col.save()
             else:
-                logging_info("Creating Column '{}' based on missing from mappings file".format(col))
                 col = Column(organization=org,
                              column_name=prop_col,
                              is_extra_data=True,
-                             table_name = "PropertyState")
+                             table_name="PropertyState")
+                logging_info("Creating Column '{}' based on missing from mappings file".format(prop_col))
                 col.save()
 
         for tl_col in taxlot_column_names:
@@ -156,11 +156,11 @@ class Command(BaseCommand):
                 logging_info("Setting Column '{}' to SOURCE_TAXLOT".format(col))
                 col.save()
             else:
-                logging_info("Creating Column '{}' based on missing from mappings file".format(col))
                 col = Column(organization=org,
                              column_name=tl_col,
                              is_extra_data=True,
                              table_name="TaxLotState")
+                logging_info("Creating Column '{}' based on missing from mappings file".format(tl_col))
                 col.save()
 
         return

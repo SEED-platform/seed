@@ -40,16 +40,6 @@ def get_mappable_types(exclude_fields=None):
     return results
 
 
-# TODO: check to see if we can delete this method as the
-# method _get_table_and_column_names is preferred
-def _get_column_names(column_mapping, attr_name='column_raw'):
-    """Turns the Column.column_names into a serializable list of str."""
-    attr = getattr(column_mapping, attr_name, None)
-    if not attr:
-        return attr
-    return [t for t in attr.all().values_list('column_name', flat=True)]
-
-
 def _get_table_and_column_names(column_mapping, attr_name='column_raw'):
     """Turns the Column.column_names into a serializable list of str."""
     attr = getattr(column_mapping, attr_name, None)

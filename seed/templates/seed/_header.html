@@ -48,10 +48,10 @@
             <ul uib-dropdown-menu class="dropdown-menu pull-right" role="menu" aria-labelledby="btnCreateNew">
                 <li class="dropdown-header">Create a new...</li>
                 <li class="divider"></li>
-                <li>
+                <!--<li>
                     <a data-toggle="modal" data-target="#newProjectModalIndex" ng-click="open_create_project_modal()">Project</a>
                 </li>
-                <li class="divider" ng-show="menu.user.organization.user_role !== 'viewer'"></li>
+                <li class="divider" ng-show="menu.user.organization.user_role !== 'viewer'"></li>-->
                 <li ng-show="menu.user.organization.user_role !== 'viewer'">
                     <a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()">Data Set</a>
                 </li>

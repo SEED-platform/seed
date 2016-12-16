@@ -105,7 +105,7 @@ class SchemaGenerationTests(TestCase):
         """
         Test of 'schema' generator.
         """
-        url = reverse('api:get_api_schema')
+        url = reverse('apiv2:schema')
         res = self.client.get(url)
         self.assertEqual(res.status_code, 200)
         endpoints = json.loads(res.content)
@@ -392,7 +392,7 @@ class TestApi(TestCase):
         data_set_id = r['id']
 
         # retrieve the upload details
-        upload_details = self.client.get('/data/get_upload_details/', follow=True, **self.headers)
+        upload_details = self.client.get('/api/v2/get_upload_details/', follow=True, **self.headers)
         self.assertEqual(upload_details.status_code, 200)
         upload_details = json.loads(upload_details.content)
         self.assertEqual(upload_details['upload_mode'], 'filesystem')
@@ -416,11 +416,10 @@ class TestApi(TestCase):
 
         # Save the data to BuildingSnapshots
         payload = {
-            'file_id': import_file_id,
             'organization_id': organization_id,
             'cycle_id': self.cycle.id,
         }
-        r = self.client.post('/app/save_raw_data/',
+        r = self.client.post('/api/v2/import_files/' + str(import_file_id) + '/save_raw_data/',
                              data=json.dumps(payload),
                              content_type='application/json',
                              follow=True, **self.headers)
@@ -437,7 +436,7 @@ class TestApi(TestCase):
 
         # check the progress bar
         progress_key = r['progress_key']
-        r = self.client.post('/app/progress/', data=json.dumps({'progress_key': progress_key}),
+        r = self.client.post('/api/v2/progress/', data=json.dumps({'progress_key': progress_key}),
                              content_type='application/json', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 
@@ -532,7 +531,7 @@ class TestApi(TestCase):
 
         # check the progress bar
         progress_key = r['progress_key']
-        r = self.client.post('/app/progress/', data=json.dumps({'progress_key': progress_key}),
+        r = self.client.post('/api/v2/progress/', data=json.dumps({'progress_key': progress_key}),
                              content_type='application/json', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 

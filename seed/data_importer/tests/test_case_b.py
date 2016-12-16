@@ -52,7 +52,7 @@ class TestCaseB(DataMappingBaseTestCase):
             organization=self.org,
             import_file=self.import_file,
         )
-        self.assertEqual(len(ps), 12)
+        self.assertEqual(len(ps), 14)
 
         # Check to make sure the tax lots were imported
         ts = TaxLotState.objects.filter(
@@ -60,7 +60,7 @@ class TestCaseB(DataMappingBaseTestCase):
             organization=self.org,
             import_file=self.import_file,
         )
-        self.assertEqual(len(ts), 17)
+        self.assertEqual(len(ts), 18)
 
         # verify that the lot_number has the tax_lot information. For this case it is one-to-many
         p_test = PropertyState.objects.filter(
@@ -69,7 +69,7 @@ class TestCaseB(DataMappingBaseTestCase):
             data_state=DATA_STATE_MAPPING,
             import_file=self.import_file,
         ).first()
-        self.assertEqual(p_test.lot_number, "33366555; 33366125; 33366148")
+        self.assertEqual(p_test.lot_number, "33366555;33366125;33366148")
 
         tasks.match_buildings(self.import_file.id, self.user.id)
 

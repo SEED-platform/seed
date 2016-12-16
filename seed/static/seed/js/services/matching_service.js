@@ -55,9 +55,8 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
         var defer = $q.defer();
         $http({
             method: 'POST',
-            url: window.BE.urls.start_system_matching,
+            url: '/api/v2/import_files/' + import_file_id + '/start_system_matching/',
             data: {
-                file_id: import_file_id,
                 organization_id: user_service.get_organization().id
             }
         }).success(function(data, status, headers, config) {

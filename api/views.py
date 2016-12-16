@@ -40,7 +40,7 @@ class TestReverseViewSet(viewsets.ViewSet):
         i = dict()
 
         # try one from the main SEED app, which appears in the url as "/app/whatever", but it is namespaced to "seed"
-        i['seed:get_column_mapping_suggestions'] = reverse('seed:get_column_mapping_suggestions')
+        # i['seed:get_column_mapping_suggestions'] = reverse('seed:get_column_mapping_suggestions')
 
         # now try the same column mapping thing from API v2
         i['apiv2:data_files-mapping-suggestions'] = reverse('apiv2:data_files-mapping-suggestions', args=[1])

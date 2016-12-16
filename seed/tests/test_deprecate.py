@@ -12,7 +12,7 @@ from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed import models as seed_models
-from seed.mappings import mapper
+from seed.lib.merging import merging
 from seed.tests import util
 
 
@@ -231,7 +231,7 @@ class TestBuildingSnapshot(TestCase):
 
     def test_merge_extra_data_no_data(self):
         """Test edgecase where there is no extra_data to merge."""
-        test_extra, test_sources = mapper.merge_extra_data(self.bs1, self.bs2)
+        test_extra, test_sources = merging.merge_extra_data(self.bs1, self.bs2)
 
         self.assertDictEqual(test_extra, {})
         self.assertDictEqual(test_sources, {})
@@ -249,7 +249,7 @@ class TestBuildingSnapshot(TestCase):
             'test': self.bs1.pk, 'test2': self.bs1.pk, 'thing': self.bs2.pk
         }
 
-        test_extra, test_sources = mapper.merge_extra_data(self.bs1, self.bs2)
+        test_extra, test_sources = merging.merge_extra_data(self.bs1, self.bs2)
 
         self.assertDictEqual(test_extra, expected_extra)
         self.assertDictEqual(test_sources, expected_sources)
@@ -281,7 +281,7 @@ class TestBuildingSnapshot(TestCase):
             'field_c': self.bs1.pk,
         }
 
-        actual_extra, actual_sources = mapper.merge_extra_data(self.bs1, self.bs2)
+        actual_extra, actual_sources = merging.merge_extra_data(self.bs1, self.bs2)
 
         self.assertDictEqual(actual_extra, expected_extra)
         self.assertDictEqual(actual_sources, expected_sources)

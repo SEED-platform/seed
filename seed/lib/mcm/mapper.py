@@ -8,11 +8,22 @@
 import copy
 import logging
 import re
+import itertools
 
 from cleaners import default_cleaner
 from seed.lib.mappings.mapping_columns import MappingColumns
 
 _log = logging.getLogger(__name__)
+
+
+def build_pm_mapping():
+    """
+    Build the Portfolio Manager mappings.
+
+    :return:
+    """
+
+    return True
 
 
 def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_args=None, thresh=0):
@@ -27,8 +38,8 @@ def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_a
 
             .. code:
 
-                # The expectation is that our callable always gets passed a
-                # raw key. If it finds a match, it returns the raw_column and score.
+                The expectation is that our callable always gets passed a raw key. If
+                it finds a match, it returns the raw_column and score.
                 previous_mapping('example field', *map_args) ->
                     ('field_1', 0.93)
 
@@ -36,12 +47,12 @@ def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_a
         thresh: .. todo: document
 
     Returns:
-        dict: {'raw_column': [('dest_column', score)...],...}
+        dict: {'raw_column': ('dest_column', score)
 
     """
 
-    mc = MappingColumns(raw_columns, dest_columns, previous_mapping, map_args, thresh)
-    return mc.final_mappings
+    return MappingColumns(raw_columns, dest_columns, previous_mapping, map_args,
+                          thresh).final_mappings
 
 
 def apply_initial_data(model, initial_data):
@@ -93,13 +104,6 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
             tmp_field = mapping.get(raw_field)
             if tmp_field:
                 tmp_field = tmp_field[1]
-
-                # TODO: there are a lot of warnings right now because we iterate over the header
-                # of the file instead of iterating over the fields that we want to map.
-
-                # else:
-                # _log.warn("Could not find the field to clean: %s" % raw_field)
-
         cleaned_value = cleaner.clean_value(value, tmp_field)
     else:
         cleaned_value = default_cleaner(value)
@@ -115,22 +119,11 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
             if hasattr(model, 'extra_data'):
                 # only save it if the model and the mapping are the same
                 if model.__class__.__name__ == table_name:
-                    model.extra_data[raw_field] = cleaned_value
-                    # else:
-                    #     _log.debug(
-                    #         "model name '%s' is not the same as the mapped table name '%s' -- skipping field '%s'" % (
-                    #         model.__class__.__name__, table_name, field_name))  # noqa
-                    # else:
-                    #     _log.debug(
-                    #         "model object does not have extra_data field, skipping mapping for %s" % raw_field)  # noqa
+                    model.extra_data[field_name] = cleaned_value
         else:
             # Simply set the field to the cleaned value if it is the correct model
             if model.__class__.__name__ == table_name:
                 setattr(model, field_name, cleaned_value)
-                # else:
-                #     _log.debug(
-                #         "model name '%s' is not the same as the mapped table name '%s' -- skipping field '%s'" % (
-                #             model.__class__.__name__, table_name, field_name))  # noqa
 
     return model
 
@@ -149,9 +142,24 @@ def _set_default_concat_config(concat):
     return concat
 
 
-def expand_field(field):
+def _normalize_expanded_field(value):
     """
-    take a field from the csv and expand/split on a delimiter and return a list of individual values
+    Fields that are expanded (typically tax lot id) are also in need of normalization to remove
+    characters that prevent easy matching.
+
+    This method will remove unwanted characters from the jurisdiction tax lot id.
+
+    :param value: string
+    :return: string
+    """
+    return re.sub(r'[-\s/\\]', '', value).upper()
+
+
+def expand_and_normalize_field(field, return_list=False):
+    """
+    take a field from the csv and expand/split on a delimiter and return a list of individual
+    values. If the return_list flag is set to true, then this method will return the data back
+    as a list of new fields instead of a cleaned up string and normalized with semicolon delimiter
 
     :param field: str, value to parse
 
@@ -159,34 +167,62 @@ def expand_field(field):
     """
 
     if isinstance(field, str) or isinstance(field, unicode):
-        return [r.strip() for r in re.split(",|;|:", field)]
+        field = field.rstrip(';:,')
+        data = [_normalize_expanded_field(r) for r in re.split(",|;|:", field)]
+        if return_list:
+            return data
+        else:
+            return ";".join(data)
     else:
-        return [field]
+        if return_list:
+            return [field]
+        else:
+            return field
 
 
-def expand_rows(row, delimited_field):
+def expand_rows(row, delimited_fields, expand_row):
     """
     Take a row and a field which may have delimited values and convert into a list of new rows
     with the same data expect for the replaced delimited value.
 
     :param row: dict, original row to split out
-    :param delimited_field: string - column to try and split
+    :param delimited_fields: list of dicts, columns to clean/expand/split
+    :param expand_row: boolean, expand the row on delimited fields or not.
 
     :return: list
     """
 
-    # does the chosen delimited field even exist in the row dict?
-    if delimited_field not in row:
-        return [row]
-    else:
-        new_values = expand_field(row[delimited_field])
+    _log.debug('expand_row is {}'.format(expand_row))
+    # go through the delimited fields and clean up the rows
+    copy_row = copy.deepcopy(row)
+    for d in delimited_fields:
+        if d in copy_row:
+            copy_row[d] = expand_and_normalize_field(copy_row[d], False)
+
+    if expand_row:
+        new_values = []
+        for d in delimited_fields:
+            fields = []
+            if d in copy_row.keys():
+                for value in expand_and_normalize_field(copy_row[d], True):
+                    fields.append({d: value})
+                new_values.append(fields)
+
+        # return all combinations of the lists
+        combinations = list(itertools.product(*new_values))
+
         new_rows = []
-        for v in new_values:
-            new_row = copy.deepcopy(row)
-            new_row[delimited_field] = v
+        for c in combinations:
+            new_row = copy.deepcopy(copy_row)
+            # c is a tuple because of the .product command
+            for item in c:
+                for k, v in item.iteritems():
+                    new_row[k] = v
             new_rows.append(new_row)
 
         return new_rows
+    else:
+        return [copy_row]
 
 
 def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, concat=None, **kwargs):
@@ -205,6 +241,8 @@ def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, conca
     initial_data = kwargs.get('initial_data', None)
     model = model_class()
 
+    # _log.debug("map_row's mappings {}".format(mapping))
+
     # If there are any initial states we need to set prior to mapping.
     if initial_data:
         model = apply_initial_data(model, initial_data)
@@ -212,10 +250,6 @@ def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, conca
     # concat is not used as of 2016-09-14
     # concat = _set_default_concat_config(concat)
 
-    # In case we need to look up cleaner by dynamic field mapping.
-    # TODO: we should flip this around and iterate over the mappings because there is a lot
-    # of extra work being done (sometimes) when the columns are being split across two
-    # different data base objects (i.e. taxlotstate and propertystate)
     for raw_field, value in row.items():
         # Look through any of our concatenation configs to see if this row
         # needs to be set aside for merging with others at the end of the map.

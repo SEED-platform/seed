@@ -193,6 +193,15 @@ ASSESSOR_FIELDS = [
         "checked": False
     },
     {
+        "title": "Property Type",
+        "sort_column": "property_type",
+        "class": "",
+        "title_class": "",
+        "type": "string",
+        "field_type": "building_information",
+        "checked": False
+    },
+    {
         "title": "Recent Sale Date",
         "sort_column": "recent_sale_date",
         "class": "is_aligned_right",

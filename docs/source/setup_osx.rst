@@ -23,7 +23,6 @@ ready for general development. If this is not the case, skip to Prerequisites.
 * create a `local_untracked.py` in the `config/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
 * `export DJANGO_SETTINGS_MODULE=config.settings.dev`
 * `pip install -r requirements/local.txt`
-* `./manage.py syncdb`
 * `./manage.py migrate`
 * `./manage.py create_default_user`
 * `./manage.py runserver`

@@ -82,8 +82,8 @@ class TestDemoV2(DataMappingBaseTestCase):
 
     def setUp(self):
         property_filename = getattr(self, 'filename',
-                                    'example-data-properties-V2-original-noID.xlsx')
-        tax_lot_filename = getattr(self, 'filename', 'example-data-taxlots-V2-original-noID.xlsx')
+                                    'example-data-properties.xlsx')
+        tax_lot_filename = getattr(self, 'filename', 'example-data-taxlots.xlsx')
         import_file_source_type = ASSESSED_RAW
         self.fake_portfolio_mappings = FAKE_MAPPINGS['portfolio']
         self.fake_taxlot_mappings = FAKE_MAPPINGS['taxlot']
@@ -153,7 +153,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         )
 
         self.assertEqual(len(ts), 9)
-        self.assertEqual(len(ps), 12)
+        self.assertEqual(len(ps), 14)
 
         tasks.match_buildings(self.import_file_property.id, self.user.id)
 

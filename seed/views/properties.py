@@ -115,13 +115,14 @@ def get_properties(request):
                 extra_data_field += '_extra'
             taxlot_state_data[extra_data_field] = extra_data_value
         taxlot_map[taxlot_view.pk] = taxlot_state_data
+        # Replace taxlot_view id with taxlot id
+        taxlot_map[taxlot_view.pk]['id'] = taxlot_view.taxlot.id
 
     # A mapping of property view pk to a list of taxlot state info for a taxlot view
     join_map = {}
     for join in joins:
         join_dict = taxlot_map[join.taxlot_view_id].copy()
         join_dict.update({
-            'id': join.taxlot_view.taxlot_id,
             'primary': 'P' if join.primary else 'S'
         })
         try:
@@ -227,6 +228,8 @@ def get_taxlots(request):
                 extra_data_field += '_extra'
             property_data[extra_data_field] = extra_data_value
         property_map[property_view.pk] = property_data
+        # Replace property_view id with property id
+        property_map[property_view.pk]['id'] = property_view.property.id
 
     # A mapping of taxlot view pk to a list of property state info for a property view
     join_map = {}
@@ -251,7 +254,6 @@ def get_taxlots(request):
 
         join_dict = property_map[join.property_view_id].copy()
         join_dict.update({
-            'id': join.property_view.property_id,
             'primary': 'P' if join.primary else 'S',
             'calculated_taxlot_ids': '; '.join(jurisdiction_tax_lot_ids)
         })
@@ -442,7 +444,7 @@ def get_property_columns(request):
         }, {
             'name': 'lot_number',
             'displayName': 'Associated Building Tax Lot ID',
-            'type': 'number',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'address',
@@ -497,6 +499,10 @@ def get_property_columns(request):
             'displayName': 'Property Notes',
             'related': False
         }, {
+            'name': 'property_type',
+            'displayName': 'Property Type',
+            'related': False
+        }, {
             'name': 'year_ending',
             'displayName': 'Benchmarking year',
             'related': False
@@ -524,7 +530,7 @@ def get_property_columns(request):
         }, {
             'name': 'postal_code',
             'displayName': 'Postal Code (Property)',
-            'type': 'number',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'building_count',
@@ -534,6 +540,7 @@ def get_property_columns(request):
         }, {
             'name': 'year_built',
             'displayName': 'Year Built',
+            'type': 'number',
             'related': False
         }, {
             'name': 'recent_sale_date',
@@ -622,7 +629,6 @@ def get_property_columns(request):
         }, {
             'name': 'number_properties',
             'displayName': 'Number Properties',
-            'treeAggregationType': 'sum',
             'type': 'number',
             'related': True
         }, {
@@ -652,7 +658,9 @@ def get_property_columns(request):
         columns.append({
             'name': name,
             'displayName': c.column_name,  # '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source])
-            'related': c.extra_data_source == Column.SOURCE_TAXLOT,
+            # Set related = True for extra data to ensure that it always aggregates
+            'related': True,
+            # 'related': c.extra_data_source == Column.SOURCE_TAXLOT or c.table_name == 'TaxLotState',
             'extraData': True
         })
 
@@ -694,7 +702,7 @@ def get_taxlot_columns(request):
             # INCOMPLETE, FIELD DOESN'T EXIST
             'name': 'associated_building_tax_lot_id',
             'displayName': 'Associated Building Tax Lot ID',
-            'type': 'number',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'address_line_1',
@@ -810,6 +818,7 @@ def get_taxlot_columns(request):
         }, {
             'name': 'year_built',
             'displayName': 'Year Built',
+            'type': 'number',
             'related': True
         }, {
             'name': 'recent_sale_date',
@@ -886,7 +895,7 @@ def get_taxlot_columns(request):
         }, {
             'name': 'postal_code',
             'displayName': 'Postal Code (Tax Lot)',
-            'type': 'number',
+            'type': 'numberStr',
             'related': False
         }, {
             'name': 'number_properties',
@@ -923,7 +932,9 @@ def get_taxlot_columns(request):
         columns.append({
             'name': name,
             'displayName': c.column_name,  # '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source])
-            'related': c.extra_data_source == Column.SOURCE_PROPERTY,
+            # Set related = True for extra data to ensure that it always aggregates
+            'related': True,
+            # 'related': c.extra_data_source == Column.SOURCE_PROPERTY or c.table_name == 'PropertyState',
             'extraData': True
         })
 

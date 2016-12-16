@@ -14,10 +14,11 @@ from django.test import TestCase
 
 from seed import decorators
 from seed.audit_logs.models import AuditLog, LOG
-from seed.data_importer.models import ROW_DELIMITER, ImportFile, ImportRecord
+from seed.data_importer.models import ImportFile, ImportRecord
+
+from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.factory import SEEDFactory
 from seed.landing.models import SEEDUser as User
-from seed.lib.mappings import mapper
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     ASSESSED_RAW,
@@ -30,12 +31,10 @@ from seed.models import (
     Cycle,
     FLOAT,
     PORTFOLIO_BS,
-    Project,
     Property,
     ProjectBuilding,
     PropertyState,
     PropertyView,
-    save_snapshot_match,
     StatusLabel,
     TaxLot,
     TaxLotProperty,
@@ -50,7 +49,6 @@ from seed.test_helpers.fake import (
 )
 from seed.tests import util as test_util
 from seed.utils.cache import set_cache, get_cache
-from seed.utils.mapping import _get_column_names
 from seed.views.main import (
     DEFAULT_CUSTOM_COLUMNS,
     _parent_tree_coparents,
@@ -73,12 +71,6 @@ class MainViewTests(TestCase):
     def test_home(self):
         response = self.client.get(reverse('seed:home'))
         self.assertEqual(200, response.status_code)
-
-    def test_create_pm_mapping(self):
-        response = self.client.post(reverse('seed:create_pm_mapping'),
-                                    '{"columns": ["name1", "name2"]}',
-                                    content_type='application/json')
-        self.assertTrue(json.loads(response.content)['success'])
 
     def test_export_buildings(self):
         cb = CanonicalBuilding(active=True)
@@ -1469,13 +1461,12 @@ class SearchBuildingSnapshotsViewTests(TestCase):
             'page': 1,
             'q': '',
             'sort_reverse': False,
-            'project_id': None,
-            'import_file_id': import_file.pk
+            'project_id': None
         }
 
         # act
         response = self.client.post(
-            reverse_lazy("seed:search_mapping_results"),
+            reverse_lazy("apiv2:import_files-search-mapping-results", args=[import_file.pk]),
             content_type='application/json',
             data=json.dumps(post_data)
         )
@@ -1593,8 +1584,7 @@ class ImportFileViewsTests(TestCase):
         self.client.login(**user_details)
 
     def test_get_import_file(self):
-        response = self.client.get(reverse("seed:get_import_file"),
-                                   {'import_file_id': self.import_file.pk})
+        response = self.client.get(reverse("apiv2:import_files-detail", args=[self.import_file.pk]))
         self.assertEqual(self.import_file.pk,
                          json.loads(response.content)['import_file']['id'])
 
@@ -1760,66 +1750,66 @@ class BuildingDetailViewTests(TestCase):
         self.parent_1 = parent_1
         self.parent_2 = parent_2
 
-    # TODO Replace with test_get_property, test_get_taxlot
-    @skip("Fix for new data model")
-    def test_get_building(self):
-        """ tests the get_building view which returns building detail and source
-            information from parent buildings.
-        """
-        # arrange
-        child, changelist = save_snapshot_match(self.parent_1.pk,
-                                                self.parent_2.pk)
-
-        url = reverse_lazy("seed:get_building")
-        get_data = {
-            'building_id': child.canonical_building.pk,
-            'organization_id': self.org.pk,
-        }
-
-        # act
-        response = self.client.get(
-            url,
-            get_data,
-            content_type='application/json',
-        )
-        json_string = response.content
-        data = json.loads(json_string)
-
-        # assert
-        self.assertEqual(data['status'], 'success')
-        self.assertEqual(len(data['imported_buildings']), 2)
-        # both parents have the same child
-        self.assertEqual(
-            data['imported_buildings'][0]['children'][0],
-            child.pk
-        )
-        self.assertEqual(
-            data['imported_buildings'][1]['children'][0],
-            child.pk
-        )
-        # both parents link to their import file
-        self.assertEqual(
-            data['imported_buildings'][0]['import_file'],
-            self.import_file_1.pk
-        )
-        self.assertEqual(
-            data['imported_buildings'][1]['import_file'],
-            self.import_file_2.pk
-        )
-        # child should get the first address
-        self.assertEqual(
-            data['building']['address_line_1'],
-            self.parent_1.address_line_1
-        )
-        self.assertEqual(
-            data['building']['address_line_1_source'],
-            self.parent_1.pk
-        )
-        # child should get second gross floor area since first is set to None
-        self.assertEqual(
-            data['building']['gross_floor_area_source'],
-            self.parent_2.pk
-        )
+    # # TODO Replace with test_get_property, test_get_taxlot
+    # @skip("Fix for new data model")
+    # def test_get_building(self):
+    #     """ tests the get_building view which returns building detail and source
+    #         information from parent buildings.
+    #     """
+    #     # arrange
+    #     child, changelist = save_snapshot_match(self.parent_1.pk,
+    #                                             self.parent_2.pk)
+    #
+    #     url = reverse_lazy("seed:get_building")
+    #     get_data = {
+    #         'building_id': child.canonical_building.pk,
+    #         'organization_id': self.org.pk,
+    #     }
+    #
+    #     # act
+    #     response = self.client.get(
+    #         url,
+    #         get_data,
+    #         content_type='application/json',
+    #     )
+    #     json_string = response.content
+    #     data = json.loads(json_string)
+    #
+    #     # assert
+    #     self.assertEqual(data['status'], 'success')
+    #     self.assertEqual(len(data['imported_buildings']), 2)
+    #     # both parents have the same child
+    #     self.assertEqual(
+    #         data['imported_buildings'][0]['children'][0],
+    #         child.pk
+    #     )
+    #     self.assertEqual(
+    #         data['imported_buildings'][1]['children'][0],
+    #         child.pk
+    #     )
+    #     # both parents link to their import file
+    #     self.assertEqual(
+    #         data['imported_buildings'][0]['import_file'],
+    #         self.import_file_1.pk
+    #     )
+    #     self.assertEqual(
+    #         data['imported_buildings'][1]['import_file'],
+    #         self.import_file_2.pk
+    #     )
+    #     # child should get the first address
+    #     self.assertEqual(
+    #         data['building']['address_line_1'],
+    #         self.parent_1.address_line_1
+    #     )
+    #     self.assertEqual(
+    #         data['building']['address_line_1_source'],
+    #         self.parent_1.pk
+    #     )
+    #     # child should get second gross floor area since first is set to None
+    #     self.assertEqual(
+    #         data['building']['gross_floor_area_source'],
+    #         self.parent_2.pk
+    #     )
 
     # TODO
     @skip("Fix for new data model")
@@ -1831,132 +1821,132 @@ class BuildingDetailViewTests(TestCase):
     def test_get_taxlot(self):
         pass
 
-    # TODO replace with test for inventory report
-    @skip("Fix for new data model")
-    def test_get_building_with_project(self):
-        """ tests get_building projects payload"""
-        # arrange
-        child, changelist = save_snapshot_match(self.parent_1.pk,
-                                                self.parent_2.pk)
-        # create project wtihout compliance
-        project = Project.objects.create(
-            name='test project',
-            owner=self.user,
-            super_organization=self.org,
-        )
-        ProjectBuilding.objects.create(
-            building_snapshot=child,
-            project=project
-        )
-
-        url = reverse_lazy("seed:get_building")
-        get_data = {
-            'building_id': child.canonical_building.pk,
-            'organization_id': self.org.pk,
-        }
-
-        # act
-        response = self.client.get(
-            url,
-            get_data,
-            content_type='application/json',
-        )
-        json_string = response.content
-        data = json.loads(json_string)
-
-        # assert that the project is returned with the building
-        self.assertEqual(data['status'], 'success')
-        self.assertEqual(len(data['projects']), 1)
-        self.assertEqual(
-            data['projects'][0]['name'],
-            'test project'
-        )
-
-    # TODO replace with test for inventory report
-    @skip("Fix for new data model")
-    def test_get_building_with_deleted_dataset(self):
-        """ tests the get_building view where the dataset has been deleted and
-            the building should load without showing the sources from deleted
-            import files.
-        """
-        # arrange
-        child, changelist = save_snapshot_match(self.parent_1.pk,
-                                                self.parent_2.pk)
-
-        url = reverse_lazy("seed:get_building")
-        get_data = {
-            'building_id': child.canonical_building.pk,
-            'organization_id': self.org.pk,
-        }
-
-        # act
-        self.import_record.delete()
-        response = self.client.get(
-            url,
-            get_data,
-            content_type='application/json',
-        )
-        json_string = response.content
-        data = json.loads(json_string)
-
-        # assert
-        self.assertEqual(data['status'], 'success')
-        # empty list of parents
-        self.assertEqual(len(data['imported_buildings']), 0)
-        # building should still have all its info
-        self.assertEqual(
-            data['building']['address_line_1'],
-            self.parent_1.address_line_1
-        )
-        self.assertEqual(
-            data['building']['address_line_1_source'],
-            self.parent_1.pk
-        )
-        self.assertEqual(
-            data['building']['gross_floor_area_source'],
-            self.parent_2.pk
-        )
-        self.assertAlmostEqual(
-            data['building']['gross_floor_area'],
-            self.parent_2.gross_floor_area,
-            places=1,
-        )
+    # # TODO replace with test for inventory report
+    # @skip("Fix for new data model")
+    # def test_get_building_with_project(self):
+    #     """ tests get_building projects payload"""
+    #     # arrange
+    #     child, changelist = save_snapshot_match(self.parent_1.pk,
+    #                                             self.parent_2.pk)
+    #     # create project wtihout compliance
+    #     project = Project.objects.create(
+    #         name='test project',
+    #         owner=self.user,
+    #         super_organization=self.org,
+    #     )
+    #     ProjectBuilding.objects.create(
+    #         building_snapshot=child,
+    #         project=project
+    #     )
+    #
+    #     url = reverse_lazy("seed:get_building")
+    #     get_data = {
+    #         'building_id': child.canonical_building.pk,
+    #         'organization_id': self.org.pk,
+    #     }
+    #
+    #     # act
+    #     response = self.client.get(
+    #         url,
+    #         get_data,
+    #         content_type='application/json',
+    #     )
+    #     json_string = response.content
+    #     data = json.loads(json_string)
+    #
+    #     # assert that the project is returned with the building
+    #     self.assertEqual(data['status'], 'success')
+    #     self.assertEqual(len(data['projects']), 1)
+    #     self.assertEqual(
+    #         data['projects'][0]['name'],
+    #         'test project'
+    #     )
 
     # TODO replace with test for inventory report
-    @skip("Fix for new data model")
-    def test_get_building_imported_buildings_includes_green_button(self):
-        # arrange
-        self.parent_2.source_type = 6
-        self.parent_2.save()
-        child, changelist = save_snapshot_match(self.parent_1.pk,
-                                                self.parent_2.pk)
-
-        url = reverse_lazy("seed:get_building")
-        get_data = {
-            'building_id': child.canonical_building.pk,
-            'organization_id': self.org.pk,
-        }
-
-        # act
-        response = self.client.get(
-            url,
-            get_data,
-            content_type='application/json',
-        )
-        json_string = response.content
-        data = json.loads(json_string)
-
-        self.assertEqual(2, len(data['imported_buildings']))
-
-        # both parents link to their import file
-        self.assertEqual(
-            data['imported_buildings'][0]['import_file'],
-            self.import_file_1.pk
-        )
-        self.assertEqual(
-            data['imported_buildings'][1]['import_file'],
-            self.import_file_2.pk
-        )
+    # @skip("Fix for new data model")
+    # def test_get_building_with_deleted_dataset(self):
+    #     """ tests the get_building view where the dataset has been deleted and
+    #         the building should load without showing the sources from deleted
+    #         import files.
+    #     """
+    #     # arrange
+    #     child, changelist = save_snapshot_match(self.parent_1.pk,
+    #                                             self.parent_2.pk)
+    #
+    #     url = reverse_lazy("seed:get_building")
+    #     get_data = {
+    #         'building_id': child.canonical_building.pk,
+    #         'organization_id': self.org.pk,
+    #     }
+    #
+    #     # act
+    #     self.import_record.delete()
+    #     response = self.client.get(
+    #         url,
+    #         get_data,
+    #         content_type='application/json',
+    #     )
+    #     json_string = response.content
+    #     data = json.loads(json_string)
+    #
+    #     # assert
+    #     self.assertEqual(data['status'], 'success')
+    #     # empty list of parents
+    #     self.assertEqual(len(data['imported_buildings']), 0)
+    #     # building should still have all its info
+    #     self.assertEqual(
+    #         data['building']['address_line_1'],
+    #         self.parent_1.address_line_1
+    #     )
+    #     self.assertEqual(
+    #         data['building']['address_line_1_source'],
+    #         self.parent_1.pk
+    #     )
+    #     self.assertEqual(
+    #         data['building']['gross_floor_area_source'],
+    #         self.parent_2.pk
+    #     )
+    #     self.assertAlmostEqual(
+    #         data['building']['gross_floor_area'],
+    #         self.parent_2.gross_floor_area,
+    #         places=1,
+    #     )
+    #
+    # # TODO replace with test for inventory report
+    # @skip("Fix for new data model")
+    # def test_get_building_imported_buildings_includes_green_button(self):
+    #     # arrange
+    #     self.parent_2.source_type = 6
+    #     self.parent_2.save()
+    #     child, changelist = save_snapshot_match(self.parent_1.pk,
+    #                                             self.parent_2.pk)
+    #
+    #     url = reverse_lazy("seed:get_building")
+    #     get_data = {
+    #         'building_id': child.canonical_building.pk,
+    #         'organization_id': self.org.pk,
+    #     }
+    #
+    #     # act
+    #     response = self.client.get(
+    #         url,
+    #         get_data,
+    #         content_type='application/json',
+    #     )
+    #     json_string = response.content
+    #     data = json.loads(json_string)
+    #
+    #     self.assertEqual(2, len(data['imported_buildings']))
+    #
+    #     # both parents link to their import file
+    #     self.assertEqual(
+    #         data['imported_buildings'][0]['import_file'],
+    #         self.import_file_1.pk
+    #     )
+    #     self.assertEqual(
+    #         data['imported_buildings'][1]['import_file'],
+    #         self.import_file_2.pk
+    #     )
 
     # TODO replace with test for inventory
     @skip("Fix for new data model")
@@ -2251,21 +2241,10 @@ class TestMCMViews(TestCase):
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_column_mapping_suggestions_pm_file(self):
-        import_file = ImportFile.objects.create(
-            import_record=self.import_record,
-            cached_first_row=ROW_DELIMITER.join([u'name', u'address']),
-            source_program=mapper.Programs.PM
-        )
-
-        post_data = {
-            'import_file_id': import_file.pk,
-            'org_id': self.org.pk
-        }
-
-        response = self.client.post(
-            reverse_lazy("seed:get_column_mapping_suggestions"),
+        response = self.client.get(
+            reverse_lazy("apiv2:data_files-mapping-suggestions",
+                         args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
-            data=json.dumps(post_data)
         )
         self.assertEqual('success', json.loads(response.content)['status'])
 
@@ -2288,25 +2267,17 @@ class TestMCMViews(TestCase):
         mapping.column_mapped.add(model_col)
         mapping.save()
 
-        post_data = {
-            'import_file_id': self.import_file.pk,
-            'org_id': self.org.pk
-        }
-
-        response = self.client.post(
-            reverse_lazy("seed:get_column_mapping_suggestions"),
+        response = self.client.get(
+            reverse_lazy("apiv2:data_files-mapping-suggestions",
+                         args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
-            data=json.dumps(post_data)
         )
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_raw_column_names(self):
         """Good case for ``get_raw_column_names``."""
-        resp = self.client.post(
-            reverse_lazy("seed:get_raw_column_names"),
-            data=json.dumps({
-                'import_file_id': self.import_file.id,
-            }),
+        resp = self.client.get(
+            reverse_lazy("apiv2:import_files-raw-column-names", args=[self.import_file.id]),
             content_type='application/json'
         )
 
@@ -2365,32 +2336,6 @@ class TestMCMViews(TestCase):
         assert (eu_col.unit is not None)
         self.assertEqual(eu_col.unit.unit_name, "test energy use intensity")
         self.assertEqual(eu_col.unit.unit_type, FLOAT)
-
-    @skip("Concatenation never worked")
-    def test_save_column_mappings_w_concat(self):
-        """Concatenated payloads come back as lists."""
-        resp = self.client.post(
-            reverse_lazy("seed:save_column_mappings"),
-            data=json.dumps({
-                'import_file_id': self.import_file.id,
-                'mappings': [
-                    ["name", ["name", "other_name"]],
-                ]
-            }),
-            content_type='application/json',
-        )
-
-        self.assertDictEqual(json.loads(resp.content), {'status': 'success'})
-
-        test_mapping = ColumnMapping.objects.filter(
-            super_organization=self.org
-        ).first()
-
-        raw_names = _get_column_names(test_mapping)
-        self.assertEquals(
-            raw_names,
-            [u'name', u'other_name']
-        )
 
     def test_save_column_mappings_idempotent(self):
         """We need to make successive calls to save_column_mappings."""
@@ -2464,7 +2409,7 @@ class TestMCMViews(TestCase):
         }
         set_cache(progress_key, 'parsing', test_progress)
         resp = self.client.post(
-            reverse_lazy("seed:progress"),
+            reverse_lazy("apiv2:progress"),
             data=json.dumps({
                 'progress_key': progress_key,
             }),
@@ -3644,9 +3589,8 @@ class InventoryViewTests(TestCase):
             'extraData': True,
             'name': 'property_extra_data_column',
             'displayName': 'property_extra_data_column',
-            'related': False,
+            'related': True,
         }
-
         self.assertIn(expected_property_extra_data_column, results)
 
         expected_taxlot_extra_data_column = {
@@ -3680,7 +3624,7 @@ class InventoryViewTests(TestCase):
 
         jurisdiction_tax_lot_id_col = {
             'name': 'jurisdiction_tax_lot_id',
-            'displayName': 'Tax Lot ID',
+            'displayName': 'Jurisdiction Tax Lot ID',
             'pinnedLeft': True,
             'type': 'numberStr',
             'related': False,
@@ -3699,6 +3643,6 @@ class InventoryViewTests(TestCase):
             'extraData': True,
             'name': 'taxlot_extra_data_column',
             'displayName': 'taxlot_extra_data_column',
-            'related': False,
+            'related': True,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
