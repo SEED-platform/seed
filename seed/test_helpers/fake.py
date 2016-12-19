@@ -1,7 +1,10 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California,
+through Lawrence Berkeley National Laboratory (subject to receipt of any
+required approvals from the U.S. Department of Energy) and contributors.
+All rights reserved.  # NOQA
 
 This files has faker methods for generating fake data.
 
@@ -26,7 +29,8 @@ from django.db.models.fields.files import FieldFile
 from faker import Factory
 
 from seed.models import (
-    BuildingSnapshot, Cycle, Column, Property, PropertyState, TaxLotState
+    BuildingSnapshot, Cycle, Column, GreenAssessment, GreenAssessmentURL,
+    GreenAssessmentProperty, Property, PropertyView, PropertyState, TaxLotState
 )
 
 Owner = namedtuple(
@@ -71,6 +75,7 @@ class BaseFake(object):
         return attr
 
     def address_line_1(self):
+        """Return realistic address line"""
         return "{} {} {}".format(
             self.fake.randomize_nb_elements(1000),
             self.fake.last_name(),
@@ -78,8 +83,9 @@ class BaseFake(object):
         )
 
     def owner(self, city=None, state=None):
+        """Return Owner named tuple"""
         email = self.fake.company_email()
-        ergx = re.compile('.*@(.*)\..*')
+        ergx = re.compile(r'.*@(.*)\..*')
         company = "{} {}".format(
             string.capwords(ergx.match(email).group(1), '-').replace('-', ' '),
             self.fake.company_suffix()
@@ -98,6 +104,7 @@ class FakeBuildingSnapshotFactory(BaseFake):
     """
 
     def __init__(self, super_organization=None, num_owners=5):
+        # pylint:disable=unused-variable
         super(FakeBuildingSnapshotFactory, self).__init__()
         self.super_organization = super_organization
         # pre-generate a list of owners so they occur more than once.
@@ -146,6 +153,7 @@ class FakeColumnFactory(BaseFake):
 
     def get_column(self, name, organization=None, is_extra_data=False,
                    table_name='PropertyState', **kw):
+        """Get column details."""
         column_details = {
             'organization': organization if organization else self.organization,
             'column_name': name,
@@ -170,6 +178,8 @@ class FakeCycleFactory(BaseFake):
         self.user = user
 
     def get_cycle(self, organization=None, user=None, **kw):
+        """Get cycle details."""
+        # pylint:disable=unused-argument
         if 'start' in kw:
             start = kw.pop('start')
         else:
@@ -192,7 +202,7 @@ class FakeCycleFactory(BaseFake):
 
 class FakePropertyFactory(BaseFake):
     """
-    Factory Class for producing Cycle instances.
+    Factory Class for producing Property instances.
     """
 
     def __init__(self, organization=None):
@@ -200,6 +210,7 @@ class FakePropertyFactory(BaseFake):
         self.organization = organization
 
     def get_property(self, organization=None, **kw):
+        """Get property instance."""
         property_details = {
             'organization': self._get_attr('organization', organization),
         }
@@ -213,6 +224,7 @@ class FakePropertyStateFactory(BaseFake):
     """
 
     def __init__(self, num_owners=5):
+        # pylint:disable=unused-variable
         super(FakePropertyStateFactory, self).__init__()
         # pre-generate a list of owners so they occur more than once.
         self.owners = [self.owner() for i in range(num_owners)]
@@ -238,11 +250,185 @@ class FakePropertyStateFactory(BaseFake):
             'owner_postal_code': owner.postal_code,
         }
 
-    def get_property_state(self, org, **kw):
+    def get_property_state(self, **kw):
         """Return a property state populated with pseudo random data"""
         property_details = self.get_details()
         property_details.update(kw)
-        return PropertyState.objects.create(organization=org, **property_details)
+        return PropertyState.objects.create(**property_details)
+
+
+class FakePropertyViewFactory(BaseFake):
+    """
+    Factory Class for producing PropertyView instances.
+    """
+
+    def __init__(self, prprty=None, cycle=None,
+                 organization=None, user=None):
+        super(FakePropertyViewFactory, self).__init__()
+        self.prprty = prprty
+        self.cycle = cycle
+        self.organization = organization
+        self.user = user
+        self.property_factory = FakePropertyFactory(
+            organization=organization
+        )
+        self.cycle_factory = FakeCycleFactory(
+            organization=organization,
+            user=user
+        )
+        self.state_factory = FakePropertyStateFactory()
+
+    def get_property_view(self, prprty=None, cycle=None, state=None,
+                          organization=None, user=None, **kw):
+        # pylint:disable=too-many-arguments
+        """Get property view instance."""
+        organization = organization if organization else self.organization
+        user = user if user else self.user
+        if not prprty:
+            prprty = self.prprty if self.prprty else \
+                self.property_factory.get_property(organization=organization)
+        if not cycle:
+            cycle = self.cycle if self.cycle else self.cycle_factory.get_cycle(
+                organization=organization
+            )
+        property_view_details = {
+            'property': prprty,
+            'cycle': cycle,
+            'state': state if state else self.state_factory.get_property_state(
+                organization=organization, **kw
+            )
+        }
+        return PropertyView.objects.create(**property_view_details)
+
+
+class FakeGreenAssessmentFactory(BaseFake):
+    """
+    Factory Class for producing GreenAssessment instances.
+    """
+
+    def __init__(self, organization=None):
+        self.organization = organization
+        super(FakeGreenAssessmentFactory, self).__init__()
+
+    def get_details(self):
+        """Generate details."""
+        rtc = self.fake.random_element(
+            elements=GreenAssessment.RECOGNITION_TYPE_CHOICES
+        )
+        color = self.fake.safe_color_name().title()
+        nelem = '' if rtc[1].startswith('Zero') else self.fake.random_element(
+            elements=('Energy', 'Efficiency', 'Sustainability', 'Building')
+        )
+        award = '{} {}{}'.format(color, nelem, rtc[1])
+        return {
+            'name': award,
+            'award_body': "{} {}".format(award, self.fake.company_suffix()),
+            'recognition_type': rtc[0],
+            'description': 'Fake Award',
+            'is_numeric_score': True,
+            'validity_duration': datetime.timedelta(365 * 5),
+            'organization': self.organization
+        }
+
+    def get_green_assessment(self, **kw):
+        """Return a green assessment populated with pseudo random data."""
+        green_assessment = self.get_details()
+        green_assessment.update(kw)
+        return GreenAssessment.objects.create(**green_assessment)
+
+
+class FakeGreenAssessmentURLFactory(BaseFake):
+    """
+    Factory Class for producing GreenAssessmentURL instances.
+    """
+
+    def __init__(self):
+        super(FakeGreenAssessmentURLFactory, self).__init__()
+
+    def get_url(self, property_assessment, url=None):
+        """Generate Instance"""
+        if not url:
+            url = "{}{}".format(self.fake.url(), self.fake.slug())
+        return GreenAssessmentURL.objects.create(
+            property_assessment=property_assessment, url=url
+        )
+
+
+class FakeGreenAssessmentPropertyFactory(BaseFake):
+    """
+    Factory Class for producing GreenAssessmentProperty instances.
+    """
+
+    def __init__(self, organization=None, user=None):
+        super(FakeGreenAssessmentPropertyFactory, self).__init__()
+        self.organization = organization
+        self.user = user
+        self.green_assessment_factory = FakeGreenAssessmentFactory()
+        self.property_view_factory = FakePropertyViewFactory(
+            organization=organization, user=user
+        )
+        self.url_factory = FakeGreenAssessmentURLFactory()
+
+    def get_details(self, assessment, property_view, organization):
+        """Get GreenAssessmentProperty details"""
+        metric = self.fake.random_digit_not_null() \
+            if assessment.is_numeric_score else None
+        rating = None if assessment.is_numeric_score else u'{} stars'.format(
+            self.fake.random.randint(1, 5)
+        )
+        details = {
+            'organization': organization,
+            'view': property_view,
+            'assessment': assessment,
+            'date': self.fake.date_time_this_decade().date()
+        }
+        if metric:
+            details['metric'] = metric
+        elif rating:
+            details['rating'] = rating
+        return details
+
+    def get_green_assessment_property(self, assessment=None, property_view=None,
+                                      organization=None, user=None,
+                                      urls=None, with_url=None, **kw):
+        """
+        Get a GreenAssessmentProperty instance.
+
+        :param assessment: assessment instance
+        :type assessment: GreenAssessment
+        :param property_view: property_view instance
+        :type property_view: PropertyView
+        :param organization: organization instance
+        :type organization: Organization
+        :param user: user instance
+        :type user: SEEDUser
+        :param urls: list of urls (as string) to create as GreenAssessmentURLs
+        :type urls: list of strings
+        :param with_url: number of GreenAssessmentURLs to create
+        :type with_url: int
+
+        with_urls and urls are mutually exclusive.
+        """
+        # pylint:disable=too-many-arguments
+        organization = organization if organization else self.organization
+        user = user if user else self.user
+        if not assessment:
+            assessment = self.green_assessment_factory.get_green_assessment()
+        if not property_view:
+            property_view = self.property_view_factory.get_property_view(
+                organization=organization, user=user
+            )
+        details = self.get_details(assessment, property_view, organization)
+        details.update(kw)
+        gap = GreenAssessmentProperty.objects.create(**details)
+        if urls:
+            for url in urls:
+                self.url_factory.get_url(gap, url)
+        elif with_url:
+            # Add urls
+            for _ in range(with_url):
+                self.url_factory.get_url(gap)
+        return gap
 
 
 class FakeTaxLotStateFactory(BaseFake):
@@ -251,6 +437,7 @@ class FakeTaxLotStateFactory(BaseFake):
     """
 
     def get_details(self):
+        """Get taxlot details."""
         taxlot_details = {
             'jurisdiction_tax_lot_id': self.fake.numerify(text='#####'),
             'block_number': self.fake.numerify(text='#####'),
@@ -262,11 +449,11 @@ class FakeTaxLotStateFactory(BaseFake):
         }
         return taxlot_details
 
-    def get_taxlot_state(self, org, **kw):
+    def get_taxlot_state(self, **kw):
         """Return a taxlot state populated with pseudo random data"""
         taxlot_details = self.get_details()
         taxlot_details.update(kw)
-        return TaxLotState.objects.create(organization=org, **taxlot_details)
+        return TaxLotState.objects.create(**taxlot_details)
 
 
 def mock_file_factory(name, size=None, url=None, path=None):
@@ -277,6 +464,7 @@ def mock_file_factory(name, size=None, url=None, path=None):
     so it handles uploading and saving to disk.
     The mock allow you to set the file name etc without having to save a file to disk.
     """
+    # pylint: disable=protected-access
     mock_file = mock.MagicMock(spec=FieldFile)
     mock_file._committed = True
     mock_file.file_name = name
@@ -336,6 +524,7 @@ def mock_queryset_factory(model, flatten=False, **kwargs):
         [namedtuple('ModelName', [field1, field2])...]
 
     """
+    # pylint: disable=protected-access, invalid-name
     auto_populate = None
     fields = list(model._meta.fields)
     auto_field = model._meta.auto_field

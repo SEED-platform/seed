@@ -79,6 +79,7 @@ class OrganizationUser(models.Model):
         # If we're removing an owner
         if self.role_level == ROLE_OWNER:
             # If there are users, but no other owners in this organization.
+<<<<<<< HEAD
             if (OrganizationUser.objects.all().exclude(pk=self.pk).exists() and
                         OrganizationUser.objects.filter(
                             organization=self.organization,
@@ -95,6 +96,24 @@ class OrganizationUser(models.Model):
                     other_user.save()
                 except IndexError:
                     print "Unable to promote secondary user, because there are no other users!"
+=======
+            all_org_users = OrganizationUser.objects.filter(
+                organization=self.organization,
+            ).exclude(pk=self.pk)
+            if (
+                    all_org_users.exists()
+                    and
+                    all_org_users.filter(role_level=ROLE_OWNER).count() == 0
+            ):
+                # Make next most high ranking person the owner.
+                other_user = all_org_users.order_by('role_level', 'pk')[0]
+                if other_user.role_level > ROLE_VIEWER:
+                    other_user.role_level = ROLE_OWNER
+                    other_user.save()
+                    found_user = True
+                else:
+                    raise UserWarning('Did not find suitable user to promote')
+>>>>>>> GBR API Helper functions, classes and mixins
 
         super(OrganizationUser, self).delete(*args, **kwargs)
 
