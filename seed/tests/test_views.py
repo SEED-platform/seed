@@ -2299,9 +2299,8 @@ class TestMCMViews(TestCase):
             unit=float_unit)
 
         resp = self.client.post(
-            reverse_lazy("seed:save_column_mappings"),
+            reverse_lazy("apiv2:import_files-save-column-mappings", args=[self.import_file.id]),
             data=json.dumps({
-                'import_file_id': self.import_file.id,
                 'mappings': [
                     {
                         'from_field': 'eui',
@@ -2345,9 +2344,8 @@ class TestMCMViews(TestCase):
             0
         )
         resp = self.client.post(
-            reverse_lazy("seed:save_column_mappings"),
+            reverse_lazy("apiv2:import_files-save-column-mappings", args=[self.import_file.id]),
             data=json.dumps({
-                'import_file_id': self.import_file.id,
                 'mappings': [
                     {
                         'from_field': 'eui',
@@ -2378,7 +2376,7 @@ class TestMCMViews(TestCase):
         self.client.login(**user_2_details)
 
         self.client.post(
-            reverse_lazy("seed:save_column_mappings"),
+            reverse_lazy("apiv2:import_files-save-column-mappings", args=[self.import_file.id]),
             data=json.dumps({
                 'import_file_id': self.import_file.id,
                 'mappings': [
