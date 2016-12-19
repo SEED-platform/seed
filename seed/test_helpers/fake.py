@@ -5,17 +5,12 @@
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
-
 This files has faker methods for generating fake data.
-
 The data is pseudo random, but still predictable. I.e. calling the same
 method mutiple times will always return the same sequence of results
 (after initialization)..
-
 .. warning::
-
     Do not edit the seed unless you know what you are doing!
-
     .. codeauthor:: Paul Munday<paul@paulmunday.net>
 """
 import datetime
@@ -50,11 +45,8 @@ STREET_SUFFIX = (
 class BaseFake(object):
     """
     Base class for fake factories.
-
     .. warning::
-
     *Always* call super, *first* when overridding init if you subclass this.
-
     """
 
     def __init__(self):
@@ -504,14 +496,11 @@ def mock_queryset_factory(model, flatten=False, **kwargs):
     Supplied a model and a list of key values pairs, where key is a
     field name on the model and value is a list of values to populate
     that field, returns a list of namedtuples to use as mock model instances.
-
     ..note::
         You are responsible for ensuring lists are the same length.
         The factory will attempt to set id/auto_field if not supplied,
         with a value corresponding to the list index + 1.
-
         If flatten == True append _id to the field_name in kwargs
-
     Usage:
     mock_queryset = mock_queryset_factory(
         Model, field1=[...], field2=[...]
@@ -519,10 +508,8 @@ def mock_queryset_factory(model, flatten=False, **kwargs):
     :param: model: Model to base queryset on
     :flatten: append _id to  ForeignKey field names
     :kwargs: field_name: list of values for model.field...
-
     :return:
         [namedtuple('ModelName', [field1, field2])...]
-
     """
     # pylint: disable=protected-access, invalid-name
     auto_populate = None
@@ -546,3 +533,15 @@ def mock_queryset_factory(model, flatten=False, **kwargs):
         ]
         queryset.append(Instance(*values))
     return queryset
+
+
+def mock_as_view(view, request, *args, **kwargs):
+    """Mimic as_view() returned callable, but returns view instance.
+
+    args and kwargs are the same you would pass to ``reverse()``
+    Borrowed from: http://tech.novapost.fr/django-unit-test-your-views-en.html
+    """
+    view.request = request
+    view.args = args
+    view.kwargs = kwargs
+    return view

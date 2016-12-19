@@ -24,6 +24,7 @@ from seed.lib.superperms.orgs.models import (
 from seed.lib.superperms.orgs.permissions import (
     get_org_or_id,
     get_org_id,
+    get_user_org,
     SEEDOrgPermissions,
     SEEDPublicPermissions
 )
@@ -32,6 +33,63 @@ from seed.lib.superperms.orgs.permissions import (
 class PermissionsFunctionsTests(TestCase):
     """Tests for Custom DRF Permissions util functions"""
     # pylint: disable=too-many-instance-attributes
+    def setUp(self):
+        self.maxDiff = None
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        user2_details = {
+            'username': 'test_user2@demo.com',
+            'password': 'test_pass'
+        }
+        user3_details = {
+            'username': 'test_user3@demo.com',
+            'password': 'test_pass'
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details)
+        self.user2 = User.objects.create_user(
+            email='test_user2@demo.com', **user2_details)
+        self.user3 = User.objects.create_user(
+            email='test_user3@demo.com', **user3_details)
+
+        self.org = Organization.objects.create()
+        self.sub_org = Organization.objects.create(parent_org=self.org)
+        self.sub_org2 = Organization.objects.create(parent_org=self.org)
+
+        # user with more than one org, default_organization set
+        self.org_user = OrganizationUser.objects.create(
+            user=self.user, organization=self.org)
+        self.sub_org_user = OrganizationUser.objects.create(
+            user=self.user, organization=self.sub_org)
+        self.user.default_organization = self.sub_org
+
+        # user with no default, one parent, one sub org
+        self.org_user2 = OrganizationUser.objects.create(
+            user=self.user2, organization=self.org)
+        self.sub_org_user2 = OrganizationUser.objects.create(
+            user=self.user2, organization=self.sub_org)
+
+        # user with all orgs of equal rank
+        self.org_user3 = OrganizationUser.objects.create(
+            user=self.user3, organization=self.sub_org)
+        self.sub_org_user3 = OrganizationUser.objects.create(
+            user=self.user3, organization=self.sub_org2)
+
+    def tearDown(self):
+        self.user.delete()
+        self.user2.delete()
+        self.user3.delete()
+        self.org.delete()
+        self.sub_org.delete()
+        self.sub_org2.delete()
+        self.org_user.delete()
+        self.org_user2.delete()
+        self.org_user3.delete()
+        self.sub_org_user.delete()
+        self.sub_org_user2.delete()
+        self.sub_org_user3.delete()
 
     def test_org_or_id(self):
         """Test getting org or org id"""
@@ -62,6 +120,25 @@ class PermissionsFunctionsTests(TestCase):
         type(mock_request).data = mock_value_error
         result = get_org_id(mock_request)
         self.assertEqual(None, result)
+
+    def test_get_user_org(self):
+        """test get_user_org method"""
+
+        # test default organization is returned if defined in user profile.
+        expected = self.sub_org
+        result = get_user_org(self.user)
+        self.assertEqual(expected, result)
+
+        # test org returned will be a parent if user has parent org in orgs.
+        # print(dir(self.user))
+        expected = self.org
+        result = get_user_org(self.user2)
+        self.assertEqual(expected, result)
+
+        # test first org id returned if all user orgs are equal rank
+        expected = self.sub_org
+        result = get_user_org(self.user3)
+        self.assertEqual(expected, result)
 
 
 class SEEDOrgPermissionsTests(TestCase):

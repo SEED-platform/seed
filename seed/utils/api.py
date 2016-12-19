@@ -19,7 +19,7 @@ from django.core.exceptions import (
     ValidationError
 )
 
-from seed.lib.superperms.orgs.permissions import get_org_id
+from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org
 
 # Data Structures
 # see OrgValidateMixin
@@ -226,21 +226,35 @@ def get_org_id_from_validator(instance, field):
 
 class OrgMixin(object):
     """
-    Provides get_organization method
+    Provides get_organization and get_parent_org method
     """
-    def get_organization(self, request):
-        """Get org id from query param or request.user."""
+
+    def get_organization(self, request, return_obj=None):
+        """Get org from query param or request.user.
+        :param request: request object.
+        :param return_obj: bool. Set to True if obj vs pk is desired.
+        :return: int representing a valid organization pk or
+            organization object.
+        """
         if not getattr(self, '_organization', None):
             org_id = get_org_id(request)
             if org_id:
                 try:
                     org = request.user.orgs.get(pk=org_id)
-                    self._organization = getattr(org, 'pk')
                 except ObjectDoesNotExist:
                     raise PermissionDenied('Incorrect org id.')
             else:
-                self._organization = request.user.orgs.all()[0].pk
+                org = get_user_org(request.user)
+            self._organization = getattr(org, 'pk') if not return_obj else org
         return self._organization
+
+    def get_parent_org(self, request):
+        """Gets parent organization of org from query param or request.
+        :param request: Request object.
+        :return: organization object.
+        """
+        org = self.get_organization(request, return_obj=True)
+        return getattr(org.get_parent(), 'pk')
 
 
 class OrgCreateMixin(OrgMixin):
@@ -351,6 +365,10 @@ class OrgQuerySetMixin(OrgMixin):
     on the model. You can override this by setting the orgfilter attribute
     to the appropriate fieldname. This also allows nested fields e.g.
     foreign_key.organization
+    By default this retrieves organization from query string param OR the
+    default_organization or first returned organization of the logged in user.
+    You can force it to return the appropriate "parent" organization by setting
+    the force_parent attribute to True.
     """
 
     def get_queryset(self):
@@ -358,6 +376,13 @@ class OrgQuerySetMixin(OrgMixin):
         # pylint:disable=invalid-name
         # raises Attribute Error if not set
         Model = self.model
+        qs = getattr(self, 'queryset', None)
         qsfilter = getattr(self, 'orgfilter', 'organization_id')
-        query_dict = {qsfilter: self.get_organization(self.request)}
+        force_parent = getattr(self, 'force_parent', False)
+        if force_parent:
+            query_dict = {qsfilter: self.get_parent_org(self.request)}
+        else:
+            query_dict = {qsfilter: self.get_organization(self.request)}
+        if qs:
+            return qs.filter(**query_dict)
         return Model.objects.filter(**query_dict)

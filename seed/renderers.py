@@ -27,10 +27,17 @@ class SEEDJSONRenderer(JSONRenderer):
     """
     Custom JSON Renderer.
 
-    returns results in the format {'status': 'success', 'data': data}
+    returns results in the format {'status': 'success', 'data': data} or
+        {'status': 'error', 'message': error message}
 
     if self.data_name is set on the view its will be used in place of data
     as a key.
+
+    Note: at present, pagination classes throw off the desired results format
+    of this renderer, returning pagination key:value pairs in the data value
+    and the data result nested in "results".
+    {"data": {"count": 2, "next": null, "previous": null, "results": data}}
+    Setting pagination_class to None returns the desired {'data': data} result.
     """
     def render(self, data, accepted_media_type=None, renderer_context=None):
         """
@@ -40,9 +47,13 @@ class SEEDJSONRenderer(JSONRenderer):
         view = renderer_context.get('view')
         data_name = getattr(view, 'data_name', data_name)
         response = renderer_context.get('response')
-        status_type = 'error'
+        # status_type = 'error'
         if status.is_success(response.status_code):
             status_type = 'success'
+        else:
+            status_type = 'error'
+            data_name = 'message'
+            data = data.get('detail', data)
         data = {'status': status_type, data_name: data}
         return super(SEEDJSONRenderer, self).render(
             data,

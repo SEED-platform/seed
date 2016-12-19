@@ -49,6 +49,29 @@ def get_org_id(request):
     return org_id
 
 
+def get_user_org(user):
+    """
+    Provides a fallback organization retrieval for when id is not supplied
+    by query params or request.data. Makes the assumption that, if set,
+    default_organization would be the highest preference in organization
+    selection, or that an available "parent" organization would logically
+    precede a sub_org in the ranking of unspecified preference.
+
+    :param user: User object from request.user
+    :return: organization object from user profile default_organization
+        attribute, if set, or first "parent" organization user is a member
+         of, or first returned organization.
+    """
+    if user.default_organization:
+        return user.default_organization
+    else:
+        orgs = user.orgs.all()
+        parent_orgs = orgs.filter(parent_org__isnull=True)
+        if parent_orgs:
+            return parent_orgs[0]
+    return orgs[0]
+
+
 class SEEDOrgPermissions(BasePermission):
     """
     Control API permissions based on OrganizationUser and HTTP Method
@@ -58,15 +81,14 @@ class SEEDOrgPermissions(BasePermission):
     ROLE_MEMBER, the rest (GET, OPTIONS, HEAD) require ROLE_VIEWER.
     All require an authenticated user.
 
-    Override perm_map (and subclass) to change these.
+    Overrride perm_map (and subclass) to change these.
 
     Requires a queryset attribute on the API View(Set). Since we typically
-    need to override get_queryset to ensure filtering by organization[#f1],
+    need to override get_queryset to ensure filtering by organization*,
     you should typically  set to MyModel.objects.none().
 
-    ..[#f1] You can use the OrgQuerySetMixin from seed.utils.api on your
+    * You can use the OrgQuerySetMixin from seed.utils.api on your
     view(set)to do this.
-
     """
     authenticated_users_only = True
     perm_map = {
@@ -87,7 +109,7 @@ class SEEDOrgPermissions(BasePermission):
         required_perm = self.perm_map.get(request.METHOD, ROLE_OWNER)
         org_id = get_org_id(request)
         if not org_id:
-            org_id = request.user.orgs.all()[0].pk
+            org_id = get_user_org(request.user).pk
         try:
             org = Organization.objects.get(pk=org_id)
             org_user = OrganizationUser.objects.get(

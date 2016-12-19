@@ -43,9 +43,12 @@ class TestOrgMixin(TestCase):
         self.user = User.objects.create_superuser(
             email='test_user@demo.com', **user_details)
         self.org = Organization.objects.create()
+        self.sub_org = Organization.objects.create(parent_org=self.org)
+
         self.org_user = OrganizationUser.objects.create(
-            user=self.user, organization=self.org
-        )
+            user=self.user, organization=self.org)
+        self.sub_org_user = OrganizationUser.objects.create(
+            user=self.user, organization=self.sub_org)
 
         class OrgMixinClass(OrgMixin):
             pass
@@ -54,10 +57,13 @@ class TestOrgMixin(TestCase):
     def tearDown(self):
         self.user.delete()
         self.org.delete()
+        self.sub_org.delete()
         self.org_user.delete()
+        self.sub_org_user.delete()
 
+    @mock.patch('seed.utils.api.get_user_org')
     @mock.patch('seed.utils.api.get_org_id')
-    def test_get_organization(self, mock_get_org_id):
+    def test_get_organization(self, mock_get_org_id, mock_user_org):
         """test get_organization method"""
         mock_request = mock.MagicMock()
         mock_request.user = self.user
@@ -70,6 +76,7 @@ class TestOrgMixin(TestCase):
 
         # test first org id returned if not defined on request
         mock_get_org_id.return_value = None
+        mock_user_org.return_value = self.org
         expected = self.org.id
         result = self.mixin_class.get_organization(mock_request)
         self.assertEqual(expected, result)
@@ -77,6 +84,30 @@ class TestOrgMixin(TestCase):
         # test org id returned if defined on request, and matches
         mock_get_org_id.return_value = self.org.id
         result = self.mixin_class.get_organization(mock_request)
+        self.assertEqual(expected, result)
+
+    @mock.patch('seed.utils.api.get_org_id')
+    def test_get_organization_object(self, mock_get_org_id):
+        """test get_organization method with return_obj"""
+        mock_request = mock.MagicMock()
+        mock_request.user = self.user
+
+        # test object, instead of id, return if return_obj parameter set
+        mock_get_org_id.return_value = None
+        result = self.mixin_class.get_organization(mock_request,
+                                                   return_obj=True)
+        self.assertIsInstance(result, Organization)
+
+    @mock.patch.object(OrgMixin, 'get_organization')
+    def test_get_parent_org(self, mock_get_organization):
+        """test get_parent_org method"""
+        mock_request = mock.MagicMock()
+        mock_request.user = self.user
+
+        # test parent org id return
+        mock_get_organization.return_value = self.sub_org
+        expected = self.org.id
+        result = self.mixin_class.get_parent_org(mock_request)
         self.assertEqual(expected, result)
 
 
@@ -306,6 +337,24 @@ class TestOrgQuerySetMixin(TestCase):
             model = mock_model
 
         mixin_class = OrgQuerySetMixinClass()
+        mixin_class.get_queryset()
+        mock_model.objects.filter.assert_called_with(organization_id=self.org.id)
+
+    @mock.patch.object(OrgMixin, 'get_parent_org')
+    def test_get_queryset_with_parent(self, mock_get_parent_org):
+        """Test get_queryset method with force_parent"""
+        mock_model = mock.MagicMock()
+
+        mock_request = mock.MagicMock()
+        mock_request.user = self.user
+        mock_get_parent_org.return_value = self.org.id
+
+        class OrgQuerySetMixinClass(OrgQuerySetMixin):
+            request = mock_request
+            model = mock_model
+
+        mixin_class = OrgQuerySetMixinClass()
+        mixin_class.force_parent = True
         mixin_class.get_queryset()
         mock_model.objects.filter.assert_called_with(organization_id=self.org.id)
 
