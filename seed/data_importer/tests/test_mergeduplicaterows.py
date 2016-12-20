@@ -64,7 +64,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
 
         return
 
-    def test_importduplicates(self):
+    def test_import_duplicates(self):
         # Check to make sure all the properties imported
         ps = PropertyState.objects.filter(
             data_state=DATA_STATE_MAPPING,

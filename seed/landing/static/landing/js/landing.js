@@ -6,7 +6,7 @@ BEHome.util = BEHome.util || {};
 BEHome.actions.vertically_center_page = function() {
     var top_and_bottom_margin = $(window).height() - $('.page').height();
     top_and_bottom_margin = (top_and_bottom_margin > 0) ? top_and_bottom_margin / 2 : 0;
-    $('.page').css({'margin-top': top_and_bottom_margin});
+    $('body').css({'padding-top': top_and_bottom_margin});
 };
 
 BEHome.actions.hide_choose_your_path = function() {
@@ -38,11 +38,11 @@ BEHome.actions.show_login_form = function() {
     $('.current_account_link').show();
 };
 BEHome.actions.check_unsupported_browser = function() {
-    var version=parseInt($.browser.version, 10);
-    if(($.browser.msie&&version<9)||($.browser.mozila&&version<3)||($.browser.webkit&&version<200)) {
-        BEHome.actions.show_unsupported_browser_message();
-        BEHome.actions.hide_login_form();
-    }
+    // var version=parseInt($.browser.version, 10);
+    // if(($.browser.msie&&version<9)||($.browser.mozila&&version<3)||($.browser.webkit&&version<200)) {
+    //     BEHome.actions.show_unsupported_browser_message();
+    //     BEHome.actions.hide_login_form();
+    // }
 };
 BEHome.actions.show_unsupported_browser_message = function() {
     $('.browser_unsupported').show();

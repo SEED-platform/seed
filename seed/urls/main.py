@@ -8,7 +8,7 @@
 from django.conf.urls import url
 
 from seed.views.main import (
-    home, create_pm_mapping,
+    home,
     get_total_number_of_buildings_for_user,         # TO REMOVE
     get_building,                                   # TO REMOVE
     search_buildings,                               # TO REMOVE
@@ -40,9 +40,6 @@ urlpatterns = [
 
     # template routes
     url(r'^$', home, name='home'),
-
-    url(r'^' + apiv1 + r'create_pm_mapping/$', create_pm_mapping,
-        name='create_pm_mapping'),
 
     # TO REMOVE
     url(

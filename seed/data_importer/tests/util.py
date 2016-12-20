@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 TAXLOT_MAPPING = [
     {
-        "from_field": u'jurisdiction_tax_lot_id',
+        "from_field": u'jurisdiction tax lot id',
         "to_table_name": u'TaxLotState',
         "to_field": u'jurisdiction_tax_lot_id',
     },
@@ -44,7 +44,7 @@ TAXLOT_MAPPING = [
         "to_field": u'city'
     },
     {
-        "from_field": u'number_buildings',
+        "from_field": u'number buildings',
         "to_table_name": u'TaxLotState',
         "to_field": u'number_properties'
     },
@@ -52,27 +52,27 @@ TAXLOT_MAPPING = [
 
 PROPERTIES_MAPPING = [
     {
-        "from_field": u'jurisdiction_tax_lot_id',
+        "from_field": u'jurisdiction tax lot id',
         "to_table_name": u'TaxLotState',
         "to_field": u'jurisdiction_tax_lot_id',
     }, {
-        "from_field": u'jurisdiction_property_id',
+        "from_field": u'jurisdiction property id',
         "to_table_name": u'PropertyState',
         "to_field": u'jurisdiction_property_id',
     }, {
-        "from_field": u'pm_property_id',
+        "from_field": u'pm property id',
         "to_table_name": u'PropertyState',
         "to_field": u'pm_property_id',
     }, {
-        "from_field": u'custom_id_1',
+        "from_field": u'custom id 1',
         "to_table_name": u'PropertyState',
         "to_field": u'custom_id_1',
     }, {
-        "from_field": u'pm_parent_property_id',
+        "from_field": u'pm parent property id',
         "to_table_name": u'PropertyState',
         "to_field": u'pm_parent_property_id'
     }, {
-        "from_field": u'address_line_1',
+        "from_field": u'address line 1',
         "to_table_name": u'PropertyState',
         "to_field": u'address_line_1'
     }, {
@@ -80,19 +80,19 @@ PROPERTIES_MAPPING = [
         "to_table_name": u'PropertyState',
         "to_field": u'city'
     }, {
-        "from_field": u'property_name',
+        "from_field": u'property name',
         "to_table_name": u'PropertyState',
         "to_field": u'property_name'
     }, {
-        "from_field": u'property_notes',
+        "from_field": u'property notes',
         "to_table_name": u'PropertyState',
         "to_field": u'property_notes'
     }, {
-        "from_field": u'use_description',
+        "from_field": u'use description',
         "to_table_name": u'PropertyState',
         "to_field": u'use_description'
     }, {
-        "from_field": u'gross_floor_area',
+        "from_field": u'gross floor area',
         "to_table_name": u'PropertyState',
         "to_field": u'gross_floor_area'
     }, {
@@ -100,31 +100,31 @@ PROPERTIES_MAPPING = [
         "to_table_name": u'PropertyState',
         "to_field": u'owner'
     }, {
-        "from_field": u'owner_email',
+        "from_field": u'owner email',
         "to_table_name": u'PropertyState',
         "to_field": u'owner_email'
     }, {
-        "from_field": u'owner_telephone',
+        "from_field": u'owner telephone',
         "to_table_name": u'PropertyState',
         "to_field": u'owner_telephone'
     }, {
-        "from_field": u'site_eui',
+        "from_field": u'site eui',
         "to_table_name": u'PropertyState',
         "to_field": u'site_eui'
     }, {
-        "from_field": u'energy_score',
+        "from_field": u'energy score',
         "to_table_name": u'PropertyState',
         "to_field": u'energy_score'
     }, {
-        "from_field": u'year_ending',
+        "from_field": u'year ending',
         "to_table_name": u'PropertyState',
         "to_field": u'year_ending'
     }, {
-        "from_field": u'extra_data_1',
+        "from_field": u'extra data 1',
         "to_table_name": u'PropertyState',
         "to_field": u'data_007'
     }, {
-        "from_field": u'extra_data_2',
+        "from_field": u'extra data 2',
         "to_table_name": u'TaxLotState',
         "to_field": u'data_008'
     }

@@ -36,6 +36,7 @@ from _localtools import load_organization_taxlot_field_mapping
 from _localtools import logging_info
 from _localtools import logging_debug
 from _localtools import logging_warn
+from _localtools import logging_error
 from seed.models import TaxLotView
 from seed.models import TaxLot
 from seed.models import TaxLotState
@@ -110,11 +111,20 @@ class Command(BaseCommand):
         for m2m in itertools.chain(TaxLotProperty.objects.filter(property_view__property__organization=org).all(),
                                    TaxLotProperty.objects.filter(taxlot_view__taxlot__organization=org).all()):
             # aggregate_value_from_state(view.state, org_rules_map[org_id])
-
-            jurisdiction_tax_lot_id = m2m.taxlot_view.state.jurisdiction_tax_lot_id
+            
+            # In some cases something in this chain of db calls in m2m.taxlot_view.state.jurisdiction_tax_lot_id
+            #  something is missing.  Log it and continue.
+            try:
+                jurisdiction_tax_lot_id = m2m.taxlot_view.state.jurisdiction_tax_lot_id
+            except Exception as e:                
+                logging_error("Error splitting taxlotproperty {t} into m2m:  {e}".format(t = m2m, e = e))
+                continue
+            logging_info("Starting to do m2m for jurisdiction_tax_lot_id {id}".format(id = jurisdiction_tax_lot_id))
+                
             taxlot_id_list = []
             try:
                 taxlot_id_list = get_id_fields(m2m.taxlot_view.state.jurisdiction_tax_lot_id)
+                logger.info("Found taxlot_id_list: {l}".format(l = taxlot_id_list))
             except TaxLotIDValueError, e:
                 logging_warn(e)
                 continue
@@ -134,27 +144,35 @@ class Command(BaseCommand):
                 # Check to see if the tax lot exists
 
                 matching_views_qry = TaxLotView.objects.filter(taxlot__organization=org, state__jurisdiction_tax_lot_id=tax_lot_id)
-                if matching_views_qry.count():
+                matching_views_ct = matching_views_qry.count()
+                logging_info("Found {ct} matching views".format(ct = matching_views_ct))
+                if matching_views_qry.count():                    
                     tax_lot = matching_views_qry.first().taxlot
-
+                    state = matching_views_qry.first().state
+                    logging_info("Found matching taxlotviews.  First is jurisdiction_tax_lot_id {id}".format(id = state.jurisdiction_tax_lot_id))
                     # FIXME: Yuck! Refactor me please!
                     created_tax_lots[tax_lot_id] = tax_lot
 
+                    logging_info("Setting taxlot_state to jurisdiction_tax_lot_id {id}".format(id = original_taxlot_view.state.jurisdiction_tax_lot_id))
                     # Apparently this is how Django clones things?
                     taxlot_state = original_taxlot_view.state
                     taxlot_state.pk = None
                     taxlot_state.jurisdiction_tax_lot_id = tax_lot_id
+                    logging_info("Setting taxlot_state.jurisdiction_tax_lot_id = {id}".format(id = tax_lot_id))
                     taxlot_state.save()
 
                 else:
+                    logging_info("No match, make a new TaxLot")
                     tl = TaxLot(organization=m2m.taxlot_view.taxlot.organization)
                     tl.save()
                     created_tax_lots[tax_lot_id] = tl
 
+                    logging_info("Setting taxlot_state to jurisdiction_tax_lot_id {id}".format(id = original_taxlot_view.state.jurisdiction_tax_lot_id))
                     # Apparently this is how Django clones things?
                     taxlot_state = original_taxlot_view.state
                     taxlot_state.pk = None
                     taxlot_state.jurisdiction_tax_lot_id = tax_lot_id
+                    logging_info("Setting taxlot_state.jurisdiction_tax_lot_id = {id}".format(id = tax_lot_id))
                     taxlot_state.save()
 
 
@@ -162,21 +180,27 @@ class Command(BaseCommand):
 
                 # Check and see if the Tax Lot View exists
                 qry = TaxLotView.objects.filter(taxlot = created_tax_lots[tax_lot_id], cycle = m2m.cycle)
-                if qry.count():
+                taxlotview_ct = qry.count()
+                logging_info("Found {ct} matching taxlotviews".format(ct = taxlotview_ct))
+                if taxlotview_ct:
                     taxlotview = qry.first()
-                    taxlotview.state = taxlot_state
+                    logging_debug("Setting the state of {v} to {s}".format(v = taxlotview.state.jurisdiction_tax_lot_id, s = taxlot_state.jurisdiction_tax_lot_id))
+                    taxlotview.state = taxlot_state                    
                     taxlotview.save()
                 else:
+                    logging_debug("Creating a new TaxLotView with cycle {c} and state {s}".format(c = m2m.cycle.name, s = taxlot_state.jurisdiction_tax_lot_id))
                     taxlotview = TaxLotView(taxlot = created_tax_lots[tax_lot_id], cycle = m2m.cycle, state = taxlot_state)
                     # Clone the state from above
                     taxlotview.save()
 
 
+                logging_debug("TaxLotProperty.objects.get_or_create with pm_id {pm}, jurisdiction_id = {j}, cycle = {c}".format(pm = m2m.property_view.state.pm_property_id, j = taxlotview.state.jurisdiction_tax_lot_id, c = m2m.cycle.name))
                 TaxLotProperty.objects.get_or_create(property_view = m2m.property_view, taxlot_view = taxlotview, cycle = m2m.cycle)
 
 
             else:
                 # The existing TaxLotView and m2m is deleted.
+                logging_debug("Deleting existing TaxLotView pm {pm}, jurisdiction {j}".format(pm = m2m.property_view.state.pm_property_id, j = m2m.taxlot_view.state.jurisdiction_tax_lot_id))
                 tl_view = m2m.taxlot_view
                 m2m.delete()
                 tl_view.delete()
@@ -189,13 +213,16 @@ class Command(BaseCommand):
         # Go through the tax Lots, collect any that are left, make
         # sure they aren't a part of any m2m entities.
         for original_taxlot_view in TaxLotView.objects.filter(taxlot__organization=org).all():
+            logging_debug("Trying original_taxlot_view jurisdiction {j}".format(j = original_taxlot_view.state.jurisdiction_tax_lot_id))
             try:
 
                 jurisdiction_tax_lot_id = original_taxlot_view.state.jurisdiction_tax_lot_id
                 taxlot_id_list = get_id_fields(jurisdiction_tax_lot_id)
+                logging_debug("Found taxlot_id_list with {ct} items.  {l}".format(ct = len(taxlot_id_list), l = taxlot_id_list))
                 if len(taxlot_id_list) <= 1: continue
                 assert TaxLotProperty.objects.filter(taxlot_view = original_taxlot_view).count() == 0, "Tax Lot should have been broken up already."
-
+                if TaxLotProperty.objects.filter(taxlot_view = original_taxlot_view).count() != 0:
+                    logging_debug("Tax Lot should have been broken up already.")
                 # Some have duplicates
                 for taxlot_id in set(taxlot_id_list):
                     logging_info("Break up tax lot {} to {} for cycle {}".format(jurisdiction_tax_lot_id, taxlot_id_list, m2m.cycle))
@@ -203,32 +230,40 @@ class Command(BaseCommand):
                     # taxlot state, and an m2m for the view and installs each.
 
                     matching_views_qry = TaxLotView.objects.filter(taxlot__organization=org, state__jurisdiction_tax_lot_id=taxlot_id)
-                    if matching_views_qry.count():
+                    matching_views_ct = matching_views_qry.count()
+                    logging_debug("Found {ct} matching views".format(ct = matching_views_ct))
+                    if matching_views_ct:
                         taxlot = matching_views_qry.first().taxlot
-
-                        if TaxLotView.objects.filter(taxlot = taxlot, cycle = original_taxlot_view.cycle).count() == 0:
+                        taxlotview_ct = TaxLotView.objects.filter(taxlot = taxlot, cycle = original_taxlot_view.cycle).count()
+                        logging_debug("Found {ct} taxlotviews".format(ct = taxlotview_ct))
+                        if taxlotview_ct == 0:
                             taxlot_state = original_taxlot_view.state
                             taxlot_state.pk = None
                             taxlot_state.jurisdiction_tax_lot_id = taxlot_id
+                            logging_debug("Creating a copy of the original taxlot_view's state with jurisdiction id {j}".format(j = taxlot_id))
                             taxlot_state.save()
-
+                            logging_debug("Creating a new TaxLotView")
                             tlv = TaxLotView(taxlot = taxlot, cycle = original_taxlot_view.cycle, state = taxlot_state)
                             tlv.save()
 
                     else:
+                        logging_debug("Creating a new TaxLot")
                         tl = TaxLot(organization=original_taxlot_view.taxlot.organization)
                         tl.save()
+                        logging_debug("Adding new taxlot to created_tax_lots at index {i}".format(i = taxlot_id))
                         created_tax_lots[taxlot_id] = tl
 
                         # Apparently this is how Django clones things?
                         taxlot_state = original_taxlot_view.state
                         taxlot_state.pk = None
                         taxlot_state.jurisdiction_tax_lot_id = taxlot_id
+                        logging_debug("Creating a copy of the original taxlot_view's state with jurisdiction id {j}".format(j = taxlot_id))
                         taxlot_state.save()
-
+                        logging_debug("Creating a new TaxLotView")
                         tlv = TaxLotView(taxlot = tl, cycle = original_taxlot_view.cycle, state = taxlot_state)
                         tlv.save()
                 else:
+                    logging_debug("Deleting original taxlot_view's with jurisdiction id {j}".format(j = original_taxlot_view.state.jurisdiction_tax_lot_id))
                     original_taxlot_view.delete()
 
 
