@@ -5,7 +5,7 @@
 :author
 """
 
-# import datetime
+
 import logging
 import csv
 from django.contrib.postgres.fields import JSONField
@@ -32,6 +32,7 @@ from seed.models import (
     TaxLotState,
     DATA_STATE_MAPPING,
     Cycle,
+    Column,
 )
 from seed.utils.api import api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
@@ -521,3 +522,55 @@ class ImportFileViewSet(viewsets.ViewSet):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse(task_save_raw(import_file_id))
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @detail_route(methods=['POST'])
+    def save_column_mappings(self, request, pk=None):
+        """
+        Saves the mappings between the raw headers of an ImportFile and the
+        destination fields in the `to_table_name` model which should be either
+        PropertyState or TaxLotState
+
+        Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
+
+        Payload::
+
+            {
+                "import_file_id": ID of the ImportFile record,
+                "mappings": [
+                    {
+                        'from_field': 'eui',  # raw field in import file
+                        'to_field': 'energy_use_intensity',
+                        'to_table_name': 'PropertyState',
+                    },
+                    {
+                        'from_field': 'gfa',
+                        'to_field': 'gross_floor_area',
+                        'to_table_name': 'PropertyState',
+                    }
+                ]
+            }
+
+        Returns::
+
+            {'status': 'success'}
+        """
+
+        body = request.data
+        import_file = ImportFile.objects.get(pk=pk)
+        organization = import_file.import_record.super_organization
+        mappings = body.get('mappings', [])
+        status1 = Column.create_mappings(mappings, organization, request.user)
+
+        # extract the to_table_name and to_field
+        column_mappings = [
+            {'from_field': m['from_field'],
+             'to_field': m['to_field'],
+             'to_table_name': m['to_table_name']} for m in mappings]
+        if status1:
+            import_file.save_cached_mapped_columns(column_mappings)
+            return JsonResponse({'status': 'success'})
+        else:
+            return JsonResponse({'status': 'error'})

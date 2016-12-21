@@ -13,7 +13,7 @@ selenium==2.53.6
 Sphinx==1.4.5
 tox==2.3.1
 unittest2
-fake-factory
+faker
 
 # For documentation, spelling, and code checking
 pep8

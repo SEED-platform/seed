@@ -15,8 +15,8 @@ python:
 
 addons:
   postgresql: '9.4'
-  # Sauce credentials in Travis env vars
-  sauce_connect: true
+  # Sauce credentials in Travis env vars, but we aren't using Sauce until we get functional tests working, so disable it
+  # sauce_connect: true
   apt_packages:
     - enchant
 

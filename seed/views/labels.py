@@ -204,7 +204,7 @@ class UpdateInventoryLabelsAPIView(APIView):
             {
                 "add_label_ids": {array}        Array of label ids to add
                 "remove_label_ids": {array}     Array of label ids to remove
-                "inventory_ids": {array}        Array property/taxlot  ids
+                "inventory_ids": {array}        Array property/taxlot ids
                 "organization_id": {integer}    The user's org ID
             }
 
@@ -232,9 +232,9 @@ class UpdateInventoryLabelsAPIView(APIView):
         error = None
         # ensure add_label_ids and remove_label_ids are different
         if not set(add_label_ids).isdisjoint(remove_label_ids):
-            error = self.errors('disjoint')
+            error = self.errors['disjoint']
         elif not organization_id:
-            error = self.errors('missing_org')
+            error = self.errors['missing_org']
         if error:
             result = {
                 'status': 'error',
