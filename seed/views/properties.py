@@ -166,6 +166,9 @@ def get_properties(request):
 def get_taxlots(request):
     page = request.GET.get('page', 1)
     per_page = request.GET.get('per_page', 1)
+    columns = request.GET.getlist('columns')
+    print "..... is:"
+    print columns
 
     cycle_id = request.GET.get('cycle')
     if cycle_id:
@@ -205,7 +208,7 @@ def get_taxlots(request):
 
     # Ids of taxlotviews to look up in m2m
     lot_ids = [l.pk for l in taxlot_views]
-    joins = TaxLotProperty.objects.filter(taxlot_view_id__in=lot_ids)
+    joins = TaxLotProperty.objects.filter(taxlot_view_id__in=lot_ids).select_related('property_view' )
 
     # Get all ids of properties on these joins
     property_view_ids = [j.property_view_id for j in joins]
@@ -227,6 +230,10 @@ def get_taxlots(request):
             while extra_data_field in property_data:
                 extra_data_field += '_extra'
             property_data[extra_data_field] = extra_data_value
+        
+        # Only return the requested rows. speeds up the json string time
+        property_data = {key: value for key, value in property_data.items() if key in columns}
+
         property_map[property_view.pk] = property_data
         # Replace property_view id with property id
         property_map[property_view.pk]['id'] = property_view.property.id

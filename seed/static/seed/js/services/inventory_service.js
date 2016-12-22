@@ -267,12 +267,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, columns) {
 
+      // console.log('in service: ', columns);
       var params = {
         organization_id: user_service.get_organization().id,
         page: page,
-        per_page: per_page || 999999999
+        per_page: per_page || 999999999,
+        columns: columns
       };
 
       var defer = $q.defer();
