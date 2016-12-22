@@ -1018,12 +1018,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
       resolve: {
         inventory: ['$stateParams', 'inventory_service', 'columns', function ($stateParams, inventory_service, columns) {
         // inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+          var localStorageKey = 'grid.' + $stateParams.inventory_type;            
+          var myColumns = inventory_service.loadSettings(localStorageKey, columns);
+          var visibleColumns = _.map(_.filter(myColumns, 'visible'), 'name');
           if ($stateParams.inventory_type === 'properties') {
-            return inventory_service.get_properties(1);
+            // return inventory_service.get_properties(1, undefined, undefined, visibleColumns).then(function (inv) {
+            return inventory_service.get_properties(1).then(function (inv) {
+              return  _.extend({'columns': myColumns}, inv);
+            });
           } else if ($stateParams.inventory_type === 'taxlots') {
-            var localStorageKey = 'grid.' + $stateParams.inventory_type;            
-            var myColumns = inventory_service.loadSettings(localStorageKey, columns);
-            var visibleColumns = _.map(_.filter(myColumns, 'visible'), 'name');
             return inventory_service.get_taxlots(1, undefined, undefined, visibleColumns).then(function (inv) {
               return  _.extend({'columns': myColumns}, inv);
             });
