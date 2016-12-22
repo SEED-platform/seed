@@ -54,6 +54,9 @@ def unique(lol):
 def get_properties(request):
     page = request.GET.get('page', 1)
     per_page = request.GET.get('per_page', 1)
+    columns = request.GET.getlist('columns')
+    print "..... is:"
+    print columns
 
     cycle_id = request.GET.get('cycle')
     if cycle_id:
@@ -114,6 +117,10 @@ def get_properties(request):
             while extra_data_field in taxlot_state_data:
                 extra_data_field += '_extra'
             taxlot_state_data[extra_data_field] = extra_data_value
+
+        # Only return the requested rows. speeds up the json string time
+        taxlot_state_data = {key: value for key, value in taxlot_state_data.items() if key in columns}
+
         taxlot_map[taxlot_view.pk] = taxlot_state_data
         # Replace taxlot_view id with taxlot id
         taxlot_map[taxlot_view.pk]['id'] = taxlot_view.taxlot.id
@@ -240,18 +247,26 @@ def get_taxlots(request):
 
     # A mapping of taxlot view pk to a list of property state info for a property view
     join_map = {}
+    #Get whole taxlotstate table:
+    wholeTaxLotPropertyTable = dict(TaxLotProperty.objects.values_list('property_view_id', 'taxlot_view_id'));
+    wholeTaxLotViewTable = dict(TaxLotView.objects.values_list('taxlot_id', 'state_id'));
+    wholeTaxLotStateTable = dict(TaxLotState.objects.values_list('id', 'jurisdiction_tax_lot_id'));
     for join in joins:
 
         # Find all the taxlot ids that this property relates to
-        related_taxlot_view_ids = TaxLotProperty.objects.filter(property_view_id=join.property_view_id) \
-            .values_list('taxlot_view_id', flat=True)
-        state_ids = TaxLotView.objects.filter(pk__in=related_taxlot_view_ids).values_list('state_id', flat=True)
+        # related_taxlot_view_ids = TaxLotProperty.objects.filter(property_view_id=join.property_view_id) \
+        #     .values_list('taxlot_view_id', flat=True)
+        related_taxlot_view_ids = wholeTaxLotPropertyTable[join.property_view_id];
+        # state_ids = TaxLotView.objects.filter(pk__in=related_taxlot_view_ids).values_list('state_id', flat=True)
+        state_ids = wholeTaxLotViewTable[related_taxlot_view_ids];
 
-        jurisdiction_tax_lot_ids = TaxLotState.objects.filter(pk__in=state_ids) \
-            .values_list('jurisdiction_tax_lot_id', flat=True)
+        # jurisdiction_tax_lot_ids = TaxLotState.objects.filter(pk__in=state_ids) \
+        #     .values_list('jurisdiction_tax_lot_id', flat=True)
+        jurisdiction_tax_lot_ids = [wholeTaxLotStateTable[state_ids]]; #FIXIT - needs to be list? see fixit below
+        # print 'related_taxlot_view_ids={} and state_ids={} and jurisdiction_tax_lot_ids={}'.format(related_taxlot_view_ids, state_ids, jurisdiction_tax_lot_ids)
 
         # Filter out associated tax lots that are present but which do not have preferred
-        none_in_jurisdiction_tax_lot_ids = None in jurisdiction_tax_lot_ids
+        none_in_jurisdiction_tax_lot_ids = None in jurisdiction_tax_lot_ids #fixit - why is a list, only one to one right?
         jurisdiction_tax_lot_ids = filter(lambda x: x is not None, jurisdiction_tax_lot_ids)
 
         if none_in_jurisdiction_tax_lot_ids:
