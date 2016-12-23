@@ -42,7 +42,6 @@ urlpatterns = [
     url(r's3_upload_complete/$', handle_s3_upload_complete, name='s3_upload_complete'),
     url(r'get_upload_details/$', get_upload_details, name='get_upload_details'),
     url(r'sign_policy_document/$', sign_policy_document, name='sign_policy_document'),
-    # url(r'upload/$', local_uploader, name='local_uploader'),
     # api schema
     url(r'^schema/$', get_api_schema, name='schema'),
     url(r'^progress/$', progress, name='progress'),
