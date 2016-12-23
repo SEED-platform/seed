@@ -38,7 +38,7 @@ _log = logging.getLogger(__name__)
 @api_endpoint
 @ajax_request
 @login_required
-@api_view(['GET'])
+@api_view(['POST'])  # NL -- this is a POST because, well, no idea. Can we just remove S3, plz?
 def handle_s3_upload_complete(request):
     """
     Notify the system that an upload to S3 has been completed. This is
@@ -68,22 +68,27 @@ def handle_s3_upload_complete(request):
         }
     """
     if 'S3' not in settings.DEFAULT_FILE_STORAGE:
-        return {'success': False,
-                'message': "Direct-to-S3 uploads not enabled"}
+        return {
+            'success': False,
+            'message': "Direct-to-S3 uploads not enabled"
+        }
 
     import_record_pk = request.POST['import_record']
     try:
         record = ImportRecord.objects.get(pk=import_record_pk)
     except ImportRecord.DoesNotExist:
         # TODO: Remove the file from S3?
-        return {'success': False,
-                'message': "Import Record %s not found" % import_record_pk}
+        return {
+            'success': False,
+            'message': "Import Record %s not found" % import_record_pk
+        }
 
     filename = request.POST['key']
     source_type = request.POST['source_type']
     # Add Program & Version fields (empty string if not given)
-    kw_fields = {field: request.POST.get(field, '')
-                 for field in ['source_program', 'source_program_version']}
+    kw_fields = {
+        f: request.POST.get(f, '') for f in ['source_program', 'source_program_version']
+    }
 
     f = ImportFile.objects.create(import_record=record,
                                   file=filename,
@@ -183,7 +188,7 @@ class LocalUploaderViewSet(viewsets.GenericViewSet):
         _log.info("Created ImportFile. kw_fields={} from-PM={}"
                   .format(kw_fields, f.from_portfolio_manager))
 
-        return {'success': True, "import_file_id": f.pk}
+        return JsonResponse({'success': True, "import_file_id": f.pk})
 
 
 @api_endpoint
@@ -261,7 +266,7 @@ def sign_policy_document(request):
             "signature": A signature of the policy document.  Also used during upload to S3.
         }
     """
-    policy_document = json.loads(request.body)
+    policy_document = request.data
     policy = base64.b64encode(json.dumps(policy_document))
     signature = base64.b64encode(
         hmac.new(
