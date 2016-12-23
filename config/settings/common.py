@@ -86,8 +86,6 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.admin',
 
-    'ajaxuploader',
-
     'compressor',
     'django_extensions',
     'raven.contrib.django.raven_compat',
@@ -116,7 +114,6 @@ INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 # apps to auto load name spaced URLs for JS use (see seed.main.views.home)
 SEED_URL_APPS = (
     # 'accounts',
-    'ajaxuploader',
     'seed',
     'audit_logs',
 )
