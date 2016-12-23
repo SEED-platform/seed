@@ -17,15 +17,20 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
-from rest_framework.decorators import api_view
 from django.http import JsonResponse
+from rest_framework.decorators import api_view
 
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
 )
-from seed.decorators import ajax_request
-from seed.utils.api import api_endpoint
+from seed.decorators import ajax_request, ajax_request_class
+from seed.utils.api import api_endpoint, api_endpoint_class
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework import viewsets
+from rest_framework.decorators import parser_classes
+
+from django.core.files.storage import FileSystemStorage
 
 _log = logging.getLogger(__name__)
 
@@ -89,31 +94,69 @@ def handle_s3_upload_complete(request):
     return JsonResponse({'success': True, "import_file_id": f.pk})
 
 
-class DataImportBackend(LocalUploadBackend):
+class LocalUploaderViewSet(viewsets.GenericViewSet):
     """
-    Subclass of ajaxuploader's LocalUploadBackend, to handle
-    creation of ImportFile objects related to the specified
-    ImportRecord.
+    Endpoint to upload data files to, if uploading to local file storage.
+    Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
+
+        source_type: A valid source type (e.g. 'Portfolio Raw' or 'Assessed Raw')
+
+    Returns::
+
+        {
+            'success': True,
+            'import_file_id': The ID of the newly-uploaded ImportFile
+        }
+
     """
 
-    def upload_complete(self, request, filename, *args, **kwargs):
+    @api_endpoint_class
+    @ajax_request_class
+    @parser_classes((MultiPartParser, FormParser,))
+    def create(self, request):
         """
-        Called directly by fineuploader on upload completion.
+        Upload a new file to an import_record. This is a multipart/form upload.
+        ---
+        parameters:
+            - name: import_record
+              description: the ID of the ImportRecord to associate this file with.
+              required: true
+              paramType: body
+            - name: source_type
+              description: the type of file
+              required: false
+              paramType: body
+            - name: source_program_version
+              description: the version of the file as related to the source_type
+              required: false
+              paramType: body
         """
+        if len(request.FILES) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': "Must pass file in as a Multipart/Form post"
+            })
+
+        the_file = request.data['file']
+        filename = the_file.name
+        path = settings.MEDIA_ROOT + "/uploads/" + filename
+
+        s = FileSystemStorage()
+        path = s.get_available_name(path)
+        with open(path, 'wb+') as temp_file:
+            for chunk in the_file.chunks():
+                temp_file.write(chunk)
+
         if 'S3' in settings.DEFAULT_FILE_STORAGE:
-            os.unlink(self.path)
+            os.unlink(path)
             raise ImproperlyConfigured("Local upload not supported")
-
-        super(DataImportBackend, self).upload_complete(
-            request, filename, *args, **kwargs
-        )
 
         import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
         try:
             record = ImportRecord.objects.get(pk=import_record_pk)
         except ImportRecord.DoesNotExist:
             # clean up the uploaded file
-            os.unlink(self.path)
+            os.unlink(path)
             return JsonResponse({
                 'success': False,
                 'message': "Import Record %s not found" % import_record_pk
@@ -126,7 +169,7 @@ class DataImportBackend(LocalUploadBackend):
                      for field in ['source_program', 'source_program_version']}
 
         f = ImportFile.objects.create(import_record=record,
-                                      file=self.path,
+                                      file=path,
                                       source_type=source_type,
                                       **kw_fields)
 
@@ -134,45 +177,6 @@ class DataImportBackend(LocalUploadBackend):
                   .format(kw_fields, f.from_portfolio_manager))
 
         return {'success': True, "import_file_id": f.pk}
-
-
-# this actually creates the django view for handling local file uploads.
-# thus the use of decorators as functions instead of decorators.
-local_uploader = AjaxFileUploader(backend=DataImportBackend)
-local_uploader = login_required(local_uploader)
-local_uploader = api_endpoint(local_uploader)
-local_uploader = api_view(['POST'])(local_uploader)
-
-# API documentation and method name fix
-local_uploader.__doc__ = \
-    """
-Endpoint to upload data files to, if uploading to local file storage.
-Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
-
-:GET:
-
-    The following parameters are expected to be in the query string:
-
-    import_record: the ID of the ImportRecord to associate this file with.
-
-    qqfile: The name of the file
-
-    source_type: A valid source type (e.g. 'Portfolio Raw' or 'Assessed Raw')
-
-
-Payload::
-
-    The content of the file as a data stream.  Do not use multipart encoding.
-
-Returns::
-
-    {
-        'success': True,
-        'import_file_id': The ID of the newly-uploaded ImportFile
-    }
-
-"""
-local_uploader.__name__ = 'local_uploader'
 
 
 @api_endpoint
