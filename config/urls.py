@@ -11,8 +11,6 @@ from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.static import serve
 
-import ajaxuploader.urls
-
 from config.views import robots_txt
 
 
@@ -34,8 +32,6 @@ urlpatterns = [
 
     # labels section
     url(r'^app/labels', include('seed.urls.labels', namespace="labels", app_name="labels")),
-
-    url(r'^ajax-uploader/', include(ajaxuploader.urls, namespace='ajaxuploader', app_name='ajaxuploader')),
 
     url(r'^eula/', include('tos.urls', namespace='tos', app_name='tos')),
 

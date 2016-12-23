@@ -396,17 +396,17 @@ class TestApi(TestCase):
         self.assertEqual(upload_details.status_code, 200)
         upload_details = json.loads(upload_details.content)
         self.assertEqual(upload_details['upload_mode'], 'filesystem')
+        self.assertEqual(upload_details['upload_path'], '/api/v2/upload/')
 
         # create hash for /data/upload/
         fsysparams = {
-            'qqfile': raw_building_file,
             'import_record': data_set_id,
             'source_type': 'Assessed Raw',
-            'filename': open(raw_building_file, 'rb')
+            'file': open(raw_building_file, 'rb')
         }
 
         # upload data and check response
-        r = self.client.post(upload_details['upload_path'], fsysparams, follow=True, **self.headers)
+        r = self.client.post(upload_details['upload_path'], fsysparams, **self.headers)
         self.assertEqual(r.status_code, 200)
 
         r = json.loads(r.content)
