@@ -11,8 +11,6 @@ import json
 import logging
 import os
 
-from ajaxuploader.backends.local import LocalUploadBackend
-from ajaxuploader.views import AjaxFileUploader
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
