@@ -128,6 +128,10 @@ class LocalUploaderViewSet(viewsets.GenericViewSet):
               description: the version of the file as related to the source_type
               required: false
               paramType: body
+            - name: file or qqfile
+              description: In-memory file object
+              required: true
+              paramType: Multipart
         """
         if len(request.FILES) == 0:
             return JsonResponse({
@@ -135,7 +139,11 @@ class LocalUploaderViewSet(viewsets.GenericViewSet):
                 'message': "Must pass file in as a Multipart/Form post"
             })
 
-        the_file = request.data['file']
+        # Fineuploader requires the field to be qqfile it appears... so why not support both? ugh.
+        if 'qqfile' in request.data.keys():
+            the_file = request.data['qqfile']
+        else:
+            the_file = request.data['file']
         filename = the_file.name
         path = settings.MEDIA_ROOT + "/uploads/" + filename
 
