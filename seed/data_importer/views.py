@@ -153,10 +153,17 @@ class LocalUploaderViewSet(viewsets.GenericViewSet):
         # Get a unique filename using the get_available_name method in FileSystemStorage
         s = FileSystemStorage()
         path = s.get_available_name(path)
+
+        # verify the directory exists
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+
+        # save the file
         with open(path, 'wb+') as temp_file:
             for chunk in the_file.chunks():
                 temp_file.write(chunk)
 
+        # The s3 stuff needs to be redone someday... delete?
         if 'S3' in settings.DEFAULT_FILE_STORAGE:
             os.unlink(path)
             raise ImproperlyConfigured("Local upload not supported")
