@@ -47,10 +47,10 @@ import time
 import sys
 
 from seed_readingtools import check_progress, check_status, read_map_file, setup_logger, upload_file
-from test_modules import upload_match_sort, account, cycles, delete_set, search_and_project, label, seed_login
-
+from test_modules import upload_match_sort, account, cycles, delete_set, search_and_project, label
 
 location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+print "Running from {}".format(location)
 
 if '--standalone' in sys.argv:
     # Open runserver as subprocess because tox doesn't support redirects or
@@ -58,36 +58,31 @@ if '--standalone' in sys.argv:
     Popen(['python', os.path.join(location, '..', '..', '..', 'manage.py'), 'runserver'])
     time.sleep(5)
 
-
-
-
 if '--noinput' in sys.argv:
     with open(os.path.join(location, 'seed_API_test.ini'), 'r') as f:
         (hostname, main_url, username, api_key) = f.read().splitlines()
 else:
-    defaultchoice = input('Use "seed_API_test.ini" credentials? [Y]es or Press Any Key ')
+    default_choice = raw_input('Use "seed_API_test.ini" credentials? [Y]es or Press Any Key ')
 
-    if defaultchoice.upper() == 'Y':
+    if default_choice.upper() == 'Y':
         with open(os.path.join(location, 'seed_API_test.ini'), 'r') as f:
-            (main_url, username, api_key) = f.read().splitlines()
+            (hostname, main_url, username, api_key) = f.read().splitlines()
 
     else:
-        hostname = input('Hostname (default: "localhost"): \t')
+        hostname = raw_input('Hostname (default: "localhost"): \t')
         if hostname == '':
             hostname = 'localhost'
-        main_url = input('Host URL (default: "http://localhost:8080": \t')
+        main_url = raw_input('Host URL (default: "http://localhost:8080": \t')
         if main_url == '':
             main_url = 'http://localhost:8000'
-        username = input('Username: \t')
-        api_key = input('APIKEY: \t')
+        username = raw_input('Username: \t')
+        api_key = raw_input('APIKEY: \t')
 time1 = dt.datetime.now()
 client = requests.session()
 client.get(main_url)
 csrfmiddlewaretoken = client.cookies['csrftoken']
 
 # NOTE: The header only accepts lower case usernames.
-
-
 
 # Set up output file
 test_time = time.strftime("%d%m_%H%M")
@@ -99,27 +94,23 @@ fileout.close()
 
 log = setup_logger(fileout_name)
 
-raw_building_file = os.path.relpath(os.path.join(location, '..', 'data', 'covered-buildings-sample.csv'))
+raw_building_file = os.path.relpath(
+    os.path.join(location, '..', 'data', 'covered-buildings-sample.csv'))
 assert (os.path.isfile(raw_building_file)), 'Missing file ' + raw_building_file
-raw_map_file = os.path.relpath(os.path.join(location, '..', 'data', 'covered-buildings-mapping.csv'))
+raw_map_file = os.path.relpath(
+    os.path.join(location, '..', 'data', 'covered-buildings-mapping.csv'))
 assert (os.path.isfile(raw_map_file)), 'Missing file ' + raw_map_file
-pm_building_file = os.path.relpath(os.path.join(location, '..', 'data', 'portfolio-manager-sample.csv'))
+pm_building_file = os.path.relpath(
+    os.path.join(location, '..', 'data', 'portfolio-manager-sample.csv'))
 assert (os.path.isfile(pm_building_file)), 'Missing file ' + pm_building_file
 pm_map_file = os.path.relpath(os.path.join(location, '..', 'data', 'portfolio-manager-mapping.csv'))
 assert (os.path.isfile(pm_map_file)), 'Missing file ' + pm_map_file
 
-#Login user
-print ('Login'),
-seed_login(main_url, csrfmiddlewaretoken, username, client, log)
-csrftoken = client.cookies['csrftoken']
-
-header = {'authorization': ':'.join([username.lower(), api_key]),
-          'Accept': 'application/json, text/plain, */*',
-          'Accept-Encoding' : 'gzip, deflate, sdch, br',
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrftoken,
-          'X-Requested-With': 'XMLHttpRequest',
-          'Connection': 'keep-alive'}
+# Login user
+header = {
+    'authorization': ':'.join([username.lower(), api_key]),
+    'Content-Type': 'application/json',
+}
 
 # -- Accounts
 print ('\n\n-------Accounts-------')
@@ -131,35 +122,37 @@ user_id = id['user']
 print ('\n\n-------Cycles-------')
 cycle_id = cycles(header, main_url, organization_id, log, client)
 
-## Create a dataset 
+## Create a dataset
 print ('\nAPI Function: create_dataset')
 partmsg = 'create_dataset'
-payload={'name': 'API Test'}
-result = client.post(main_url+'/api/v2/datasets/',
-					  headers=header,
-                      params={'organization_id':organization_id},
-					  data=json.dumps(payload))
+payload = {'name': 'API Test'}
+result = client.post(main_url + '/api/v2/datasets/',
+                     headers=header,
+                     params={'organization_id': organization_id},
+                     data=json.dumps(payload))
 check_status(result, partmsg, log)
 
-# Get the dataset id to be used 
+# Get the dataset id to be used
 dataset_id = result.json()['id']
 
 # Upload and test the raw building file
 print ('\n|---Covered Building File---|\n')
-upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, raw_building_file, 'Assessed Raw', raw_map_file, log, client)
+upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, raw_building_file,
+                  'Assessed Raw', raw_map_file, log, client)
 
 # Upload and test the portfolio manager file
 print ('\n|---Portfolio Manager File---|\n')
-upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, pm_building_file, 'Portfolio Raw', pm_map_file, log, client)
+upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, pm_building_file,
+                  'Portfolio Raw', pm_map_file, log, client)
 
 # Run search and project tests
 project_slug = search_and_project(header, main_url, organization_id, log, client)
-#label_id = label(header, main_url, organization_id, log)
-#The label test needs to be added back once it has been re-enabled.
+# label_id = label(header, main_url, organization_id, log)
+# The label test needs to be added back once it has been re-enabled.
 
 # Delete dataset and building
 delete_set(header, main_url, organization_id, dataset_id, project_slug, log, client)
 
 time2 = dt.datetime.now()
-diff = time2-time1
-log.info('Processing Time:{}min, {}sec'.format(diff.seconds/60, diff.seconds%60))
+diff = time2 - time1
+log.info('Processing Time:{}min, {}sec'.format(diff.seconds / 60, diff.seconds % 60))
