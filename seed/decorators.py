@@ -125,8 +125,8 @@ def ajax_request(func):
 
 def ajax_request_class(func):
     """
-    * Copied from django-annoying, with a small modification. Now we also check for 'status' or 'success' keys and \
-    return correct status codes
+    * Copied from django-annoying, with a small modification. Now we also check for 'status' or
+    'success' keys and return correct status codes
 
     If view returned serializable dict, returns response in a format requested
     by HTTP_ACCEPT header. Defaults to JSON if none requested or match.

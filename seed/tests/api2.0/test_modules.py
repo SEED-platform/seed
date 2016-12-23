@@ -12,26 +12,24 @@ import time
 import pprint
 import getpass
 
-def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, filepath, filetype, mappingfilepath, log, client):
-    
-    # Upload the covered-buildings-sample file 
+
+def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, filepath, filetype,
+                      mappingfilepath, log, client):
+    # Upload the covered-buildings-sample file
     print ('\nAPI Function: upload_file'),
     partmsg = 'upload_file'
-    try:
-        result = upload_file(header, filepath, main_url, dataset_id, filetype, client, header['X-CSRFToken'])
-        check_status(result, partmsg, log)
-    except:
-        log.error("Following API could not be tested")
-        return
-    
+
+    result = upload_file(header, filepath, main_url, dataset_id, filetype, client)
+    check_status(result, partmsg, log)
+
     header['Content-Type'] = 'application/json'
-    # Get import ID 
+    # Get import ID
     import_id = result.json()['import_file_id']
 
     # Get Import file
     print ('\nAPI Function: GET import_files')
     partmsg = 'import_files'
-    result = client.get(main_url+'/api/v2/import_files/'+str(import_id),
+    result = client.get(main_url + '/api/v2/import_files/' + str(import_id),
                         headers=header)
     check_status(result, partmsg, log)
 
@@ -41,9 +39,10 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
     payload = {'organization_id': organization_id,
                'cycle_id': cycle_id}
     try:
-        result = client.post(main_url+'/api/v2/import_files/'+str(import_id)+'/save_raw_data/',
-                              headers=header,
-                              data=json.dumps(payload))
+        result = client.post(
+            main_url + '/api/v2/import_files/' + str(import_id) + '/save_raw_data/',
+            headers=header,
+            data=json.dumps(payload))
         progress = check_progress(main_url, header, result.json()['progress_key'], client)
         check_status(result, partmsg, log)
     except:
@@ -54,9 +53,9 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
     print ('\nAPI Function: get_first_five_rows')
     partmsg = 'get_first_five_rows'
     try:
-        result = client.post(main_url+'/app/get_first_five_rows/',
+        result = client.post(main_url + '/app/get_first_five_rows/',
                              headers=header,
-                             data=json.dumps({'import_file_id':import_id}))
+                             data=json.dumps({'import_file_id': import_id}))
         check_status(result, partmsg, log)
     except:
         pass
@@ -64,11 +63,11 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
     # Get imported file
     print ('\nAPI Function: get_import_file'),
     partmsg = 'get_import_file'
-    
+
     try:
-        result = client.get(main_url+'/app/get_import_file/',
+        result = client.get(main_url + '/app/get_import_file/',
                             headers=header,
-                            params={'import_file_id':import_id})
+                            params={'import_file_id': import_id})
         check_status(result, partmsg, log)
     except:
         log.error("Following API could not be tested")
@@ -80,24 +79,25 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
     payload = {'import_file_id': import_id,
                'org_id': organization_id}
     try:
-        result = client.get(main_url+'/api/v2/data_files/'+str(import_id)+'/mapping_suggestions/',
-                              headers=header,
-                              params={'organization_id': organization_id},
-                              data=json.dumps(payload))
+        result = client.get(
+            main_url + '/api/v2/data_files/' + str(import_id) + '/mapping_suggestions/',
+            headers=header,
+            params={'organization_id': organization_id},
+            data=json.dumps(payload))
         check_status(result, partmsg, log, PIIDflag='mappings')
     except:
         pass
 
-    # Save the column mappings 
+    # Save the column mappings
     print ('\nAPI Function: save_column_mappings'),
     partmsg = 'save_column_mappings'
     payload = {'import_file_id': import_id,
                'organization_id': organization_id}
     payload['mappings'] = read_map_file(mappingfilepath)
     try:
-        result = client.get(main_url+'/app/save_column_mappings/',
-                              headers=header,
-                              data=json.dumps(payload))
+        result = client.get(main_url + '/app/save_column_mappings/',
+                            headers=header,
+                            data=json.dumps(payload))
         check_status(result, partmsg, log)
     except:
         log.error("Following API could not be tested")
@@ -109,10 +109,10 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
     payload = {'file_id': import_id,
                'organization_id': organization_id}
     try:
-        result = client.post(main_url+'/app/remap_buildings/',
-                              headers=header,
-                              data=json.dumps(payload))
-                      
+        result = client.post(main_url + '/app/remap_buildings/',
+                             headers=header,
+                             data=json.dumps(payload))
+
         progress = check_progress(main_url, header, result.json()['progress_key'], client)
         check_status(result, partmsg, log)
     except:
@@ -123,13 +123,12 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
     print ('\nAPI Function: cleansing'),
     partmsg = 'cleansing'
     try:
-        result = client.get(main_url+'/cleansing/results/',
-                              headers=header,
-                              params={'import_file_id':import_id})
+        result = client.get(main_url + '/cleansing/results/',
+                            headers=header,
+                            params={'import_file_id': import_id})
         check_status(result, partmsg, log, PIIDflag='cleansing')
     except:
         pass
-
 
     # Match uploaded buildings with buildings already in the organization.
     print ('\nAPI Function: start_system_matching'),
@@ -137,10 +136,10 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
     payload = {'file_id': import_id,
                'organization_id': organization_id}
     try:
-        result = client.post(main_url+'/app/start_system_matching/',
-                              headers=header,
-                              data=json.dumps(payload))
-                      
+        result = client.post(main_url + '/app/start_system_matching/',
+                             headers=header,
+                             data=json.dumps(payload))
+
         progress = check_progress(main_url, header, result.json()['progress_key'], client)
         check_status(result, partmsg, log)
     except:
@@ -150,248 +149,232 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
     print ('\nAPI Function: get_PM_filter_by_counts'),
     partmsg = 'get_PM_filter_by_counts'
     try:
-        result = client.get(main_url+'/app/get_PM_filter_by_counts/',
-                              headers=header,
-                              params={'import_file_id':import_id})
-        check_status(result, partmsg, log, PIIDflag = 'PM_filter')
+        result = client.get(main_url + '/app/get_PM_filter_by_counts/',
+                            headers=header,
+                            params={'import_file_id': import_id})
+        check_status(result, partmsg, log, PIIDflag='PM_filter')
     except:
         pass
 
     return
 
-def seed_login(main_url, csrfmiddlewaretoken, username, client, log):
-    #Login SEED
-    partmsg = 'login'
-    password = getpass.getpass("Password for account " + username + " : ")
-    while True:
-        login_data = dict(csrfmiddlewaretoken = csrfmiddlewaretoken, email = username, password = password)
-        result = client.post(main_url+'/accounts/login/?next=/app/',
-                            headers={'Referer': main_url},
-                            data=login_data)
-        if result.status_code != 200:
-            log.error('Login request does not respond (not an error of password or username)')
-            raise RuntimeError
-        try:
-            if result.history[0].status_code == 302:
-                print ('Login Successful')
-                log.info('Login...passed')
-                log.debug("Login Successful")
-                return
-        except:
-            password = getpass.getpass("Password Incorrect. Try again (username: " + username + ") : ")
 
 def search_and_project(header, main_url, organization_id, log, client):
-	# Search CanonicalBuildings
+    # Search CanonicalBuildings
     print ('\nAPI Function: search_buildings'),
     partmsg = 'search_buildings'
-    search_payload = {'filter_params':{u'address_line_1': u'94734 SE Honeylocust Street' }}
+    search_payload = {'filter_params': {u'address_line_1': u'94734 SE Honeylocust Street'}}
     try:
-        result = client.get(main_url+'/app/search_buildings/',
-                              headers=header,
-                              data=json.dumps(search_payload))
+        result = client.get(main_url + '/app/search_buildings/',
+                            headers=header,
+                            data=json.dumps(search_payload))
         check_status(result, partmsg, log)
     except:
         pass
 
-
-	#-- Project 
+    # -- Project
     print ('\n\n-------Project-------')
 
-	# Create a Project for 'Condo' in 'use_description'
+    # Create a Project for 'Condo' in 'use_description'
     print ('\nAPI Function: create_project'),
     partmsg = 'create_project'
     time1 = dt.datetime.now()
-    newproject_payload = {'project': {'name': 'New Project_'+str(time1.day)+str(time1.second), 
-									'compliance_type': 'describe compliance type', 
-									'description': 'project description'},
-						  'organization_id': organization_id}
+    newproject_payload = {'project': {'name': 'New Project_' + str(time1.day) + str(time1.second),
+                                      'compliance_type': 'describe compliance type',
+                                      'description': 'project description'},
+                          'organization_id': organization_id}
     try:
-        result = client.post(main_url+'/app/projects/create_project/',
-							   headers=header,
-							   data=json.dumps(newproject_payload))
+        result = client.post(main_url + '/app/projects/create_project/',
+                             headers=header,
+                             data=json.dumps(newproject_payload))
         check_status(result, partmsg, log)
     except:
         log.error("Could not create a project. Following API in SEARCH_AND_PROJECT not tested")
         return
 
-	# Get project slug 
+    # Get project slug
     project_slug = result.json()['project_slug']
 
-	# Get the projects for the organization
+    # Get the projects for the organization
     print ('\nAPI Function: get_project'),
     partmsg = 'get_project'
     try:
-        result = client.get(main_url+'/app/projects/get_projects/',
-							   headers=header,
-							   params={'organization_id':organization_id})
+        result = client.get(main_url + '/app/projects/get_projects/',
+                            headers=header,
+                            params={'organization_id': organization_id})
         check_status(result, partmsg, log)
     except:
         pass
 
-	# Populate project by search buildings result 
+    # Populate project by search buildings result
     print ('\nAPI Function: add_buildings_to_project'),
     partmsg = 'add_buildings_to_project'
-    projectbldg_payload = {'project':{'status':'active',
-									  'project_slug':project_slug,
-									  'slug':project_slug, 
-									  'select_all_checkbox':True, 
-									  'selected_buildings':[],
-									  'filter_params':{'use_description':'CONDO'}}, 
-						   'organization_id':organization_id}
+    projectbldg_payload = {'project': {'status': 'active',
+                                       'project_slug': project_slug,
+                                       'slug': project_slug,
+                                       'select_all_checkbox': True,
+                                       'selected_buildings': [],
+                                       'filter_params': {'use_description': 'CONDO'}},
+                           'organization_id': organization_id}
     try:
-        result = client.post(main_url+'/app/projects/add_buildings_to_project/',
-							   headers=header,
-							   data=json.dumps(projectbldg_payload))
+        result = client.post(main_url + '/app/projects/add_buildings_to_project/',
+                             headers=header,
+                             data=json.dumps(projectbldg_payload))
         time.sleep(20)
         check_status(result, partmsg, log)
 
-		# Get the percent/progress of buildings added to project 
-        progress = client.post(main_url+'/app/projects/get_adding_buildings_to_project_status_percentage/',
-								 headers=header,
-								 data=json.dumps({'project_loading_cache_key':result.json()['project_loading_cache_key']}))
+        # Get the percent/progress of buildings added to project
+        progress = client.post(
+            main_url + '/app/projects/get_adding_buildings_to_project_status_percentage/',
+            headers=header,
+            data=json.dumps(
+                {'project_loading_cache_key': result.json()['project_loading_cache_key']}))
         log.debug(pprint.pformat(progress.json()))
     except:
         pass
 
-	#-- Export
+    # -- Export
     print ('\n\n-------Export-------')
 
-	# Export all buildings.
-    print ('\nAPI Function: export_buildings'),	
+    # Export all buildings.
+    print ('\nAPI Function: export_buildings'),
     partmsg = 'export_buildings'
-    export_payload = {'export_name': 'project_buildings', 
-					  'export_type': "csv",
-					  'select_all_checkbox': True,
-					  'filter_params':{'project__slug':project_slug}}
+    export_payload = {'export_name': 'project_buildings',
+                      'export_type': "csv",
+                      'select_all_checkbox': True,
+                      'filter_params': {'project__slug': project_slug}}
     try:
-        result = client.post(main_url+'/app/export_buildings/',
-								headers=header,
-								data=json.dumps(export_payload))
+        result = client.post(main_url + '/app/export_buildings/',
+                             headers=header,
+                             data=json.dumps(export_payload))
         check_status(result, partmsg, log)
         if result.json()['total_buildings'] != 58:
-            log.warning('Export Buildings: ' + str(result.json()['total_buildings']) + " ; expected 58")
+            log.warning(
+                'Export Buildings: ' + str(result.json()['total_buildings']) + " ; expected 58")
 
-	    # Get exportID
+            # Get exportID
         exportID = result.json()['export_id']
 
         time.sleep(25)
-        progress = client.post(main_url+'/app/export_buildings/progress/',
-							    headers=header,
-							    data=json.dumps({'export_id':exportID}))
+        progress = client.post(main_url + '/app/export_buildings/progress/',
+                               headers=header,
+                               data=json.dumps({'export_id': exportID}))
         log.debug(pprint.pformat(progress.json()))
         time.sleep(25)
 
     except:
         log.error("Could not export building. Following API in SEARCH_AND_PROJECT not tested")
-        return project_slug		
+        return project_slug
 
-    print ('\nAPI Function: export_buildings_download'),	
+    print ('\nAPI Function: export_buildings_download'),
     partmsg = 'export_buildings_download'
     try:
-        result = client.post(main_url+'/app/export_buildings/download/',
-								headers=header,
-								data=json.dumps({'export_id':exportID}))
+        result = client.post(main_url + '/app/export_buildings/download/',
+                             headers=header,
+                             data=json.dumps({'export_id': exportID}))
         check_status(result, partmsg, log)
     except:
         pass
 
     return project_slug
 
+
 def label(header, main_url, organization_id, log, client):
-    #-- Labels
+    # -- Labels
     print ('\n\n-------Labels-------')
 
-	# Create label
+    # Create label
     print ('\nAPI Function: add_label'),
     partmsg = 'add_label'
     label_payload = {'color': 'gray',
                      'label': 'default',
                      'name': 'test label'}
     try:
-        result = client.post(main_url+'/app/labels/',
-								headers=header,
-								data=json.dumps(label_payload))
+        result = client.post(main_url + '/app/labels/',
+                             headers=header,
+                             data=json.dumps(label_payload))
         check_status(result, partmsg, log)
     except:
         log.error("Could not create a label. Following API in LABEL not tested")
         return
 
-	# Get label_id
+    # Get label_id
     label_id = result.json()['id']
 
-	# Get organization labels
-    print ('\nAPI Function: get_labels'),	
+    # Get organization labels
+    print ('\nAPI Function: get_labels'),
     partmsg = 'get_labels'
     try:
-        result = client.get(main_url+'/app/projects/get_labels/',
-								headers=header)
+        result = client.get(main_url + '/app/projects/get_labels/',
+                            headers=header)
         check_status(result, partmsg, log)
     except:
         pass
 
-	# Apply to buildings that have ENERGY STAR Score > 50
-    print ('\nAPI Function: apply_label'),	
+    # Apply to buildings that have ENERGY STAR Score > 50
+    print ('\nAPI Function: apply_label'),
     partmsg = 'apply_label'
-    payload = {'label':{'id':label_id},
-						'project_slug':project_slug,
-						'buildings':[],
-						'select_all_checkbox':True,
-						'search_params':{'filter_params':{'project__slug':project_slug}} }
+    payload = {'label': {'id': label_id},
+               'project_slug': project_slug,
+               'buildings': [],
+               'select_all_checkbox': True,
+               'search_params': {'filter_params': {'project__slug': project_slug}}}
     try:
-        result = client.post(main_url+'/app/projects/apply_label/',
-								headers=header,
-								data=json.dumps(payload))
+        result = client.post(main_url + '/app/projects/apply_label/',
+                             headers=header,
+                             data=json.dumps(payload))
         check_status(result, partmsg, log)
     except:
         pass
 
     return label_id
 
+
 def account(header, main_url, username, log, client):
     # Retrieve all users profile [might be only for superuser...]
- #   print ('\nAPI Function: users GET'),
- #   partmsg = 'users_get'
- #   result = client.get(main_url+'/api/v2/users/',
- #                         headers=header)
- #   check_status(result, partmsg, log, PIIDflag='users')
+    #   print ('\nAPI Function: users GET'),
+    #   partmsg = 'users_get'
+    #   result = client.get(main_url+'/api/v2/users/',
+    #                         headers=header)
+    #   check_status(result, partmsg, log, PIIDflag='users')
 
     # Retrieve user id
     print ('\nAPI Function: current_user_id')
     partmsg = 'current_user_id'
-    result = client.get(main_url+'/api/v2/users/current_user_id/',
-                          headers=header)
+    result = client.get(main_url + '/api/v2/users/current_user_id/', headers=header)
     check_status(result, partmsg, log)
 
-    user_id = str(result.json()['pk'])     
-    
+    user_id = str(result.json()['pk'])
+
     # Get the user profile
     print ('\nAPI Function: users/{pk} GET'),
     partmsg = 'users_pk_get'
-    result = client.get(main_url+'/api/v2/users/'+user_id,
-                          headers=header)
-    check_status(result, partmsg, log)             
+    result = client.get(main_url + '/api/v2/users/' + user_id + '/', headers=header)
+    check_status(result, partmsg, log)
 
-    # Change user profile 
+    # Change user profile
     print ('\nAPI Function: users PUT'),
     partmsg = 'users_put'
-    user_payload={'first_name': 'Baptiste', 
-                  'last_name':'Ravache',
-                  'email': username} 
-    result = client.put(main_url+'/api/v2/users/'+user_id+'/',
-                          headers=header,
-                          data=json.dumps(user_payload))
+    user_payload = {
+        'first_name': 'Baptiste',
+        'last_name': 'Ravache',
+        'email': username
+    }
+    result = client.put(main_url + '/api/v2/users/' + user_id + '/',
+                        headers=header,
+                        data=json.dumps(user_payload))
     check_status(result, partmsg, log)
 
     # Retrieve the organizations
     print ('\nAPI Function: organizations'),
     partmsg = 'organizations'
-    result = client.get(main_url+'/api/v2/organizations/',
-                          headers=header)
+    result = client.get(main_url + '/api/v2/organizations/',
+                        headers=header)
     check_status(result, partmsg, log, PIIDflag='organizations')
-    
-	# # Get the organization id to be used.
-	# # NOTE: Loop through the organizations and get the org_id 
-	# # where the organization owner is 'username' else get the first organization. 
+
+    # # Get the organization id to be used.
+    # # NOTE: Loop through the organizations and get the org_id
+    # # where the organization owner is 'username' else get the first organization.
     orgs_result = result.json()
     for ctr in range(len(orgs_result['organizations'])):
         if orgs_result['organizations'][ctr]['owners'][0]['email'] == username:
@@ -399,151 +382,148 @@ def account(header, main_url, username, log, client):
             break
         else:
             organization_id = str(orgs_result['organizations'][0]['org_id'])
-                                            
+
     # Get user authorization
     print ('\nAPI Function: is_authorized'),
     partmsg = 'is_authorized'
-    payload = {'actions': ["requires_superuser", "can_invite_member", "can_remove_member", "requires_owner", "requires_member"],
-                   'organization_id': organization_id}
-    result = client.post(main_url+'/api/v2/users/'+user_id+'/is_authorized/',
-                          headers=header,
-                          params={'organization_id':organization_id},
-                          data=json.dumps(payload))
+    payload = {'actions': ["requires_superuser", "can_invite_member", "can_remove_member",
+                           "requires_owner", "requires_member"],
+               'organization_id': organization_id}
+    result = client.post(main_url + '/api/v2/users/' + user_id + '/is_authorized/',
+                         headers=header,
+                         params={'organization_id': organization_id},
+                         data=json.dumps(payload))
     check_status(result, partmsg, log)
 
     # Get organizations users
     print ('\nAPI Function: organizations/{pk}/users/')
     partmsg = 'organizations_pk_users'
-    result = client.get(main_url+'/api/v2/organizations/'+organization_id+'/users/',
-                          headers=header)
+    result = client.get(main_url + '/api/v2/organizations/' + organization_id + '/users/',
+                        headers=header)
     check_status(result, partmsg, log)
-    
+
     # Get organizations settings
     print ('API Function: query_threshold\n')
     partmsg = 'query_threshold'
-    result = client.get(main_url+'/api/v2/organizations/'+organization_id+'/query_threshold/',
-                          headers=header)
+    result = client.get(main_url + '/api/v2/organizations/' + organization_id + '/query_threshold/',
+                        headers=header)
     check_status(result, partmsg, log)
 
     # Get shared fields
     print ('\nAPI Function: shared_fields')
     partmsg = 'shared_fields'
-    result = client.get(main_url+'/api/v2/organizations/'+organization_id+'/shared_fields/',
-                          headers=header)
+    result = client.get(main_url + '/api/v2/organizations/' + organization_id + '/shared_fields/',
+                        headers=header)
     check_status(result, partmsg, log)
 
     id = {'org': organization_id, 'user': user_id}
     return id
 
+
 def cycles(header, main_url, organization_id, log, client):
-    header['referer'] = main_url+'/app/'
-    header['Origin'] = main_url
-    header['Host'] = main_url[8:]
-    #Get cycles
+    # Get cycles
     print ('API Function: get_cycles\n')
     partmsg = 'get_cycles'
+    cycle_name = 'API Test Cycle'
+    cycle_id = 138  # horrible idea, but c'est la vie.
     try:
-        result = client.get(main_url+'/app/get_cycles/',
-                              headers=header,
-                              params={'organization_id':organization_id})
-        check_status(result, partmsg, log, PIIDflag = 'cycles')
+        result = client.get(main_url + '/api/v2/cycles/',
+                            headers=header,
+                            params={'organization_id': organization_id})
+        check_status(result, partmsg, log, PIIDflag='cycles')
 
         cycles = result.json()['cycles']
         for cyc in cycles:
-            if cyc['name'] == 'TestCycle':
+            if cyc['name'] == cycle_name:
                 cycle_id = cyc['id']
                 break
         else:
-            #Create cycle (only if it doesn't exist, until there is a function to delete cycles)
+            # Create cycle (only if it doesn't exist, until there is a function to delete cycles)
             print ('API Function: create_cycle\n')
             partmsg = 'create_cycle'
-            payload = {'start': "2015-01-01T08:00:00.000Z",
-                       'end': "2016-01-01T08:00:00.000Z",
-                       'name': "TestCycle"}
-            result = client.post(main_url+'/app/create_cycle/',
-                                   headers=header,
-                                   params={'organization_id':organization_id},
-                                   data=json.dumps(payload))
+            payload = {
+                'start': "2015-01-01T08:00:00.000Z",
+                'end': "2016-01-01T08:00:00.000Z",
+                'name': cycle_name
+            }
+            result = client.post(main_url + '/api/v2/cycles/',
+                                 headers=header,
+                                 params={'organization_id': organization_id},
+                                 data=json.dumps(payload))
             check_status(result, partmsg, log)
 
-            cycles = result.json()['cycles']
-            for cyc in cycles:
-                if cyc['name'] == 'TestCycle':
-                    cycle_id = cyc['id']
-                    break
+            cycle_id = result.json()['id']
     except:
-        cycle_id = 138
+        raise Exception("Error getting/creating cycle")
 
-    #Update cycle
+    # Update cycle
     print ('\nAPI Function: update_cycle')
     partmsg = 'update_cycle'
-    payload = {'start': "2015-01-01T08:00:00.000Z",
-               'end': "2016-01-01T08:00:00.000Z",
-               'name': "TestCycle",
-               'id': cycle_id}
-    result = client.put(main_url+'/app/update_cycle/',
-                          headers=header,
-                          params={'organization_id':organization_id},
-                          data=json.dumps(payload))
+    payload = {
+        'start': "2015-01-01T08:00:00.000Z",
+        'end': "2016-01-01T08:00:00.000Z",
+        'name': cycle_name
+    }
+    result = client.put(main_url + '/api/v2/cycles/' + str(cycle_id) + '/',
+                        headers=header,
+                        params={'organization_id': organization_id},
+                        data=json.dumps(payload))
     check_status(result, partmsg, log)
 
     return cycle_id
 
 
-
 def delete_set(header, main_url, organization_id, dataset_id, project_slug, log, client):
-
-    #Delete all buildings
+    # Delete all buildings
     print ('\nAPI Function: delete_buildings'),
     partmsg = 'delete_buildings'
     payload = {'organization_id': organization_id,
                'search_payload': {'select_all_checkbox': True}}
     try:
-        result = client.delete(main_url+'/app/delete_buildings/',
-                                    headers = header,
-                                    data=json.dumps(payload))
+        result = client.delete(main_url + '/app/delete_buildings/',
+                               headers=header,
+                               data=json.dumps(payload))
         check_status(result, partmsg, log)
     except:
         print("\n WARNING: Can't delete BUILDING RECORDS, delete manually!")
         input("Press Enter to continue...")
 
-
-    #Delete dataset
+    # Delete dataset
     print ('\nAPI Function: delete_dataset'),
     partmsg = 'delete_dataset'
     try:
-        result = client.delete(main_url+'/api/v2/datasets/'+str(dataset_id)+'/',
-                               params={'organization_id':organization_id},
-                               headers = header)
+        result = client.delete(main_url + '/api/v2/datasets/' + str(dataset_id) + '/',
+                               params={'organization_id': organization_id},
+                               headers=header)
         check_status(result, partmsg, log)
     except:
         print("\n WARNING: Can't delete BUILDING SET, delete manually!")
         input("Press Enter to continue...")
 
-    #Delete project
+    # Delete project
     print ('\nAPI Function: delete_project'),
     partmsg = 'delete_project'
     payload = {'organization_id': organization_id,
                'project_slug': project_slug}
     try:
-        result = client.delete(main_url+'/app/projects/delete_project/',
-                                 headers = header,
-                                 data=json.dumps(payload))
+        result = client.delete(main_url + '/app/projects/delete_project/',
+                               headers=header,
+                               data=json.dumps(payload))
         check_status(result, partmsg, log)
     except:
         print("\n WARNING: Can't delete PROJECT, delete manually!")
         input("Press Enter to continue...")
 
     ##Delete label
-    #print ('API Function: delete_label\n'),
-    #partmsg = 'delete_label'
-    #payload = {'organization_id': organization_id}
-    #try:
+    # print ('API Function: delete_label\n'),
+    # partmsg = 'delete_label'
+    # payload = {'organization_id': organization_id}
+    # try:
     #    result = client.delete(main_url+'/app/labels/'+label_id+'/',
     #                             headers = header,
     #                             data=json.dumps(payload))
     #    check_status(result, partmsg, log)
-    #except:
+    # except:
     #    print("\n WARNING: Can't delete LABEL, delete manually!")
     #    input("Press Enter to continue...")
 
