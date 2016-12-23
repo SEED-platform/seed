@@ -15,7 +15,6 @@ class Migration(migrations.Migration):
             if apps.get_model("seed", "Cycle").objects.filter(name=cycle_name).exists():
                 cycle = apps.get_model("seed", "Cycle").objects.get(name=cycle_name)
             else:
-                print "Creating new cycle instance"
                 cycle = apps.get_model("seed", "Cycle").objects.create(
                     name=cycle_name,
                     start=datetime(year, 1, 1),
