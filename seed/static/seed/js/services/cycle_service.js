@@ -42,7 +42,7 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
 
       $http({
         method: 'GET',
-        url: window.BE.urls.get_cycles,
+        url: '/api/v2/cycles/',
         params: {
           organization_id: org_id
         }
@@ -73,7 +73,7 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
       var defer = $q.defer();
       $http({
         method: 'POST',
-        url: window.BE.urls.create_cycle,
+        url: '/api/v2/cycles/',
         data: cycle,
         params: {
           organization_id: org_id

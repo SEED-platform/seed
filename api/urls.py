@@ -19,6 +19,7 @@ from seed.data_importer.views import (
     local_uploader
 )
 from seed.views.import_files import ImportFileViewSet
+from seed.views.cycles import CycleView
 
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
@@ -27,6 +28,7 @@ api_v2_router.register(r'data_files', DataFileViewSet, base_name="data_files")
 api_v2_router.register(r'projects', ProjectViewSet, base_name="projects")
 api_v2_router.register(r'users', UserViewSet, base_name="users")
 api_v2_router.register(r'import_files', ImportFileViewSet, base_name="import_files")
+api_v2_router.register(r'cycles', CycleView, base_name="cycles")
 api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
 
 urlpatterns = [
