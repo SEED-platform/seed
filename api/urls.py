@@ -9,7 +9,9 @@ from rest_framework import routers
 
 from api.views import test_view_with_arg, TestReverseViewSet
 from seed.data_importer.views import (
-    handle_s3_upload_complete, get_upload_details, sign_policy_document,
+    handle_s3_upload_complete,
+    get_upload_details,
+    sign_policy_document,
     LocalUploaderViewSet
 )
 from seed.views.api import get_api_schema

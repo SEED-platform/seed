@@ -32,23 +32,11 @@ from seed.views.main import (
     delete_organization_inventory,
     delete_buildings
 )
-from seed.views.properties import (
-    create_cycle,
-    get_cycles,
-    update_cycle,
-    delete_cycle
-)
 
 # prefix, to revert back to original endpoints, leave this blank
 apiv1 = r''  # r'api/v1/'
 
 urlpatterns = [
-
-    # cycle routes
-    url(r'^' + apiv1 + r'create_cycle/$', create_cycle, name='create_cycle'),
-    url(r'^' + apiv1 + r'get_cycles/$', get_cycles, name='get_cycles'),
-    url(r'^' + apiv1 + r'update_cycle/$', update_cycle, name='update_cycle'),
-    url(r'^' + apiv1 + r'delete_cycle/$', delete_cycle, name='delete_cycle'),
 
     # template routes
     url(r'^$', home, name='home'),
