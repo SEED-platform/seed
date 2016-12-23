@@ -99,8 +99,6 @@ class LocalUploaderViewSet(viewsets.GenericViewSet):
     Endpoint to upload data files to, if uploading to local file storage.
     Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
 
-        source_type: A valid source type (e.g. 'Portfolio Raw' or 'Assessed Raw')
-
     Returns::
 
         {
@@ -123,7 +121,7 @@ class LocalUploaderViewSet(viewsets.GenericViewSet):
               required: true
               paramType: body
             - name: source_type
-              description: the type of file
+              description: the type of file (e.g. 'Portfolio Raw' or 'Assessed Raw')
               required: false
               paramType: body
             - name: source_program_version
@@ -141,6 +139,7 @@ class LocalUploaderViewSet(viewsets.GenericViewSet):
         filename = the_file.name
         path = settings.MEDIA_ROOT + "/uploads/" + filename
 
+        # Get a unique filename using the get_available_name method in FileSystemStorage
         s = FileSystemStorage()
         path = s.get_available_name(path)
         with open(path, 'wb+') as temp_file:
@@ -215,7 +214,7 @@ def get_upload_details(request):
         ret['aws_client_key'] = settings.AWS_UPLOAD_CLIENT_KEY
     else:
         ret['upload_mode'] = 'filesystem'
-        ret['upload_path'] = reverse('apiv2:local_uploader')
+        ret['upload_path'] = '/api/v2/upload/'
     return JsonResponse(ret)
 
 
