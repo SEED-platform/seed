@@ -54,4 +54,5 @@ seed/data_importer/tests/data/tmp_*
 seed/data_importer/tests/data/~*
 seed/tests/api/*_seedhost.txt
 seed/tests/api/seed_API_test.ini
+seed/tests/api2.0/seed_API_test.ini
 test.sqlite
