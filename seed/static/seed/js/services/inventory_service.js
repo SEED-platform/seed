@@ -21,7 +21,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     inventory_service.get_properties = function (page, per_page, cycle, columns) {
 
-      console.log('getprop: ', columns);
       var params = {
         organization_id: user_service.get_organization().id,
         page: page,
@@ -271,7 +270,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     inventory_service.get_taxlots = function (page, per_page, cycle, columns) {
 
-      // console.log('in service: ', columns);
       var params = {
         organization_id: user_service.get_organization().id,
         page: page,

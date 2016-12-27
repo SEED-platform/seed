@@ -1021,7 +1021,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHel
           var localStorageKey = 'grid.' + $stateParams.inventory_type;            
           var myColumns = inventory_service.loadSettings(localStorageKey, columns);
           var visibleColumns = _.map(_.filter(myColumns, 'visible'), 'name');
-          console.log('before: ', visibleColumns);
+          // console.log('before: ', visibleColumns);
           if ($stateParams.inventory_type === 'properties') {
             return inventory_service.get_properties(1, undefined, undefined, visibleColumns).then(function (inv) {
             // return inventory_service.get_properties(1).then(function (inv) {
