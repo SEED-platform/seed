@@ -234,7 +234,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         user_factory.get_user_id().then(function (this_user_id) {
             $http({
                 method: 'PUT',
-                url: '/api/v2/users/' + this_user_id.toString() + '/set_password/',
+                url: '/api/v2/users/' + this_user_id + '/set_password/',
                 data: {
                     current_password: current_password,
                     password_1: password_1,

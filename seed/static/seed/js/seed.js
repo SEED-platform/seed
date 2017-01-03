@@ -16,7 +16,6 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.grid',
   'ui.grid.draggable-rows',
   'ui.grid.exporter',
-  'ui.grid.grouping',
   'ui.grid.moveColumns',
   'ui.grid.pinning',
   'ui.grid.resizeColumns',
@@ -135,8 +134,9 @@ var SEED_app = angular.module('BE.seed', [
 SEED_app.run([
   '$http',
   '$cookies',
+  '$rootScope',
   'editableOptions',
-  function ($http, $cookies, editableOptions) {
+  function ($http, $cookies, $rootScope, editableOptions) {
     var csrftoken = $cookies.get('csrftoken');
     BE.csrftoken = csrftoken;
     $http.defaults.headers.common['X-CSRFToken'] = csrftoken;
@@ -146,6 +146,9 @@ SEED_app.run([
 
     //config ANGULAR-XEDITABLE ... (this is the recommended place rather than in .config)...
     editableOptions.theme = 'bs3';
+
+    // Use lodash in views
+    $rootScope._ = window._;
   }
 ]);
 
@@ -1119,6 +1122,8 @@ SEED_app.config(['$httpProvider', function ($httpProvider) {
  */
 SEED_app.config(['$compileProvider', function ($compileProvider) {
   $compileProvider.debugInfoEnabled(window.BE.debug);
+  $compileProvider.commentDirectivesEnabled(false);
+  $compileProvider.cssClassDirectivesEnabled(false);
 }]);
 
 /**
@@ -1126,7 +1131,6 @@ SEED_app.config(['$compileProvider', function ($compileProvider) {
  */
 SEED_app.constant('urls', {
   search_buildings: BE.urls.search_buildings_url,
-  search_mapping_results: BE.urls.search_mapping_results,
   save_match: BE.urls.save_match_url,
   seed_home: BE.urls.seed_home,
   // update_building: BE.urls.update_building,

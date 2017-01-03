@@ -97,8 +97,8 @@ class CleansingDataTestCoveredBuilding(TestCase):
 
         c = Cleansing(self.org)
         c.cleanse(qs)
+        # print c.results
 
-        print c.results
         self.assertEqual(len(c.results), 2)
 
         result = [v for v in c.results.values() if
@@ -526,15 +526,13 @@ class CleansingViewTests(TestCase):
     def test_get_cleansing_results(self):
         data = {'test': 'test'}
         cache.set('cleansing_results__1', data)
-        response = self.client.get(reverse('cleansing:get_cleansing_results'),
-                                   {'import_file_id': 1})
+        response = self.client.get(reverse('apiv2:import_files-cleansing-results.json', args=[1]))
         self.assertEqual(json.loads(response.content)['data'], data)
 
     def test_get_progress(self):
         data = {'status': 'success', 'progress': 85}
         cache.set(':1:SEED:get_progress:PROG:1', data)
-        response = self.client.get(reverse('cleansing:get_progress'),
-                                   {'import_file_id': 1})
+        response = self.client.get(reverse('apiv2:import_files-cleansing-progress', args=[1]))
         self.assertEqual(json.loads(response.content), 85)
 
     def test_get_csv(self):
@@ -550,6 +548,5 @@ class CleansingViewTests(TestCase):
             }]
         }]
         cache.set('cleansing_results__1', data)
-        response = self.client.get(reverse('cleansing:get_csv'),
-                                   {'import_file_id': 1})
+        response = self.client.get(reverse('apiv2:import_files-cleansing-results.csv', args=[1]))
         self.assertEqual(200, response.status_code)

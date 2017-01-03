@@ -22,57 +22,70 @@ import logging
 _log = logging.getLogger(__name__)
 
 
-def get_column_mapping(column_raw, organization, attr_name='column_mapped'):
-    """Callable provided to MCM to return a previously mapped field.
+def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
+    """Find the ColumnMapping objects that exist in the database from a raw_column
 
-    :param column_raw: str, the column name of the raw data.
+    :param raw_column: str, the column name of the raw data.
     :param organization: Organization inst.
     :param attr_name: str, name of attribute on ColumnMapping to pull out.
         whether we're looking at a mapping from the perspective of
         a raw_column (like we do when creating a mapping), or mapped_column,
         (like when we're applying that mapping).
+        # TODO: Remove the use of this attr_name
     :returns: list of mapped items, float representation of confidence.
 
     """
-    from seed.utils.mapping import _get_column_names
+    from seed.utils.mapping import _get_table_and_column_names
 
-    if not isinstance(column_raw, list):
-        column_raw = [column_raw]
+    if not isinstance(raw_column, list):
+        column_raw = [raw_column]
+    else:
+        # NL 12/6/2016 - We should never get here, if we see this then find out why and remove the
+        # list. Eventually delete this code.
+        raise Exception("I am a LIST! Which makes no sense!")
 
+    # Should only return one column
     cols = Column.objects.filter(
         organization=organization, column_name__in=column_raw
     )
 
     try:
         previous_mapping = ColumnMapping.objects.get(
-            super_organization=organization, column_raw__in=cols,
+            super_organization=organization,
+            column_raw__in=cols,
         )
     except ColumnMapping.MultipleObjectsReturned:
-        # # handle the special edge-case where remove dupes doesn't get
-        # # called by ``get_or_create``
-        ColumnMapping.objects.filter(
-            super_organization=organization,
-            column_raw__in=cols
-        ).delete()
+        _log.debug("ColumnMapping.MultipleObjectsReturned in get_column_mapping")
+        # handle the special edge-case where remove dupes doesn't get
+        # called by ``get_or_create``
+        ColumnMapping.objects.filter(super_organization=organization, column_raw__in=cols).delete()
 
-        previous_mapping, _ = ColumnMapping.objects.get_or_create(
-            super_organization=organization,
-            column_raw__in=cols
-        )
+        # Need to delete and then just allow for the system to re-attempt the match because
+        # the old matches are no longer valid.
+        return None
     except ColumnMapping.DoesNotExist:
+        _log.debug("ColumnMapping.DoesNotExist")
         return None
 
-    column_names = _get_column_names(previous_mapping, attr_name=attr_name)
+    column_names = _get_table_and_column_names(previous_mapping, attr_name=attr_name)
 
+    # Check if the mapping is a one-to-one mapping, that is, there is only one mapping available.
+    # As far as I know, this should always be the case because of the MultipleObjectsReturned
+    # from above.
     if previous_mapping.is_direct():
         column_names = column_names[0]
+    else:
+        # NL 12/2/2016 - Adding this here for now as a catch. If we get here, then we have problems.
+        raise Exception("The mapping returned with not direct!")
 
-    # TODO: return the correct table name!
-    return 'PropertyState', column_names, 100
+    return column_names[0], column_names[1], 100
 
 
 class Column(models.Model):
     """The name of a column for a given organization."""
+
+    # We have two concepts of the SOURCE. The table_name, which is mostly used, and the
+    # SOURCE_* fields. Need to converge on one or the other.
     SOURCE_PROPERTY = 'P'
     SOURCE_TAXLOT = 'T'
     SOURCE_CHOICES = (
@@ -144,16 +157,15 @@ class Column(models.Model):
         # Take the existing object and return the same object with the db column objects added to
         # the dictionary (to_column_object and from_column_object)
         mappings = Column._column_fields_to_columns(mappings, organization)
-
         for mapping in mappings:
             if isinstance(mapping, dict):
-
                 try:
                     column_mapping, _ = ColumnMapping.objects.get_or_create(
                         super_organization=organization,
                         column_raw__in=mapping['from_column_object'],
                     )
                 except ColumnMapping.MultipleObjectsReturned:
+                    _log.debug('ColumnMapping.MultipleObjectsReturned in create_mappings')
                     # handle the special edge-case where remove dupes doesn't get
                     # called by ``get_or_create``
                     ColumnMapping.objects.filter(
@@ -318,8 +330,6 @@ class Column(models.Model):
                 organization=model_obj.organization,
                 table_name=model_obj.__class__.__name__
             )
-
-            # TODO: catch the MultipleObjectsReturns
 
 
 class ColumnMapping(models.Model):

@@ -14,8 +14,6 @@ from seed.serializers.celery import CeleryDatetimeSerializer
 
 SITE_ROOT = abspath(join(dirname(__file__), "..", ".."))
 
-SEED_DATADIR = join(SITE_ROOT, 'seed', 'data')
-
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
@@ -88,8 +86,6 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.admin',
 
-    'ajaxuploader',
-
     'compressor',
     'django_extensions',
     'raven.contrib.django.raven_compat',
@@ -117,9 +113,7 @@ INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
 # apps to auto load name spaced URLs for JS use (see seed.main.views.home)
 SEED_URL_APPS = (
-   # 'accounts',
-    'ajaxuploader',
-    'data_importer',
+    # 'accounts',
     'seed',
     'audit_logs',
 )
@@ -180,12 +174,6 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         }
-    },
-    'loggers': {
-        '': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-        },
     }
 }
 

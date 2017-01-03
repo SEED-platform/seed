@@ -8,7 +8,6 @@ import sys
 from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
 
-
 DEBUG = True
 SESSION_COOKIE_SECURE = False
 
@@ -51,18 +50,27 @@ else:
     }
     LOGGING = {
         'version': 1,
-        'disable_existing_loggers': True,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'plain': {
+                'format': '%(message)s'
+            },
+            'file_line_number': {
+                'format': "%(pathname)s:%(lineno)d - %(message)s"
+            }
+        },
         # set up some log message handlers to choose from
         'handlers': {
             'console': {
-                'level': 'INFO',
-                'class': 'logging.StreamHandler'
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'formatter': 'file_line_number',
             }
         },
         'loggers': {
             # the name of the logger, if empty, then this is the default logger
             '': {
-                'level': 'INFO',
+                'level': 'DEBUG',
                 'handlers': ['console'],
             }
         },
@@ -90,7 +98,6 @@ if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
     COMPRESS_JS_FILTERS = []
 
 ALLOWED_HOSTS = ['*']
-
 
 # use imp module to find the local_untracked file rather than a hard-coded path
 # TODO: There seems to be a bunch of loading of other files in these settings. First this loads the common, then this, then anything in the untracked file

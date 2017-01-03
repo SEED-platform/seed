@@ -18,7 +18,7 @@ angular.module('BE.seed.service.cleansing', []).factory('cleansing_service', [
         var defer = $q.defer();
         $http({
             method: 'GET',
-            url: '/cleansing/results/?import_file_id=' + import_file_id
+            url: '/api/v2/import_files/' + import_file_id + '/cleansing_results.json'
         }).success(function(data, status, headers, config) {
             defer.resolve(data.data);
         }).error(function(data, status, headers, config) {

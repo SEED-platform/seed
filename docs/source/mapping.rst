@@ -22,7 +22,7 @@ These are saved in the model `seed.data_importer.models.ImportFile`.
 Mapping
 -------
 
-After the data is saved, the UI invokes `seed.views.main.get_column_mapping_suggestions` to get the columns to
+After the data is saved, the UI invokes `DataFileViewSet.mapping_suggestions` to get the columns to
 display on the mapping screen. This loads back the model that was mentioned above as an `ImportFile` instance, and
 then the `from_portfolio_manager` property can be used to choose the branch of the code:
 

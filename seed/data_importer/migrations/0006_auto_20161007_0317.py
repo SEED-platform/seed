@@ -3,21 +3,33 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import django.db.models.deletion
-from seed.models import Cycle
+from datetime import date, datetime, timedelta
 
 
 class Migration(migrations.Migration):
+    def forwards_func(apps, schema_editor):
+        cycle = None
+        if apps.get_model("seed", "Cycle").objects.count() == 0:
+            year = date.today().year - 1
+            cycle_name = 'Migration Created Cycle'
+            if apps.get_model("seed", "Cycle").objects.filter(name=cycle_name).exists():
+                cycle = apps.get_model("seed", "Cycle").objects.get(name=cycle_name)
+            else:
+                cycle = apps.get_model("seed", "Cycle").objects.create(
+                    name=cycle_name,
+                    start=datetime(year, 1, 1),
+                    end=datetime(year + 1, 1, 1) - timedelta(seconds=1)
+                )
+
+        # Go through the importfiles and add the default cycle
+        for c in apps.get_model("data_importer", "ImportFile").objects.all():
+            c.cycle = cycle
+            c.save()
 
     dependencies = [
         ('data_importer', '0005_importfile_cycle'),
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='importfile',
-            name='cycle',
-            field=models.ForeignKey(default=370, on_delete=django.db.models.deletion.CASCADE, to='seed.Cycle'),
-            preserve_default=False,
-        ),
+        migrations.RunPython(forwards_func),
     ]

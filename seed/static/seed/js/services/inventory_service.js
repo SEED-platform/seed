@@ -603,31 +603,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.aggregations = function () {
-      return {
-        sum: {
-          aggregationFn: function (aggregation, fieldValue) {
-            if (!_.has(aggregation, 'values')) aggregation.values = [fieldValue];
-            else aggregation.values.push(fieldValue);
-          },
-          finalizerFn: function (aggregation) {
-            var sum = _.sum(_.without(aggregation.values, undefined, null, ''));
-            aggregation.value = sum ? sum : null;
-          }
-        },
-        uniqueList: {
-          aggregationFn: function (aggregation, fieldValue) {
-            if (!_.has(aggregation, 'values')) aggregation.values = [fieldValue];
-            else aggregation.values.push(fieldValue);
-          },
-          finalizerFn: function (aggregation) {
-            aggregation.value = _.join(_.uniq(_.without(aggregation.values, undefined, null, '')), '; ');
-          }
-        }
-      };
-    };
-
-
     inventory_service.get_total_properties_for_user = function () {
       // django uses request.user for user information
       var defer = $q.defer();

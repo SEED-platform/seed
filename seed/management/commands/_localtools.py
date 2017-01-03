@@ -9,20 +9,32 @@ from IPython import embed
 import seed.models
 from seed.models import TaxLotView
 
+# For large migrations it is much easier to just dump everything to a file and look at that.
+# Especially when trying to figure out the difference between two migrated BuildingSnapshots.
+# But the resulting file can get fairly large (NYC is ~25 mb).  Leaving this here for the future
+# where "pass" can be replaced with writing to whatever file is most convenient.
+def write_to_file(msg):
+    pass
+
 def logging_info(msg):
-    print "INFO: {}".format(msg)
+    s = "INFO: {}".format(msg)
+    print s
+    write_to_file(s)
 
 def logging_debug(msg):
-    print "DEBUG: {}".format(msg)
-    return
+    s =  "DEBUG: {}".format(msg)
+    print s
+    write_to_file(s)
 
 def logging_warn(msg):
-    print "WARN: {}".format(msg)
-    return
+    s = "WARN: {}".format(msg)
+    print s
+    write_to_file(s)
 
 def logging_error(msg):
-    print "ERROR: {}".format(msg)
-    return
+    s = "ERROR: {}".format(msg)
+    print s
+    write_to_file(s)
 
 def removeCommasToType(typ):
 
@@ -307,6 +319,7 @@ def get_id_fields(parse_string):
     Raises an exception if string does not match
     """
 
+    logging_info("get_id_fields called with {id}".format(id = parse_string))
     if parse_string is None: return []
 
     #The id field can use any of several delimiters so reduce it to just one
@@ -323,6 +336,7 @@ def get_id_fields(parse_string):
 
     #If there is nothing in the string return an empty list
     if not len(cleaned_str.strip()):
+        logging_info("No ids found, returning")
         return []
 
     fields = cleaned_str.split(delimiter_to_use)
@@ -332,8 +346,10 @@ def get_id_fields(parse_string):
 
     for field in fields:
         if not valid_id(field):
+            logging_info("Invalid id: {id}".format(id = field))
             raise TaxLotIDValueError(parse_string, field)
 
+    logging_info("Returning {f}".format(f = fields))
     return fields
 
 

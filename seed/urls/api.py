@@ -6,15 +6,7 @@
 """
 from django.conf.urls import url, include
 
-from seed.views.api import get_api_schema
-
 urlpatterns = [
-    # api schema
-    url(
-        r'^get_api_schema/$',
-        get_api_schema,
-        name='get_api_schema'
-    ),
     # swagger urls
     url(
         r'^swagger/',
