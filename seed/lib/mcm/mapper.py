@@ -228,7 +228,7 @@ def expand_rows(row, delimited_fields, expand_row):
 def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, concat=None, **kwargs):
     """Apply mapping of row data to model.
 
-    :param original_row: dict, parsed row data from csv.
+    :param row: dict, parsed row data from csv.
     :param mapping: dict, keys map row columns to model_class attrs.
     :param model_class: class, reference to model class we map against.
     :param extra_data_fields: list, list of raw columns that are considered extra data (per mapping)
