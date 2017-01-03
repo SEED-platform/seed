@@ -22,6 +22,8 @@ from seed.views.main import DataFileViewSet, version, progress
 from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.users import UserViewSet
+from seed.views.properties import PropertyViewSet, TaxLotViewSet
+
 
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
@@ -31,6 +33,8 @@ api_v2_router.register(r'projects', ProjectViewSet, base_name="projects")
 api_v2_router.register(r'users', UserViewSet, base_name="users")
 api_v2_router.register(r'import_files', ImportFileViewSet, base_name="import_files")
 api_v2_router.register(r'cycles', CycleView, base_name="cycles")
+api_v2_router.register(r'properties', PropertyViewSet, base_name="properties")
+api_v2_router.register(r'taxlots', TaxLotViewSet, base_name="taxlots")
 api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
 # TODO: NL: Upload needs to get moved to import_files
 api_v2_router.register(r'upload', LocalUploaderViewSet, base_name='local_uploader')
