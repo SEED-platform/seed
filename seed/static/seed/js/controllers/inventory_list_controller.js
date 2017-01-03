@@ -17,6 +17,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'columns',
     'urls',
     'spinner_utility',
+    'naturalSort',
     function ($scope,
               $window,
               $log,
@@ -29,7 +30,8 @@ angular.module('BE.seed.controller.inventory_list', [])
               labels,
               columns,
               urls,
-              spinner_utility) {
+              spinner_utility,
+              naturalSort) {
       spinner_utility.show();
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
@@ -121,6 +123,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         var options = {};
         if (col.type == 'number') options.filter = inventory_service.numFilter();
         else options.filter = inventory_service.textFilter();
+        if (col.type == 'numberStr') options.sortingAlgorithm = naturalSort;
         if (col.name == 'number_properties' && col.related) options.treeAggregationType = 'total';
         else if (col.related || col.extraData) options.treeAggregationType = 'uniqueList';
         return _.defaults(col, options, defaults);
