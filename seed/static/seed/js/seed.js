@@ -1135,7 +1135,7 @@ SEED_app.config(['$httpProvider', function ($httpProvider) {
 SEED_app.config(['$compileProvider', function ($compileProvider) {
   $compileProvider.debugInfoEnabled(window.BE.debug);
   $compileProvider.commentDirectivesEnabled(false);
-  $compileProvider.cssClassDirectivesEnabled(false);
+  // $compileProvider.cssClassDirectivesEnabled(false); // This cannot be enabled due to the draggable ui-grid rows
 }]);
 
 /**
