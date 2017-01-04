@@ -52,7 +52,7 @@ var makeS3Uploader = function(scope, element, attrs, filename) {
         enableAuto: true
     },
     signature: {
-        endpoint: window.BE.urls.uploader_signature_endpoint,
+        endpoint: '/api/v2/sign_policy_document/',
         customHeaders: {
             'X-CSRFToken': BE.csrftoken
          }
@@ -64,7 +64,7 @@ var makeS3Uploader = function(scope, element, attrs, filename) {
      * SEED: a Portfolio Manager file or a covered assessor buildings file
      */
     uploadSuccess: {
-        endpoint: window.BE.urls.uploader_success_endpoint,
+        endpoint: '/api/v2/s3_upload_complete/',
         params: {
             csrfmiddlewaretoken: BE.csrftoken,
             import_record: scope.importrecord,
@@ -172,9 +172,9 @@ var makeFileSystemUploader = function(scope, element, attrs, filename) {
     var uploader = new qq.FineUploader({
         element: element[0],
         request: {
-            endpoint: window.BE.urls.uploader_local_endpoint,
-            paramsInBody: false,
-            forceMultipart: false,
+            endpoint: '/api/v2/upload/',
+            paramsInBody: true,
+            forceMultipart: true,
             customHeaders: {
                 'X-CSRFToken': BE.csrftoken
              }
@@ -231,7 +231,7 @@ var makeFileSystemUploader = function(scope, element, attrs, filename) {
                         csrf_name: 'csrfmiddlewaretoken',
                         csrf_xname: 'X-CSRFToken',
                         import_record: scope.importrecord,
-                        qqfilename: fileName,
+                        file: fileName,
                         source_type: scope.sourcetype,
                         source_program: scope.sourceprog,
                         source_program_version: scope.sourcever

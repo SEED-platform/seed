@@ -16,6 +16,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
+from rest_framework.decorators import list_route
 
 from seed import search
 from seed.authentication import SEEDAuthentication
@@ -911,6 +912,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
 
     @api_endpoint_class
     @has_perm_class('requires_viewer')
+    @list_route(methods=['GET'])
     def count(self, request):
         """
         Returns the number of projects within the org tree to which
@@ -923,11 +925,13 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
               description: The organization_id for this user's organization
               required: true
               paramType: query
-       Returns::
-            {
-                'status': 'success',
-                'count': number of projects
-            }
+        type:
+            status:
+                type: string
+                description: success, or error
+            count:
+                type: integer
+                description: number of projects
         """
         status_code = status.HTTP_200_OK
         super_organization_id = self.get_organization()

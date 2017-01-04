@@ -25,14 +25,12 @@ from django_extensions.db.models import TimeStampedModel
 
 from config.utils import de_camel_case
 from seed.data_importer.managers import NotDeletedManager
-from seed.lib.mappings import mapper
+from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.utils.cache import (
     set_cache_raw, set_cache_state, get_cache, get_cache_raw,
     get_cache_state, delete_cache
 )
-
-ROW_DELIMITER = "|#*#|"
 
 SOURCE_FACILITY_ID_MAX_LEN = 40
 
@@ -651,8 +649,6 @@ class ImportRecord(NotDeletableModel):
 class ImportFile(NotDeletableModel, TimeStampedModel):
     import_record = models.ForeignKey(ImportRecord)
     cycle = models.ForeignKey('seed.Cycle', blank=True, null=True)
-    # cycle = models.ForeignKey('seed.Cycle')
-
     file = models.FileField(
         upload_to="data_imports", max_length=500, blank=True, null=True
     )
@@ -661,6 +657,9 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     )
     file_size_in_bytes = models.IntegerField(blank=True, null=True)
     cached_first_row = models.TextField(blank=True, null=True)
+    # Save a list of the final column mapping names that were used for this file.
+    # This should really be a many-to-many with the column/ColumnMapping table.
+    cached_mapped_columns = models.TextField(blank=True, null=True)
     cached_second_to_fifth_row = models.TextField(blank=True, null=True)
     num_columns = models.IntegerField(blank=True, null=True)
     num_rows = models.IntegerField(blank=True, null=True)
@@ -684,9 +683,9 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         null=True, blank=True, max_length=63,
     )
     # program names should match a value in common.mapper.Programs
-    source_program = models.CharField(blank=True, max_length=80)
+    source_program = models.CharField(blank=True, max_length=80)  # don't think that this is used
     # program version is in format "x.y[.z]"
-    source_program_version = models.CharField(blank=True, max_length=40)
+    source_program_version = models.CharField(blank=True, max_length=40)  # don't think this is used
 
     def __unicode__(self):
         return "%s" % self.file.name
@@ -702,7 +701,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @property
     def from_portfolio_manager(self):
-        return self._strcmp(self.source_program, mapper.Programs.PM)
+        return self._strcmp(self.source_program, 'PortfolioManager')
 
     def _strcmp(self, a, b, ignore_ws=True, ignore_case=True):
         """Easily controlled loose string-matching."""
@@ -777,6 +776,20 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         if not hasattr(self, "_first_row_columns"):
             self._first_row_columns = self.cached_first_row.split(ROW_DELIMITER)
         return self._first_row_columns
+
+    def save_cached_mapped_columns(self, columns):
+        self.cached_mapped_columns = json.dumps(columns)
+        self.save()
+
+    @property
+    def get_cached_mapped_columns(self):
+        # create a list of tuples
+        data = json.loads(self.cached_mapped_columns)
+        result = []
+        for d in data:
+            result.append((d['to_table_name'], d['to_field']))
+
+        return result
 
     @property
     def second_to_fifth_rows(self):

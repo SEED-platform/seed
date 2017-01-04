@@ -107,7 +107,7 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
       var defer = $q.defer();
       $http({
         method: 'GET',
-        url: window.BE.urls.get_import_file,
+        url: '/api/v2/import_files/' + import_file_id + '/',
         params: {
           import_file_id: import_file_id
         }

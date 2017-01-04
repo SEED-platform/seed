@@ -15,24 +15,18 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import DefaultStorage
-from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, api_view
 
 from seed import tasks
-from seed.audit_logs.models import AuditLog
 from seed.authentication import SEEDAuthentication
-from seed.common import views as vutil
-from seed.data_importer.models import ImportFile, ImportRecord, ROW_DELIMITER
+from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import (
-    map_data,
     remap_data,
-    match_buildings,
-    save_raw_data as task_save_raw,
 )
 from seed.decorators import (
     ajax_request, ajax_request_class, get_prog_key, require_organization_id
@@ -47,19 +41,12 @@ from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
-    PropertyState,
-    TaxLotState,
-    Cycle,
     BuildingSnapshot,
     CanonicalBuilding,
     Column,
     ProjectBuilding,
     get_ancestors,  # TO REMOVE
     get_column_mapping,
-    save_snapshot_match,
-    unmatch_snapshot_tree as unmatch_snapshot,
-    obj_to_dict,
-    DATA_STATE_MAPPING,
 )
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.buildings import (
@@ -67,7 +54,6 @@ from seed.utils.buildings import (
     get_buildings_for_user_count
 )
 from seed.utils.cache import get_cache, set_cache
-from seed.utils.mapping import get_mappable_types
 from seed.utils.projects import (
     get_projects,
 )
@@ -156,6 +142,7 @@ def home(request):
 
 @api_endpoint
 @ajax_request
+@api_view(['GET'])
 def version(request):
     """
     Returns the SEED version and current git sha
@@ -168,74 +155,10 @@ def version(request):
     sha = subprocess.check_output(
         ['git', 'rev-parse', '--short', 'HEAD']).strip()
 
-    return {
+    return JsonResponse({
         'version': manifest['version'],
         'sha': sha
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def create_pm_mapping(request):
-    # TODO: NLL - fix this today
-    """Create a mapping for PortfolioManager input columns.
-
-    Payload::
-
-        {
-            columns: [ "name1", "name2", ... , "nameN"],
-        }
-
-    Returns::
-
-        {
-            success: true,
-            mapping: [
-                [
-                    "name1",
-                    "mapped1", {
-                        bedes: true|false,
-                        numeric: true|false
-                    }
-                ],
-                [
-                    "name2",
-                    "mapped2", {
-                        bedes: true|false,
-                        numeric: true|false
-                    }
-                ],
-                ...
-                [
-                    "nameN",
-                    "mappedN", {
-                        bedes: true|false,
-                        numeric: true|false
-                    }
-                ]
-            ]
-        }
-        -- OR --
-        {
-            success: false,
-            reason: "message goes here"
-        }
-    """
-    _log.info("create_pm_mapping: request.body='{}'".format(request.body))
-    body = json.loads(request.body)
-
-    # validate inputs
-    invalid = vutil.missing_request_keys(['columns'], body)
-    if invalid:
-        return vutil.api_error(invalid)
-
-    try:
-        result = simple_mapper.get_pm_mapping('1.0', body['columns'])
-    except ValueError as err:
-        return vutil.api_error(str(err))
-    json_result = [[c] + v.as_json() for c, v in result.items()]
-    return vutil.api_success(mapping=json_result)
+    })
 
 
 @api_endpoint
@@ -691,129 +614,6 @@ def search_buildings(request):
     }
 
 
-@api_endpoint
-@ajax_request
-@login_required
-def search_mapping_results(request):
-    """
-    Retrieves a paginated list of Properties and Tax Lots for a specific import file after mapping.
-
-    Payload::
-
-        {
-            'q': a string to search on (optional),
-            'order_by': which field to order by (e.g. pm_property_id),
-            'import_file_id': ID of an import to limit search to,
-            'filter_params': {
-                a hash of Django-like filter parameters to limit query.  See seed.search.filter_other_params.
-            }
-            'page': Which page of results to retrieve (default: 1),
-            'number_per_page': Number of buildings to retrieve per page (default: 10),
-        }
-
-    Returns::
-
-        {
-            'status': 'success',
-            'properties': [
-                {
-                    'pm_property_id': ID of building (from Portfolio Manager),
-                    'address_line_1': First line of building's address,
-                    'property_name': Building's name, if any
-                },
-                ...
-            ],
-            'tax_lots': [
-                {
-                    'pm_property_id': ID of building (from Portfolio Manager),
-                    'address_line_1': First line of building's address,
-                    'jurisdiction_tax_lot_id': Tax lot id,
-                    ...
-                },
-                ...
-            ]
-            'number_properties_matching_search': Total number of properties matching search,
-            'number_properties_returned': Number of properties returned for this page,
-            'number_tax_lots_matching_search': Total number of tax lots matching search,
-            'number_tax_lots_returned': Number of tax lots returned for this page
-        }
-    """
-    body = json.loads(request.body)
-    q = body.get('q', '')
-    other_search_params = body.get('filter_params', {})
-    # order_by = body.get('order_by', 'pm_property_id')
-    # if not order_by or order_by == '':
-    #     order_by = 'pm_property_id'
-    order_by = 'id'
-    sort_reverse = body.get('sort_reverse', False)
-    page = int(body.get('page', 1))
-    number_per_page = int(body.get('number_per_page', 10))
-    import_file_id = body.get(
-        'import_file_id'
-    ) or other_search_params.get('import_file_id')
-    if sort_reverse:
-        order_by = "-%s" % order_by
-
-    properties_initial_qs = PropertyState.objects.order_by(order_by).filter(
-        import_file__pk=import_file_id,
-        data_state=DATA_STATE_MAPPING,
-    )
-    taxlots_initial_qs = TaxLotState.objects.order_by(order_by).filter(
-        import_file__pk=import_file_id,
-        data_state=DATA_STATE_MAPPING,
-    )
-
-    fieldnames = [
-        # 'pm_property_id',
-        'address_line_1',
-        'property_name',
-    ]
-    # add some filters to the dict of known column names so search_buildings
-    # doesn't parse them as extra_data
-    # TODO: remove the use of get_mappable_types and replace with MappingData.
-    db_columns = get_mappable_types()
-    db_columns['children__isnull'] = ''
-    db_columns['children'] = ''
-    db_columns['project__slug'] = ''
-    db_columns['import_file_id'] = ''
-
-    # search the query sets
-    properties_queryset = search.search_buildings(
-        q, fieldnames=fieldnames, queryset=properties_initial_qs
-    )
-    properties_queryset = search.filter_other_params(
-        properties_queryset, other_search_params, db_columns
-    )
-    properties, properties_count = search.generate_paginated_results(
-        properties_queryset, number_per_page=number_per_page, page=page,
-        matching=True
-    )
-
-    taxlots_queryset = search.search_buildings(
-        q, fieldnames=fieldnames, queryset=taxlots_initial_qs
-    )
-    taxlots_queryset = search.filter_other_params(
-        taxlots_queryset, other_search_params, db_columns
-    )
-    tax_lots, tax_lots_count = search.generate_paginated_results(
-        taxlots_queryset, number_per_page=number_per_page, page=page,
-        matching=True
-    )
-
-    _log.debug("I found {} properties".format(len(properties)))
-    _log.debug("I found {} tax lots".format(len(tax_lots)))
-
-    return {
-        'status': 'success',
-        'properties': properties,
-        'tax_lots': tax_lots,
-        'number_properties_returned': len(properties),
-        'number_properties_matching_search': properties_count,
-        'number_tax_lots_returned': len(tax_lots),
-        'number_tax_lots_matching_search': tax_lots_count,
-    }
-
-
 @ajax_request
 @login_required
 def get_default_columns(request):
@@ -908,80 +708,83 @@ def get_columns(request):
     return utils_get_columns(request.GET['organization_id'], all_fields)
 
 
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_member')
+# @api_endpoint
+# @ajax_request
+# @login_required
+# @has_perm('requires_member')
 def save_match(request):
-    """
-    Adds or removes a match between two BuildingSnapshots.
-    Creating a match creates a new BuildingSnapshot with merged data.
+    return "DEPRECATE ME"
 
-    Payload::
 
-        {
-            'organization_id': current user organization id,
-            'source_building_id': ID of first BuildingSnapshot,
-            'target_building_id': ID of second BuildingSnapshot,
-            'create_match': True to create match, False to remove it,
-            'organization_id': ID of user's organization
-        }
-
-    Returns::
-
-        {
-            'status': 'success',
-            'child_id': The ID of the newly-created BuildingSnapshot
-                        containing merged data from the two parents.
-        }
-    """
-    body = json.loads(request.body)
-    create = body.get('create_match')
-    b1_pk = body['source_building_id']
-    b2_pk = body.get('target_building_id')
-    child_id = None
-
-    # check some perms
-    b1 = BuildingSnapshot.objects.get(pk=b1_pk)
-    if create:
-        b2 = BuildingSnapshot.objects.get(pk=b2_pk)
-        if b1.super_organization_id != b2.super_organization_id:
-            return {
-                'status': 'error',
-                'message': (
-                    'Only buildings within an organization can be matched'
-                )
-            }
-    if b1.super_organization_id != int(body.get('organization_id')):
-        return {
-            'status': 'error',
-            'message': (
-                'The source building does not belong to the organization'
-            )
-        }
-
-    if create:
-        child_id, changelist = save_snapshot_match(
-            b1_pk, b2_pk, user=request.user, match_type=2, default_pk=b2_pk
-        )
-        child_id = child_id.pk
-        cb = CanonicalBuilding.objects.get(buildingsnapshot__id=child_id)
-        AuditLog.objects.log_action(
-            request, cb, body['organization_id'],
-            action_note='Matched building.'
-        )
-    else:
-        cb = b1.canonical_building or b1.co_parent.canonical_building
-        AuditLog.objects.log_action(
-            request, cb, body['organization_id'],
-            action_note='Unmatched building.'
-        )
-        unmatch_snapshot(b1_pk)
-    resp = {
-        'status': 'success',
-        'child_id': child_id,
-    }
-    return resp
+#     """
+#     Adds or removes a match between two BuildingSnapshots.
+#     Creating a match creates a new BuildingSnapshot with merged data.
+#
+#     Payload::
+#
+#         {
+#             'organization_id': current user organization id,
+#             'source_building_id': ID of first BuildingSnapshot,
+#             'target_building_id': ID of second BuildingSnapshot,
+#             'create_match': True to create match, False to remove it,
+#             'organization_id': ID of user's organization
+#         }
+#
+#     Returns::
+#
+#         {
+#             'status': 'success',
+#             'child_id': The ID of the newly-created BuildingSnapshot
+#                         containing merged data from the two parents.
+#         }
+#     """
+#     body = json.loads(request.body)
+#     create = body.get('create_match')
+#     b1_pk = body['source_building_id']
+#     b2_pk = body.get('target_building_id')
+#     child_id = None
+#
+#     # check some perms
+#     b1 = BuildingSnapshot.objects.get(pk=b1_pk)
+#     if create:
+#         b2 = BuildingSnapshot.objects.get(pk=b2_pk)
+#         if b1.super_organization_id != b2.super_organization_id:
+#             return {
+#                 'status': 'error',
+#                 'message': (
+#                     'Only buildings within an organization can be matched'
+#                 )
+#             }
+#     if b1.super_organization_id != int(body.get('organization_id')):
+#         return {
+#             'status': 'error',
+#             'message': (
+#                 'The source building does not belong to the organization'
+#             )
+#         }
+#
+#     if create:
+#         child_id, changelist = save_snapshot_match(
+#             b1_pk, b2_pk, user=request.user, match_type=2, default_pk=b2_pk
+#         )
+#         child_id = child_id.pk
+#         cb = CanonicalBuilding.objects.get(buildingsnapshot__id=child_id)
+#         AuditLog.objects.log_action(
+#             request, cb, body['organization_id'],
+#             action_note='Matched building.'
+#         )
+#     else:
+#         cb = b1.canonical_building or b1.co_parent.canonical_building
+#         AuditLog.objects.log_action(
+#             request, cb, body['organization_id'],
+#             action_note='Unmatched building.'
+#         )
+#         unmatch_snapshot(b1_pk)
+#     resp = {
+#         'status': 'success',
+#         'child_id': child_id,
+#     }
+#     return resp
 
 
 @api_endpoint
@@ -1269,7 +1072,7 @@ def delete_duplicates_from_import_file(request):
     }
 
 
-def tmp_mapping_suggestions(import_file_id, org_id, user):
+def _tmp_mapping_suggestions(import_file_id, org_id, user):
     """
     Temp function for allowing both api version for mapping suggestions to
     return the same data. Move this to the mapping_suggestions once we can
@@ -1302,28 +1105,20 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
     # TODO: Move this to the MappingData class and remove calling add_extra_data
     # Check if there are any DB columns that are not defined in the
     # list of mapping data.
+    # NL 12/2/2016: Removed 'organization__isnull' Query because we only want the
+    # the ones belonging to the organization
     columns = list(Column.objects.select_related('unit').filter(
-        Q(mapped_mappings__super_organization_id=org_id) |
-        Q(organization__isnull=True)).exclude(column_name__in=md.keys)
+        mapped_mappings__super_organization_id=org_id).exclude(column_name__in=md.keys)
     )
     md.add_extra_data(columns)
 
-    # Portfolio manager files have their own mapping scheme
+    # Portfolio manager files have their own mapping scheme - yuck, really?
     if import_file.from_portfolio_manager:
         _log.info("map Portfolio Manager input file")
-        suggested_mappings = {}
-        ver = import_file.source_program_version
-
-        # if there is no pm mapping found but the file has already been matched
-        # then effectively the mappings are already known with a confidence of 100
-        no_pm_mappings_confidence = 100 if import_file.matching_done else 0
-
-        for col, item in simple_mapper.get_pm_mapping(ver,
-                                                      import_file.first_row_columns,
-                                                      include_none=True).items():
-            if item is None:
-                suggested_mappings[col] = (col, no_pm_mappings_confidence)
+        suggested_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns,
+                                                          resolve_duplicates=True)
     else:
+        _log.info("custom mapping of input file")
         # All other input types
         suggested_mappings = mapper.build_column_mapping(
             import_file.first_row_columns,
@@ -1334,10 +1129,11 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
         )
         # replace None with empty string for column names and PropertyState for tables
         for m in suggested_mappings:
-            table, dest, conf = suggested_mappings[m]
-            if dest is None:
+            table, field, conf = suggested_mappings[m]
+            if field is None:
                 suggested_mappings[m][1] = u''
 
+    # Fix the table name, eventually move this to the build_column_mapping and build_pm_mapping
     for m in suggested_mappings:
         table, dest, conf = suggested_mappings[m]
         if not table:
@@ -1348,38 +1144,6 @@ def tmp_mapping_suggestions(import_file_id, org_id, user):
     result['columns'] = md.data
 
     return result
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def get_column_mapping_suggestions(request):
-    """
-    Returns suggested mappings from an uploaded file's headers to known
-    data fields.
-    Payload::
-        {
-            'import_file_id': The ID of the ImportRecord to examine,
-            'org_id': The ID of the user's organization
-        }
-    Returns::
-        {
-            'status': 'success',
-            'suggested_column_mappings': {
-                column header from file: [ (destination_column, score) ...]
-                ...
-            },
-            'building_columns': [ a list of all possible columns ],
-            'building_column_types': [a list of column types corresponding to building_columns],
-        }
-    ..todo: The response of this method may not be correct. verify.
-
-    """
-    body = json.loads(request.body)
-    org_id = body.get('org_id')
-    import_file_id = body.get('import_file_id')
-
-    return tmp_mapping_suggestions(import_file_id, org_id, request.user)
 
 
 class DataFileViewSet(viewsets.ViewSet):
@@ -1426,217 +1190,9 @@ class DataFileViewSet(viewsets.ViewSet):
         """
         org_id = request.query_params.get('organization_id', None)
 
-        result = tmp_mapping_suggestions(pk, org_id, request.user)
+        result = _tmp_mapping_suggestions(pk, org_id, request.user)
 
         return JsonResponse(result)
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def get_raw_column_names(request):
-    """
-    Retrieves a list of all column names from an ImportFile.
-
-    Payload::
-
-        {
-            'import_file_id': The ID of the ImportFile
-        }
-
-    Returns::
-
-        {
-            'status': 'success',
-            'raw_columns': [
-                list of strings of the header row of the ImportFile
-            ]
-        }
-    """
-    body = json.loads(request.body)
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
-
-    return {
-        'status': 'success',
-        'raw_columns': import_file.first_row_columns
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def get_first_five_rows(request):
-    """
-    Retrieves the first five rows of an ImportFile.
-
-    Payload::
-
-        {
-            'import_file_id': The ID of the ImportFile
-        }
-
-    Returns::
-
-        {
-            'status': 'success',
-            'first_five_rows': [
-                [list of strings of header row],
-                [list of strings of first data row],
-                ...
-                [list of strings of fifth data row]
-            ]
-        }
-    """
-    body = json.loads(request.body)
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
-
-    '''
-    import_file.cached_second_to_fifth_row is a field that contains the first
-    4 lines of data from the file, split on newlines, delimited by
-    ROW_DELIMITER. This becomes an issue when fields have newlines in them,
-    so the following is to handle newlines in the fields.
-    '''
-    lines = []
-    for l in import_file.cached_second_to_fifth_row.splitlines():
-        if ROW_DELIMITER in l:
-            lines.append(l)
-        else:
-            # Line caused by newline in data, concat it to previous line.
-            index = len(lines) - 1
-            lines[index] = lines[index] + '\n' + l
-
-    rows = [r.split(ROW_DELIMITER) for r in lines]
-
-    return {
-        'status': 'success',
-        'first_five_rows': [
-            dict(
-                zip(import_file.first_row_columns, row)
-            ) for row in rows
-        ]
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_member')
-def save_column_mappings(request):
-    """
-    Saves the mappings between the raw headers of an ImportFile and the
-    destination fields in the `to_table_name` model which should be either
-    PropertyState or TaxLotState
-
-    Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
-
-    Payload::
-
-        {
-            "import_file_id": ID of the ImportFile record,
-            "mappings": [
-                {
-                    'from_field': 'eui',  # raw field in import file
-                    'to_field': 'energy_use_intensity',
-                    'to_table_name': 'PropertyState',
-                },
-                {
-                    'from_field': 'gfa',
-                    'to_field': 'gross_floor_area',
-                    'to_table_name': 'PropertyState',
-                }
-            ]
-        }
-
-    Returns::
-
-        {'status': 'success'}
-    """
-
-    body = json.loads(request.body)
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
-    organization = import_file.import_record.super_organization
-    mappings = body.get('mappings', [])
-    status = Column.create_mappings(mappings, organization, request.user)
-
-    if status:
-        return {'status': 'success'}
-    else:
-        return {'status': 'error'}
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def get_import_file(request):
-    """
-    Retrieves details about an ImportFile.
-
-    :GET: Expects import_file_id in the query string.
-
-    Returns::
-
-        {
-            'status': 'success',
-            'import_file': {
-                "name": Name of the uploaded file,
-                "number_of_buildings": number of buildings in the file,
-                "number_of_mappings": number of mapped columns,
-                "number_of_cleanings": number of cleaned fields,
-                "source_type": type of data in file, e.g. 'Assessed Raw'
-                "number_of_matchings": Number of matched buildings in file,
-                "id": ImportFile ID,
-                'dataset': {
-                    'name': Name of ImportRecord file belongs to,
-                    'id': ID of ImportRecord file belongs to,
-                    'importfiles': [  # All ImportFiles in this ImportRecord, with
-                        # requested ImportFile first:
-                        {'name': Name of file,
-                         'id': ID of ImportFile
-                        }
-                        ...
-                    ]
-                }
-            }
-        }
-    """
-
-    import_file_id = request.GET.get('import_file_id', '')
-    orgs = request.user.orgs.all()
-    import_file = ImportFile.objects.get(
-        pk=import_file_id
-    )
-    d = ImportRecord.objects.filter(
-        super_organization__in=orgs, pk=import_file.import_record_id
-    )
-    # check if user has access to the import file
-    if not d.exists():
-        return {
-            'status': 'success',
-            'import_file': {},
-        }
-
-    f = obj_to_dict(import_file)
-    f['name'] = import_file.filename_only
-    f['dataset'] = obj_to_dict(import_file.import_record)
-    # add the importfiles for the matching select
-    f['dataset']['importfiles'] = []
-    files = f['dataset']['importfiles']
-    for i in import_file.import_record.files:
-        files.append({
-            'name': i.filename_only,
-            'id': i.pk
-        })
-    # make the first element in the list the current import file
-    i = files.index({
-        'name': import_file.filename_only,
-        'id': import_file.pk
-    })
-    files[0], files[i] = files[i], files[0]
-
-    return {
-        'status': 'success',
-        'import_file': f,
-    }
 
 
 @api_endpoint
@@ -1690,100 +1246,6 @@ def delete_file(request):
 @ajax_request
 @login_required
 @has_perm('can_modify_data')
-def save_raw_data(request):
-    """
-    Starts a background task to import raw data from an ImportFile
-    into PropertyState objects as extra_data. If the cycle_id is set to
-    year_ending then the cycle ID will be set to the year_ending column for each
-    record in the uploaded file. Note that the year_ending flag is not yet enabled.
-
-    Payload::
-
-        {
-            'file_id': The ID of the ImportFile to be saved
-            'cycle_id': The ID of the cycle or the string 'year_ending'
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'message': 'message about there error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    body = json.loads(request.body)
-    import_file_id = body.get('file_id')
-    if not import_file_id:
-        return {
-            'status': 'error',
-            'message': 'must pass file_id of file to save'
-        }
-
-    cycle_id = body.get('cycle_id')
-    if not cycle_id:
-        return {
-            'status': 'error',
-            'message': 'must pass cycle_id of the cycle to save the data'
-        }
-    elif cycle_id == 'year_ending':
-        _log.error("NOT CONFIGURED FOR YEAR ENDING OPTION AT THE MOMENT")
-        return {
-            'status': 'error',
-            'message': 'SEED is unable to parse year_ending at the moment'
-        }
-    else:
-        # find the cycle
-        cycle = Cycle.objects.get(id=cycle_id)
-        if cycle:
-            # assign the cycle id to the import file object
-            import_file = ImportFile.objects.get(id=import_file_id)
-            import_file.cycle = cycle
-            import_file.save()
-        else:
-            return {
-                'status': 'error',
-                'message': 'cycle_id was invalid'
-            }
-
-    return task_save_raw(import_file_id)
-
-
-# Move to data_mapping
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def start_mapping(request):
-    """
-    Starts a background task to convert imported raw data into
-    BuildingSnapshots, using user's column mappings.
-
-    Payload::
-
-        {
-            'file_id': The ID of the ImportFile to be mapped
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    body = json.loads(request.body)
-    import_file_id = body.get('file_id')
-    if not import_file_id:
-        return {'status': 'error'}
-
-    return map_data(import_file_id)
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
 def remap_buildings(request):
     """
     Re-run the background task to remap buildings as if it hadn't happened at
@@ -1815,36 +1277,7 @@ def remap_buildings(request):
 @api_endpoint
 @ajax_request
 @login_required
-@has_perm('can_modify_data')
-def start_system_matching(request):
-    """
-    Starts a background task to attempt automatic matching between buildings
-    in an ImportFile with other existing buildings within the same org.
-
-    Payload::
-
-        {
-            'file_id': The ID of the ImportFile to be matched
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    body = json.loads(request.body)
-    import_file_id = body.get('file_id')
-    if not import_file_id:
-        return {'status': 'error'}
-
-    return match_buildings(import_file_id, request.user.pk)
-
-
-@api_endpoint
-@ajax_request
-@login_required
+@api_view(['POST'])
 def progress(request):
     """
     Get the progress (percent complete) for a task.
@@ -1863,16 +1296,16 @@ def progress(request):
         }
     """
 
-    progress_key = json.loads(request.body).get('progress_key')
+    progress_key = request.data.get('progress_key')
 
     if get_cache(progress_key):
-        return get_cache(progress_key)
+        return JsonResponse(get_cache(progress_key))
     else:
-        return {
+        return JsonResponse({
             'progress_key': progress_key,
             'progress': 0,
             'status': 'waiting'
-        }
+        })
 
 
 # @api_endpoint

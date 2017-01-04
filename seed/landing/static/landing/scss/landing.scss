@@ -72,12 +72,15 @@ $prefinery-gray: #CCC;
   border-top-left-radius: $radius;
 }
 
-body {
-  width: 100%;
+html, body {
   height: 100%;
-  overflow: auto;
+  margin: 0;
   padding: 0;
-  background-image: url("../images/landing/landing-bg.jpg");
+  width: 100%;
+}
+
+body {
+  background: #808080 url("../images/landing/landing-bg.jpg") no-repeat;
   background-size: cover;
   font-family: $font-family-base;
   font-size: 16px;
@@ -97,9 +100,9 @@ body {
 
 ////////// STYLE THE PAGE ////////////
 .page {
-  margin: 125px auto;
+  margin-left: auto;
+  margin-right: auto;
   width: 75%;
-  height: 50%;
   background: $white;
   border-radius: 8px;
   @include box-shadow(0 0 26px rgba(0, 0, 0, 0.7));

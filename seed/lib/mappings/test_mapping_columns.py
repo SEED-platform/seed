@@ -57,7 +57,7 @@ class TestMappingColumns(TestCase):
             'Owner': ['PropertyState', 'owner', 100],
             'extra_data_1': ['PropertyState', 'generation_date', 69],
             'extra_data_2': ['PropertyState', 'release_date', 67],
-            'Property Type': ['PropertyState', 'property_notes', 92],
+            'Property Type': ['PropertyState', 'property_type', 100],
             'UBI': ['PropertyState', 'building_certification', 60],
             'UBI_BBL': ['PropertyState', 'occupied_floor_area', 59],
         }
@@ -82,7 +82,7 @@ class TestMappingColumns(TestCase):
             'Data State': ['PropertyState', 'recent_sale_date', 66],
             'GBA': ['PropertyState', 'gross_floor_area', 100],
             'Owner': ['PropertyState', 'owner', 100],
-            'Property Type': ['PropertyState', 'property_notes', 92],
+            'Property Type': ['PropertyState', 'property_type', 100],
             'State': ['PropertyState', 'state', 100],
             'UBI': ['PropertyState', 'building_certification', 60],
             'Zip': ['PropertyState', 'postal_code', 100],
@@ -106,6 +106,41 @@ class TestMappingColumns(TestCase):
 
         self.assertDictEqual(mc.final_mappings, expected)
 
+    def test_no_more_matches(self):
+        """Test to make sure that similar fields have different targets"""
+        raw_data = [
+            'address line 1',
+            'address line 2',
+            'address line 3',
+            'address line 4',
+            'address line 5',
+            'address line 6',
+            'address line 7',
+            'address line 8',
+        ]
+
+        map_data = [
+            ('PropertyState', 'address_line_1'),
+            ('PropertyState', 'address_line_2'),
+            ('TaxLotState', 'address_line_1'),
+            ('TaxLotState', 'address_line_2'),
+        ]
+
+        mc = mapping_columns.MappingColumns(raw_data, map_data)
+
+        expected = {
+            'address line 1': ['PropertyState', 'address_line_1', 100],
+            'address line 2': ['PropertyState', 'address_line_2', 100],
+            'address line 3': ['TaxLotState', 'address_line_1', 97],
+            'address line 4': ['TaxLotState', 'address_line_2', 97],
+            'address line 5': ['PropertyState', 'address line 5', 100],
+            'address line 6': ['PropertyState', 'address line 6', 100],
+            'address line 7': ['PropertyState', 'address line 7', 100],
+            'address line 8': ['PropertyState', 'address line 8', 100]
+        }
+
+        self.assertDictEqual(mc.final_mappings, expected)
+
     def test_mapping_columns_with_threshold(self):
         expected = {
             'City': ['PropertyState', 'city', 100],
@@ -118,7 +153,7 @@ class TestMappingColumns(TestCase):
             'Owner': ['PropertyState', 'owner', 100],
             'extra_data_1': ['PropertyState', 'generation_date', 69],
             'extra_data_2': ['PropertyState', 'extra_data_2', 100],
-            'Property Type': ['PropertyState', 'property_notes', 92],
+            'Property Type': ['PropertyState', 'property_type', 100],
             'UBI': ['PropertyState', 'UBI', 100],
             'UBI_BBL': ['PropertyState', 'UBI_BBL', 100],
         }
@@ -139,7 +174,7 @@ class TestMappingColumns(TestCase):
             'Owner': ['PropertyState', 'owner', 100],
             'extra_data_1': ['PropertyState', 'extra_data_1', 100],
             'extra_data_2': ['PropertyState', 'extra_data_2', 100],
-            'Property Type': ['PropertyState', 'property_notes', 92],
+            'Property Type': ['PropertyState', 'property_type', 100],
             'UBI': ['PropertyState', 'UBI', 100],
             'UBI_BBL': ['PropertyState', 'UBI_BBL', 100],
         }
@@ -159,7 +194,7 @@ class TestMappingColumns(TestCase):
             'Owner': ['PropertyState', 'owner', 100],
             'extra_data_1': ['PropertyState', 'extra_data_1', 100],
             'extra_data_2': ['PropertyState', 'extra_data_2', 100],
-            'Property Type': ['PropertyState', 'Property Type', 100],
+            'Property Type': ['PropertyState', 'property_type', 100],
             'UBI': ['PropertyState', 'UBI', 100],
             'UBI_BBL': ['PropertyState', 'UBI_BBL', 100],
         }

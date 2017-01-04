@@ -7,30 +7,15 @@
 
 from django.conf.urls import url
 
-from seed.views.cycles import CycleView
 from seed.views.properties import (get_properties, get_property_columns,
                                    get_taxlots, get_taxlot_columns,
                                    Property, TaxLot,
                                    PropertyStateEndpoint, TaxLotStateEndpoint)
-
 from seed.views.reports import Report
-
-cycle_list = CycleView.as_view({
-    'get': 'list_cycle',
-    'post': 'create_cycle',
-})
-cycle_detail = CycleView.as_view({
-    'put': 'update_cycle',
-    'patch': 'partial_update_cycle',
-    'get': 'get_cycle',
-    'delete': 'delete_cycle',
-})
 
 urlpatterns = [
     url(r'^properties/$', get_properties, name='properties'),
     url(r'^taxlots/$', get_taxlots, name='taxlots'),
-    url(r'^cycles/$', cycle_list, name='cycles'),
-    url(r'^cycles/(?P<cycle_pk>\d+)/$', cycle_detail, name='cycle-details'),
     url(r'^property-columns/$', get_property_columns, name='property-columns'),
     url(r'^taxlot-columns/$', get_taxlot_columns, name='taxlot-columns'),
     url(r'^properties/(?P<property_pk>\d+)/cycles/(?P<cycle_pk>\d+)/$', Property.as_view({'get': 'get_property'}),

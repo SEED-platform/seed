@@ -45,7 +45,7 @@ Configure PostgreSQL
     $ createuser -P DBUsername
     $ psql
     postgres=# GRANT ALL PRIVILEGES ON DATABASE "seed-deploy" TO DBUsername;
-    postgres=# \q;
+    postgres=# \q
     $ exit
 
 .. note:: Any database name and username can be used here in place of "seed-deploy" and DBUsername
@@ -129,12 +129,7 @@ create the database tables and migrations:
 
 .. code-block:: console
 
-    $ python manage.py syncdb
     $ python manage.py migrate
-
-.. note::
-
-    running migrations can be shortened into a one-liner ``./manage.py syncdb --migrate``
 
 Cache and Message Broker
 ^^^^^^^^^^^^^^^^^^^^^^^^

@@ -7,9 +7,18 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 
-from api.views import TestReverseViewSet, test_view_with_arg
+from api.views import test_view_with_arg, TestReverseViewSet
+from seed.data_importer.views import (
+    handle_s3_upload_complete,
+    get_upload_details,
+    sign_policy_document,
+    LocalUploaderViewSet
+)
+from seed.views.api import get_api_schema
+from seed.views.cycles import CycleView
 from seed.views.datasets import DatasetViewSet
-from seed.views.main import DataFileViewSet
+from seed.views.import_files import ImportFileViewSet
+from seed.views.main import DataFileViewSet, version, progress
 from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.users import UserViewSet
@@ -23,15 +32,24 @@ api_v2_router.register(r'projects', ProjectViewSet, base_name="projects")
 api_v2_router.register(r'users', UserViewSet, base_name="users")
 api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
 api_v2_router.register(r'labels', LabelViewSet, base_name="labels")
+api_v2_router.register(r'import_files', ImportFileViewSet, base_name="import_files")
+api_v2_router.register(r'cycles', CycleView, base_name="cycles")
+api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
+# TODO: NL: Upload needs to get moved to import_files
+api_v2_router.register(r'upload', LocalUploaderViewSet, base_name='local_uploader')
 
 urlpatterns = [
     # v2 api
     url(r'^', include(api_v2_router.urls)),
-    url(
-        r'projects-count/$',
-        ProjectViewSet.as_view({'get': 'count'}),
-        name='projects-count'
-    ),
+    # ajax routes
+    url(r'^version/$', version, name='version'),
+    # data uploader related things
+    url(r's3_upload_complete/$', handle_s3_upload_complete, name='s3_upload_complete'),
+    url(r'get_upload_details/$', get_upload_details, name='get_upload_details'),
+    url(r'sign_policy_document/$', sign_policy_document, name='sign_policy_document'),
+    # api schema
+    url(r'^schema/$', get_api_schema, name='schema'),
+    url(r'^progress/$', progress, name='progress'),
     url(
         r'projects/(?P<pk>\w+)/add/$',
         ProjectViewSet.as_view({'put': 'add'}),
