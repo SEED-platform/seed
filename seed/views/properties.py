@@ -55,8 +55,8 @@ def get_properties(request):
     page = request.GET.get('page', 1)
     per_page = request.GET.get('per_page', 1)
     columns = request.GET.getlist('columns')
-    print "..... is:"
-    print columns
+    # print "..... is:"
+    # print columns
 
     cycle_id = request.GET.get('cycle')
     if cycle_id:
@@ -174,8 +174,8 @@ def get_taxlots(request):
     page = request.GET.get('page', 1)
     per_page = request.GET.get('per_page', 1)
     columns = request.GET.getlist('columns')
-    print "..... is:"
-    print columns
+    # print "..... is:"
+    # print columns
 
     cycle_id = request.GET.get('cycle')
     if cycle_id:
