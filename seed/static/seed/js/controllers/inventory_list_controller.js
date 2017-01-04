@@ -6,7 +6,6 @@ angular.module('BE.seed.controller.inventory_list', [])
   .controller('inventory_list_controller', [
     '$scope',
     '$window',
-    '$log',
     '$uibModal',
     '$stateParams',
     'inventory_service',
@@ -20,7 +19,6 @@ angular.module('BE.seed.controller.inventory_list', [])
     'naturalSort',
     function ($scope,
               $window,
-              $log,
               $uibModal,
               $stateParams,
               inventory_service,
@@ -191,7 +189,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             }
             var updated = _.reduce(related[j], function (result, value, key) {
               key = map[key] || key;
-              if (_.includes(columnNamesToAggregate, key)) aggregations[key] = (aggregations[key] || []).concat(value);
+              if (_.includes(columnNamesToAggregate, key)) aggregations[key] = (aggregations[key] || []).concat(_.split(value, '; '));
               result[key] = value;
               return result;
             }, {});
@@ -200,7 +198,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           }
 
           aggregations = _.pickBy(_.mapValues(aggregations, function (values, key) {
-            var cleanedValues = _.without(values, undefined, null, '');
+            var cleanedValues = _.uniq(_.without(values, undefined, null, ''));
             if (key == 'number_properties') return _.sum(cleanedValues) || null;
             else return _.join(_.uniq(cleanedValues), '; ');
           }), function (result) {
