@@ -51,6 +51,27 @@ class PropertyViewSet(GenericViewSet):
     @ajax_request_class
     @has_perm_class('requires_viewer')
     def list(self, request):
+        """
+        List all the properties
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: cycle
+              description: The ID of the cycle to get properties
+              required: true
+              paramType: query
+            - name: page
+              description: The current page of properties to return
+              required: false
+              paramType: query
+            - name: per_page
+              description: The number of items per page to return
+              required: false
+              paramType: query
+        """
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
@@ -169,6 +190,16 @@ class PropertyViewSet(GenericViewSet):
     @has_perm_class('requires_viewer')
     @list_route(methods=['GET'])
     def columns(self, request):
+        """
+        List all property columns
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+
         """TODO: These property columns should be merged with
         constants.py:ASSESSOR_FIELDS"""
 
@@ -430,6 +461,15 @@ class PropertyViewSet(GenericViewSet):
     @has_perm_class('requires_viewer')
     @list_route(methods=['DELETE'])
     def batch_delete(self, request):
+        """
+        List all property columns
+        ---
+        parameters:
+            - name: selected
+              description: A list of property ids to delete
+              many: true
+              required: true
+        """
         property_states = request.data.get('selected', [])
         resp = PropertyState.objects.filter(pk__in=property_states).delete()
 
@@ -467,7 +507,15 @@ class PropertyViewSet(GenericViewSet):
     @ajax_request_class
     @detail_route(methods=['GET'])
     def view(self, request, pk=None):
-        """Get the property view"""
+        """
+        Get the property view
+        ---
+        parameters:
+            - name: cycle_id
+              description: The cycle ID to query on
+              required: true
+              paramType: query
+        """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
             return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
@@ -486,7 +534,9 @@ class PropertyViewSet(GenericViewSet):
     @ajax_request_class
     @detail_route(methods=['GET'])
     def taxlots(self, pk):
-        """Get related taxlots"""
+        """
+        Get related TaxLots for this property
+        """
         return JsonResponse(self._get_taxlots(pk))
 
     def get_history(self, property_view):
@@ -515,7 +565,19 @@ class PropertyViewSet(GenericViewSet):
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk=None):
-        """GET view that returns property details."""
+        """
+        Get property details
+        ---
+        parameters:
+            - name: cycle_id
+              description: The cycle id for filtering the property view
+              required: true
+              paramType: query
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
             return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
@@ -537,7 +599,15 @@ class PropertyViewSet(GenericViewSet):
     @api_endpoint_class
     @ajax_request_class
     def update(self, request, pk=None):
-        """View called by update."""
+        """
+        Update a property
+        ---
+        parameters:
+            - name: cycle_id
+              description: The cycle id for filtering the property view
+              required: true
+              paramType: query
+        """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
             return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
@@ -605,6 +675,27 @@ class TaxLotViewSet(GenericViewSet):
     @ajax_request_class
     @has_perm_class('requires_viewer')
     def list(self, request):
+        """
+        List all the properties
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: cycle
+              description: The ID of the cycle to get taxlots
+              required: true
+              paramType: query
+            - name: page
+              description: The current page of taxlots to return
+              required: false
+              paramType: query
+            - name: per_page
+              description: The number of items per page to return
+              required: false
+              paramType: query
+        """
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
@@ -741,6 +832,16 @@ class TaxLotViewSet(GenericViewSet):
     @has_perm_class('requires_viewer')
     @list_route(methods=['GET'])
     def columns(self, request):
+        """
+        List all property columns
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+
         # TODO: Merge this with other schemas. Check https://github.com/SEED-platform/seed/blob/d2bfe96e7503f670300448d5967a2bd6d5863634/seed/lib/mcm/data/SEED/seed.py and  https://github.com/SEED-platform/seed/blob/41c104cd105161c949e9cb379aac946ea9202c74/seed/lib/mappings/mapping_data.py  # noqa
         columns = [
             {
@@ -1012,6 +1113,15 @@ class TaxLotViewSet(GenericViewSet):
     @has_perm_class('requires_viewer')
     @list_route(methods=['DELETE'])
     def batch_delete(self, request):
+        """
+        List all property columns
+        ---
+        parameters:
+            - name: selected
+              description: A list of taxlot ids to delete
+              many: true
+              required: true
+        """
         taxlot_states = request.data.get('selected', [])
         resp = TaxLotState.objects.filter(pk__in=taxlot_states).delete()
 
@@ -1051,7 +1161,15 @@ class TaxLotViewSet(GenericViewSet):
     @ajax_request_class
     @detail_route(methods=['GET'])
     def view(self, request, pk=None):
-        """Get the property view"""
+        """
+        Get the TaxLot view
+        ---
+        parameters:
+            - name: cycle_id
+              description: The cycle ID to query on
+              required: true
+              paramType: query
+        """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
             return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
@@ -1097,12 +1215,27 @@ class TaxLotViewSet(GenericViewSet):
     @ajax_request_class
     @detail_route(methods=['GET'])
     def properties(self, pk):
-        """Get related properties"""
+        """
+        Get related properties for this tax lot
+        """
         return JsonResponse(self._get_properties(pk))
 
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk):
+        """
+        Get property details
+        ---
+        parameters:
+            - name: cycle_id
+              description: The cycle id for filtering the taxlot view
+              required: true
+              paramType: query
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
             return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
@@ -1124,6 +1257,15 @@ class TaxLotViewSet(GenericViewSet):
     @api_endpoint_class
     @ajax_request_class
     def update(self, request, pk):
+        """
+        Update a taxlot
+        ---
+        parameters:
+            - name: cycle_id
+              description: The cycle id for filtering the taxlot view
+              required: true
+              paramType: query
+        """
         data = request.data
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
