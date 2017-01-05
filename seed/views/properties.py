@@ -215,7 +215,7 @@ def get_taxlots(request):
 
     # Ids of taxlotviews to look up in m2m
     lot_ids = [l.pk for l in taxlot_views]
-    joins = TaxLotProperty.objects.filter(taxlot_view_id__in=lot_ids).select_related('property_view' )
+    joins = TaxLotProperty.objects.filter(taxlot_view_id__in=lot_ids).select_related('property_view')
 
     # Get all ids of properties on these joins
     property_view_ids = [j.property_view_id for j in joins]
@@ -237,7 +237,7 @@ def get_taxlots(request):
             while extra_data_field in property_data:
                 extra_data_field += '_extra'
             property_data[extra_data_field] = extra_data_value
-        
+
         # Only return the requested rows. speeds up the json string time
         property_data = {key: value for key, value in property_data.items() if key in columns}
 
@@ -247,8 +247,8 @@ def get_taxlots(request):
 
     # A mapping of taxlot view pk to a list of property state info for a property view
     join_map = {}
-    #Get whole taxlotstate table:
-    propToJurisdictionTL = dict(TaxLotProperty.objects.values_list('property_view_id', 'taxlot_view__state__jurisdiction_tax_lot_id'));
+    # Get whole taxlotstate table:
+    propToJurisdictionTL = dict(TaxLotProperty.objects.values_list('property_view_id', 'taxlot_view__state__jurisdiction_tax_lot_id'))
     # wholeTaxLotPropertyTable = dict(TaxLotProperty.objects.values_list('property_view_id', 'taxlot_view_id'));
     # wholeTaxLotViewTable = dict(TaxLotView.objects.values_list('taxlot_id', 'state_id'));
     # wholeTaxLotStateTable = dict(TaxLotState.objects.values_list('id', 'jurisdiction_tax_lot_id'));
@@ -264,12 +264,12 @@ def get_taxlots(request):
 
         # jurisdiction_tax_lot_ids = TaxLotState.objects.filter(pk__in=state_ids) \
         #     .values_list('jurisdiction_tax_lot_id', flat=True)
-        jurisdiction_tax_lot_ids = [propToJurisdictionTL[join.property_view_id]] #FIXIT - needs to be list? see fixit below
+        jurisdiction_tax_lot_ids = [propToJurisdictionTL[join.property_view_id]]  # FIXIT - needs to be list? see fixit below
         # print 'related_taxlot_view_ids={}'.format(jurisdiction_tax_lot_ids)
         # print 'related_taxlot_view_ids={} and state_ids={} and jurisdiction_tax_lot_ids={}'.format(related_taxlot_view_ids, state_ids, jurisdiction_tax_lot_ids)
 
         # Filter out associated tax lots that are present but which do not have preferred
-        none_in_jurisdiction_tax_lot_ids = None in jurisdiction_tax_lot_ids #fixit - why is a list, only one to one right?
+        none_in_jurisdiction_tax_lot_ids = None in jurisdiction_tax_lot_ids  # fixit - why is a list, only one to one right?
         jurisdiction_tax_lot_ids = filter(lambda x: x is not None, jurisdiction_tax_lot_ids)
 
         if none_in_jurisdiction_tax_lot_ids:
@@ -291,7 +291,7 @@ def get_taxlots(request):
         # Each object in the response is built from the state data, with related data added on.
         l = model_to_dict(lot.state, exclude=['extra_data'])
 
-        #TODO - can we just return the "extra_data" json string and do this in JS which has faster loops?
+        # TODO - can we just return the "extra_data" json string and do this in JS which has faster loops?
         for extra_data_field, extra_data_value in lot.state.extra_data.items():
             if extra_data_field == 'id':
                 extra_data_field += '_extra'
