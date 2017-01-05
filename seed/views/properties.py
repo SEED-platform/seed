@@ -328,11 +328,6 @@ def get_property_columns(request):
             'type': 'numberStr',
             'related': False
         }, {
-            'name': 'address',
-            'displayName': 'Tax Lot Address',
-            'type': 'numberStr',
-            'related': True
-        }, {
             'name': 'address_line_1',
             'displayName': 'Address Line 1 (Property)',
             'type': 'numberStr',
