@@ -5,7 +5,7 @@
 
         </div>
         <div class="page_title">
-            <h1>Data Mapping &amp; Validation ({$ import_file.name $})</h1>
+            <h1>Data Mapping &amp; Validation ({$ import_file.uploaded_filename $})</h1>
         </div>
         <div class="right page_action_container"></div>
     </div>
@@ -22,7 +22,7 @@
                         <p>In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view.</p>
                         <p>
                             <span class="label label-info">Field names for matching:</span> The following fields are used by SEED to match records:
-                            <strong>Tax Lot ID</strong>, <strong>PM Property ID</strong>, <strong>Custom ID 1</strong>,
+                            <strong>Jurisdiction Tax Lot ID</strong>, <strong>PM Property ID</strong>, <strong>Custom ID 1</strong>,
                             <strong>Address Line 1</strong>. If there are fields in a datafile mapped to these names, the program will attempt to match on those same names in existing records.
                         </p>
                         <p>For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired.</p>
@@ -82,7 +82,7 @@
                         <tr>
                             <th class="source_data blank"></th>
                             <th class="source_data">SEED</th>
-                            <th colspan="99" class="source_data">{$ import_file.name $}</th>
+                            <th colspan="99" class="source_data">{$ import_file.uploaded_filename $}</th>
                         </tr>
                         <tr ng-show="duplicates.length > 0">
                             <th class="sub_head is_aligned_center">Map
@@ -188,7 +188,7 @@
     <div class="section_content_container" ng-if="save_mappings">
         <div class="section_content">
             <div class="progress_bar_container progressbar_fill_area">
-                <div class="progress_bar_copy_top">Mapping buildings for <strong>{$ import_file.name $}</strong></div>
+                <div class="progress_bar_copy_top">Mapping buildings for <strong>{$ import_file.uploaded_filename $}</strong></div>
                 <uib-progressbar class="progress-striped active" value="import_file.progress" type="success"></uib-progressbar>
                 <div class="progress_bar_copy_bottom">{$ import_file.progress | number:0 $}% Complete</div>
             </div>

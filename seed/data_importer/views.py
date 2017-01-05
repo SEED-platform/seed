@@ -186,6 +186,7 @@ class LocalUploaderViewSet(viewsets.GenericViewSet):
                      for field in ['source_program', 'source_program_version']}
 
         f = ImportFile.objects.create(import_record=record,
+                                      uploaded_filename=filename,
                                       file=path,
                                       source_type=source_type,
                                       **kw_fields)
