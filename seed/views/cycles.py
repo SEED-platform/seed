@@ -75,7 +75,7 @@ class CycleView(GenericViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'Could not access any cycles for organization_id={}'.format(org_id_in_query)
-            }, status=status.HTTP_403_FORBIDDEN)
+            })
         return JsonResponse({'status': 'success', 'cycles': cycles})
 
     @api_endpoint_class
