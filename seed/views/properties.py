@@ -261,7 +261,7 @@ class PropertyViewSet(GenericViewSet):
                 'related': False
             }, {
                 'name': 'gross_floor_area',
-                'displayName': 'Property Floor Area',
+                'displayName': 'Gross Floor Area',
                 'type': 'number',
                 'related': False
             }, {
@@ -332,12 +332,12 @@ class PropertyViewSet(GenericViewSet):
                 'related': False
             }, {
                 'name': 'conditioned_floor_area',
-                'displayName': 'Property Conditioned Floor Area',
+                'displayName': 'Conditioned Floor Area',
                 'type': 'number',
                 'related': False
             }, {
                 'name': 'occupied_floor_area',
-                'displayName': 'Property Occupied Floor Area',
+                'displayName': 'Occupied Floor Area',
                 'type': 'number',
                 'related': False
             }, {
@@ -931,7 +931,7 @@ class TaxLotViewSet(GenericViewSet):
                 'related': True
             }, {
                 'name': 'gross_floor_area',
-                'displayName': 'Property Floor Area',
+                'displayName': 'Gross Floor Area',
                 'type': 'number',
                 'related': True
             }, {
@@ -1001,12 +1001,12 @@ class TaxLotViewSet(GenericViewSet):
                 'related': True
             }, {
                 'name': 'conditioned_floor_area',
-                'displayName': 'Property Conditioned Floor Area',
+                'displayName': 'Conditioned Floor Area',
                 'type': 'number',
                 'related': True
             }, {
                 'name': 'occupied_floor_area',
-                'displayName': 'Property Occupied Floor Area',
+                'displayName': 'Occupied Floor Area',
                 'type': 'number',
                 'related': True
             }, {
