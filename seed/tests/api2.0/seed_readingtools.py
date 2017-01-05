@@ -4,16 +4,13 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import logging
-import pprint
-import json
-import os
-import requests
 import csv
 import datetime as dt
+import json
+import logging
+import os
+import pprint
 import time
-import ntpath
-import uuid
 from calendar import timegm
 
 
@@ -125,7 +122,7 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
              "success": true,
              "filename": "DataforSEED_dos15.csv"}
         """
-        upload_url = "%s%s" % (main_url, upload_details['upload_path'])
+        # upload_url = "%s%s" % (main_url, upload_details['upload_path'])
         fsysparams = {
             'qqfile': upload_filepath,
             'import_record': upload_dataset_id,

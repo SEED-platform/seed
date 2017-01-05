@@ -4,13 +4,12 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from seed_readingtools import check_progress, check_status, read_map_file, setup_logger, upload_file
-import requests
-import json
 import datetime as dt
-import time
+import json
 import pprint
-import getpass
+import time
+
+from seed_readingtools import check_progress, check_status, read_map_file, upload_file
 
 
 def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, filepath, filetype,
@@ -43,7 +42,7 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
             main_url + '/api/v2/import_files/' + str(import_id) + '/save_raw_data/',
             headers=header,
             data=json.dumps(payload))
-        progress = check_progress(main_url, header, result.json()['progress_key'], client)
+        check_progress(main_url, header, result.json()['progress_key'], client)
         check_status(result, partmsg, log)
     except:
         log.error("Following API could not be tested")
@@ -113,7 +112,7 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
                              headers=header,
                              data=json.dumps(payload))
 
-        progress = check_progress(main_url, header, result.json()['progress_key'], client)
+        check_progress(main_url, header, result.json()['progress_key'], client)
         check_status(result, partmsg, log)
     except:
         log.error("Following API could not be tested")
@@ -140,7 +139,7 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
                              headers=header,
                              data=json.dumps(payload))
 
-        progress = check_progress(main_url, header, result.json()['progress_key'], client)
+        check_progress(main_url, header, result.json()['progress_key'], client)
         check_status(result, partmsg, log)
     except:
         pass
@@ -312,6 +311,7 @@ def label(header, main_url, organization_id, log, client):
         pass
 
     # Apply to buildings that have ENERGY STAR Score > 50
+    project_slug = ''
     print ('\nAPI Function: apply_label'),
     partmsg = 'apply_label'
     payload = {'label': {'id': label_id},
@@ -514,7 +514,7 @@ def delete_set(header, main_url, organization_id, dataset_id, project_slug, log,
         print("\n WARNING: Can't delete PROJECT, delete manually!")
         input("Press Enter to continue...")
 
-    ##Delete label
+    # Delete label
     # print ('API Function: delete_label\n'),
     # partmsg = 'delete_label'
     # payload = {'organization_id': organization_id}

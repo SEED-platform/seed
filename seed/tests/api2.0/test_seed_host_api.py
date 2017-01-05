@@ -35,19 +35,17 @@ some apps.
 
 """
 
-from calendar import timegm
-import csv
 import datetime as dt
 import json
 import os
-import pprint
-import requests
-from subprocess import Popen
-import time
 import sys
+import time
+from subprocess import Popen
 
-from seed_readingtools import check_progress, check_status, read_map_file, setup_logger, upload_file
-from test_modules import upload_match_sort, account, cycles, delete_set, search_and_project, label
+import requests
+
+from seed_readingtools import check_status, setup_logger
+from test_modules import upload_match_sort, account, cycles, delete_set, search_and_project
 
 location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 print "Running from {}".format(location)
@@ -122,7 +120,7 @@ user_id = id['user']
 print ('\n\n-------Cycles-------')
 cycle_id = cycles(header, main_url, organization_id, log, client)
 
-## Create a dataset
+# Create a dataset
 print ('\nAPI Function: create_dataset')
 partmsg = 'create_dataset'
 payload = {'name': 'API Test'}
