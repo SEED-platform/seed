@@ -144,7 +144,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       var defer = $q.defer();
       var organization_id = user_service.get_organization().id;
-      var get_property_url = "/api/v2/properties/" + property_id + "/?cycle_id=" + cycle_id + "/";
+      var get_property_url = "/api/v2/properties/" + property_id + "/?cycle_id=" + cycle_id;
 
       spinner_utility.show();
       $http({
@@ -189,7 +189,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       var defer = $q.defer();
-      var update_property_url = "/api/v2/properties/" + property_id + "/?cycle_id=" + cycle_id + "/";
+      var update_property_url = "/api/v2/properties/" + property_id + "/?cycle_id=" + cycle_id;
 
       spinner_utility.show();
       $http({
@@ -394,7 +394,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       var defer = $q.defer();
-      var get_taxlot_url = '/api/v2/taxlots/' + taxlot_id + '/?cycle_id=' + cycle_id + '/';
+      var get_taxlot_url = '/api/v2/taxlots/' + taxlot_id + '/?cycle_id=' + cycle_id;
 
       spinner_utility.show();
       $http({
@@ -440,7 +440,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       var defer = $q.defer();
-      var update_taxlot_url = '/api/v2/taxlots/' + taxlot_id + '/?cycle_id=' + cycle_id + '/';
+      var update_taxlot_url = '/api/v2/taxlots/' + taxlot_id + '/?cycle_id=' + cycle_id;
 
       spinner_utility.show();
       $http({
