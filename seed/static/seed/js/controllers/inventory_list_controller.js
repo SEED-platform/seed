@@ -174,6 +174,8 @@ angular.module('BE.seed.controller.inventory_list', [])
             var map = {};
             if ($scope.inventory_type == 'properties') {
               map = {
+                address_line_1: 'tax_address_line_1',
+                address_line_2: 'tax_address_line_2',
                 city: 'tax_city',
                 state: 'tax_state',
                 postal_code: 'tax_postal_code'

@@ -328,11 +328,6 @@ def get_property_columns(request):
             'type': 'numberStr',
             'related': False
         }, {
-            'name': 'address',
-            'displayName': 'Tax Lot Address',
-            'type': 'numberStr',
-            'related': True
-        }, {
             'name': 'address_line_1',
             'displayName': 'Address Line 1 (Property)',
             'type': 'numberStr',
@@ -491,6 +486,18 @@ def get_property_columns(request):
             'name': 'building_certification',
             'displayName': 'Building Certification',
             'related': False
+        }, {
+            # Modified field name
+            'name': 'tax_address_line_1',
+            'displayName': 'Address Line 1 (Tax Lot)',
+            'type': 'numberStr',
+            'related': True
+        }, {
+            # Modified field name
+            'name': 'tax_address_line_2',
+            'displayName': 'Address Line 2 (Tax Lot)',
+            'type': 'numberStr',
+            'related': True
         }, {
             # Modified field name
             'name': 'tax_city',
