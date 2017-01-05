@@ -208,7 +208,9 @@ class TestApi(TestCase):
         self.assertEqual(r['organizations'][0]['number_of_users'], 1)
         self.assertEqual(r['organizations'][0]['user_role'], 'owner')
         self.assertEqual(r['organizations'][0]['owners'][0]['first_name'], 'Jaqen')
-        self.assertEqual(r['organizations'][0]['cycles'], [{u'name': u'Test Hack Cycle 2015', u'num_properties': 0, u'num_taxlots': 0}])
+        self.assertEqual(r['organizations'][0]['cycles'], [
+            {u'name': u'Default 2016 Calendar Year', u'num_properties': 0, u'num_taxlots': 0},
+            {u'name': u'Test Hack Cycle 2015', u'num_properties': 0, u'num_taxlots': 0}])
 
     def test_organization_details(self):
         r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)

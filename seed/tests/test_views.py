@@ -3547,7 +3547,7 @@ class InventoryViewTests(TestCase):
         results = json.loads(response.content)
         self.assertEqual(results['status'], 'success')
 
-        self.assertEqual(len(results['cycles']), 1)
+        self.assertEqual(len(results['cycles']), 2)
         cycle = results['cycles'][0]
         self.assertEqual(cycle['id'], self.cycle.pk)
         self.assertEqual(cycle['name'], self.cycle.name)
