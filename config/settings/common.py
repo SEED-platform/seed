@@ -280,5 +280,5 @@ REST_FRAMEWORK = {
 }
 
 SWAGGER_SETTINGS = {
-    "exclude_namespaces": ["labels", "app"],  # List URL namespaces to ignore
+    "exclude_namespaces": ["app"],  # List URL namespaces to ignore
 }
