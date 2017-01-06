@@ -66,7 +66,7 @@ class CycleView(GenericViewSet):
         org_id_in_query = request.query_params.get('organization_id', None)
         tmp_cycles = Cycle.objects.filter(
             organization_id=org_id_in_query
-        )
+        ).order_by('name')
         cycles = []
         if tmp_cycles.exists():
             for cycle in tmp_cycles:
