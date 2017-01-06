@@ -122,9 +122,10 @@ var SEED_app = angular.module('BE.seed', [
     'BE.seed.services',
     'BE.seed.controllers',
     'BE.seed.utilities'
-  ], ['$interpolateProvider', function ($interpolateProvider) {
+  ], ['$interpolateProvider', '$qProvider', function ($interpolateProvider, $qProvider) {
     $interpolateProvider.startSymbol('{$');
     $interpolateProvider.endSymbol('$}');
+    $qProvider.errorOnUnhandledRejections(false);
   }]
 );
 
@@ -155,953 +156,955 @@ SEED_app.run([
 /**
  * url routing declaration for SEED
  */
-SEED_app.config(['stateHelperProvider', '$urlRouterProvider', function (stateHelperProvider, $urlRouterProvider) {
+SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider',
+  function (stateHelperProvider, $urlRouterProvider, $locationProvider) {
 
-  var static_url = BE.urls.STATIC_URL;
+    var static_url = BE.urls.STATIC_URL;
 
-  $urlRouterProvider.otherwise('/');
+    $locationProvider.hashPrefix('');
+    $urlRouterProvider.otherwise('/');
 
-  stateHelperProvider
-    .state({
-      name: 'home',
-      url: '/',
-      templateUrl: static_url + 'seed/partials/home.html'
-    })
-    .state({
-      name: 'profile',
-      url: '/profile',
-      templateUrl: static_url + 'seed/partials/profile.html',
-      controller: 'profile_controller',
-      resolve: {
-        auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
-          var organization_id = user_service.get_organization().id;
-          return auth_service.is_authorized(organization_id, ['requires_superuser']);
-        }],
-        user_profile_payload: ['user_service', function (user_service) {
-          return user_service.get_user_profile();
-        }]
-      }
-    })
-    .state({
-      name: 'security',
-      url: '/profile/security',
-      templateUrl: static_url + 'seed/partials/security.html',
-      controller: 'security_controller',
-      resolve: {
-        auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
-          var organization_id = user_service.get_organization().id;
-          return auth_service.is_authorized(organization_id, ['requires_superuser']);
-        }],
-        user_profile_payload: ['user_service', function (user_service) {
-          return user_service.get_user_profile();
-        }]
-      }
-    })
-    .state({
-      name: 'developer',
-      url: '/profile/developer',
-      templateUrl: static_url + 'seed/partials/developer.html',
-      controller: 'developer_controller',
-      resolve: {
-        auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
-          var organization_id = user_service.get_organization().id;
-          return auth_service.is_authorized(organization_id, ['requires_superuser']);
-        }],
-        user_profile_payload: ['user_service', function (user_service) {
-          return user_service.get_user_profile();
-        }]
-      }
-    })
-    .state({
-      name: 'admin',
-      url: '/profile/admin',
-      templateUrl: static_url + 'seed/partials/admin.html',
-      controller: 'admin_controller',
-      resolve: {
-        auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
-          var organization_id = user_service.get_organization().id;
-          return auth_service.is_authorized(organization_id, ['requires_superuser'])
-            .then(function (data) {
-              if (data.auth.requires_superuser) {
-                return data;
-              } else {
-                return $q.reject('not authorized');
+    stateHelperProvider
+      .state({
+        name: 'home',
+        url: '/',
+        templateUrl: static_url + 'seed/partials/home.html'
+      })
+      .state({
+        name: 'profile',
+        url: '/profile',
+        templateUrl: static_url + 'seed/partials/profile.html',
+        controller: 'profile_controller',
+        resolve: {
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_superuser']);
+          }],
+          user_profile_payload: ['user_service', function (user_service) {
+            return user_service.get_user_profile();
+          }]
+        }
+      })
+      .state({
+        name: 'security',
+        url: '/profile/security',
+        templateUrl: static_url + 'seed/partials/security.html',
+        controller: 'security_controller',
+        resolve: {
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_superuser']);
+          }],
+          user_profile_payload: ['user_service', function (user_service) {
+            return user_service.get_user_profile();
+          }]
+        }
+      })
+      .state({
+        name: 'developer',
+        url: '/profile/developer',
+        templateUrl: static_url + 'seed/partials/developer.html',
+        controller: 'developer_controller',
+        resolve: {
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_superuser']);
+          }],
+          user_profile_payload: ['user_service', function (user_service) {
+            return user_service.get_user_profile();
+          }]
+        }
+      })
+      .state({
+        name: 'admin',
+        url: '/profile/admin',
+        templateUrl: static_url + 'seed/partials/admin.html',
+        controller: 'admin_controller',
+        resolve: {
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_superuser'])
+              .then(function (data) {
+                if (data.auth.requires_superuser) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }],
+          user_profile_payload: ['user_service', function (user_service) {
+            return user_service.get_user_profile();
+          }]
+        }
+      })
+      /*.state({
+       name: 'projects',
+       url: '/projects',
+       templateUrl: static_url + 'seed/partials/projects.html',
+       controller: 'project_list_controller',
+       resolve: {
+       projects_payload: ['project_service', function (project_service) {
+       return project_service.get_projects();
+       }]
+       }
+       })
+       .state({
+       name: 'project_detail',
+       url: '/projects/{project_id:int}',
+       templateUrl: static_url + 'seed/partials/project_detail.html',
+       controller: 'building_list_controller',
+       resolve: {
+       search_payload: ['building_services', '$state', '$stateParams', function (building_services, $state, $stateParams) {
+       var orderBy = '';
+       var sortReverse = false;
+       var params = angular.copy($stateParams);
+       var q = params.q || '';
+       var numberPerPage = 10;
+       var project_slug = params.project_id;
+       var pageNumber = 1;
+       delete(params.project_id);
+       params.project__slug = project_slug;
+
+       // Check session storage for order, sort, and filter values.
+       if (!_.isUndefined(Storage)) {
+
+       // set the prefix to the specific project. This fixes
+       // the issue where the filter was not persisting.
+       var prefix = _.replace($state.current.url, ':project_id', project_slug);
+       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
+       orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
+       }
+       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
+       sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
+       }
+       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
+       params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
+       }
+       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
+       numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
+       }
+       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
+       pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
+       }
+       }
+       // params: (query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id, project_slug)
+       return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null, project_slug);
+       }],
+       default_columns: ['user_service', function (user_service) {
+       return user_service.get_default_columns();
+       }],
+       all_columns: ['building_services', '$stateParams', function (building_services, $stateParams) {
+       var params = angular.copy($stateParams);
+       var project_slug = params.project_id;
+       return building_services.get_columns();
+       }],
+       project_payload: ['$stateParams', 'project_service', function ($stateParams, project_service) {
+       var params = angular.copy($stateParams);
+       var project_slug = params.project_id;
+       return project_service.get_project(project_slug);
+       }]
+       }
+       })
+       .state({
+       name: 'project_settings',
+       url: '/projects/{project_id:int}/settings',
+       templateUrl: static_url + 'seed/partials/project_settings.html',
+       controller: 'buildings_settings_controller',
+       resolve: {
+       all_columns: ['building_services', function (building_services) {
+       return building_services.get_columns();
+       }],
+       default_columns: ['user_service', function (user_service) {
+       return user_service.get_default_columns();
+       }],
+       shared_fields_payload: ['user_service', function (user_service) {
+       return user_service.get_shared_buildings();
+       }],
+       $uibModalInstance: function () {
+       return {close: function () {}};
+       },
+       project_payload: ['$stateParams', 'project_service', function ($stateParams, project_service) {
+       var params = angular.copy($stateParams);
+       var project_slug = params.project_id;
+       return project_service.get_project(project_slug);
+       }],
+       building_payload: function () {
+       return {building: {}};
+       }
+       }
+       })
+       .state({
+       name: 'building_detail_section',
+       url: '/projects/{project_id:int}/{building_id:int}',
+       templateUrl: static_url + 'seed/partials/building_detail_section.html',
+       controller: 'building_detail_controller',
+       resolve: {
+       building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
+       var building_id = $stateParams.building_id;
+       return building_services.get_building(building_id);
+       }],
+       all_columns: ['building_services', function (building_services) {
+       return building_services.get_columns();
+       }],
+       audit_payload: function () {
+       return {audit_logs: {}};
+       },
+       default_columns: ['user_service', function (user_service) {
+       return user_service.get_default_building_detail_columns();
+       }]
+       }
+       })*/
+      .state({
+        name: 'buildings',
+        url: '/buildings',
+        templateUrl: static_url + 'seed/partials/buildings.html',
+        controller: 'building_list_controller',
+        resolve: {
+          search_payload: ['building_services', '$state', '$stateParams', function (building_services, $state, $stateParams) {
+            // Defaults
+
+            var q = $stateParams.q || '';
+            var orderBy = '';
+            var sortReverse = false;
+            var params = {};
+            var numberPerPage = 10;
+            var pageNumber = 1;
+
+            // Check session storage for order, sort, and filter values.
+            if (!_.isUndefined(Storage)) {
+
+              var prefix = $state.current.url;
+
+              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
+                orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
               }
-            }, function (data) {
-              return $q.reject(data.message);
-            });
-        }],
-        user_profile_payload: ['user_service', function (user_service) {
-          return user_service.get_user_profile();
-        }]
-      }
-    })
-    /*.state({
-      name: 'projects',
-      url: '/projects',
-      templateUrl: static_url + 'seed/partials/projects.html',
-      controller: 'project_list_controller',
-      resolve: {
-        projects_payload: ['project_service', function (project_service) {
-          return project_service.get_projects();
-        }]
-      }
-    })
-    .state({
-      name: 'project_detail',
-      url: '/projects/{project_id:int}',
-      templateUrl: static_url + 'seed/partials/project_detail.html',
-      controller: 'building_list_controller',
-      resolve: {
-        search_payload: ['building_services', '$state', '$stateParams', function (building_services, $state, $stateParams) {
-          var orderBy = '';
-          var sortReverse = false;
-          var params = angular.copy($stateParams);
-          var q = params.q || '';
-          var numberPerPage = 10;
-          var project_slug = params.project_id;
-          var pageNumber = 1;
-          delete(params.project_id);
-          params.project__slug = project_slug;
+              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
+                sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
+              }
+              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
+                params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
+              }
+              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
+                numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
+              }
+              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
+                pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
+              }
+            }
 
-          // Check session storage for order, sort, and filter values.
-          if (!_.isUndefined(Storage)) {
-
-            // set the prefix to the specific project. This fixes
-            // the issue where the filter was not persisting.
-            var prefix = _.replace($state.current.url, ':project_id', project_slug);
-            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
-              orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
-            }
-            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
-              sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
-            }
-            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
-              params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
-            }
-            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
-              numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
-            }
-            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
-              pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
-            }
+            // params: (query, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id)
+            return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null);
+          }],
+          default_columns: ['user_service', function (user_service) {
+            return user_service.get_default_columns();
+          }],
+          all_columns: ['building_services', function (building_services) {
+            return building_services.get_columns();
+          }],
+          project_payload: function () {
+            return {
+              project: {}
+            };
           }
-          // params: (query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id, project_slug)
-          return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null, project_slug);
-        }],
-        default_columns: ['user_service', function (user_service) {
-          return user_service.get_default_columns();
-        }],
-        all_columns: ['building_services', '$stateParams', function (building_services, $stateParams) {
-          var params = angular.copy($stateParams);
-          var project_slug = params.project_id;
-          return building_services.get_columns();
-        }],
-        project_payload: ['$stateParams', 'project_service', function ($stateParams, project_service) {
-          var params = angular.copy($stateParams);
-          var project_slug = params.project_id;
-          return project_service.get_project(project_slug);
-        }]
-      }
-    })
-    .state({
-      name: 'project_settings',
-      url: '/projects/{project_id:int}/settings',
-      templateUrl: static_url + 'seed/partials/project_settings.html',
-      controller: 'buildings_settings_controller',
-      resolve: {
-        all_columns: ['building_services', function (building_services) {
-          return building_services.get_columns();
-        }],
-        default_columns: ['user_service', function (user_service) {
-          return user_service.get_default_columns();
-        }],
-        shared_fields_payload: ['user_service', function (user_service) {
-          return user_service.get_shared_buildings();
-        }],
-        $uibModalInstance: function () {
-          return {close: function () {}};
-        },
-        project_payload: ['$stateParams', 'project_service', function ($stateParams, project_service) {
-          var params = angular.copy($stateParams);
-          var project_slug = params.project_id;
-          return project_service.get_project(project_slug);
-        }],
-        building_payload: function () {
-          return {building: {}};
         }
-      }
-    })
-    .state({
-      name: 'building_detail_section',
-      url: '/projects/{project_id:int}/{building_id:int}',
-      templateUrl: static_url + 'seed/partials/building_detail_section.html',
-      controller: 'building_detail_controller',
-      resolve: {
-        building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-          var building_id = $stateParams.building_id;
-          return building_services.get_building(building_id);
-        }],
-        all_columns: ['building_services', function (building_services) {
-          return building_services.get_columns();
-        }],
-        audit_payload: function () {
-          return {audit_logs: {}};
-        },
-        default_columns: ['user_service', function (user_service) {
-          return user_service.get_default_building_detail_columns();
-        }]
-      }
-    })*/
-    .state({
-      name: 'buildings',
-      url: '/buildings',
-      templateUrl: static_url + 'seed/partials/buildings.html',
-      controller: 'building_list_controller',
-      resolve: {
-        search_payload: ['building_services', '$state', '$stateParams', function (building_services, $state, $stateParams) {
-          // Defaults
-
-          var q = $stateParams.q || '';
-          var orderBy = '';
-          var sortReverse = false;
-          var params = {};
-          var numberPerPage = 10;
-          var pageNumber = 1;
-
-          // Check session storage for order, sort, and filter values.
-          if (!_.isUndefined(Storage)) {
-
-            var prefix = $state.current.url;
-
-            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
-              orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
-            }
-            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
-              sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
-            }
-            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
-              params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
-            }
-            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
-              numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
-            }
-            if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
-              pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
-            }
+      })
+      .state({
+        name: 'buildings_settings',
+        url: '/buildings/settings',
+        templateUrl: static_url + 'seed/partials/buildings_settings.html',
+        controller: 'buildings_settings_controller',
+        resolve: {
+          all_columns: ['building_services', function (building_services) {
+            return building_services.get_columns();
+          }],
+          default_columns: ['user_service', function (user_service) {
+            return user_service.get_default_columns();
+          }],
+          shared_fields_payload: ['user_service', function (user_service) {
+            return user_service.get_shared_buildings();
+          }],
+          $uibModalInstance: function () {
+            return {
+              close: function () {
+              }
+            };
+          },
+          project_payload: function () {
+            return {project: {}};
+          },
+          building_payload: function () {
+            return {building: {}};
           }
-
-          // params: (query, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id)
-          return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null);
-        }],
-        default_columns: ['user_service', function (user_service) {
-          return user_service.get_default_columns();
-        }],
-        all_columns: ['building_services', function (building_services) {
-          return building_services.get_columns();
-        }],
-        project_payload: function () {
-          return {
-            project: {}
-          };
         }
-      }
-    })
-    .state({
-      name: 'buildings_settings',
-      url: '/buildings/settings',
-      templateUrl: static_url + 'seed/partials/buildings_settings.html',
-      controller: 'buildings_settings_controller',
-      resolve: {
-        all_columns: ['building_services', function (building_services) {
-          return building_services.get_columns();
-        }],
-        default_columns: ['user_service', function (user_service) {
-          return user_service.get_default_columns();
-        }],
-        shared_fields_payload: ['user_service', function (user_service) {
-          return user_service.get_shared_buildings();
-        }],
-        $uibModalInstance: function () {
-          return {
-            close: function () {
-            }
-          };
-        },
-        project_payload: function () {
-          return {project: {}};
-        },
-        building_payload: function () {
-          return {building: {}};
+      })
+      .state({
+        name: 'reports',
+        url: '/{inventory_type:properties|taxlots}/reports',
+        templateUrl: static_url + 'seed/partials/inventory_reports.html',
+        controller: 'inventory_reports_controller',
+        resolve: {
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }]
         }
-      }
-    })
-    .state({
-      name: 'reports',
-      url: '/{inventory_type:properties|taxlots}/reports',
-      templateUrl: static_url + 'seed/partials/inventory_reports.html',
-      controller: 'inventory_reports_controller',
-      resolve: {
-        cycles: ['cycle_service', function (cycle_service) {
-          return cycle_service.get_cycles();
-        }]
-      }
-    })
-    .state({
-      name: 'list_settings',
-      url: '/{inventory_type:properties|taxlots}/settings',
-      templateUrl: static_url + 'seed/partials/inventory_settings.html',
-      controller: 'inventory_settings_controller',
-      resolve: {
-        $uibModalInstance: function () {
-          return {
-            close: function () {
+      })
+      .state({
+        name: 'list_settings',
+        url: '/{inventory_type:properties|taxlots}/settings',
+        templateUrl: static_url + 'seed/partials/inventory_settings.html',
+        controller: 'inventory_settings_controller',
+        resolve: {
+          $uibModalInstance: function () {
+            return {
+              close: function () {
+              }
+            };
+          },
+          all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns();
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns();
             }
-          };
-        },
-        all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
-          if ($stateParams.inventory_type === 'properties') {
+          }],
+          shared_fields_payload: ['user_service', function (user_service) {
+            return user_service.get_shared_buildings();
+          }]
+        }
+      })
+      .state({
+        name: 'detail_settings',
+        url: '/{inventory_type:properties|taxlots}/{inventory_id:int}/cycles/{cycle_id:int}/settings',
+        templateUrl: static_url + 'seed/partials/inventory_detail_settings.html',
+        controller: 'inventory_detail_settings_controller',
+        resolve: {
+          $uibModalInstance: function () {
+            return {
+              close: function () {
+              }
+            };
+          },
+          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, 'related');
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, 'related');
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            }
+          }]
+        }
+      })
+      .state({
+        name: 'building_detail',
+        url: '/buildings/{building_id:int}',
+        templateUrl: static_url + 'seed/partials/building_detail_section.html',
+        controller: 'building_detail_controller',
+        resolve: {
+          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
+            // load `get_building` before page is loaded to avoid
+            // page flicker.
+            var building_id = $stateParams.building_id;
+            return building_services.get_building(building_id);
+          }],
+          all_columns: ['building_services', function (building_services) {
+            return building_services.get_columns();
+          }],
+          audit_payload: function () {
+            return {audit_logs: {}};
+          },
+          default_columns: ['user_service', function (user_service) {
+            return user_service.get_default_building_detail_columns();
+          }]
+        }
+      })
+      .state({
+        name: 'building_projects',
+        url: '/buildings/{building_id:int}/projects',
+        templateUrl: static_url + 'seed/partials/building_projects_section.html',
+        controller: 'building_detail_controller',
+        resolve: {
+          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
+            // load `get_building` before page is loaded to avoid
+            // page flicker.
+            var building_id = $stateParams.building_id;
+            return building_services.get_building(building_id);
+          }],
+          all_columns: ['building_services', function (building_services) {
+            return building_services.get_columns();
+          }],
+          audit_payload: function () {
+            return {audit_logs: {}};
+          },
+          default_columns: function () {
+            return {columns: {}};
+          }
+        }
+      })
+      .state({
+        name: 'building_audit_log',
+        url: '/buildings/{building_id:int}/audit',
+        templateUrl: static_url + 'seed/partials/building_audit_log.html',
+        controller: 'building_detail_controller',
+        resolve: {
+          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
+            // load `get_building` before page is loaded to avoid
+            // page flicker.
+            var building_id = $stateParams.building_id;
+            return building_services.get_building(building_id);
+          }],
+          all_columns: ['building_services', function (building_services) {
+            return building_services.get_columns();
+          }],
+          audit_payload: ['audit_service', '$stateParams', function (audit_service, $stateParams) {
+            var building_id = $stateParams.building_id;
+            return audit_service.get_building_logs(building_id);
+          }],
+          default_columns: function () {
+            return {columns: {}};
+          }
+        }
+      })
+      .state({
+        name: 'building_energy',
+        url: '/buildings/{building_id:int}/energy',
+        templateUrl: static_url + 'seed/partials/building_energy_section.html',
+        controller: 'building_detail_controller',
+        resolve: {
+          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
+            // load `get_building` before page is loaded to avoid
+            // page flicker.
+            var building_id = $stateParams.building_id;
+            return building_services.get_building(building_id);
+          }],
+          all_columns: ['building_services', function (building_services) {
+            return building_services.get_columns();
+          }],
+          audit_payload: function () {
+            return {audit_logs: {}};
+          },
+          default_columns: function () {
+            return {columns: {}};
+          }
+        }
+      })
+      .state({
+        name: 'building_settings',
+        url: '/buildings/{building_id:int}/settings',
+        templateUrl: static_url + 'seed/partials/building_settings_section.html',
+        controller: 'buildings_settings_controller',
+        resolve: {
+          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
+            // load `get_building` before page is loaded to avoid
+            // page flicker.
+            var building_id = $stateParams.building_id;
+            return building_services.get_building(building_id);
+          }],
+          all_columns: ['building_services', function (building_services) {
+            return building_services.get_columns();
+          }],
+          default_columns: ['user_service', function (user_service) {
+            return user_service.get_default_building_detail_columns();
+          }],
+          shared_fields_payload: function () {
+            return {show_shared_buildings: false};
+          },
+          $uibModalInstance: function () {
+            return {
+              close: function () {
+              }
+            };
+          },
+          project_payload: function () {
+            return {project: {}};
+          }
+        }
+      })
+      .state({
+        name: 'mapping',
+        url: '/data/mapping/{importfile_id:int}',
+        templateUrl: static_url + 'seed/partials/mapping.html',
+        controller: 'mapping_controller',
+        resolve: {
+          import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return dataset_service.get_import_file(importfile_id);
+          }],
+          suggested_mappings_payload: ['mapping_service', '$stateParams', function (mapping_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return mapping_service.get_column_mapping_suggestions(
+              importfile_id
+            );
+          }],
+          raw_columns_payload: ['mapping_service', '$stateParams', function (mapping_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return mapping_service.get_raw_columns(
+              importfile_id
+            );
+          }],
+          first_five_rows_payload: ['mapping_service', '$stateParams', function (mapping_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return mapping_service.get_first_five_rows(
+              importfile_id
+            );
+          }],
+          property_columns: ['inventory_service', function (inventory_service) {
             return inventory_service.get_property_columns();
-          } else if ($stateParams.inventory_type === 'taxlots') {
+          }],
+          taxlot_columns: ['inventory_service', function (inventory_service) {
             return inventory_service.get_taxlot_columns();
-          }
-        }],
-        shared_fields_payload: ['user_service', function (user_service) {
-          return user_service.get_shared_buildings();
-        }]
-      }
-    })
-    .state({
-      name: 'detail_settings',
-      url: '/{inventory_type:properties|taxlots}/{inventory_id:int}/cycles/{cycle_id:int}/settings',
-      templateUrl: static_url + 'seed/partials/inventory_detail_settings.html',
-      controller: 'inventory_detail_settings_controller',
-      resolve: {
-        $uibModalInstance: function () {
-          return {
-            close: function () {
+          }],
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_member'])
+              .then(function (data) {
+                if (data.auth.requires_member) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'matching',
+        url: '/data/matching/{importfile_id:int}',
+        templateUrl: static_url + 'seed/partials/matching.html',
+        controller: 'matching_controller',
+        resolve: {
+          import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return dataset_service.get_import_file(importfile_id);
+          }],
+          buildings_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return building_services.search_matching_buildings(
+              '', 10, 1, '', false, {}, importfile_id);
+          }],
+          default_columns: ['user_service', function (user_service) {
+            return user_service.get_default_columns();
+          }],
+          all_columns: ['building_services', function (building_services) {
+            return building_services.get_columns();
+          }],
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_member'])
+              .then(function (data) {
+                if (data.auth.requires_member) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'dataset_list',
+        url: '/data',
+        templateUrl: static_url + 'seed/partials/dataset_list.html',
+        controller: 'dataset_list_controller',
+        resolve: {
+          datasets_payload: ['dataset_service', function (dataset_service) {
+            return dataset_service.get_datasets();
+          }],
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_member'])
+              .then(function (data) {
+                if (data.auth.requires_member) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'dataset_detail',
+        url: '/data/{dataset_id:int}',
+        templateUrl: static_url + 'seed/partials/dataset_detail.html',
+        controller: 'dataset_detail_controller',
+        resolve: {
+          dataset_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+            var dataset_id = $stateParams.dataset_id;
+            return dataset_service.get_dataset(dataset_id);
+          }],
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_member'])
+              .then(function (data) {
+                if (data.auth.requires_member) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'contact',
+        url: '/contact',
+        templateUrl: static_url + 'seed/partials/contact.html'
+      })
+      .state({
+        name: 'api_docs',
+        url: '/api/swagger',
+        templateUrl: static_url + 'seed/partials/api_docs.html',
+        controller: 'api_controller'
+      })
+      .state({
+        name: 'about',
+        url: '/about',
+        templateUrl: static_url + 'seed/partials/about.html',
+        controller: 'about_controller',
+        resolve: {
+          version_payload: ['main_service', function (main_service) {
+            return main_service.version();
+          }]
+        }
+      })
+      .state({
+        name: 'organizations',
+        url: '/accounts',
+        templateUrl: static_url + 'seed/partials/accounts.html',
+        controller: 'accounts_controller',
+        resolve: {
+          organization_payload: ['organization_service', function (organization_service) {
+            return organization_service.get_organizations();
+          }]
+        }
+      })
+      .state({
+        name: 'organization_settings',
+        url: '/accounts/{organization_id:int}',
+        templateUrl: static_url + 'seed/partials/settings.html',
+        controller: 'organization_settings_controller',
+        resolve: {
+          all_columns: ['building_services', function (building_services) {
+            return building_services.get_columns(true);
+          }],
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id);
+          }],
+          query_threshold_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_query_threshold(organization_id);
+          }],
+          shared_fields_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_shared_fields(organization_id);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner'])
+              .then(function (data) {
+                if (data.auth.requires_owner) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'organization_sharing',
+        url: '/accounts/{organization_id:int}/sharing',
+        templateUrl: static_url + 'seed/partials/sharing.html',
+        controller: 'organization_settings_controller',
+        resolve: {
+          all_columns: ['building_services', function (building_services) {
+            return building_services.get_columns();
+          }],
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id);
+          }],
+          query_threshold_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_query_threshold(organization_id);
+          }],
+          shared_fields_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_shared_fields(organization_id);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner'])
+              .then(function (data) {
+                if (data.auth.requires_owner) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'organization_cleansing',
+        url: '/accounts/{organization_id:int}/data_cleansing',
+        templateUrl: static_url + 'seed/partials/cleansing_admin.html',
+        controller: 'cleansing_admin_controller',
+        resolve: {
+          all_columns: ['building_services', function (building_services) {
+            return building_services.get_columns();
+          }],
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id);
+          }],
+          cleansing_rules_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_cleansing_rules(organization_id);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner'])
+              .then(function (data) {
+                if (data.auth.requires_owner) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'organization_cycles',
+        url: '/accounts/{organization_id:int}/cycles',
+        templateUrl: static_url + 'seed/partials/cycle_admin.html',
+        controller: 'cycle_admin_controller',
+        resolve: {
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            return organization_service.get_organization($stateParams.organization_id);
+          }],
+          cycles_payload: ['cycle_service', '$stateParams', function (cycle_service, $stateParams) {
+            return cycle_service.get_cycles_for_org($stateParams.organization_id);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner'])
+              .then(function (data) {
+                if (data.auth.requires_owner) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'organization_labels',
+        url: '/accounts/{organization_id:int}/labels',
+        templateUrl: static_url + 'seed/partials/label_admin.html',
+        controller: 'label_admin_controller',
+        resolve: {
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id);
+          }],
+          labels_payload: ['label_service', '$stateParams', function (label_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return label_service.get_labels_for_org(organization_id);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner'])
+              .then(function (data) {
+                if (data.auth.requires_owner) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'organization_sub_orgs',
+        url: '/accounts/{organization_id:int}/sub_org',
+        templateUrl: static_url + 'seed/partials/sub_org.html',
+        controller: 'organization_controller',
+        resolve: {
+          users_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization_users({org_id: organization_id});
+          }],
+          organization_payload: ['organization_service', '$stateParams', '$q', function (organization_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id)
+              .then(function (data) {
+                if (data.organization.is_parent) {
+                  return data;
+                } else {
+                  return $q.reject('Your page could not be located!');
+                }
+              });
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner'])
+              .then(function (data) {
+                if (data.auth.requires_owner) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'organization_members',
+        url: '/accounts/{organization_id:int}/members',
+        templateUrl: static_url + 'seed/partials/members.html',
+        controller: 'members_controller',
+        resolve: {
+          users_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization_users({org_id: organization_id});
+          }],
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['can_invite_member', 'can_remove_member', 'requires_owner', 'requires_member'])
+              .then(function (data) {
+                if (data.auth.requires_member) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }],
+          user_profile_payload: ['user_service', function (user_service) {
+            return user_service.get_user_profile();
+          }]
+        }
+      })
+      .state({
+        name: 'inventory_list',
+        url: '/{inventory_type:properties|taxlots}',
+        templateUrl: static_url + 'seed/partials/inventory_list.html',
+        controller: 'inventory_list_controller',
+        resolve: {
+          inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_properties(1);
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlots(1);
             }
-          };
-        },
-        columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
-          if ($stateParams.inventory_type === 'properties') {
-            return inventory_service.get_property_columns().then(function (columns) {
-              _.remove(columns, 'related');
-              return _.map(columns, function (col) {
-                return _.omit(col, ['pinnedLeft', 'related']);
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
+          labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
+            return label_service.get_labels([], {
+              inventory_type: $stateParams.inventory_type
+            }).then(function (labels) {
+              return _.filter(labels, function (label) {
+                return !_.isEmpty(label.is_applied);
               });
             });
-          } else if ($stateParams.inventory_type === 'taxlots') {
-            return inventory_service.get_taxlot_columns().then(function (columns) {
-              _.remove(columns, 'related');
-              return _.map(columns, function (col) {
-                return _.omit(col, ['pinnedLeft', 'related']);
-              });
-            });
-          }
-        }]
-      }
-    })
-    .state({
-      name: 'building_detail',
-      url: '/buildings/{building_id:int}',
-      templateUrl: static_url + 'seed/partials/building_detail_section.html',
-      controller: 'building_detail_controller',
-      resolve: {
-        building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-          // load `get_building` before page is loaded to avoid
-          // page flicker.
-          var building_id = $stateParams.building_id;
-          return building_services.get_building(building_id);
-        }],
-        all_columns: ['building_services', function (building_services) {
-          return building_services.get_columns();
-        }],
-        audit_payload: function () {
-          return {audit_logs: {}};
-        },
-        default_columns: ['user_service', function (user_service) {
-          return user_service.get_default_building_detail_columns();
-        }]
-      }
-    })
-    .state({
-      name: 'building_projects',
-      url: '/buildings/{building_id:int}/projects',
-      templateUrl: static_url + 'seed/partials/building_projects_section.html',
-      controller: 'building_detail_controller',
-      resolve: {
-        building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-          // load `get_building` before page is loaded to avoid
-          // page flicker.
-          var building_id = $stateParams.building_id;
-          return building_services.get_building(building_id);
-        }],
-        all_columns: ['building_services', function (building_services) {
-          return building_services.get_columns();
-        }],
-        audit_payload: function () {
-          return {audit_logs: {}};
-        },
-        default_columns: function () {
-          return {columns: {}};
-        }
-      }
-    })
-    .state({
-      name: 'building_audit_log',
-      url: '/buildings/{building_id:int}/audit',
-      templateUrl: static_url + 'seed/partials/building_audit_log.html',
-      controller: 'building_detail_controller',
-      resolve: {
-        building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-          // load `get_building` before page is loaded to avoid
-          // page flicker.
-          var building_id = $stateParams.building_id;
-          return building_services.get_building(building_id);
-        }],
-        all_columns: ['building_services', function (building_services) {
-          return building_services.get_columns();
-        }],
-        audit_payload: ['audit_service', '$stateParams', function (audit_service, $stateParams) {
-          var building_id = $stateParams.building_id;
-          return audit_service.get_building_logs(building_id);
-        }],
-        default_columns: function () {
-          return {columns: {}};
-        }
-      }
-    })
-    .state({
-      name: 'building_energy',
-      url: '/buildings/{building_id:int}/energy',
-      templateUrl: static_url + 'seed/partials/building_energy_section.html',
-      controller: 'building_detail_controller',
-      resolve: {
-        building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-          // load `get_building` before page is loaded to avoid
-          // page flicker.
-          var building_id = $stateParams.building_id;
-          return building_services.get_building(building_id);
-        }],
-        all_columns: ['building_services', function (building_services) {
-          return building_services.get_columns();
-        }],
-        audit_payload: function () {
-          return {audit_logs: {}};
-        },
-        default_columns: function () {
-          return {columns: {}};
-        }
-      }
-    })
-    .state({
-      name: 'building_settings',
-      url: '/buildings/{building_id:int}/settings',
-      templateUrl: static_url + 'seed/partials/building_settings_section.html',
-      controller: 'buildings_settings_controller',
-      resolve: {
-        building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-          // load `get_building` before page is loaded to avoid
-          // page flicker.
-          var building_id = $stateParams.building_id;
-          return building_services.get_building(building_id);
-        }],
-        all_columns: ['building_services', function (building_services) {
-          return building_services.get_columns();
-        }],
-        default_columns: ['user_service', function (user_service) {
-          return user_service.get_default_building_detail_columns();
-        }],
-        shared_fields_payload: function () {
-          return {show_shared_buildings: false};
-        },
-        $uibModalInstance: function () {
-          return {
-            close: function () {
+          }],
+          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns();
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns();
             }
-          };
-        },
-        project_payload: function () {
-          return {project: {}};
+          }]
         }
-      }
-    })
-    .state({
-      name: 'mapping',
-      url: '/data/mapping/{importfile_id:int}',
-      templateUrl: static_url + 'seed/partials/mapping.html',
-      controller: 'mapping_controller',
-      resolve: {
-        import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
-          var importfile_id = $stateParams.importfile_id;
-          return dataset_service.get_import_file(importfile_id);
-        }],
-        suggested_mappings_payload: ['mapping_service', '$stateParams', function (mapping_service, $stateParams) {
-          var importfile_id = $stateParams.importfile_id;
-          return mapping_service.get_column_mapping_suggestions(
-            importfile_id
-          );
-        }],
-        raw_columns_payload: ['mapping_service', '$stateParams', function (mapping_service, $stateParams) {
-          var importfile_id = $stateParams.importfile_id;
-          return mapping_service.get_raw_columns(
-            importfile_id
-          );
-        }],
-        first_five_rows_payload: ['mapping_service', '$stateParams', function (mapping_service, $stateParams) {
-          var importfile_id = $stateParams.importfile_id;
-          return mapping_service.get_first_five_rows(
-            importfile_id
-          );
-        }],
-        property_columns: ['inventory_service', function (inventory_service) {
-          return inventory_service.get_property_columns();
-        }],
-        taxlot_columns: ['inventory_service', function (inventory_service) {
-          return inventory_service.get_taxlot_columns();
-        }],
-        auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
-          var organization_id = user_service.get_organization().id;
-          return auth_service.is_authorized(organization_id, ['requires_member'])
-            .then(function (data) {
-              if (data.auth.requires_member) {
-                return data;
-              } else {
-                return $q.reject('not authorized');
-              }
-            }, function (data) {
-              return $q.reject(data.message);
-            });
-        }]
-      }
-    })
-    .state({
-      name: 'matching',
-      url: '/data/matching/{importfile_id:int}',
-      templateUrl: static_url + 'seed/partials/matching.html',
-      controller: 'matching_controller',
-      resolve: {
-        import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
-          var importfile_id = $stateParams.importfile_id;
-          return dataset_service.get_import_file(importfile_id);
-        }],
-        buildings_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-          var importfile_id = $stateParams.importfile_id;
-          return building_services.search_matching_buildings(
-            '', 10, 1, '', false, {}, importfile_id);
-        }],
-        default_columns: ['user_service', function (user_service) {
-          return user_service.get_default_columns();
-        }],
-        all_columns: ['building_services', function (building_services) {
-          return building_services.get_columns();
-        }],
-        auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
-          var organization_id = user_service.get_organization().id;
-          return auth_service.is_authorized(organization_id, ['requires_member'])
-            .then(function (data) {
-              if (data.auth.requires_member) {
-                return data;
-              } else {
-                return $q.reject('not authorized');
-              }
-            }, function (data) {
-              return $q.reject(data.message);
-            });
-        }]
-      }
-    })
-    .state({
-      name: 'dataset_list',
-      url: '/data',
-      templateUrl: static_url + 'seed/partials/dataset_list.html',
-      controller: 'dataset_list_controller',
-      resolve: {
-        datasets_payload: ['dataset_service', function (dataset_service) {
-          return dataset_service.get_datasets();
-        }],
-        auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
-          var organization_id = user_service.get_organization().id;
-          return auth_service.is_authorized(organization_id, ['requires_member'])
-            .then(function (data) {
-              if (data.auth.requires_member) {
-                return data;
-              } else {
-                return $q.reject('not authorized');
-              }
-            }, function (data) {
-              return $q.reject(data.message);
-            });
-        }]
-      }
-    })
-    .state({
-      name: 'dataset_detail',
-      url: '/data/{dataset_id:int}',
-      templateUrl: static_url + 'seed/partials/dataset_detail.html',
-      controller: 'dataset_detail_controller',
-      resolve: {
-        dataset_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
-          var dataset_id = $stateParams.dataset_id;
-          return dataset_service.get_dataset(dataset_id);
-        }],
-        auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
-          var organization_id = user_service.get_organization().id;
-          return auth_service.is_authorized(organization_id, ['requires_member'])
-            .then(function (data) {
-              if (data.auth.requires_member) {
-                return data;
-              } else {
-                return $q.reject('not authorized');
-              }
-            }, function (data) {
-              return $q.reject(data.message);
-            });
-        }]
-      }
-    })
-    .state({
-      name: 'contact',
-      url: '/contact',
-      templateUrl: static_url + 'seed/partials/contact.html'
-    })
-    .state({
-      name: 'api_docs',
-      url: '/api/swagger',
-      templateUrl: static_url + 'seed/partials/api_docs.html',
-      controller: 'api_controller'
-    })
-    .state({
-      name: 'about',
-      url: '/about',
-      templateUrl: static_url + 'seed/partials/about.html',
-      controller: 'about_controller',
-      resolve: {
-        version_payload: ['main_service', function (main_service) {
-          return main_service.version();
-        }]
-      }
-    })
-    .state({
-      name: 'organizations',
-      url: '/accounts',
-      templateUrl: static_url + 'seed/partials/accounts.html',
-      controller: 'accounts_controller',
-      resolve: {
-        organization_payload: ['organization_service', function (organization_service) {
-          return organization_service.get_organizations();
-        }]
-      }
-    })
-    .state({
-      name: 'organization_settings',
-      url: '/accounts/{organization_id:int}',
-      templateUrl: static_url + 'seed/partials/settings.html',
-      controller: 'organization_settings_controller',
-      resolve: {
-        all_columns: ['building_services', function (building_services) {
-          return building_services.get_columns(true);
-        }],
-        organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-          var organization_id = $stateParams.organization_id;
-          return organization_service.get_organization(organization_id);
-        }],
-        query_threshold_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-          var organization_id = $stateParams.organization_id;
-          return organization_service.get_query_threshold(organization_id);
-        }],
-        shared_fields_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-          var organization_id = $stateParams.organization_id;
-          return organization_service.get_shared_fields(organization_id);
-        }],
-        auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
-          var organization_id = $stateParams.organization_id;
-          return auth_service.is_authorized(organization_id, ['requires_owner'])
-            .then(function (data) {
-              if (data.auth.requires_owner) {
-                return data;
-              } else {
-                return $q.reject('not authorized');
-              }
-            }, function (data) {
-              return $q.reject(data.message);
-            });
-        }]
-      }
-    })
-    .state({
-      name: 'organization_sharing',
-      url: '/accounts/{organization_id:int}/sharing',
-      templateUrl: static_url + 'seed/partials/sharing.html',
-      controller: 'organization_settings_controller',
-      resolve: {
-        all_columns: ['building_services', function (building_services) {
-          return building_services.get_columns();
-        }],
-        organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-          var organization_id = $stateParams.organization_id;
-          return organization_service.get_organization(organization_id);
-        }],
-        query_threshold_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-          var organization_id = $stateParams.organization_id;
-          return organization_service.get_query_threshold(organization_id);
-        }],
-        shared_fields_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-          var organization_id = $stateParams.organization_id;
-          return organization_service.get_shared_fields(organization_id);
-        }],
-        auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
-          var organization_id = $stateParams.organization_id;
-          return auth_service.is_authorized(organization_id, ['requires_owner'])
-            .then(function (data) {
-              if (data.auth.requires_owner) {
-                return data;
-              } else {
-                return $q.reject('not authorized');
-              }
-            }, function (data) {
-              return $q.reject(data.message);
-            });
-        }]
-      }
-    })
-    .state({
-      name: 'organization_cleansing',
-      url: '/accounts/{organization_id:int}/data_cleansing',
-      templateUrl: static_url + 'seed/partials/cleansing_admin.html',
-      controller: 'cleansing_admin_controller',
-      resolve: {
-        all_columns: ['building_services', function (building_services) {
-          return building_services.get_columns();
-        }],
-        organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-          var organization_id = $stateParams.organization_id;
-          return organization_service.get_organization(organization_id);
-        }],
-        cleansing_rules_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-          var organization_id = $stateParams.organization_id;
-          return organization_service.get_cleansing_rules(organization_id);
-        }],
-        auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
-          var organization_id = $stateParams.organization_id;
-          return auth_service.is_authorized(organization_id, ['requires_owner'])
-            .then(function (data) {
-              if (data.auth.requires_owner) {
-                return data;
-              } else {
-                return $q.reject('not authorized');
-              }
-            }, function (data) {
-              return $q.reject(data.message);
-            });
-        }]
-      }
-    })
-    .state({
-      name: 'organization_cycles',
-      url: '/accounts/{organization_id:int}/cycles',
-      templateUrl: static_url + 'seed/partials/cycle_admin.html',
-      controller: 'cycle_admin_controller',
-      resolve: {
-        organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-          return organization_service.get_organization($stateParams.organization_id);
-        }],
-        cycles_payload: ['cycle_service', '$stateParams', function (cycle_service, $stateParams) {
-          return cycle_service.get_cycles_for_org($stateParams.organization_id);
-        }],
-        auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
-          var organization_id = $stateParams.organization_id;
-          return auth_service.is_authorized(organization_id, ['requires_owner'])
-            .then(function (data) {
-              if (data.auth.requires_owner) {
-                return data;
-              } else {
-                return $q.reject('not authorized');
-              }
-            }, function (data) {
-              return $q.reject(data.message);
-            });
-        }]
-      }
-    })
-    .state({
-      name: 'organization_labels',
-      url: '/accounts/{organization_id:int}/labels',
-      templateUrl: static_url + 'seed/partials/label_admin.html',
-      controller: 'label_admin_controller',
-      resolve: {
-        organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-          var organization_id = $stateParams.organization_id;
-          return organization_service.get_organization(organization_id);
-        }],
-        labels_payload: ['label_service', '$stateParams', function (label_service, $stateParams) {
-          var organization_id = $stateParams.organization_id;
-          return label_service.get_labels_for_org(organization_id);
-        }],
-        auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
-          var organization_id = $stateParams.organization_id;
-          return auth_service.is_authorized(organization_id, ['requires_owner'])
-            .then(function (data) {
-              if (data.auth.requires_owner) {
-                return data;
-              } else {
-                return $q.reject('not authorized');
-              }
-            }, function (data) {
-              return $q.reject(data.message);
-            });
-        }]
-      }
-    })
-    .state({
-      name: 'organization_sub_orgs',
-      url: '/accounts/{organization_id:int}/sub_org',
-      templateUrl: static_url + 'seed/partials/sub_org.html',
-      controller: 'organization_controller',
-      resolve: {
-        users_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-          var organization_id = $stateParams.organization_id;
-          return organization_service.get_organization_users({org_id: organization_id});
-        }],
-        organization_payload: ['organization_service', '$stateParams', '$q', function (organization_service, $stateParams, $q) {
-          var organization_id = $stateParams.organization_id;
-          return organization_service.get_organization(organization_id)
-            .then(function (data) {
-              if (data.organization.is_parent) {
-                return data;
-              } else {
-                return $q.reject('Your page could not be located!');
+      })
+      .state({
+        name: 'inventory_detail',
+        url: '/{inventory_type:properties|taxlots}/{inventory_id:int}/cycles/{cycle_id:int}',
+        templateUrl: static_url + 'seed/partials/inventory_detail.html',
+        controller: 'inventory_detail_controller',
+        resolve: {
+          inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+            // load `get_building` before page is loaded to avoid page flicker.
+            var inventory_id = $stateParams.inventory_id;
+            var cycle_id = $stateParams.cycle_id;
+            var promise;
+            if ($stateParams.inventory_type == 'properties') promise = inventory_service.get_property(inventory_id, cycle_id);
+            else if ($stateParams.inventory_type == 'taxlots') promise = inventory_service.get_taxlot(inventory_id, cycle_id);
+            promise.catch(function (err) {
+              if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
+                // Inventory item not found for current organization, redirecting
+                $state.go('inventory_list', {inventory_type: $stateParams.inventory_type});
               }
             });
-        }],
-        auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
-          var organization_id = $stateParams.organization_id;
-          return auth_service.is_authorized(organization_id, ['requires_owner'])
-            .then(function (data) {
-              if (data.auth.requires_owner) {
-                return data;
-              } else {
-                return $q.reject('not authorized');
-              }
-            }, function (data) {
-              return $q.reject(data.message);
-            });
-        }]
-      }
-    })
-    .state({
-      name: 'organization_members',
-      url: '/accounts/{organization_id:int}/members',
-      templateUrl: static_url + 'seed/partials/members.html',
-      controller: 'members_controller',
-      resolve: {
-        users_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-          var organization_id = $stateParams.organization_id;
-          return organization_service.get_organization_users({org_id: organization_id});
-        }],
-        organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-          var organization_id = $stateParams.organization_id;
-          return organization_service.get_organization(organization_id);
-        }],
-        auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
-          var organization_id = $stateParams.organization_id;
-          return auth_service.is_authorized(organization_id, ['can_invite_member', 'can_remove_member', 'requires_owner', 'requires_member'])
-            .then(function (data) {
-              if (data.auth.requires_member) {
-                return data;
-              } else {
-                return $q.reject('not authorized');
-              }
-            }, function (data) {
-              return $q.reject(data.message);
-            });
-        }],
-        user_profile_payload: ['user_service', function (user_service) {
-          return user_service.get_user_profile();
-        }]
-      }
-    })
-    .state({
-      name: 'inventory_list',
-      url: '/{inventory_type:properties|taxlots}',
-      templateUrl: static_url + 'seed/partials/inventory_list.html',
-      controller: 'inventory_list_controller',
-      resolve: {
-        inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
-          if ($stateParams.inventory_type === 'properties') {
-            return inventory_service.get_properties(1);
-          } else if ($stateParams.inventory_type === 'taxlots') {
-            return inventory_service.get_taxlots(1);
-          }
-        }],
-        cycles: ['cycle_service', function (cycle_service) {
-          return cycle_service.get_cycles();
-        }],
-        labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
-          return label_service.get_labels([], {
-            inventory_type: $stateParams.inventory_type
-          }).then(function (labels) {
-            return _.filter(labels, function (label) {
-              return !_.isEmpty(label.is_applied);
-            });
-          });
-        }],
-        columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
-          if ($stateParams.inventory_type === 'properties') {
-            return inventory_service.get_property_columns();
-          } else if ($stateParams.inventory_type === 'taxlots') {
-            return inventory_service.get_taxlot_columns();
-          }
-        }]
-      }
-    })
-    .state({
-      name: 'inventory_detail',
-      url: '/{inventory_type:properties|taxlots}/{inventory_id:int}/cycles/{cycle_id:int}',
-      templateUrl: static_url + 'seed/partials/inventory_detail.html',
-      controller: 'inventory_detail_controller',
-      resolve: {
-        inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
-          // load `get_building` before page is loaded to avoid page flicker.
-          var inventory_id = $stateParams.inventory_id;
-          var cycle_id = $stateParams.cycle_id;
-          var promise;
-          if ($stateParams.inventory_type == 'properties') promise = inventory_service.get_property(inventory_id, cycle_id);
-          else if ($stateParams.inventory_type == 'taxlots') promise = inventory_service.get_taxlot(inventory_id, cycle_id);
-          promise.catch(function (err) {
-            if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
-              // Inventory item not found for current organization, redirecting
-              $state.go('inventory_list', {inventory_type: $stateParams.inventory_type});
+            return promise;
+          }],
+          columns: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
+            if ($stateParams.inventory_type == 'properties') {
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, 'related');
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            } else if ($stateParams.inventory_type == 'taxlots') {
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, 'related');
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
             }
-          });
-          return promise;
-        }],
-        columns: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
-          if ($stateParams.inventory_type == 'properties') {
-            return inventory_service.get_property_columns().then(function (columns) {
-              _.remove(columns, 'related');
-              return _.map(columns, function (col) {
-                return _.omit(col, ['pinnedLeft', 'related']);
-              });
+          }],
+          labels_payload: ['$stateParams', 'label_service', function ($stateParams, label_service) {
+            return label_service.get_labels([$stateParams.inventory_id], {
+              inventory_type: $stateParams.inventory_type
             });
-          } else if ($stateParams.inventory_type == 'taxlots') {
-            return inventory_service.get_taxlot_columns().then(function (columns) {
-              _.remove(columns, 'related');
-              return _.map(columns, function (col) {
-                return _.omit(col, ['pinnedLeft', 'related']);
-              });
-            });
-          }
-        }],
-        labels_payload: ['$stateParams', 'label_service', function ($stateParams, label_service) {
-          return label_service.get_labels([$stateParams.inventory_id], {
-            inventory_type: $stateParams.inventory_type
-          });
-        }]
-      }
-    });
-}]);
+          }]
+        }
+      });
+  }]);
 
 /**
  * whitelist needed to load html partials from Amazon AWS S3

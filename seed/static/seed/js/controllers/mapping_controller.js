@@ -380,13 +380,10 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.save_mappings = false;
 
         spinner_utility.show();
-        $http({
-          method: 'POST',
-          data: {},
-          url: '/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/'
-        }).success(function (data, status, headers, config) {
+        $http.post('/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/', {}).then(function (response) {
           spinner_utility.hide();
 
+          var data = response.data
           $scope.mappedData = data;
 
           var gridOptions = {
@@ -457,8 +454,8 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.taxlotsGridOptions.columnDefs = taxlot_columns;
 
           $scope.show_mapped_buildings = true;
-        }).error(function (data, status, headers, config) {
-          console.error(data, status);
+        }).catch(function (response) {
+          console.error(response);
         });
       };
 
