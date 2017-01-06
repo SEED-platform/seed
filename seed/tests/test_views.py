@@ -72,12 +72,6 @@ class MainViewTests(TestCase):
         response = self.client.get(reverse('seed:home'))
         self.assertEqual(200, response.status_code)
 
-    def test_create_pm_mapping(self):
-        response = self.client.post(reverse('seed:create_pm_mapping'),
-                                    '{"columns": ["name1", "name2"]}',
-                                    content_type='application/json')
-        self.assertTrue(json.loads(response.content)['success'])
-
     def test_export_buildings(self):
         cb = CanonicalBuilding(active=True)
         cb.save()
@@ -2305,9 +2299,8 @@ class TestMCMViews(TestCase):
             unit=float_unit)
 
         resp = self.client.post(
-            reverse_lazy("seed:save_column_mappings"),
+            reverse_lazy("apiv2:import_files-save-column-mappings", args=[self.import_file.id]),
             data=json.dumps({
-                'import_file_id': self.import_file.id,
                 'mappings': [
                     {
                         'from_field': 'eui',
@@ -2351,9 +2344,8 @@ class TestMCMViews(TestCase):
             0
         )
         resp = self.client.post(
-            reverse_lazy("seed:save_column_mappings"),
+            reverse_lazy("apiv2:import_files-save-column-mappings", args=[self.import_file.id]),
             data=json.dumps({
-                'import_file_id': self.import_file.id,
                 'mappings': [
                     {
                         'from_field': 'eui',
@@ -2384,7 +2376,7 @@ class TestMCMViews(TestCase):
         self.client.login(**user_2_details)
 
         self.client.post(
-            reverse_lazy("seed:save_column_mappings"),
+            reverse_lazy("apiv2:import_files-save-column-mappings", args=[self.import_file.id]),
             data=json.dumps({
                 'import_file_id': self.import_file.id,
                 'mappings': [
@@ -2805,7 +2797,7 @@ class InventoryViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("app:properties"), params)
+        response = self.client.get('/api/v2/properties/', params)
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -2823,7 +2815,7 @@ class InventoryViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("app:properties"), params)
+        response = self.client.get("/api/v2/properties/", params)
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -2848,7 +2840,7 @@ class InventoryViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("app:properties"), params)
+        response = self.client.get("/api/v2/properties/", params)
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -2881,7 +2873,7 @@ class InventoryViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("app:properties"), params)
+        response = self.client.get("/api/v2/properties/", params)
         results = json.loads(response.content)
         self.assertEquals(len(results['results']), 1)
         result = results['results'][0]
@@ -2921,7 +2913,7 @@ class InventoryViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("app:properties"), params)
+        response = self.client.get("/api/v2/properties/", params)
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -2942,7 +2934,7 @@ class InventoryViewTests(TestCase):
             'page': 'one',
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("app:properties"), params)
+        response = self.client.get("/api/v2/properties/", params)
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 1)
         pagination = result['pagination']
@@ -2960,7 +2952,7 @@ class InventoryViewTests(TestCase):
             'page': 10,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("app:properties"), params)
+        response = self.client.get("/api/v2/properties/", params)
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 0)
         pagination = result['pagination']
@@ -2993,13 +2985,13 @@ class InventoryViewTests(TestCase):
             cycle=self.cycle
         )
         params = {
+            'cycle_id': self.cycle.pk,
             'organization_id': self.org.pk,
             'page': 1,
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("app:property-details",
-                    args=(property_property.id, self.cycle.pk)),
+            "/api/v2/properties/" + str(property_property.id) + "/",
             params
         )
         results = json.loads(response.content)
@@ -3078,13 +3070,13 @@ class InventoryViewTests(TestCase):
             cycle=self.cycle
         )
         params = {
+            'cycle_id': self.cycle.pk,
             'organization_id': self.org.pk,
             'page': 1,
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("app:property-details",
-                    args=(property_property.id, self.cycle.pk)),
+            "/api/v2/properties/" + str(property_property.id) + "/",
             params
         )
         results = json.loads(response.content)
@@ -3166,7 +3158,7 @@ class InventoryViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 1,
         }
-        response = self.client.get(reverse("app:taxlots"), params)
+        response = self.client.get("/api/v2/taxlots/", params)
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 1)
@@ -3208,7 +3200,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'page': 1,
         }
-        response = self.client.get(reverse("app:taxlots"), params)
+        response = self.client.get("/api/v2/taxlots/", params)
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 1)
@@ -3227,7 +3219,7 @@ class InventoryViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(reverse("app:taxlots"), params)
+        response = self.client.get("/api/v2/taxlots/", params)
 
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 1)
@@ -3285,7 +3277,7 @@ class InventoryViewTests(TestCase):
             'page': 1,
             'per_page': 256,
         }
-        response = self.client.get(reverse("app:taxlots"), params)
+        response = self.client.get("/api/v2/taxlots/", params)
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 2)
@@ -3346,7 +3338,7 @@ class InventoryViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 1,
         }
-        response = self.client.get(reverse("app:taxlots"), params)
+        response = self.client.get("/api/v2/taxlots/", params)
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 1)
@@ -3383,7 +3375,7 @@ class InventoryViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 'bad',
         }
-        response = self.client.get(reverse("app:taxlots"), params)
+        response = self.client.get("/api/v2/taxlots/", params)
         result = json.loads(response.content)
 
         self.assertEquals(len(result['results']), 1)
@@ -3423,7 +3415,7 @@ class InventoryViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 'bad',
         }
-        response = self.client.get(reverse("app:taxlots"), params)
+        response = self.client.get("/api/v2/taxlots/", params)
         result = json.loads(response.content)
 
         self.assertEquals(len(result['results']), 1)
@@ -3464,7 +3456,7 @@ class InventoryViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 'bad',
         }
-        response = self.client.get(reverse("app:taxlots"), params)
+        response = self.client.get("/api/v2/taxlots/", params)
         related = json.loads(response.content)['results'][0]['related'][0]
         self.assertEqual(related['calculated_taxlot_ids'], 'Missing')
 
@@ -3499,13 +3491,12 @@ class InventoryViewTests(TestCase):
         )
 
         params = {
+            'cycle_id': self.cycle.pk,
             'organization_id': self.org.pk,
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(
-            reverse("app:taxlot-details",
-                    args=(taxlot.id, self.cycle.pk)), params)
+        response = self.client.get("/api/v2/taxlots/" + str(taxlot.id) + "/", params)
         result = json.loads(response.content)
 
         cycle = result['cycle']
@@ -3551,12 +3542,12 @@ class InventoryViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("app:cycles"), params
+            reverse("apiv2:cycles-list"), params
         )
         results = json.loads(response.content)
         self.assertEqual(results['status'], 'success')
 
-        self.assertEqual(len(results['cycles']), 1)
+        self.assertEqual(len(results['cycles']), 2)
         cycle = results['cycles'][0]
         self.assertEqual(cycle['id'], self.cycle.pk)
         self.assertEqual(cycle['name'], self.cycle.name)
@@ -3578,9 +3569,9 @@ class InventoryViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("app:property-columns"), params
+            "/api/v2/properties/columns/", params
         )
-        results = json.loads(response.content)
+        results = json.loads(response.content)['columns']
 
         pm_property_id_col = {
             'name': 'pm_property_id',
@@ -3623,10 +3614,8 @@ class InventoryViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(
-            reverse("app:taxlot-columns"), params
-        )
-        results = json.loads(response.content)
+        response = self.client.get("/api/v2/taxlots/columns/", params)
+        results = json.loads(response.content)['columns']
 
         jurisdiction_tax_lot_id_col = {
             'name': 'jurisdiction_tax_lot_id',

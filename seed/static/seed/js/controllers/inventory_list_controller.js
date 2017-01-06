@@ -6,7 +6,6 @@ angular.module('BE.seed.controller.inventory_list', [])
   .controller('inventory_list_controller', [
     '$scope',
     '$window',
-    '$log',
     '$uibModal',
     '$stateParams',
     'inventory_service',
@@ -17,9 +16,9 @@ angular.module('BE.seed.controller.inventory_list', [])
     // 'columns',
     'urls',
     'spinner_utility',
+    'naturalSort',
     function ($scope,
               $window,
-              $log,
               $uibModal,
               $stateParams,
               inventory_service,
@@ -29,7 +28,8 @@ angular.module('BE.seed.controller.inventory_list', [])
               labels,
               // columns,
               urls,
-              spinner_utility) {
+              spinner_utility,
+              naturalSort) {
       spinner_utility.show();
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
@@ -122,6 +122,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         var options = {};
         if (col.type == 'number') options.filter = inventory_service.numFilter();
         else options.filter = inventory_service.textFilter();
+        if (col.type == 'numberStr') options.sortingAlgorithm = naturalSort;
         if (col.name == 'number_properties' && col.related) options.treeAggregationType = 'total';
         else if (col.related || col.extraData) options.treeAggregationType = 'uniqueList';
         return _.defaults(col, options, defaults);
@@ -172,6 +173,8 @@ angular.module('BE.seed.controller.inventory_list', [])
             var map = {};
             if ($scope.inventory_type == 'properties') {
               map = {
+                address_line_1: 'tax_address_line_1',
+                address_line_2: 'tax_address_line_2',
                 city: 'tax_city',
                 state: 'tax_state',
                 postal_code: 'tax_postal_code'
@@ -187,7 +190,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             }
             var updated = _.reduce(related[j], function (result, value, key) {
               key = map[key] || key;
-              if (_.includes(columnNamesToAggregate, key)) aggregations[key] = (aggregations[key] || []).concat(value);
+              if (_.includes(columnNamesToAggregate, key)) aggregations[key] = (aggregations[key] || []).concat(_.split(value, '; '));
               result[key] = value;
               return result;
             }, {});
@@ -196,7 +199,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           }
 
           aggregations = _.pickBy(_.mapValues(aggregations, function (values, key) {
-            var cleanedValues = _.without(values, undefined, null, '');
+            var cleanedValues = _.uniq(_.without(values, undefined, null, ''));
             if (key == 'number_properties') return _.sum(cleanedValues) || null;
             else return _.join(_.uniq(cleanedValues), '; ');
           }), function (result) {

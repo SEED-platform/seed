@@ -4,15 +4,21 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from datetime import date, datetime, timedelta
+
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import pre_delete
-from django.contrib.auth.models import User
 
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 
-USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', User)
 
+import logging
+
+_log = logging.getLogger(__name__)
+
+USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', User)
 
 # Role Levels
 ROLE_VIEWER = 0
@@ -24,7 +30,6 @@ ROLE_LEVEL_CHOICES = (
     (ROLE_MEMBER, 'Member'),
     (ROLE_OWNER, 'Owner'),
 )
-
 
 # Invite status
 STATUS_PENDING = 'pending'
@@ -126,13 +131,23 @@ class Organization(models.Model):
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
         # There can only be one.
-        if (
-                        self.parent_org is not None and
-                        self.parent_org.parent_org is not None
-        ):
+        if (self.parent_org is not None and self.parent_org.parent_org is not None):
             raise TooManyNestedOrgs
 
         super(Organization, self).save(*args, **kwargs)
+
+        # Create a default cycle for the organization if there isn't one already
+        from seed.models import Cycle
+        year = date.today().year - 1
+        cycle_name = 'Default ' + str(year) + ' Calendar Year'
+        if not Cycle.objects.filter(name=cycle_name, organization=self).exists():
+            _log.debug("Creating default cycle for new organization")
+            Cycle.objects.create(
+                name=cycle_name,
+                organization=self,
+                start=datetime(year, 1, 1),
+                end=datetime(year + 1, 1, 1) - timedelta(seconds=1)
+            )
 
     def is_member(self, user):
         """Return True if user object has a relation to this organization."""

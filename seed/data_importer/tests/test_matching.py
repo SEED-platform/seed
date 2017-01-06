@@ -23,7 +23,7 @@ from seed.models import (
     Column,
     PropertyState,
 )
-from seed.utils.generic import pp
+
 
 logger = logging.getLogger(__name__)
 
@@ -160,16 +160,17 @@ class TestMatching(DataMappingBaseTestCase):
         )
 
         # get a list of unhandled
-        unmatched_properties = self.import_file.find_unmatched_property_states()
-        unmatched_properties_2 = duplicate_import_file.find_unmatched_property_states()
-        print unmatched_properties
-        for p in unmatched_properties:
-            pp(p)
-        print len(unmatched_properties)
-
-        for p in unmatched_properties_2:
-            pp(p)
-        print len(unmatched_properties_2)
+        # unmatched_properties = self.import_file.find_unmatched_property_states()
+        # unmatched_properties_2 = duplicate_import_file.find_unmatched_property_states()
+        # from seed.utils.generic import pp
+        # print unmatched_properties
+        # for p in unmatched_properties:
+        #     pp(p)
+        # print len(unmatched_properties)
+        #
+        # for p in unmatched_properties_2:
+        #     pp(p)
+        # print len(unmatched_properties_2)
 
         # TODO: figure out why this isn't working here
         # self.assertRaises(tasks.DuplicateDataError, tasks.handle_id_matches,

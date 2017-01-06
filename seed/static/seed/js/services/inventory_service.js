@@ -41,7 +41,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           params.cycle = lastCycleId;
         }
 
-        var get_properties_url = "/app/properties";
+        var get_properties_url = "/api/v2/properties";
 
         spinner_utility.show();
 
@@ -145,7 +145,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       var defer = $q.defer();
       var organization_id = user_service.get_organization().id;
-      var get_property_url = "/app/properties/" + property_id + "/cycles/" + cycle_id;
+      var get_property_url = "/api/v2/properties/" + property_id + "/?cycle_id=" + cycle_id;
 
       spinner_utility.show();
       $http({
@@ -190,7 +190,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       var defer = $q.defer();
-      var update_property_url = '/app/properties/' + property_id + '/cycles/' + cycle_id + '/';
+      var update_property_url = "/api/v2/properties/" + property_id + "/?cycle_id=" + cycle_id;
 
       spinner_utility.show();
       $http({
@@ -216,7 +216,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.delete_properties = function (search_payload) {
 
       var defer = $q.defer();
-      var delete_properties_url = "/app/properties";
+      var delete_properties_url = "/app/properties";  // TODO: FixthisURL
       var organization_id = user_service.get_organization().id;
 
       spinner_utility.show();
@@ -241,7 +241,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.delete_property_states = function (ids) {
       return $http({
         method: 'DELETE',
-        url: '/app/property-state/',
+        url: '/api/v2/properties/batch_delete/',
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
         },
@@ -256,7 +256,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.delete_taxlot_states = function (ids) {
       return $http({
         method: 'DELETE',
-        url: '/app/taxlot-state/',
+        url: '/api/v2/taxlots/batch_delete/',
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
         },
@@ -290,7 +290,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           params.cycle = lastCycleId;
         }
 
-        var get_taxlots_url = "/app/taxlots";
+        var get_taxlots_url = "/api/v2/taxlots/";
 
         spinner_utility.show();
 
@@ -396,7 +396,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       var defer = $q.defer();
-      var get_taxlot_url = '/app/taxlots/' + taxlot_id + '/cycles/' + cycle_id;
+      var get_taxlot_url = '/api/v2/taxlots/' + taxlot_id + '/?cycle_id=' + cycle_id;
 
       spinner_utility.show();
       $http({
@@ -442,7 +442,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       var defer = $q.defer();
-      var update_taxlot_url = '/app/taxlots/' + taxlot_id + '/cycles/' + cycle_id + '/';
+      var update_taxlot_url = '/api/v2/taxlots/' + taxlot_id + '/?cycle_id=' + cycle_id;
 
       spinner_utility.show();
       $http({
@@ -480,7 +480,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.get_property_columns = function () {
 
       var defer = $q.defer();
-      var get_property_columns_url = "/app/property-columns";
+      var get_property_columns_url = "/api/v2/properties/columns/";
       var organization_id = user_service.get_organization().id;
 
       $http({
@@ -494,7 +494,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         _.remove(data, function (datum) {
           return _.isEmpty(datum.name);
         });
-        defer.resolve(data);
+        defer.resolve(data.columns);
       }).error(function (data, status, headers, config) {
         defer.reject(data, status);
       });
@@ -505,7 +505,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.get_taxlot_columns = function () {
 
       var defer = $q.defer();
-      var get_taxlot_columns_url = "/app/taxlot-columns";
+      var get_taxlot_columns_url = "/api/v2/taxlots/columns/";
       var organization_id = user_service.get_organization().id;
 
       $http({
@@ -519,7 +519,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         _.remove(data, function (datum) {
           return _.isEmpty(datum.name);
         });
-        defer.resolve(data);
+        defer.resolve(data.columns);
       }).error(function (data, status, headers, config) {
         defer.reject(data, status);
       });

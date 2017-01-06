@@ -652,36 +652,37 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     file = models.FileField(
         upload_to="data_imports", max_length=500, blank=True, null=True
     )
+    # Save the name of the raw file that was uploaded before it was saved to disk with the unique
+    # extension.
+    uploaded_filename = models.CharField(blank=True, max_length=255)
+    file_size_in_bytes = models.IntegerField(blank=True, null=True)
     export_file = models.FileField(
         upload_to="data_imports/exports", blank=True, null=True
     )
-    file_size_in_bytes = models.IntegerField(blank=True, null=True)
     cached_first_row = models.TextField(blank=True, null=True)
     # Save a list of the final column mapping names that were used for this file.
     # This should really be a many-to-many with the column/ColumnMapping table.
     cached_mapped_columns = models.TextField(blank=True, null=True)
     cached_second_to_fifth_row = models.TextField(blank=True, null=True)
-    num_columns = models.IntegerField(blank=True, null=True)
-    num_rows = models.IntegerField(blank=True, null=True)
-    num_mapping_warnings = models.IntegerField(default=0)
-    num_mapping_errors = models.IntegerField(default=0)
+    has_header_row = models.BooleanField(default=True)
+    mapping_completion = models.IntegerField(blank=True, null=True)
+    mapping_done = models.BooleanField(default=False)
     mapping_error_messages = models.TextField(blank=True, null=True)
-    num_validation_errors = models.IntegerField(blank=True, null=True)
-    num_tasks_total = models.IntegerField(blank=True, null=True)
-    num_tasks_complete = models.IntegerField(blank=True, null=True)
+    matching_completion = models.IntegerField(blank=True, null=True)
+    matching_done = models.BooleanField(default=False)
     num_coercion_errors = models.IntegerField(blank=True, null=True, default=0)
     num_coercions_total = models.IntegerField(blank=True, null=True, default=0)
-    has_header_row = models.BooleanField(default=True)
+    num_columns = models.IntegerField(blank=True, null=True)
+    num_mapping_errors = models.IntegerField(default=0)
+    num_mapping_warnings = models.IntegerField(default=0)
+    num_rows = models.IntegerField(blank=True, null=True)
+    num_tasks_complete = models.IntegerField(blank=True, null=True)
+    num_tasks_total = models.IntegerField(blank=True, null=True)
+    num_validation_errors = models.IntegerField(blank=True, null=True)
     # New MCM values
     raw_save_done = models.BooleanField(default=False)
     raw_save_completion = models.IntegerField(blank=True, null=True)
-    mapping_done = models.BooleanField(default=False)
-    mapping_completion = models.IntegerField(blank=True, null=True)
-    matching_done = models.BooleanField(default=False)
-    matching_completion = models.IntegerField(blank=True, null=True)
-    source_type = models.CharField(
-        null=True, blank=True, max_length=63,
-    )
+    source_type = models.CharField(null=True, blank=True, max_length=63)
     # program names should match a value in common.mapper.Programs
     source_program = models.CharField(blank=True, max_length=80)  # don't think that this is used
     # program version is in format "x.y[.z]"
@@ -855,6 +856,11 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def filename_only(self):
         name = unquote(self.file.name)
         return name[name.rfind("/") + 1:name.rfind(".")]
+
+    @property
+    def filename(self):
+        name = unquote(self.file.name)
+        return name[name.rfind("/") + 1:len(name)]
 
     @property
     def ready_to_import(self):

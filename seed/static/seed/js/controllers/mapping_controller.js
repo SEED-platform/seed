@@ -78,6 +78,7 @@ angular.module('BE.seed.controller.mapping', [])
         two_active: false,
         three_active: false
       };
+
       $scope.import_file = import_file_payload.import_file;
       $scope.import_file.matching_finished = false;
       $scope.suggested_mappings = suggested_mappings_payload.suggested_column_mappings;
@@ -659,7 +660,7 @@ angular.module('BE.seed.controller.mapping', [])
               return cleansing_service.get_cleansing_results($scope.import_file.id);
             },
             name: function () {
-              return $scope.import_file.name;
+              return $scope.import_file.uploaded_filename;
             },
             uploaded: function () {
               return $scope.import_file.created;
@@ -696,7 +697,7 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.open_data_upload_modal = function (dataset) {
         var step = 11;
         var ds = angular.copy(dataset);
-        ds.filename = $scope.import_file.name;
+        ds.filename = $scope.import_file.uploaded_filename;
         ds.import_file_id = $scope.import_file.id;
         var dataModalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',

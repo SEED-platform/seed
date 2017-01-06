@@ -202,10 +202,10 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # the demo this is an infix place, but is absolutely terrible and
     # should be removed ASAP!!!!!
     if 'PropertyState' not in table_mappings and 'TaxLotState' in table_mappings and '' in table_mappings:
+        _log.error("this code should not be running here...")
         debug_inferred_prop_state_mapping = table_mappings['']
         table_mappings['PropertyState'] = debug_inferred_prop_state_mapping
 
-    _log.debug("Mappings are %s" % table_mappings)
     map_cleaner = _build_cleaner(org)
 
     # *** BREAK OUT INTO SEPARATE METHOD ***
@@ -213,27 +213,25 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # individual values (e.g. tax lot ids). The definition of the delimited field is currently
     # hard coded
     try:
-        delimited_field = {}
+        delimited_fields = {}
         if 'TaxLotState' in table_mappings.keys():
-            delimited_field = table_mappings['TaxLotState'].keys()[
-                table_mappings['TaxLotState'].values().index(
-                    ('TaxLotState', 'jurisdiction_tax_lot_id'))]
-            # put this into a dict for now. I would much rather have this as a new method. Only
-            # delimit if in the table listed below.
-            delimited_field = {'TaxLotState': delimited_field}
+            tmp = table_mappings['TaxLotState'].keys()[table_mappings['TaxLotState'].values().index(('TaxLotState', 'jurisdiction_tax_lot_id'))]
+            delimited_fields['jurisdiction_tax_lot_id'] = {
+                'from_field': tmp,
+                'to_table': 'TaxLotState',
+                'to_field_name': 'jurisdiction_tax_lot_id',
+            }
     except ValueError:
-        delimited_field = {}
+        delimited_fields = {}
         # field does not exist in mapping list, so ignoring
 
     # _log.debug("my table mappings are {}".format(table_mappings))
-    _log.debug("delimited_field that will be expanded and normalized: {}".format(delimited_field))
+    _log.debug("delimited_field that will be expanded and normalized: {}".format(delimited_fields))
 
     # Add custom mappings for cross-related data. Right now these are hard coded, but could
     # be a setting if so desired.
-    if delimited_field and 'PropertyState' in table_mappings.keys():
-        table_mappings['PropertyState'][delimited_field['TaxLotState']] = (
-            'PropertyState', 'lot_number')
-    # _log.debug("my mappings are {}".format(table_mappings))
+    if delimited_fields and delimited_fields['jurisdiction_tax_lot_id'] and 'PropertyState' in table_mappings.keys():
+        table_mappings['PropertyState'][delimited_fields['jurisdiction_tax_lot_id']['from_field']] = ('PropertyState', 'lot_number')
     # *** END BREAK OUT ***
 
     # yes, there are three cascading for loops here. sorry :(
@@ -241,6 +239,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     for table, mappings in table_mappings.iteritems():
         if not table:
             continue
+
         # This may be historic, but we need to pull out the extra_data_fields here to pass into
         # mapper.map_row. apply_columns are extra_data columns (the raw column names)
         extra_data_fields = []
@@ -248,7 +247,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
             if not md.find_column(v[0], v[1]):
                 extra_data_fields.append(k)
         _log.debug("extra data fields: {}".format(extra_data_fields))
-        _log.debug("table {} has the maps: {}".format(table, mappings))
+
         # All the data live in the PropertyState.extra_data field when the data are imported
         data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
 
@@ -261,13 +260,20 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
 
             # expand the row into multiple rows if needed with the delimited_field replaced with a
             # single value. This minimizes the need to rewrite the downstream code.
-            if table in delimited_field.keys():
-                model_delimited_fields = delimited_field[table]
-            else:
-                model_delimited_fields = None
+            expand_row = False
+            for k, d in delimited_fields.iteritems():
+                if d['to_table'] == table:
+                    expand_row = True
+            _log.debug("Expand row is set to {}".format(expand_row))
+
+            delimited_field_list = []
+            for _, v in delimited_fields.iteritems():
+                delimited_field_list.append(v['from_field'])
+
+            _log.debug("delimited_field_list is set to {}".format(delimited_field_list))
 
             # Weeee... the data are in the extra_data column.
-            for row in expand_rows(original_row.extra_data, model_delimited_fields):
+            for row in expand_rows(original_row.extra_data, delimited_field_list, expand_row):
                 # TODO: during the mapping the data are saved back in the database
                 # If the user decided to not use the mapped data and go back and remap
                 # then the data will forever be in the property state table for

@@ -8,7 +8,7 @@
 from django.conf.urls import url
 
 from seed.views.main import (
-    home, create_pm_mapping,
+    home,
     get_total_number_of_buildings_for_user,         # TO REMOVE
     get_building,                                   # TO REMOVE
     search_buildings,                               # TO REMOVE
@@ -23,7 +23,6 @@ from seed.views.main import (
     get_PM_filter_by_counts,
     delete_duplicates_from_import_file,
     delete_file,
-    save_column_mappings,
     remap_buildings,
     public_search, export_buildings,
     export_buildings_progress,
@@ -33,29 +32,14 @@ from seed.views.main import (
     delete_organization_inventory,
     delete_buildings
 )
-from seed.views.properties import (
-    create_cycle,
-    get_cycles,
-    update_cycle,
-    delete_cycle
-)
 
 # prefix, to revert back to original endpoints, leave this blank
 apiv1 = r''  # r'api/v1/'
 
 urlpatterns = [
 
-    # cycle routes
-    url(r'^' + apiv1 + r'create_cycle/$', create_cycle, name='create_cycle'),
-    url(r'^' + apiv1 + r'get_cycles/$', get_cycles, name='get_cycles'),
-    url(r'^' + apiv1 + r'update_cycle/$', update_cycle, name='update_cycle'),
-    url(r'^' + apiv1 + r'delete_cycle/$', delete_cycle, name='delete_cycle'),
-
     # template routes
     url(r'^$', home, name='home'),
-
-    url(r'^' + apiv1 + r'create_pm_mapping/$', create_pm_mapping,
-        name='create_pm_mapping'),
 
     # TO REMOVE
     url(
@@ -124,11 +108,6 @@ urlpatterns = [
     # ),
 
     # New MCM endpoints
-    url(
-        r'^' + apiv1 + r'save_column_mappings/$',
-        save_column_mappings,
-        name='save_column_mappings'
-    ),
     url(r'^' + apiv1 + r'remap_buildings/$', remap_buildings,
         name='remap_buildings'),
     url(

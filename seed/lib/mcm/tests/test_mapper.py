@@ -131,6 +131,7 @@ class TestMapper(TestCase):
             u'City': [u'PropertyState', u'city', 100],
             u'Name': [u'PropertyState', u'name', 100]
         }
+
         # Here we pretend that we're doing a query and returning
         # relevant results.
 
@@ -428,50 +429,84 @@ class TestMapper(TestCase):
         self.assertEqual(modified_model.sale_date, sale_expected)
 
     def test_expand_field(self):
-        r = mapper.expand_field(None)
-        self.assertEqual(r, [None])
-        r = mapper.expand_field(10000)
+        r = mapper.expand_and_normalize_field(None)
+        self.assertEqual(r, None)
+        r = mapper.expand_and_normalize_field(10000)
+        self.assertEqual(r, 10000)
+        r = mapper.expand_and_normalize_field("123,15543;32132:321321;1231;:,::", False)
+        self.assertEqual(r, "123;15543;32132;321321;1231")
+        r = mapper.expand_and_normalize_field(u"4815162342")
+        self.assertEqual(r, '4815162342')
+        r = mapper.expand_and_normalize_field(u"4\\//\\//\\\\-815162342")
+        self.assertEqual(r, '4815162342')
+
+        # Returning lists
+        r = mapper.expand_and_normalize_field(10000, True)
         self.assertEqual(r, [10000])
-        r = mapper.expand_field('1,2,3')
+        r = mapper.expand_and_normalize_field('1,2,3', True)
         self.assertEqual(r, ['1', '2', '3'])
-        r = mapper.expand_field("123,15543;32132:321321;1231;")
-        self.assertEqual(r, ['123', '15543', '32132', '321321', '1231', ''])
-        r = mapper.expand_field("123,15543;32132:321321;1231;987")
+        r = mapper.expand_and_normalize_field("123,15543;32132:321321;1231", True)
+        self.assertEqual(r, ['123', '15543', '32132', '321321', '1231'])
+        r = mapper.expand_and_normalize_field("123,15543;32132:321321;1231;987", True)
         self.assertEqual(r, ['123', '15543', '32132', '321321', '1231', '987'])
-        r = mapper.expand_field(u"123,15543;32132:321321;1231;987")
+        r = mapper.expand_and_normalize_field(u"123,15543;32132:321321;1231;987", True)
         self.assertEqual(r, ['123', '15543', '32132', '321321', '1231', '987'])
-        r = mapper.expand_field(u"4815162342")
-        self.assertEqual(r, ['4815162342'])
-        r = mapper.expand_field("33366555;         33366125; 33366148")
+        r = mapper.expand_and_normalize_field("33366555; 33366125; 33366148", True)
         self.assertEqual(r, ["33366555", "33366125", "33366148"])
-        r = mapper.expand_field("000064545; 0000--34-23492-0; 00///1234: //12  34\\1234")
+        r = mapper.expand_and_normalize_field("000064545; 0000--34-23492-0; 00///1234: //12  34\\1234", True)
         self.assertEqual(r, ['000064545', '000034234920', '001234', '12341234'])
-        r = mapper.expand_field(u"4\\//\\//\\\\-815162342")
-        self.assertEqual(r, ['4815162342'])
 
-    def test_expand_rows(self):
+    def test_clean_single_row(self):
         data = {
             u'city': u'Meereen',
             u'country': u'Westeros',
-            u'jurisdiction_tax_lot_id': 1552813
+            u'jurisdiction_tax_lot_id': '155\\/\///2813'
         }
 
-        r = mapper.expand_rows(data, 'jurisdiction_tax_lot_id')
-        self.assertEqual(r, [data])
+        expected = [
+            {
+                u'city': u'Meereen',
+                u'country': u'Westeros',
+                u'jurisdiction_tax_lot_id': '1552813'
+            }
+        ]
 
+        r = mapper.expand_rows(data, ['jurisdiction_tax_lot_id'], False)
+        self.assertListEqual(r, expected)
+
+    def test_clean_single_row_no_expand(self):
         data = {
             u'city': u'Meereen',
             u'country': u'Westeros',
-            u'jurisdiction_tax_lot_id': "1,2,3,4,5"
+            u'jurisdiction_tax_lot_id': '123;234,345:456'
         }
-        expected_0 = {
+        expected = [
+            {
+                u'city': u'Meereen',
+                u'country': u'Westeros',
+                u'jurisdiction_tax_lot_id': '123;234;345;456'
+            }
+        ]
+        r = mapper.expand_rows(data, ['jurisdiction_tax_lot_id'], False)
+        self.assertListEqual(r, expected)
+
+    def test_expand_two_fields(self):
+        data = {
             u'city': u'Meereen',
             u'country': u'Westeros',
-            u'jurisdiction_tax_lot_id': "1"
+            u'jurisdiction_tax_lot_id': '123,234',
+            u'another_field': 'abc,bcd'
         }
 
-        r = mapper.expand_rows(data, 'jurisdiction_tax_lot_id')
-        self.assertEqual(len(r), 5)
-        self.assertEqual(r[0], expected_0)
-        self.assertEqual(r[2]['jurisdiction_tax_lot_id'], '3')
-        self.assertEqual(r[4]['jurisdiction_tax_lot_id'], '5')
+        expected = [
+            {u'jurisdiction_tax_lot_id': '123', u'city': u'Meereen', u'another_field': 'ABC',
+             u'country': u'Westeros'},
+            {u'jurisdiction_tax_lot_id': '123', u'city': u'Meereen', u'another_field': 'BCD',
+             u'country': u'Westeros'},
+            {u'jurisdiction_tax_lot_id': '234', u'city': u'Meereen', u'another_field': 'ABC',
+             u'country': u'Westeros'},
+            {u'jurisdiction_tax_lot_id': '234', u'city': u'Meereen', u'another_field': 'BCD',
+             u'country': u'Westeros'}
+        ]
+        r = mapper.expand_rows(data, ['jurisdiction_tax_lot_id', 'another_field'], True)
+        self.assertListEqual(r, expected)
