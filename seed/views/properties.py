@@ -791,16 +791,27 @@ class TaxLotViewSet(GenericViewSet):
         # A mapping of taxlot view pk to a list of property state info for a property view
         join_map = {}
         # Get whole taxlotstate table:
-        propToJurisdictionTL = dict(TaxLotProperty.objects.values_list('property_view_id', 'taxlot_view__state__jurisdiction_tax_lot_id'))
+        tuplePropToJurisdictionTL = tuple(TaxLotProperty.objects.values_list('property_view_id', 'taxlot_view__state__jurisdiction_tax_lot_id'))
+        from collections import defaultdict
+
+        # create a mapping that defaults to an empty list
+        propToJurisdictionTL = defaultdict(list)
+
+        # populate the mapping
+        for name, path in tuplePropToJurisdictionTL:
+            propToJurisdictionTL[name].append(path)
+
         for join in joins:
 
-            jurisdiction_tax_lot_ids = [propToJurisdictionTL[join.property_view_id]]  # FIXIT - needs to be list? see fixit below
+            jurisdiction_tax_lot_ids = propToJurisdictionTL[join.property_view_id]
 
             # Filter out associated tax lots that are present but which do not have preferred
-            none_in_jurisdiction_tax_lot_ids = None in jurisdiction_tax_lot_ids  # FIXIT - why is a list, only one to one right?
+            none_in_jurisdiction_tax_lot_ids = None in jurisdiction_tax_lot_ids
             jurisdiction_tax_lot_ids = filter(lambda x: x is not None, jurisdiction_tax_lot_ids)
 
             if none_in_jurisdiction_tax_lot_ids:
+                print "\nhere"
+                print jurisdiction_tax_lot_ids
                 jurisdiction_tax_lot_ids.append('Missing')
 
             # jurisdiction_tax_lot_ids = [""]
