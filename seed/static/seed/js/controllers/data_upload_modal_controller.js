@@ -159,6 +159,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        */
       $scope.uploaderfunc = function (event_message, file, progress) {
         if (event_message === 'invalid_extension') {
+          console.log('got here!')
           $scope.uploader.invalid_extension_alert = true;
         }
         if (event_message === 'upload_submitted') {
@@ -189,9 +190,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         // $apply() or $digest() needed maybe because of this:
         // https://github.com/angular-ui/bootstrap/issues/1798
         // otherwise alert doesn't show unless modal is interacted with
-        if (!$scope.$$phase) {
-          $scope.$apply();
-        }
+        // if (!$scope.$$phase) {
+        //   $scope.$apply();
+        // }
       };
 
       /**
