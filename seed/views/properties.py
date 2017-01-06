@@ -87,8 +87,14 @@ class PropertyViewSet(GenericViewSet):
             if cycle:
                 cycle = cycle.first()
             else:
-                return JsonResponse({'status': 'error', 'message': 'Could not locate cycle'},
-                                    status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Could not locate cycle',
+                    'pagination': {
+                        'total': 0
+                    },
+                    'results': []
+                })
 
         property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
             .filter(property__organization_id=request.query_params['organization_id'], cycle=cycle)
@@ -715,12 +721,17 @@ class TaxLotViewSet(GenericViewSet):
             cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
         else:
             cycle = Cycle.objects.filter(organization_id=org_id).order_by('name')
-            cycle = Cycle.objects.filter(organization_id=org_id).order_by('name')
             if cycle:
                 cycle = cycle.first()
             else:
-                return JsonResponse({'status': 'error', 'message': 'Could not locate cycle'},
-                                    status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Could not locate cycle',
+                    'pagination': {
+                        'total': 0
+                    },
+                    'results': []
+                })
 
         taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
             .filter(taxlot__organization_id=request.query_params['organization_id'], cycle=cycle)
