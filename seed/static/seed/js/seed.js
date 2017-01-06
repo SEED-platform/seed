@@ -1031,11 +1031,21 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/inventory_list.html',
         controller: 'inventory_list_controller',
         resolve: {
-          inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+        inventory: ['$stateParams', 'inventory_service', 'columns', function ($stateParams, inventory_service, columns) {
+        // inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+          var localStorageKey = 'grid.' + $stateParams.inventory_type;
+          var myColumns = inventory_service.loadSettings(localStorageKey, columns);
+          var visibleColumns = _.map(_.filter(myColumns, 'visible'), 'name');
+          // console.log('before: ', visibleColumns);
             if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_properties(1);
+            return inventory_service.get_properties(1, undefined, undefined, visibleColumns).then(function (inv) {
+            // return inventory_service.get_properties(1).then(function (inv) {
+              return  _.extend({'columns': myColumns}, inv);
+            });
             } else if ($stateParams.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlots(1);
+            return inventory_service.get_taxlots(1, undefined, undefined, visibleColumns).then(function (inv) {
+              return  _.extend({'columns': myColumns}, inv);
+            });
             }
           }],
           cycles: ['cycle_service', function (cycle_service) {

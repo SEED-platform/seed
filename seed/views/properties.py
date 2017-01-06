@@ -75,6 +75,7 @@ class PropertyViewSet(GenericViewSet):
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
+        columns = request.query_params.getlist('columns')
         if not org_id:
             return JsonResponse({'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -147,6 +148,10 @@ class PropertyViewSet(GenericViewSet):
                 while extra_data_field in taxlot_state_data:
                     extra_data_field += '_extra'
                 taxlot_state_data[extra_data_field] = extra_data_value
+
+            # Only return the requested rows. speeds up the json string time
+            taxlot_state_data = {key: value for key, value in taxlot_state_data.items() if key in columns}
+
             taxlot_map[taxlot_view.pk] = taxlot_state_data
             # Replace taxlot_view id with taxlot id
             taxlot_map[taxlot_view.pk]['id'] = taxlot_view.taxlot.id
@@ -712,6 +717,7 @@ class TaxLotViewSet(GenericViewSet):
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
+        columns = request.query_params.getlist('columns')
         if not org_id:
             return JsonResponse({'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -763,7 +769,7 @@ class TaxLotViewSet(GenericViewSet):
 
         # Ids of taxlotviews to look up in m2m
         lot_ids = [l.pk for l in taxlot_views]
-        joins = TaxLotProperty.objects.filter(taxlot_view_id__in=lot_ids)
+        joins = TaxLotProperty.objects.filter(taxlot_view_id__in=lot_ids).select_related('property_view')
 
         # Get all ids of properties on these joins
         property_view_ids = [j.property_view_id for j in joins]
@@ -785,27 +791,38 @@ class TaxLotViewSet(GenericViewSet):
                 while extra_data_field in property_data:
                     extra_data_field += '_extra'
                 property_data[extra_data_field] = extra_data_value
+
+            # Only return the requested rows. speeds up the json string time
+            property_data = {key: value for key, value in property_data.items() if key in columns}
+
             property_map[property_view.pk] = property_data
             # Replace property_view id with property id
             property_map[property_view.pk]['id'] = property_view.property.id
 
         # A mapping of taxlot view pk to a list of property state info for a property view
         join_map = {}
+        # Get whole taxlotstate table:
+        tuplePropToJurisdictionTL = tuple(TaxLotProperty.objects.values_list('property_view_id', 'taxlot_view__state__jurisdiction_tax_lot_id'))
+        from collections import defaultdict
+
+        # create a mapping that defaults to an empty list
+        propToJurisdictionTL = defaultdict(list)
+
+        # populate the mapping
+        for name, path in tuplePropToJurisdictionTL:
+            propToJurisdictionTL[name].append(path)
+
         for join in joins:
 
-            # Find all the taxlot ids that this property relates to
-            related_taxlot_view_ids = TaxLotProperty.objects.filter(property_view_id=join.property_view_id) \
-                .values_list('taxlot_view_id', flat=True)
-            state_ids = TaxLotView.objects.filter(pk__in=related_taxlot_view_ids).values_list('state_id', flat=True)
-
-            jurisdiction_tax_lot_ids = TaxLotState.objects.filter(pk__in=state_ids) \
-                .values_list('jurisdiction_tax_lot_id', flat=True)
+            jurisdiction_tax_lot_ids = propToJurisdictionTL[join.property_view_id]
 
             # Filter out associated tax lots that are present but which do not have preferred
             none_in_jurisdiction_tax_lot_ids = None in jurisdiction_tax_lot_ids
             jurisdiction_tax_lot_ids = filter(lambda x: x is not None, jurisdiction_tax_lot_ids)
 
             if none_in_jurisdiction_tax_lot_ids:
+                print "\nhere"
+                print jurisdiction_tax_lot_ids
                 jurisdiction_tax_lot_ids.append('Missing')
 
             # jurisdiction_tax_lot_ids = [""]
@@ -824,6 +841,7 @@ class TaxLotViewSet(GenericViewSet):
             # Each object in the response is built from the state data, with related data added on.
             l = model_to_dict(lot.state, exclude=['extra_data'])
 
+            # TODO - can we just return the "extra_data" json string and do this in JS which has faster loops?
             for extra_data_field, extra_data_value in lot.state.extra_data.items():
                 if extra_data_field == 'id':
                     extra_data_field += '_extra'

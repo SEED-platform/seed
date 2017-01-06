@@ -13,7 +13,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'inventory',
     'cycles',
     'labels',
-    'columns',
+    // 'columns',
     'urls',
     'spinner_utility',
     'naturalSort',
@@ -26,7 +26,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               inventory,
               cycles,
               labels,
-              columns,
+              // columns,
               urls,
               spinner_utility,
               naturalSort) {
@@ -37,15 +37,16 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = inventory.results;
       $scope.pagination = inventory.pagination;
+      $scope.columns = inventory.columns;
       $scope.total = $scope.pagination.total;
       $scope.number_per_page = 999999999;
 
       $scope.labels = labels;
       $scope.selected_labels = [];
 
-      var localStorageKey = 'grid.' + $scope.inventory_type;
+      // var localStorageKey = 'grid.' + $scope.inventory_type;
 
-      $scope.columns = inventory_service.loadSettings(localStorageKey, columns);
+      // $scope.columns = inventory_service.loadSettings(localStorageKey, columns);
 
       $scope.clear_labels = function () {
         $scope.selected_labels = [];
@@ -215,14 +216,15 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       var refresh_objects = function () {
+        var visibleColumns = _.map(_.filter($scope.columns, 'visible'), 'name');
         if ($scope.inventory_type == 'properties') {
-          inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle).then(function (properties) {
+          inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, visibleColumns).then(function (properties) {
             $scope.data = properties.results;
             $scope.pagination = properties.pagination;
             processData();
           });
         } else if ($scope.inventory_type == 'taxlots') {
-          inventory_service.get_taxlots($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle).then(function (taxlots) {
+          inventory_service.get_taxlots($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, visibleColumns).then(function (taxlots) {
             $scope.data = taxlots.results;
             $scope.pagination = taxlots.pagination;
             processData();
