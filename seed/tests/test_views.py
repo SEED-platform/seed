@@ -2796,6 +2796,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'page': 1,
             'per_page': 999999999,
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get('/api/v2/properties/', params)
         result = json.loads(response.content)
@@ -2814,6 +2815,7 @@ class InventoryViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 1,
             'per_page': 999999999,
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get("/api/v2/properties/", params)
         result = json.loads(response.content)
@@ -2839,6 +2841,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'page': 1,
             'per_page': 999999999,
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get("/api/v2/properties/", params)
         result = json.loads(response.content)
@@ -2872,6 +2875,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'page': 1,
             'per_page': 999999999,
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get("/api/v2/properties/", params)
         results = json.loads(response.content)
@@ -2912,6 +2916,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'page': 1,
             'per_page': 999999999,
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get("/api/v2/properties/", params)
         result = json.loads(response.content)
@@ -2933,6 +2938,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'page': 'one',
             'per_page': 999999999,
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get("/api/v2/properties/", params)
         result = json.loads(response.content)
@@ -2951,6 +2957,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'page': 10,
             'per_page': 999999999,
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get("/api/v2/properties/", params)
         result = json.loads(response.content)
@@ -3157,6 +3164,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'cycle': self.cycle.pk,
             'page': 1,
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get("/api/v2/taxlots/", params)
         results = json.loads(response.content)['results']
@@ -3199,6 +3207,7 @@ class InventoryViewTests(TestCase):
         params = {
             'organization_id': self.org.pk,
             'page': 1,
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get("/api/v2/taxlots/", params)
         results = json.loads(response.content)['results']
@@ -3218,6 +3227,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'page': 1,
             'per_page': 999999999,
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get("/api/v2/taxlots/", params)
 
@@ -3276,6 +3286,7 @@ class InventoryViewTests(TestCase):
             'cycle': self.cycle.pk,
             'page': 1,
             'per_page': 256,
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get("/api/v2/taxlots/", params)
         results = json.loads(response.content)['results']
@@ -3337,6 +3348,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'cycle': self.cycle.pk,
             'page': 1,
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get("/api/v2/taxlots/", params)
         results = json.loads(response.content)['results']
@@ -3374,6 +3386,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'cycle': self.cycle.pk,
             'page': 'bad',
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get("/api/v2/taxlots/", params)
         result = json.loads(response.content)
@@ -3414,6 +3427,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'cycle': self.cycle.pk,
             'page': 'bad',
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get("/api/v2/taxlots/", params)
         result = json.loads(response.content)
@@ -3455,6 +3469,7 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'cycle': self.cycle.pk,
             'page': 'bad',
+            'columns': DEFAULT_CUSTOM_COLUMNS,
         }
         response = self.client.get("/api/v2/taxlots/", params)
         related = json.loads(response.content)['results'][0]['related'][0]
