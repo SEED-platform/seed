@@ -143,7 +143,6 @@ class PropertyViewSet(GenericViewSet):
                     extra_data_field += '_extra'
                 taxlot_state_data[extra_data_field] = extra_data_value
 
-
             # Only return the requested rows. speeds up the json string time
             taxlot_state_data = {key: value for key, value in taxlot_state_data.items() if key in columns}
 
@@ -798,7 +797,7 @@ class TaxLotViewSet(GenericViewSet):
             jurisdiction_tax_lot_ids = [propToJurisdictionTL[join.property_view_id]]  # FIXIT - needs to be list? see fixit below
 
             # Filter out associated tax lots that are present but which do not have preferred
-            none_in_jurisdiction_tax_lot_ids = None in jurisdiction_tax_lot_ids # FIXIT - why is a list, only one to one right?
+            none_in_jurisdiction_tax_lot_ids = None in jurisdiction_tax_lot_ids  # FIXIT - why is a list, only one to one right?
             jurisdiction_tax_lot_ids = filter(lambda x: x is not None, jurisdiction_tax_lot_ids)
 
             if none_in_jurisdiction_tax_lot_ids:
