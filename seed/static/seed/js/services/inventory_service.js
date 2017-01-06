@@ -489,10 +489,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
       }).success(function (data, status, headers, config) {
         // Remove empty columns
-        _.remove(data, function (datum) {
+        var columns = data.columns;
+        _.remove(columns, function (datum) {
           return _.isEmpty(datum.name);
         });
-        defer.resolve(data.columns);
+        defer.resolve(columns);
       }).error(function (data, status, headers, config) {
         defer.reject(data, status);
       });
@@ -514,10 +515,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
       }).success(function (data, status, headers, config) {
         // Remove empty columns
-        _.remove(data, function (datum) {
+        var columns = data.columns;
+        _.remove(columns, function (datum) {
           return _.isEmpty(datum.name);
         });
-        defer.resolve(data.columns);
+        defer.resolve(columns);
       }).error(function (data, status, headers, config) {
         defer.reject(data, status);
       });
