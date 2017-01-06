@@ -5,8 +5,7 @@
 // cleansing services
 angular.module('BE.seed.service.cleansing', []).factory('cleansing_service', [
   '$http',
-  '$q',
-  function ($http, $q) {
+  function ($http) {
     var cleansing_factory = {};
 
     /*
@@ -14,18 +13,11 @@ angular.module('BE.seed.service.cleansing', []).factory('cleansing_service', [
      * return cleansing results.
      * @param import_file_id: int, represents file import id.
      */
-    cleansing_factory.get_cleansing_results = function(import_file_id) {
-        var defer = $q.defer();
-        $http({
-            method: 'GET',
-            url: '/api/v2/import_files/' + import_file_id + '/cleansing_results.json'
-        }).success(function(data, status, headers, config) {
-            defer.resolve(data.data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
-        });
-        return defer.promise;
+    cleansing_factory.get_cleansing_results = function (import_file_id) {
+      return $http.get('/api/v2/import_files/' + import_file_id + '/cleansing_results.json').then(function (response) {
+        return response.data.data;
+      });
     };
 
     return cleansing_factory;
-}]);
+  }]);

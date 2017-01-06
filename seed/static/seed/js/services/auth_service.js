@@ -5,10 +5,9 @@
 
 angular.module('BE.seed.service.auth', []).factory('auth_service', [
   '$http',
-  '$q',
   'user_service',
   'generated_urls',
-  function ($http, $q, user_service, generated_urls) {
+  function ($http, user_service, generated_urls) {
 
     var auth_factory = {};
     var urls = generated_urls;
@@ -28,42 +27,29 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
      * @return {promise} then a an object with keys as the actions, and bool
      * values
      */
-    auth_factory.is_authorized = function(organization_id, actions) {
-        var defer = $q.defer();
-        user_service.get_user_id().then(function (user_id) {
-            $http({
-                method: 'POST',
-                url: '/api/v2/users/' + user_id + '/is_authorized/',
-                params: {organization_id: organization_id},
-                data: {
-                    actions: actions,
-                    organization_id: organization_id
-                }
-            }).success(function (data, status, headers, config) {
-                defer.resolve(data);
-            }).error(function (data, status, headers, config) {
-                defer.reject(data, status);
-            });
+    auth_factory.is_authorized = function (organization_id, actions) {
+      return user_service.get_user_id().then(function (user_id) {
+        return $http.post('/api/v2/users/' + user_id + '/is_authorized/', {
+          actions: actions
+        }, {
+          params: {
+            organization_id: organization_id
+          }
+        }).then(function (response) {
+          return response.data;
         });
-        return defer.promise;
+      });
     };
 
     /**
      * gets all available actions
      * @return {promise} then an array of actions
      */
-    auth_factory.get_actions = function(user) {
-        var defer = $q.defer();
-        $http({
-            method: 'GET',
-            url: urls.accounts.get_actions
-        }).success(function(data, status, headers, config) {
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
-        });
-        return defer.promise;
+    auth_factory.get_actions = function (user) {
+      return $http.get(urls.accounts.get_actions).then(function (response) {
+        return response.data;
+      });
     };
 
     return auth_factory;
-}]);
+  }]);

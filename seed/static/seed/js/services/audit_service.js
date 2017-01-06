@@ -5,10 +5,9 @@
 // dataset services
 angular.module('BE.seed.service.audit', []).factory('audit_service', [
   '$http',
-  '$q',
   'user_service',
   'generated_urls',
-  function ($http, $q, user_service, generated_urls) {
+  function ($http, user_service, generated_urls) {
     var audit_log_factory = {};
 
     /**
@@ -16,23 +15,15 @@ angular.module('BE.seed.service.audit', []).factory('audit_service', [
      * @param  {str or int} building_id building canonical id
      * @return {obj}             payload with key `audit_logs`
      */
-    audit_log_factory.get_building_logs = function(building_id) {
-        var defer = $q.defer();
-        $http({
-            method: 'GET',
-            url: generated_urls.audit_logs.get_building_logs,
-            params: {
-                organization_id: user_service.get_organization().id,
-                building_id: building_id
-            }
-        }).success(function(data, status, headers, config) {
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
-
-        });
-        return defer.promise;
-
+    audit_log_factory.get_building_logs = function (building_id) {
+      return $http.get(generated_urls.audit_logs.get_building_logs, {
+        params: {
+          organization_id: user_service.get_organization().id,
+          building_id: building_id
+        }
+      }).then(function (response) {
+        return response.data;
+      });
     };
 
     /**
@@ -41,50 +32,30 @@ angular.module('BE.seed.service.audit', []).factory('audit_service', [
      * @param  {str} action_note
      * @return {obj}             status obj
      */
-    audit_log_factory.create_note = function(building_id, action_note) {
-        var defer = $q.defer();
-        $http({
-            method: 'POST',
-            url: generated_urls.audit_logs.create_note,
-            data: {
-                organization_id: user_service.get_organization().id,
-                building_id: building_id,
-                action_note: action_note
-            }
-        }).success(function(data, status, headers, config) {
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
-
-        });
-        return defer.promise;
-
+    audit_log_factory.create_note = function (building_id, action_note) {
+      return $http.post(generated_urls.audit_logs.create_note, {
+        organization_id: user_service.get_organization().id,
+        building_id: building_id,
+        action_note: action_note
+      }).then(function (response) {
+        return response.data;
+      });
     };
 
     /**
      * updates an existing note
-     * @return {obj}             status obj
+     * @return {obj} status obj
      * @param  {str} action_note
      */
-    audit_log_factory.update_note = function(audit_log_id, action_note) {
-        var defer = $q.defer();
-        $http({
-            method: 'PUT',
-            url: generated_urls.audit_logs.update_note,
-            data: {
-                organization_id: user_service.get_organization().id,
-                action_note: action_note,
-                audit_log_id: audit_log_id
-            }
-        }).success(function(data, status, headers, config) {
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
-
-        });
-        return defer.promise;
-
+    audit_log_factory.update_note = function (audit_log_id, action_note) {
+      return $http.put(generated_urls.audit_logs.update_note, {
+        organization_id: user_service.get_organization().id,
+        action_note: action_note,
+        audit_log_id: audit_log_id
+      }).then(function (response) {
+        return response.data;
+      });
     };
 
     return audit_log_factory;
-}]);
+  }]);
