@@ -39,7 +39,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         spinner_utility.show();
 
-        return $http.get('/api/v2/properties', {
+        return $http.get('/api/v2/properties/', {
           params: params
         }).then(function (response) {
           return response.data;
