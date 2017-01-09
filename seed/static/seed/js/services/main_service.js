@@ -5,22 +5,14 @@
 // dataset services
 angular.module('BE.seed.service.main', []).factory('main_service', [
   '$http',
-  '$q',
-  function ($http, $q) {
+  function ($http) {
     var main_factory = {};
 
-    main_factory.version = function() {
-        var defer = $q.defer();
-        $http({
-            method: 'GET',
-            url: '/api/v2/version'
-        }).success(function(data, status, headers, config) {
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
-        });
-        return defer.promise;
+    main_factory.version = function () {
+      return $http.get('/api/v2/version').then(function (response) {
+        return response.data;
+      });
     };
 
     return main_factory;
-}]);
+  }]);

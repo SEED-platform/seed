@@ -6,7 +6,6 @@ angular.module('BE.seed.controller.menu', [])
   .controller('menu_controller', [
     '$rootScope',
     '$scope',
-    '$http',
     '$location',
     '$window',
     '$uibModal',
@@ -14,7 +13,6 @@ angular.module('BE.seed.controller.menu', [])
     'urls',
     'building_services',
     'project_service',
-    'uploader_service',
     'organization_service',
     'user_service',
     'dataset_service',
@@ -24,7 +22,6 @@ angular.module('BE.seed.controller.menu', [])
     'spinner_utility',
     function ($rootScope,
               $scope,
-              $http,
               $location,
               $window,
               $uibModal,
@@ -32,7 +29,6 @@ angular.module('BE.seed.controller.menu', [])
               urls,
               building_services,
               project_service,
-              uploader_service,
               organization_service,
               user_service,
               dataset_service,
@@ -119,27 +115,14 @@ angular.module('BE.seed.controller.menu', [])
         } else if (menu_item !== '/' && _.startsWith($location.path(), menu_item)) {
           return true;
         } else if (menu_item === '/seed/data' && !_.includes($location.absUrl(), '#')) {
-          if (_.includes($location.absUrl(), menu_item)) {
-            return true;
-          }
-          if (_.includes($location.absUrl(), 'worksheet')) {
-            return true;
-          }
-          if (_.includes($location.absUrl(), 'mapping')) {
-            return true;
-          }
-          if (_.includes($location.absUrl(), 'cleaning')) {
-            return true;
-          }
-          if (_.includes($location.absUrl(), 'merge')) {
-            return true;
-          }
-          if (_.includes($location.absUrl(), 'import')) {
-            return true;
-          }
+          if (_.includes($location.absUrl(), menu_item)) return true;
+          if (_.includes($location.absUrl(), 'worksheet')) return true;
+          if (_.includes($location.absUrl(), 'mapping')) return true;
+          if (_.includes($location.absUrl(), 'cleaning')) return true;
+          if (_.includes($location.absUrl(), 'merge')) return true;
+          if (_.includes($location.absUrl(), 'import')) return true;
           return false;
-        }
-        else {
+        } else {
           return false;
         }
       };
@@ -313,14 +296,14 @@ angular.module('BE.seed.controller.menu', [])
       );
 
       //watch buildings
-      $scope.$watch(function () {
-          return building_services.total_number_of_buildings_for_user;
-        },
-        function (data) {
-          $scope.buildings_count = data;
-        },
-        true
-      );
+      // $scope.$watch(function () {
+      //     return building_services.total_number_of_buildings_for_user;
+      //   },
+      //   function (data) {
+      //     $scope.buildings_count = data;
+      //   },
+      //   true
+      // );
 
       //watch datasets
       $scope.$watch(function () {
@@ -345,18 +328,18 @@ angular.module('BE.seed.controller.menu', [])
       var init = function () {
         // get the default org for the user
         $scope.menu.user.organization = user_service.get_organization();
-        building_services.get_total_number_of_buildings_for_user().then(function (data) {
-          // resolve promise
-          $scope.buildings_count = data.buildings_count;
-        });
+        // building_services.get_total_number_of_buildings_for_user().then(function (data) {
+        //   // resolve promise
+        //   $scope.buildings_count = data.buildings_count;
+        // });
         project_service.get_datasets_count().then(function (data) {
           // resolve promise
           $scope.datasets_count = data.datasets_count;
         });
-        project_service.get_projects_count().then(function (data) {
-          // resolve promise
-          $scope.projects_count = data.projects_count;
-        });
+        // project_service.get_projects_count().then(function (data) {
+        //   // resolve promise
+        //   $scope.projects_count = data.projects_count;
+        // });
         organization_service.get_organizations().then(function (data) {
           // resolve promise
           $scope.organizations_count = data.organizations.length;

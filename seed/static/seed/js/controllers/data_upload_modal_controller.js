@@ -331,7 +331,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                           $scope.step.number = 8;
                         } else {
                           $scope.step.number = 10;
-                          building_services.get_total_number_of_buildings_for_user();
+                          // building_services.get_total_number_of_buildings_for_user();
                         }
                       });
                     }
@@ -340,7 +340,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                         $scope.step.number = 8;
                       } else {
                         $scope.step.number = 10;
-                        building_services.get_total_number_of_buildings_for_user();
+                        // building_services.get_total_number_of_buildings_for_user();
                       }
                     }
                   });

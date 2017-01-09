@@ -190,7 +190,10 @@ class DatasetViewSet(viewsets.ViewSet):
         importfiles = []
         for f in d.files:
             importfile = obj_to_dict(f)
-            importfile['name'] = f.filename_only
+            if not f.uploaded_filename:
+                importfile['name'] = f.filename_only
+            else:
+                importfile['name'] = f.uploaded_filename
             importfiles.append(importfile)
 
         dataset['importfiles'] = importfiles

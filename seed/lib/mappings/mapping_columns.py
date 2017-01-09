@@ -129,7 +129,7 @@ class MappingColumns(object):
         if mappings and len(mappings) > 0:
             return self.data[raw_column]['mappings'][0]
         else:
-            _log.info(
+            _log.debug(
                 "There are no suggested mappings for the column {}, setting to field name".format(
                     raw_column))
             return ('PropertyState', raw_column, 100)
@@ -186,7 +186,7 @@ class MappingColumns(object):
         :return: None
 
         """
-        _log.info("resolving duplicate field for {}".format(dup_map_field))
+        _log.debug("resolving duplicate field for {}".format(dup_map_field))
 
         # decide which raw_column should "win"
         raw_columns = sorted(raw_columns, cmp=sort_duplicates)
@@ -220,7 +220,7 @@ class MappingColumns(object):
         else:
             # if there are no mappings left, then the mapping suggestion will look like
             # extra data
-            print "Setting set_initial_mapping to None for {}".format(raw_column)
+            # print "Setting set_initial_mapping to None for {}".format(raw_column)
             self.data[raw_column]['initial_mapping_cmp'] = None
 
     def apply_threshold(self, threshold):
