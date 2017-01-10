@@ -9,7 +9,7 @@ import json
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -45,42 +45,15 @@ class PropertyViewSet(GenericViewSet):
     renderer_classes = (JSONRenderer,)
     serializer_class = PropertySerializer
 
-    # @require_organization_id
-    # @require_organization_membership
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
-    def list(self, request):
-        """
-        List all the properties
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: cycle
-              description: The ID of the cycle to get properties
-              required: true
-              paramType: query
-            - name: page
-              description: The current page of properties to return
-              required: false
-              paramType: query
-            - name: per_page
-              description: The number of items per page to return
-              required: false
-              paramType: query
-        """
+    def _get_filtered_results(self, request, columns):
+
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
-        columns = request.query_params.getlist('columns')
+        cycle_id = request.query_params.get('cycle')
         if not org_id:
             return JsonResponse({'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                                 status=status.HTTP_400_BAD_REQUEST)
-
-        cycle_id = request.query_params.get('cycle')
         if cycle_id:
             cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
         else:
@@ -193,6 +166,70 @@ class PropertyViewSet(GenericViewSet):
             response['results'].append(p)
 
         return JsonResponse(response)
+
+    # @require_organization_id
+    # @require_organization_membership
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    def list(self, request):
+        """
+        List all the properties
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: cycle
+              description: The ID of the cycle to get properties
+              required: true
+              paramType: query
+            - name: page
+              description: The current page of properties to return
+              required: false
+              paramType: query
+            - name: per_page
+              description: The number of items per page to return
+              required: false
+              paramType: query
+        """
+        return self._get_filtered_results(request, columns=[])
+
+    # @require_organization_id
+    # @require_organization_membership
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @list_route(methods=['POST'])
+    def filter(self, request):
+        """
+        List all the properties
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: cycle
+              description: The ID of the cycle to get properties
+              required: true
+              paramType: query
+            - name: page
+              description: The current page of properties to return
+              required: false
+              paramType: query
+            - name: per_page
+              description: The number of items per page to return
+              required: false
+              paramType: query
+            - name: column filter data
+              description: Object containing columns to filter on, should be a JSON object with a single key "columns"
+                           whose value is a list of strings, each representing a column name
+              paramType: body
+        """
+        columns = request.data['columns']
+        return self._get_filtered_results(request, columns=columns)
 
     # @require_organization_id
     # @require_organization_membership
@@ -687,42 +724,15 @@ class TaxLotViewSet(GenericViewSet):
     renderer_classes = (JSONRenderer,)
     serializer_class = TaxLotSerializer
 
-    # @require_organization_id
-    # @require_organization_membership
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
-    def list(self, request):
-        """
-        List all the properties
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: cycle
-              description: The ID of the cycle to get taxlots
-              required: true
-              paramType: query
-            - name: page
-              description: The current page of taxlots to return
-              required: false
-              paramType: query
-            - name: per_page
-              description: The number of items per page to return
-              required: false
-              paramType: query
-        """
+    def _get_filtered_results(self, request, columns):
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
-        columns = request.query_params.getlist('columns')
+        cycle_id = request.query_params.get('cycle')
         if not org_id:
             return JsonResponse({'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-        cycle_id = request.query_params.get('cycle')
         if cycle_id:
             cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
         else:
@@ -775,7 +785,8 @@ class TaxLotViewSet(GenericViewSet):
         property_view_ids = [j.property_view_id for j in joins]
 
         # Get all property views that are related
-        property_views = PropertyView.objects.select_related('property', 'state', 'cycle').filter(pk__in=property_view_ids)
+        property_views = PropertyView.objects.select_related('property', 'state', 'cycle').filter(
+            pk__in=property_view_ids)
 
         # Map property view id to property view's state data, so we can reference these easily and save some queries.
         property_map = {}
@@ -802,7 +813,8 @@ class TaxLotViewSet(GenericViewSet):
         # A mapping of taxlot view pk to a list of property state info for a property view
         join_map = {}
         # Get whole taxlotstate table:
-        tuplePropToJurisdictionTL = tuple(TaxLotProperty.objects.values_list('property_view_id', 'taxlot_view__state__jurisdiction_tax_lot_id'))
+        tuplePropToJurisdictionTL = tuple(
+            TaxLotProperty.objects.values_list('property_view_id', 'taxlot_view__state__jurisdiction_tax_lot_id'))
         from collections import defaultdict
 
         # create a mapping that defaults to an empty list
@@ -860,6 +872,70 @@ class TaxLotViewSet(GenericViewSet):
             response['results'].append(l)
 
         return JsonResponse(response)
+
+    # @require_organization_id
+    # @require_organization_membership
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    def list(self, request):
+        """
+        List all the properties
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: cycle
+              description: The ID of the cycle to get taxlots
+              required: true
+              paramType: query
+            - name: page
+              description: The current page of taxlots to return
+              required: false
+              paramType: query
+            - name: per_page
+              description: The number of items per page to return
+              required: false
+              paramType: query
+        """
+        return self._get_filtered_results(request, columns=[])
+
+    # @require_organization_id
+    # @require_organization_membership
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @list_route(methods=['POST'])
+    def filter(self, request):
+        """
+        List all the properties
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: cycle
+              description: The ID of the cycle to get taxlots
+              required: true
+              paramType: query
+            - name: page
+              description: The current page of taxlots to return
+              required: false
+              paramType: query
+            - name: per_page
+              description: The number of items per page to return
+              required: false
+              paramType: query
+            - name: column filter data
+              description: Object containing columns to filter on, should be a JSON object with a single key "columns"
+                           whose value is a list of strings, each representing a column name
+              paramType: body
+        """
+        columns = request.data['columns']
+        return self._get_filtered_results(request, columns=columns)
 
     # @require_organization_id
     # @require_organization_membership
