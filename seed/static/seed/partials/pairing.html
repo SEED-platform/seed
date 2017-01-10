@@ -1,0 +1,62 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a class="page_action" ui-sref="dataset_detail({dataset_id: import_file.dataset.id})"><i class="fa fa-chevron-left"></i> {$ import_file.dataset.name $}</a>
+
+        </div>
+        <div class="page_title">
+            <h1>Data Pairing ({$ import_file.uploaded_filename $})</h1>
+        </div>
+        <div class="right page_action_container"></div>
+    </div>
+</div>
+
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+
+        </div>
+        <div class="page_title">
+            <h1>{$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $}</h1>
+        </div>
+        <div class="right page_action_container page_action_btn"></div>
+    </div>
+</div>
+
+<div class="inventory-list-controls">
+    <div class="form-group" style="padding-top: 20px;">
+        <div style="display: inline-block;">
+            <select class="form-control input-sm" ng-model="show.selected_show" ng-change="update_show()"
+                    ng-options="option.name for option in show.options">
+            </select>
+        </div>
+        <label>Cycle:</label>
+        <div style="display: inline-block;">
+            <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
+                    ng-options="option.name for option in cycle.cycles track by option.id">
+            </select>
+        </div>
+    </div>
+    <div class="form-group" style="padding-top: 20px;">
+        <div style="display: inline-block;">
+            <select class="form-control input-sm" ng-model="inventory_type" ng-change="update_inventory_type()"
+                    ng-options="option.name for option in inventory_type.options">
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
+    <div class="section_content">
+        <div id="grid-container">
+            <div ui-grid="gridOptionsLeft" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-selection ui-grid-tree-view></div>
+        </div>
+    </div>
+</div>
+<div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
+    <div class="section_content">
+        <div id="grid-container">
+            <div ui-grid="gridOptionsRight" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-selection ui-grid-tree-view></div>
+        </div>
+    </div>
+</div>

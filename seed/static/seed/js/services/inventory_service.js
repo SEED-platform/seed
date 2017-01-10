@@ -23,7 +23,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         organization_id: user_service.get_organization().id,
         page: page,
         per_page: per_page || 999999999,
-        columns: columns
+        c: columns
       };
 
       return cycle_service.get_cycles().then(function (cycles) {
@@ -230,7 +230,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         organization_id: user_service.get_organization().id,
         page: page,
         per_page: per_page || 999999999,
-        columns: columns
+        c: columns
       };
 
       return cycle_service.get_cycles().then(function (cycles) {

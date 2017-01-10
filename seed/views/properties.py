@@ -75,7 +75,7 @@ class PropertyViewSet(GenericViewSet):
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
-        columns = request.query_params.getlist('columns')
+        columns = request.query_params.getlist('c')
         if not org_id:
             return JsonResponse({'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -172,13 +172,17 @@ class PropertyViewSet(GenericViewSet):
             # Each object in the response is built from the state data, with related data added on.
             p = model_to_dict(prop.state, exclude=['extra_data'])
 
-            for extra_data_field, extra_data_value in prop.state.extra_data.items():
-                if extra_data_field == 'id':
-                    extra_data_field += '_extra'
-                while extra_data_field in p:
-                    extra_data_field += '_extra'
+            # Only return the requested rows. speeds up the json string time
+            p = {key: value for key, value in p.items() if key in columns}
 
-                p[extra_data_field] = extra_data_value
+            for extra_data_field, extra_data_value in prop.state.extra_data.items():
+                if extra_data_field in columns:
+                    if extra_data_field == 'id':
+                        extra_data_field += '_extra'
+                    while extra_data_field in p:
+                        extra_data_field += '_extra'
+
+                    p[extra_data_field] = extra_data_value
 
             # Use property_id instead of default (state_id)
             p['id'] = prop.property_id
@@ -717,7 +721,7 @@ class TaxLotViewSet(GenericViewSet):
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
-        columns = request.query_params.getlist('columns')
+        columns = request.query_params.getlist('c')
         if not org_id:
             return JsonResponse({'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                                 status=status.HTTP_400_BAD_REQUEST)
