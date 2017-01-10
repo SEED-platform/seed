@@ -92,10 +92,11 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
         )
         results = [
             LabelSerializer(
-                q, super_organization=super_organization,
+                q,
+                super_organization=super_organization,
                 inventory=inventory
             ).data for q in qs
-            ]
+        ]
         status_code = status.HTTP_200_OK
         return response.Response(results, status=status_code)
 
@@ -175,18 +176,18 @@ class UpdateInventoryLabelsAPIView(APIView):
     def add_labels(self, qs, inventory_type, inventory_ids, add_label_ids):
         added = []
         if add_label_ids:
-            Model = self.models[inventory_type]
-            InventoryModel = self.inventory_models[inventory_type]
+            model = self.models[inventory_type]
+            inventory_model = self.inventory_models[inventory_type]
             exclude = self.exclude(qs, inventory_type, add_label_ids)
             inventory_ids = inventory_ids if inventory_ids else [
-                m.pk for m in InventoryModel.objects.all()
+                m.pk for m in inventory_model.objects.all()
             ]
             new_inventory_labels = [
                 self.label_factory(inventory_type, label_id, pk)
                 for label_id in add_label_ids for pk in inventory_ids
                 if pk not in exclude[label_id]
             ]
-            Model.objects.bulk_create(new_inventory_labels)
+            model.objects.bulk_create(new_inventory_labels)
             added = [
                 self.get_inventory_id(m, inventory_type)
                 for m in new_inventory_labels
