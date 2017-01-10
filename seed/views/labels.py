@@ -16,6 +16,7 @@ from rest_framework import (
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
+from rest_framework.decorators import list_route
 
 from seed.decorators import DecoratorMixin
 from seed.filters import (
@@ -83,7 +84,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
         kwargs['inventory'] = inventory
         return super(LabelViewSet, self).get_serializer(*args, **kwargs)
 
-    def list(self, request):
+    def _get_labels(self, request):
         qs = self.get_queryset()
         super_organization = self.get_organization()
         inventory = InventoryFilterBackend().filter_queryset(
@@ -94,9 +95,16 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
                 q, super_organization=super_organization,
                 inventory=inventory
             ).data for q in qs
-        ]
+            ]
         status_code = status.HTTP_200_OK
         return response.Response(results, status=status_code)
+
+    @list_route(methods=['POST'])
+    def filter(self, request):
+        return self._get_labels(request)
+
+    def list(self, request):
+        return self._get_labels(request)
 
 
 class UpdateInventoryLabelsAPIView(APIView):
