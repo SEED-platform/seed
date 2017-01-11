@@ -725,6 +725,8 @@ class TaxLotViewSet(GenericViewSet):
     serializer_class = TaxLotSerializer
 
     def _get_filtered_results(self, request, columns):
+        print("***COLUMNS***")
+        print(columns)
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
