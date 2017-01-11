@@ -4,8 +4,8 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import logging
 import datetime
+import logging
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
@@ -19,14 +19,10 @@ from seed.models import (
     Column,
     ImportFile,
     ImportRecord,
-    PropertyState,
-    PropertyView,
     TaxLot,
     TaxLotState,
-    TaxLotProperty,
     TaxLotView,
     DATA_STATE_IMPORT,
-    DATA_STATE_MAPPING,
     ASSESSED_RAW,
 )
 
@@ -55,11 +51,11 @@ class TestCaseMultiYearTest(DataMappingBaseTestCase):
             owner=self.user, last_modified_by=self.user, super_organization=self.org
         )
 
-
         import_file_is_espm = getattr(self, 'import_file_is_espm', True)
         import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
 
-        import_file_2014 = ImportFile.objects.create(import_record=import_record_2014, cycle=self.cycle_2014)
+        import_file_2014 = ImportFile.objects.create(import_record=import_record_2014,
+                                                     cycle=self.cycle_2014)
         import_file_2014.is_espm = import_file_is_espm
         import_file_2014.source_type = import_file_source_type
         import_file_2014.data_state = import_file_data_state
@@ -69,7 +65,6 @@ class TestCaseMultiYearTest(DataMappingBaseTestCase):
         self.import_file_2015 = self.load_import_file_file(filename, self.import_file_2015)
 
     def test_multiyear(self):
-
         tasks._save_raw_data(self.import_file_2014.pk, 'fake_cache_key', 1)
         Column.create_mappings(self.fake_mappings, self.org, self.user)
         tasks.map_data(self.import_file_2014.pk)

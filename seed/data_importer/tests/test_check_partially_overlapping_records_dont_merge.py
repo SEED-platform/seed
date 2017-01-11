@@ -17,18 +17,12 @@ import logging
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
     DataMappingBaseTestCase,
-    FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
-    FAKE_ROW,
 )
 from seed.models import (
     Column,
-    PropertyState,
-    PropertyView,
-    Property,
     TaxLotState,
     TaxLot,
-    DATA_STATE_MAPPING,
     ASSESSED_RAW,
 )
 
@@ -45,7 +39,6 @@ class TestCaseCheckHalfMatchDoesNotMerge(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         self.import_file = self.load_import_file_file(filename, self.import_file)
-
 
     def test_importduplicates(self):
         self.assertEqual(TaxLotState.objects.count(), 0)
@@ -65,6 +58,5 @@ class TestCaseCheckHalfMatchDoesNotMerge(DataMappingBaseTestCase):
 
         self.assertNotEqual(TaxLot.objects.count(), 0)
         self.assertEqual(TaxLot.objects.count(), 2)
-
 
         return

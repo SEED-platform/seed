@@ -127,8 +127,7 @@ PROPERTIES_MAPPING = [
         "from_field": u'release_date',
         "to_table_name": u'PropertyState',
         "to_field": u'release_date'
-    },
-    {
+    }, {
         "from_field": u'extra_data_1',
         "to_table_name": u'PropertyState',
         "to_field": u'data_007'

@@ -17,9 +17,7 @@ import logging
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
     DataMappingBaseTestCase,
-    FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
-    FAKE_ROW,
 )
 from seed.models import (
     Column,
@@ -27,9 +25,6 @@ from seed.models import (
     PropertyView,
     Property,
     PropertyAuditLog,
-    TaxLotState,
-    TaxLot,
-    DATA_STATE_MAPPING,
     ASSESSED_RAW,
 )
 
@@ -75,7 +70,6 @@ class TestCaseCheckHalfMatchDoesNotMerge(DataMappingBaseTestCase):
         self.assertEqual(Property.objects.count(), 4)
         self.assertEqual(PropertyView.objects.count(), 4)
 
-
         pv = PropertyView.objects.filter(state__pm_property_id="1180478").first()
         self.assertTrue(pv is not None)
 
@@ -99,7 +93,6 @@ class TestCaseCheckHalfMatchDoesNotMerge(DataMappingBaseTestCase):
         self.assertEqual(s1.owner_email, "trusso@akridge.com")
         self.assertEqual(s2.owner_email, "kbrokaw@akridge.com")
         self.assertEqual(s3.owner_email, "")
-
 
         self.assertEqual(s1.owner_telephone, '202-638-3000')
         self.assertEqual(s2.owner_telephone, '000-000-0000')

@@ -39,13 +39,15 @@ class EZState(object):
 class PropertyState(EZState):
 
     def __init__(self, **kwds):
-        super(PropertyState, self).__init__("pm_property_id", "custom_id_1", "normalized_address", **kwds)
+        super(PropertyState, self).__init__("pm_property_id", "custom_id_1", "normalized_address",
+                                            **kwds)
 
 
 class TaxLotState(EZState):
 
     def __init__(self, **kwds):
-        super(TaxLotState, self).__init__("jurisdiction_tax_lot_id", "custom_id_1", "normalized_address", **kwds)
+        super(TaxLotState, self).__init__("jurisdiction_tax_lot_id", "custom_id_1",
+                                          "normalized_address", **kwds)
 
 
 class TestEquivalenceClassGenerator(TestCase):
@@ -57,8 +59,7 @@ class TestEquivalenceClassGenerator(TestCase):
         p2 = PropertyState(pm_property_id=100)
         p3 = PropertyState(pm_property_id=200)
         p4 = PropertyState(custom_id_1=100)
-        p5 = PropertyState(pm_property_id=101, custom_id_1=100)
-
+        # p5 = PropertyState(pm_property_id=101, custom_id_1=100)
 
         equivalence_classes = partitioner.calculate_equivalence_classes([p1, p2])
         self.assertEqual(len(equivalence_classes), 1)
@@ -69,11 +70,13 @@ class TestEquivalenceClassGenerator(TestCase):
         equivalence_classes = partitioner.calculate_equivalence_classes([p1, p4])
         self.assertEqual(len(equivalence_classes), 1)
 
-        class_grp_1 = [PropertyState(pm_property_id=100),PropertyState(pm_property_id=101, custom_id_1=100)]
+        class_grp_1 = [PropertyState(pm_property_id=100),
+                       PropertyState(pm_property_id=101, custom_id_1=100)]
         equivalence_classes = partitioner.calculate_equivalence_classes(class_grp_1)
-        self.assertEqual( len(equivalence_classes), 2)
+        self.assertEqual(len(equivalence_classes), 2)
 
-        class_grp_2 = [PropertyState(pm_property_id=100, normalized_address="123 Fake St"), PropertyState(pm_property_id=101, normalized_address="123 Fake St")]
+        class_grp_2 = [PropertyState(pm_property_id=100, normalized_address="123 Fake St"),
+                       PropertyState(pm_property_id=101, normalized_address="123 Fake St")]
         equivalence_classes = partitioner.calculate_equivalence_classes(class_grp_2)
         self.assertEqual(len(equivalence_classes), 2)
 
@@ -82,7 +85,8 @@ class TestEquivalenceClassGenerator(TestCase):
     def test_a_dummy_class_basics(self):
         tls1 = TaxLotState(jurisdiction_tax_lot_id="1")
         tls2 = TaxLotState(jurisdiction_tax_lot_id="1", custom_id_1="100")
-        tls3 = TaxLotState(jurisdiction_tax_lot_id="1", custom_id_1="100", normalized_address="123 fake street")
+        tls3 = TaxLotState(jurisdiction_tax_lot_id="1", custom_id_1="100",
+                           normalized_address="123 fake street")
 
         self.assertEqual(tls1.jurisdiction_tax_lot_id, "1")
         self.assertEqual(tls1.custom_id_1, None)
