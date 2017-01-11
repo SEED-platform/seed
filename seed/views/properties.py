@@ -260,7 +260,7 @@ class PropertyViewSet(GenericViewSet):
                 'related': False
             }, {
                 'name': 'jurisdiction_property_id',
-                'displayName': 'Property / Building ID',
+                'displayName': 'Jurisdiction Property ID',
                 'type': 'numberStr',
                 'related': False
             }, {
@@ -314,7 +314,7 @@ class PropertyViewSet(GenericViewSet):
                 'related': False
             }, {
                 'name': 'use_description',
-                'displayName': 'Property Type',
+                'displayName': 'Use Description',
                 'related': False
             }, {
                 'name': 'energy_score',
@@ -323,7 +323,7 @@ class PropertyViewSet(GenericViewSet):
                 'related': False
             }, {
                 'name': 'site_eui',
-                'displayName': 'Site EUI (kBtu/sf-yr)',
+                'displayName': 'Site EUI',
                 'type': 'number',
                 'related': False
             }, {
@@ -336,7 +336,7 @@ class PropertyViewSet(GenericViewSet):
                 'related': False
             }, {
                 'name': 'year_ending',
-                'displayName': 'Benchmarking year',
+                'displayName': 'Year Ending',
                 'related': False
             }, {
                 'name': 'owner',
@@ -366,7 +366,7 @@ class PropertyViewSet(GenericViewSet):
                 'related': False
             }, {
                 'name': 'building_count',
-                'displayName': 'Number of Buildings',
+                'displayName': 'Building Count',
                 'type': 'number',
                 'related': False
             }, {
@@ -376,7 +376,7 @@ class PropertyViewSet(GenericViewSet):
                 'related': False
             }, {
                 'name': 'recent_sale_date',
-                'displayName': 'Property Sale Date',
+                'displayName': 'Recent Sale Date',
                 'related': False
             }, {
                 'name': 'conditioned_floor_area',
@@ -1015,7 +1015,7 @@ class TaxLotViewSet(GenericViewSet):
                 'related': True
             }, {
                 'name': 'jurisdiction_property_id',
-                'displayName': 'Property / Building ID',
+                'displayName': 'Jurisdiction Property ID',
                 'type': 'numberStr',
                 'related': True
             }, {
@@ -1041,7 +1041,7 @@ class TaxLotViewSet(GenericViewSet):
                 'related': True
             }, {
                 'name': 'use_description',
-                'displayName': 'Property Type',
+                'displayName': 'Use Description',
                 'related': True
             }, {
                 'name': 'energy_score',
@@ -1050,7 +1050,7 @@ class TaxLotViewSet(GenericViewSet):
                 'related': True
             }, {
                 'name': 'site_eui',
-                'displayName': 'Site EUI (kBtu/sf-yr)',
+                'displayName': 'Site EUI',
                 'type': 'number',
                 'related': True
             }, {
@@ -1059,7 +1059,7 @@ class TaxLotViewSet(GenericViewSet):
                 'related': True
             }, {
                 'name': 'year_ending',
-                'displayName': 'Benchmarking year',
+                'displayName': 'Year Ending',
                 'related': True
             }, {
                 'name': 'owner',
@@ -1092,7 +1092,7 @@ class TaxLotViewSet(GenericViewSet):
                 'related': True
             }, {
                 'name': 'building_count',
-                'displayName': 'Number of Buildings',
+                'displayName': 'Building Count',
                 'type': 'number',
                 'related': True
             }, {
@@ -1102,7 +1102,7 @@ class TaxLotViewSet(GenericViewSet):
                 'related': True
             }, {
                 'name': 'recent_sale_date',
-                'displayName': 'Property Sale Date',
+                'displayName': 'Recent Sale Date',
                 'related': True
             }, {
                 'name': 'conditioned_floor_area',
