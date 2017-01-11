@@ -17,6 +17,8 @@ seed local_untracked.py
 """
 DEBUG = True
 
+import os
+
 # postgres DB config
 DATABASES = {
     'default': {

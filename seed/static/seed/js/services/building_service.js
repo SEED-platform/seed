@@ -4,56 +4,42 @@
  */
 // building services
 angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
-.factory('building_services', [
-  '$http',
-  '$q',
-  'urls',
-  'label_helper_service',
-  'user_service',
-  'generated_urls',
-  'spinner_utility',
-  function ($http, $q, urls, label_helper_service, user_service, generated_urls, spinner_utility) {
+  .factory('building_services', [
+    '$http',
+    'urls',
+    'label_helper_service',
+    'user_service',
+    'generated_urls',
+    'spinner_utility',
+    function ($http, urls, label_helper_service, user_service, generated_urls, spinner_utility) {
 
-    var building_factory = { total_number_of_buildings_for_user: 0};
+      var building_factory = {total_number_of_buildings_for_user: 0};
 
-    building_factory.get_total_number_of_buildings_for_user = function() {
+      building_factory.get_total_number_of_buildings_for_user = function () {
         // django uses request.user for user information
-        var defer = $q.defer();
-        $http({
-            method: 'GET',
-            url: window.BE.urls.get_total_number_of_buildings_for_user_url
-        }).success(function(data, status, headers, config) {
-            building_factory.total_number_of_buildings_for_user = data.buildings_count;
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
+        return $http.get(window.BE.urls.get_total_number_of_buildings_for_user_url).then(function (response) {
+          building_factory.total_number_of_buildings_for_user = response.data.buildings_count;
+          return response.data;
         });
-        return defer.promise;
-    };
+      };
 
-    building_factory.get_building = function(building_id) {
+      building_factory.get_building = function (building_id) {
         // django uses request.user for user information
-        var defer = $q.defer();
-        $http({
-            method: 'GET',
-            url: window.BE.urls.get_building_url,
-            params: {
-                building_id: building_id,
-                organization_id: user_service.get_organization().id
+        return $http.get(window.BE.urls.get_building_url, {
+          params: {
+            building_id: building_id,
+            organization_id: user_service.get_organization().id
+          }
+        }).then(function (response) {
+          _.forEach(response.data.projects, function (project) {
+            var building = project.building;
+            if (building.label) {
+              building.label.label = label_helper_service.lookup_label(building.label.color);
             }
-        }).success(function(data, status, headers, config) {
-            for (var i = 0; i < data.projects.length; i++) {
-                var building = data.projects[i].building;
-                if (!_.isUndefined(building.label)) {
-                    building.label.label = label_helper_service.lookup_label(building.label.color);
-                }
-            }
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
+          });
+          return response.data;
         });
-        return defer.promise;
-    };
+      };
 
       /**
        *
@@ -67,220 +53,137 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
        * @param project_slug: Name of the project to constrain the query.
        * @returns {Promise}
        */
-    building_factory.search_buildings = function(query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id, project_slug) {
+      building_factory.search_buildings = function (query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id, project_slug) {
         spinner_utility.show();
-        var defer = $q.defer();
-        $http({
-            method: 'POST',
-            data: {
-                q: query_string,
-                number_per_page: number_per_page,
-                page: page_number,
-                order_by: order_by,
-                sort_reverse: sort_reverse,
-                filter_params: filter_params,
-                project_id: project_id,
-                project_slug: project_slug
-            },
-            url: urls.search_buildings
-        }).success(function(data, status, headers, config){
-            spinner_utility.hide();
-            defer.resolve(data);
-        }).error(function(data, status, headers, config){
-            defer.reject(data, status);
+        return $http.post(urls.search_buildings, {
+          q: query_string,
+          number_per_page: number_per_page,
+          page: page_number,
+          order_by: order_by,
+          sort_reverse: sort_reverse,
+          filter_params: filter_params,
+          project_id: project_id,
+          project_slug: project_slug
+        }).then(function (response) {
+          spinner_utility.hide();
+          return response.data;
         });
-        return defer.promise;
-    };
+      };
 
-    building_factory.search_mapping_results = function(query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id, project_id, project_slug) {
-        spinner_utility.show();
-        var defer = $q.defer();
-        $http({
-            method: 'POST',
-            data: {
-                q: query_string,
-                number_per_page: number_per_page,
-                page: page_number,
-                order_by: order_by,
-                sort_reverse: sort_reverse,
-                filter_params: filter_params,
-                project_id: project_id,
-                import_file_id: import_file_id,
-                project_slug: project_slug
-            },
-            url: urls.search_mapping_results
-        }).success(function(data, status, headers, config){
-            spinner_utility.hide();
-            defer.resolve(data);
-        }).error(function(data, status, headers, config){
-            defer.reject(data, status);
+      // building_factory.search_mapping_results = function (query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id, project_id, project_slug) {
+      //   spinner_utility.show();
+      //   return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', {}).then(function (response) {
+      //     spinner_utility.hide();
+      //     return response.data;
+      //   });
+      // };
+      //
+      // building_factory.search_matching_buildings = function (query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id) {
+      //   spinner_utility.show({top: '75%'}, $('.section_content')[0]);
+      //   return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', {}).then(function (response) {
+      //     spinner_utility.hide();
+      //     return response.data;
+      //   });
+      // };
+
+      building_factory.save_match = function (source_building_id, target_building_id, create_match) {
+        return $http.post(urls.save_match, {
+          source_building_id: source_building_id,
+          target_building_id: target_building_id,
+          create_match: create_match,
+          organization_id: user_service.get_organization().id
+        }).then(function (response) {
+          return response.data;
         });
-        return defer.promise;
-    };
+      };
 
-    building_factory.search_matching_buildings = function(query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id) {
-        spinner_utility.show({top: '75%'}, $('.section_content')[0]);
-        var defer = $q.defer();
-        $http({
-            method: 'POST',
-            data: {
-                q: query_string,
-                number_per_page: number_per_page,
-                page: page_number,
-                order_by: order_by,
-                sort_reverse: sort_reverse,
-                filter_params: filter_params,
-                import_file_id: import_file_id
-            },
-            url: urls.search_mapping_results
-        }).success(function(data, status, headers, config){
-            spinner_utility.hide();
-            defer.resolve(data);
-        }).error(function(data, status, headers, config){
-            defer.reject(data, status);
+      building_factory.update_building = function (building, organization_id) {
+        return $http.put(urls.update_building, {
+          building: building,
+          organization_id: organization_id
+        }).then(function (response) {
+          return response.data;
         });
-        return defer.promise;
-    };
-
-    building_factory.save_match = function(source_building_id, target_building_id, create_match) {
-        var defer = $q.defer();
-        $http({
-            method: 'POST',
-            data: {
-                source_building_id: source_building_id,
-                target_building_id: target_building_id,
-                create_match: create_match,
-                organization_id: user_service.get_organization().id
-            },
-            url: urls.save_match
-        }).success(function(data, status, headers, config){
-            defer.resolve(data);
-        }).error(function(data, status, headers, config){
-            defer.reject(data, status);
-        });
-        return defer.promise;
-    };
-
-    building_factory.update_building = function(building, organization_id) {
-        var defer = $q.defer();
-        $http({
-            method: 'PUT',
-            data: {
-                building: building,
-                organization_id: organization_id
-            },
-            url: urls.update_building
-        }).success(function(data, status, headers, config){
-            defer.resolve(data);
-        }).error(function(data, status, headers, config){
-            defer.reject(data, status);
-        });
-        return defer.promise;
-    };
+      };
 
 
-
-    building_factory.get_columns = function(all_fields) {
-        var defer = $q.defer();
+      building_factory.get_columns = function (all_fields) {
         all_fields = all_fields || '';
-        $http({
-            method: 'GET',
-            url: window.BE.urls.get_columns_url,
-            params: {
-                all_fields: all_fields,
-                organization_id: user_service.get_organization().id
-            }
-        }).success(function(data, status, headers, config) {
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
+        return $http.get(window.BE.urls.get_columns_url, {
+          params: {
+            all_fields: all_fields,
+            organization_id: user_service.get_organization().id
+          }
+        }).then(function (response) {
+          return response.data;
         });
-        return defer.promise;
-    };
+      };
 
-    building_factory.get_PM_filter_by_counts = function(import_file_id) {
-        var defer = $q.defer();
-        $http({
-            method: 'GET',
-            url: window.BE.urls.get_PM_filter_by_counts_url,
-            params: {
-                import_file_id: import_file_id
-            }
-        }).success(function(data, status, headers, config) {
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
+      building_factory.get_PM_filter_by_counts = function (import_file_id) {
+        return $http.get(window.BE.urls.get_PM_filter_by_counts_url, {
+          params: {
+            import_file_id: import_file_id
+          }
+        }).then(function (response) {
+          return response.data;
         });
-        return defer.promise;
-    };
+      };
 
-    building_factory.delete_duplicates_from_import_file = function(import_file_id) {
-        var defer = $q.defer();
-        $http({
-            method: 'GET',
-            url: window.BE.urls.delete_duplicates_from_import_file_url,
-            params: {
-                import_file_id: import_file_id
-            }
-        }).success(function(data, status, headers, config) {
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
+      building_factory.delete_duplicates_from_import_file = function (import_file_id) {
+        $http.get(window.BE.urls.delete_duplicates_from_import_file_url, {
+          params: {
+            import_file_id: import_file_id
+          }
+        }).then(function (response) {
+          return response.data;
         });
-        return defer.promise;
-    };
+      };
 
-    /**
-     * start the delete buildings process
-     */
-    building_factory.delete_buildings = function(search_payload) {
+      /**
+       * start the delete buildings process
+       */
+      building_factory.delete_buildings = function (search_payload) {
         spinner_utility.show();
-        var defer = $q.defer();
-        $http({
-            method: 'DELETE',
-            url: generated_urls.seed.delete_buildings,
-            data: {
-                organization_id: user_service.get_organization().id,
-                search_payload: search_payload
-            }
-        }).success(function(data, status, headers, config) {
-            spinner_utility.hide();
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
+        return $http.delete(generated_urls.seed.delete_buildings, {
+          data: {
+            organization_id: user_service.get_organization().id,
+            search_payload: search_payload
+          }
+        }).then(function (response) {
+          spinner_utility.hide();
+          return response.data;
         });
-        return defer.promise;
-    };
+      };
 
-    building_factory.get_confidence_ranges = function() {
+      building_factory.get_confidence_ranges = function () {
         // low, med, and high could be generate server side
         var LOW, MED, HIGH;
         LOW = 0.4;
         MED = 0.75;
         HIGH = 1.0;
         return {
-            low: LOW,
-            medium: MED,
-            high: HIGH
+          low: LOW,
+          medium: MED,
+          high: HIGH
         };
-    };
+      };
 
-    building_factory.confidence_text = function(confidence) {
+      building_factory.confidence_text = function (confidence) {
         // this could be moved into a directive
         var conf_range = this.get_confidence_ranges();
 
         if (confidence < conf_range.low) {
-            return 'low';
+          return 'low';
         } else if (confidence >= conf_range.low && confidence < conf_range.medium) {
-            return 'med';
+          return 'med';
         } else if (confidence >= conf_range.medium <= conf_range.high) {
-            return 'high';
+          return 'high';
         }
         else {
-            return '';
+          return '';
         }
-    };
+      };
 
 
-    return building_factory;
-}]);
+      return building_factory;
+    }]);

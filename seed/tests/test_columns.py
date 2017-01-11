@@ -33,11 +33,13 @@ class TestColumns(TestCase):
         org1 = Organization.objects.create()
         org2 = Organization.objects.create()
 
+        # Raw columns don't have a table name!
         raw_column = seed_models.Column.objects.create(
             column_name=u'Some Weird City ID',
             organization=org2
         )
         mapped_column = seed_models.Column.objects.create(
+            table_name=u'PropertyState',
             column_name=u'custom_id_1',
             organization=org2
         )
@@ -61,9 +63,7 @@ class TestColumns(TestCase):
 
         # Fully correct example
         self.assertEqual(
-            seed_models.get_column_mapping(
-                raw_column.column_name, org2, 'column_mapped'
-            ),
+            seed_models.get_column_mapping(raw_column.column_name, org2, 'column_mapped'),
             (u'PropertyState', u'custom_id_1', 100)
         )
 

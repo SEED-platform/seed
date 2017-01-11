@@ -4,7 +4,6 @@
 :author
 """
 # stdlib
-from datetime import date, datetime, timedelta
 from optparse import make_option
 
 # Django
@@ -14,7 +13,6 @@ from django.core.management.base import BaseCommand
 from seed.utils.organizations import create_organization
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import Cycle
 
 
 class Command(BaseCommand):
@@ -72,24 +70,4 @@ class Command(BaseCommand):
                 ending=' '
             )
             org, _, user_added = create_organization(u, options['organization'])
-            self.stdout.write('Created!', ending='\n')
-
-        year = date.today().year - 1
-        cycle_name = str(year) + ' Calendar Year'
-        if Cycle.objects.filter(name=cycle_name, organization=org).exists():
-            self.stdout.write(
-                'Cycle <%s> already exists' % cycle_name,
-                ending='\n'
-            )
-            c = Cycle.objects.get(name=cycle_name, organization=org)
-        else:
-            self.stdout.write(
-                'Creating cycle <%s> ...' % cycle_name,
-                ending=' '
-            )
-            c = Cycle.objects.create(name=cycle_name,
-                                     organization=org,
-                                     start=datetime(year, 1, 1),
-                                     end=datetime(year + 1, 1, 1) - timedelta(seconds=1)
-                                     )
             self.stdout.write('Created!', ending='\n')

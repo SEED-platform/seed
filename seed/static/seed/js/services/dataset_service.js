@@ -5,119 +5,73 @@
 // dataset services
 angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
   '$http',
-  '$q',
-  '$timeout',
   'user_service',
-  function ($http, $q, $timeout, user_service) {
+  function ($http, user_service) {
 
     var dataset_factory = {total_datasets_for_user: 0};
 
     dataset_factory.get_datasets = function () {
-      var defer = $q.defer();
-      $http({
-        method: 'GET',
-        url: '/api/v2/datasets/',
+      return $http.get('/api/v2/datasets/', {
         params: {
           organization_id: user_service.get_organization().id
         }
-      }).success(function (data, status, headers, config) {
-        dataset_factory.total_datasets_for_user = (data.datasets !== undefined) ? data.datasets.length : 0;
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
-
+      }).then(function (response) {
+        dataset_factory.total_datasets_for_user = _.has(response.data.datasets, 'length') ? response.data.datasets.length : 0;
+        return response.data;
       });
-      return defer.promise;
-
     };
 
     dataset_factory.get_dataset = function (dataset_id) {
-      var defer = $q.defer();
-      $http({
-        method: 'GET',
-        url: '/api/v2/datasets/' + dataset_id + '/',
+      return $http.get('/api/v2/datasets/' + dataset_id + '/', {
         params: {
           organization_id: user_service.get_organization().id
         }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
-
+      }).then(function (response) {
+        return response.data;
       });
-      return defer.promise;
     };
 
     dataset_factory.delete_file = function (file_id) {
-      var defer = $q.defer();
-      $http({
-        method: 'DELETE',
-        url: window.BE.urls.delete_file,
+      return $http.delete(window.BE.urls.delete_file, {
         data: {
           file_id: file_id,
           organization_id: user_service.get_organization().id
         }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
-
+      }).then(function (response) {
+        return response.data;
       });
-      return defer.promise;
     };
 
     dataset_factory.delete_dataset = function (dataset_id) {
-      var defer = $q.defer();
-      $http({
-        method: 'DELETE',
-        url: '/api/v2/datasets/' + dataset_id + '/',
+      return $http.delete('/api/v2/datasets/' + dataset_id + '/', {
         params: {
           organization_id: user_service.get_organization().id
         }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
-
+      }).then(function (response) {
+        return response.data;
       });
-      return defer.promise;
     };
 
     dataset_factory.update_dataset = function (dataset) {
-      var defer = $q.defer();
-      $http({
-        method: 'PUT',
-        url: '/api/v2/datasets/' + dataset.id + '/',
-        data: {
-          dataset: dataset.name
-        },
+      return $http.put('/api/v2/datasets/' + dataset.id + '/', {
+        dataset: dataset.name
+      }, {
         params: {
           organization_id: user_service.get_organization().id
         }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
-
+      }).then(function (response) {
+        return response.data;
       });
-      return defer.promise;
     };
 
     dataset_factory.get_import_file = function (import_file_id) {
-      var defer = $q.defer();
-      $http({
-        method: 'GET',
-        url: window.BE.urls.get_import_file,
+      return $http.get('/api/v2/import_files/' + import_file_id + '/', {
         params: {
           import_file_id: import_file_id
         }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
-
+      }).then(function (response) {
+        return response.data;
       });
-      return defer.promise;
     };
 
     return dataset_factory;

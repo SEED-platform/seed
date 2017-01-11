@@ -78,6 +78,7 @@ angular.module('BE.seed.controller.mapping', [])
         two_active: false,
         three_active: false
       };
+
       $scope.import_file = import_file_payload.import_file;
       $scope.import_file.matching_finished = false;
       $scope.suggested_mappings = suggested_mappings_payload.suggested_column_mappings;
@@ -101,7 +102,6 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.show_mapped_buildings = false;
 
       $scope.search = angular.copy(search_service);
-      $scope.search.url = urls.search_mapping_results;
       $scope.search.has_checkbox = false;
       $scope.search.update_results();
 
@@ -380,22 +380,10 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.save_mappings = false;
 
         spinner_utility.show();
-        $http({
-          method: 'POST',
-          data: {
-            filter_params: {
-              import_file_id: $scope.import_file.id
-            },
-            number_per_page: 999999999,
-            order_by: '',
-            page: 1,
-            q: '',
-            sort_reverse: false
-          },
-          url: urls.search_mapping_results
-        }).success(function (data, status, headers, config) {
+        $http.post('/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/', {}).then(function (response) {
           spinner_utility.hide();
 
+          var data = response.data
           $scope.mappedData = data;
 
           var gridOptions = {
@@ -424,6 +412,16 @@ angular.module('BE.seed.controller.mapping', [])
             }
             return _.defaults(col, options, defaults);
           });
+          _.forEach(existing_extra_property_keys, function (name) {
+            if (!_.find(property_columns, {name: name})) {
+              property_columns.push(_.defaults({
+                name: name,
+                displayName: _.startCase(_.toLower(name)),
+                filter: inventory_service.textFilter(),
+                related: false
+              }, defaults));
+            }
+          });
           _.map(taxlot_columns, function (col) {
             var options = {};
             if (!_.includes(existing_taxlot_keys, col.name) && !_.includes(existing_extra_taxlot_keys, col.name)) col.visible = false;
@@ -432,6 +430,16 @@ angular.module('BE.seed.controller.mapping', [])
               else options.filter = inventory_service.textFilter();
             }
             return _.defaults(col, options, defaults);
+          });
+          _.forEach(existing_extra_taxlot_keys, function (name) {
+            if (!_.find(taxlot_columns, {name: name})) {
+              taxlot_columns.push(_.defaults({
+                name: name,
+                displayName: _.startCase(_.toLower(name)),
+                filter: inventory_service.textFilter(),
+                related: false
+              }, defaults));
+            }
           });
 
           $scope.propertiesGridOptions = angular.copy(gridOptions);
@@ -446,8 +454,8 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.taxlotsGridOptions.columnDefs = taxlot_columns;
 
           $scope.show_mapped_buildings = true;
-        }).error(function (data, status, headers, config) {
-          console.error(data, status);
+        }).catch(function (response) {
+          console.error(response);
         });
       };
 
@@ -649,7 +657,7 @@ angular.module('BE.seed.controller.mapping', [])
               return cleansing_service.get_cleansing_results($scope.import_file.id);
             },
             name: function () {
-              return $scope.import_file.name;
+              return $scope.import_file.uploaded_filename;
             },
             uploaded: function () {
               return $scope.import_file.created;
@@ -686,7 +694,7 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.open_data_upload_modal = function (dataset) {
         var step = 11;
         var ds = angular.copy(dataset);
-        ds.filename = $scope.import_file.name;
+        ds.filename = $scope.import_file.uploaded_filename;
         ds.import_file_id = $scope.import_file.id;
         var dataModalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',

@@ -32,7 +32,7 @@ class Command(BaseCommand):
             # Writing loop over organizations
 
             org = Organization.objects.filter(pk=org_id).first()
-            logging.info("Processing organization {}".format(org))
+            logging_info("Processing organization {}".format(org))
 
             assert org, "Organization {} not found".format(org_id)
 
@@ -43,13 +43,16 @@ class Command(BaseCommand):
 
     def assign_primarysecondary_tax_lots(self, org):
         for property_view in PropertyView.objects.filter(property__organization=org).all():
-            if TaxLotProperty.objects.filter(property_view=property_view).count() <= 1: continue
-
+            logging_info("assign_primarysecondary_tax_lots for property {p}".format(p = property_view.state.pm_property_id))
+            found_ct = TaxLotProperty.objects.filter(property_view=property_view).count()
+            logging_info("Found {ct} TaxLotProperty".format(ct = found_ct))
+            if found_ct <= 1: 
+                continue            
             links = list(TaxLotProperty.objects.filter(property_view=property_view).order_by(
                 'taxlot_view__state__jurisdiction_tax_lot_id').all())
-
+            logging_info("Found {ct} linked TaxLotProperties".format(ct = len(links)))
             for ndx in xrange(1, len(links)):
-                print "Setting secondary"
+                logging_info("Setting secondary for property {p} for cycle {c}:  {s}".format(p = property_view.state.pm_property_id, c = property_view.cycle.name, s = links[ndx].property_view.state.pm_property_id))
                 links[ndx].primary = False
                 links[ndx].save()
 

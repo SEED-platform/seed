@@ -24,8 +24,8 @@ from itertools import chain
 from celery import chord
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from django.conf import settings
 from django.db.models import Q
+from unidecode import unidecode
 
 from seed.cleansing.models import Cleansing
 from seed.cleansing.tasks import (
@@ -36,7 +36,6 @@ from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
     STATUS_READY_TO_MERGE,
-    ROW_DELIMITER,
     # DuplicateDataError,
 )
 from seed.decorators import get_prog_key
@@ -52,19 +51,17 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     ASSESSED_BS,
     ASSESSED_RAW,
-    AuditLog,
     # BS_VALUES_LIST,
     GREEN_BUTTON_BS,
     GREEN_BUTTON_RAW,
     PORTFOLIO_BS,
     PORTFOLIO_RAW,
-    POSSIBLE_MATCH,
     SYSTEM_MATCH,
     Column,
     ColumnMapping,
     # find_canonical_building_values,
     # initialize_canonical_building,
-    save_snapshot_match,
+    # save_snapshot_match,
     # BuildingSnapshot,
     PropertyState,
     PropertyView,
@@ -82,7 +79,7 @@ from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache
 
-logger = get_task_logger(__name__)
+_log = get_task_logger(__name__)
 
 # Maximum number of possible matches under which we'll allow a system match.
 MAX_SEARCH = 5
@@ -174,18 +171,6 @@ def _build_cleaner(org):
     return cleaners.Cleaner(units)
 
 
-def _normalize_tax_lot_id(value):
-    return value.strip().lstrip('0').upper().replace(
-        '-', ''
-    ).replace(
-        ' ', ''
-    ).replace(
-        '/', ''
-    ).replace(
-        '\\', ''
-    )
-
-
 @shared_task
 def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwargs):
     """Does the work of matching a mapping to a source type and saving
@@ -201,7 +186,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
 
     """
 
-    logger.debug("Mapping row chunks")
+    _log.debug("Mapping row chunks")
     import_file = ImportFile.objects.get(pk=file_pk)
     save_type = PORTFOLIO_BS
     if source_type == ASSESSED_RAW:
@@ -217,10 +202,10 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # the demo this is an infix place, but is absolutely terrible and
     # should be removed ASAP!!!!!
     if 'PropertyState' not in table_mappings and 'TaxLotState' in table_mappings and '' in table_mappings:
+        _log.error("this code should not be running here...")
         debug_inferred_prop_state_mapping = table_mappings['']
         table_mappings['PropertyState'] = debug_inferred_prop_state_mapping
 
-    logger.debug("Mappings are %s" % table_mappings)
     map_cleaner = _build_cleaner(org)
 
     # *** BREAK OUT INTO SEPARATE METHOD ***
@@ -228,43 +213,41 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # individual values (e.g. tax lot ids). The definition of the delimited field is currently
     # hard coded
     try:
-        delimited_field = {}
+        delimited_fields = {}
         if 'TaxLotState' in table_mappings.keys():
-            delimited_field = table_mappings['TaxLotState'].keys()[
-                table_mappings['TaxLotState'].values().index(
-                    ('TaxLotState', 'jurisdiction_tax_lot_id'))]
-            # put this into a dict for now. I would much rather have this as a new method. Only
-            # delimit if in the table listed below.
-            delimited_field = {'TaxLotState': delimited_field}
+            tmp = table_mappings['TaxLotState'].keys()[table_mappings['TaxLotState'].values().index(('TaxLotState', 'jurisdiction_tax_lot_id'))]
+            delimited_fields['jurisdiction_tax_lot_id'] = {
+                'from_field': tmp,
+                'to_table': 'TaxLotState',
+                'to_field_name': 'jurisdiction_tax_lot_id',
+            }
     except ValueError:
-        delimited_field = {}
+        delimited_fields = {}
         # field does not exist in mapping list, so ignoring
 
-    # logger.debug("my table mappings are {}".format(table_mappings))
-    # logger.debug("my delimited_field is {}".format(delimited_field))
+    # _log.debug("my table mappings are {}".format(table_mappings))
+    _log.debug("delimited_field that will be expanded and normalized: {}".format(delimited_fields))
 
     # Add custom mappings for cross-related data. Right now these are hard coded, but could
     # be a setting if so desired.
-    if delimited_field and 'PropertyState' in table_mappings.keys():
-        table_mappings['PropertyState'][delimited_field['TaxLotState']] = (
-            'PropertyState', 'lot_number')
-    # logger.debug("my mappings are {}".format(table_mappings))
+    if delimited_fields and delimited_fields['jurisdiction_tax_lot_id'] and 'PropertyState' in table_mappings.keys():
+        table_mappings['PropertyState'][delimited_fields['jurisdiction_tax_lot_id']['from_field']] = ('PropertyState', 'lot_number')
     # *** END BREAK OUT ***
 
     # yes, there are three cascading for loops here. sorry :(
     md = MappingData()
     for table, mappings in table_mappings.iteritems():
-        print "table: {}".format(table)
         if not table:
             continue
+
         # This may be historic, but we need to pull out the extra_data_fields here to pass into
         # mapper.map_row. apply_columns are extra_data columns (the raw column names)
         extra_data_fields = []
         for k, v in mappings.iteritems():
             if not md.find_column(v[0], v[1]):
                 extra_data_fields.append(k)
-        logger.debug("extra data fields: {}".format(extra_data_fields))
-        logger.debug("table {} has the maps: {}".format(table, mappings))
+        _log.debug("extra data fields: {}".format(extra_data_fields))
+
         # All the data live in the PropertyState.extra_data field when the data are imported
         data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
 
@@ -277,13 +260,20 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
 
             # expand the row into multiple rows if needed with the delimited_field replaced with a
             # single value. This minimizes the need to rewrite the downstream code.
-            if table in delimited_field.keys():
-                model_delimited_fields = delimited_field[table]
-            else:
-                model_delimited_fields = None
+            expand_row = False
+            for k, d in delimited_fields.iteritems():
+                if d['to_table'] == table:
+                    expand_row = True
+            _log.debug("Expand row is set to {}".format(expand_row))
+
+            delimited_field_list = []
+            for _, v in delimited_fields.iteritems():
+                delimited_field_list.append(v['from_field'])
+
+            _log.debug("delimited_field_list is set to {}".format(delimited_field_list))
 
             # Weeee... the data are in the extra_data column.
-            for row in expand_rows(original_row.extra_data, model_delimited_fields):
+            for row in expand_rows(original_row.extra_data, delimited_field_list, expand_row):
                 # TODO: during the mapping the data are saved back in the database
                 # If the user decided to not use the mapped data and go back and remap
                 # then the data will forever be in the property state table for
@@ -319,17 +309,17 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 # data types... stay tuned.
                 if hasattr(map_model_obj,
                            'recent_sale_date') and map_model_obj.recent_sale_date == '':
-                    logger.debug("recent_sale_date was an empty string, setting to None")
+                    _log.debug("recent_sale_date was an empty string, setting to None")
                     map_model_obj.recent_sale_date = None
                 if hasattr(map_model_obj,
                            'generation_date') and map_model_obj.generation_date == '':
-                    logger.debug("generation_date was an empty string, setting to None")
+                    _log.debug("generation_date was an empty string, setting to None")
                     map_model_obj.generation_date = None
                 if hasattr(map_model_obj, 'release_date') and map_model_obj.release_date == '':
-                    logger.debug("release_date was an empty string, setting to None")
+                    _log.debug("release_date was an empty string, setting to None")
                     map_model_obj.release_date = None
                 if hasattr(map_model_obj, 'year_ending') and map_model_obj.year_ending == '':
-                    logger.debug("year_ending was an empty string, setting to None")
+                    _log.debug("year_ending was an empty string, setting to None")
                     map_model_obj.year_ending = None
 
                 # TODO: Second temporary hack.  This should not happen but somehow it does.
@@ -363,7 +353,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                                              import_filename=import_file,
                                              record_type=AUDIT_IMPORT)
 
-                # Make sure that we've saved all of the extra_data column names from the first item in list
+        # Make sure that we've saved all of the extra_data column names from the first item in list
         if map_model_obj:
             Column.save_column_names(map_model_obj)
 
@@ -379,12 +369,12 @@ def _map_data(file_pk, *args, **kwargs):
     :param file_pk: int, the id of the import_file we're working with.
 
     """
-    logger.debug("Starting to map the data")
+    _log.debug("Starting to map the data")
     prog_key = get_prog_key('map_data', file_pk)
     import_file = ImportFile.objects.get(pk=file_pk)
     # Don't perform this task if it's already been completed.
     if import_file.mapping_done:
-        logger.debug("_map_data mapping_done is true")
+        _log.debug("_map_data mapping_done is true")
         result = {
             'status': 'warning',
             'progress': 100,
@@ -397,7 +387,7 @@ def _map_data(file_pk, *args, **kwargs):
     # If we haven't finished saving, we shouldn't proceed with mapping
     # Re-queue this task.
     if not import_file.raw_save_done:
-        logger.debug("_map_data raw_save_done is false, queueing the task until raw_save finishes")
+        _log.debug("_map_data raw_save_done is false, queueing the task until raw_save finishes")
         map_data.apply_async(args=[file_pk], countdown=60, expires=120)
         return {
             'status': 'error',
@@ -427,7 +417,7 @@ def _map_data(file_pk, *args, **kwargs):
         # specify the chord as an immutable with .si
         chord(tasks, interval=15)(finish_mapping.si(file_pk))
     else:
-        logger.debug("Not creating finish_mapping chord, calling directly")
+        _log.debug("Not creating finish_mapping chord, calling directly")
         finish_mapping.si(file_pk)
 
 
@@ -504,6 +494,8 @@ def _cleanse_data(file_pk, record_type='property'):
 def map_data(file_pk, *args, **kwargs):
     """Small wrapper to ensure we isolate our mapping process from requests."""
     _map_data.delay(file_pk)
+    prog_key = get_prog_key('map_data', file_pk)
+    return {'status': 'started', 'progress_key': prog_key}
 
 
 @shared_task
@@ -516,7 +508,17 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
     for c in chunk:
         raw_property = PropertyState(organization=import_file.import_record.super_organization)
         raw_property.import_file = import_file  # not defined in new data model
-        raw_property.extra_data = c
+
+        # sanitize c and remove any diacritics
+        new_chunk = {}
+        for k, v in c.iteritems():
+            # remove extra spaces surrounding keys
+            key = k.strip()
+            if isinstance(v, unicode):
+                new_chunk[key] = unidecode(v)
+            else:
+                new_chunk[key] = v
+        raw_property.extra_data = new_chunk
         raw_property.source_type = source_type  # not defined in new data model
         raw_property.data_state = DATA_STATE_IMPORT
 
@@ -532,7 +534,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
 
     # Indicate progress
     increment_cache(prog_key, increment)
-    logger.debug('Returning from _save_raw_data_chunk')
+    _log.debug('Returning from _save_raw_data_chunk')
 
     return True
 
@@ -556,7 +558,7 @@ def finish_raw_save(file_pk):
         'progress_key': prog_key
     }
     set_cache(prog_key, result['status'], result)
-    logger.debug('Returning from finish_raw_save')
+    _log.debug('Returning from finish_raw_save')
     return result
 
 
@@ -564,43 +566,20 @@ def cache_first_rows(import_file, parser):
     """Cache headers, and rows 2-6 for validation/viewing.
 
     :param import_file: ImportFile inst.
-    :param parser: unicode-csv.Reader instance.
-
-    Unfortunately, this is duplicated logic from data_importer,
-    but since data_importer makes many faulty assumptions we need to do
-    it differently.
-
+    :param parser: MCMParser instance.
     """
-    parser.seek_to_beginning()
-    rows = parser.next()
-
-    validation_rows = []
-    for i in range(5):
-        try:
-            row = rows.next()
-            if row:
-                validation_rows.append(row)
-        except StopIteration:
-            """Less than 5 rows in file"""
-            break
 
     # return the first row of the headers which are cleaned
     first_row = parser.headers()
+    first_five_rows = parser.first_five_rows
 
-    tmp = []
-    for r in validation_rows:
-        tmp.append(ROW_DELIMITER.join([str(r[x]) for x in first_row]))
+    _log.debug(first_five_rows)
 
-    import_file.cached_second_to_fifth_row = "\n".join(tmp)
-
+    import_file.cached_second_to_fifth_row = "\n".join(first_five_rows)
     if first_row:
-        first_row = ROW_DELIMITER.join(first_row)
+        first_row = reader.ROW_DELIMITER.join(first_row)
     import_file.cached_first_row = first_row or ''
-
     import_file.save()
-
-    # Reset our file pointer for mapping.
-    parser.seek_to_beginning()
 
 
 @shared_task
@@ -646,21 +625,21 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
 def _save_raw_data(file_pk, *args, **kwargs):
     """Chunk up the CSV or XLSX file and save the raw data into the DB PropertyState table."""
     prog_key = get_prog_key('save_raw_data', file_pk)
-    logger.debug("Current cache state")
+    _log.debug("Current cache state")
     current_cache = get_cache(prog_key)
-    logger.debug(current_cache)
+    _log.debug(current_cache)
     time.sleep(2)  # NL: yuck
     result = current_cache
 
     try:
-        logger.debug('Attempting to access import_file')
+        _log.debug('Attempting to access import_file')
         import_file = ImportFile.objects.get(pk=file_pk)
         if import_file.raw_save_done:
             result['status'] = 'warning'
             result['message'] = 'Raw data already saved'
             result['progress'] = 100
             set_cache(prog_key, result['status'], result)
-            logger.debug('Returning with warn from _save_raw_data')
+            _log.debug('Returning with warn from _save_raw_data')
             return result
 
         if import_file.source_type == "Green Button Raw":
@@ -680,18 +659,18 @@ def _save_raw_data(file_pk, *args, **kwargs):
         tasks = [_save_raw_data_chunk.s(chunk, file_pk, prog_key, increment)
                  for chunk in chunks]
 
-        logger.debug('Appended all tasks')
+        _log.debug('Appended all tasks')
         import_file.save()
-        logger.debug('Saved import_file')
+        _log.debug('Saved import_file')
 
         if tasks:
-            logger.debug('Adding chord to queue')
+            _log.debug('Adding chord to queue')
             chord(tasks, interval=15)(finish_raw_save.si(file_pk))
         else:
-            logger.debug('Skipped chord')
+            _log.debug('Skipped chord')
             finish_raw_save.s(file_pk)
 
-        logger.debug('Finished raw save tasks')
+        _log.debug('Finished raw save tasks')
         result = get_cache(prog_key)
     except StopIteration:
         result['status'] = 'error'
@@ -711,15 +690,15 @@ def _save_raw_data(file_pk, *args, **kwargs):
         result['stacktrace'] = traceback.format_exc()
 
     set_cache(prog_key, result['status'], result)
-    logger.debug('Returning from end of _save_raw_data with state:')
-    logger.debug(result)
+    _log.debug('Returning from end of _save_raw_data with state:')
+    _log.debug(result)
     return result
 
 
 @shared_task
 @lock_and_track
 def save_raw_data(file_pk, *args, **kwargs):
-    logger.debug('In save_raw_data')
+    _log.debug('In save_raw_data')
 
     prog_key = get_prog_key('save_raw_data', file_pk)
     initializing_key = {
@@ -729,7 +708,7 @@ def save_raw_data(file_pk, *args, **kwargs):
     }
     set_cache(prog_key, initializing_key['status'], initializing_key)
     _save_raw_data.delay(file_pk, *args, **kwargs)
-    logger.debug('Returning from save_raw_data')
+    _log.debug('Returning from save_raw_data')
     result = get_cache(prog_key)
     return result
 
@@ -742,56 +721,56 @@ def _stringify(values):
     )
 
 
-def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
-    """Seek IDs and save our snapshot match.
-
-    :param results: list of tuples. [('match', 0.99999),...]
-    :param b_idx: int, the index of the current building in the unmatched_list.
-    :param can_rev_idx: dict, reverse index from match -> canonical PK.
-    :param user_pk: user ID, used for AuditLog logging
-    :unmatched_list: list of dicts, the result of a values_list query for
-        unmatched PropertyState.
-
-    """
-    match_string, confidence = results[0]  # We always care about closest match
-    match_type = SYSTEM_MATCH
-    # If we passed the minimum threshold, we're here, but we need to
-    # distinguish probable matches from good matches.
-    if confidence < getattr(settings, 'MATCH_MED_THRESHOLD', 0.7):
-        match_type = POSSIBLE_MATCH
-
-    can_snap_pk = can_rev_idx[match_string]
-    building_pk = unmatched_list[b_idx][0]  # First element is PK
-
-    bs, changes = save_snapshot_match(
-        can_snap_pk,
-        building_pk,
-        confidence=confidence,
-        match_type=match_type,
-        default_pk=building_pk,
-    )
-    canon = bs.canonical_building
-    action_note = 'System matched building.'
-    if changes:
-        action_note += "  Fields changed in cannonical building:\n"
-        for change in changes:
-            action_note += "\t{field}:\t".format(
-                field=change["field"].replace("_", " ").replace("-",
-                                                                "").capitalize(),
-            )
-            if "from" in change:
-                action_note += "From:\t{prev}\tTo:\t".format(
-                    prev=change["from"])
-
-            action_note += "{value}\n".format(value=change["to"])
-        action_note = action_note[:-1]
-    AuditLog.objects.create(
-        user_id=user_pk,
-        content_object=canon,
-        action_note=action_note,
-        action='save_system_match',
-        organization=bs.super_organization,
-    )
+# def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
+#     """Seek IDs and save our snapshot match.
+#
+#     :param results: list of tuples. [('match', 0.99999),...]
+#     :param b_idx: int, the index of the current building in the unmatched_list.
+#     :param can_rev_idx: dict, reverse index from match -> canonical PK.
+#     :param user_pk: user ID, used for AuditLog logging
+#     :unmatched_list: list of dicts, the result of a values_list query for
+#         unmatched PropertyState.
+#
+#     """
+#     match_string, confidence = results[0]  # We always care about closest match
+#     match_type = SYSTEM_MATCH
+#     # If we passed the minimum threshold, we're here, but we need to
+#     # distinguish probable matches from good matches.
+#     if confidence < getattr(settings, 'MATCH_MED_THRESHOLD', 0.7):
+#         match_type = POSSIBLE_MATCH
+#
+#     can_snap_pk = can_rev_idx[match_string]
+#     building_pk = unmatched_list[b_idx][0]  # First element is PK
+#
+#     bs, changes = save_snapshot_match(
+#         can_snap_pk,
+#         building_pk,
+#         confidence=confidence,
+#         match_type=match_type,
+#         default_pk=building_pk,
+#     )
+#     canon = bs.canonical_building
+#     action_note = 'System matched building.'
+#     if changes:
+#         action_note += "  Fields changed in cannonical building:\n"
+#         for change in changes:
+#             action_note += "\t{field}:\t".format(
+#                 field=change["field"].replace("_", " ").replace("-",
+#                                                                 "").capitalize(),
+#             )
+#             if "from" in change:
+#                 action_note += "From:\t{prev}\tTo:\t".format(
+#                     prev=change["from"])
+#
+#             action_note += "{value}\n".format(value=change["to"])
+#         action_note = action_note[:-1]
+#     AuditLog.objects.create(
+#         user_id=user_pk,
+#         content_object=canon,
+#         action_note=action_note,
+#         action='save_system_match',
+#         organization=bs.super_organization,
+#     )
 
 
 @shared_task
@@ -949,17 +928,17 @@ def hash_state_object(obj, include_extra_data=True):
         # print "{}: {} -> {}".format(field, obj_val, m.hexdigest())
 
     if include_extra_data:
-        addDictionaryReprToHash(m, obj.extra_data)
+        add_dictionary_repr_to_hash(m, obj.extra_data)
 
     return m.hexdigest()
 
 
-def addDictionaryReprToHash(hash_obj, dict_obj):
+def add_dictionary_repr_to_hash(hash_obj, dict_obj):
     assert isinstance(dict_obj, dict)
 
     for (key, value) in sorted(dict_obj.items(), key=lambda x_y: x_y[0]):
         if isinstance(value, dict):
-            addDictionaryReprToHash(hash_obj, value)
+            add_dictionary_repr_to_hash(hash_obj, value)
         else:
             hash_obj.update(str(key))
             hash_obj.update(str(value))
@@ -995,6 +974,7 @@ def filter_duplicated_states(unmatched_states):
 
 
 class EquivalencePartitioner(object):
+    """ TODO: Document purpose of class"""
 
     @classmethod
     def makeDefaultStateEquivalence(kls, equivalence_type):
@@ -1141,7 +1121,7 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import
     unmatched_tax_lot_states and returns a set of states that
     correspond to unmatched states."""
 
-    logger.debug("Starting to map_and_merge_unmatched_objects")
+    _log.debug("Starting to map_and_merge_unmatched_objects")
 
 
     # Sort unmatched states/This shouldn't be happening!
@@ -1190,7 +1170,7 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import
         else:
             merged_objects.append(merged_result)
 
-    logger.debug("DONE with map_and_merge_unmatched_objects")
+    _log.debug("DONE with map_and_merge_unmatched_objects")
     return merged_objects, equivalence_classes.keys()
 
 
@@ -1630,12 +1610,12 @@ def is_same_snapshot(s1, s2):
 
 def save_state_match(state1, state2, confidence=None, user=None,
                      match_type=None, default_match=None, import_filename=None):
-    from seed.mappings import mapper as seed_mapper
+    from seed.lib.merging import merging as seed_merger
 
     merged_state = type(state1).objects.create(organization=state1.organization)
-    merged_state, changes = seed_mapper.merge_state(merged_state,
+    merged_state, changes = seed_merger.merge_state(merged_state,
                                                     state1, state2,
-                                                    seed_mapper.get_state_attrs([state1, state2]),
+                                                    seed_merger.get_state_attrs([state1, state2]),
                                                     conf=confidence,
                                                     default=state2,
                                                     match_type=SYSTEM_MATCH)

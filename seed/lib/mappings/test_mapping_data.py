@@ -72,7 +72,7 @@ class TestMappingData(TestCase):
                          'owner_address', 'owner_city_state', 'owner_email',
                          'owner_postal_code', 'owner_telephone',
                          'pm_parent_property_id', 'pm_property_id',
-                         'postal_code', 'property_name', 'property_notes',
+                         'postal_code', 'property_name', 'property_notes', 'property_type',
                          'recent_sale_date', 'release_date', 'site_eui',
                          'site_eui_weather_normalized', 'source_eui',
                          'source_eui_weather_normalized', 'space_alerts',

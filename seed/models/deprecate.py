@@ -117,66 +117,70 @@ def clean_canonicals(b1, b2, new_snapshot):
             canon.active = False
             canon.save()
 
-
-def save_snapshot_match(b1_pk, b2_pk, confidence=None, user=None,
-                        match_type=None, default_pk=None):
-    """Saves a match between two models as a new snapshot; updates Canonical.
-
-    :param b1_pk: int, id for building snapshot.
-    :param b2_pk: int, id for building snapshot.
-    :param confidence: (optional) float, likelihood that two models are linked.
-    :param user: (optional) User inst, last_modified_by for BuildingSnapshot.
-    :rtype: BuildingSnapshot instance, post save.
-
-    Determines which Canonical link should be used. If ``canonical`` is
-    specified,
-    we're probably changing a building's Canonical link, so use that Canonical
-    Building. Otherwise, use the model we match against. If none exists,
-    create it.
-
-    Update mapped fields in the new snapshot, update canonical links.
-
-    """
-    from seed.mappings import mapper as seed_mapper
-
-    # No point in linking the same building together.
-    if b1_pk == b2_pk:
-        return
-
-    default_pk = default_pk or b1_pk
-
-    b1 = BuildingSnapshot.objects.get(pk=b1_pk)
-    b2 = BuildingSnapshot.objects.get(pk=b2_pk)
-
-    # we don't want to match in the middle of the tree, so get the tip
-    b1 = b1.tip
-    b2 = b2.tip
-
-    default_building = b1 if default_pk == b1_pk else b2
-
-    new_snapshot = BuildingSnapshot.objects.create()
-    new_snapshot, changes = seed_mapper.merge_building(
-        new_snapshot,
-        b1,
-        b2,
-        seed_mapper.get_building_attrs([b1, b2]),
-        conf=confidence,
-        default=default_building,
-        match_type=match_type
-    )
-
-    clean_canonicals(b1, b2, new_snapshot)
-
-    new_snapshot.last_modified_by = user
-
-    new_snapshot.meters.add(*b1.meters.all())
-    new_snapshot.meters.add(*b2.meters.all())
-    new_snapshot.super_organization = b1.super_organization
-    new_snapshot.super_organization = b2.super_organization
-
-    new_snapshot.save()
-
-    return new_snapshot, changes
+# def get_building_attrs(data_set_buildings):
+#     mapping = seed_mappings.BuildingSnapshot_to_BuildingSnapshot
+#     return get_attrs_with_mapping(data_set_buildings, mapping)
+#
+#
+# def save_snapshot_match(b1_pk, b2_pk, confidence=None, user=None,
+#                         match_type=None, default_pk=None):
+#     """Saves a match between two models as a new snapshot; updates Canonical.
+#
+#     :param b1_pk: int, id for building snapshot.
+#     :param b2_pk: int, id for building snapshot.
+#     :param confidence: (optional) float, likelihood that two models are linked.
+#     :param user: (optional) User inst, last_modified_by for BuildingSnapshot.
+#     :rtype: BuildingSnapshot instance, post save.
+#
+#     Determines which Canonical link should be used. If ``canonical`` is
+#     specified,
+#     we're probably changing a building's Canonical link, so use that Canonical
+#     Building. Otherwise, use the model we match against. If none exists,
+#     create it.
+#
+#     Update mapped fields in the new snapshot, update canonical links.
+#
+#     """
+#     from seed.mappings import mapper as seed_mapper
+#
+#     # No point in linking the same building together.
+#     if b1_pk == b2_pk:
+#         return
+#
+#     default_pk = default_pk or b1_pk
+#
+#     b1 = BuildingSnapshot.objects.get(pk=b1_pk)
+#     b2 = BuildingSnapshot.objects.get(pk=b2_pk)
+#
+#     # we don't want to match in the middle of the tree, so get the tip
+#     b1 = b1.tip
+#     b2 = b2.tip
+#
+#     default_building = b1 if default_pk == b1_pk else b2
+#
+#     new_snapshot = BuildingSnapshot.objects.create()
+#     new_snapshot, changes = seed_mapper.merge_building(
+#         new_snapshot,
+#         b1,
+#         b2,
+#         seed_mapper.get_building_attrs([b1, b2]),
+#         conf=confidence,
+#         default=default_building,
+#         match_type=match_type
+#     )
+#
+#     clean_canonicals(b1, b2, new_snapshot)
+#
+#     new_snapshot.last_modified_by = user
+#
+#     new_snapshot.meters.add(*b1.meters.all())
+#     new_snapshot.meters.add(*b2.meters.all())
+#     new_snapshot.super_organization = b1.super_organization
+#     new_snapshot.super_organization = b2.super_organization
+#
+#     new_snapshot.save()
+#
+#     return new_snapshot, changes
 
 
 def unmatch_snapshot_tree(building_pk):
@@ -271,13 +275,13 @@ def unmatch_snapshot_tree(building_pk):
         child.delete()
 
     # re-merge parents whose children have been taken from them
-    bachelor = root
+    # bachelor = root
     newborn_child = None
-    for bereaved_parent in coparents_to_keep:
-        newborn_child, _ = save_snapshot_match(
-            bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk,
-        )
-        bachelor = newborn_child
+    # for bereaved_parent in coparents_to_keep:
+    # newborn_child, _ = save_snapshot_match(
+    #     bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk,
+    # )
+    # bachelor = newborn_child
 
     # set canonical_snapshot for root's canonical building
     tip = newborn_child or root

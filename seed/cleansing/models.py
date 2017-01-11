@@ -330,9 +330,6 @@ class Cleansing(object):
         :return:
         """
         fields = self.get_fieldnames(record_type)
-
-        print fields
-
         for datum in data:
             # Initialize the ID if it doesn't exist yet. Add in the other
             # fields that are of interest to the GUI

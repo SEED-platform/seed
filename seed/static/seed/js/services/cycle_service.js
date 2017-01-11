@@ -4,117 +4,89 @@
  */
 angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
   '$http',
-  '$q',
-  '$timeout',
-  '$log',
   'user_service',
-  function ($http,
-            $q,
-            $timeout,
-            $log,
-            user_service) {
+  function ($http, user_service) {
 
     var cycle_factory = {};
     /** Cycle Service:
-        --------------------------------------------------
-        Provides methods to add/edit cycles on the server.
-    */
+     --------------------------------------------------
+     Provides methods to add/edit cycles on the server.
+     */
 
 
     /** Returns an array of cycles.
 
-        Returned cycle objects should have the following properties,
-        with 'text' and 'color' properties assigned locally.
+     Returned cycle objects should have the following properties,
+     with 'text' and 'color' properties assigned locally.
 
-            id {integer}            The id of the Cycle.
-            name {string}           The text that appears in the Cycle.
-            start_date {string}     Start date for Cycle.
-            end_date {string}       End date for Cycle.
+     id {integer}            The id of the Cycle.
+     name {string}           The text that appears in the Cycle.
+     start_date {string}     Start date for Cycle.
+     end_date {string}       End date for Cycle.
 
-    */
+     */
 
-    cycle_factory.get_cycles = function() {
+    cycle_factory.get_cycles = function () {
       return cycle_factory.get_cycles_for_org(user_service.get_organization().id);
     };
 
     cycle_factory.get_cycles_for_org = function (org_id) {
-      var defer = $q.defer();
-
-      $http({
-        method: 'GET',
-        url: window.BE.urls.get_cycles,
+      return $http.get('/api/v2/cycles/', {
         params: {
           organization_id: org_id
         }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
+      }).then(function (response) {
+        return response.data;
       });
-      return defer.promise;
     };
 
 
     /*  Add a cycle to an organization's list of cycles
 
-        @param {object} cycle       Cycle object to use for creating cycle on server.
+     @param {object} cycle       Cycle object to use for creating cycle on server.
 
-        @return {object}            Returns a promise object which will resolve
-                                    with either a success if the cycle was created
-                                    on the server, or an error if the cycle could not be
-                                    created on the server.
+     @return {object}            Returns a promise object which will resolve
+     with either a success if the cycle was created
+     on the server, or an error if the cycle could not be
+     created on the server.
 
-    */
+     */
     cycle_factory.create_cycle = function (cycle) {
       return cycle_factory.create_cycle_for_org(cycle, user_service.get_organization().id);
     };
 
     cycle_factory.create_cycle_for_org = function (cycle, org_id) {
-      var defer = $q.defer();
-      $http({
-        method: 'POST',
-        url: window.BE.urls.create_cycle,
-        data: cycle,
+      return $http.post('/api/v2/cycles/', cycle, {
         params: {
           organization_id: org_id
         }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
+      }).then(function (response) {
+        return response.data;
       });
-      return defer.promise;
     };
 
 
     /*  Update an existing a cycle in an organization
 
-        @param {object} cycle   A cycle object with changed properties to update on server.
-                                The object must include property 'id' for cycle ID.
+     @param {object} cycle   A cycle object with changed properties to update on server.
+     The object must include property 'id' for cycle ID.
 
-        @return {object}        Returns a promise object which will resolve
-                                with either a success if the cycle was updated,
-                                or an error if not.
-    */
+     @return {object}        Returns a promise object which will resolve
+     with either a success if the cycle was updated,
+     or an error if not.
+     */
     cycle_factory.update_cycle = function (cycle) {
       return cycle_factory.update_cycle_for_org(cycle, user_service.get_organization().id);
     };
 
     cycle_factory.update_cycle_for_org = function (cycle, org_id) {
-      var defer = $q.defer();
-      $http({
-        method: 'PUT',
-        url: window.BE.urls.update_cycle,
-        data: cycle,
+      return $http.put('/api/v2/cycles/' + cycle.id + '/', cycle, {
         params: {
           organization_id: org_id
         }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
+      }).then(function (response) {
+        return response.data;
       });
-      return defer.promise;
     };
 
     cycle_factory.delete_cycle = function (cycle) {
@@ -122,22 +94,16 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
     };
 
     cycle_factory.delete_cycle_for_org = function (cycle, org_id) {
-      var defer = $q.defer();
-      $http({
-        method: 'DELETE',
-        url: window.BE.urls.delete_cycle,
+      return $http.delete('/api/v2/cycles/' + cycle.id + '/', {
         data: cycle,
         params: {
           organization_id: org_id
         }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
+      }).then(function (response) {
+        return response.data;
       });
-      return defer.promise;
     };
 
     return cycle_factory;
 
-}]);
+  }]);

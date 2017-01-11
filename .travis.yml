@@ -15,8 +15,8 @@ python:
 
 addons:
   postgresql: '9.4'
-  # Sauce credentials in Travis env vars
-  sauce_connect: true
+  # Sauce credentials in Travis env vars, but we aren't using Sauce until we get functional tests working, so disable it
+  # sauce_connect: true
   apt_packages:
     - enchant
 
@@ -37,13 +37,10 @@ env:
 
 install:
   - pip install --upgrade pip
-  - pip install tox==2.3.1
+  - pip install tox==2.3.2
 
 before_script:
   - psql -c "create database seeddb;" -U postgres
 
 script:
   - tox -e $TOX_ENV
-
-after_script:
-  - coveralls
