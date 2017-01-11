@@ -3220,7 +3220,8 @@ class InventoryViewTests(TestCase):
             'page', 1,
             'per_page', 999999999
         )
-        response = self.client.post(url, data={'columns': COLUMNS_TO_SEND})
+        data = {'columns': COLUMNS_TO_SEND}
+        response = self.client.post(url, data=data)
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 1)
         self.assertEquals(len(result['results'][0]['related']), 2)
