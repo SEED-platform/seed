@@ -24,9 +24,9 @@ class SEEDAuthentication(authentication.BaseAuthentication):
 
         try:
             if not auth_header.startswith('Basic'):
-            raise exceptions.AuthenticationFailed(
-                "Only Basic HTTP_AUTHORIZATION is supported"
-            )
+                raise exceptions.AuthenticationFailed(
+                    "Only Basic HTTP_AUTHORIZATION is supported"
+                )
 
             auth_header = auth_header.split()[1]
             auth_header = base64.urlsafe_b64decode(auth_header)
