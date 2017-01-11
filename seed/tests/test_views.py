@@ -3155,10 +3155,11 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}".format(
+        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}".format(
             'organization_id', self.org.pk,
             'page', 1,
-            'per_page', 999999999
+            'per_page', 999999999,
+            'cycle', self.cycle.pk
         ), data={'columns': COLUMNS_TO_SEND})
         results = json.loads(response.content)['results']
 
@@ -3270,7 +3271,7 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view_2,
             cycle=self.cycle
         )
-        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}".format(
+        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}".format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
             'page', 1,
