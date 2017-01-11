@@ -7,6 +7,7 @@
 import base64
 from rest_framework import authentication
 from rest_framework import exceptions
+from seed.landing.models import SEEDUser as User
 
 
 class SEEDAuthentication(authentication.BaseAuthentication):
@@ -30,7 +31,6 @@ class SEEDAuthentication(authentication.BaseAuthentication):
 
             auth_header = auth_header.split()[1]
             auth_header = base64.urlsafe_b64decode(auth_header)
-            from seed.landing.models import SEEDUser as User
             username, api_key = auth_header.split(':')
             user = User.objects.get(api_key=api_key, username=username)
             return user, api_key
