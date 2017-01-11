@@ -228,7 +228,10 @@ class PropertyViewSet(GenericViewSet):
                            whose value is a list of strings, each representing a column name
               paramType: body
         """
-        columns = request.data['columns']
+        try:
+            columns = dict(request.data.iterlists())['columns']
+        except AttributeError:
+            columns = request.data['columns']
         return self._get_filtered_results(request, columns=columns)
 
     # @require_organization_id
@@ -934,7 +937,10 @@ class TaxLotViewSet(GenericViewSet):
                            whose value is a list of strings, each representing a column name
               paramType: body
         """
-        columns = request.data['columns']
+        try:
+            columns = dict(request.data.iterlists())['columns']
+        except AttributeError:
+            columns = request.data['columns']
         return self._get_filtered_results(request, columns=columns)
 
     # @require_organization_id

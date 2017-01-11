@@ -2873,13 +2873,11 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        params = {
-            'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
-            'columns': COLUMNS_TO_SEND,
-        }
-        response = self.client.get("/api/v2/properties/", params)
+        response = self.client.post("/api/v2/properties/filter/?{}={}&{}={}&{}={}".format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999
+        ), data={'columns': COLUMNS_TO_SEND})
         results = json.loads(response.content)
         self.assertEquals(len(results['results']), 1)
         result = results['results'][0]
@@ -2914,13 +2912,11 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        params = {
-            'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
-            'columns': COLUMNS_TO_SEND,
-        }
-        response = self.client.get("/api/v2/properties/", params)
+        response = self.client.post("/api/v2/properties/filter/?{}={}&{}={}&{}={}".format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999
+        ), data={'columns': COLUMNS_TO_SEND})
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -2936,13 +2932,11 @@ class InventoryViewTests(TestCase):
         PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
         )
-        params = {
-            'organization_id': self.org.pk,
-            'page': 'one',
-            'per_page': 999999999,
-            'columns': COLUMNS_TO_SEND,
-        }
-        response = self.client.get("/api/v2/properties/", params)
+        response = self.client.post("/api/v2/properties/filter/?{}={}&{}={}&{}={}".format(
+            'organization_id', self.org.pk,
+            'page', 'one',
+            'per_page', 999999999
+        ), data={'columns': COLUMNS_TO_SEND})
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 1)
         pagination = result['pagination']
@@ -2955,13 +2949,13 @@ class InventoryViewTests(TestCase):
         self.assertEquals(pagination['total'], 1)
 
     def test_get_properties_empty_page(self):
-        params = {
-            'organization_id': self.org.pk,
-            'page': 10,
-            'per_page': 999999999,
-            'columns': COLUMNS_TO_SEND,
-        }
-        response = self.client.get("/api/v2/properties/", params)
+        filter_properties_url = "/api/v2/properties/filter/?{}={}&{}={}&{}={}".format(
+            'organization_id', self.org.pk,
+            'page', 10,
+            'per_page', 999999999
+        )
+        print("Filter properties URL: " + filter_properties_url)
+        response = self.client.post(filter_properties_url, data={'columns': COLUMNS_TO_SEND})
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 0)
         pagination = result['pagination']
@@ -3161,14 +3155,12 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-
-        params = {
-            'organization_id': self.org.pk,
-            'cycle': self.cycle.pk,
-            'page': 1,
-            'columns': COLUMNS_TO_SEND,
-        }
-        response = self.client.get("/api/v2/taxlots/", params)
+        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}".format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999,
+            'cycle', self.cycle.pk
+        ), data={'columns': COLUMNS_TO_SEND})
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 1)
@@ -3205,13 +3197,11 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-
-        params = {
-            'organization_id': self.org.pk,
-            'page': 1,
-            'columns': COLUMNS_TO_SEND,
-        }
-        response = self.client.get("/api/v2/taxlots/", params)
+        url = "/api/v2/taxlots/filter/?{}={}&{}={}".format(
+            'organization_id', self.org.pk,
+            'page', 1
+        )
+        response = self.client.post(url, data={'columns': COLUMNS_TO_SEND})
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 1)
@@ -3225,14 +3215,13 @@ class InventoryViewTests(TestCase):
             property_view=property_view_1, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        params = {
-            'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
-            'columns': COLUMNS_TO_SEND,
-        }
-        response = self.client.get("/api/v2/taxlots/", params)
-
+        url = "/api/v2/taxlots/filter/?{}={}&{}={}&{}={}".format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999
+        )
+        data = {'columns': COLUMNS_TO_SEND}
+        response = self.client.post(url, data=data)
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 1)
         self.assertEquals(len(result['results'][0]['related']), 2)
@@ -3282,18 +3271,13 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view_2,
             cycle=self.cycle
         )
-
-        params = {
-            'organization_id': self.org.pk,
-            'cycle': self.cycle.pk,
-            'page': 1,
-            'per_page': 256,
-            'columns': COLUMNS_TO_SEND,
-        }
-        response = self.client.get("/api/v2/taxlots/", params)
+        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}".format(
+            'organization_id', self.org.pk,
+            'cycle', self.cycle.pk,
+            'page', 1,
+            'per_page', 999999999
+        ), data={'columns': COLUMNS_TO_SEND})
         results = json.loads(response.content)['results']
-        print "\nhere"
-        print results
         self.assertEquals(len(results), 2)
 
         result = results[0]
@@ -3346,14 +3330,11 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-
-        params = {
-            'organization_id': self.org.pk,
-            'cycle': self.cycle.pk,
-            'page': 1,
-            'columns': COLUMNS_TO_SEND,
-        }
-        response = self.client.get("/api/v2/taxlots/", params)
+        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}".format(
+            'organization_id', self.org.pk,
+            'cycle', self.cycle.pk,
+            'page', 1
+        ), data={'columns': COLUMNS_TO_SEND})
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 1)
@@ -3384,14 +3365,11 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-
-        params = {
-            'organization_id': self.org.pk,
-            'cycle': self.cycle.pk,
-            'page': 'bad',
-            'columns': COLUMNS_TO_SEND,
-        }
-        response = self.client.get("/api/v2/taxlots/", params)
+        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}".format(
+            'organization_id', self.org.pk,
+            'cycle', self.cycle.pk,
+            'page', 'bad'
+        ), data={'columns': COLUMNS_TO_SEND})
         result = json.loads(response.content)
 
         self.assertEquals(len(result['results']), 1)
@@ -3425,14 +3403,11 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-
-        params = {
-            'organization_id': self.org.pk,
-            'cycle': self.cycle.pk,
-            'page': 'bad',
-            'columns': COLUMNS_TO_SEND,
-        }
-        response = self.client.get("/api/v2/taxlots/", params)
+        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}".format(
+            'organization_id', self.org.pk,
+            'cycle', self.cycle.pk,
+            'page', 'bad'
+        ), data={'columns': COLUMNS_TO_SEND})
         result = json.loads(response.content)
 
         self.assertEquals(len(result['results']), 1)
@@ -3467,14 +3442,11 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-
-        params = {
-            'organization_id': self.org.pk,
-            'cycle': self.cycle.pk,
-            'page': 'bad',
-            'columns': COLUMNS_TO_SEND,
-        }
-        response = self.client.get("/api/v2/taxlots/", params)
+        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}".format(
+            'organization_id', self.org.pk,
+            'cycle', self.cycle.pk,
+            'page', 'bad'
+        ), data={'columns': COLUMNS_TO_SEND})
         related = json.loads(response.content)['results'][0]['related'][0]
         self.assertEqual(related['calculated_taxlot_ids'], 'Missing')
 
