@@ -446,6 +446,10 @@ class PropertyViewSet(GenericViewSet):
                 'displayName': 'Building Certification',
                 'related': False
             }, {
+                'name': 'custom_id_1',
+                'displayName': 'Custom ID 1',
+                'related': False
+            }, {
                 # Modified field name
                 'name': 'tax_address_line_1',
                 'displayName': 'Address Line 1 (Tax Lot)',
@@ -1197,6 +1201,10 @@ class TaxLotViewSet(GenericViewSet):
             }, {
                 'name': 'lot_number',
                 'displayName': 'Associated Tax Lot ID',
+                'related': True
+            }, {
+                'name': 'custom_id_1',
+                'displayName': 'Custom ID 1',
                 'related': True
             }
         ]
