@@ -3576,7 +3576,7 @@ class InventoryViewTests(TestCase):
             'extraData': True,
             'name': 'property_extra_data_column',
             'displayName': 'property_extra_data_column',
-            'related': True,
+            'related': False,
         }
         self.assertIn(expected_property_extra_data_column, results)
 
