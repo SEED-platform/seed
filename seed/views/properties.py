@@ -506,9 +506,7 @@ class PropertyViewSet(GenericViewSet):
                 'name': name,
                 # '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source])
                 'displayName': c.column_name,
-                # Set related = True for extra data to ensure that it always aggregates
-                'related': True,
-                # 'related': c.extra_data_source == Column.SOURCE_TAXLOT or c.table_name == 'TaxLotState',
+                'related': c.extra_data_source != Column.SOURCE_PROPERTY and c.table_name != 'PropertyState',
                 'extraData': True
             })
 
@@ -1218,9 +1216,7 @@ class TaxLotViewSet(GenericViewSet):
             columns.append({
                 'name': name,
                 'displayName': c.column_name,  # '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source])
-                # Set related = True for extra data to ensure that it always aggregates
-                'related': True,
-                # 'related': c.extra_data_source == Column.SOURCE_PROPERTY or c.table_name == 'PropertyState',
+                'related': c.extra_data_source != Column.SOURCE_TAXLOT and c.table_name != 'TaxLotState',
                 'extraData': True
             })
 
