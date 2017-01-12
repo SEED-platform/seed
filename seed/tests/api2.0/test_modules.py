@@ -43,7 +43,21 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
             main_url + '/api/v2/import_files/' + str(import_id) + '/save_raw_data/',
             headers=header,
             data=json.dumps(payload))
+        #time.sleep(10)
         progress = check_progress(main_url, header, result.json()['progress_key'], client)
+        check_status(result, partmsg, log)
+    except:
+        log.error("Following API could not be tested")
+        return
+
+    # Get imported file
+    print ('\nAPI Function: get_import_file'),
+    partmsg = 'get_import_file'
+
+    try:
+        result = client.get(main_url + '/api/v2/import_files/' + str(import_id) + '/',
+                            headers=header,
+                            params={'import_file_id': import_id})
         check_status(result, partmsg, log)
     except:
         log.error("Following API could not be tested")
@@ -53,25 +67,11 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
     print ('\nAPI Function: get_first_five_rows')
     partmsg = 'get_first_five_rows'
     try:
-        result = client.post(main_url + '/app/get_first_five_rows/',
-                             headers=header,
-                             data=json.dumps({'import_file_id': import_id}))
+        result = client.get(main_url + '/api/v2/import_files/' + str(import_id) + '/first_five_rows/',
+                             headers=header)
         check_status(result, partmsg, log)
     except:
         pass
-
-    # Get imported file
-    print ('\nAPI Function: get_import_file'),
-    partmsg = 'get_import_file'
-
-    try:
-        result = client.get(main_url + '/app/get_import_file/',
-                            headers=header,
-                            params={'import_file_id': import_id})
-        check_status(result, partmsg, log)
-    except:
-        log.error("Following API could not be tested")
-        return
 
     # Get the mapping suggestions
     print ('\nAPI Function: mapping_suggestions'),
@@ -91,11 +91,10 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
     # Save the column mappings
     print ('\nAPI Function: save_column_mappings'),
     partmsg = 'save_column_mappings'
-    payload = {'import_file_id': import_id,
-               'organization_id': organization_id}
+    payload = {'organization_id': organization_id}
     payload['mappings'] = read_map_file(mappingfilepath)
     try:
-        result = client.get(main_url + '/app/save_column_mappings/',
+        result = client.post(main_url + '/api/v2/import_files/' + str(import_id) + '/save_column_mappings/',
                             headers=header,
                             data=json.dumps(payload))
         check_status(result, partmsg, log)
@@ -112,7 +111,7 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
         result = client.post(main_url + '/app/remap_buildings/',
                              headers=header,
                              data=json.dumps(payload))
-
+        time.sleep(10)
         progress = check_progress(main_url, header, result.json()['progress_key'], client)
         check_status(result, partmsg, log)
     except:
@@ -123,9 +122,8 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
     print ('\nAPI Function: cleansing'),
     partmsg = 'cleansing'
     try:
-        result = client.get(main_url + '/cleansing/results/',
-                            headers=header,
-                            params={'import_file_id': import_id})
+        result = client.get(main_url + '/api/v2/import_files/' + str(import_id) + '/cleansing_results.json/',
+                            headers=header)
         check_status(result, partmsg, log, PIIDflag='cleansing')
     except:
         pass
@@ -133,13 +131,12 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
     # Match uploaded buildings with buildings already in the organization.
     print ('\nAPI Function: start_system_matching'),
     partmsg = 'start_system_matching'
-    payload = {'file_id': import_id,
-               'organization_id': organization_id}
+    payload = {'organization_id': organization_id}
     try:
-        result = client.post(main_url + '/app/start_system_matching/',
+        result = client.post(main_url + '/api/v2/import_files/' + str(import_id) + '/start_system_matching/',
                              headers=header,
                              data=json.dumps(payload))
-
+        time.sleep(10)
         progress = check_progress(main_url, header, result.json()['progress_key'], client)
         check_status(result, partmsg, log)
     except:
@@ -403,7 +400,7 @@ def account(header, main_url, username, log, client):
     check_status(result, partmsg, log)
 
     # Get organizations settings
-    print ('API Function: query_threshold\n')
+    print ('\nAPI Function: query_threshold')
     partmsg = 'query_threshold'
     result = client.get(main_url + '/api/v2/organizations/' + organization_id + '/query_threshold/',
                         headers=header)
@@ -422,10 +419,10 @@ def account(header, main_url, username, log, client):
 
 def cycles(header, main_url, organization_id, log, client):
     # Get cycles
-    print ('API Function: get_cycles\n')
+    print ('\nAPI Function: get_cycles')
     partmsg = 'get_cycles'
     cycle_name = 'API Test Cycle'
-    cycle_id = 138  # horrible idea, but c'est la vie.
+#    cycle_id = 138  # horrible idea, but c'est la vie.
     try:
         result = client.get(main_url + '/api/v2/cycles/',
                             headers=header,
@@ -473,7 +470,7 @@ def cycles(header, main_url, organization_id, log, client):
     return cycle_id
 
 
-def delete_set(header, main_url, organization_id, dataset_id, project_slug, log, client):
+def delete_set(header, main_url, organization_id, dataset_id, project_slug, cycle_id, log, client):
     # Delete all buildings
     print ('\nAPI Function: delete_buildings'),
     partmsg = 'delete_buildings'
@@ -486,7 +483,7 @@ def delete_set(header, main_url, organization_id, dataset_id, project_slug, log,
         check_status(result, partmsg, log)
     except:
         print("\n WARNING: Can't delete BUILDING RECORDS, delete manually!")
-        input("Press Enter to continue...")
+        raw_input("Press Enter to continue...")
 
     # Delete dataset
     print ('\nAPI Function: delete_dataset'),
@@ -498,21 +495,21 @@ def delete_set(header, main_url, organization_id, dataset_id, project_slug, log,
         check_status(result, partmsg, log)
     except:
         print("\n WARNING: Can't delete BUILDING SET, delete manually!")
-        input("Press Enter to continue...")
+        raw_input("Press Enter to continue...")
 
     # Delete project
-    print ('\nAPI Function: delete_project'),
-    partmsg = 'delete_project'
-    payload = {'organization_id': organization_id,
-               'project_slug': project_slug}
-    try:
-        result = client.delete(main_url + '/app/projects/delete_project/',
-                               headers=header,
-                               data=json.dumps(payload))
-        check_status(result, partmsg, log)
-    except:
-        print("\n WARNING: Can't delete PROJECT, delete manually!")
-        input("Press Enter to continue...")
+    #print ('\nAPI Function: delete_project'),
+    #partmsg = 'delete_project'
+    #payload = {'organization_id': organization_id,
+    #           'project_slug': project_slug}
+    #try:
+    #    result = client.delete(main_url + '/app/projects/delete_project/',
+    #                           headers=header,
+    #                           data=json.dumps(payload))
+    #    check_status(result, partmsg, log)
+    #except:
+    #    print("\n WARNING: Can't delete PROJECT, delete manually!")
+    #    raw_input("Press Enter to continue...")
 
     ##Delete label
     # print ('API Function: delete_label\n'),
@@ -525,6 +522,18 @@ def delete_set(header, main_url, organization_id, dataset_id, project_slug, log,
     #    check_status(result, partmsg, log)
     # except:
     #    print("\n WARNING: Can't delete LABEL, delete manually!")
-    #    input("Press Enter to continue...")
+    #    raw_input("Press Enter to continue...")
+
+    #Delete cycle
+    print ('\nAPI Function: delete_cycle'),
+    partmsg = 'delete_cycle'
+    try:
+        result = client.delete(main_url + '/api/v2/cycles/' + str(cycle_id) + '/',
+                               headers = header,
+                               params={'organization_id': organization_id})
+        check_status(result, partmsg, log)
+    except:
+        print("\n WARNING: Can't delete CYCLE, delete manually!")
+        raw_input("Press Enter to continue...")
 
     return

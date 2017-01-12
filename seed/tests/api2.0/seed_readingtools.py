@@ -127,17 +127,21 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
         """
         upload_url = "%s%s" % (main_url, upload_details['upload_path'])
         fsysparams = {
-            'qqfile': upload_filepath,
-            'import_record': upload_dataset_id,
+            'import_record': str(upload_dataset_id),
             'source_type': upload_datatype,
-            'filename': open(upload_filepath, 'rb')
         }
+
+        files = {'qqfile': (os.path.basename(upload_filepath), open(upload_filepath, 'rb'), 'application/vnd.ms-excel')}
 
         # only pass in the authorization key (i.e. remove content-type)
         # header = {k: v for k, v in upload_header.items() if k == 'authorization'}
+        
+        header_simple = {'authorization': upload_header['authorization']}
+
         return client.post(main_url + upload_details['upload_path'],
-                           fsysparams,
-                           headers=upload_header,
+                           fsysparams, 
+                           files=files, 
+                           headers=header_simple,
                            allow_redirects=True)
 
     # Get the upload details.
@@ -199,7 +203,7 @@ def check_status(resultOut, partmsg, log, PIIDflag=None):
         log.debug(msg)
     else:
         msg = resultOut.reason
-        print msg
+        print(msg)
         log.error(partmsg + '...not passed')
         log.debug(msg)
         raise RuntimeError
@@ -209,15 +213,15 @@ def check_status(resultOut, partmsg, log, PIIDflag=None):
 
 def check_progress(mainURL, Header, progress_key, client):
     """Delays the sequence until progress is at 100 percent."""
-    time.sleep(10)
-    progressResult = client.post(mainURL + '/app/progress/',
-                                 headers=Header,
-                                 data=json.dumps({'progress_key': progress_key}))
+    progressResult = client.post(mainURL + '/api/v2/progress/',
+                                    headers=Header,
+                                    data=json.dumps({'progress_key': progress_key}))
 
     if progressResult.json()['progress'] == 100:
         return (progressResult)
     else:
-        progressResult = check_progress(mainURL, Header, progress_key)
+        time.sleep(5)
+        progressResult = check_progress(mainURL, Header, progress_key, client)
 
 
 def read_map_file(mapfilePath):
@@ -237,9 +241,11 @@ def read_map_file(mapfilePath):
         # changed to make the test pass
         maplist.append(
             {
-                'to_table_name': rowitem[0], 'to_field': rowitem[1],
-                # rowitem only has 2 values, lets make this one up
-                'from_field': rowitem[0]
+                'to_field': rowitem[0], 
+                'from_field': rowitem[1],
+                'to_field_display_name': rowitem[2],
+                'to_table_name': rowitem[3]
+
             }
         )
     return maplist
