@@ -168,17 +168,13 @@ class PropertyViewSet(GenericViewSet):
             # Each object in the response is built from the state data, with related data added on.
             p = model_to_dict(prop.state, exclude=['extra_data'])
 
-            # Only return the requested rows. speeds up the json string time
-            p = {key: value for key, value in p.items() if key in columns}
-
             for extra_data_field, extra_data_value in prop.state.extra_data.items():
-                if extra_data_field in columns:
-                    if extra_data_field == 'id':
-                        extra_data_field += '_extra'
-                    while extra_data_field in p:
-                        extra_data_field += '_extra'
+                if extra_data_field == 'id':
+                    extra_data_field += '_extra'
+                while extra_data_field in p:
+                    extra_data_field += '_extra'
 
-                    p[extra_data_field] = extra_data_value
+                p[extra_data_field] = extra_data_value
 
             # Use property_id instead of default (state_id)
             p['id'] = prop.property_id
