@@ -241,206 +241,209 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }]
         }
       })
-      /*.state({
-       name: 'projects',
-       url: '/projects',
-       templateUrl: static_url + 'seed/partials/projects.html',
-       controller: 'project_list_controller',
-       resolve: {
-       projects_payload: ['project_service', function (project_service) {
-       return project_service.get_projects();
-       }]
-       }
-       })
-       .state({
-       name: 'project_detail',
-       url: '/projects/{project_id:int}',
-       templateUrl: static_url + 'seed/partials/project_detail.html',
-       controller: 'building_list_controller',
-       resolve: {
-       search_payload: ['building_services', '$state', '$stateParams', function (building_services, $state, $stateParams) {
-       var orderBy = '';
-       var sortReverse = false;
-       var params = angular.copy($stateParams);
-       var q = params.q || '';
-       var numberPerPage = 10;
-       var project_slug = params.project_id;
-       var pageNumber = 1;
-       delete(params.project_id);
-       params.project__slug = project_slug;
-
-       // Check session storage for order, sort, and filter values.
-       if (!_.isUndefined(Storage)) {
-
-       // set the prefix to the specific project. This fixes
-       // the issue where the filter was not persisting.
-       var prefix = _.replace($state.current.url, ':project_id', project_slug);
-       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
-       orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
-       }
-       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
-       sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
-       }
-       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
-       params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
-       }
-       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
-       numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
-       }
-       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
-       pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
-       }
-       }
-       // params: (query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id, project_slug)
-       return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null, project_slug);
-       }],
-       default_columns: ['user_service', function (user_service) {
-       return user_service.get_default_columns();
-       }],
-       all_columns: ['building_services', '$stateParams', function (building_services, $stateParams) {
-       var params = angular.copy($stateParams);
-       var project_slug = params.project_id;
-       return building_services.get_columns();
-       }],
-       project_payload: ['$stateParams', 'project_service', function ($stateParams, project_service) {
-       var params = angular.copy($stateParams);
-       var project_slug = params.project_id;
-       return project_service.get_project(project_slug);
-       }]
-       }
-       })
-       .state({
-       name: 'project_settings',
-       url: '/projects/{project_id:int}/settings',
-       templateUrl: static_url + 'seed/partials/project_settings.html',
-       controller: 'buildings_settings_controller',
-       resolve: {
-       all_columns: ['building_services', function (building_services) {
-       return building_services.get_columns();
-       }],
-       default_columns: ['user_service', function (user_service) {
-       return user_service.get_default_columns();
-       }],
-       shared_fields_payload: ['user_service', function (user_service) {
-       return user_service.get_shared_buildings();
-       }],
-       $uibModalInstance: function () {
-       return {close: function () {}};
-       },
-       project_payload: ['$stateParams', 'project_service', function ($stateParams, project_service) {
-       var params = angular.copy($stateParams);
-       var project_slug = params.project_id;
-       return project_service.get_project(project_slug);
-       }],
-       building_payload: function () {
-       return {building: {}};
-       }
-       }
-       })
-       .state({
-       name: 'building_detail_section',
-       url: '/projects/{project_id:int}/{building_id:int}',
-       templateUrl: static_url + 'seed/partials/building_detail_section.html',
-       controller: 'building_detail_controller',
-       resolve: {
-       building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-       var building_id = $stateParams.building_id;
-       return building_services.get_building(building_id);
-       }],
-       all_columns: ['building_services', function (building_services) {
-       return building_services.get_columns();
-       }],
-       audit_payload: function () {
-       return {audit_logs: {}};
-       },
-       default_columns: ['user_service', function (user_service) {
-       return user_service.get_default_building_detail_columns();
-       }]
-       }
-       })*/
-      .state({
-        name: 'buildings',
-        url: '/buildings',
-        templateUrl: static_url + 'seed/partials/buildings.html',
-        controller: 'building_list_controller',
-        resolve: {
-          search_payload: ['building_services', '$state', '$stateParams', function (building_services, $state, $stateParams) {
-            // Defaults
-
-            var q = $stateParams.q || '';
-            var orderBy = '';
-            var sortReverse = false;
-            var params = {};
-            var numberPerPage = 10;
-            var pageNumber = 1;
-
-            // Check session storage for order, sort, and filter values.
-            if (!_.isUndefined(Storage)) {
-
-              var prefix = $state.current.url;
-
-              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
-                orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
-              }
-              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
-                sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
-              }
-              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
-                params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
-              }
-              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
-                numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
-              }
-              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
-                pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
-              }
-            }
-
-            // params: (query, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id)
-            return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null);
-          }],
-          default_columns: ['user_service', function (user_service) {
-            return user_service.get_default_columns();
-          }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
-          }],
-          project_payload: function () {
-            return {
-              project: {}
-            };
-          }
-        }
-      })
-      .state({
-        name: 'buildings_settings',
-        url: '/buildings/settings',
-        templateUrl: static_url + 'seed/partials/buildings_settings.html',
-        controller: 'buildings_settings_controller',
-        resolve: {
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
-          }],
-          default_columns: ['user_service', function (user_service) {
-            return user_service.get_default_columns();
-          }],
-          shared_fields_payload: ['user_service', function (user_service) {
-            return user_service.get_shared_buildings();
-          }],
-          $uibModalInstance: function () {
-            return {
-              close: function () {
-              }
-            };
-          },
-          project_payload: function () {
-            return {project: {}};
-          },
-          building_payload: function () {
-            return {building: {}};
-          }
-        }
-      })
+      // .state({
+      //   name: 'projects',
+      //   url: '/projects',
+      //   templateUrl: static_url + 'seed/partials/projects.html',
+      //   controller: 'project_list_controller',
+      //   resolve: {
+      //     projects_payload: ['project_service', function (project_service) {
+      //       return project_service.get_projects();
+      //     }]
+      //   }
+      // })
+      // .state({
+      //   name: 'project_detail',
+      //   url: '/projects/{project_id:int}',
+      //   templateUrl: static_url + 'seed/partials/project_detail.html',
+      //   controller: 'building_list_controller',
+      //   resolve: {
+      //     search_payload: ['building_services', '$state', '$stateParams', function (building_services, $state, $stateParams) {
+      //       var orderBy = '';
+      //       var sortReverse = false;
+      //       var params = angular.copy($stateParams);
+      //       var q = params.q || '';
+      //       var numberPerPage = 10;
+      //       var project_slug = params.project_id;
+      //       var pageNumber = 1;
+      //       delete(params.project_id);
+      //       params.project__slug = project_slug;
+      //
+      //       // Check session storage for order, sort, and filter values.
+      //       if (!_.isUndefined(Storage)) {
+      //
+      //         // set the prefix to the specific project. This fixes
+      //         // the issue where the filter was not persisting.
+      //         var prefix = _.replace($state.current.url, ':project_id', project_slug);
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
+      //           orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
+      //         }
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
+      //           sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
+      //         }
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
+      //           params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
+      //         }
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
+      //           numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
+      //         }
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
+      //           pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
+      //         }
+      //       }
+      //       // params: (query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id, project_slug)
+      //       return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null, project_slug);
+      //     }],
+      //     default_columns: ['user_service', function (user_service) {
+      //       return user_service.get_default_columns();
+      //     }],
+      //     all_columns: ['building_services', '$stateParams', function (building_services, $stateParams) {
+      //       var params = angular.copy($stateParams);
+      //       var project_slug = params.project_id;
+      //       return building_services.get_columns();
+      //     }],
+      //     project_payload: ['$stateParams', 'project_service', function ($stateParams, project_service) {
+      //       var params = angular.copy($stateParams);
+      //       var project_slug = params.project_id;
+      //       return project_service.get_project(project_slug);
+      //     }]
+      //   }
+      // })
+      // .state({
+      //   name: 'project_settings',
+      //   url: '/projects/{project_id:int}/settings',
+      //   templateUrl: static_url + 'seed/partials/project_settings.html',
+      //   controller: 'buildings_settings_controller',
+      //   resolve: {
+      //     all_columns: ['building_services', function (building_services) {
+      //       return building_services.get_columns();
+      //     }],
+      //     default_columns: ['user_service', function (user_service) {
+      //       return user_service.get_default_columns();
+      //     }],
+      //     shared_fields_payload: ['user_service', function (user_service) {
+      //       return user_service.get_shared_buildings();
+      //     }],
+      //     $uibModalInstance: function () {
+      //       return {
+      //         close: function () {
+      //         }
+      //       };
+      //     },
+      //     project_payload: ['$stateParams', 'project_service', function ($stateParams, project_service) {
+      //       var params = angular.copy($stateParams);
+      //       var project_slug = params.project_id;
+      //       return project_service.get_project(project_slug);
+      //     }],
+      //     building_payload: function () {
+      //       return {building: {}};
+      //     }
+      //   }
+      // })
+      // .state({
+      //   name: 'building_detail_section',
+      //   url: '/projects/{project_id:int}/{building_id:int}',
+      //   templateUrl: static_url + 'seed/partials/building_detail_section.html',
+      //   controller: 'building_detail_controller',
+      //   resolve: {
+      //     building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
+      //       var building_id = $stateParams.building_id;
+      //       return building_services.get_building(building_id);
+      //     }],
+      //     all_columns: ['building_services', function (building_services) {
+      //       return building_services.get_columns();
+      //     }],
+      //     audit_payload: function () {
+      //       return {audit_logs: {}};
+      //     },
+      //     default_columns: ['user_service', function (user_service) {
+      //       return user_service.get_default_building_detail_columns();
+      //     }]
+      //   }
+      // })
+      // .state({
+      //   name: 'buildings',
+      //   url: '/buildings',
+      //   templateUrl: static_url + 'seed/partials/buildings.html',
+      //   controller: 'building_list_controller',
+      //   resolve: {
+      //     search_payload: ['building_services', '$state', '$stateParams', function (building_services, $state, $stateParams) {
+      //       // Defaults
+      //
+      //       var q = $stateParams.q || '';
+      //       var orderBy = '';
+      //       var sortReverse = false;
+      //       var params = {};
+      //       var numberPerPage = 10;
+      //       var pageNumber = 1;
+      //
+      //       // Check session storage for order, sort, and filter values.
+      //       if (!_.isUndefined(Storage)) {
+      //
+      //         var prefix = $state.current.url;
+      //
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
+      //           orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
+      //         }
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
+      //           sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
+      //         }
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
+      //           params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
+      //         }
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
+      //           numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
+      //         }
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
+      //           pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
+      //         }
+      //       }
+      //
+      //       // params: (query, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id)
+      //       return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null);
+      //     }],
+      //     default_columns: ['user_service', function (user_service) {
+      //       return user_service.get_default_columns();
+      //     }],
+      //     all_columns: ['building_services', function (building_services) {
+      //       return building_services.get_columns();
+      //     }],
+      //     project_payload: function () {
+      //       return {
+      //         project: {}
+      //       };
+      //     }
+      //   }
+      // })
+      // .state({
+      //   name: 'buildings_settings',
+      //   url: '/buildings/settings',
+      //   templateUrl: static_url + 'seed/partials/buildings_settings.html',
+      //   controller: 'buildings_settings_controller',
+      //   resolve: {
+      //     all_columns: ['building_services', function (building_services) {
+      //       return building_services.get_columns();
+      //     }],
+      //     default_columns: ['user_service', function (user_service) {
+      //       return user_service.get_default_columns();
+      //     }],
+      //     shared_fields_payload: ['user_service', function (user_service) {
+      //       return user_service.get_shared_buildings();
+      //     }],
+      //     $uibModalInstance: function () {
+      //       return {
+      //         close: function () {
+      //         }
+      //       };
+      //     },
+      //     project_payload: function () {
+      //       return {project: {}};
+      //     },
+      //     building_payload: function () {
+      //       return {building: {}};
+      //     }
+      //   }
+      // })
       .state({
         name: 'reports',
         url: '/{inventory_type:properties|taxlots}/reports',
@@ -491,14 +494,19 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
-                _.remove(columns, 'related');
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                console.debug(angular.copy(columns));
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
-                _.remove(columns, 'related');
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -1134,14 +1142,18 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           columns: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
             if ($stateParams.inventory_type == 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
-                _.remove(columns, 'related');
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
             } else if ($stateParams.inventory_type == 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
-                _.remove(columns, 'related');
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });

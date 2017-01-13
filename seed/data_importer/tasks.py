@@ -340,18 +340,26 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                     # Skip this object as it has no data...
                     continue
 
-                map_model_obj.save()
+                try:
+                    # There was an error with a field being too long [> 255 chars].
+                    map_model_obj.save()
 
-                # Create an audit log record for the new
-                # map_model_obj that was created.
+                    # Create an audit log record for the new
+                    # map_model_obj that was created.
 
-                AuditLogClass = PropertyAuditLog if isinstance(map_model_obj, PropertyState) else TaxLotAuditLog
-                AuditLogClass.objects.create(organization=org,
-                                             state=map_model_obj,
-                                             name='Import Creation',
-                                             description='Creation from Import file.',
-                                             import_filename=import_file,
-                                             record_type=AUDIT_IMPORT)
+                    AuditLogClass = PropertyAuditLog if isinstance(map_model_obj,
+                                                                   PropertyState) else TaxLotAuditLog
+                    AuditLogClass.objects.create(organization=org,
+                                                 state=map_model_obj,
+                                                 name='Import Creation',
+                                                 description='Creation from Import file.',
+                                                 import_filename=import_file,
+                                                 record_type=AUDIT_IMPORT)
+
+                except:
+                    # Could not save the record for some reason. Report out and keep moving
+                    # TODO: Need to address this and report back to the user which records were not imported  #noqa
+                    _log.error("ERROR: Could not save the model with row {}".format(row))
 
         # Make sure that we've saved all of the extra_data column names from the first item in list
         if map_model_obj:
