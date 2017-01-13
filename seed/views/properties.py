@@ -40,6 +40,28 @@ def unique(lol):
     """Calculate unique elements in a list of lists."""
     return sorted(set(itertools.chain.from_iterable(lol)))
 
+def link_unlink_property_taxlot(property_id, taxlot_id, organization_id, link):
+    # TODO: validate against organization_id
+    if link:
+        string = 'linked'
+        success = True
+        pass  # TODO: Do linking between property_id and taxlot_id
+    else:
+        string = 'unlinked'
+        success = True
+        pass  # TODO: Do unlinking between property_id and taxlot_id
+    # TODO: Return a JsonResponse object
+    if success:
+        return JsonResponse({
+            'status': 'success',
+            'message': 'taxlot {} and property {} are now {}'.format(taxlot_id, property_id, string)
+        })
+    else:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Could not pair because reasons, maybe bad organization id={}'.format(organization_id)
+        }, status=status.HTTP_403_FORBIDDEN)
+
 
 class PropertyViewSet(GenericViewSet):
     renderer_classes = (JSONRenderer,)
@@ -233,6 +255,62 @@ class PropertyViewSet(GenericViewSet):
         except AttributeError:
             columns = request.data['columns']
         return self._get_filtered_results(request, columns=columns)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @detail_route(methods=['PUT'])
+    def pair(self, request, pk=None):
+        """
+        Pair a taxlot to this property
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: taxlot_id
+              description: The taxlot id to pair up with this property
+              required: true
+              paramType: query
+            - name: pk
+              description: pk (property ID)
+              required: true
+              paramType: path
+        """
+        # TODO: Call with PUT /api/v2/properties/1/pair/?taxlot_id=1&organization_id=1
+        organization_id = request.query_params.get('organization_id')
+        taxlot_id = request.query_params.get('taxlot_id')
+        return link_unlink_property_taxlot(pk, taxlot_id, organization_id, True)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @detail_route(methods=['PUT'])
+    def unpair(self, request, pk=None):
+        """
+        Unpair a taxlot from this property
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: taxlot_id
+              description: The taxlot id to unpair from this property
+              required: true
+              paramType: query
+            - name: pk
+              description: pk (property ID)
+              required: true
+              paramType: path
+        """
+        # TODO: Call with PUT /api/v2/properties/1/unpair/?taxlot_id=1&organization_id=1
+        organization_id = request.query_params.get('organization_id')
+        taxlot_id = request.query_params.get('taxlot_id')
+        return link_unlink_property_taxlot(pk, taxlot_id, organization_id, False)
 
     # @require_organization_id
     # @require_organization_membership
@@ -944,6 +1022,62 @@ class TaxLotViewSet(GenericViewSet):
         except AttributeError:
             columns = request.data['columns']
         return self._get_filtered_results(request, columns=columns)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @detail_route(methods=['PUT'])
+    def pair(self, request, pk=None):
+        """
+        Pair a property to this taxlot
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: property_id
+              description: The property id to pair up with this taxlot
+              required: true
+              paramType: query
+            - name: pk
+              description: pk (taxlot ID)
+              required: true
+              paramType: path
+        """
+        # TODO: Call with PUT /api/v2/taxlots/1/pair/?property_id=1&organization_id=1
+        organization_id = request.query_params.get('organization_id')
+        property_id = request.query_params.get('property_id')
+        return link_unlink_property_taxlot(property_id, pk, organization_id, True)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @detail_route(methods=['PUT'])
+    def unpair(self, request, pk=None):
+        """
+        Unpair a property from this taxlot
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: property_id
+              description: The property id to unpair from this taxlot
+              required: true
+              paramType: query
+            - name: pk
+              description: pk (taxlot ID)
+              required: true
+              paramType: path
+        """
+        # TODO: Call with PUT /api/v2/taxlots/1/unpair/?property_id=1&organization_id=1
+        organization_id = request.query_params.get('organization_id')
+        property_id = request.query_params.get('property_id')
+        return link_unlink_property_taxlot(property_id, pk, organization_id, False)
 
     # @require_organization_id
     # @require_organization_membership
