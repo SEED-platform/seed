@@ -40,16 +40,17 @@ def unique(lol):
     """Calculate unique elements in a list of lists."""
     return sorted(set(itertools.chain.from_iterable(lol)))
 
-def link_unlink_property_taxlot(property_id, taxlot_id, organization_id, link):
+
+def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair):
     # TODO: validate against organization_id
-    if link:
-        string = 'linked'
+    if pair:
+        string = 'paired'
         success = True
-        pass  # TODO: Do linking between property_id and taxlot_id
+        pass  # TODO: Do pairing between property_id and taxlot_id
     else:
-        string = 'unlinked'
+        string = 'unpaired'
         success = True
-        pass  # TODO: Do unlinking between property_id and taxlot_id
+        pass  # TODO: Do unpairing between property_id and taxlot_id
     # TODO: Return a JsonResponse object
     if success:
         return JsonResponse({
@@ -282,7 +283,7 @@ class PropertyViewSet(GenericViewSet):
         # TODO: Call with PUT /api/v2/properties/1/pair/?taxlot_id=1&organization_id=1
         organization_id = request.query_params.get('organization_id')
         taxlot_id = request.query_params.get('taxlot_id')
-        return link_unlink_property_taxlot(pk, taxlot_id, organization_id, True)
+        return pair_unpair_property_taxlot(pk, taxlot_id, organization_id, True)
 
     @api_endpoint_class
     @ajax_request_class
@@ -310,7 +311,7 @@ class PropertyViewSet(GenericViewSet):
         # TODO: Call with PUT /api/v2/properties/1/unpair/?taxlot_id=1&organization_id=1
         organization_id = request.query_params.get('organization_id')
         taxlot_id = request.query_params.get('taxlot_id')
-        return link_unlink_property_taxlot(pk, taxlot_id, organization_id, False)
+        return pair_unpair_property_taxlot(pk, taxlot_id, organization_id, False)
 
     # @require_organization_id
     # @require_organization_membership
@@ -1049,7 +1050,7 @@ class TaxLotViewSet(GenericViewSet):
         # TODO: Call with PUT /api/v2/taxlots/1/pair/?property_id=1&organization_id=1
         organization_id = request.query_params.get('organization_id')
         property_id = request.query_params.get('property_id')
-        return link_unlink_property_taxlot(property_id, pk, organization_id, True)
+        return pair_unpair_property_taxlot(property_id, pk, organization_id, True)
 
     @api_endpoint_class
     @ajax_request_class
@@ -1077,7 +1078,7 @@ class TaxLotViewSet(GenericViewSet):
         # TODO: Call with PUT /api/v2/taxlots/1/unpair/?property_id=1&organization_id=1
         organization_id = request.query_params.get('organization_id')
         property_id = request.query_params.get('property_id')
-        return link_unlink_property_taxlot(property_id, pk, organization_id, False)
+        return pair_unpair_property_taxlot(property_id, pk, organization_id, False)
 
     # @require_organization_id
     # @require_organization_membership
