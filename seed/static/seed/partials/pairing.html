@@ -5,58 +5,96 @@
 
         </div>
         <div class="page_title">
-            <h1>Data Pairing ({$ import_file.uploaded_filename $})</h1>
+            <h1>{$ inventoryType === 'Property' ? 'Pairing Properties to Tax Lots' : 'Pairing Tax Lots to Properties' $}</h1>
+            <!-- <h1>Data Pairing ({$ import_file.uploaded_filename $})</h1> -->
         </div>
         <div class="right page_action_container"></div>
     </div>
 </div>
 
-<div class="page_header_container" ng-cloak>
-    <div class="page_header">
-        <div class="left page_action_container">
-
+<div class="pairing-list-controls-full container">
+    <div class="col-md-6">
+        <div class="row">
+            <div class="pairing-show col-md-6">
+                <select class="form-control input-sm" ng-model="showPaired" ng-options="option for option in showPairedOptions" ng-change="getLeftData()">
+                </select>
+            </div>
+            <div class="pairing-cycle col-md-6 form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-3 control-label">Cycle:</label>
+                    <div class="col-md-9">
+                        <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="updateCycle(cycle.selected_cycle)"
+                                ng-options="option.name for option in cycle.cycles track by option.id">
+                        </select>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="page_title">
-            <h1>{$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $}</h1>
-        </div>
-        <div class="right page_action_container page_action_btn"></div>
-    </div>
-</div>
-
-<div class="inventory-list-controls">
-    <div class="form-group" style="padding-top: 20px;">
-        <div style="display: inline-block;">
-            <select class="form-control input-sm" ng-model="show.selected_show" ng-change="update_show()"
-                    ng-options="option.name for option in show.options">
-            </select>
-        </div>
-        <label>Cycle:</label>
-        <div style="display: inline-block;">
-            <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
-                    ng-options="option.name for option in cycle.cycles track by option.id">
-            </select>
-        </div>
-    </div>
-    <div class="form-group" style="padding-top: 20px;">
-        <div style="display: inline-block;">
-            <select class="form-control input-sm" ng-model="inventory_type" ng-change="update_inventory_type()"
-                    ng-options="option.name for option in inventory_type.options">
+        <div>
+            <select class="form-control input-sm" ng-model="inventoryType" ng-change="updateInventoryType()"
+                    ng-options="option for option in inventoryOptions">
             </select>
         </div>
     </div>
-</div>
-
-<div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
-    <div class="section_content">
-        <div id="grid-container">
-            <div ui-grid="gridOptionsLeft" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-selection ui-grid-tree-view></div>
-        </div>
+    <div class="pairing-other-title col-md-6">
+        <h4> {$ otherInventory() $} </h4>
     </div>
 </div>
-<div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
-    <div class="section_content">
-        <div id="grid-container">
-            <div ui-grid="gridOptionsRight" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-selection ui-grid-tree-view></div>
+
+<div class="pairing container">
+    <div class="pairing-inventory  col-md-6">
+        <div class="pairing-container" >
+            <div class="pairing-headers-row" >
+                <div class="pairing-headers" ng-repeat="col in leftColumns track by $index"  >
+                    <div class="pairing-header">{$ col.displayName $}</div>
+                    <input ng-model="col.searchText" ng-model-options="{debounce:200}">
+                </div>
+            </div>
+            <div class="pairing-rows" dragula='"drag-pairing-row"'>
+                <div class="pairing-data-row grab-pairing-left" ng-repeat="row in newLeftData | filter:leftSearch track by $index ">
+                    <div class="pairing-data-row-col" ng-repeat="col in whichColumns('left') track by $index" >
+                        <div class="pairing-cell">
+                            <span class="pairing-text"> {$ row[col] $} </span>
+                        </div>
+                    </div>
+                    <div class="is-paired-child" ng-if="leftPaired(row)">paired: {$ leftPaired(row) $}</div>
+                </div>
+            </div>
+        </div>
+        <div class="pairing-text-left">
+            <span>Showing {$ leftData.length $} {$ inventoryType $} ({$ leftNumUnpaired() $} unpaired)</span>
+        </div>
+    </div>
+    <div class="pairing-inventory-other col-md-6">
+        <div class="pairing-container">
+            <div class="pairing-headers-row" >
+                <div class="pairing-headers" ng-repeat="col in rightColumns track by $index">
+                    <div class="pairing-header">{$ col.displayName $}</div>
+                    <input ng-model="col.searchText">
+                </div>
+            </div>
+            <div class="pairing-rows">
+                <div class="pairing-data-row" ng-repeat="row in rightData | filter:rightSearch track by $index">
+                    <div class="pairing-data-row-col" ng-repeat="col in whichColumns('right') track by $index" >
+                        <div class="pairing-cell">
+                            <span class="pairing-text"> {$ row[col] $} </span>
+                        </div>
+                    </div>
+                    <div class="pairing-child cant-move" dragula='"drag-pairing-row"'>
+                        <div class="pairing-data-row-indent" ng-repeat="id in whichChildren(row) track by $index">
+                            <div class="pairing-data-row-col-indent" ng-repeat="col in whichColumns('left') track by $index" >
+                                <div class="pairing-cell">
+                                    <span class="pairing-text"> {$ whichChildData(id,col) $} </span>
+                                </div>
+                            </div>
+                            <div class="unpair-child" ng-click="unpairChild($event)">remove</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="pairing-text-right">
+            <span>Showing {$ rightData.length $} {$ otherInventory() $} ({$ rightNumUnpaired() $} unpaired)</span>
         </div>
     </div>
 </div>

@@ -7,7 +7,7 @@ angular.module('BE.seed.controller.pairing', [])
     '$scope',
     '$window',
     '$uibModal',
-    '$stateParams',
+    // '$stateParams',
     'inventory_service',
     'label_service',
     'propertyInventory',
@@ -17,10 +17,11 @@ angular.module('BE.seed.controller.pairing', [])
     'urls',
     'spinner_utility',
     'naturalSort',
+    'dragulaService',
     function ($scope,
               $window,
               $uibModal,
-              $stateParams,
+              // $stateParams,
               inventory_service,
               label_service,
               propertyInventory,
@@ -29,81 +30,32 @@ angular.module('BE.seed.controller.pairing', [])
               // columns,
               urls,
               spinner_utility,
-              naturalSort) {
+              naturalSort,
+              dragulaService) {
       spinner_utility.show();
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
 
-      $scope.inventory_type = $stateParams.inventory_type;
-      $scope.leftData = propertyInventory.results;
-      $scope.rightData = taxlotInventory.results;
-      $scope.leftColumns = propertyInventory.columns;
-      $scope.rightColumns = taxlotInventory.columns;
+      $scope.inventoryType = 'Property';
+      $scope.inventoryOptions = ['Property', 'Tax Lots'];
 
-      $scope.pagination = propertyInventory.pagination;
-      $scope.total = $scope.pagination.total;
-      $scope.number_per_page = 5;
+      $scope.showPaired = 'All';
+      $scope.showPairedOptions = ['All', 'Show Paired', 'Show Unpaired'];
 
-      $scope.labels = [];
-      $scope.selected_labels = [];
+      $scope.propertyData = propertyInventory.results;
+      $scope.taxlotData = taxlotInventory.results;
+      $scope.allPropertyColumns = propertyInventory.columns;
+      $scope.propertyColumns = _.filter(propertyInventory.columns, function(o) { return o.name !== 'jurisdiction_tax_lot_id'});
+      $scope.taxlotColumns = taxlotInventory.columns;
 
-      $scope.clear_labels = function () {
-        $scope.selected_labels = [];
-      };
+      var allPropertyColumns = ['address_line_1', 'pm_property_id', 'custom_id_1'];
+      var allTaxlotColumns = ['address_line_1', 'jurisdiction_tax_lot_id', 'not_a_real_key_placeholder_pairing'];
 
-      $scope.loadLabelsForFilter = function (query) {
-        return _.filter($scope.labels, function (lbl) {
-          if (_.isEmpty(query)) {
-            // Empty query so return the whole list.
-            return true;
-          } else {
-            // Only include element if it's name contains the query string.
-            return _.includes(_.toLower(lbl.name), _.toLower(query));
-          }
-        });
-      };
-
-      var filterUsingLabels = function () {
-        // Only submit the `id` of the label to the API.
-        var ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
-        if ($scope.selected_labels.length) {
-          _.forEach($scope.leftGridApi.grid.rows, function (row) {
-            if ((!_.includes(ids, row.entity.id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.leftGridApi.core.setRowInvisible(row);
-            else $scope.leftGridApi.core.clearRowInvisible(row);
-          });
-        } else {
-          _.forEach($scope.leftGridApi.grid.rows, $scope.leftGridApi.core.clearRowInvisible);
-        }
-        _.delay($scope.updateHeight, 150);
-      };
-
-      $scope.$watchCollection('selected_labels', filterUsingLabels);
-
-      /**
-       Opens the update building labels modal.
-       All further actions for labels happen with that modal and its related controller,
-       including creating a new label or applying to/removing from a building.
-       When the modal is closed, and refresh labels.
-       */
-      $scope.open_update_labels_modal = function () {
-        var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/update_item_labels_modal.html',
-          controller: 'update_item_labels_modal_controller',
-          resolve: {
-            inventory_ids: function () {
-              return _.map(_.filter($scope.leftGridApi.selection.getSelectedRows(), {$$treeLevel: 0}), 'id');
-            },
-            inventory_type: function () {
-              return $scope.inventory_type;
-            }
-          }
-        });
-        modalInstance.result.then(function () {
-          //dialog was closed with 'Done' button.
-          get_labels();
-        });
-      };
-
+      // Data Maps to fill with 'createMap'
+      $scope.propToTaxlot = {};
+      $scope.propertyMap = {};
+      $scope.taxlotMap = {};
+      $scope.taxlotToProp = {};
 
       var lastCycleId = inventory_service.get_last_cycle();
       $scope.cycle = {
@@ -111,327 +63,290 @@ angular.module('BE.seed.controller.pairing', [])
         cycles: cycles.cycles
       };
 
-      // Columns
-      var defaults = {
-        minWidth: 75,
-        width: 150
-        //type: 'string'
+      var refreshObjects = function () {
+        var visiblePropertyColumns = _.map($scope.allPropertyColumns, 'name');
+        var visibleTaxlotColumns = _.map($scope.taxlotColumns, 'name');
+        inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, visiblePropertyColumns).then(function (properties) {
+          $scope.propertyData = properties.results;
+          $scope.updateLeftRight();
+        });
+        inventory_service.get_taxlots(1, undefined, $scope.cycle.selected_cycle, visibleTaxlotColumns).then(function (taxlots) {
+          $scope.taxlotData = taxlots.results;
+          $scope.updateLeftRight();
+        });
       };
 
-
-      // Data
-      var processData = function () {
-        var visibleColumns = _.map(_.filter($scope.leftColumns, 'visible'), 'name')
-          .concat(['$$treeLevel', 'id', 'property_state_id', 'taxlot_state_id']);
-
-        var columnsToAggregate = _.filter($scope.leftColumns, function (col) {
-          return col.treeAggregationType && _.includes(visibleColumns, col.name);
-        }).reduce(function (obj, col) {
-          obj[col.name] = col.treeAggregationType;
-          return obj;
-        }, {});
-        var columnNamesToAggregate = _.keys(columnsToAggregate);
-
-        var data = $scope.leftData;
-        var roots = data.length;
-        for (var i = 0, trueIndex = 0; i < roots; ++i, ++trueIndex) {
-          data[trueIndex].$$treeLevel = 0;
-          var related = data[trueIndex].related;
-          var relatedIndex = trueIndex;
-          var aggregations = {};
-          for (var j = 0; j < related.length; ++j) {
-            // Rename nested keys
-            var map = {};
-            if ($scope.inventory_type == 'properties') {
-              map = {
-                address_line_1: 'tax_address_line_1',
-                address_line_2: 'tax_address_line_2',
-                city: 'tax_city',
-                state: 'tax_state',
-                postal_code: 'tax_postal_code'
-              };
-            } else if ($scope.inventory_type == 'taxlots') {
-              map = {
-                address_line_1: 'property_address_line_1',
-                address_line_2: 'property_address_line_2',
-                city: 'property_city',
-                state: 'property_state',
-                postal_code: 'property_postal_code'
-              };
-            }
-            var updated = _.reduce(related[j], function (result, value, key) {
-              key = map[key] || key;
-              if (_.includes(columnNamesToAggregate, key)) aggregations[key] = (aggregations[key] || []).concat(_.split(value, '; '));
-              result[key] = value;
-              return result;
-            }, {});
-
-            data.splice(++trueIndex, 0, _.pick(updated, visibleColumns));
-          }
-
-          aggregations = _.pickBy(_.mapValues(aggregations, function (values, key) {
-            var cleanedValues = _.uniq(_.without(values, undefined, null, ''));
-            if (key == 'number_properties') return _.sum(cleanedValues) || null;
-            else return _.join(_.uniq(cleanedValues), '; ');
-          }), function (result) {
-            return _.isNumber(result) || !_.isEmpty(result);
-          });
-
-          // Remove unnecessary data
-          data[relatedIndex] = _.pick(data[relatedIndex], visibleColumns);
-          // Insert aggregated child values into parent row
-          _.merge(data[relatedIndex], aggregations);
-        }
-        $scope.leftData = data;
-        $scope.updateQueued = true;
-      };
-
-      var refresh_objects = function () {
-        var visibleColumns = _.map(_.filter($scope.leftColumns, 'visible'), 'name');
-        if ($scope.inventory_type == 'properties') {
-          inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, visibleColumns).then(function (properties) {
-            $scope.leftData = properties.results;
-            $scope.pagination = properties.pagination;
-            processData();
-          });
-        } else if ($scope.inventory_type == 'taxlots') {
-          inventory_service.get_taxlots($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, visibleColumns).then(function (taxlots) {
-            $scope.leftData = taxlots.results;
-            $scope.pagination = taxlots.pagination;
-            processData();
-          });
-        }
-      };
-
-      $scope.update_cycle = function (cycle) {
+      $scope.updateCycle = function (cycle) {
+        spinner_utility.show();
         inventory_service.save_last_cycle(cycle.id);
         $scope.cycle.selected_cycle = cycle;
-        refresh_objects();
+        refreshObjects();
       };
 
-      processData();
-
-      var get_labels = function () {
-        label_service.get_labels([], {
-          inventory_type: $scope.inventory_type
-        }).then(function (labels) {
-          $scope.labels = _.filter(labels, function (label) {
-            return !_.isEmpty(label.is_applied);
-          });
-        });
+      $scope.updateInventoryType = function () {
+        spinner_utility.show();
+        console.log('inv: ', $scope.inventoryType)
+        $scope.updateLeftRight();
+        console.log('pTot: ', $scope.propToTaxlot)
+        // console.log('leftData: ', $scope.leftData)
       };
 
-      $scope.open_delete_modal = function () {
-        var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/delete_modal.html',
-          controller: 'delete_modal_controller',
-          resolve: {
-            property_states: function () {
-              return _.map(_.filter($scope.leftGridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type == 'properties') return row.$$treeLevel == 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'property_state_id');
-            },
-            taxlot_states: function () {
-              return _.map(_.filter($scope.leftGridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type == 'taxlots') return row.$$treeLevel == 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'taxlot_state_id');
-            }
-          }
-        });
-
-        modalInstance.result.then(function (result) {
-          if (_.includes(['fail', 'incomplete'], result.delete_state)) refresh_objects();
-          else if (result.delete_state == 'success') {
-            var selectedRows = $scope.leftGridApi.selection.getSelectedRows();
-            var selectedChildRows = _.remove(selectedRows, function (row) {
-              return !_.has(row, '$$treeLevel');
-            });
-            // Delete selected child rows first
-            _.forEach(selectedChildRows, function (row) {
-              var index = $scope.leftData.lastIndexOf(row);
-              var count = 1;
-              if (row.$$treeLevel == 0) {
-                // Count children to delete
-                var i = index + 1;
-                while (i < ($scope.leftData.length - 1) && !_.has($scope.leftData[i], '$$treeLevel')) {
-                  count++;
-                  i++;
-                }
-              }
-              // console.debug('Deleting ' + count + ' child rows');
-              $scope.leftData.splice(index, count);
-            });
-            // Delete parent rows and all child rows
-            _.forEach(selectedRows, function (row) {
-              var index = $scope.leftData.lastIndexOf(row);
-              var count = 1;
-              if (row.$$treeLevel == 0) {
-                // Count children to delete
-                var i = index + 1;
-                while (i < ($scope.leftData.length - 1) && !_.has($scope.leftData[i], '$$treeLevel')) {
-                  count++;
-                  i++;
-                }
-              }
-              // console.debug('Deleting ' + count + ' rows');
-              $scope.leftData.splice(index, count);
-            });
-            // Delete any child rows that may have been duplicated due to a M2M relationship
-            if ($scope.inventory_type == 'properties') {
-              _.remove($scope.leftData, function (row) {
-                return !_.has(row, '$$treeLevel') && _.includes(result.taxlot_states, row.taxlot_state_id);
-              });
-            } else if ($scope.inventory_type == 'taxlots') {
-              _.remove($scope.leftData, function (row) {
-                return !_.has(row, '$$treeLevel') && _.includes(result.property_states, row.property_state_id);
-              });
-            }
-          }
-        }, function (result) {
-          if (_.includes(['fail', 'incomplete'], result.delete_state)) refresh_objects();
-        });
-      };
-
-      $scope.updateHeight = function () {
-        var height = 0;
-        _.forEach(['.header', '.page_header_container', '.section_nav_container', '.inventory-list-controls', '.inventory-list-tab-container'], function (selector) {
-          var element = angular.element(selector)[0];
-          if (element) height += element.offsetHeight;
-        });
-        angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
-        angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');
-        $scope.leftGridApi.core.handleWindowResize();
-      };
-
-      $scope.open_export_modal = function () {
-        var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/export_inventory_modal.html',
-          controller: 'export_inventory_modal_controller',
-          resolve: {
-            leftGridApi: function () {
-              return $scope.leftGridApi;
-            }
-          }
-        });
-
-        // modalInstance.result.then(function () {
-        // }, function (message) {
-        //   console.info(message);
-        //   console.info('Modal dismissed at: ' + new Date());
-        // });
-      };
-
-      var saveSettings = function () {
-        // Save all columns except first 3
-        var cols = _.filter($scope.leftGridApi.grid.columns, function (col) {
-          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'id'], col.name);
-        });
-        _.map(cols, function (col) {
-          col.pinnedLeft = col.renderContainer == 'left' && col.visible;
-          return col;
-        });
-        inventory_service.saveSettings(localStorageKey, cols);
-      };
-
-      $scope.gridOptionsLeft = {
-        data: 'leftData',
-        enableFiltering: true,
-        enableGridMenu: true,
-        enableSorting: true,
-        exporterMenuPdf: false,
-        fastWatch: true,
-        flatEntityAccess: true,
-        gridMenuShowHideColumns: false,
-        showTreeExpandNoChildren: false,
-        columnDefs: $scope.leftColumns,
-        onRegisterApi: function (leftGridApi) {
-          $scope.leftGridApi = leftGridApi;
-
-          _.delay($scope.updateHeight, 150);
-
-          var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
-          angular.element($window).on('resize', debouncedHeightUpdate);
-          $scope.$on('$destroy', function () {
-            angular.element($window).off('resize', debouncedHeightUpdate);
-          });
-
-          leftGridApi.colMovable.on.columnPositionChanged($scope, saveSettings);
-          leftGridApi.core.on.columnVisibilityChanged($scope, saveSettings);
-          leftGridApi.pinning.on.columnPinned($scope, saveSettings);
-
-          var selectionChanged = function () {
-            var selected = leftGridApi.selection.getSelectedRows();
-            $scope.selectedCount = selected.length;
-            $scope.selectedParentCount = _.filter(selected, {$$treeLevel: 0}).length;
-          };
-
-          leftGridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
-          leftGridApi.selection.on.rowSelectionChangedBatch($scope, selectionChanged);
-
-          leftGridApi.core.on.rowsRendered($scope, _.debounce(function () {
-            $scope.$apply(function () {
-              spinner_utility.hide();
-              $scope.total = _.filter($scope.leftGridApi.core.getVisibleRows($scope.leftGridApi.grid), {treeLevel: 0}).length;
-              if ($scope.updateQueued) {
-                $scope.updateQueued = false;
-                if ($scope.selected_labels.length) filterUsingLabels();
-              }
-            });
-          }, 150));
+      $scope.whichColumns = function (side) {
+        if (side === 'left') {
+          return $scope.inventoryType === 'Property' ? allPropertyColumns : allTaxlotColumns;
+        } else {
+          return $scope.inventoryType !== 'Property' ? allPropertyColumns : allTaxlotColumns;
         }
       };
 
-      $scope.gridOptionsRight = {
-        data: 'rightData',
-        enableFiltering: true,
-        enableGridMenu: true,
-        enableSorting: true,
-        exporterMenuPdf: false,
-        fastWatch: true,
-        flatEntityAccess: true,
-        gridMenuShowHideColumns: false,
-        showTreeExpandNoChildren: false,
-        columnDefs: $scope.rightColumns,
-        onRegisterApi: function (rightGridApi) {
-          $scope.rightGridApi = rightGridApi;
+      $scope.whichChildren = function (row) {
+        // console.log('row: ', row);
+        if ($scope.inventoryType === 'Property') {
+          return $scope.taxlotToProp[row.id]
+        } else {
+          return $scope.propToTaxlot[row.id]
+        }
+      }
 
-          _.delay($scope.updateHeight, 150);
+      $scope.otherInventory = function () {
+        if ($scope.inventoryType === 'Property') {
+          return "Tax Lots"
+        } else {
+          return "Properties"
+        }
+      }
 
-          var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
-          angular.element($window).on('resize', debouncedHeightUpdate);
-          $scope.$on('$destroy', function () {
-            angular.element($window).off('resize', debouncedHeightUpdate);
-          });
+      $scope.whichChildData = function (propId, col) {
+        if ($scope.inventoryType === 'Property') {
+          return $scope.propertyMap[propId][col]
+        } else {
+          return $scope.taxlotMap[propId][col]
+        }
+      }
 
-          rightGridApi.colMovable.on.columnPositionChanged($scope, saveSettings);
-          rightGridApi.core.on.columnVisibilityChanged($scope, saveSettings);
-          rightGridApi.pinning.on.columnPinned($scope, saveSettings);
+      $scope.unpairChild = function ($event) {
+        var ids = getIdsFromDOM(angular.element($event.target.parentNode));
 
-          var selectionChanged = function () {
-            var selected = rightGridApi.selection.getSelectedRows();
-            $scope.selectedCount = selected.length;
-            $scope.selectedParentCount = _.filter(selected, {$$treeLevel: 0}).length;
-          };
+        //make BE call here to unpair
 
-          rightGridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
-          rightGridApi.selection.on.rowSelectionChangedBatch($scope, selectionChanged);
+        //if error
+        if (0) {
+          return;
+        }
 
-          rightGridApi.core.on.rowsRendered($scope, _.debounce(function () {
-            $scope.$apply(function () {
-              spinner_utility.hide();
-              $scope.total = _.filter($scope.rightGridApi.core.getVisibleRows($scope.rightGridApi.grid), {treeLevel: 0}).length;
-              if ($scope.updateQueued) {
-                $scope.updateQueued = false;
-                if ($scope.selected_labels.length) filterUsingLabels();
-              }
-            });
-          }, 150));
+        //if success remove from maps
+        _.pull($scope.taxlotToProp[ids.taxlotId], ids.propertyId);
+        _.pull($scope.propToTaxlot[ids.propertyId], ids.taxlotId);
+        // console.log('tTop: ', $scope.taxlotToProp)
+        // console.log('pTot: ', $scope.propToTaxlot)
+      }
+
+      var addTtoP = function (taxlotId, propertyId) {
+        if (!$scope.taxlotToProp[+taxlotId]) {
+          $scope.taxlotToProp[+taxlotId] = [];
+        }
+        if (!_.includes($scope.taxlotToProp[+taxlotId], +propertyId)) {
+          $scope.taxlotToProp[+taxlotId].push(+propertyId)
+        }
+      }
+      var addPtoT = function (taxlotId, propertyId) {
+        if (!$scope.propToTaxlot[+propertyId]) {
+          $scope.propToTaxlot[+propertyId] = [];
+        }
+        if (!_.includes($scope.propToTaxlot[+propertyId], +taxlotId)) {
+          $scope.propToTaxlot[+propertyId].push(+taxlotId)
+        }
+      }
+      var createMap = function () {
+        $scope.propertyData.forEach(function (property) {
+          // Create map of property IDs to objects
+          $scope.propertyMap[property.id] = property;
+
+          property.related.forEach(function (taxlot) {
+            // Create array of all properties with id of their taxlots
+            addTtoP(taxlot.id, property.id);
+
+            // Create array of all taxlots with id of their property
+            addPtoT(taxlot.id, property.id);
+          })
+        })
+
+        // Create map of taxlot IDs to objects
+        $scope.taxlotData.forEach(function(taxlot) {
+          $scope.taxlotMap[taxlot.id] = taxlot;
+        })
+      };
+      createMap();
+
+
+      $scope.leftPaired = function (row) {
+        if ($scope.inventoryType !== 'Property') {
+          return $scope.taxlotToProp[row.id] ? $scope.taxlotToProp[row.id].length : false;
+        } else {
+          return $scope.propToTaxlot[row.id] ? $scope.propToTaxlot[row.id].length : false;
         }
       };
 
-      // $scope.$on('$destroy', function () {
-      //   console.log('Destroying!');
-      // });
+      $scope.leftNumUnpaired = function () {
+        var count = 0;
+        if ($scope.inventoryType === 'Property') {
+          $scope.leftData.forEach(function (data) {
+            count += $scope.propToTaxlot[data.id]&&$scope.propToTaxlot[data.id].length>0 ? 0 : 1;
+          })
+        } else {
+          $scope.leftData.forEach(function (data) {
+            count += $scope.taxlotToProp[data.id]&&$scope.taxlotToProp[data.id].length>0 ? 0 : 1;
+          })  
+        }
+        return count;
+      }
+
+      $scope.rightNumUnpaired = function () {
+        var count = 0;
+        if ($scope.inventoryType !== 'Property') {
+          $scope.rightData.forEach(function (data) {
+            count += $scope.propToTaxlot[data.id]&&$scope.propToTaxlot[data.id].length>0 ? 0 : 1;
+          })
+        } else {
+          $scope.rightData.forEach(function (data) {
+            count += $scope.taxlotToProp[data.id]&&$scope.taxlotToProp[data.id].length>0 ? 0 : 1;
+          })  
+        }
+        return count;
+      }
+
+      $scope.getLeftData = function () {
+        var newLeftData = [];
+        var leftMap = $scope.inventoryType === 'Property' ? $scope.propToTaxlot : $scope.taxlotToProp;
+        if ($scope.showPaired === 'All') {
+          newLeftData = $scope.leftData;
+        } else if ($scope.showPaired === 'Show Paired') {
+          $scope.leftData.forEach( function (data) {
+            if (leftMap[data.id]&&leftMap[data.id].length>0) {
+              newLeftData.push(data);
+            }
+          });
+        } else {
+          $scope.leftData.forEach( function (data) {
+            if (leftMap[data.id]==undefined||leftMap[data.id].length==0) {
+              newLeftData.push(data);
+            }
+          });
+        }
+        // console.log('getLeftData', newLeftData)
+        $scope.newLeftData = newLeftData;
+      }
+
+      var getIdsFromDOM = function (el) {
+        var parentRow = el.scope().row;
+        var parentId = parentRow.id;
+        var parentAddr =  parentRow.address_line_1
+        var parentNum = $scope.inventoryType === 'Property' ?  parentRow.jurisdiction_tax_lot_id : parentRow.pm_property_id;
+        var parentCus = parentRow.custom_id_1;
+        var childAddr = el.children()[0].innerText.trim(); 
+        var childNum = el.children()[1].innerText.trim(); 
+        var childCus = el.children()[2].innerText.trim();
+        // console.log('child, ',childAddr, childNum, childCus)
+        // console.log('parent, ',parentAddr, parentNum, parentCus)
+
+        var taxlotId;
+        var propertyId;
+        if ($scope.inventoryType === 'Property') {
+          taxlotId = parentId;
+          propertyId = _.findKey($scope.propertyMap, function(o) { 
+            return (o.address_line_1==childAddr||o.pm_property_id==childNum||o.custom_id_1==childCus) 
+          })
+        } else {
+          propertyId = parentId;
+          taxlotId = _.findKey($scope.taxlotMap, function(o) { 
+            return (o.address_line_1==childAddr||o.jurisdiction_tax_lot_id==childNum) 
+          })
+        }
+        return {'propertyId': +propertyId, 'taxlotId': +taxlotId};
+      }
+
+      $scope.leftSearch = function (value, index, array) {
+        for (var i = 0; i<$scope.leftColumns.length; i++) {
+          if ($scope.leftColumns[i].searchText && value[$scope.leftColumns[i].name]) {
+            return value[$scope.leftColumns[i].name].indexOf($scope.leftColumns[i].searchText) > -1;
+          }
+        }
+        return true;
+      }
+      $scope.rightSearch = function (value, index, array) {
+        for (var i = 0; i<$scope.rightColumns.length; i++) {
+          if ($scope.rightColumns[i].searchText && value[$scope.rightColumns[i].name]) {
+            return value[$scope.rightColumns[i].name].indexOf($scope.rightColumns[i].searchText) > -1;
+          }
+        }
+        return true;
+      }
+
+      $scope.updateLeftRight = function () {
+        if ($scope.inventoryType === 'Property') {
+          $scope.rightData = $scope.taxlotData;
+          $scope.leftData = $scope.propertyData;
+
+          $scope.leftColumns = $scope.propertyColumns;
+          $scope.rightColumns = $scope.taxlotColumns;
+         } else {
+          $scope.leftData = $scope.taxlotData;
+          $scope.rightData = $scope.propertyData;
+
+          $scope.leftColumns = $scope.taxlotColumns;
+          $scope.rightColumns = $scope.propertyColumns;
+         }
+        $scope.getLeftData();
+        spinner_utility.hide();
+      }
+      // Set left right data initially
+      $scope.updateLeftRight();
+
+      //Dragula stuff:
+      dragulaService.options($scope, 'drag-pairing-row', {
+        copy: true,
+        copySortSource: false,
+        moves: function (el, container, handle) {
+            // restrict dragging to designated handles
+            return (container.className.indexOf('cant-move') === -1);
+        },
+        accepts: function (el, target, source, sibling) {
+          //don't allow dropping in left column
+          return (target.className.indexOf('pairing-data-left') === -1); 
+        },
+      });
+
+      $scope.$on('drag-pairing-row.drop', function (e, el) {
+        if (!el.scope()) {
+          return; //dropped in left side
+        }
+        el.removeClass('grab-pairing-left');
+        el.removeClass('pairing-data-row');
+        // el.children.removeClass('pairing-data-row-col');
+        // el.children.addClass('pairing-data-row-col-indent');
+        el.addClass('pairing-data-row-indent');
+        el.attr('ng-repeat', 'id in whichChildren(row) track by $index');
+        el.parent().attr('style', '');
+
+        //make BE call
+
+        //if error
+        if (0) {
+          el.remove();
+          return;
+        }
+
+        //else BE success
+        var ids = getIdsFromDOM(el)
+        addTtoP(ids.taxlotId, ids.propertyId);
+        addPtoT(ids.taxlotId, ids.propertyId);
+        $scope.getLeftData();
+        $scope.$apply();
+        // console.log('tTop: ', $scope.taxlotToProp)
+        // console.log('pTot: ', $scope.propToTaxlot)
+
+        el.remove();
+      });
+
+      spinner_utility.hide();
     }]);

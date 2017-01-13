@@ -25,7 +25,8 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.router.stateHelper',
   'ui.sortable',
   'ui.tree',
-  'xeditable'
+  'xeditable',
+  angularDragula(angular)
 ]);
 angular.module('BE.seed.controllers', [
   'BE.seed.controller.about',
@@ -726,11 +727,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           //   var importfile_id = $stateParams.importfile_id;
           //   return dataset_service.get_import_file(importfile_id);
           // }],
-          propertyInventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
-          // inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+          propertyInventory: ['inventory_service', function (inventory_service) {
             var myColumns = [
               { 'displayName': 'Address Line 1 (Property)', 'name':'address_line_1','type':'numberStr', 'related':false},
               { 'displayName': 'PM Property ID', 'name':'pm_property_id','type':'number', 'related':false},
+              { 'displayName': 'Jurisdiction Tax Lot ID', 'name':'jurisdiction_tax_lot_id','type':'numberStr', 'related':false},
               { 'displayName': 'Custom ID', 'name':'custom_id_1','type':'numberStr', 'related':false}]
             var visibleColumns = _.map(myColumns, 'name');
             // console.log('before: ', myColumns);
@@ -739,8 +740,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               return  _.extend({'columns': myColumns}, inv);
             });
           }],
-          taxlotInventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
-          // inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+          taxlotInventory: ['inventory_service', function (inventory_service) {
             var myColumns = [
               { 'displayName': 'Address Line 1 (Tax Lot)', 'name':'address_line_1','type':'numberStr', 'related':false},
               // { 'displayName': 'Primary Tax Lot ID', 'name':'primary_tax_lot_id','type':'number', 'related':false},
