@@ -1,12 +1,12 @@
 from __future__ import unicode_literals
 
 from django.core.management.base import BaseCommand
-from django.apps import apps
+
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import User
-from IPython import embed
+
+
 # from seed.landing.models import DoesNotExist
-import pdb
 
 
 class Command(BaseCommand):
