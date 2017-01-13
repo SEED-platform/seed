@@ -2611,6 +2611,10 @@ gs-input .tags .tag-item .remove-button {
 
   border-collapse: collapse;
   color: #A0A0A0;
+  .unpaired {
+    width: 100%;
+    color: lightskyblue;
+  }
 }
 
 .grab-pairing-left {

@@ -81,6 +81,13 @@
                         </div>
                     </div>
                     <div class="pairing-child cant-move" dragula='"drag-pairing-row"'>
+                        <div class="pairing-data-row-indent" ng-if="!whichChildren(row)">
+                            <div class="pairing-data-row-col-indent unpaired" >
+                                <div class="pairing-cell">
+                                    <span class="pairing-text"> Drag {$ inventoryType $} here to pair with this {$ otherInventory() $} </span>
+                                </div>
+                            </div>
+                        </div>
                         <div class="pairing-data-row-indent" ng-repeat="id in whichChildren(row) track by $index">
                             <div class="pairing-data-row-col-indent" ng-repeat="col in whichColumns('left') track by $index" >
                                 <div class="pairing-cell">
