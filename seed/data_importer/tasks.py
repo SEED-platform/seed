@@ -1678,9 +1678,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     # taxlot_keys = [taxlot_m2m_keygen.calculate_comparison_key(tl): tl.pk for tl in taxlot_objects}
 
     # Calculate a key for each of the split fields.
-    print "prepk"
     property_keys_orig = dict([(property_m2m_keygen.calculate_comparison_key(p), p.pk) for p in property_objects])
-    print "PK: {}".format(property_keys_orig)
 
     # property_keys = copy.deepcopy(property_keys_orig)
 
