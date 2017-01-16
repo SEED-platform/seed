@@ -2500,6 +2500,25 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
+.ui-grid-row:nth-child(odd) .ui-grid-cell .inventory-settings-cell::after {
+  color: #d7d7d7;
+}
+.ui-grid-row:nth-child(even) .ui-grid-cell .inventory-settings-cell::after {
+  color: #cbcbcb;
+}
+.inventory-settings-cell {
+  &::after {
+    content: attr(data-after-content);
+    float: right;
+    opacity: 0;
+    transition: opacity .25s ease-in-out;
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
+}
+
 // Nested rows
 .ui-grid-row:not(.ui-grid-tree-header-row) {
   /*.ui-grid-cell-contents {
