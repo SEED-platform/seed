@@ -45,7 +45,6 @@ Using Python::
   print result.json()  
 
 
-PUT  Updates a users role within an organization
 
 Responses
 ---------
