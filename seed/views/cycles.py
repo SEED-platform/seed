@@ -14,7 +14,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import Cycle, PropertyView, TaxLotView
 from seed.serializers.cycles import CycleSerializer
 from seed.utils.api import api_endpoint_class
@@ -52,6 +52,7 @@ class CycleView(GenericViewSet):
 
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_viewer')
     def list(self, request):
         """
         List all the cycles
@@ -62,20 +63,22 @@ class CycleView(GenericViewSet):
               required: true
               paramType: query
         """
-        # make sure query org id is in this user's orgs
-        org_id_in_query = request.query_params.get('organization_id', None)
-        tmp_cycles = Cycle.objects.filter(
-            organization_id=org_id_in_query
-        ).order_by('name')
-        cycles = []
-        if tmp_cycles.exists():
-            for cycle in tmp_cycles:
-                cycles.append(model_to_dict(cycle))
-        else:
+        org_id = int(request.query_params.get('organization_id', None))
+        valid_orgs = OrganizationUser.objects.filter(
+            user_id=request.user.id
+        ).values_list('organization_id', flat=True).order_by('organization_id')
+        if org_id not in valid_orgs:
             return JsonResponse({
                 'status': 'error',
-                'message': 'Could not access any cycles for organization_id={}'.format(org_id_in_query)
-            })
+                'message': 'Cannot access cycles for this organization id',
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        tmp_cycles = Cycle.objects.filter(
+            organization_id=org_id
+        ).order_by('name')
+        cycles = []
+        for cycle in tmp_cycles:
+            cycles.append(model_to_dict(cycle))
         return JsonResponse({'status': 'success', 'cycles': cycles})
 
     @api_endpoint_class
