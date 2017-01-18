@@ -158,13 +158,6 @@ settings.
     }
     BROKER_URL = 'redis://127.0.0.1:6379/1'
 
-.. note::
-
-    The popular ``memcached`` can also be used as a cache back-end, but is not
-    supported and redis has a different cache key format, which could cause
-    breakage and isn't tested.
-    Likewise, ``rabbitmq`` or AWS ``SQS`` are alternative message brokers,
-    which could cause breakage and is not tested.
 
 Creating the initial user
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -192,8 +185,7 @@ project directory, ``celery`` can be started:
 
 .. code-block:: console
 
-    $ python manage.py celery worker -B -c 2 --loglevel=INFO -E --maxtasksperchild=1000
-
+    celery -A seed worker -l INFO -c 2 -B --events --maxtasksperchild 1000
 
 .. _Celery: http://www.celeryproject.org/
 

@@ -183,7 +183,7 @@ project directory, ``celery`` can be started:
 
 .. code-block:: console
 
-    ./manage.py celery worker -B -c 2 --loglevel=INFO -E --maxtasksperchild=1000
+    celery -A seed worker -l INFO -c 2 -B --events --maxtasksperchild 1000
 
 .. _Celery: http://www.celeryproject.org/
 
