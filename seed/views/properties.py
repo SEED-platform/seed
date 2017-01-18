@@ -42,26 +42,67 @@ def unique(lol):
 
 
 def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair):
-    # TODO: validate against organization_id
+    # TODO: validate against organization_id, make sure cycle_ids are the same
+
+    try:
+        property_view = PropertyView.objects.get(pk=property_id)
+    except PropertyView.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'property view with id {} does not exist'.format(property_id)
+        }, status=status.HTTP_404_NOT_FOUND)
+    try:
+        taxlot_view = TaxLotView.objects.get(pk=taxlot_id)
+    except TaxLotView.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'tax lot view with id {} does not exist'.format(taxlot_id)
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    pv_cycle = property_view.cycle_id
+    tv_cycle = taxlot_view.cycle_id
+
+    if pv_cycle != tv_cycle:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Cycle mismatch between PropertyView and TaxLotView'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
     if pair:
-        string = 'paired'
+        string = 'pair'
+
+        if TaxLotProperty.objects.filter(property_view_id=property_id, taxlot_view_id=taxlot_id).exists():
+            return JsonResponse({
+                'status': 'success',
+                'message': 'taxlot {} and property {} are already {}ed'.format(taxlot_id, property_id, string)
+            })
+        TaxLotProperty(primary=True, cycle_id=pv_cycle, property_view_id=property_id, taxlot_view_id=taxlot_id) \
+            .save()
+
         success = True
-        pass  # TODO: Do pairing between property_id and taxlot_id
     else:
-        string = 'unpaired'
+        string = 'unpair'
+
+        if not TaxLotProperty.objects.filter(property_view_id=property_id, taxlot_view_id=taxlot_id).exists():
+            return JsonResponse({
+                'status': 'success',
+                'message': 'taxlot {} and property {} are already {}ed'.format(taxlot_id, property_id, string)
+            })
+        TaxLotProperty.objects.filter(property_view_id=property_id, taxlot_view_id=taxlot_id) \
+            .delete()
+
         success = True
-        pass  # TODO: Do unpairing between property_id and taxlot_id
-    # TODO: Return a JsonResponse object
+
     if success:
         return JsonResponse({
             'status': 'success',
-            'message': 'taxlot {} and property {} are now {}'.format(taxlot_id, property_id, string)
+            'message': 'taxlot {} and property {} are now {}ed'.format(taxlot_id, property_id, string)
         })
     else:
         return JsonResponse({
             'status': 'error',
-            'message': 'Could not pair because reasons, maybe bad organization id={}'.format(organization_id)
-        }, status=status.HTTP_403_FORBIDDEN)
+            'message': 'Could not {} because reasons, maybe bad organization id={}'.format(string, organization_id)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PropertyViewSet(GenericViewSet):
@@ -259,7 +300,7 @@ class PropertyViewSet(GenericViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('can_modify_data')
     @detail_route(methods=['PUT'])
     def pair(self, request, pk=None):
         """
@@ -281,13 +322,14 @@ class PropertyViewSet(GenericViewSet):
               paramType: path
         """
         # TODO: Call with PUT /api/v2/properties/1/pair/?taxlot_id=1&organization_id=1
-        organization_id = request.query_params.get('organization_id')
-        taxlot_id = request.query_params.get('taxlot_id')
-        return pair_unpair_property_taxlot(pk, taxlot_id, organization_id, True)
+        organization_id = int(request.query_params.get('organization_id'))
+        property_id = int(pk)
+        taxlot_id = int(request.query_params.get('taxlot_id'))
+        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, True)
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('can_modify_data')
     @detail_route(methods=['PUT'])
     def unpair(self, request, pk=None):
         """
@@ -309,9 +351,10 @@ class PropertyViewSet(GenericViewSet):
               paramType: path
         """
         # TODO: Call with PUT /api/v2/properties/1/unpair/?taxlot_id=1&organization_id=1
-        organization_id = request.query_params.get('organization_id')
-        taxlot_id = request.query_params.get('taxlot_id')
-        return pair_unpair_property_taxlot(pk, taxlot_id, organization_id, False)
+        organization_id = int(request.query_params.get('organization_id'))
+        property_id = int(pk)
+        taxlot_id = int(request.query_params.get('taxlot_id'))
+        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
 
     # @require_organization_id
     # @require_organization_membership
@@ -597,7 +640,7 @@ class PropertyViewSet(GenericViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('can_modify_data')
     @list_route(methods=['DELETE'])
     def batch_delete(self, request):
         """
@@ -1025,7 +1068,7 @@ class TaxLotViewSet(GenericViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('can_modify_data')
     @detail_route(methods=['PUT'])
     def pair(self, request, pk=None):
         """
@@ -1047,13 +1090,14 @@ class TaxLotViewSet(GenericViewSet):
               paramType: path
         """
         # TODO: Call with PUT /api/v2/taxlots/1/pair/?property_id=1&organization_id=1
-        organization_id = request.query_params.get('organization_id')
-        property_id = request.query_params.get('property_id')
-        return pair_unpair_property_taxlot(property_id, pk, organization_id, True)
+        organization_id = int(request.query_params.get('organization_id'))
+        property_id = int(request.query_params.get('property_id'))
+        taxlot_id = int(pk)
+        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, True)
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('can_modify_data')
     @detail_route(methods=['PUT'])
     def unpair(self, request, pk=None):
         """
@@ -1075,9 +1119,10 @@ class TaxLotViewSet(GenericViewSet):
               paramType: path
         """
         # TODO: Call with PUT /api/v2/taxlots/1/unpair/?property_id=1&organization_id=1
-        organization_id = request.query_params.get('organization_id')
-        property_id = request.query_params.get('property_id')
-        return pair_unpair_property_taxlot(property_id, pk, organization_id, False)
+        organization_id = int(request.query_params.get('organization_id'))
+        property_id = int(request.query_params.get('property_id'))
+        taxlot_id = int(pk)
+        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
 
     # @require_organization_id
     # @require_organization_membership
@@ -1366,7 +1411,7 @@ class TaxLotViewSet(GenericViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('can_modify_data')
     @list_route(methods=['DELETE'])
     def batch_delete(self, request):
         """
