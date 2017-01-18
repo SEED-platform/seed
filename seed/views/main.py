@@ -38,10 +38,13 @@ from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
+    DATA_STATE_MATCHING,
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
-    BuildingSnapshot,
+    BuildingSnapshot, # TO REMOVE
+    PropertyState,
+    TaxLotState,
     CanonicalBuilding,
     Column,
     ProjectBuilding,
@@ -787,65 +790,6 @@ def save_match(request):
 #     return resp
 
 
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def get_match_tree(request):
-    """returns the BuildingSnapshot tree
-
-    :GET: Expects organization_id and building_id in the query string
-
-    Returns::
-
-        {
-            'status': 'success',
-            'match_tree': [ // array of all the members of the tree
-                {
-                    "id": 333,
-                    "coparent": 223,
-                    "child": 443,
-                    "parents": [],
-                    "canonical_building_id": 1123
-                },
-                {
-                    "id": 223,
-                    "coparent": 333,
-                    "child": 443,
-                    "parents": [],
-                    "canonical_building_id": 1124
-                },
-                {
-                    "id": 443,
-                    "coparent": null,
-                    "child": 9933,
-                    "parents": [333, 223],
-                    "canonical_building_id": 1123
-                },
-                {
-                    "id": 9933,
-                    "coparent": null,
-                    "child": null,
-                    "parents": [443],
-                    "canonical_building_id": 1123
-                },
-                ...
-            ]
-        }
-    """
-    building_id = request.GET.get('building_id', '')
-    bs = BuildingSnapshot.objects.get(pk=building_id)
-    # since our tree has the structure of two parents and one child, we can go
-    # to the tip and look up, otherwise it's hard to keep track of the
-    # co-parent trees of the children.
-    tree = bs.tip.parent_tree + [bs.tip]
-    tree = map(lambda b: b.to_dict(), tree)
-    return {
-        'status': 'success',
-        'match_tree': tree,
-    }
-
-
 def _parent_tree_coparents(snapshot):
     """
     Takes a BuildingSnapshot inst. Climbs the snapshot tree upward and
@@ -1008,27 +952,56 @@ def get_PM_filter_by_counts(request):
     """
     import_file_id = request.GET.get('import_file_id', '')
 
-    matched = BuildingSnapshot.objects.filter(
+    # properties
+    properties_matched = PropertyState.objects.filter(
         import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        children__isnull=False
+        data_state__in=[DATA_STATE_MATCHING],
+        # children__isnull=False
     ).count()
-    unmatched = BuildingSnapshot.objects.filter(
+    properties_duplicates = PropertyState.objects.filter(
         import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        children__isnull=True,
-        duplicate__isnull=True
+        data_state__in=[DATA_STATE_MATCHING],
+        # duplicate__isnull=False
     ).count()
-    duplicates = BuildingSnapshot.objects.filter(
+    properties_unmatched = PropertyState.objects.filter(
         import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        duplicate__isnull=False
+        data_state__in=[DATA_STATE_MATCHING],
+        # children__isnull=True,
+        # duplicate__isnull=True
     ).count()
+
+    # properties
+    tax_lots_matched = TaxLotState.objects.filter(
+        import_file__pk=import_file_id,
+        data_state__in=[DATA_STATE_MATCHING],
+        # children__isnull=False
+    ).count()
+    tax_lots_duplicates = TaxLotState.objects.filter(
+        import_file__pk=import_file_id,
+        data_state__in=[DATA_STATE_MATCHING],
+        # duplicate__isnull=False
+    ).count()
+    tax_lots_unmatched = TaxLotState.objects.filter(
+        import_file__pk=import_file_id,
+        data_state__in=[DATA_STATE_MATCHING],
+        # children__isnull=True,
+        # duplicate__isnull=True
+    ).count()
+    # taxlots
+
     return {
         'status': 'success',
-        'matched': matched,
-        'unmatched': unmatched,
-        'duplicates': duplicates,
+        'properties': {
+            'matched': properties_matched,
+            'unmatched': properties_unmatched,
+            'duplicates': properties_duplicates,
+        },
+        'tax_lots': {
+            'matched': tax_lots_matched,
+            'unmatched': tax_lots_unmatched,
+            'duplicates': tax_lots_duplicates,
+        }
+
     }
 
 
