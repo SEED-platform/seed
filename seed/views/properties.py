@@ -909,7 +909,6 @@ class TaxLotViewSet(GenericViewSet):
             propToJurisdictionTL[name].append(path)
 
         for join in joins:
-
             jurisdiction_tax_lot_ids = propToJurisdictionTL[join.property_view_id]
 
             # Filter out associated tax lots that are present but which do not have preferred

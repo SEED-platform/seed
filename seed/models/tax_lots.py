@@ -22,6 +22,8 @@ from seed.models import (
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
+    MERGE_STATE,
+    MERGE_STATE_UNKNOWN,
     ASSESSED_BS,
 )
 from seed.utils.address import normalize_address_str
@@ -53,6 +55,7 @@ class TaxLotState(models.Model):
     # Add organization to the tax lot states
     organization = models.ForeignKey(Organization)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
+    merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN)
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
 
@@ -104,9 +107,6 @@ class TaxLotState(models.Model):
 
             tlv = TaxLotView.objects.create(taxlot=taxlot, cycle=cycle, state=self)
 
-            # Also set the data state on the promoted state to DATA_STATE_MATCHING
-            self.data_state = DATA_STATE_MATCHING
-            self.source_type = ASSESSED_BS
             self.save()
 
             return tlv
@@ -175,7 +175,7 @@ class TaxLotState(models.Model):
         if self.address_line_1 is not None:
             self.normalized_address = normalize_address_str(self.address_line_1)
         else:
-            self.normalize_address = None
+            self.normalized_address = None
 
         return super(TaxLotState, self).save(*args, **kwargs)
 

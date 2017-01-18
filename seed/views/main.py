@@ -39,10 +39,14 @@ from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     DATA_STATE_MATCHING,
+    MERGE_STATE_MERGED,
+    MERGE_STATE_NEW,
+    MERGE_STATE_DUPLICATE,
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
-    BuildingSnapshot, # TO REMOVE
+    BuildingSnapshot,  # TO REMOVE
+    PropertyView,
     PropertyState,
     TaxLotState,
     CanonicalBuilding,
@@ -952,54 +956,41 @@ def get_PM_filter_by_counts(request):
     """
     import_file_id = request.GET.get('import_file_id', '')
 
-    # properties
+    # property views associated with this imported file (including merges)
+    properties_new = PropertyState.objects.filter(
+        import_file__pk=import_file_id,
+        data_state=DATA_STATE_MATCHING,
+        merge_state=MERGE_STATE_NEW,
+    ).count()
     properties_matched = PropertyState.objects.filter(
         import_file__pk=import_file_id,
-        data_state__in=[DATA_STATE_MATCHING],
-        # children__isnull=False
-    ).count()
-    properties_duplicates = PropertyState.objects.filter(
-        import_file__pk=import_file_id,
-        data_state__in=[DATA_STATE_MATCHING],
-        # duplicate__isnull=False
-    ).count()
-    properties_unmatched = PropertyState.objects.filter(
-        import_file__pk=import_file_id,
-        data_state__in=[DATA_STATE_MATCHING],
-        # children__isnull=True,
-        # duplicate__isnull=True
+        data_state=DATA_STATE_MATCHING,
+        merge_state=MERGE_STATE_MERGED,
     ).count()
 
     # properties
+    tax_lots_new = TaxLotState.objects.filter(
+        import_file__pk=import_file_id,
+        data_state=DATA_STATE_MATCHING,
+        merge_state=MERGE_STATE_NEW,
+    ).count()
     tax_lots_matched = TaxLotState.objects.filter(
         import_file__pk=import_file_id,
-        data_state__in=[DATA_STATE_MATCHING],
-        # children__isnull=False
+        data_state=DATA_STATE_MATCHING,
+        merge_state=MERGE_STATE_MERGED,
     ).count()
-    tax_lots_duplicates = TaxLotState.objects.filter(
-        import_file__pk=import_file_id,
-        data_state__in=[DATA_STATE_MATCHING],
-        # duplicate__isnull=False
-    ).count()
-    tax_lots_unmatched = TaxLotState.objects.filter(
-        import_file__pk=import_file_id,
-        data_state__in=[DATA_STATE_MATCHING],
-        # children__isnull=True,
-        # duplicate__isnull=True
-    ).count()
+
     # taxlots
 
     return {
         'status': 'success',
         'properties': {
             'matched': properties_matched,
-            'unmatched': properties_unmatched,
-            'duplicates': properties_duplicates,
+            'unmatched': properties_new,
         },
         'tax_lots': {
             'matched': tax_lots_matched,
-            'unmatched': tax_lots_unmatched,
-            'duplicates': tax_lots_duplicates,
+            'unmatched': tax_lots_new,
         }
 
     }

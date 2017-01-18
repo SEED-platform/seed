@@ -16,6 +16,7 @@ from seed.utils.mapping import get_mappable_columns
 from seed.lib.mappings.mapping_data import MappingData
 from seed.models.deprecate import SYSTEM_MATCH
 
+# TODO: Fix name of this method / remove if possible.
 BuildingSnapshot_to_BuildingSnapshot = tuple([(k, k) for k in get_mappable_columns()])
 
 md = MappingData()
@@ -119,12 +120,11 @@ def merge_extra_data(b1, b2, default=None):
 def merge_state(merged_state, state1, state2, can_attrs, conf, default=None, match_type=None):
     """Set attributes on our Canonical model, saving differences.
 
-    :param merged_state: BuildingSnapshot model inst.
+    :param merged_state: PropertyState/TaxLotState model inst.
     :param state1: PropertyState/TaxLotState model inst. Left parent.
     :param state2: PropertyState/TaxLotState model inst. Right parent.
     :param can_attrs: dict of dicts, {'attr_name': {'dataset1': 'value'...}}.
     :param default: (optional), which dataset's value to default to.
-    :rtype default: BuildingSnapshot
     :return: inst(``merged_state``), updated.
 
     """

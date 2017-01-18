@@ -71,6 +71,10 @@ from seed.models import (
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     DATA_STATE_DELETE,
+    MERGE_STATE_UNKNOWN,
+    MERGE_STATE_MERGED,
+    MERGE_STATE_DUPLICATE,
+    MERGE_STATE_NEW,
 )
 from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
@@ -1135,7 +1139,7 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import
         for unmatched in unmatched_state_class[1:]:
             merged_result, changes = save_state_match(merged_result,
                                                       unmatched,
-                                                      confidence=0.9,
+                                                      confidence=0.9,  # worthless field
                                                       match_type=SYSTEM_MATCH,
                                                       user=import_file.import_record.owner
                                                       # What does this param do?
@@ -1279,16 +1283,23 @@ def _match_properties_and_taxlots(file_pk, user_pk):
     # Mark all the unmatched objects as done with matching and mapping
     # There should be some kind of bulk-update/save thing we can do to
     # improve upon this.
-    for state in chain(all_unmatched_properties, all_unmatched_tax_lots):
+    for state in chain(unmatched_properties, unmatched_tax_lots):
         state.data_state = DATA_STATE_MATCHING
+        # state.merge_state = MERGE_STATE_MERGED
         state.save()
 
-    for state in map(lambda x: x.state, chain(merged_taxlot_views, merged_property_views)):
+    for state in map(lambda x: x.state, chain(merged_property_views, merged_taxlot_views)):
         state.data_state = DATA_STATE_MATCHING
+        # The merge state seems backwards, but it isn't for some reason, if they are not marked as
+        # MERGE_STATE_MERGED when called in the merge_unmatched_into_views, then they are new.
+        if state.merge_state != MERGE_STATE_MERGED:
+            state.merge_state = MERGE_STATE_NEW
         state.save()
 
+    # I don't think we arrive at this code ... ever.
     for state in chain(duplicate_property_states, duplicate_tax_lot_states):
         state.data_state = DATA_STATE_DELETE
+        # state.merge_state = MERGE_STATE_DUPLICATE
         state.save()
 
     # This is a kind of vestigial code that I do not particularly understand.
@@ -1449,6 +1460,7 @@ def save_state_match(state1, state2, confidence=None, user=None,
     from seed.lib.merging import merging as seed_merger
 
     merged_state = type(state1).objects.create(organization=state1.organization)
+
     merged_state, changes = seed_merger.merge_state(merged_state,
                                                     state1, state2,
                                                     seed_merger.get_state_attrs([state1, state2]),
@@ -1478,6 +1490,8 @@ def save_state_match(state1, state2, confidence=None, user=None,
     # pp(ps2)
     # pp(merged_property_state)
 
+    # Set the merged_state to merged
+    merged_state.merge_state = MERGE_STATE_MERGED
     merged_state.save()
 
     return merged_state, False
@@ -1546,8 +1560,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     # now. The logic that is being missed is a pretty extreme corner
     # case.
 
-    # TODO: I should generate one key for each property for each thing
-    # in it's lot number state.
+    # TODO: I should generate one key for each property for each thing in it's lot number state.
 
     # property_keys = {property_m2m_keygen.calculate_comparison_key(p): p.pk for p in property_objects}
     # taxlot_keys = [taxlot_m2m_keygen.calculate_comparison_key(tl): tl.pk for tl in taxlot_objects}

@@ -22,6 +22,8 @@ from seed.models import (
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
+    MERGE_STATE,
+    MERGE_STATE_UNKNOWN,
     ASSESSED_BS,
     TaxLotProperty
 )
@@ -62,6 +64,7 @@ class PropertyState(models.Model):
 
     organization = models.ForeignKey(Organization)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
+    merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN)
 
     # Is this still being used during matching? Apparently so.
     confidence = models.FloatField(default=0, null=True, blank=True)
@@ -164,9 +167,6 @@ class PropertyState(models.Model):
 
             pv = PropertyView.objects.create(property=prop, cycle=cycle, state=self)
 
-            # Also set the data state on the promoted state to DATA_STATE_MATCHING
-            self.data_state = DATA_STATE_MATCHING
-            self.source_type = ASSESSED_BS
             self.save()
 
             return pv
@@ -256,7 +256,7 @@ class PropertyState(models.Model):
         if self.address_line_1 is not None:
             self.normalized_address = normalize_address_str(self.address_line_1)
         else:
-            self.normalize_address = None
+            self.normalized_address = None
 
         return super(PropertyState, self).save(*args, **kwargs)
 
