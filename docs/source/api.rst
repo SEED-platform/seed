@@ -52,39 +52,20 @@ Responses
 Responses from all requests will be JSON-encoded objects, as specified in each endpoint's documentation.
 In the case of an error, most endpoints will return this instead of the expected payload (or an HTTP status code)::
 
+.. code-block::
+
     {
         'status': 'error',
         'message': 'explanation of the error here'
     }
  
 
-API-related Endpoints
----------------------
+API-Endpoints
+-------------
 
-.. automodule:: seed.views.api
-    :members:
-    :undoc-members:
+A list of interactive endpoints are available by accessing the API menu item on the left navigation
+pane within you account on your SEED instance.
 
-Account Management Endpoints
-----------------------------
+To view a list of non-interactive endpoints without an account, view swagger_ on the development server.
 
-.. automodule:: seed.views.users
-    :members:
-    :undoc-members:
-
-File Upload Endpoints
----------------------
-
-These endpoints behave drastically differently depending on whether the system is configured to upload files to S3 or
-to the local file system.
-
-.. automodule:: seed.data_importer.views
-    :members: handle_s3_upload_complete, local_uploader, get_upload_details, sign_policy_document
-
-
-SEED (Building and Project) Endpoints
--------------------------------------
-
-.. automodule:: seed.views.main
-    :members:
-    :undoc-members:
+.. _swagger: https://seed-platform.org/app/api/swagger/

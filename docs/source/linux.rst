@@ -6,7 +6,7 @@ running on a bare-bones Linux server follows a similar setup, replacing the
 AWS services with their Linux package counterparts, namely: PostgreSQL and
 Redis.
 
-**seed** is a `Django project`_ and Django's documentation
+**SEED** is a `Django project`_ and Django's documentation
 is an excellent place to general understanding of this project's layout.
 
 .. _Django project: https://www.djangoproject.com/
@@ -18,17 +18,17 @@ Prerequisites
 
 Ubuntu server 14.04 or newer
 
-We need to install the base packages needed to run the app:
+Install the following base packages to run SEED:
 
 .. code-block:: console
 
-    $ sudo apt-get update
-    $ sudo apt-get upgrade
-    $ sudo apt-get install libpq-dev python-dev python-pip libatlas-base-dev \
+    sudo apt-get update
+    sudo apt-get upgrade
+    sudo apt-get install libpq-dev python-dev python-pip libatlas-base-dev \
     gfortran build-essential g++ npm libxml2-dev libxslt1-dev git mercurial \
     libssl-dev curl uwsgi-core uwsgi-plugin-python
-    $ sudo apt-get install redis-server
-    $ sudo apt-get install postgresql postgresql-contrib
+    sudo apt-get install redis-server
+    sudo apt-get install postgresql postgresql-contrib
 
 
 .. note:: postgresql ``>=9.3`` is required to support `JSON Type`_

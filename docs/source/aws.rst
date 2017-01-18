@@ -2,71 +2,56 @@
 AWS Setup
 =========
 
-Amazon Web Services (`AWS`_) provides the preferred hosting for SEED.
+Amazon Web Services (`AWS`_) provides the preferred hosting for the SEED Platform.
 
-**seed** is a `Django Project`_ and Django's documentation
-is an excellent place for general understanding of this project's layout.
+**seed** is a `Django Project`_ and Django's documentation is an excellent place for general
+understanding of this project's layout.
 
 .. _Django Project: https://www.djangoproject.com/
 
 .. _AWS: http://aws.amazon.com/
 
 Prerequisites
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^
 
-Ubuntu server 13.10 or newer, with the following list of *aptitude packages*
-installed.
-
-Copy the *prerequisites.txt* files to the server and install the dependencies:
+Ubuntu server 14.04 or newer.
 
 .. code-block:: console
 
-    $ sudo dpkg --set-selections < ./prerequisites.txt
-    $ sudo apt-get dselect-upgrade
-
-or with a single command as ``su``
-
-.. code-block:: console
-
-    # aptitude install $(cat ./prerequisites.txt | awk '{print $1}')
-
-.. note::
-
-    PostgresSQL server is not included above, and it is assumed that the system
-    will use the AWS RDS PostgresSQL service
-
-.. note:: postgresql ``>=9.3`` is required to support `JSON Type`_
+    sudo apt-get update
+    sudo apt-get upgrade
+    sudo apt-get install -y libpq-dev python-dev python-pip libatlas-base-dev \
+    gfortran build-essential g++ npm libxml2-dev libxslt1-dev git mercurial \
+    libssl-dev curl uwsgi-core uwsgi-plugin-python
 
 
-.. _JSON Type: http://www.postgresql.org/docs/9.3/static/datatype-json.html
+PostgreSQL and Redis are not included in the above commands. For a quick installation on AWS it
+is okay to install PostgreSQL and Redis locally on the AWS instance. If a more permanent and
+scalable solution, it is recommended to use AWS's hosted Redis (ElastiCache) and PostgreSQL service.
 
-
-A smaller list of packages to get going:
+.. note:: postgresql ``>=9.4`` is required to support `JSON Type`_
 
 .. code-block:: console
 
-    $ sudo apt-get install python-pip python-dev libatlas-base-dev gfortran \
-    python-dev build-essential g++ npm libxml2-dev libxslt1-dev \
-    postgresql-devel postgresql-9.3 postgresql-server-dev-9.3 libpq-dev \
-    libmemcached-dev openjdk-7-jre-headless
-
+    # To install PostgreSQL and Redis locally
+    sudo apt-get install redis-server
+    sudo apt-get install postgresql postgresql-contrib
 
 
 Amazon Web Services (AWS) Dependencies
 ++++++++++++++++++++++++++++++++++++++
 
-The following AWS services are used for **seed**:
+The following AWS services are used for **SEED**:
 
-* RDS (PostgreSQL >=9.3)
+* RDS (PostgreSQL >=9.4)
 * ElastiCache (redis)
 * SES
-* S3
 
 
 Python Dependencies
 ^^^^^^^^^^^^^^^^^^^
 
-Clone the **seed** repository from **github**
+Clone the **SEED** repository from **github**
 
 .. code-block:: console
 
@@ -92,7 +77,6 @@ convenience.
 .. code-block:: console
 
     $ sudo apt-get install build-essential
-    $ sudo apt-get install libssl-dev
     $ sudo apt-get install curl
 
 
@@ -127,37 +111,29 @@ instance you have manually installed within your infrastructure.
 
 .. note::
 
-
-    other databases could be used such as MySQL, but are not supported
-    due to the postgres-specific `JSON Type`_
-
-In in the above database configuration, ``seed`` is the database name, this
+In the above database configuration, ``seed`` is the database name, this
 is arbitrary and any valid name can be used as long as the database exists.
 
 create the database within the postgres ``psql`` shell:
 
 .. code-block:: psql
 
-    postgres-user=# CREATE DATABASE seed;
+    CREATE DATABASE seed;
 
 or from the command line:
 
 .. code-block:: console
 
-    $ createdb seed
+    createdb seed
 
 
 create the database tables and migrations:
 
 .. code-block:: console
 
-    $ python manage.py syncdb
-    $ python manage.py migrate
+    python manage.py syncdb
+    python manage.py migrate
 
-.. note::
-
-    running migrations can be shortened into a one-liner ``./manage.py syncdb
-    --migrate``
 
 create a superuser to access the system
 
@@ -173,7 +149,7 @@ create a superuser to access the system
 
 
 
-cache and message broker
+Cache and Message Broker
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 The SEED project relies on `redis`_ for both cache and message brokering, and
@@ -184,7 +160,6 @@ settings.
 .. _ElastiCache: https://aws.amazon.com/elasticache/
 
 .. _redis: http://redis.io/
-
 
 .. code-block:: python
 
@@ -198,16 +173,8 @@ settings.
     }
     BROKER_URL = 'redis://seed-core-cache.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
 
-.. note::
 
-    The popular ``memcached`` can also be used as a cache back-end, but is not
-    supported and redis has a different cache key format, which could cause
-    breakage and isn't tested.
-    Likewise, ``rabbitmq`` or AWS ``SQS`` are alternative message brokers,
-    which could cause breakage and is not tested.
-
-
-running celery the background task worker
+Running Celery the Background Task Worker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 `Celery`_ is used for background tasks (saving data, matching, creating
@@ -216,13 +183,12 @@ project directory, ``celery`` can be started:
 
 .. code-block:: console
 
-    $ python manage.py celery worker -B -c 2 --loglevel=INFO -E --maxtasksperchild=1000
-
+    ./manage.py celery worker -B -c 2 --loglevel=INFO -E --maxtasksperchild=1000
 
 .. _Celery: http://www.celeryproject.org/
 
 
-running the development web server
+Running the Development Web Server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The Django dev server (not for production use) can be a quick and easy way to
@@ -234,10 +200,10 @@ options.
 
 .. code-block:: console
 
-    $ python manage.py runserver
+    $ ./manage.py runserver
 
 
-running a production web server
+Running a Production Web Server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Our recommended web server is uwsgi sitting behind nginx. The
