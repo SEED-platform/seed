@@ -55,8 +55,8 @@ In the case of an error, most endpoints will return this instead of the expected
 .. code-block::
 
     {
-        'status': 'error',
-        'message': 'explanation of the error here'
+        "status": "error",
+        "message": "explanation of the error here"
     }
  
 

@@ -8,6 +8,8 @@ An overview of the process is:
 
 1. Import - A file is uploaded and saved in the database
 2. Mapping - Mapping occurs on that file
+3. Matching / Merging
+4. Pairing
 
 Import
 ------
@@ -31,3 +33,13 @@ the Portfolio Manager mapping (see comments in the containing file, `mapper.py`)
 the return value for this method, which goes back to the UI to display the mapping screen.
 
 Otherwise the code does some auto-magical logic to try and infer the "correct" mapping.
+
+Matching
+--------
+
+.. todo:: document
+
+Pairing
+-------
+
+.. todo:: document
