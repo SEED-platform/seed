@@ -54,7 +54,7 @@ class TaxLotState(models.Model):
     # Add organization to the tax lot states
     organization = models.ForeignKey(Organization)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
-    merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN)
+    merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
 
