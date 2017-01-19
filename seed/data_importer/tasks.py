@@ -1233,6 +1233,8 @@ def _match_properties_and_taxlots(file_pk, user_pk):
 
     # Return a list of all the properties/tax lots based on the import file.
     all_unmatched_properties = import_file.find_unmatched_property_states()
+    unmatched_properties = []
+    unmatched_tax_lots = []
     if all_unmatched_properties:
 
         # Filter out the duplicates.  Do we actually want to delete them
@@ -1281,7 +1283,7 @@ def _match_properties_and_taxlots(file_pk, user_pk):
     # Mark all the unmatched objects as done with matching and mapping
     # There should be some kind of bulk-update/save thing we can do to
     # improve upon this.
-    for state in chain(all_unmatched_properties, all_unmatched_tax_lots):
+    for state in chain(unmatched_properties, unmatched_tax_lots):
         state.data_state = DATA_STATE_MATCHING
         state.save()
 
