@@ -24,7 +24,6 @@ from seed.models import (
     DATA_STATE_MATCHING,
     MERGE_STATE,
     MERGE_STATE_UNKNOWN,
-    ASSESSED_BS,
 )
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import split_model_fields, obj_to_dict
@@ -106,6 +105,9 @@ class TaxLotState(models.Model):
             )
 
             tlv = TaxLotView.objects.create(taxlot=taxlot, cycle=cycle, state=self)
+
+            # This is legacy but still needed here to have the tests pass.
+            self.data_state = DATA_STATE_MATCHING
 
             self.save()
 

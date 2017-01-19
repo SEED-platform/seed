@@ -24,7 +24,6 @@ from seed.models import (
     DATA_STATE_MATCHING,
     MERGE_STATE,
     MERGE_STATE_UNKNOWN,
-    ASSESSED_BS,
     TaxLotProperty
 )
 
@@ -64,7 +63,7 @@ class PropertyState(models.Model):
 
     organization = models.ForeignKey(Organization)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
-    merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN)
+    merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
 
     # Is this still being used during matching? Apparently so.
     confidence = models.FloatField(default=0, null=True, blank=True)
@@ -166,6 +165,9 @@ class PropertyState(models.Model):
             )
 
             pv = PropertyView.objects.create(property=prop, cycle=cycle, state=self)
+
+            # This is legacy but still needed here to have the tests pass.
+            self.data_state = DATA_STATE_MATCHING
 
             self.save()
 

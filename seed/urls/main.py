@@ -19,7 +19,6 @@ from seed.views.main import (
     get_columns,
     save_match,
     get_coparents,
-    get_PM_filter_by_counts,
     delete_duplicates_from_import_file,
     delete_file,
     remap_buildings,
@@ -73,11 +72,6 @@ urlpatterns = [
     url(r'^' + apiv1 + r'save_match/$', save_match, name='save_match'),
     url(r'^' + apiv1 + r'get_coparents/$', get_coparents,
         name='get_coparents'),
-    url(
-        r'^' + apiv1 + r'get_PM_filter_by_counts/$',
-        get_PM_filter_by_counts,
-        name='get_PM_filter_by_counts'
-    ),
     url(
         r'^' + apiv1 + r'delete_duplicates_from_import_file/$',
         delete_duplicates_from_import_file,

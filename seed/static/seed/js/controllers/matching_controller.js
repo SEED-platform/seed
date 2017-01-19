@@ -330,7 +330,7 @@ angular.module('BE.seed.controller.matching', [])
      *   buildings
      */
     $scope.update_number_matched = function() {
-        building_services.get_PM_filter_by_counts($scope.file_select.file.id)
+        building_services.get_matching_results($scope.file_select.file.id)
         .then(function (data){
             // resolve promise
             $scope.matched_buildings = data.matched;

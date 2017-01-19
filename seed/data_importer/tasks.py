@@ -71,9 +71,7 @@ from seed.models import (
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     DATA_STATE_DELETE,
-    MERGE_STATE_UNKNOWN,
     MERGE_STATE_MERGED,
-    MERGE_STATE_DUPLICATE,
     MERGE_STATE_NEW,
 )
 from seed.models import PropertyAuditLog
@@ -1283,9 +1281,8 @@ def _match_properties_and_taxlots(file_pk, user_pk):
     # Mark all the unmatched objects as done with matching and mapping
     # There should be some kind of bulk-update/save thing we can do to
     # improve upon this.
-    for state in chain(unmatched_properties, unmatched_tax_lots):
+    for state in chain(all_unmatched_properties, all_unmatched_tax_lots):
         state.data_state = DATA_STATE_MATCHING
-        # state.merge_state = MERGE_STATE_MERGED
         state.save()
 
     for state in map(lambda x: x.state, chain(merged_property_views, merged_taxlot_views)):
