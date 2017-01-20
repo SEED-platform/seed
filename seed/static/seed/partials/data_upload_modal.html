@@ -5,7 +5,7 @@
     <h4 class="modal-title" ng-switch-when="4">Upload your energy data.</h4>
     <h4 class="modal-title" ng-switch-when="5">Successful upload!</h4>
     <h4 class="modal-title" ng-switch-when="6">What type of file would you like to upload?</h4>
-    <h4 class="modal-title" ng-switch-when="7">Finding building matches.</h4>
+    <h4 class="modal-title" ng-switch-when="7">Finding inventory matches.</h4>
     <h4 class="modal-title" ng-switch-when="8">Matching Results for file: <strong>{$ dataset.filename $}</strong></h4>
     <h4 class="modal-title" ng-switch-when="9">Add files to {$ dataset.name $}.</h4>
     <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|titleCase $}</h4>
@@ -116,7 +116,7 @@
     <div class="data_upload_steps" ng-switch-when="6">
         <div class="row">
             <div class="form-group col-sm-12">
-                <button type="button" class="btn btn-primary" ng-click="goto_step(2)">Buildings list file</button>
+                <button type="button" class="btn btn-primary" ng-click="goto_step(2)">Inventory list file</button>
                 <button type="button" class="btn btn-primary" ng-click="goto_step(4)">Energy data file</button>
             </div>
         </div>
@@ -126,7 +126,7 @@
         <div class="row">
             <div class="form-group col-sm-12">
                 <div class="progress_bar_container">
-                    <div class="progress_bar_copy_top">Finding building matches for
+                    <div class="progress_bar_copy_top">Finding inventory matches for
                         <strong>{$ dataset.filename $}</strong></div>
                     <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
                     <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% Complete</div>
@@ -140,10 +140,9 @@
             <div class="alert alert-success alert-dismissable">
                 <button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
                 <ul>
-                    <li>Total records in the file: {$ (matched_buildings + unmatched_buildings + duplicate_buildings)|number:0 $}</li>
-                    <li>Duplicate records, not merged into existing Master buildings: {$ duplicate_buildings|number:0 $}</li>
-                    <li>Records that were matched to existing (or new) Master buildings: {$ matched_buildings|number:0 $}</li>
-                    <li>Records that were made into new Master buildings (not duplicates, not matches): {$ unmatched_buildings|number:0 $}</li>
+                    <li>Total records in the file: {$ (matched_properties + unmatched_properties + matched_taxlots + unmatched_taxlots)|number:0 $}</li>
+                    <li>Records that were matched to existing properties &amp; tax lots: {$ (matched_properties + matched_taxlots)|number:0 $}</li>
+                    <li>Records that were made into new properties &amp; tax lots (not matches): {$ (unmatched_properties + unmatched_taxlots)|number:0 $}</li>
                 </ul>
             </div>
         </div>
@@ -162,7 +161,7 @@
             <div class="alert alert-{$ step_10_style $} alert-dismissable">
                 <button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
                 <span ng-show="step_10_error_message">{$ step_10_error_message $}</span>
-                <span ng-hide="step_10_error_message">SEED could not locate any non-duplicate matches and found <strong>{$ duplicate_buildings|number:0 $} duplicates</strong>. Would you like to add another file?</span>
+                <span ng-hide="step_10_error_message">SEED could not locate any existing matches</strong>. Would you like to add another file?</span>
             </div>
             <div class="form-group col-sm-12"></div>
         </div>
@@ -172,7 +171,7 @@
         <div class="row">
             <div class="alert alert-warning alert-dismissable">
                 <button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
-                Did you review your mappings? It's a good idea to double check your mappings. Once SEED matches your buildings you cannot undo or edit these mappings.
+                Did you review your mappings? It's a good idea to double check your mappings. Once SEED matches your properties &amp; tax lots you cannot undo or edit these mappings.
             </div>
         </div>
     </div>
@@ -215,10 +214,10 @@
     <div ng-switch-when="7"></div>
     <div ng-switch-when="8">
         <div class="row text-center">
-            <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="view_my_buildings()">View my buildings</button>
+            <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="view_my_properties()">View my properties</button>
         </div>
         <div class="row text-center">
-            <button id="review-mapping" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_data_matching()">Review matches</button>
+            <!--<button id="review-mapping" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_data_matching()">Review matches</button>-->
         </div>
     </div>
     <div ng-switch-when="9">
@@ -231,7 +230,7 @@
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)">Add another file</button>
         </div>
         <div class="row text-center">
-            <button id="view-buildings" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_buildings()">View my buildings</button>
+            <button id="view-buildings" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()">View my properties</button>
         </div>
     </div>
     <div ng-switch-when="11">

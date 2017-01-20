@@ -116,7 +116,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $uibModalInstance.close();
         $state.go('matching', {importfile_id: $scope.dataset.import_file_id});
       };
-      $scope.view_my_buildings = function () {
+      $scope.view_my_properties = function () {
         $uibModalInstance.close();
         spinner_utility.show();
         $state.go('inventory_list', {inventory_type: 'properties'});
@@ -300,7 +300,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         matching_service.start_system_matching(
           import_file_id
         ).then(function (data) {
-          if (data.status === 'error' || data.status === 'warning') {
+          if (_.includes(['error', 'warning'], data.status)) {
             $scope.uploader.complete = true;
             $scope.uploader.in_progress = false;
             $scope.uploader.progress = 0;
@@ -309,40 +309,22 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.step_10_error_message = data.message;
             $scope.step_10_title = data.message;
           } else {
-            uploader_service.check_progress_loop(
-              data.progress_key,
-              0,
-              1.0,
-              function (data) {
-                building_services.get_matching_results($scope.dataset.import_file_id)
-                  .then(function (data) {
-                    // resolve promise
-                    $scope.matched_buildings = data.matched;
-                    $scope.unmatched_buildings = data.unmatched;
-                    $scope.duplicate_buildings = data.duplicates;
-                    $scope.uploader.complete = true;
-                    $scope.uploader.in_progress = false;
-                    $scope.uploader.progress = 0;
-                    if ($scope.duplicate_buildings > 0) {
-                      //alert("Duplicate buildings found, trying to delete");
-                      building_services.delete_duplicates_from_import_file($scope.dataset.import_file_id).then(function (data) {
-                        if ($scope.matched_buildings > 0) {
-                          $scope.step.number = 8;
-                        } else {
-                          $scope.step.number = 10;
-                          // building_services.get_total_number_of_buildings_for_user();
-                        }
-                      });
-                    }
-                    else {
-                      if ($scope.matched_buildings > 0) {
-                        $scope.step.number = 8;
-                      } else {
-                        $scope.step.number = 10;
-                        // building_services.get_total_number_of_buildings_for_user();
-                      }
-                    }
-                  });
+            uploader_service.check_progress_loop(data.progress_key, 0, 1, function (data) {
+                building_services.get_matching_results($scope.dataset.import_file_id).then(function (data) {
+                  $scope.matched_properties = data.properties.matched;
+                  $scope.unmatched_properties = data.properties.unmatched;
+                  $scope.matched_taxlots = data.tax_lots.matched;
+                  $scope.unmatched_taxlots = data.tax_lots.unmatched;
+                  $scope.uploader.complete = true;
+                  $scope.uploader.in_progress = false;
+                  $scope.uploader.progress = 0;
+                  if ($scope.matched_properties + $scope.matched_taxlots > 0) {
+                    $scope.step.number = 8;
+                  } else {
+                    $scope.step.number = 10;
+                    // building_services.get_total_number_of_buildings_for_user();
+                  }
+                });
               }, function (data) {
                 // Do nothing
               },
