@@ -449,18 +449,6 @@ class ColumnMapping(models.Model):
 
         :param organization: instance, Organization
         :return: dict
-
-        expected = {
-            u'PropertyState': {
-                u'Wookiee': (u'PropertyState', u'Dothraki'),
-                u'eui': (u'PropertyState', u'site_eui'),
-            },
-            u'TaxLotState': {
-                u'address': (u'TaxLotState', u'address'),
-                u'Ewok': (u'TaxLotState', u'Hattin'),
-            }
-        }
-
         """
 
         data, _ = ColumnMapping.get_column_mappings(organization)
@@ -485,4 +473,16 @@ class ColumnMapping(models.Model):
         for k, v in data.iteritems():
             container[v[0]][k] = v
 
+        # Container will be in the format:
+        #
+        # container = {
+        #     u'PropertyState': {
+        #         u'Wookiee': (u'PropertyState', u'Dothraki'),
+        #         u'eui': (u'PropertyState', u'site_eui'),
+        #     },
+        #     u'TaxLotState': {
+        #         u'address': (u'TaxLotState', u'address'),
+        #         u'Ewok': (u'TaxLotState', u'Hattin'),
+        #     }
+        # }
         return container
