@@ -1229,7 +1229,9 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
 def _match_properties_and_taxlots(file_pk, user_pk):
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
-    org = Organization.objects.filter(users=import_file.import_record.owner).first()
+
+    # Don't query the org table here, just get the organization from the import_record
+    org = import_file.import_record.super_organization
 
     # Return a list of all the properties/tax lots based on the import file.
     all_unmatched_properties = import_file.find_unmatched_property_states()
