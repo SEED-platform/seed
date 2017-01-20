@@ -1421,9 +1421,7 @@ def query_property_matches(properties, pm_id, custom_id):
         # Return an empty QuerySet if we don't have any params.
         return properties.none()
 
-    matches = properties.filter(reduce(operator.or_, params))
-
-    return matches
+    return properties.filter(reduce(operator.or_, params))
 
 
 # TODO: Move this should be on the PropertyState (or property) class
