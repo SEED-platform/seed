@@ -3,8 +3,7 @@ Modules
 =======
 
 .. toctree::
-    :maxdepth: 2
-
+    :maxdepth: 3
 
     modules/seed.audit_logs
     modules/seed.cleansing
@@ -18,6 +17,7 @@ Modules
     modules/seed.lib
     modules/seed.mappings
     modules/seed.managers
+    modules/seed.models
     modules/seed.public
     modules/seed
     modules/seed.serializers

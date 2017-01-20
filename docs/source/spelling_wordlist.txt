@@ -37,6 +37,7 @@ Chomsky
 chomsky
 chunked
 ci
+cmp
 collectstatic
 concat
 cond

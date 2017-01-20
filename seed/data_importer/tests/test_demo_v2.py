@@ -162,8 +162,8 @@ class TestDemoV2(DataMappingBaseTestCase):
             organization=self.org,
             import_file=self.import_file_property,
         )
-
-        self.assertEqual(len(ps), 0)
+        # There will be 4 properties that will still be in the DATA_STATE_MAPPING
+        self.assertEqual(len(ps), 4)
 
         # psv = PropertyView.objects.filter(state__organization=self.org)
         # self.assertEqual(len(psv), 12)

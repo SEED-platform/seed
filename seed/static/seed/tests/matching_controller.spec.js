@@ -20,7 +20,7 @@ describe('Controller: matching_controller', function () {
     matching_controller_scope = $rootScope.$new();
 
     mock_building_services = building_services;
-    spyOn(mock_building_services, 'get_PM_filter_by_counts')
+    spyOn(mock_building_services, 'get_matching_results')
       .andCallFake(function (import_file) {
           return $q.when({
             status: 'success',
@@ -180,7 +180,7 @@ describe('Controller: matching_controller', function () {
       expect(matching_controller_scope.number_matching_search).toEqual(1);
       expect(matching_controller_scope.number_returned).toEqual(1);
       expect(matching_controller_scope.num_pages).toEqual(1);
-      expect(mock_building_services.get_PM_filter_by_counts).toHaveBeenCalled();
+      expect(mock_building_services.get_matching_results).toHaveBeenCalled();
     });
   it('should match a building in the matching list', function () {
     // arrange
@@ -205,7 +205,7 @@ describe('Controller: matching_controller', function () {
 
     // assertions
     expect(mock_building_services.save_match).toHaveBeenCalledWith(b1.id, b2.id, true);
-    expect(mock_building_services.get_PM_filter_by_counts).toHaveBeenCalled();
+    expect(mock_building_services.get_matching_results).toHaveBeenCalled();
     expect(b1.children[0]).toEqual(3);
   });
   it('Should update the list of buildings correctly when \'Show Matched\' is selected', function () {

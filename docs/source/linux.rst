@@ -6,7 +6,7 @@ running on a bare-bones Linux server follows a similar setup, replacing the
 AWS services with their Linux package counterparts, namely: PostgreSQL and
 Redis.
 
-**seed** is a `Django project`_ and Django's documentation
+**SEED** is a `Django project`_ and Django's documentation
 is an excellent place to general understanding of this project's layout.
 
 .. _Django project: https://www.djangoproject.com/
@@ -18,17 +18,17 @@ Prerequisites
 
 Ubuntu server 14.04 or newer
 
-We need to install the base packages needed to run the app:
+Install the following base packages to run SEED:
 
 .. code-block:: console
 
-    $ sudo apt-get update
-    $ sudo apt-get upgrade
-    $ sudo apt-get install libpq-dev python-dev python-pip libatlas-base-dev \
+    sudo apt-get update
+    sudo apt-get upgrade
+    sudo apt-get install libpq-dev python-dev python-pip libatlas-base-dev \
     gfortran build-essential g++ npm libxml2-dev libxslt1-dev git mercurial \
     libssl-dev curl uwsgi-core uwsgi-plugin-python
-    $ sudo apt-get install redis-server
-    $ sudo apt-get install postgresql postgresql-contrib
+    sudo apt-get install redis-server
+    sudo apt-get install postgresql postgresql-contrib
 
 
 .. note:: postgresql ``>=9.3`` is required to support `JSON Type`_
@@ -158,13 +158,6 @@ settings.
     }
     BROKER_URL = 'redis://127.0.0.1:6379/1'
 
-.. note::
-
-    The popular ``memcached`` can also be used as a cache back-end, but is not
-    supported and redis has a different cache key format, which could cause
-    breakage and isn't tested.
-    Likewise, ``rabbitmq`` or AWS ``SQS`` are alternative message brokers,
-    which could cause breakage and is not tested.
 
 Creating the initial user
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -192,8 +185,7 @@ project directory, ``celery`` can be started:
 
 .. code-block:: console
 
-    $ python manage.py celery worker -B -c 2 --loglevel=INFO -E --maxtasksperchild=1000
-
+    celery -A seed worker -l INFO -c 2 -B --events --maxtasksperchild 1000
 
 .. _Celery: http://www.celeryproject.org/
 

@@ -314,7 +314,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               0,
               1.0,
               function (data) {
-                building_services.get_PM_filter_by_counts($scope.dataset.import_file_id)
+                building_services.get_matching_results($scope.dataset.import_file_id)
                   .then(function (data) {
                     // resolve promise
                     $scope.matched_buildings = data.matched;

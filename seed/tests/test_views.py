@@ -15,10 +15,9 @@ from django.test import TestCase
 from seed import decorators
 from seed.audit_logs.models import AuditLog, LOG
 from seed.data_importer.models import ImportFile, ImportRecord
-
-from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.factory import SEEDFactory
 from seed.landing.models import SEEDUser as User
+from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     ASSESSED_RAW,
@@ -54,7 +53,10 @@ from seed.views.main import (
     _parent_tree_coparents,
 )
 
-COLUMNS_TO_SEND = DEFAULT_CUSTOM_COLUMNS + ['postal_code', 'pm_parent_property_id', 'calculated_taxlot_ids', 'primary', 'extra_data_field', 'jurisdiction_tax_lot_id', 'is secret lair', 'paint color', 'number of secret gadgets']
+COLUMNS_TO_SEND = DEFAULT_CUSTOM_COLUMNS + ['postal_code', 'pm_parent_property_id',
+                                            'calculated_taxlot_ids', 'primary', 'extra_data_field',
+                                            'jurisdiction_tax_lot_id', 'is secret lair',
+                                            'paint color', 'number of secret gadgets']
 
 
 class MainViewTests(TestCase):
@@ -1605,9 +1607,9 @@ class ImportFileViewsTests(TestCase):
         self.assertFalse(
             ImportFile.objects.filter(pk=self.import_file.pk).exists())
 
-    def test_get_pm_filter_by_counts(self):
-        response = self.client.get(reverse("seed:get_PM_filter_by_counts"),
-                                   {'import_file_id': self.import_file.pk})
+    def test_get_matching_results(self):
+        response = self.client.get(
+            '/api/v2/import_files/' + str(self.import_file.pk) + '/matching_results/')
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_delete_duplicates_from_import_file(self):

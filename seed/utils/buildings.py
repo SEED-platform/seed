@@ -118,6 +118,7 @@ def get_columns(org_id, all_fields=False):
         'string': 'string',
         'decimal': 'number',
         'datetime': 'date',
+        'foreignkey': 'number'
     }
     field_types = {}
     for k, v in get_mappable_types().items():

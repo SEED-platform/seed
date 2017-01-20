@@ -119,11 +119,9 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         });
       };
 
-      building_factory.get_PM_filter_by_counts = function (import_file_id) {
-        return $http.get(window.BE.urls.get_PM_filter_by_counts_url, {
-          params: {
-            import_file_id: import_file_id
-          }
+      building_factory.get_matching_results = function (import_file_id) {
+        return $http.get("/api/v2/import_files/" + import_file_id + "/matching_results/", {
+          params: {}
         }).then(function (response) {
           return response.data;
         });

@@ -53,6 +53,18 @@ DATA_STATE = (
     (DATA_STATE_DELETE, 'Flagged for Deletion'),
 )
 
+# State of the merging for PropertyStates and TaxLotStates
+MERGE_STATE_UNKNOWN = 0
+MERGE_STATE_NEW = 1
+MERGE_STATE_MERGED = 2
+MERGE_STATE_DUPLICATE = 3
+MERGE_STATE = (
+    (MERGE_STATE_UNKNOWN, 'Unknown'),
+    (MERGE_STATE_NEW, 'Orphaned as result of merge'),
+    (MERGE_STATE_MERGED, 'Merged Record'),
+    (MERGE_STATE_DUPLICATE, 'Duplicate Record'),
+)
+
 SEARCH_CONFIDENCE_RANGES = {
     'low': 0.4,
     'medium': 0.75,
