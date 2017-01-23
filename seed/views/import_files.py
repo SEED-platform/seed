@@ -31,6 +31,9 @@ from seed.models import (
     PropertyState,
     TaxLotState,
     DATA_STATE_MAPPING,
+    DATA_STATE_MATCHING,
+    MERGE_STATE_MERGED,
+    MERGE_STATE_NEW,
     Cycle,
     Column,
 )
@@ -581,3 +584,63 @@ class ImportFileViewSet(viewsets.ViewSet):
             return JsonResponse({'status': 'success'})
         else:
             return JsonResponse({'status': 'error'})
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @detail_route(methods=['GET'])
+    def matching_results(self, request, pk=None):
+        """
+        Retrieves the number of matched and unmatched BuildingSnapshots for
+        a given ImportFile record.
+
+        :GET: Expects import_file_id corresponding to the ImportFile in question.
+
+        Returns::
+
+            {
+                'status': 'success',
+                'matched': Number of BuildingSnapshot objects that have matches,
+                'unmatched': Number of BuildingSnapshot objects with no matches.
+            }
+        """
+        import_file_id = pk
+
+        # property views associated with this imported file (including merges)
+        properties_new = PropertyState.objects.filter(
+            import_file__pk=import_file_id,
+            data_state=DATA_STATE_MATCHING,
+            merge_state=MERGE_STATE_NEW,
+        ).count()
+        properties_matched = PropertyState.objects.filter(
+            import_file__pk=import_file_id,
+            data_state=DATA_STATE_MATCHING,
+            merge_state=MERGE_STATE_MERGED,
+        ).count()
+
+        # properties
+        tax_lots_new = TaxLotState.objects.filter(
+            import_file__pk=import_file_id,
+            data_state=DATA_STATE_MATCHING,
+            merge_state=MERGE_STATE_NEW,
+        ).count()
+        tax_lots_matched = TaxLotState.objects.filter(
+            import_file__pk=import_file_id,
+            data_state=DATA_STATE_MATCHING,
+            merge_state=MERGE_STATE_MERGED,
+        ).count()
+
+        # taxlots
+
+        return {
+            'status': 'success',
+            'properties': {
+                'matched': properties_matched,
+                'unmatched': properties_new,
+            },
+            'tax_lots': {
+                'matched': tax_lots_matched,
+                'unmatched': tax_lots_new,
+            }
+
+        }

@@ -56,6 +56,9 @@
                 if (window.BE.username === "") {
                     window.BE.username = "{{ request.user.first_name }} {{ request.user.last_name}}";
                 }
+                if (window.BE.username === " ") {
+                    window.BE.username = "{{ request.user.email }}"
+                }
                 window.BE.initial_org_id = "{{ initial_org_id }}";
                 window.BE.initial_org_user_role = "{{ initial_org_user_role }}";
                 window.BE.initial_org_name = "{{ initial_org_name }}";
