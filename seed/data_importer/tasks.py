@@ -1168,7 +1168,7 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
         ParentAttrName = "property"
     elif isinstance(unmatched_states[0], TaxLotState):
         ObjectViewClass = TaxLotView
-        ParentAttrName = "tax_lot"
+        ParentAttrName = "taxlot"
     else:
         raise ValueError("Unknown class '{}' passed to merge_unmatched_into_views".format(
             type(unmatched_states[0])))
@@ -1208,10 +1208,12 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
                 else:
                     # Grab another view that has the same parent as
                     # the one we belong to.
-                    cousin_view = existing_view_states[key].values()[0].values()[0][0]
+                    cousin_view = existing_view_states[key].values()[0]
                     view_parent = getattr(cousin_view, ParentAttrName)
                     new_view = type(cousin_view)()
                     setattr(new_view, ParentAttrName, view_parent)
+                    new_view.cycle = current_match_cycle
+                    new_view.state = unmatched
                     new_view.save()
                     matched_views.append(new_view)
 
