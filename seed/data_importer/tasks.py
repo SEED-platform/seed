@@ -24,6 +24,7 @@ from itertools import chain
 from celery import chord
 from celery import shared_task
 from celery.utils.log import get_task_logger
+from django.db import IntegrityError
 from django.db.models import Q
 from unidecode import unidecode
 
@@ -1214,8 +1215,11 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
                     setattr(new_view, ParentAttrName, view_parent)
                     new_view.cycle = current_match_cycle
                     new_view.state = unmatched
-                    new_view.save()
-                    matched_views.append(new_view)
+                    try:
+                        new_view.save()
+                        matched_views.append(new_view)
+                    except IntegrityError:
+                        _log.warn("Unable to save the new view as it already exists in the db")
 
                 break
         else:
