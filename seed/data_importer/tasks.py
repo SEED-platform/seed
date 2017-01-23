@@ -25,6 +25,7 @@ from celery import chord
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError
+from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import Q
 from unidecode import unidecode
 
@@ -1475,11 +1476,16 @@ def save_state_match(state1, state2, confidence=None, user=None,
 
     AuditLogClass = PropertyAuditLog if isinstance(merged_state, PropertyState) else TaxLotAuditLog
 
-    assert AuditLogClass.objects.filter(state=state1).count() >= 1
-    assert AuditLogClass.objects.filter(state=state2).count() >= 1
+    try:
+        state_1_audit_log, _ = AuditLogClass.objects.get_or_create(state=state1, organization=state1.organization)
+    except MultipleObjectsReturned:
+        state_1_audit_log = AuditLogClass.objects.filter(state=state1).first()
 
-    state_1_audit_log = AuditLogClass.objects.filter(state=state1).first()
-    state_2_audit_log = AuditLogClass.objects.filter(state=state2).first()
+    try:
+        state_2_audit_log, _ = AuditLogClass.objects.get_or_create(state=state2, organization=state2.organization)
+    except MultipleObjectsReturned:
+        state_2_audit_log = AuditLogClass.objects.filter(state=state2).first()
+
 
     AuditLogClass.objects.create(organization=state1.organization,
                                  parent1=state_1_audit_log,
