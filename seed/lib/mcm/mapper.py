@@ -192,7 +192,7 @@ def expand_rows(row, delimited_fields, expand_row):
     :return: list
     """
 
-    _log.debug('expand_row is {}'.format(expand_row))
+    # _log.debug('expand_row is {}'.format(expand_row))
     # go through the delimited fields and clean up the rows
     copy_row = copy.deepcopy(row)
     for d in delimited_fields:

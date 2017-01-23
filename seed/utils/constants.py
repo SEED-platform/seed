@@ -16,9 +16,10 @@ EXCLUDE_FIELDS = [
     'duplicate',
     'extra_data',
     'id',
-    'import_file',
+    # 'import_file',  # NEED import_file to copy over when we are merging records, leave it in for now.
     'last_modified_by',
     'match_type',
+    'merge_state',
     'modified',
     'organization',
     'parents',

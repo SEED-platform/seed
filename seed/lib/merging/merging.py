@@ -16,6 +16,7 @@ from seed.utils.mapping import get_mappable_columns
 from seed.lib.mappings.mapping_data import MappingData
 from seed.models.deprecate import SYSTEM_MATCH
 
+# TODO: Fix name of this method / remove if possible.
 BuildingSnapshot_to_BuildingSnapshot = tuple([(k, k) for k in get_mappable_columns()])
 
 md = MappingData()
@@ -45,11 +46,18 @@ def get_attrs_with_mapping(data_set_buildings, mapping):
     """
 
     can_attrs = defaultdict(dict)
-    # mapping = seed_mappings.BuildingSnapshot_to_BuildingSnapshot
     for data_set_building in data_set_buildings:
         for data_set_attr, can_attr in mapping:
-            data_set_value = getattr(data_set_building, data_set_attr)
-            can_attrs[can_attr][data_set_building] = data_set_value
+            # Catch import_file because getattr will not return the ID of the object, rather, the
+            # foreign object is returned. If the import_file has been deleted (or at least the
+            # deleted flag is set), then this would crash because the query doesn't return an
+            # object.
+            if can_attr == 'import_file':
+                data_set_value = data_set_building.import_file_id
+                can_attrs['import_file_id'][data_set_building] = data_set_value
+            else:
+                data_set_value = getattr(data_set_building, data_set_attr)
+                can_attrs[can_attr][data_set_building] = data_set_value
 
     return can_attrs
 
@@ -61,7 +69,6 @@ def get_propertystate_attrs(data_set_buildings):
 
 
 def get_taxlotstate_attrs(data_set_buildings):
-    MappingData()
     mapping = TaxLotState_to_TaxLotState
     return get_attrs_with_mapping(data_set_buildings, mapping)
 
@@ -119,12 +126,11 @@ def merge_extra_data(b1, b2, default=None):
 def merge_state(merged_state, state1, state2, can_attrs, conf, default=None, match_type=None):
     """Set attributes on our Canonical model, saving differences.
 
-    :param merged_state: BuildingSnapshot model inst.
+    :param merged_state: PropertyState/TaxLotState model inst.
     :param state1: PropertyState/TaxLotState model inst. Left parent.
     :param state2: PropertyState/TaxLotState model inst. Right parent.
     :param can_attrs: dict of dicts, {'attr_name': {'dataset1': 'value'...}}.
     :param default: (optional), which dataset's value to default to.
-    :rtype default: BuildingSnapshot
     :return: inst(``merged_state``), updated.
 
     """
@@ -174,7 +180,6 @@ def merge_state(merged_state, state1, state2, can_attrs, conf, default=None, mat
             # setattr(merged_state, '{0}_source'.format(attr), attr_source)
 
     # TODO - deprecate extra_data_sources
-    # pdb.set_trace()
     merged_extra_data, merged_extra_data_sources = merge_extra_data(state1, state2, default=default)
 
     merged_state.extra_data = merged_extra_data

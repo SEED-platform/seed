@@ -28,7 +28,6 @@ angular.module('BE.seed.controller.admin', [])
       };
       $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
 
-
       var update_alert = function (is_ok, message) {
         $scope.alert.show = true;
         $scope.alert.css = is_ok ? $scope.alert.bootstrap_class.ok : $scope.alert.bootstrap_class.error;

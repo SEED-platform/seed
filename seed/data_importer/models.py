@@ -1072,7 +1072,6 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
         :rtype: list of tuples, field values specified in BS_VALUES_LIST.
 
-        NB: This does not return a queryset!
         NJA: This function is a straight copy/update to find_unmatched_property_states
         """
 
@@ -1082,24 +1081,19 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
             DATA_STATE_MAPPING
         )
 
-        assert kls in [PropertyState, TaxLotState], "Must be one of our State objects!"
+        assert kls in [PropertyState, TaxLotState], \
+            "Must be one of our State objects [PropertyState, TaxLotState]!"
 
         return kls.objects.filter(
-            # TODO: I would really like to remove this source_type field if at all possible
-            # source_type__in=[COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW],
             data_state__in=[DATA_STATE_MAPPING],
             import_file=self.id,
         )
-
-        return
 
     def find_unmatched_property_states(self):
         """Get unmatched property states' id info from an import file.
 
         # TODO - Fix Comment
         :rtype: list of tuples, field values specified in BS_VALUES_LIST.
-
-        NB: This does not return a queryset!
 
         """
 

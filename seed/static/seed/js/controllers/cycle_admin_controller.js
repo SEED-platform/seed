@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.cycle_admin', [])
             Notification.primary(msg);
             initialize_new_cycle();
             form.$setPristine();
-            cycle_service.get_cycles().then(processCycles);
+            cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
           }, function (message) {
             $log.error('Error creating new cycle.', message);
           }
@@ -78,7 +78,7 @@ angular.module('BE.seed.controller.cycle_admin', [])
         cycle_service.update_cycle_for_org(cycle, $scope.org.id).then(function (data) {
           var msg = 'Cycle updated.';
           Notification.primary(msg);
-          cycle_service.get_cycles().then(processCycles);
+          cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
         }, function (message) {
           $log.error('Error saving cycle.', message);
         });
@@ -88,7 +88,7 @@ angular.module('BE.seed.controller.cycle_admin', [])
         cycle_service.delete_cycle_for_org(cycle, $scope.org.id).then(function (data) {
           var msg = 'Cycle deleted.';
           Notification.primary(msg);
-          cycle_service.get_cycles().then(processCycles);
+          cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
         }, function (message) {
           $log.error('Error deleting cycle.', message);
         });

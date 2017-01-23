@@ -41,7 +41,7 @@ from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
-    BuildingSnapshot,
+    BuildingSnapshot,  # TO REMOVE
     CanonicalBuilding,
     Column,
     ProjectBuilding,
@@ -403,7 +403,7 @@ def export_buildings_download(request):
         }
 
 
-# TO REMOVE
+# TODO: TO REMOVE
 @ajax_request
 @login_required
 def get_total_number_of_buildings_for_user(request):
@@ -787,65 +787,6 @@ def save_match(request):
 #     return resp
 
 
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def get_match_tree(request):
-    """returns the BuildingSnapshot tree
-
-    :GET: Expects organization_id and building_id in the query string
-
-    Returns::
-
-        {
-            'status': 'success',
-            'match_tree': [ // array of all the members of the tree
-                {
-                    "id": 333,
-                    "coparent": 223,
-                    "child": 443,
-                    "parents": [],
-                    "canonical_building_id": 1123
-                },
-                {
-                    "id": 223,
-                    "coparent": 333,
-                    "child": 443,
-                    "parents": [],
-                    "canonical_building_id": 1124
-                },
-                {
-                    "id": 443,
-                    "coparent": null,
-                    "child": 9933,
-                    "parents": [333, 223],
-                    "canonical_building_id": 1123
-                },
-                {
-                    "id": 9933,
-                    "coparent": null,
-                    "child": null,
-                    "parents": [443],
-                    "canonical_building_id": 1123
-                },
-                ...
-            ]
-        }
-    """
-    building_id = request.GET.get('building_id', '')
-    bs = BuildingSnapshot.objects.get(pk=building_id)
-    # since our tree has the structure of two parents and one child, we can go
-    # to the tip and look up, otherwise it's hard to keep track of the
-    # co-parent trees of the children.
-    tree = bs.tip.parent_tree + [bs.tip]
-    tree = map(lambda b: b.to_dict(), tree)
-    return {
-        'status': 'success',
-        'match_tree': tree,
-    }
-
-
 def _parent_tree_coparents(snapshot):
     """
     Takes a BuildingSnapshot inst. Climbs the snapshot tree upward and
@@ -986,50 +927,6 @@ def get_coparents(request):
     }
 
     return response
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def get_PM_filter_by_counts(request):
-    """
-    Retrieves the number of matched and unmatched BuildingSnapshots for
-    a given ImportFile record.
-
-    :GET: Expects import_file_id corresponding to the ImportFile in question.
-
-    Returns::
-
-        {
-            'status': 'success',
-            'matched': Number of BuildingSnapshot objects that have matches,
-            'unmatched': Number of BuildingSnapshot objects with no matches.
-        }
-    """
-    import_file_id = request.GET.get('import_file_id', '')
-
-    matched = BuildingSnapshot.objects.filter(
-        import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        children__isnull=False
-    ).count()
-    unmatched = BuildingSnapshot.objects.filter(
-        import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        children__isnull=True,
-        duplicate__isnull=True
-    ).count()
-    duplicates = BuildingSnapshot.objects.filter(
-        import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        duplicate__isnull=False
-    ).count()
-    return {
-        'status': 'success',
-        'matched': matched,
-        'unmatched': unmatched,
-        'duplicates': duplicates,
-    }
 
 
 @api_endpoint
