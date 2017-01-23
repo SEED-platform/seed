@@ -46,9 +46,12 @@ class InventoryFilterBackend(filters.BaseFilterBackend):
         if request.query_params.get('select_all_checkbox', 'false') == 'true':
             pass
         elif 'selected' in request.query_params:
-            return queryset.filter(
-                id__in=request.query_params.getlist('selected'),
-            )
+            if 'selected' in request.data:
+                return queryset.filter(
+                    id__in=request.data['selected'],
+                )
+            else:
+                return queryset
         return queryset
 
 

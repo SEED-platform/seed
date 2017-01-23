@@ -80,7 +80,7 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
     };
 
     cycle_factory.update_cycle_for_org = function (cycle, org_id) {
-      return $http.put(window.BE.urls.update_cycle, cycle, {
+      return $http.put('/api/v2/cycles/' + cycle.id + '/', cycle, {
         params: {
           organization_id: org_id
         }
@@ -94,7 +94,7 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
     };
 
     cycle_factory.delete_cycle_for_org = function (cycle, org_id) {
-      return $http.delete(window.BE.urls.delete_cycle, {
+      return $http.delete('/api/v2/cycles/' + cycle.id + '/', {
         data: cycle,
         params: {
           organization_id: org_id

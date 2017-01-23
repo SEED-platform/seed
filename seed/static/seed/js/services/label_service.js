@@ -62,14 +62,15 @@ angular.module('BE.seed.service.label',
 
     function get_labels_for_org(org_id, selected, search_params) {
       var searchArgs = _.assignIn({
-        selected: selected,
         organization_id: org_id
       }, search_params);
 
       // If no inventory_type specified use 'property' just to get the list of all labels
       searchArgs.inventory_type = (searchArgs.inventory_type == 'taxlots') ? 'taxlot' : 'property';
 
-      return $http.get('/api/v2/labels/', {
+      return $http.post('/api/v2/labels/filter/', {
+        selected: selected
+      }, {
         params: searchArgs
       }).then(function (response) {
         return _.map(response.data, update_label_w_local_props);

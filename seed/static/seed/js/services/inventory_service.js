@@ -22,8 +22,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       var params = {
         organization_id: user_service.get_organization().id,
         page: page,
-        per_page: per_page || 999999999,
-        columns: columns
+        per_page: per_page || 999999999
       };
 
       return cycle_service.get_cycles().then(function (cycles) {
@@ -39,7 +38,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         spinner_utility.show();
 
-        return $http.get('/api/v2/properties/', {
+        return $http.post('/api/v2/properties/filter/', {
+          columns: columns
+        }, {
           params: params
         }).then(function (response) {
           return response.data;
@@ -229,8 +230,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       var params = {
         organization_id: user_service.get_organization().id,
         page: page,
-        per_page: per_page || 999999999,
-        columns: columns
+        per_page: per_page || 999999999
       };
 
       return cycle_service.get_cycles().then(function (cycles) {
@@ -245,7 +245,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
 
         spinner_utility.show();
-        return $http.get('/api/v2/taxlots/', {
+        return $http.post('/api/v2/taxlots/filter/', {
+          columns: columns
+        }, {
           params: params
         }).then(function (response) {
           return response.data;

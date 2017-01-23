@@ -179,13 +179,15 @@ class ImportFileViewSet(viewsets.ViewSet):
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         '''
         import_file.cached_second_to_fifth_row is a field that contains the first
-        4 lines of data from the file, split on newlines, delimited by
+        5 lines of data from the file, split on newlines, delimited by
         ROW_DELIMITER. This becomes an issue when fields have newlines in them,
         so the following is to handle newlines in the fields.
+        In the case of only one data column there will be no ROW_DELIMITER.
         '''
         lines = []
+        number_of_columns = len(import_file.cached_first_row.split(ROW_DELIMITER))
         for l in import_file.cached_second_to_fifth_row.splitlines():
-            if ROW_DELIMITER in l:
+            if ROW_DELIMITER in l or number_of_columns == 1:
                 lines.append(l)
             else:
                 # Line caused by newline in data, concat it to previous line.

@@ -14,7 +14,7 @@ angular.module('BE.seed.controller.cycle_admin', [])
     'cycles_payload',
     'organization_payload',
     'auth_payload',
-    function ($scope, $log, urls, simple_modal_service, notification, cycle_service, cycles_payload, organization_payload, auth_payload) {
+    function ($scope, $log, urls, simple_modal_service, Notification, cycle_service, cycles_payload, organization_payload, auth_payload) {
 
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
@@ -38,11 +38,11 @@ angular.module('BE.seed.controller.cycle_admin', [])
           return;
         }
         cycle_service.create_cycle_for_org($scope.new_cycle, $scope.org.id).then(function (result) {
-            processCycles(result);
             var msg = 'Created new Cycle ' + getTruncatedName($scope.new_cycle.name);
-            notification.primary(msg);
+            Notification.primary(msg);
             initialize_new_cycle();
             form.$setPristine();
+            cycle_service.get_cycles().then(processCycles);
           }, function (message) {
             $log.error('Error creating new cycle.', message);
           }
@@ -77,8 +77,8 @@ angular.module('BE.seed.controller.cycle_admin', [])
         angular.extend(cycle, {id: id});
         cycle_service.update_cycle_for_org(cycle, $scope.org.id).then(function (data) {
           var msg = 'Cycle updated.';
-          notification.primary(msg);
-          processCycles(data);
+          Notification.primary(msg);
+          cycle_service.get_cycles().then(processCycles);
         }, function (message) {
           $log.error('Error saving cycle.', message);
         });
@@ -87,8 +87,8 @@ angular.module('BE.seed.controller.cycle_admin', [])
       $scope.deleteCycle = function (cycle) {
         cycle_service.delete_cycle_for_org(cycle, $scope.org.id).then(function (data) {
           var msg = 'Cycle deleted.';
-          notification.primary(msg);
-          processCycles(data);
+          Notification.primary(msg);
+          cycle_service.get_cycles().then(processCycles);
         }, function (message) {
           $log.error('Error deleting cycle.', message);
         });
