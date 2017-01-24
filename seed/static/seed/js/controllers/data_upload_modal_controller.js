@@ -189,9 +189,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         // $apply() or $digest() needed maybe because of this:
         // https://github.com/angular-ui/bootstrap/issues/1798
         // otherwise alert doesn't show unless modal is interacted with
-        // if (!$scope.$$phase) {
-        //   $scope.$apply();
-        // }
+        if (!$scope.$$phase) {
+          $scope.$apply();
+        }
       };
 
       /**

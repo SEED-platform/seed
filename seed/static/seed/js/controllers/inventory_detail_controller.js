@@ -22,7 +22,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id,
-        related: $scope.inventory_type !== 'properties' ? inventory_payload.taxlots : inventory_payload.properties
+        related: $scope.inventory_type == 'properties' ? inventory_payload.taxlots : inventory_payload.properties
       };
       $scope.cycle = inventory_payload.cycle;
       $scope.labels = _.filter(labels_payload, function (label) {
