@@ -159,7 +159,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        */
       $scope.uploaderfunc = function (event_message, file, progress) {
         if (event_message === 'invalid_extension') {
-          console.log('got here!')
           $scope.uploader.invalid_extension_alert = true;
         }
         if (event_message === 'upload_submitted') {

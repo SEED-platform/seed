@@ -94,63 +94,63 @@ describe('controller: inventory_detail_controller', function(){
             },
             created: 'at some point'
         };
-        var fake_imported_buildings = [
-            {
-                id: 2,
-                pk: 2,
-                gross_floor_area: 123456,
-                gross_floor_area_source: null,
-                city: 'Washington, DC',
-                city_source: null,
-                extra_data: {
-                    'some other key': 123,
-                    'some other key that is not in a child': 333,
-                    'some floor area': 444
-                },
-                extra_data_sources: {
-                    'some other key': null,
-                    'some other key that is not in a child': 111,
-                    'some floor area': 444
-                },
-                created: 'test'
-            },
-            {
-                id: 3,
-                pk: 3,
-                gross_floor_area: 2111111,
-                gross_floor_area_source: null,
-                city: 'Washington',
-                city_source: null,
-                tax_lot_id: '11/22',
-                tax_lot_id_source: null,
-                extra_data: {
-                    'make it four': 4
-                },
-                extra_data_sources: {
-                    'make it four': null
-                }
-            }, {
-                id: 4,
-                pk: 4,
-                gross_floor_area: 2111111,
-                gross_floor_area_source: null,
-                city: 'Washington',
-                city_source: null,
-                tax_lot_id: '11/22',
-                tax_lot_id_source: null,
-                extra_data: {
-                    'make it four': 5
-                },
-                extra_data_sources: {
-                    'make it four': null
-                }
-            }
-        ];
+        // var fake_imported_buildings = [
+        //     {
+        //         id: 2,
+        //         pk: 2,
+        //         gross_floor_area: 123456,
+        //         gross_floor_area_source: null,
+        //         city: 'Washington, DC',
+        //         city_source: null,
+        //         extra_data: {
+        //             'some other key': 123,
+        //             'some other key that is not in a child': 333,
+        //             'some floor area': 444
+        //         },
+        //         extra_data_sources: {
+        //             'some other key': null,
+        //             'some other key that is not in a child': 111,
+        //             'some floor area': 444
+        //         },
+        //         created: 'test'
+        //     },
+        //     {
+        //         id: 3,
+        //         pk: 3,
+        //         gross_floor_area: 2111111,
+        //         gross_floor_area_source: null,
+        //         city: 'Washington',
+        //         city_source: null,
+        //         tax_lot_id: '11/22',
+        //         tax_lot_id_source: null,
+        //         extra_data: {
+        //             'make it four': 4
+        //         },
+        //         extra_data_sources: {
+        //             'make it four': null
+        //         }
+        //     }, {
+        //         id: 4,
+        //         pk: 4,
+        //         gross_floor_area: 2111111,
+        //         gross_floor_area_source: null,
+        //         city: 'Washington',
+        //         city_source: null,
+        //         tax_lot_id: '11/22',
+        //         tax_lot_id_source: null,
+        //         extra_data: {
+        //             'make it four': 5
+        //         },
+        //         extra_data_sources: {
+        //             'make it four': null
+        //         }
+        //     }
+        // ];
         var fake_payload = {
             status: 'success',
             // properties: fake_building,
             state: fake_building,
-            imported_buildings: fake_imported_buildings,
+            // imported_buildings: fake_imported_buildings,
             projects: [],
             cycle: {
                 id: 2017
@@ -299,25 +299,6 @@ describe('controller: inventory_detail_controller', function(){
           .toEqual(true);
     });
 
-    it('should display all the data within all the buildings', function() {
-        // arrange
-        create_inventory_detail_controller();
-        var keys;
-
-        // act
-        inventory_detail_controller_scope.$digest();
-
-        // assertions
-        var edc = inventory_detail_controller_scope.columns;
-
-        // should not duplicate keys
-        expect(edc.length).toEqual(8);
-        keys = edc.map(function ( d ) {
-            return d.key;
-        });
-        expect(keys.indexOf('make it four')).toEqual(4);
-    });
-
     it('should display Floor Areas with number', function() {
         // arrange
         create_inventory_detail_controller();
@@ -334,6 +315,26 @@ describe('controller: inventory_detail_controller', function(){
 
 
     });
+
+    // Test doesn't make sense anymore:
+    // it('should display all the data within all the buildings', function() {
+    //     // arrange
+    //     create_inventory_detail_controller();
+    //     var keys;
+
+    //     // act
+    //     inventory_detail_controller_scope.$digest();
+
+    //     // assertions
+    //     var edc = inventory_detail_controller_scope.columns;
+
+    //     // should not duplicate keys
+    //     expect(edc.length).toEqual(8);
+    //     keys = edc.map(function ( d ) {
+    //         return d.key;
+    //     });
+    //     expect(keys.indexOf('make it four')).toEqual(4);
+    // });
 
     // I don't think the idea of active project is still used....
     // it('should highlight the active project', function() {

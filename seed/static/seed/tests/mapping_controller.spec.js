@@ -88,11 +88,11 @@ describe('controller: mapping_controller', function(){
             status: 'success',
             suggested_column_mappings: {
                 // key(django model attribute): [csv_header1, ... csv_header3]
-                'property id': ['pm_property_id', 89],
-                'lot number': ['tax_lot_id', 54]
+                'property id': ['', 'pm_property_id', 89],
+                'lot number': ['', 'tax_lot_id', 54]
             },
-            building_columns: mock_be_building_columns,
-            building_column_types: mock_be_building_types
+            columns: mock_be_building_columns,
+            column_names: mock_be_building_columns
         };
 
         var mock_raw_column_names = [
@@ -135,6 +135,8 @@ describe('controller: mapping_controller', function(){
             import_file_payload: fake_import_file_payload,
             suggested_mappings_payload: mock_mapping_suggestions_payload,
             raw_columns_payload: raw_columns_payload,
+            property_columns: mock_raw_column_names,
+            taxlot_columns: mock_raw_column_names,
             first_five_rows_payload: first_five_rows_payload,
             all_columns: {fields: []},
             building_services: mock_building_services,
@@ -157,7 +159,7 @@ describe('controller: mapping_controller', function(){
         expect(mapping_controller_scope.import_file.dataset.name).toBe('DC 2013 data');
     });
 
-    it('should show suggested mappings and confidence', function() {
+    it('should show suggested mappings', function() {
         // arrange
         create_mapping_controller();
 
@@ -166,6 +168,7 @@ describe('controller: mapping_controller', function(){
 
         // assertions
         var raw_columns = mapping_controller_scope.raw_columns;
+        console.log('raw: ', raw_columns)
         var first_column = raw_columns[0];
 
         expect(first_column.confidence).toBe(89);
