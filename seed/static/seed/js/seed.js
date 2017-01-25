@@ -736,32 +736,60 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           //   return dataset_service.get_import_file(importfile_id);
           // }],
           propertyInventory: ['inventory_service', function (inventory_service) {
-            var myColumns = [
-              { 'displayName': 'Address Line 1 (Property)', 'name':'address_line_1','type':'numberStr', 'related':false},
-              { 'displayName': 'PM Property ID', 'name':'pm_property_id','type':'number', 'related':false},
-              { 'displayName': 'Jurisdiction Tax Lot ID', 'name':'jurisdiction_tax_lot_id','type':'numberStr', 'related':false},
-              { 'displayName': 'Custom ID', 'name':'custom_id_1','type':'numberStr', 'related':false}]
+            var myColumns = [{
+              'displayName': 'Address Line 1 (Property)',
+              'name': 'address_line_1',
+              'type': 'numberStr',
+              'related': false
+            }, {
+              'displayName': 'PM Property ID',
+              'name': 'pm_property_id',
+              'type': 'number',
+              'related': false
+            }, {
+              'displayName': 'Jurisdiction Tax Lot ID',
+              'name': 'jurisdiction_tax_lot_id',
+              'type': 'numberStr',
+              'related': false
+            }, {
+              'displayName': 'Custom ID',
+              'name': 'custom_id_1',
+              'type': 'numberStr',
+              'related': false
+            }];
             var visibleColumns = _.map(myColumns, 'name');
             // console.log('before: ', myColumns);
             return inventory_service.get_properties(1, undefined, undefined, visibleColumns).then(function (inv) {
-            // return inventory_service.get_properties(1).then(function (inv) {
-              return  _.extend({'columns': myColumns}, inv);
+              // return inventory_service.get_properties(1).then(function (inv) {
+              return _.extend({'columns': myColumns}, inv);
             });
           }],
           taxlotInventory: ['inventory_service', function (inventory_service) {
-            var myColumns = [
-              { 'displayName': 'Address Line 1 (Tax Lot)', 'name':'address_line_1','type':'numberStr', 'related':false},
-              // { 'displayName': 'Primary Tax Lot ID', 'name':'primary_tax_lot_id','type':'number', 'related':false},
-              { 'displayName': 'Jurisdiction Tax Lot ID', 'name':'jurisdiction_tax_lot_id','type':'numberStr', 'related':false}]
+            var myColumns = [{
+              'displayName': 'Address Line 1 (Tax Lot)',
+              'name': 'address_line_1',
+              'type': 'numberStr',
+              'related': false
+            }, /*{
+             'displayName': 'Primary Tax Lot ID',
+             'name': 'primary_tax_lot_id',
+             'type': 'number',
+             'related': false
+             },*/ {
+              'displayName': 'Jurisdiction Tax Lot ID',
+              'name': 'jurisdiction_tax_lot_id',
+              'type': 'numberStr',
+              'related': false
+            }];
             var visibleColumns = _.map(myColumns, 'name');
             // console.log('before: ', myColumns);
             return inventory_service.get_taxlots(1, undefined, undefined, visibleColumns).then(function (inv) {
-              return  _.extend({'columns': myColumns}, inv);
+              return _.extend({'columns': myColumns}, inv);
             });
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
-          }],
+          }]
         }
       })
       .state({
@@ -794,9 +822,23 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/dataset_detail.html',
         controller: 'dataset_detail_controller',
         resolve: {
-          dataset_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
-            var dataset_id = $stateParams.dataset_id;
-            return dataset_service.get_dataset(dataset_id);
+          dataset_payload: ['dataset_service', '$stateParams', '$state', '$q', 'spinner_utility', function (dataset_service, $stateParams, $state, $q, spinner_utility) {
+            return dataset_service.get_dataset($stateParams.dataset_id)
+              .catch(function (response) {
+                if (response.status == 400 && response.data.message == 'Organization ID mismatch between dataset and organization') {
+                  // Org id mismatch, likely due to switching organizations while viewing a dataset_detail page
+                  _.delay(function () {
+                    $state.go('dataset_list');
+                    spinner_utility.hide();
+                  });
+                  // Resolve with empty response to avoid error alert
+                  return $q.resolve({
+                    status: 'success',
+                    dataset: {}
+                  });
+                }
+                return $q.reject(response);
+              });
           }],
           auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
             var organization_id = user_service.get_organization().id;
