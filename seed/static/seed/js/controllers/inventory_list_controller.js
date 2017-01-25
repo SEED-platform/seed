@@ -44,9 +44,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.labels = labels;
       $scope.selected_labels = [];
 
-      // var localStorageKey = 'grid.' + $scope.inventory_type;
-
-      // $scope.columns = inventory_service.loadSettings(localStorageKey, columns);
+      var localStorageKey = 'grid.' + $scope.inventory_type;
 
       $scope.clear_labels = function () {
         $scope.selected_labels = [];
