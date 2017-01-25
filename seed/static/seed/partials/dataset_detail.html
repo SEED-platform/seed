@@ -25,6 +25,7 @@
                                 <th># of Buildings</th>
                                 <th>Data Mapping &amp; Validation</th>
                                 <th>Data Matching</th>
+                                <th>Data Pairing</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -37,6 +38,7 @@
                                 <td class="is_aligned_right">{$ f.num_rows || 0 $}</td>
                                 <td><a id="data-mapping-{$ $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="mapping({importfile_id: f.id})" ng-disabled="!f.num_rows">{$ f.number_of_mappings $} Data Mapping</a></td>
                                 <td><a id="data-matching-{$ $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="matching({importfile_id: f.id})" ng-disabled="!f.num_rows">{$ f.number_of_matchings $} Data Matching</a></td>
+                                <td><a id="data-pairing-{$ $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="pairing({importfile_id: f.id})" ng-disabled="!f.num_rows">{$ f.number_of_pairings $} Data Pairing</a></td>
                             </tr>
                         </tbody>
                     </table>

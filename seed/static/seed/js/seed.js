@@ -25,7 +25,8 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.router.stateHelper',
   'ui.sortable',
   'ui.tree',
-  'xeditable'
+  'xeditable',
+  angularDragula(angular)
 ]);
 angular.module('BE.seed.controllers', [
   'BE.seed.controller.about',
@@ -55,6 +56,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
   'BE.seed.controller.label_admin',
+  'BE.seed.controller.pairing',
   'BE.seed.controller.mapping',
   'BE.seed.controller.matching',
   'BE.seed.controller.matching_detail',
@@ -721,6 +723,45 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 return $q.reject(data.message);
               });
           }]
+        }
+      })
+      .state({
+        name: 'pairing',
+        url: '/data/pairing/{importfile_id:int}',
+        templateUrl: static_url + 'seed/partials/pairing.html',
+        controller: 'pairing_controller',
+        resolve: {
+          // import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+          //   var importfile_id = $stateParams.importfile_id;
+          //   return dataset_service.get_import_file(importfile_id);
+          // }],
+          propertyInventory: ['inventory_service', function (inventory_service) {
+            var myColumns = [
+              { 'displayName': 'Address Line 1 (Property)', 'name':'address_line_1','type':'numberStr', 'related':false},
+              { 'displayName': 'PM Property ID', 'name':'pm_property_id','type':'number', 'related':false},
+              { 'displayName': 'Jurisdiction Tax Lot ID', 'name':'jurisdiction_tax_lot_id','type':'numberStr', 'related':false},
+              { 'displayName': 'Custom ID', 'name':'custom_id_1','type':'numberStr', 'related':false}]
+            var visibleColumns = _.map(myColumns, 'name');
+            // console.log('before: ', myColumns);
+            return inventory_service.get_properties(1, undefined, undefined, visibleColumns).then(function (inv) {
+            // return inventory_service.get_properties(1).then(function (inv) {
+              return  _.extend({'columns': myColumns}, inv);
+            });
+          }],
+          taxlotInventory: ['inventory_service', function (inventory_service) {
+            var myColumns = [
+              { 'displayName': 'Address Line 1 (Tax Lot)', 'name':'address_line_1','type':'numberStr', 'related':false},
+              // { 'displayName': 'Primary Tax Lot ID', 'name':'primary_tax_lot_id','type':'number', 'related':false},
+              { 'displayName': 'Jurisdiction Tax Lot ID', 'name':'jurisdiction_tax_lot_id','type':'numberStr', 'related':false}]
+            var visibleColumns = _.map(myColumns, 'name');
+            // console.log('before: ', myColumns);
+            return inventory_service.get_taxlots(1, undefined, undefined, visibleColumns).then(function (inv) {
+              return  _.extend({'columns': myColumns}, inv);
+            });
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
         }
       })
       .state({

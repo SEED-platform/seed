@@ -2593,4 +2593,94 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
+// Pairing page:
+// Main container: initialize the flex, direction is row
+.pairing-data-row, .pairing-headers-row {
+  display: flex;           display: -webkit-flex;
+  flex-direction: row;     -webkit-flex-direction: row;
+  flex-grow: 0;            -webkit-flex-grow: 0;
+  flex-wrap: wrap;         -webkit-flex-wrap: wrap;
+  width: 100%;
 
+  border-bottom: 2px solid #e0e0e0;
+  border-collapse: collapse;
+  padding: 2px;
+  .is-paired-child {
+    width: 10%;  
+  }
+}
+
+// Mismatch row colors
+.pairing-data-row:nth-child(even) {
+  background-color: #fdfdfd;
+}
+.pairing-data-row:nth-child(odd) {
+  background-color: #f3f3f3;
+}
+
+// Child rows, indented
+.pairing-data-row-indent{
+  display: flex;           display: -webkit-flex;
+  flex-direction: row;     -webkit-flex-direction: row;
+  flex-grow: 0;            -webkit-flex-grow: 0;
+  flex-wrap: wrap;         -webkit-flex-wrap: wrap;
+  width: 100%;
+  padding-left: 40px;
+  padding-right: 15px;
+
+  border-collapse: collapse;
+  color: #A0A0A0;
+  .unpaired {
+    width: 100%;
+    color: lightskyblue;
+  }
+}
+
+.grab-pairing-left {
+  cursor: grab;
+}
+
+.unpair-child {
+  cursor: pointer;
+  color: #428bca;
+}
+
+.pairing-child {
+  width: 100%;
+  min-height: 15px;
+}
+
+.pairing-headers-row {
+  background-color: #E0E0E0;
+  border-bottom: 2px solid #A0A0A0;
+}
+
+.pairing-container {
+  border: 1px solid #A0A0A0;
+}
+
+.pairing-data-row-col, .pairing-headers {
+  width: 30%;
+}
+
+.pairing-rows {
+  height: 600px;
+  overflow-y: auto;
+}
+
+.pairing-list-controls-full {
+  margin-top: 15px;
+}
+
+.pairing-other-title {
+  margin-top: 40px;
+}
+
+// Text based cells: grow, truncate and show ellipsis when there is not enough space
+.pairing-cell {
+  flex-grow: 1;            -webkit-flex-grow: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-right: 20px;
+}
