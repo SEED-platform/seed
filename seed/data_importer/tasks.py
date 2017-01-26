@@ -1592,10 +1592,8 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     global taxlot_m2m_keygen
     global property_m2m_keygen
 
-    # @nathan.addy -- I set the identity_fields to [], but I don't think they are right.
-    # Can you fix these
-    taxlot_m2m_keygen = EquivalencePartitioner(tax_cmp_fmt, [])
-    property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt, [])
+    taxlot_m2m_keygen = EquivalencePartitioner(tax_cmp_fmt, ["jurisdiction_tax_lot_id"])
+    property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt, ["pm_property_id", "jurisdiction_property_id"])
 
     property_views = PropertyView.objects.filter(state__organization=org, cycle=cycle).values_list(
         *prop_comparison_field_names)
