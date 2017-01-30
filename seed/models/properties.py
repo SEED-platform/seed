@@ -383,3 +383,14 @@ class PropertyAuditLog(models.Model):
     record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True,
                                       blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True)
+
+    def get_import_states(self):
+        if self.import_filename is not None:
+            return [self.state]
+        elif self.parent1 is None and self.parent2 is None:
+            return []
+        else:
+            parent1_states = self.parent1.get_import_states()
+            parent2_states = self.parent2.get_import_states()
+
+            return parent1_states + parent2_states

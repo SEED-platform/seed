@@ -37,5 +37,14 @@ In prioritized order
 
 
 ## Example command
+\copy seed_buildingsnapshot_children TO '/home/ubuntu/prj/seed/seed/management/commands/tree_file.csv'  DELIMITER ',' CSV HEADER;
 \copy seed_buildingsnapshot_children TO '/Users/naddy/Source/LBL/seed/seed/management/commands/tree_file.csv' DELIMITER ',' CSV HEADER;
-\copy my_table to 'filename' csv header
+\copy my_table to 'filename' csv header;
+
+
+
+psql -U seeduser bluesky (w/ pw testing)
+
+
+## Other useful commands
+from nose.tools import set_trace;set_trace()

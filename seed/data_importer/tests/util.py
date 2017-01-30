@@ -120,7 +120,15 @@ PROPERTIES_MAPPING = [
         "to_table_name": u'PropertyState',
         "to_field": u'year_ending'
     }, {
-        "from_field": u'extra data 1',
+        "from_field": u'generation_date',
+        "to_table_name": u'PropertyState',
+        "to_field": u'generation_date'
+    }, {
+        "from_field": u'release_date',
+        "to_table_name": u'PropertyState',
+        "to_field": u'release_date'
+    }, {
+        "from_field": u'extra_data_1',
         "to_table_name": u'PropertyState',
         "to_field": u'data_007'
     }, {
