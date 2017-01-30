@@ -631,12 +631,22 @@ angular.module('BE.seed.controller.mapping', [])
         return false;
       };
 
-      $scope.disable_mapping_button = function () {
-        if ($scope.duplicates_present()){
-          angular.element('.mapping-button').prop('disabled', true);
-        } else {
-          angular.element('.mapping-button').prop('disabled', false);
+      /*
+       * check_fields: called by ng-disabled for "Map Your Data" button.  Checks for duplicates and for required fields.
+       */
+      $scope.check_fields = function () {
+        return $scope.duplicates_present() || !$scope.required_fields_present();
+      }
+
+      /*
+       * required_fields_present: check for presence of at least one field used by SEED to match records
+       */
+      $scope.required_fields_present = function () {
+        var required_fields = ['Jurisdiction Tax Lot ID', 'PM Property ID', 'Custom ID 1', 'Address Line 1'];
+        function gettext(x) {
+            return x.suggestion;
         }
+        return _.intersection(required_fields,_.map($scope.raw_columns,gettext)).length > 0
       };
 
       $scope.backToMapping = function () {
