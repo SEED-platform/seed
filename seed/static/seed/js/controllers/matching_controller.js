@@ -85,7 +85,7 @@ angular.module('BE.seed.controller.matching', [])
      */
     $scope.filter_search = function() {
         $scope.update_number_matched();
-        building_services.search_matching_buildings($scope.q, $scope.number_per_page, $scope.current_page,
+        building_services.search_buildings($scope.q, $scope.number_per_page, $scope.current_page,
             $scope.order_by, $scope.sort_reverse, $scope.filter_params, $scope.file_select.file.id).then(
             function(data) {
                 // resolve promise

@@ -37,7 +37,7 @@ describe('Controller: matching_controller', function () {
           });
         }
       );
-    spyOn(mock_building_services, 'search_matching_buildings')
+    spyOn(mock_building_services, 'search_buildings')
       .andCallFake(function (q, number_per_page, current_page, order_by, sort_reverse,
                              filter_params, file_id) {
         var bldgs;

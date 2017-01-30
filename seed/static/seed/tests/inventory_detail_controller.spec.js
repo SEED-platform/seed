@@ -1,6 +1,8 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
+ 
+ // Replaces building detail controller, will test later with both property and taxlot data too
 describe('controller: inventory_detail_controller', function(){
     // globals set up and used in each test scenario
     var mockService, scope, controller, ngFilter, delete_called;
