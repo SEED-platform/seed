@@ -120,7 +120,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         var options = {};
         if (col.type == 'number') options.filter = inventory_service.numFilter();
         else options.filter = inventory_service.textFilter();
-        if (col.type == 'numberStr') options.sortingAlgorithm = naturalSort;
+        if (col.type == 'text' || col.type == 'numberStr') options.sortingAlgorithm = naturalSort;
         if (col.name == 'number_properties' && col.related) options.treeAggregationType = 'total';
         else if (col.related || col.extraData) options.treeAggregationType = 'uniqueList';
         return _.defaults(col, options, defaults);
@@ -199,7 +199,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           aggregations = _.pickBy(_.mapValues(aggregations, function (values, key) {
             var cleanedValues = _.uniq(_.without(values, undefined, null, ''));
             if (key == 'number_properties') return _.sum(cleanedValues) || null;
-            else return _.join(_.uniq(cleanedValues), '; ');
+            else return _.join(_.uniq(cleanedValues).sort(naturalSort), '; ');
           }), function (result) {
             return _.isNumber(result) || !_.isEmpty(result);
           });
