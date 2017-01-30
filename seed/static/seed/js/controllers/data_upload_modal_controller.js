@@ -66,6 +66,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *  newly created data set
        * file: the file being upload file.filename is the file's name
        */
+      $scope.organization_id = dataset.owner;
       $scope.dataset = {
         name: '',
         disabled: function () {
