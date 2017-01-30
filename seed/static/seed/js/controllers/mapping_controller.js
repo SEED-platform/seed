@@ -642,7 +642,7 @@ angular.module('BE.seed.controller.mapping', [])
        * required_fields_present: check for presence of at least one field used by SEED to match records
        */
       $scope.required_fields_present = function () {
-        var required_fields = ['Jurisdiction Tax Lot ID', 'PM Property ID', 'Custom ID 1', 'Address Line 1'];
+        var required_fields = ['Jurisdiction Tax Lot Id', 'Pm Property Id', 'Custom Id 1', 'Address Line 1'];
         function gettext(x) {
             return x.suggestion;
         }
