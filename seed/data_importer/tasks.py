@@ -25,7 +25,6 @@ from celery import chord
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError
-from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import Q
 from unidecode import unidecode
 
