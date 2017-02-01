@@ -59,13 +59,13 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
   'BE.seed.controller.label_admin',
-  'BE.seed.controller.pairing',
   'BE.seed.controller.mapping',
   'BE.seed.controller.matching',
   'BE.seed.controller.matching_detail',
   'BE.seed.controller.members',
   'BE.seed.controller.menu',
   'BE.seed.controller.new_member_modal',
+  'BE.seed.controller.pairing',
   'BE.seed.controller.profile',
   'BE.seed.controller.organization',
   'BE.seed.controller.organization_settings',
@@ -694,7 +694,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'matching',
-        url: '/data/matching/{importfile_id:int}',
+        url: '/data/matching/{importfile_id:int}/{inventory_type:properties|taxlots}',
         templateUrl: static_url + 'seed/partials/matching.html',
         controller: 'matching_controller',
         resolve: {
@@ -702,16 +702,18 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var importfile_id = $stateParams.importfile_id;
             return dataset_service.get_import_file(importfile_id);
           }],
-          buildings_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
+          inventory_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
-            return building_services.search_matching_buildings(
-              '', 10, 1, '', false, {}, importfile_id);
+            return inventory_service.search_matching_inventory('', 10, 1, '', false, {}, importfile_id);
           }],
           default_columns: ['user_service', function (user_service) {
             return user_service.get_default_columns();
           }],
           all_columns: ['building_services', function (building_services) {
             return building_services.get_columns();
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
           }],
           auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
             var organization_id = user_service.get_organization().id;

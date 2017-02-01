@@ -138,6 +138,8 @@ class ImportFileViewSet(viewsets.ViewSet):
             files.append({
                 'name': i.filename_only,
                 'uploaded_filename': tmp_uploaded_filename,
+                'mapping_done': i.mapping_done,
+                'cycle': i.cycle.id,
                 'id': i.pk
             })
 

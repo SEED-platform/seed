@@ -5,11 +5,8 @@
 
         </div>
         <div class="page_title">
-            <h1><i class="fa fa-sitemap"></i>
-                {$ datasets.length | number:0 $}
-                <ng-pluralize count="datasets.length"
-                              when="{'one': 'Data Set','other': 'Data Sets'}">
-                </ng-pluralize>
+            <h1><i class="fa fa-sitemap"></i> {$ datasets.length | number:0 $}
+                <ng-pluralize count="datasets.length" when="{'one': 'Data Set','other': 'Data Sets'}"></ng-pluralize>
             </h1>
         </div>
         <div class="right page_action_container">
@@ -35,22 +32,22 @@
                                 <a href="" class="delete_link" ng-click="confirm_delete(d)" ng-show="!d.edit_form_showing"><i class='fa fa-trash-o'></i></a>
                                 <a href="" class="replace_file_button edit_file_name" ng-click="edit_dataset_name(d)" ng-show="!d.edit_form_showing" style="margin-right: 8px;"><i class="fa fa-pencil"></i></a>
                             </span>
-                            <form class="row action edit_file_name form form-inline edit_import_meta_form"
-                                          role="form" action="" method="PUT" ng-submit=""
-                                          sd-enter="save_dataset_name(d)" ng-show="d.edit_form_showing">
+                            <form class="row action edit_file_name form form-inline edit_import_meta_form" role="form" action="" method="PUT" ng-submit="" sd-enter="save_dataset_name(d)" ng-show="d.edit_form_showing">
                                 <div class="form-group col-sm-8">
                                     <label class="sr-only" for="editDatasetName">Edit Name</label>
                                     <input class="form-control input-sm" id="editDatasetName" type="text" name="name" ng-model="d.name" style="width: 100%;">
                                 </div>
                                 <div class="form-group col-sm-4" style="text-align: right;">
                                     <button type="submit" class="cancel_button btn btn-sm" ng-click="cancel_edit_name(d)" value="Cancel">Cancel</button>
-                                    <button type="submit" class="submit_button btn btn-sm btn-primary"  ng-click="save_dataset_name(d)"  value="Save">Save</button>
+                                    <button type="submit" class="submit_button btn btn-sm btn-primary" ng-click="save_dataset_name(d)" value="Save">Save</button>
                                 </div>
                             </form>
                         </td>
                         <td ng-class="d.column_class('status')" class="status_change status is_aligned_right">{$ d.importfiles.length | number:0 $}</td>
                         <td ng-class="d.column_class('last_modified_seconds_ago')" class="last_change last_changed">{$ d.updated_at | fromNow $}</td>
-                        <td ng-class="d.column_class('last_modified_by')" class="last_change_user changed_by"> <span class="modified_by">{$d.last_modified_by$}</span></td>
+                        <td ng-class="d.column_class('last_modified_by')" class="last_change_user changed_by">
+                            <span class="modified_by">{$d.last_modified_by$}</span>
+                        </td>
 
                         <td ng-class="d.column_class('')" class="status_details percent_done">
                             <button type="button" class="btn btn-sm btn-primary" ng-click="open_data_upload_modal(d)">Add Data Files</button>

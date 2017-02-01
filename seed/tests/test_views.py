@@ -86,9 +86,9 @@ class MainViewTests(TestCase):
         b.save()
 
         payload = {
-            "export_name": "My Export",
-            "export_type": "csv",
-            "selected_buildings": [b.pk]
+            'export_name': 'My Export',
+            'export_type': 'csv',
+            'selected_buildings': [b.pk]
         }
         response = self.client.post(reverse('seed:export_buildings'),
                                     json.dumps(payload),
@@ -97,9 +97,9 @@ class MainViewTests(TestCase):
 
     def test_export_buildings_empty(self):
         payload = {
-            "export_name": "My Export",
-            "export_type": "csv",
-            "selected_buildings": []
+            'export_name': 'My Export',
+            'export_type': 'csv',
+            'selected_buildings': []
         }
         response = self.client.post(reverse('seed:export_buildings'),
                                     json.dumps(payload),
@@ -108,7 +108,7 @@ class MainViewTests(TestCase):
 
     def test_export_buildings_progress(self):
         payload = {
-            "export_id": "1234"
+            'export_id': '1234'
         }
         cache.set('export_buildings__1234',
                   {'progress': 85, 'total_buildings': 1, 'status': 'success'})
@@ -140,11 +140,11 @@ class DefaultColumnsViewTests(TestCase):
         self.client.login(**user_details)
 
     def test_get_default_columns_with_set_columns(self):
-        columns = ["source_facility_id", "test_column_0"]
+        columns = ['source_facility_id', 'test_column_0']
         self.user.default_custom_columns = columns
         self.user.save()
-        columns = ["source_facility_id", "test_column_0"]
-        url = reverse_lazy("seed:get_default_columns")
+        columns = ['source_facility_id', 'test_column_0']
+        url = reverse_lazy('seed:get_default_columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -153,7 +153,7 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(data['columns'], columns)
 
     def test_get_default_columns_initial_state(self):
-        url = reverse_lazy("seed:get_default_columns")
+        url = reverse_lazy('seed:get_default_columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -162,7 +162,7 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(data['columns'], DEFAULT_CUSTOM_COLUMNS)
 
     def test_set_default_columns(self):
-        url = reverse_lazy("seed:set_default_columns")
+        url = reverse_lazy('seed:set_default_columns')
         columns = ['s', 'c1', 'c2']
         post_data = {
             'columns': columns,
@@ -179,14 +179,14 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(200, response.status_code)
 
         # get the columns
-        url = reverse_lazy("seed:get_default_columns")
+        url = reverse_lazy('seed:get_default_columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
         self.assertEqual(data['columns'], columns)
 
         # get show_shared_buildings
-        url = reverse_lazy("apiv2:users-shared-buildings", args=[self.user.pk])
+        url = reverse_lazy('apiv2:users-shared-buildings', args=[self.user.pk])
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -194,7 +194,7 @@ class DefaultColumnsViewTests(TestCase):
 
         # set show_shared_buildings to False
         post_data['show_shared_buildings'] = False
-        url = reverse_lazy("seed:set_default_columns")
+        url = reverse_lazy('seed:set_default_columns')
         response = self.client.post(
             url,
             content_type='application/json',
@@ -205,14 +205,14 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(200, response.status_code)
 
         # get show_shared_buildings
-        url = reverse_lazy("apiv2:users-shared-buildings", args=[self.user.pk])
+        url = reverse_lazy('apiv2:users-shared-buildings', args=[self.user.pk])
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
         self.assertEqual(data['show_shared_buildings'], False)
 
     def test_get_columns(self):
-        url = reverse_lazy("seed:get_columns")
+        url = reverse_lazy('seed:get_columns')
 
         # test building list columns
         response = self.client.get(
@@ -240,7 +240,7 @@ class DefaultColumnsViewTests(TestCase):
             url,
             {
                 'organization_id': self.org.id,
-                'all_fields': "true"
+                'all_fields': 'true'
             }
         )
 
@@ -264,7 +264,7 @@ class SearchViewTests(TestCase):
         OrganizationUser.objects.create(user=self.user, organization=self.org)
         self.client.login(**user_details)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_active_canonicalbuildings(self):
         """
         tests the search_buildings method used throughout the app for only
@@ -295,7 +295,7 @@ class SearchViewTests(TestCase):
             b = SEEDFactory.building_snapshot()
             b.super_organization = self.org
             b.save()
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {},
             'number_per_page': NUMBER_PER_PAGE,
@@ -325,7 +325,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['number_returned'], NUMBER_PER_PAGE)
         self.assertEqual(len(data['buildings']), NUMBER_PER_PAGE)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_sort(self):
         """
         tests the search_buildings method used throughout the app for only
@@ -345,7 +345,7 @@ class SearchViewTests(TestCase):
             cb.save()
             b.super_organization = self.org
             b.save()
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {},
             'number_per_page': NUMBER_PER_PAGE,
@@ -388,7 +388,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['tax_lot_id'], '9')
         self.assertEqual(data['buildings'][9]['tax_lot_id'], '0')
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_extra_data(self):
         """
         tests the search_buildings method used throughout the app for only
@@ -412,7 +412,7 @@ class SearchViewTests(TestCase):
             cb.save()
             b.super_organization = self.org
             b.save()
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         # filters on DB column and extra_data json field
         post_data = {
             'filter_params': {
@@ -466,7 +466,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['tax_lot_id'], '9')
         self.assertEqual(data['buildings'][4]['tax_lot_id'], '5')
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_sort_extra_data(self):
         """
         Tests that sorting on extra data takes the column type
@@ -508,7 +508,7 @@ class SearchViewTests(TestCase):
                 ed_col_name: str(i * 13.17)
             }
             b.save()
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {},
             'number_per_page': NUMBER_PER_PAGE,
@@ -581,7 +581,7 @@ class SearchViewTests(TestCase):
             cb.save()
             b.super_organization = self.org
             b.save()
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {
                 # should return 3 buildings with years built of:
@@ -614,13 +614,13 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][1]['year_built'], 6)
         self.assertEqual(data['buildings'][2]['year_built'], 7)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_filter_date_range_ISO8601(self):
         cb = CanonicalBuilding(active=True)
         cb.save()
         b = SEEDFactory.building_snapshot(
             canonical_building=cb,
-            tax_lot_id="1",
+            tax_lot_id='1',
             year_ending=date(year=2015, month=1, day=1)
         )
         cb.canonical_snapshot = b
@@ -628,7 +628,7 @@ class SearchViewTests(TestCase):
         b.super_organization = self.org
         b.save()
 
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {
                 'year_ending__gte': '2014-01-01T00:00:00.000Z',
@@ -656,7 +656,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['number_matching_search'], 1)
         self.assertEqual(len(data['buildings']), 1)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_exact_match(self):
         """
         Tests search_buildings method when called with an exact match.
@@ -667,7 +667,7 @@ class SearchViewTests(TestCase):
         cb1.save()
         b1 = SEEDFactory.building_snapshot(
             canonical_building=cb1,
-            address_line_1="Address"
+            address_line_1='Address'
         )
         cb1.canonical_snapshot = b1
         cb1.save()
@@ -679,14 +679,14 @@ class SearchViewTests(TestCase):
         cb2.save()
         b2 = SEEDFactory.building_snapshot(
             canonical_building=cb2,
-            address_line_1="address"
+            address_line_1='address'
         )
         cb2.canonical_snapshot = b2
         cb2.save()
         b2.super_organization = self.org
         b2.save()
 
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {
                 'address_line_1': '"Address"'
@@ -714,7 +714,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(len(data['buildings']), 1)
         self.assertEqual(data['buildings'][0]['address_line_1'], 'Address')
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_case_insensitive_exact_match(self):
         """
         Tests search_buildings method when called with a case insensitive exact match.
@@ -725,7 +725,7 @@ class SearchViewTests(TestCase):
         cb1.save()
         b1 = SEEDFactory.building_snapshot(
             canonical_building=cb1,
-            address_line_1="Address"
+            address_line_1='Address'
         )
         cb1.canonical_snapshot = b1
         cb1.save()
@@ -737,7 +737,7 @@ class SearchViewTests(TestCase):
         cb2.save()
         b2 = SEEDFactory.building_snapshot(
             canonical_building=cb2,
-            address_line_1="address"
+            address_line_1='address'
         )
         cb2.canonical_snapshot = b2
         cb2.save()
@@ -749,14 +749,14 @@ class SearchViewTests(TestCase):
         cb3.save()
         b3 = SEEDFactory.building_snapshot(
             canonical_building=cb3,
-            address_line_1="fake address"
+            address_line_1='fake address'
         )
         cb3.canonical_snapshot = b3
         cb3.save()
         b3.super_organization = self.org
         b3.save()
 
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {
                 'address_line_1': '^"Address"'
@@ -792,7 +792,7 @@ class SearchViewTests(TestCase):
         self.assertIn('Address', addresses)
         self.assertNotIn('fake address', addresses)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_empty_column(self):
         """
         Tests search_buildings method when called with an empty column query.
@@ -803,7 +803,7 @@ class SearchViewTests(TestCase):
         cb1.save()
         b1 = SEEDFactory.building_snapshot(
             canonical_building=cb1,
-            address_line_1=""
+            address_line_1=''
         )
         cb1.canonical_snapshot = b1
         cb1.save()
@@ -815,14 +815,14 @@ class SearchViewTests(TestCase):
         cb2.save()
         b2 = SEEDFactory.building_snapshot(
             canonical_building=cb2,
-            address_line_1="Address"
+            address_line_1='Address'
         )
         cb2.canonical_snapshot = b2
         cb2.save()
         b2.super_organization = self.org
         b2.save()
 
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {
                 'address_line_1': '""'
@@ -851,7 +851,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['address_line_1'], '')
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_not_empty_column(self):
         """
         Tests search_buildings method when called with a not-empty column query.
@@ -862,7 +862,7 @@ class SearchViewTests(TestCase):
         cb1.save()
         b1 = SEEDFactory.building_snapshot(
             canonical_building=cb1,
-            address_line_1=""
+            address_line_1=''
         )
         cb1.canonical_snapshot = b1
         cb1.save()
@@ -874,14 +874,14 @@ class SearchViewTests(TestCase):
         cb2.save()
         b2 = SEEDFactory.building_snapshot(
             canonical_building=cb2,
-            address_line_1="Address"
+            address_line_1='Address'
         )
         cb2.canonical_snapshot = b2
         cb2.save()
         b2.super_organization = self.org
         b2.save()
 
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {
                 'address_line_1': '!""'
@@ -910,7 +910,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(data['buildings'][0]['address_line_1'], 'Address')
         self.assertEqual(data['buildings'][0]['pk'], b2.pk)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_extra_data_exact_match(self):
         """Exact match on extra_data json keys"""
         # Uppercase
@@ -937,7 +937,7 @@ class SearchViewTests(TestCase):
         b2.super_organization = self.org
         b2.save()
 
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {
                 'testing': '"TEST"'
@@ -965,7 +965,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(len(data['buildings']), 1)
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_extra_data_non_existent_column(self):
         """
         Empty column query on extra_data key should match key not existing in JsonField.
@@ -994,7 +994,7 @@ class SearchViewTests(TestCase):
         b2.super_organization = self.org
         b2.save()
 
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {
                 'testing': '""'
@@ -1022,7 +1022,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(len(data['buildings']), 1)
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_extra_data_empty_column(self):
         """
         Empty column query on extra_data key should match key's value being empty in JsonField.
@@ -1051,7 +1051,7 @@ class SearchViewTests(TestCase):
         b2.super_organization = self.org
         b2.save()
 
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {
                 'testing': '""'
@@ -1079,7 +1079,7 @@ class SearchViewTests(TestCase):
         self.assertEqual(len(data['buildings']), 1)
         self.assertEqual(data['buildings'][0]['pk'], b1.pk)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_extra_data_non_empty_column(self):
         """
         Not-empty column query on extra_data key.
@@ -1108,7 +1108,7 @@ class SearchViewTests(TestCase):
         b2.super_organization = self.org
         b2.save()
 
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {
                 'testing': '!""'
@@ -1136,13 +1136,13 @@ class SearchViewTests(TestCase):
         self.assertEqual(len(data['buildings']), 1)
         self.assertEqual(data['buildings'][0]['pk'], b2.pk)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_exclude_filter(self):
         cb1 = CanonicalBuilding(active=True)
         cb1.save()
         b1 = SEEDFactory.building_snapshot(
             canonical_building=cb1,
-            address_line_1="Include"
+            address_line_1='Include'
         )
         cb1.canonical_snapshot = b1
         cb1.save()
@@ -1153,7 +1153,7 @@ class SearchViewTests(TestCase):
         cb2.save()
         b2 = SEEDFactory.building_snapshot(
             canonical_building=cb2,
-            address_line_1="Exclude"
+            address_line_1='Exclude'
         )
         cb2.canonical_snapshot = b2
         cb2.save()
@@ -1165,14 +1165,14 @@ class SearchViewTests(TestCase):
         cb3.save()
         b3 = SEEDFactory.building_snapshot(
             canonical_building=cb3,
-            address_line_1="Include 2"
+            address_line_1='Include 2'
         )
         cb3.canonical_snapshot = b3
         cb3.save()
         b3.super_organization = self.org
         b3.save()
 
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {
                 'address_line_1': '!Exclude'
@@ -1208,7 +1208,7 @@ class SearchViewTests(TestCase):
         self.assertIn('Include 2', addresses)
         self.assertNotIn('Exclude', addresses)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_extra_data_exclude_filter(self):
         cb1 = CanonicalBuilding(active=True)
         cb1.save()
@@ -1243,7 +1243,7 @@ class SearchViewTests(TestCase):
         b3.super_organization = self.org
         b3.save()
 
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {
                 'testing': '!Exclude'
@@ -1279,13 +1279,13 @@ class SearchViewTests(TestCase):
         self.assertIn('Include 2', fields)
         self.assertNotIn('Exclude', fields)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_exact_exclude_filter(self):
         cb1 = CanonicalBuilding(active=True)
         cb1.save()
         b1 = SEEDFactory.building_snapshot(
             canonical_building=cb1,
-            address_line_1="Include"
+            address_line_1='Include'
         )
         cb1.canonical_snapshot = b1
         cb1.save()
@@ -1296,7 +1296,7 @@ class SearchViewTests(TestCase):
         cb2.save()
         b2 = SEEDFactory.building_snapshot(
             canonical_building=cb2,
-            address_line_1="Exclude"
+            address_line_1='Exclude'
         )
         cb2.canonical_snapshot = b2
         cb2.save()
@@ -1308,14 +1308,14 @@ class SearchViewTests(TestCase):
         cb3.save()
         b3 = SEEDFactory.building_snapshot(
             canonical_building=cb3,
-            address_line_1="exclude"
+            address_line_1='exclude'
         )
         cb3.canonical_snapshot = b3
         cb3.save()
         b3.super_organization = self.org
         b3.save()
 
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {
                 'address_line_1': '!"Exclude"'
@@ -1351,7 +1351,7 @@ class SearchViewTests(TestCase):
         self.assertIn('exclude', addresses)
         self.assertNotIn('Exclude', addresses)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_extra_data_exact_exclude_filter(self):
         cb1 = CanonicalBuilding(active=True)
         cb1.save()
@@ -1386,7 +1386,7 @@ class SearchViewTests(TestCase):
         b3.super_organization = self.org
         b3.save()
 
-        url = reverse_lazy("seed:search_buildings")
+        url = reverse_lazy('seed:search_buildings')
         post_data = {
             'filter_params': {
                 'testing': '!"Exclude"'
@@ -1436,7 +1436,7 @@ class SearchBuildingSnapshotsViewTests(TestCase):
         OrganizationUser.objects.create(user=self.user, organization=self.org)
         self.client.login(**user_details)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_search_mapping_results(self):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
@@ -1449,7 +1449,7 @@ class SearchBuildingSnapshotsViewTests(TestCase):
         cb1.save()
         b1 = SEEDFactory.building_snapshot(
             canonical_building=cb1,
-            address_line_1="test",
+            address_line_1='test',
             import_file=import_file,
             source_type=ASSESSED_BS
         )
@@ -1470,7 +1470,7 @@ class SearchBuildingSnapshotsViewTests(TestCase):
 
         # act
         response = self.client.post(
-            reverse_lazy("apiv2:import_files-search-mapping-results", args=[import_file.pk]),
+            reverse_lazy('apiv2:import_files-search-mapping-results', args=[import_file.pk]),
             content_type='application/json',
             data=json.dumps(post_data)
         )
@@ -1494,7 +1494,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse("apiv2:datasets-list"),
+        response = self.client.get(reverse('apiv2:datasets-list'),
                                    {'organization_id': self.org.pk})
         self.assertEqual(1, len(json.loads(response.content)['datasets']))
 
@@ -1502,7 +1502,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse("apiv2:datasets-count"),
+        response = self.client.get(reverse('apiv2:datasets-count'),
                                    {'organization_id': self.org.pk})
         self.assertEqual(200, response.status_code)
         j = json.loads(response.content)
@@ -1513,7 +1513,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse("apiv2:datasets-count"),
+        response = self.client.get(reverse('apiv2:datasets-count'),
                                    {'organization_id': 666})
         self.assertEqual(400, response.status_code)
         j = json.loads(response.content)
@@ -1526,7 +1526,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record.super_organization = self.org
         import_record.save()
         response = self.client.get(
-            reverse("apiv2:datasets-detail", args=[import_record.pk]) + '?organization_id=' + str(
+            reverse('apiv2:datasets-detail', args=[import_record.pk]) + '?organization_id=' + str(
                 self.org.pk)
         )
         self.assertEqual('success', json.loads(response.content)['status'])
@@ -1537,7 +1537,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record.save()
 
         response = self.client.delete(
-            reverse_lazy("apiv2:datasets-detail",
+            reverse_lazy('apiv2:datasets-detail',
                          args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json'
         )
@@ -1555,7 +1555,7 @@ class GetDatasetsViewsTests(TestCase):
         }
 
         response = self.client.put(
-            reverse_lazy("apiv2:datasets-detail",
+            reverse_lazy('apiv2:datasets-detail',
                          args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
             data=json.dumps(post_data)
@@ -1582,13 +1582,13 @@ class ImportFileViewsTests(TestCase):
         self.import_record.save()
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            cached_first_row="Name|#*#|Address"
+            cached_first_row='Name|#*#|Address'
         )
 
         self.client.login(**user_details)
 
     def test_get_import_file(self):
-        response = self.client.get(reverse("apiv2:import_files-detail", args=[self.import_file.pk]))
+        response = self.client.get(reverse('apiv2:import_files-detail', args=[self.import_file.pk]))
         self.assertEqual(self.import_file.pk,
                          json.loads(response.content)['import_file']['id'])
 
@@ -1599,7 +1599,7 @@ class ImportFileViewsTests(TestCase):
         }
 
         response = self.client.delete(
-            reverse_lazy("seed:delete_file"),
+            reverse_lazy('seed:delete_file'),
             content_type='application/json',
             data=json.dumps(post_data)
         )
@@ -1614,13 +1614,13 @@ class ImportFileViewsTests(TestCase):
 
     def test_delete_duplicates_from_import_file(self):
         response = self.client.get(
-            reverse("seed:delete_duplicates_from_import_file"),
+            reverse('seed:delete_duplicates_from_import_file'),
             {'import_file_id': self.import_file.pk}
         )
         self.assertEqual('success', json.loads(response.content)['status'])
 
 
-@skip("Fix for new data model")
+@skip('Fix for new data model')
 class ReportViewsTests(TestCase):
 
     def setUp(self):
@@ -1638,7 +1638,7 @@ class ReportViewsTests(TestCase):
         self.import_record.save()
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            cached_first_row="Name|#*#|Address"
+            cached_first_row='Name|#*#|Address'
         )
 
         BuildingSnapshot.objects.create(super_organization=self.org,
@@ -1655,11 +1655,11 @@ class ReportViewsTests(TestCase):
         }
 
         response = self.client.get(
-            reverse("seed:get_building_summary_report_data"), params)
+            reverse('seed:get_building_summary_report_data'), params)
         self.assertEqual('success', json.loads(response.content)['status'])
 
     # TODO replace with test for inventory report
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_get_building_report_data(self):
         params = {
             'start_date': (datetime.now() - timedelta(days=30)).strftime(
@@ -1670,16 +1670,16 @@ class ReportViewsTests(TestCase):
             'organization_id': self.org.pk
         }
 
-        response = self.client.get(reverse("seed:get_building_report_data"),
+        response = self.client.get(reverse('seed:get_building_report_data'),
                                    params)
         self.assertEqual('success', json.loads(response.content)['status'])
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_get_inventory_report_data(self):
         pass  # TODO
 
     # TODO replace with test for inventory report
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_get_aggregated_building_report_data(self):
         params = {
             'start_date': (datetime.now() - timedelta(days=30)).strftime(
@@ -1691,15 +1691,15 @@ class ReportViewsTests(TestCase):
         }
 
         response = self.client.get(
-            reverse("seed:get_aggregated_building_report_data"), params)
+            reverse('seed:get_aggregated_building_report_data'), params)
         self.assertEqual('success', json.loads(response.content)['status'])
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_get_aggregated_inventory_report_data(self):
         pass  # TODO
 
 
-@skip("Fix for new data model")
+@skip('Fix for new data model')
 class BuildingDetailViewTests(TestCase):
     """
     Tests of the SEED Building Detail page
@@ -1755,7 +1755,7 @@ class BuildingDetailViewTests(TestCase):
         self.parent_2 = parent_2
 
     # # TODO Replace with test_get_property, test_get_taxlot
-    # @skip("Fix for new data model")
+    # @skip('Fix for new data model')
     # def test_get_building(self):
     #     """ tests the get_building view which returns building detail and source
     #         information from parent buildings.
@@ -1764,7 +1764,7 @@ class BuildingDetailViewTests(TestCase):
     #     child, changelist = save_snapshot_match(self.parent_1.pk,
     #                                             self.parent_2.pk)
     #
-    #     url = reverse_lazy("seed:get_building")
+    #     url = reverse_lazy('seed:get_building')
     #     get_data = {
     #         'building_id': child.canonical_building.pk,
     #         'organization_id': self.org.pk,
@@ -1816,23 +1816,23 @@ class BuildingDetailViewTests(TestCase):
     #     )
 
     # TODO
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_get_property(self):
         pass
 
     # TODO
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_get_taxlot(self):
         pass
 
     # # TODO replace with test for inventory report
-    # @skip("Fix for new data model")
+    # @skip('Fix for new data model')
     # def test_get_building_with_project(self):
     #     """ tests get_building projects payload"""
     #     # arrange
     #     child, changelist = save_snapshot_match(self.parent_1.pk,
     #                                             self.parent_2.pk)
-    #     # create project wtihout compliance
+    #     # create project without compliance
     #     project = Project.objects.create(
     #         name='test project',
     #         owner=self.user,
@@ -1843,7 +1843,7 @@ class BuildingDetailViewTests(TestCase):
     #         project=project
     #     )
     #
-    #     url = reverse_lazy("seed:get_building")
+    #     url = reverse_lazy('seed:get_building')
     #     get_data = {
     #         'building_id': child.canonical_building.pk,
     #         'organization_id': self.org.pk,
@@ -1867,7 +1867,7 @@ class BuildingDetailViewTests(TestCase):
     #     )
 
     # TODO replace with test for inventory report
-    # @skip("Fix for new data model")
+    # @skip('Fix for new data model')
     # def test_get_building_with_deleted_dataset(self):
     #     """ tests the get_building view where the dataset has been deleted and
     #         the building should load without showing the sources from deleted
@@ -1877,7 +1877,7 @@ class BuildingDetailViewTests(TestCase):
     #     child, changelist = save_snapshot_match(self.parent_1.pk,
     #                                             self.parent_2.pk)
     #
-    #     url = reverse_lazy("seed:get_building")
+    #     url = reverse_lazy('seed:get_building')
     #     get_data = {
     #         'building_id': child.canonical_building.pk,
     #         'organization_id': self.org.pk,
@@ -1917,7 +1917,7 @@ class BuildingDetailViewTests(TestCase):
     #     )
     #
     # # TODO replace with test for inventory report
-    # @skip("Fix for new data model")
+    # @skip('Fix for new data model')
     # def test_get_building_imported_buildings_includes_green_button(self):
     #     # arrange
     #     self.parent_2.source_type = 6
@@ -1925,7 +1925,7 @@ class BuildingDetailViewTests(TestCase):
     #     child, changelist = save_snapshot_match(self.parent_1.pk,
     #                                             self.parent_2.pk)
     #
-    #     url = reverse_lazy("seed:get_building")
+    #     url = reverse_lazy('seed:get_building')
     #     get_data = {
     #         'building_id': child.canonical_building.pk,
     #         'organization_id': self.org.pk,
@@ -1953,7 +1953,7 @@ class BuildingDetailViewTests(TestCase):
     #     )
 
     # TODO replace with test for inventory
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_update_building_audit_log(self):
         """tests that a building update logs an audit_log"""
         # arrange
@@ -1962,7 +1962,7 @@ class BuildingDetailViewTests(TestCase):
 
         # act
         self.client.put(
-            reverse_lazy("seed:update_building"),
+            reverse_lazy('seed:update_building'),
             data=json.dumps({
                 'organization_id': self.org.pk,
                 'building': building,
@@ -1980,12 +1980,12 @@ class BuildingDetailViewTests(TestCase):
         self.assertTrue('update_building' in audit_log.action)
         self.assertEqual(audit_log.audit_type, LOG)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_save_match_audit_log(self):
         """tests that a building match logs an audit_log"""
         # act
         self.client.put(
-            reverse_lazy("seed:save_match"),
+            reverse_lazy('seed:save_match'),
             data=json.dumps({
                 'organization_id': self.org.pk,
                 'source_building_id': self.parent_1.pk,
@@ -2006,12 +2006,12 @@ class BuildingDetailViewTests(TestCase):
         self.assertEqual(audit_log.action_note, 'Matched building.')
         self.assertEqual(audit_log.audit_type, LOG)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_get_match_tree(self):
         """tests get_match_tree"""
         # arrange
         self.client.put(
-            reverse_lazy("seed:save_match"),
+            reverse_lazy('seed:save_match'),
             data=json.dumps({
                 'organization_id': self.org.pk,
                 'source_building_id': self.parent_1.pk,
@@ -2023,7 +2023,7 @@ class BuildingDetailViewTests(TestCase):
 
         # act
         resp = self.client.get(
-            reverse_lazy("seed:get_match_tree"),
+            reverse_lazy('seed:get_match_tree'),
             {
                 'organization_id': self.org.pk,
                 'building_id': self.parent_1.pk,
@@ -2038,12 +2038,12 @@ class BuildingDetailViewTests(TestCase):
         self.assertIn(self.parent_2.pk, ids)
         self.assertIn(self.parent_1.children.first().pk, ids)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_get_match_tree_from_child(self):
         """tests get_match_tree from the child"""
         # arrange
         self.client.put(
-            reverse_lazy("seed:save_match"),
+            reverse_lazy('seed:save_match'),
             data=json.dumps({
                 'organization_id': self.org.pk,
                 'source_building_id': self.parent_1.pk,
@@ -2055,7 +2055,7 @@ class BuildingDetailViewTests(TestCase):
 
         # act
         resp = self.client.get(
-            reverse_lazy("seed:get_match_tree"),
+            reverse_lazy('seed:get_match_tree'),
             {
                 'organization_id': self.org.pk,
                 'building_id': self.parent_1.children.first().pk,
@@ -2078,7 +2078,7 @@ class BuildingDetailViewTests(TestCase):
 
         # act
         resp = self.client.put(
-            reverse_lazy("seed:save_match"),
+            reverse_lazy('seed:save_match'),
             data=json.dumps({
                 'organization_id': new_org.pk,
                 'source_building_id': self.parent_1.pk,
@@ -2102,7 +2102,7 @@ class BuildingDetailViewTests(TestCase):
 
         # act
         resp = self.client.put(
-            reverse_lazy("seed:save_match"),
+            reverse_lazy('seed:save_match'),
             data=json.dumps({
                 'organization_id': new_org.pk,
                 'source_building_id': self.parent_1.pk,
@@ -2129,7 +2129,7 @@ class BuildingDetailViewTests(TestCase):
 
         # act
         resp = self.client.put(
-            reverse_lazy("seed:save_match"),
+            reverse_lazy('seed:save_match'),
             data=json.dumps({
                 'organization_id': self.org.pk,
                 'source_building_id': self.parent_1.pk,
@@ -2146,12 +2146,12 @@ class BuildingDetailViewTests(TestCase):
             'message': 'Only buildings within an organization can be matched'
         })
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_save_unmatch_audit_log(self):
         """tests that a building unmatch logs an audit_log"""
         # arrange match to unmatch
         self.client.post(
-            reverse_lazy("seed:save_match"),
+            reverse_lazy('seed:save_match'),
             data=json.dumps({
                 'organization_id': self.org.pk,
                 'source_building_id': self.parent_1.pk,
@@ -2162,7 +2162,7 @@ class BuildingDetailViewTests(TestCase):
         )
         # act
         self.client.post(
-            reverse_lazy("seed:save_match"),
+            reverse_lazy('seed:save_match'),
             data=json.dumps({
                 'organization_id': self.org.pk,
                 'source_building_id': self.parent_2.pk,
@@ -2204,7 +2204,7 @@ class TestMCMViews(TestCase):
         """
         # fields returned by mapping will change depending on the
         # BEDES columns in the database; confidence will also change
-        # depending on the columns in the db and the mapper implementaion
+        # depending on the columns in the db and the mapper implementation
         for orig_col in actual:
             expected_dest, expected_confidence = expected[orig_col]
             dest_col, suggested_confidence = actual[orig_col]
@@ -2238,7 +2238,7 @@ class TestMCMViews(TestCase):
 
     def test_get_column_mapping_suggestions(self):
         response = self.client.get(
-            reverse_lazy("apiv2:data_files-mapping-suggestions",
+            reverse_lazy('apiv2:data_files-mapping-suggestions',
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json'
         )
@@ -2246,7 +2246,7 @@ class TestMCMViews(TestCase):
 
     def test_get_column_mapping_suggestions_pm_file(self):
         response = self.client.get(
-            reverse_lazy("apiv2:data_files-mapping-suggestions",
+            reverse_lazy('apiv2:data_files-mapping-suggestions',
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
         )
@@ -2272,7 +2272,7 @@ class TestMCMViews(TestCase):
         mapping.save()
 
         response = self.client.get(
-            reverse_lazy("apiv2:data_files-mapping-suggestions",
+            reverse_lazy('apiv2:data_files-mapping-suggestions',
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
         )
@@ -2281,7 +2281,7 @@ class TestMCMViews(TestCase):
     def test_get_raw_column_names(self):
         """Good case for ``get_raw_column_names``."""
         resp = self.client.get(
-            reverse_lazy("apiv2:import_files-raw-column-names", args=[self.import_file.id]),
+            reverse_lazy('apiv2:import_files-raw-column-names', args=[self.import_file.id]),
             content_type='application/json'
         )
 
@@ -2303,7 +2303,7 @@ class TestMCMViews(TestCase):
             unit=float_unit)
 
         resp = self.client.post(
-            reverse_lazy("apiv2:import_files-save-column-mappings", args=[self.import_file.id]),
+            reverse_lazy('apiv2:import_files-save-column-mappings', args=[self.import_file.id]),
             data=json.dumps({
                 'mappings': [
                     {
@@ -2329,7 +2329,7 @@ class TestMCMViews(TestCase):
         # NL: There is not a global definition in the test cases, so we created one above.
         energy_use_columns = Column.objects.filter(
             organization=self.org,
-            column_name="Global National Median Site Energy Use"
+            column_name='Global National Median Site Energy Use'
         )
 
         self.assertEquals(len(energy_use_columns), 1)
@@ -2337,7 +2337,7 @@ class TestMCMViews(TestCase):
         eu_col = energy_use_columns.first()
 
         assert (eu_col.unit is not None)
-        self.assertEqual(eu_col.unit.unit_name, "test energy use intensity")
+        self.assertEqual(eu_col.unit.unit_name, 'test energy use intensity')
         self.assertEqual(eu_col.unit.unit_type, FLOAT)
 
     def test_save_column_mappings_idempotent(self):
@@ -2348,7 +2348,7 @@ class TestMCMViews(TestCase):
             0
         )
         resp = self.client.post(
-            reverse_lazy("apiv2:import_files-save-column-mappings", args=[self.import_file.id]),
+            reverse_lazy('apiv2:import_files-save-column-mappings', args=[self.import_file.id]),
             data=json.dumps({
                 'mappings': [
                     {
@@ -2380,7 +2380,7 @@ class TestMCMViews(TestCase):
         self.client.login(**user_2_details)
 
         self.client.post(
-            reverse_lazy("apiv2:import_files-save-column-mappings", args=[self.import_file.id]),
+            reverse_lazy('apiv2:import_files-save-column-mappings', args=[self.import_file.id]),
             data=json.dumps({
                 'import_file_id': self.import_file.id,
                 'mappings': [
@@ -2411,7 +2411,7 @@ class TestMCMViews(TestCase):
         }
         set_cache(progress_key, 'parsing', test_progress)
         resp = self.client.post(
-            reverse_lazy("apiv2:progress"),
+            reverse_lazy('apiv2:progress'),
             data=json.dumps({
                 'progress_key': progress_key,
             }),
@@ -2423,7 +2423,7 @@ class TestMCMViews(TestCase):
         self.assertEqual(body.get('progress', 0), test_progress['progress'])
         self.assertEqual(body.get('progress_key', ''), progress_key)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_remap_buildings(self):
         """Test good case for resetting mapping."""
         # Make raw BSes, these should stick around.
@@ -2444,7 +2444,7 @@ class TestMCMViews(TestCase):
         set_cache(cache_key, 'success', 100)
 
         resp = self.client.post(
-            reverse_lazy("seed:remap_buildings"),
+            reverse_lazy('seed:remap_buildings'),
             data=json.dumps({
                 'file_id': self.import_file.pk,
             }),
@@ -2469,7 +2469,7 @@ class TestMCMViews(TestCase):
 
         self.assertEqual(get_cache(cache_key)['progress'], 0)
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_reset_mapped_w_previous_matches(self):
         """Ensure we ignore mapped buildings with children BuildingSnapshots."""
         # Make the raw BSes for us to make new mappings from
@@ -2503,7 +2503,7 @@ class TestMCMViews(TestCase):
         )
 
         self.client.post(
-            reverse_lazy("seed:remap_buildings"),
+            reverse_lazy('seed:remap_buildings'),
             data=json.dumps({
                 'file_id': self.import_file.pk,
             }),
@@ -2523,7 +2523,7 @@ class TestMCMViews(TestCase):
             child
         )
 
-    @skip("Fix for new data model")
+    @skip('Fix for new data model')
     def test_reset_mapped_w_matching_done(self):
         """Make sure we don't delete buildings that have been merged."""
         self.import_file.matching_done = True
@@ -2534,7 +2534,7 @@ class TestMCMViews(TestCase):
             test_util.make_fake_property(self.import_file, {}, ASSESSED_BS)
 
         resp = self.client.post(
-            reverse_lazy("seed:remap_buildings"),
+            reverse_lazy('seed:remap_buildings'),
             data=json.dumps({
                 'file_id': self.import_file.pk,
             }),
@@ -2561,7 +2561,7 @@ class TestMCMViews(TestCase):
         DATASET_NAME_1 = 'test_name 1'
         DATASET_NAME_2 = 'city compliance dataset 2014'
         resp = self.client.post(
-            reverse_lazy("apiv2:datasets-list") + '?organization_id=' + str(self.org.pk),
+            reverse_lazy('apiv2:datasets-list') + '?organization_id=' + str(self.org.pk),
             data=json.dumps({
                 'name': DATASET_NAME_1,
             }),
@@ -2571,7 +2571,7 @@ class TestMCMViews(TestCase):
         self.assertEqual(data['name'], DATASET_NAME_1)
 
         resp = self.client.post(
-            reverse_lazy("apiv2:datasets-list") + '?organization_id=' + str(self.org.pk),
+            reverse_lazy('apiv2:datasets-list') + '?organization_id=' + str(self.org.pk),
             data=json.dumps({
                 'name': DATASET_NAME_2,
             }),
@@ -2591,7 +2591,7 @@ class TestMCMViews(TestCase):
 
         # test duplicate name
         resp = self.client.post(
-            reverse_lazy("apiv2:datasets-list") + '?organization_id=' + str(self.org.pk),
+            reverse_lazy('apiv2:datasets-list') + '?organization_id=' + str(self.org.pk),
             data=json.dumps({
                 'name': DATASET_NAME_1,
             }),
@@ -2611,7 +2611,7 @@ class TestMCMViews(TestCase):
         self.assertEqual(self.org, import_record.super_organization)
 
 
-@skip("Fix for new data model")
+@skip('Fix for new data model')
 class MatchTreeTests(TestCase):
     """Currently only tests _parent_tree_coparents"""
 
@@ -2821,7 +2821,7 @@ class InventoryViewTests(TestCase):
             'per_page': 999999999,
             'columns': COLUMNS_TO_SEND,
         }
-        response = self.client.get("/api/v2/properties/", params)
+        response = self.client.get('/api/v2/properties/', params)
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -2847,7 +2847,7 @@ class InventoryViewTests(TestCase):
             'per_page': 999999999,
             'columns': COLUMNS_TO_SEND,
         }
-        response = self.client.get("/api/v2/properties/", params)
+        response = self.client.get('/api/v2/properties/', params)
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -2875,7 +2875,7 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post("/api/v2/properties/filter/?{}={}&{}={}&{}={}".format(
+        response = self.client.post('/api/v2/properties/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
@@ -2914,7 +2914,7 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post("/api/v2/properties/filter/?{}={}&{}={}&{}={}".format(
+        response = self.client.post('/api/v2/properties/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
@@ -2934,7 +2934,7 @@ class InventoryViewTests(TestCase):
         PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
         )
-        response = self.client.post("/api/v2/properties/filter/?{}={}&{}={}&{}={}".format(
+        response = self.client.post('/api/v2/properties/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 'one',
             'per_page', 999999999
@@ -2951,12 +2951,12 @@ class InventoryViewTests(TestCase):
         self.assertEquals(pagination['total'], 1)
 
     def test_get_properties_empty_page(self):
-        filter_properties_url = "/api/v2/properties/filter/?{}={}&{}={}&{}={}".format(
+        filter_properties_url = '/api/v2/properties/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 10,
             'per_page', 999999999
         )
-        print("Filter properties URL: " + filter_properties_url)
+        print('Filter properties URL: ' + filter_properties_url)
         response = self.client.post(filter_properties_url, data={'columns': COLUMNS_TO_SEND})
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 0)
@@ -2996,7 +2996,7 @@ class InventoryViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            "/api/v2/properties/" + str(property_property.id) + "/",
+            '/api/v2/properties/' + str(property_property.id) + '/',
             params
         )
         results = json.loads(response.content)
@@ -3081,7 +3081,7 @@ class InventoryViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            "/api/v2/properties/" + str(property_property.id) + "/",
+            '/api/v2/properties/' + str(property_property.id) + '/',
             params
         )
         results = json.loads(response.content)
@@ -3157,7 +3157,7 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}".format(
+        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999,
@@ -3199,7 +3199,7 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        url = "/api/v2/taxlots/filter/?{}={}&{}={}".format(
+        url = '/api/v2/taxlots/filter/?{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1
         )
@@ -3217,7 +3217,7 @@ class InventoryViewTests(TestCase):
             property_view=property_view_1, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        url = "/api/v2/taxlots/filter/?{}={}&{}={}&{}={}".format(
+        url = '/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
@@ -3273,7 +3273,7 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view_2,
             cycle=self.cycle
         )
-        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}".format(
+        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
             'page', 1,
@@ -3332,7 +3332,7 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}".format(
+        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
             'page', 1
@@ -3367,7 +3367,7 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}".format(
+        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
             'page', 'bad'
@@ -3405,7 +3405,7 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}".format(
+        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
             'page', 'bad'
@@ -3444,7 +3444,7 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post("/api/v2/taxlots/filter/?{}={}&{}={}&{}={}".format(
+        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
             'page', 'bad'
@@ -3488,7 +3488,7 @@ class InventoryViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get("/api/v2/taxlots/" + str(taxlot.id) + "/", params)
+        response = self.client.get('/api/v2/taxlots/' + str(taxlot.id) + '/', params)
         result = json.loads(response.content)
 
         cycle = result['cycle']
@@ -3534,7 +3534,7 @@ class InventoryViewTests(TestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse("apiv2:cycles-list"), params
+            reverse('apiv2:cycles-list'), params
         )
         results = json.loads(response.content)
         self.assertEqual(results['status'], 'success')
@@ -3560,9 +3560,7 @@ class InventoryViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get(
-            "/api/v2/properties/columns/", params
-        )
+        response = self.client.get('/api/v2/properties/columns/', params)
         results = json.loads(response.content)['columns']
 
         pm_property_id_col = {
@@ -3606,7 +3604,7 @@ class InventoryViewTests(TestCase):
             'page': 1,
             'per_page': 999999999,
         }
-        response = self.client.get("/api/v2/taxlots/columns/", params)
+        response = self.client.get('/api/v2/taxlots/columns/', params)
         results = json.loads(response.content)['columns']
 
         jurisdiction_tax_lot_id_col = {

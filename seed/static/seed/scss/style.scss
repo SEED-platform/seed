@@ -2418,8 +2418,7 @@ gs-input .tags .tag-item .remove-button {
          appear in the building list. So defining a style here that can hopefully be refactored into
          the styles above at a later point. */
 
-.inventory-list-tab-container {
-
+.inventory-list-tab-container, .matching-tab-container {
   margin-left: 10px;
   margin-bottom: -2px;
 
@@ -2453,6 +2452,25 @@ gs-input .tags .tag-item .remove-button {
   .nav-tabs > li > a:hover {
     background-color: $blue;
     color: #FFF;
+  }
+}
+
+.matching-tab-container {
+  margin-bottom: -1px;
+  .nav-tabs {
+    border-bottom: 0;
+  }
+  .nav-tabs > li > a {
+    background-color: #F1F1F1;
+    border: 1px solid #D1D1D1;
+    border-bottom: 0;
+  }
+  .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover {
+    background-color: #7B7B87;
+    border: 1px solid #D1D1D1;
+    border-bottom: 1px solid #7B7B87;
+    color: #FFF;
+    font-weight: bold;
   }
 }
 
@@ -2606,7 +2624,7 @@ gs-input .tags .tag-item .remove-button {
   border-collapse: collapse;
   padding: 2px;
   .is-paired-child {
-    width: 10%;  
+    width: 10%;
   }
 }
 
@@ -2676,11 +2694,19 @@ gs-input .tags .tag-item .remove-button {
   margin-top: 40px;
 }
 
+.pairing-data-row-col-indent {
+  flex-grow: 1;
+}
+
 // Text based cells: grow, truncate and show ellipsis when there is not enough space
 .pairing-cell {
-  flex-grow: 1;            -webkit-flex-grow: 1;
+  flex-grow: 1;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   padding-right: 20px;
+}
+
+table.import_results a[disabled] {
+  pointer-events: none;
 }
