@@ -642,11 +642,18 @@ angular.module('BE.seed.controller.mapping', [])
        * required_fields_present: check for presence of at least one field used by SEED to match records
        */
       $scope.required_fields_present = function () {
-        var required_fields = ['Jurisdiction Tax Lot Id', 'Pm Property Id', 'Custom Id 1', 'Address Line 1'];
-        function gettext(x) {
-            return x.suggestion;
+        var required_fields = [
+            {header: 'Jurisdiction Tax Lot Id', inventory_type: 'TaxLotState'},
+            {header: 'Pm Property Id', inventory_type: 'PropertyState'},
+            {header: 'Custom Id 1', inventory_type: 'PropertyState'},
+            {header: 'Custom Id 1', inventory_type: 'TaxLotState'},
+            {header: 'Address Line 1', inventory_type: 'PropertyState'},
+            {header: 'Address Line 1', inventory_type: 'TaxLotState'}
+        ];
+        function compare_fields(x,y) {
+          return x.header == y.suggestion && x.inventory_type == y.suggestion_table_name;
         }
-        return _.intersection(required_fields,_.map($scope.raw_columns,gettext)).length > 0
+        return _.intersectionWith(required_fields,$scope.raw_columns, compare_fields).length > 0;
       };
 
       $scope.backToMapping = function () {
