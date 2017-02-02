@@ -29,6 +29,7 @@
   },
   "scripts": {
     "bower": "bower",
-    "gulp": "gulp"
+    "gulp": "gulp",
+    "test": "protractor seed/static/seed/tests/protractor-tests/protractorConfig.js"
   }
 }
