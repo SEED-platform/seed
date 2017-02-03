@@ -19,13 +19,15 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.grid.moveColumns',
   'ui.grid.pinning',
   'ui.grid.resizeColumns',
+  'ui.grid.saveState',
   'ui.grid.selection',
   'ui.grid.treeView',
   'ui.router',
   'ui.router.stateHelper',
   'ui.sortable',
   'ui.tree',
-  'xeditable'
+  'xeditable',
+  angularDragula(angular)
 ]);
 angular.module('BE.seed.controllers', [
   'BE.seed.controller.about',
@@ -43,6 +45,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.data_upload_modal',
   'BE.seed.controller.dataset',
   'BE.seed.controller.dataset_detail',
+  'BE.seed.controller.delete_dataset_modal',
+  'BE.seed.controller.delete_file_modal',
   'BE.seed.controller.delete_modal',
   'BE.seed.controller.developer',
   'BE.seed.controller.edit_project_modal',
@@ -61,6 +65,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.members',
   'BE.seed.controller.menu',
   'BE.seed.controller.new_member_modal',
+  'BE.seed.controller.pairing',
   'BE.seed.controller.profile',
   'BE.seed.controller.organization',
   'BE.seed.controller.organization_settings',
@@ -689,7 +694,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'matching',
-        url: '/data/matching/{importfile_id:int}',
+        url: '/data/matching/{importfile_id:int}/{inventory_type:properties|taxlots}',
         templateUrl: static_url + 'seed/partials/matching.html',
         controller: 'matching_controller',
         resolve: {
@@ -697,16 +702,18 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var importfile_id = $stateParams.importfile_id;
             return dataset_service.get_import_file(importfile_id);
           }],
-          buildings_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
+          inventory_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
-            return building_services.search_matching_buildings(
-              '', 10, 1, '', false, {}, importfile_id);
+            return inventory_service.search_matching_inventory('', 10, 1, '', false, {}, importfile_id);
           }],
           default_columns: ['user_service', function (user_service) {
             return user_service.get_default_columns();
           }],
           all_columns: ['building_services', function (building_services) {
             return building_services.get_columns();
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
           }],
           auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
             var organization_id = user_service.get_organization().id;
@@ -720,6 +727,73 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               }, function (data) {
                 return $q.reject(data.message);
               });
+          }]
+        }
+      })
+      .state({
+        name: 'pairing',
+        url: '/data/pairing/{importfile_id:int}',
+        templateUrl: static_url + 'seed/partials/pairing.html',
+        controller: 'pairing_controller',
+        resolve: {
+          // import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+          //   var importfile_id = $stateParams.importfile_id;
+          //   return dataset_service.get_import_file(importfile_id);
+          // }],
+          propertyInventory: ['inventory_service', function (inventory_service) {
+            var myColumns = [{
+              'displayName': 'Address Line 1 (Property)',
+              'name': 'address_line_1',
+              'type': 'numberStr',
+              'related': false
+            }, {
+              'displayName': 'PM Property ID',
+              'name': 'pm_property_id',
+              'type': 'number',
+              'related': false
+            }, {
+              'displayName': 'Jurisdiction Tax Lot ID',
+              'name': 'jurisdiction_tax_lot_id',
+              'type': 'numberStr',
+              'related': false
+            }, {
+              'displayName': 'Custom ID',
+              'name': 'custom_id_1',
+              'type': 'numberStr',
+              'related': false
+            }];
+            var visibleColumns = _.map(myColumns, 'name');
+            // console.log('before: ', myColumns);
+            return inventory_service.get_properties(1, undefined, undefined, visibleColumns).then(function (inv) {
+              // return inventory_service.get_properties(1).then(function (inv) {
+              return _.extend({'columns': myColumns}, inv);
+            });
+          }],
+          taxlotInventory: ['inventory_service', function (inventory_service) {
+            var myColumns = [{
+              'displayName': 'Address Line 1 (Tax Lot)',
+              'name': 'address_line_1',
+              'type': 'numberStr',
+              'related': false
+            }, /*{
+             'displayName': 'Primary Tax Lot ID',
+             'name': 'primary_tax_lot_id',
+             'type': 'number',
+             'related': false
+             },*/ {
+              'displayName': 'Jurisdiction Tax Lot ID',
+              'name': 'jurisdiction_tax_lot_id',
+              'type': 'numberStr',
+              'related': false
+            }];
+            var visibleColumns = _.map(myColumns, 'name');
+            // console.log('before: ', myColumns);
+            return inventory_service.get_taxlots(1, undefined, undefined, visibleColumns).then(function (inv) {
+              return _.extend({'columns': myColumns}, inv);
+            });
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
           }]
         }
       })
@@ -753,9 +827,23 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/dataset_detail.html',
         controller: 'dataset_detail_controller',
         resolve: {
-          dataset_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
-            var dataset_id = $stateParams.dataset_id;
-            return dataset_service.get_dataset(dataset_id);
+          dataset_payload: ['dataset_service', '$stateParams', '$state', '$q', 'spinner_utility', function (dataset_service, $stateParams, $state, $q, spinner_utility) {
+            return dataset_service.get_dataset($stateParams.dataset_id)
+              .catch(function (response) {
+                if (response.status == 400 && response.data.message == 'Organization ID mismatch between dataset and organization') {
+                  // Org id mismatch, likely due to switching organizations while viewing a dataset_detail page
+                  _.delay(function () {
+                    $state.go('dataset_list');
+                    spinner_utility.hide();
+                  });
+                  // Resolve with empty response to avoid error alert
+                  return $q.resolve({
+                    status: 'success',
+                    dataset: {}
+                  });
+                }
+                return $q.reject(response);
+              });
           }],
           auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
             var organization_id = user_service.get_organization().id;

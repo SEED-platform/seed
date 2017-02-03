@@ -100,7 +100,7 @@ class CycleView(GenericViewSet):
         try:
             org = Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
-            return JsonResponse({"status": 'error', 'message': 'organization_id not provided'},
+            return JsonResponse({'status': 'error', 'message': 'organization_id not provided'},
                                 status=status.HTTP_400_BAD_REQUEST)
         record = Cycle.objects.create(
             organization=org,

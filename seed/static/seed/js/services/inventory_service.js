@@ -572,6 +572,17 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
     };
 
+    // Save non-empty sort/filter states
+    inventory_service.saveGridSettings = function (key, settings) {
+      key += '.' + user_service.get_organization().id;
+      localStorage.setItem(key, JSON.stringify(settings));
+    };
+
+    inventory_service.loadGridSettings = function (key) {
+      key += '.' + user_service.get_organization().id;
+      return localStorage.getItem(key);
+    };
+
     inventory_service.removeSettings = function (key) {
       key += '.' + user_service.get_organization().id;
       localStorage.removeItem(key);
@@ -607,6 +618,38 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       var pinned = _.remove(columns, 'pinnedLeft');
       var selected = _.remove(columns, 'visible');
       return pinned.concat(selected).concat(columns);
+    };
+
+    inventory_service.search_matching_inventory = function (query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id) {
+      spinner_utility.show();
+      return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', {}).then(function (response) {
+        spinner_utility.hide();
+        return response.data;
+      });
+    };
+
+    inventory_service.save_property_match = function (source_property_id, target_property_id, create_match) {
+      // TODO: Fix url
+      return $http.post(urls.save_match, {
+        source_inventory_id: source_property_id,
+        target_inventory_id: target_property_id,
+        create_match: create_match,
+        organization_id: user_service.get_organization().id
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    inventory_service.save_taxlot_match = function (source_taxlot_id, target_taxlot_id, create_match) {
+      // TODO: Fix url
+      return $http.post(urls.save_match, {
+        source_inventory_id: source_taxlot_id,
+        target_inventory_id: target_taxlot_id,
+        create_match: create_match,
+        organization_id: user_service.get_organization().id
+      }).then(function (response) {
+        return response.data;
+      });
     };
 
     return inventory_service;

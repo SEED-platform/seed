@@ -12,23 +12,17 @@ angular.module('BE.seed.controller.dataset', [])
     '$state',
     function ($scope, datasets_payload, $uibModal, urls, dataset_service, $state) {
       $scope.datasets = datasets_payload.datasets;
-      $scope.columns = [
-        {
-          title: 'Data Set Name'
-        },
-        {
-          title: '# Of Files'
-        },
-        {
-          title: 'Last Changed'
-        },
-        {
-          title: 'Changed By'
-        },
-        {
-          title: 'Actions'
-        }
-      ];
+      $scope.columns = [{
+        title: 'Data Set Name'
+      }, {
+        title: '# Of Files'
+      }, {
+        title: 'Last Changed'
+      }, {
+        title: 'Changed By'
+      }, {
+        title: 'Actions'
+      }];
       /**
        * Functions for dealing with editing a dataset's name
        */
@@ -85,16 +79,22 @@ angular.module('BE.seed.controller.dataset', [])
       };
 
       $scope.confirm_delete = function (dataset) {
-        var yes = confirm('Are you sure you want to PERMANENTLY delete \'' + dataset.name + '\'?');
-        if (yes) {
-          $scope.delete_dataset(dataset);
-        }
-      };
-      $scope.delete_dataset = function (dataset) {
-        dataset_service.delete_dataset(dataset.id).then(function (data) {
-          // resolve promise
-          init();
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/delete_dataset_modal.html',
+          controller: 'delete_dataset_modal_controller',
+          resolve: {
+            dataset: dataset
+          }
         });
+
+        modalInstance.result.then(
+          // modal close() function
+          function () {
+            init();
+            // modal dismiss() function
+          }, function (message) {
+            init();
+          });
       };
       $scope.update_dataset = function (dataset) {
         dataset_service.update_dataset(dataset).then(function (data) {
@@ -158,7 +158,7 @@ angular.module('BE.seed.controller.dataset', [])
       };
 
       /**
-       * event brocasted from menu controller when a new dataset is added
+       * event broadcasted from menu controller when a new dataset is added
        */
       $scope.$on('datasets_updated', function () {
         init();

@@ -961,7 +961,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         body = request.data
         org = Organization.objects.get(pk=pk)
-        email = body['sub_org_owner_email']
+        email = body['sub_org_owner_email'].lower()
         try:
             user = User.objects.get(username=email)
         except User.DoesNotExist:

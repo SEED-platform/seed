@@ -2,69 +2,75 @@
  * :copyright: (c) 2014 Building Energy Inc
  */
 angular.module('BE.seed.controller.dataset_detail', [])
-.controller('dataset_detail_controller', [
-  '$scope',
-  'dataset_payload',
-  '$log',
-  'dataset_service',
-  '$uibModal',
-  'urls',
-  function ($scope, dataset_payload, $log, dataset_service, $uibModal, urls) {
-    $scope.dataset = dataset_payload.dataset;
+  .controller('dataset_detail_controller', [
+    '$scope',
+    'dataset_payload',
+    '$log',
+    'dataset_service',
+    '$uibModal',
+    'urls',
+    function ($scope, dataset_payload, $log, dataset_service, $uibModal, urls) {
+      $scope.dataset = dataset_payload.dataset;
 
-    _.forOwn($scope.dataset.importfiles, function(value, key) {
+      _.forOwn($scope.dataset.importfiles, function (value, key) {
         value['created'] = new Date(value['created']);
-    });
+      });
 
-    $scope.confirm_delete = function (file) {
-        var yes = confirm('Are you sure you want to PERMANENTLY delete \'' + file.name + '\'?');
-        if (yes) {
-            $scope.delete_file(file);
-        }
-    };
-    $scope.delete_file = function(file) {
-        dataset_service.delete_file(file.id).then(function(data) {
-            // resolve promise
-            init();
+      $scope.confirm_delete = function (file) {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/delete_file_modal.html',
+          controller: 'delete_file_modal_controller',
+          resolve: {
+            file: file
+          }
         });
-    };
 
-    /**
-     * open_data_upload_modal: opens the data upload modal to step 4, add energy files
-     */
-    $scope.open_data_upload_modal = function() {
+        modalInstance.result.then(
+          // modal close() function
+          function () {
+            init();
+            // modal dismiss() function
+          }, function (message) {
+            init();
+          });
+      };
+
+      /**
+       * open_data_upload_modal: opens the data upload modal to step 4, add energy files
+       */
+      $scope.open_data_upload_modal = function () {
         var dataModalInstance = $uibModal.open({
-            templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
-            controller: 'data_upload_modal_controller',
-            resolve: {
-                cycles: ['cycle_service', function (cycle_service) {
-                    return cycle_service.get_cycles();
-                }],
-                step: function(){
-                    return 2;
-                },
-                dataset: function(){
-                    return $scope.dataset;
-                }
+          templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
+          controller: 'data_upload_modal_controller',
+          resolve: {
+            cycles: ['cycle_service', function (cycle_service) {
+              return cycle_service.get_cycles();
+            }],
+            step: function () {
+              return 2;
+            },
+            dataset: function () {
+              return $scope.dataset;
             }
+          }
         });
 
         dataModalInstance.result.then(
-            // modal close() function
-            function () {
-                init();
+          // modal close() function
+          function () {
+            init();
             // modal dismiss() function
-        }, function (message) {
-                // dismiss
-                init();
-        });
-    };
+          }, function (message) {
+            // dismiss
+            init();
+          });
+      };
 
-    var init = function(){
-        dataset_service.get_dataset($scope.dataset.id).then(function(data){
-            // resolve promise
-            $scope.dataset = data.dataset;
+      var init = function () {
+        dataset_service.get_dataset($scope.dataset.id).then(function (data) {
+          // resolve promise
+          $scope.dataset = data.dataset;
         });
-    };
+      };
 
-}]);
+    }]);

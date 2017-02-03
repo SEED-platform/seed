@@ -631,12 +631,29 @@ angular.module('BE.seed.controller.mapping', [])
         return false;
       };
 
-      $scope.disable_mapping_button = function () {
-        if ($scope.duplicates_present()){
-          angular.element('.mapping-button').prop('disabled', true);
-        } else {
-          angular.element('.mapping-button').prop('disabled', false);
+      /*
+       * check_fields: called by ng-disabled for "Map Your Data" button.  Checks for duplicates and for required fields.
+       */
+      $scope.check_fields = function () {
+        return $scope.duplicates_present() || !$scope.required_fields_present();
+      }
+
+      /*
+       * required_fields_present: check for presence of at least one field used by SEED to match records
+       */
+      $scope.required_fields_present = function () {
+        var required_fields = [
+            {header: 'Jurisdiction Tax Lot Id', inventory_type: 'TaxLotState'},
+            {header: 'Pm Property Id', inventory_type: 'PropertyState'},
+            {header: 'Custom Id 1', inventory_type: 'PropertyState'},
+            {header: 'Custom Id 1', inventory_type: 'TaxLotState'},
+            {header: 'Address Line 1', inventory_type: 'PropertyState'},
+            {header: 'Address Line 1', inventory_type: 'TaxLotState'}
+        ];
+        function compare_fields(x,y) {
+          return x.header == y.suggestion && x.inventory_type == y.suggestion_table_name;
         }
+        return _.intersectionWith(required_fields,$scope.raw_columns, compare_fields).length > 0;
       };
 
       $scope.backToMapping = function () {
