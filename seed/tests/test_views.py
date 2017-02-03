@@ -1575,6 +1575,8 @@ class ImportFileViewsTests(TestCase):
         }
         self.user = User.objects.create_superuser(**user_details)
         self.org = Organization.objects.create()
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2016, 1, 1))
         OrganizationUser.objects.create(user=self.user, organization=self.org)
 
         self.import_record = ImportRecord.objects.create(owner=self.user)
@@ -1582,6 +1584,7 @@ class ImportFileViewsTests(TestCase):
         self.import_record.save()
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
+            cycle=self.cycle,
             cached_first_row='Name|#*#|Address'
         )
 
