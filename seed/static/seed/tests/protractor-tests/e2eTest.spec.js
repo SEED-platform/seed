@@ -7,16 +7,6 @@ var hasClass = function (element, cls) {
     });
 };
 
-var selectDropdownbyText = function ( element, optionSelect ) {
-    element.all(by.tagName('option')).filter(function(org) {
-        return org.getText().then(function(label) { 
-            return label == optionSelect;
-        });
-    }).first().click();
-};
-
-// This is the name of the org we're working on. i.e. first parent we find
-var globalOrg;
 var EC = protractor.ExpectedConditions;
 
 // Login
@@ -31,7 +21,7 @@ describe('When I visit the login page', function () {
     it('should see title', function () {
         // browser.get("/app");
         // browser.ignoreSynchronization = false;
-        expect(browser.getTitle()).toEqual('SEED Platform™');
+        expect(browser.getTitle()).toContain('SEED Platform');
     });
 });
 
@@ -49,128 +39,188 @@ describe('When I visit the login page', function () {
  // Admin page:
  describe('When I go to admin page', function () {
      it('should create new test org', function () {
-        // browser.get("/app/#/profile/admin");
+        browser.ignoreSynchronization = false;
+        browser.get("/app/#/profile/admin");
+        $('#org_name').sendKeys(browser.params.testOrg.parent);
+        $('#user_emails').element(by.cssContainingText('option', browser.params.login.user)).click();
+        $('[ng-click="org_form.add(org)"]').click();
+
+        //  browser.wait(function() {
+        //     var myNewOrg;
+        //     return element.all(by.repeater('org in org_user.organizations')).then(function(rows) {
+        //         expect(rows.length).not.toBeLessThan(1);
+        //         for(var i=0;i<rows.length;i++){
+        //             rows[i].all(by.tagName('td')).then(function(inner) {
+        //                 for(var j=0;j<inner.length;j++){
+        //                     inner[j].getText().then(function(text) {
+        //                         if (text.includes(browser.params.testOrg.parent)) {
+        //                             myNewOrg = inner;
+        //                         }
+        //                     });
+        //                     if(myNewOrg) break;
+        //                 }
+        //             });
+        //             if(myNewOrg) break;
+        //         }
+        //     });
+        // }, 2000).then(function(){
+        //     expect(myNewOrg.isPresent()).toBe(true);
+        // });
+
+        var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
+            expect(rows.length).not.toBeLessThan(1);
+            return rows.getText().then(function (label) {
+                return label.includes(browser.params.testOrg.parent);
+            });
+        }).first();
+        expect(myNewOrg.isPresent()).toBe(true);
+
      });
+    it('should create new user for test org', function () {
+        $('#first_name').sendKeys('Test');
+        $('#last_name').sendKeys('Testy');
+        $('#user_email').sendKeys('testy@test.com');
+        $('[ng-model="user.organization"]').element(by.cssContainingText('option', browser.params.testOrg.parent)).click();
+        $('[ng-click="user_form.add(user)"]').click();
+
+        $('[ng-model="org_user.organization"]').element(by.cssContainingText('option', browser.params.testOrg.parent)).click();
+        var myNewUser = element.all(by.repeater('user in org_user.users')).filter(function (rows) {
+            expect(rows.length).not.toBeLessThan(1);
+            return rows.getText().then(function (label) {
+                return label.includes('testy@test.com');
+            });
+        }).first();
+        expect(myNewUser.isPresent()).toBe(true);
+    });
+
+    it('should delete new user for test org', function () {
+        $('[ng-model="org_user.organization"]').element(by.cssContainingText('option', browser.params.testOrg.parent)).click();
+        var myNewUser = element.all(by.repeater('user in org_user.users')).filter(function (rows) {
+            expect(rows.length).not.toBeLessThan(1);
+            return rows.getText().then(function (label) {
+                return label.includes('testy@test.com');
+            });
+        }).first();
+        myNewUser.$('button').click();
+        browser.sleep(100);
+        expect(myNewUser.isPresent()).toBe(false);
+    });
  });
 
 
 // Accounts page
-// describe('When I visit the accounts page', function () {
-//     it('should see my organizations', function () {
-//         browser.ignoreSynchronization = false;
-//         browser.get("/app/#/accounts");
+describe('When I visit the accounts page', function () {
+    it('should see my organizations', function () {
+        browser.ignoreSynchronization = false;
+        browser.get("/app/#/accounts");
 
-//         var orgsAreThere = $('.section_content_container').$('.section_content').$('.table_list_container');
+        var rows = element.all(by.repeater('org in orgs_I_own'));
+        expect(rows.count()).not.toBeLessThan(1);
+    });
+    it('should find and create new sub org', function () {
+        var myNewOrg = element(by.cssContainingText('.account_org.parent_org', browser.params.testOrg.parent))
+            .element(by.xpath('..')).element(by.xpath('..'));
+        expect(myNewOrg.isPresent()).toBe(true);
 
-    //     browser.wait(EC.presenceOf(orgsAreThere), 5000);
-    //     var rows = element.all(by.repeater('org in orgs_I_own')).map(function (elm) {
-    //         return elm;
-    //     });
-    //     expect(rows.length).not.toBeLessThan(1);
-    // });
-    // it('should find and create new sub org', function () {
-    //     var myDiv = element.all(by.css('[ng-show="org.is_parent"]')).filter(function (elm) {
-//             return elm.isDisplayed().then(function (isDisplayed) {
-//                 return isDisplayed;
-//             });
-//         }).first();
-
-//         // This is the name of the org we're working on. i.e. first parent we find
-//         myDiv.element(by.xpath('..')).$('.account_org.parent_org').getText().then(function(text) {
-//             globalOrg = text;
-//         });
-
-//         browser.actions().mouseMove(myDiv.$('.sub_head.sub_org.right')).perform();
-//         myDiv.$('.sub_head.sub_org.right').$('a').click(); 
-//         $('[id="createOrganizationName"]').sendKeys('test sub org');
-//         $('[id="createOrganizationInvite"]').sendKeys(browser.params.login.user);
-//         $('.btn.btn-primary').click();
-//         var myNewSub = element.all(by.repeater('sub_org in org.sub_orgs')).filter(function(sub) {
-//             return sub.$('.account_org.left').getText().then(function(label) { 
-//                 return label == 'test sub org';
-//             });
-//         });
-        // // expect(myNewSub.count() > 0);
-        // var rows = element.all(myNewSub).map(function (elm) {
-        //     return elm;
-        // });
-        // expect(rows.length).not.toBeLessThan(1);
-//         browser.actions().mouseMove(myNewSub.get(0).$('.account_org.right')).perform();
-//         myNewSub.get(0).$('.account_org.right a').click();
-//     });
-//     it('should change the sub org name', function () {
-//         $('input').clear().then(function() {
-//             $('input').sendKeys('Another test sub name');
-//         });
-//         $('[ng-click="save_settings()"]').click();
-//         expect($('.page_title').getText()).toEqual('Another test sub name');
-//     });
-//     it('should go back to orgranizations', function () {
-//         $('[ui-sref="organizations"]').click();
-//         expect($('.page_title').getText()).toEqual('Organizations');
-//     });
-// });
-// describe('When I visit the the parent org', function () {
-//     it('should go to parent organization', function () {
-//         var myDiv = element.all(by.css('[ng-show="org.is_parent"]')).filter(function (elm) {
-//             return elm.isDisplayed().then(function (isDisplayed) {
-//                 return isDisplayed;
-//             });
-//         }).first().element(by.xpath('..')).$('.account_org.right');
-//         browser.actions().mouseMove(myDiv).perform();
-//         myDiv.$('a').click();
-//         var myOptions = element.all(by.css('a')).filter(function (elm) {
-//             return elm.getText().then(function(label) { 
-//                 return label == 'Cycles';
-//             });
-//         }).first();
-//         myOptions.click();
-//         expect($('.table_list_container').isPresent()).toBe(true);
-//     });
-//     it('should create new cycle', function () {
-//         $('[ng-model="new_cycle.name"]').sendKeys('protractor test cycle 2017');
-//         $('[ng-model="new_cycle.start"]').sendKeys('01-01-2017');
-//         $('[ng-model="new_cycle.end"]').sendKeys('12-31-2017');
-//         $('#btnCreateCycle').click();
+        browser.actions().mouseMove(myNewOrg.$('[ng-show="org.is_parent"]').$('.sub_head.sub_org.right')).perform();
+        myNewOrg.$('.sub_head.sub_org.right').$('a').click(); 
+        $('[id="createOrganizationName"]').sendKeys(browser.params.testOrg.child);
+        $('[id="createOrganizationInvite"]').sendKeys(browser.params.login.user);
+        $('.btn.btn-primary').click();
         
-//         var myNewCycle = element.all(by.repeater('cycle in cycles')).filter(function(sub) {
-//             return sub.element(by.tagName('td')).$('[ng-show="!rowform.$visible"]').getText().then(function(label) { 
-//                 return label == 'protractor test cycle 2017';
-//             });
-//         }).first();
-//         expect(myNewCycle.element(by.tagName('td')).$('[ng-show="!rowform.$visible"]').getText()).toEqual('protractor test cycle 2017');
-//     });
-//  //TODO add other settings from parent
-// });
+        var myNewSub = element(by.cssContainingText('.account_org.left', browser.params.testOrg.child))
+            .element(by.xpath('..'));
+        
+        // expect(myNewSub.count() > 0);
+        expect(myNewSub.isPresent()).toBe(true);
+        browser.actions().mouseMove(myNewSub.$('.account_org.right')).perform();
+        myNewSub.$('.account_org.right a').click();
+    });
+    it('should change the sub org name', function () {
+        $('input').clear().then(function() {
+            $('input').sendKeys(browser.params.testOrg.childRename);
+            $('[ng-click="save_settings()"]').click();
+            expect($('.page_title').getText()).toEqual(browser.params.testOrg.childRename);
+        });
+    });
+    it('should go back to orgranizations', function () {
+        $('[ui-sref="organizations"]').click();
+        expect($('.page_title').getText()).toEqual('Organizations');
+    });
+});
+describe('When I visit the the parent org', function () {
+    it('should go to parent organization', function () {
+        var myNewOrg = element(by.cssContainingText('.account_org.parent_org', browser.params.testOrg.parent))
+            .element(by.xpath('..')).$('.account_org.right');
+        
+        expect(myNewOrg.isPresent()).toBe(true);
 
-// // Select my new sub org
-// describe('When I click the orgs button', function () {
-//     it('should be able to switch to my org', function () {
-//         browser.get("/app/#/data");
-//         $('#btnUserOrgs').click();
-//         var myOrg = element.all(by.repeater('org in menu.user.organizations')).filter(function(org) {
-//             return org.$('a.ng-binding').getText().then(function(label) {
-//                 return label == globalOrg;
-//             });
-//         }).first().$('a.ng-binding').click();
-//         expect($('#btnUserOrgs').getText()).toEqual(globalOrg)
-//     });
-// });
+        browser.actions().mouseMove(myNewOrg).perform();
+        myNewOrg.$('a').click();
+        var myOptions = element.all(by.css('a')).filter(function (elm) {
+            return elm.getText().then(function(label) { 
+                return label == 'Cycles';
+            });
+        }).first();
+        myOptions.click();
+        expect($('.table_list_container').isPresent()).toBe(true);
+    });
+    it('should create new cycle', function () {
+        $('[ng-model="new_cycle.name"]').sendKeys(browser.params.testOrg.cycle);
+        $('[ng-model="new_cycle.start"]').sendKeys('01-01-2017');
+        $('[ng-model="new_cycle.end"]').sendKeys('12-31-2017');
+        $('#btnCreateCycle').click();
+        
+        var myNewCycle = element.all(by.repeater('cycle in cycles')).filter(function(sub) {
+            return sub.element(by.tagName('td')).$('[ng-show="!rowform.$visible"]').getText().then(function(label) { 
+                return label == browser.params.testOrg.cycle;
+            });
+        }).first();
+        expect(myNewCycle.element(by.tagName('td')).$('[ng-show="!rowform.$visible"]').getText()).toEqual(browser.params.testOrg.cycle);
+    });
+    it('should create new label', function () {
+        var myOptions = element.all(by.css('a')).filter(function (elm) {
+            return elm.getText().then(function(label) { 
+                return label == 'Labels';
+            });
+        }).first();
+        myOptions.click();
+        
+        $('input').sendKeys('fake label');
+        $('.input-group-btn.dropdown').click();
+        element(by.cssContainingText('.dropdown-menu.pull-right', 'orange')).click();
+        $('#btnCreateLabel').click();
+        var myNewLabel = element(by.cssContainingText('[editable-text="label.name"]', 'fake label'))
+            .element(by.xpath('..')).element(by.xpath('..'));
 
-// Data Set page
+        expect(myNewLabel.isPresent()).toBe(true);
+        myNewLabel.$('[ng-click="deleteLabel(label, $index)"]').click();
+        browser.sleep(300);
+        $('.btn.btn-primary.ng-binding').click();
+        expect(myNewLabel.isPresent()).toBe(false);
+    });
+});
+
+// Select my new sub org
+describe('When I click the orgs button', function () {
+    it('should be able to switch to my org', function () {
+        browser.get("/app/#/data");
+        $('#btnUserOrgs').click();
+        element(by.cssContainingText('[ng-click="set_user_org(org)"]', browser.params.testOrg.parent)).click();
+        expect($('#btnUserOrgs').getText()).toEqual(browser.params.testOrg.parent)
+    });
+});
+
+// // Data Set page
 describe('When I visit the data set page', function () {
     it('should be able to create a new data set', function () {
-        
-        //temp
-        browser.get("/app/#/data");
-        browser.sleep(2000);
 
         $('[ui-sref="dataset_list"]').click();
         browser.sleep(500);
         $('input').sendKeys('my fake dataset');
         $('[ng-click="create_dataset(dataset.name)"]').click();
-        // selectDropdownbyText(element, "protractor test cycle 2017");
-        element(by.cssContainingText('option', 'protractor test cycle 2017')).click();
+        // selectDropdownbyText(element, browser.params.testOrg.cycle);
+        element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
         // $('[buttontext="Upload a Spreadsheet"]').$('.qq-uploader').click();
 
         var path = require('path');
@@ -180,6 +230,7 @@ describe('When I visit the data set page', function () {
 
         element(by.xpath('//input[@type="file"]')).sendKeys(absolutePath);
         var passingBar = $('.alert.alert-success');
+        browser.ignoreSynchronization = true; //not angular based
         browser.wait(EC.presenceOf(passingBar), 120000);
         expect($('.alert.alert-success').isPresent()).toBe(true);
         expect($('[ng-click="goto_data_mapping()"]').isPresent()).toBe(true);
@@ -200,6 +251,7 @@ describe('When I visit the data set page', function () {
         $('[ng-click="remap_buildings()"]').click();
     });
     it('should go to mapping Validation', function () {
+        browser.ignoreSynchronization = true;
         browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),120000);       
         expect($('[heading="View by Property"]').isPresent()).toBe(true);
         expect($('[heading="View by Tax Lot"]').isPresent()).toBe(true);
@@ -207,67 +259,58 @@ describe('When I visit the data set page', function () {
             return elm;
         });
         expect(rows.length).not.toBeLessThan(1);
+        browser.ignoreSynchronization = false;
     });
 
     it('should save mappings', function () {
         $('#save-mapping').click();
-        browser.sleep(500);
+        browser.sleep(5000);
         $('#confirm-mapping').click();
     });
 });
 
- // Admin page last:
- describe('When I go to admin page', function () {
-     it('should delete new test org', function () {
-        // browser.get("/app/#/profile/admin");
-     });
+
+ // Check inventory Page:
+ describe('When I go to the inventory page', function () {
+    it('should ', function () {
+    // click inventory
+    });
  });
 
 
-// describe('And I have a project', function () {
-//     it('should have a project', function () {
-//         Project.objects.create(
-//             name="my project",
-//             super_organization_id=world.org.id,
-//             owner=world.user
-//         )
-//     });
-// });
+ // Delete created dataset:
+ describe('When I go to the dataset page', function () {
+    it('should delete dataset', function () {
+    // click dataset 
+    });
+ });
 
+ // Admin page last:
+ describe('When I go to admin page', function () {
+    it('should delete new test org', function () {
+        browser.ignoreSynchronization = false;
+        browser.get("/app/#/profile/admin");
+        var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
+            expect(rows.length).not.toBeLessThan(1);
+            return rows.getText().then(function (label) {
+                return label.includes(browser.params.testOrg.parent);
+            });
+        }).first();
+        expect(myNewOrg.isPresent()).toBe(true);
 
-// describe('And I have a dataset', function () {
-//     it('should and_i_have_a_dataset', function () {
-//         ImportRecord.objects.create(
-//             name='dataset 1',
-//             super_organization=world.org,
-//             owner=world.user
-//         )
-//     });
-// });
+        myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]').click();
+        browser.wait(EC.alertIsPresent(), 10000, "Remove inventory Alert is not present");
+        browser.switchTo().alert().accept();
+        // expect(myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]').isDisabled()).toBe(true);
 
-
-// describe('When I visit the dataset page', function () {
-//     it('should when_i_visit_the_dataset_page', function () {
-//         browser.get("/app" + "#/data");
-//     });
-// });
-
-
-// describe('And I delete a dataset', function () {
-//     it('should and_i_delete_a_dataset', function () {
-//         delete_icon = browser.find_by_css('.delete_link')
-//         delete_icon.click()
-//         alert = browser.get_alert()
-//         alert.accept()
-//     });
-// });
-
-
-// describe('Then I should see no datasets', function () {
-//     it('should then_i_should_see_no_datasets', function () {
-//         number_of_datasets = len(browser.find_by_css('.import_row'))
-//         number_of_datasets = len(browser.find_by_css('.import_row'))
-//         number_of_datasets = len(browser.find_by_css('.import_row'))
-//         assert number_of_datasets == 0
-//     });
-// });
+        browser.wait(EC.presenceOf(myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]')), 120000);
+        myNewOrg.$('[ng-click="confirm_org_delete(org)"]').click();
+        browser.wait(EC.alertIsPresent(), 10000, "Remove org Alert is not present";
+        browser.switchTo().alert().accept();
+        // accept again
+        browser.wait(EC.alertIsPresent(), 10000, "Second remove org Alert is not present");
+        browser.switchTo().alert().accept();
+        browser.sleep(5000)
+        expect(myNewOrg.isPresent()).toBe(false);
+    });
+ });

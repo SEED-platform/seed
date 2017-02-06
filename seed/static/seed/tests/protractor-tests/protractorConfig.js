@@ -9,6 +9,12 @@ exports.config = {
    		login: {
    			user: 'daniel@devetry.com',
    			password: 'test'
+		},
+		testOrg: {
+			parent: "Protractor test org",
+			child: "Protractor test sub org",
+			childRename: "Protractor sub rename",
+			cycle: "Protractor test cycle"
 		}
    	}
 }
