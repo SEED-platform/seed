@@ -5,10 +5,10 @@ exports.config = {
 	specs: ['e2eTest.spec.js'],
 	baseUrl: 'http://localhost:8000/',
 	rootElement: '.app',
- 	params: {
-   		login: {
-   			user: 'daniel@devetry.com',
-   			password: 'test'
+	params: {
+		login: {
+			user: 'daniel@devetry.com',
+			password: 'test'
 		},
 		testOrg: {
 			parent: "Protractor test org",
@@ -16,5 +16,5 @@ exports.config = {
 			childRename: "Protractor sub rename",
 			cycle: "Protractor test cycle"
 		}
-   	}
+	}
 }
