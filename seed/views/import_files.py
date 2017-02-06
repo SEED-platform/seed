@@ -32,6 +32,7 @@ from seed.models import (
     TaxLotState,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
+    MERGE_STATE_UNKNOWN,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
     Cycle,
@@ -257,6 +258,8 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         import_file_id = pk
 
+        review = request.data.get('review', False)
+
         # get the field names that were in the mapping
         import_file = ImportFile.objects.get(id=import_file_id)
         field_names = import_file.get_cached_mapped_columns
@@ -279,14 +282,16 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         properties = PropertyState.objects.order_by('id').filter(
             import_file__pk=import_file_id,
-            data_state=DATA_STATE_MAPPING,
+            data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
         ).values(*fields['PropertyState'])
-        properties = list(properties)
-
         tax_lots = TaxLotState.objects.order_by('id').filter(
             import_file__pk=import_file_id,
-            data_state=DATA_STATE_MAPPING,
+            data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
         ).values(*fields['TaxLotState'])
+        if review:
+            properties = properties.exclude(merge_state=MERGE_STATE_UNKNOWN)
+            tax_lots = tax_lots.exclude(merge_state=MERGE_STATE_UNKNOWN)
+        properties = list(properties)
         tax_lots = list(tax_lots)
 
         _log.debug("Found {} properties".format(len(properties)))

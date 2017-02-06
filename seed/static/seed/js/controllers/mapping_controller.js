@@ -370,7 +370,7 @@ angular.module('BE.seed.controller.mapping', [])
       /*
        * get_mapped_buildings: gets mapped buildings for the preview table
        */
-      $scope.get_mapped_buildings = function () {
+      $scope.get_mapped_buildings = function (review) {
         $scope.import_file.progress = 0;
         $scope.save_mappings = true;
         $scope.review_mappings = true;
@@ -380,7 +380,8 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.save_mappings = false;
 
         spinner_utility.show();
-        $http.post('/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/', {}).then(function (response) {
+        $http.post('/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/',
+            { "review": review }).then(function (response) {
           spinner_utility.hide();
 
           var data = response.data
