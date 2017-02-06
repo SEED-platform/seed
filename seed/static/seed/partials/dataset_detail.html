@@ -29,7 +29,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="f in dataset.importfiles" class="file_to_import " ng-class="f.status_classes">
+                            <tr ng-repeat="f in dataset.importfiles | orderBy: '-created'" class="file_to_import " ng-class="f.status_classes">
                                 <td class="data_file_name">{$ f.name $}</td>
                                 <td>
                                     <a class="delete_link" ng-click="confirm_delete(f)"><i class="fa fa-trash-o"></i></a>
