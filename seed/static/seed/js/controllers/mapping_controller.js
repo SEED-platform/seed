@@ -184,12 +184,12 @@ angular.module('BE.seed.controller.mapping', [])
         value: 'TaxLotState'
       }];
       $scope.setAllInventoryTypes = function () {
-        _.each($scope.valids, function (valid) {
+        _.forEach($scope.valids, function (valid) {
           valid.suggestion_table_name = $scope.setAllFields.value;
           $scope.change(valid);
           // Check if the mapping button should be disabled.
-          $scope.disable_mapping_button();
-        })
+          $scope.check_fields();
+        });
       };
       $scope.setInventoryType = function (tcm) {
         var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
@@ -636,24 +636,26 @@ angular.module('BE.seed.controller.mapping', [])
        */
       $scope.check_fields = function () {
         return $scope.duplicates_present() || !$scope.required_fields_present();
-      }
+      };
 
       /*
        * required_fields_present: check for presence of at least one field used by SEED to match records
        */
       $scope.required_fields_present = function () {
         var required_fields = [
-            {header: 'Jurisdiction Tax Lot Id', inventory_type: 'TaxLotState'},
-            {header: 'Pm Property Id', inventory_type: 'PropertyState'},
-            {header: 'Custom Id 1', inventory_type: 'PropertyState'},
-            {header: 'Custom Id 1', inventory_type: 'TaxLotState'},
-            {header: 'Address Line 1', inventory_type: 'PropertyState'},
-            {header: 'Address Line 1', inventory_type: 'TaxLotState'}
+          {header: 'Jurisdiction Tax Lot Id', inventory_type: 'TaxLotState'},
+          {header: 'Pm Property Id', inventory_type: 'PropertyState'},
+          {header: 'Custom Id 1', inventory_type: 'PropertyState'},
+          {header: 'Custom Id 1', inventory_type: 'TaxLotState'},
+          {header: 'Address Line 1', inventory_type: 'PropertyState'},
+          {header: 'Address Line 1', inventory_type: 'TaxLotState'}
         ];
-        function compare_fields(x,y) {
+
+        function compare_fields(x, y) {
           return x.header == y.suggestion && x.inventory_type == y.suggestion_table_name;
         }
-        return _.intersectionWith(required_fields,$scope.raw_columns, compare_fields).length > 0;
+
+        return _.intersectionWith(required_fields, $scope.raw_columns, compare_fields).length > 0;
       };
 
       $scope.backToMapping = function () {
