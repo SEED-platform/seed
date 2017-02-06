@@ -13,7 +13,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'inventory',
     'cycles',
     'labels',
-    // 'columns',
+    'all_columns',
     'urls',
     'spinner_utility',
     'naturalSort',
@@ -26,7 +26,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               inventory,
               cycles,
               labels,
-              // columns,
+              all_columns,
               urls,
               spinner_utility,
               naturalSort) {
@@ -37,7 +37,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = inventory.results;
       $scope.pagination = inventory.pagination;
-      $scope.columns = inventory.columns;
+      $scope.columns = _.filter(inventory.columns, 'visible');
       $scope.total = $scope.pagination.total;
       $scope.number_per_page = 999999999;
       $scope.restoring = false;
@@ -360,7 +360,18 @@ angular.module('BE.seed.controller.inventory_list', [])
           col.pinnedLeft = col.renderContainer == 'left' && col.visible;
           return col;
         });
-        inventory_service.saveSettings(localStorageKey, cols);
+        var oldSettings = inventory_service.loadSettings(localStorageKey, all_columns);
+        oldSettings = _.map(oldSettings, function (col) {
+          col.pinnedLeft = false;
+          col.visible = false;
+          return col;
+        });
+        var visibleColumns = _.map(cols, 'name');
+        oldSettings = _.filter(oldSettings, function (col) {
+          return !_.includes(visibleColumns, col.name);
+        });
+
+        inventory_service.saveSettings(localStorageKey, cols.concat(oldSettings));
       };
 
       var saveGridSettings = function () {
@@ -420,7 +431,10 @@ angular.module('BE.seed.controller.inventory_list', [])
           });
 
           gridApi.colMovable.on.columnPositionChanged($scope, saveSettings);
-          gridApi.core.on.columnVisibilityChanged($scope, saveSettings);
+          gridApi.core.on.columnVisibilityChanged($scope, function () {
+            $scope.columns = _.filter($scope.columns, 'visible');
+            saveSettings();
+          });
           gridApi.core.on.filterChanged($scope, _.debounce(saveGridSettings, 150));
           gridApi.core.on.sortChanged($scope, _.debounce(saveGridSettings, 150));
           gridApi.pinning.on.columnPinned($scope, saveSettings);

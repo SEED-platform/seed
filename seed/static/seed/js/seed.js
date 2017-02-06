@@ -1162,6 +1162,13 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns();
             }
+          }],
+          all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns();
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns();
+            }
           }]
         }
       })
