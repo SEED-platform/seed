@@ -305,7 +305,7 @@ describe('When I visit the data set page', function () {
 
         browser.wait(EC.presenceOf(myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]')), 120000);
         myNewOrg.$('[ng-click="confirm_org_delete(org)"]').click();
-        browser.wait(EC.alertIsPresent(), 10000, "Remove org Alert is not present";
+        browser.wait(EC.alertIsPresent(), 10000, "Remove org Alert is not present");
         browser.switchTo().alert().accept();
         // accept again
         browser.wait(EC.alertIsPresent(), 10000, "Second remove org Alert is not present");
