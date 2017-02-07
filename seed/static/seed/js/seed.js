@@ -845,6 +845,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 return $q.reject(response);
               });
           }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
           auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
             var organization_id = user_service.get_organization().id;
             return auth_service.is_authorized(organization_id, ['requires_member'])

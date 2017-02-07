@@ -306,16 +306,16 @@ class DatasetViewSet(viewsets.ViewSet):
                     org_id))
             org = Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
-            return JsonResponse({"status": 'error', 'message': 'organization_id not provided'},
+            return JsonResponse({'status': 'error', 'message': 'organization_id not provided'},
                                 status=status.HTTP_400_BAD_REQUEST)
         record = ImportRecord.objects.create(
             name=body['name'],
-            app="seed",
+            app='seed',
             start_time=datetime.datetime.now(),
             created_at=datetime.datetime.now(),
             last_modified_by=request.user,
             super_organization=org,
-            owner=request.user,
+            owner=request.user
         )
 
         return JsonResponse({'status': 'success', 'id': record.pk, 'name': record.name})

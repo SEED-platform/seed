@@ -23,7 +23,8 @@
                                 <th></th>
                                 <th>Date Imported</th>
                                 <th># of Records</th>
-                                <th>Data Mapping &amp; Validation</th>
+                                <th>Cycle</th>
+                                <th>Data Mapping</th>
                                 <!--<th>Data Matching</th>-->
                                 <!--<th>Data Pairing</th>-->
                             </tr>
@@ -36,6 +37,7 @@
                                 </td>
                                 <td>{$ f.created | date: 'MM/dd/yyyy hh:mm:ss a' $}</td>
                                 <td class="is_aligned_right">{$ f.num_rows || 0 $}</td>
+                                <td>{$ getCycleName(f.cycle) $}</td>
                                 <td><a id="data-mapping-{$ $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="mapping({importfile_id: f.id})" ng-disabled="!f.num_rows">{$ f.number_of_mappings $} Data Mapping</a></td>
                                 <!--<td><a id="data-matching-{$ $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="matching({importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="!f.num_rows || !f.mapping_done">{$ f.number_of_matchings $} Data Matching</a></td>-->
                                 <!--<td><a id="data-pairing-{$ $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="pairing({importfile_id: f.id})" ng-disabled="!f.num_rows || !f.mapping_done || !f.matching_done">{$ f.number_of_pairings $} Data Pairing</a></td>-->

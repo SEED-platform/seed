@@ -51,7 +51,11 @@ angular.module('BE.seed.controller.matching', [])
       });
       $scope.selectedCycle = _.find($scope.cycles, {id: $scope.import_file.cycle});
 
-      $scope.buildings = inventory_payload.buildings;
+      if ($scope.inventory_type == 'properties') {
+        $scope.buildings = inventory_payload.properties;
+      } else {
+        $scope.buildings = inventory_payload.tax_lots;
+      }
       $scope.q = '';
       $scope.number_per_page = 10;
       $scope.current_page = 1;
@@ -60,8 +64,10 @@ angular.module('BE.seed.controller.matching', [])
       $scope.filter_params = {};
       $scope.existing_filter_params = {};
       $scope.project_slug = null;
-      $scope.number_matching_search = 0;
-      $scope.number_returned = 0;
+      $scope.number_properties_matching_search = 0;
+      $scope.number_tax_lots_matching_search = 0;
+      $scope.number_properties_returned = 0;
+      $scope.number_tax_lots_returned = 0;
       $scope.pagination = {};
       $scope.prev_page_disabled = false;
       $scope.next_page_disabled = false;
@@ -109,10 +115,20 @@ angular.module('BE.seed.controller.matching', [])
             // safe-guard against future init() calls
             inventory_payload = data;
 
-            $scope.buildings = data.buildings;
-            $scope.number_matching_search = data.number_matching_search;
-            $scope.number_returned = data.number_returned;
-            $scope.num_pages = Math.ceil(data.number_matching_search / $scope.number_per_page);
+            if ($scope.inventory_type == 'properties') {
+              $scope.buildings = data.properties;
+            } else {
+              $scope.buildings = data.tax_lots;
+            }
+            $scope.number_properties_matching_search = data.number_properties_matching_search;
+            $scope.number_tax_lots_matching_search = data.number_tax_lots_matching_search;
+            $scope.number_properties_returned = data.number_properties_returned;
+            $scope.number_tax_lots_returned = data.number_tax_lots_returned;
+            if ($scope.inventory_type == 'properties') {
+              $scope.num_pages = Math.ceil(data.number_properties_matching_search / $scope.number_per_page);
+            } else {
+              $scope.num_pages = Math.ceil(data.number_tax_lots_matching_search / $scope.number_per_page);
+            }
             update_start_end_paging();
           })
           .catch(function (data, status) {
@@ -174,9 +190,13 @@ angular.module('BE.seed.controller.matching', [])
       };
       var update_start_end_paging = function () {
         if ($scope.current_page === $scope.num_pages) {
-          $scope.showing.end = $scope.number_matching_search;
+          if ($scope.inventory_type == 'properties') {
+            $scope.showing.end = $scope.number_properties_matching_search;
+          } else {
+            $scope.showing.end = $scope.number_tax_lots_matching_search;
+          }
         } else {
-          $scope.showing.end = ($scope.current_page) * $scope.number_per_page;
+          $scope.showing.end = $scope.current_page * $scope.number_per_page;
         }
 
         $scope.showing.start = ($scope.current_page - 1) * $scope.number_per_page + 1;
@@ -349,10 +369,13 @@ angular.module('BE.seed.controller.matching', [])
       $scope.update_number_matched = function () {
         building_services.get_matching_results($scope.file_select.file.id)
           .then(function (data) {
-            // resolve promise
-            $scope.matched_buildings = data.matched;
-            $scope.unmatched_buildings = data.unmatched;
-            $scope.duplicate_buildings = data.duplicates;
+            if ($scope.inventory_type == 'properties') {
+              $scope.matched_buildings = data.properties.matched;
+              $scope.unmatched_buildings = data.properties.unmatched;
+            } else {
+              $scope.matched_buildings = data.tax_lots.matched;
+              $scope.unmatched_buildings = data.tax_lots.unmatched;
+            }
           });
       };
 
@@ -395,11 +418,19 @@ angular.module('BE.seed.controller.matching', [])
       $scope.init = function () {
         $scope.cycleChanged();
         $scope.columns = search_service.generate_columns($scope.fields, $scope.default_columns);
+        $scope.number_properties_matching_search = inventory_payload.number_properties_matching_search;
+        $scope.number_tax_lots_matching_search = inventory_payload.number_tax_lots_matching_search;
+        $scope.number_properties_returned = inventory_payload.number_properties_returned;
+        $scope.number_tax_lots_returned = inventory_payload.number_tax_lots_returned;
+
+        if ($scope.inventory_type == 'properties') {
+          $scope.buildings = inventory_payload.properties;
+          $scope.num_pages = Math.ceil(inventory_payload.number_properties_matching_search / $scope.number_per_page);
+        } else {
+          $scope.buildings = inventory_payload.tax_lots;
+          $scope.num_pages = Math.ceil(inventory_payload.number_tax_lots_matching_search / $scope.number_per_page);
+        }
         update_start_end_paging();
-        $scope.buildings = inventory_payload.buildings;
-        $scope.number_matching_search = inventory_payload.number_matching_search;
-        $scope.number_returned = inventory_payload.number_returned;
-        $scope.num_pages = Math.ceil(inventory_payload.number_matching_search / $scope.number_per_page);
 
         $scope.update_number_matched();
       };
