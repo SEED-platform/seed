@@ -44,12 +44,12 @@ angular.module('BE.seed.controller.matching', [])
       $scope.search = angular.copy(search_service);
       $scope.search.url = urls.search_buildings;
 
-      $scope.import_file = import_file_payload.import_file;
+      $scope.import_files = import_file_payload.import_file;
       var validCycles = _.uniq(_.map(import_file_payload.import_file.dataset.importfiles, 'cycle'));
       $scope.cycles = _.filter(cycles.cycles, function (cycle) {
         return _.includes(validCycles, cycle.id);
       });
-      $scope.selectedCycle = _.find($scope.cycles, {id: $scope.import_file.cycle});
+      $scope.selectedCycle = _.find($scope.cycles, {id: $scope.import_files.cycle});
 
       $scope.buildings = inventory_payload.buildings;
       $scope.q = '';
@@ -76,7 +76,7 @@ angular.module('BE.seed.controller.matching', [])
       $scope.columns = [];
       $scope.alerts = [];
       $scope.file_select = {
-        file: $scope.import_file.dataset.importfiles[0]
+        file: $scope.import_files.dataset.importfiles[0]
       };
       $scope.detail = {
         match_tree: []
@@ -374,7 +374,7 @@ angular.module('BE.seed.controller.matching', [])
 
       $scope.cycleChanged = function () {
         var initial = _.isUndefined($scope.import_files);
-        $scope.import_files = _.filter($scope.import_file.dataset.importfiles, function (file) {
+        $scope.import_files = _.filter($scope.import_files.dataset.importfiles, function (file) {
           return file.cycle == $scope.selectedCycle.id;
         });
         if (!initial) {

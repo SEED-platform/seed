@@ -27,22 +27,23 @@ describe('When I visit the login page', function () {
 
 
 // Older Jasmine tests:
- describe('When I go to jamine tests', function () {
+describe('When I go to jamine tests', function () {
+        browser.ignoreSynchronization = true;
      it('should run jasmine unit tests and pass', function () {
         browser.get("/app/angular_js_tests");
         var passingBar = $('.passingAlert.bar');
         browser.wait(EC.presenceOf(passingBar), 5000);
         expect($('.passingAlert.bar').isPresent()).toBe(true);
      });
- });
+});
 
- // Admin page:
- describe('When I go to admin page', function () {
+// Admin page:
+describe('When I go to admin page', function () {
      it('should create new test org', function () {
         browser.ignoreSynchronization = false;
         browser.get("/app/#/profile/admin");
         $('#org_name').sendKeys(browser.params.testOrg.parent);
-        $('#user_emails').element(by.cssContainingText('option', browser.params.login.user)).click();
+        $$('#user_emails').first().element(by.cssContainingText('option', browser.params.login.user)).click();
         $('[ng-click="org_form.add(org)"]').click();
 
         //  browser.wait(function() {
@@ -79,7 +80,7 @@ describe('When I visit the login page', function () {
     it('should create new user for test org', function () {
         $('#first_name').sendKeys('Test');
         $('#last_name').sendKeys('Testy');
-        $('#user_email').sendKeys('testy@test.com');
+        $$('#user_email').first().sendKeys('testy@test.com');
         $('[ng-model="user.organization"]').element(by.cssContainingText('option', browser.params.testOrg.parent)).click();
         $('[ng-click="user_form.add(user)"]').click();
 
@@ -105,7 +106,7 @@ describe('When I visit the login page', function () {
         browser.sleep(100);
         expect(myNewUser.isPresent()).toBe(false);
     });
- });
+});
 
 
 // Accounts page
@@ -123,7 +124,7 @@ describe('When I visit the accounts page', function () {
         expect(myNewOrg.isPresent()).toBe(true);
 
         browser.actions().mouseMove(myNewOrg.$('[ng-show="org.is_parent"]').$('.sub_head.sub_org.right')).perform();
-        myNewOrg.$('.sub_head.sub_org.right').$('a').click(); 
+        myNewOrg.$('.sub_head.sub_org.right').$$('a').first().click(); 
         $('[id="createOrganizationName"]').sendKeys(browser.params.testOrg.child);
         $('[id="createOrganizationInvite"]').sendKeys(browser.params.login.user);
         $('.btn.btn-primary').click();
@@ -134,12 +135,12 @@ describe('When I visit the accounts page', function () {
         // expect(myNewSub.count() > 0);
         expect(myNewSub.isPresent()).toBe(true);
         browser.actions().mouseMove(myNewSub.$('.account_org.right')).perform();
-        myNewSub.$('.account_org.right a').click();
+        myNewSub.$$('.account_org.right a').first().click();
     });
     it('should change the sub org name', function () {
         $('input').clear().then(function() {
             $('input').sendKeys(browser.params.testOrg.childRename);
-            $('[ng-click="save_settings()"]').click();
+            $$('[ng-click="save_settings()"]').first().click();
             expect($('.page_title').getText()).toEqual(browser.params.testOrg.childRename);
         });
     });
@@ -156,7 +157,7 @@ describe('When I visit the the parent org', function () {
         expect(myNewOrg.isPresent()).toBe(true);
 
         browser.actions().mouseMove(myNewOrg).perform();
-        myNewOrg.$('a').click();
+        myNewOrg.$$('a').first().click();
         var myOptions = element.all(by.css('a')).filter(function (elm) {
             return elm.getText().then(function(label) { 
                 return label == 'Cycles';
@@ -172,11 +173,11 @@ describe('When I visit the the parent org', function () {
         $('#btnCreateCycle').click();
         
         var myNewCycle = element.all(by.repeater('cycle in cycles')).filter(function(sub) {
-            return sub.element(by.tagName('td')).$('[ng-show="!rowform.$visible"]').getText().then(function(label) { 
+            return sub.all(by.tagName('td')).first().$('[ng-show="!rowform.$visible"]').getText().then(function(label) { 
                 return label == browser.params.testOrg.cycle;
             });
         }).first();
-        expect(myNewCycle.element(by.tagName('td')).$('[ng-show="!rowform.$visible"]').getText()).toEqual(browser.params.testOrg.cycle);
+        expect(myNewCycle.all(by.tagName('td')).first().$('[ng-show="!rowform.$visible"]').getText()).toEqual(browser.params.testOrg.cycle);
     });
     it('should create new label', function () {
         var myOptions = element.all(by.css('a')).filter(function (elm) {
@@ -186,7 +187,7 @@ describe('When I visit the the parent org', function () {
         }).first();
         myOptions.click();
         
-        $('input').sendKeys('fake label');
+        $$('input').first().sendKeys('fake label');
         $('.input-group-btn.dropdown').click();
         element(by.cssContainingText('.dropdown-menu.pull-right', 'orange')).click();
         $('#btnCreateLabel').click();
@@ -215,78 +216,191 @@ describe('When I click the orgs button', function () {
 describe('When I visit the data set page', function () {
     it('should be able to create a new data set', function () {
 
+        browser.ignoreSynchronization = false;
+        // browser.ignoreSynchronization = true; //not angular based
         $('[ui-sref="dataset_list"]').click();
-        browser.sleep(500);
-        $('input').sendKeys('my fake dataset');
+        browser.sleep(1000);
+        $$('input').first().sendKeys('my fake dataset');
         $('[ng-click="create_dataset(dataset.name)"]').click();
         // selectDropdownbyText(element, browser.params.testOrg.cycle);
+        expect(element(by.cssContainingText('option', browser.params.testOrg.cycle)).isPresent()).toBe(true);
         element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
         // $('[buttontext="Upload a Spreadsheet"]').$('.qq-uploader').click();
 
         var path = require('path');
         // Select image
-        var fileToUpload = '../../../../tests/data/portfolio-manager-sample.csv'
+        var fileToUpload = '../../../../tests/data/protractorProperties.xlsx';
+        // var fileToUpload = '../../../../tests/data/protractorTaxlots.xlsx';
         var absolutePath = path.resolve(__dirname, fileToUpload);
 
-        element(by.xpath('//input[@type="file"]')).sendKeys(absolutePath);
-        var passingBar = $('.alert.alert-success');
         browser.ignoreSynchronization = true; //not angular based
-        browser.wait(EC.presenceOf(passingBar), 120000);
+        element.all(by.xpath('//input[@type="file"]')).first().sendKeys(absolutePath);
+        browser.wait(EC.presenceOf($('.alert.alert-success')), 120000);
         expect($('.alert.alert-success').isPresent()).toBe(true);
         expect($('[ng-click="goto_data_mapping()"]').isPresent()).toBe(true);
     });
+
     it('should take me to the mapping page', function () {
+        browser.ignoreSynchronization = false;
         $('[ng-click="goto_data_mapping()"]').click(); 
         browser.wait(EC.presenceOf($('.table_list_container.mapping')),5000);       
         expect($('.page_title').getText()).toContain('Data Mapping & Validation');
     });
-    it('should have more than one mapped value and change prop/tl', function () {
+
+    it('should have more than one mapped value', function () {
+        var rows = element.all(by.repeater('tcm in valids')).filter(function (elm) {
+            expect(elm.length).not.toBeLessThan(1);
+            return elm;
+        });
+    });
+
+    it('should go to mapping Validation', function () {
+        // browser.ignoreSynchronization = true;
+        // browser.sleep(5000);
+        browser.ignoreSynchronization = false;
+        $$('[ng-click="remap_buildings()"]').first().click();
+        browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),120000);       
+        expect($('[heading="View by Property"]').isPresent()).toBe(true);
+        expect($('[heading="View by Tax Lot"]').isPresent()).toBe(true);
+        browser.ignoreSynchronization = true;
+        var rows = element.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows')).filter(function (elm) {
+            expect(elm.length).not.toBeLessThan(1);
+            return elm;
+        });
+    });
+
+    it('should save mappings', function () {
+        browser.ignoreSynchronization = false;
+        $('#save-mapping').click();
+        browser.sleep(500);
+        $('#confirm-mapping').click();
+        browser.wait(EC.presenceOf($('.alert.alert-info.alert-dismissable')),120000);       
+        expect($('.alert.alert-info.alert-dismissable').isPresent()).toBe(true);
+        $$('[ng-click="goto_step(2)"]').first().click();
+    });
+
+    it('should be able to add tax lots file too', function () {
+
+        element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
+        // $('[buttontext="Upload a Spreadsheet"]').$('.qq-uploader').click();
+
+        var path = require('path');
+        var fileToUpload = '../../../../tests/data/protractorTaxlots.xlsx';
+        var absolutePath = path.resolve(__dirname, fileToUpload);
+
+        browser.ignoreSynchronization = true; //not angular based
+        element.all(by.xpath('//input[@type="file"]')).first().sendKeys(absolutePath);
+        var passingBar = $('.alert.alert-success');
+        browser.wait(EC.presenceOf(passingBar), 120000);
+        expect($('.alert.alert-success').isPresent()).toBe(true);
+        expect($('[ng-click="goto_data_mapping()"]').isPresent()).toBe(true);
+    });
+    it('should take me to the mapping page for taxlots', function () {
+        browser.ignoreSynchronization = false;
+        $('[ng-click="goto_data_mapping()"]').click(); 
+        browser.wait(EC.presenceOf($('.table_list_container.mapping')),5000);       
+        expect($('.page_title').getText()).toContain('Data Mapping & Validation');
+    });
+    it('should have more than one mapped value and change all to taxlot', function () {
+        $('[ng-change="setAllInventoryTypes()"]').element(by.cssContainingText('option', 'Tax Lot')).click();
         var cusRow = element.all(by.repeater('tcm in valids')).filter(function (rows) {
             expect(rows.length).not.toBeLessThan(1);
-            return rows.element(by.tagName('strong')).getText().then(function (label) {
-                return label == "Address 1"
+            return rows.$('[ng-model="tcm.suggestion_table_name"]').getText().then(function (label) {
+                expect(label).toEqual('Tax Lot');
+                return;
             })
-        }).first();
-        cusRow.element(by.cssContainingText('option', 'Tax Lot')).click();
-        $('[ng-click="remap_buildings()"]').click();
+        });
+        $$('[ng-click="remap_buildings()"]').first().click();
     });
-    it('should go to mapping Validation', function () {
+    it('should go to mapping Validation for taxlots', function () {
         browser.ignoreSynchronization = true;
         browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),120000);       
         expect($('[heading="View by Property"]').isPresent()).toBe(true);
         expect($('[heading="View by Tax Lot"]').isPresent()).toBe(true);
-        var rows = element.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows')).map(function (elm) {
+        var rows = element.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows')).filter(function (elm) {
+            expect(elm.length).not.toBeLessThan(1);
             return elm;
         });
-        expect(rows.length).not.toBeLessThan(1);
-        browser.ignoreSynchronization = false;
     });
 
-    it('should save mappings', function () {
+    it('should save mappings for taxlots', function () {
+        browser.ignoreSynchronization = false;
         $('#save-mapping').click();
-        browser.sleep(5000);
+        browser.sleep(500);
         $('#confirm-mapping').click();
+        browser.wait(EC.presenceOf($('.alert.alert-success.alert-dismissable')),120000);       
+        expect($('.alert.alert-success.alert-dismissable').isPresent()).toBe(true);
+        $('[ng-click="view_my_properties()"]').click();
+        expect(browser.getCurrentUrl()).toContain("/app/#/properties");
     });
 });
 
 
- // Check inventory Page:
- describe('When I go to the inventory page', function () {
-    it('should ', function () {
-    // click inventory
+// Check inventory Page:
+describe('When I go to the inventory page', function () {
+    it('should change to out test cycle', function () {
+        browser.ignoreSynchronization = false;
+        $('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
+        // var elm = element(by.model("inventory_type"));
+        // elm.getAttribute('value').then(function (value) {
+        //     console.log(value);
+        // });
     });
- });
+});
 
 
- // Delete created dataset:
- describe('When I go to the dataset page', function () {
-    it('should delete dataset', function () {
-    // click dataset 
+// Delete created dataset:
+// describe('When I go to the dataset page', function () {
+//     it('should delete dataset', function () {
+//     // click dataset 
+//     });
+// });
+
+// Admin page last:
+describe('When I go to admin page', function () {
+    it('should delete new test org inventory', function () {
+        browser.ignoreSynchronization = false;
+        browser.get("/app/#/profile/admin");
+        var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
+            expect(rows.length).toBeLessThan(1);
+            return rows.getText().then(function (label) {
+                return label.includes(browser.params.testOrg.parent);
+            });
+        }).first();
+        expect(myNewOrg.isPresent()).toBe(true);
+
+        myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]').click();
+
+        browser.wait(EC.alertIsPresent(), 2000, "Remove inventory Alert is not present");
+        browser.switchTo().alert().accept();
+        browser.sleep(1000);
+        // expect(myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]').isDisabled()).toBe(true);
     });
- });
 
- // Admin page last:
- describe('When I go to admin page', function () {
+    it('should delete new test sub org', function () {
+        browser.ignoreSynchronization = false;
+        browser.get("/app/#/profile/admin");
+        var myNewSubOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
+            expect(rows.length).not.toBeLessThan(1);
+            return rows.getText().then(function (label) {
+                return label.includes(browser.params.testOrg.childRename);
+            });
+        }).first();
+        expect(myNewSubOrg.isPresent()).toBe(true);
+
+        browser.wait(EC.presenceOf(myNewSubOrg.$('[ng-click="confirm_inventory_delete(org)"]')), 120000);
+        myNewSubOrg.$('[ng-click="confirm_org_delete(org)"]').click();
+        browser.wait(EC.alertIsPresent(), 2000, "Remove org Alert is not present");
+        browser.switchTo().alert().accept();
+
+        // accept again
+        browser.wait(EC.alertIsPresent(), 2000, "Second remove org Alert is not present");
+        browser.switchTo().alert().accept();
+
+        browser.wait(EC.not(EC.presenceOf(myNewSubOrg.$('.progress-bar.progress-bar-danger'))), 50000);
+        expect(myNewSubOrg.isPresent()).toBe(false);
+    }, 60000);
+
     it('should delete new test org', function () {
         browser.ignoreSynchronization = false;
         browser.get("/app/#/profile/admin");
@@ -298,19 +412,16 @@ describe('When I visit the data set page', function () {
         }).first();
         expect(myNewOrg.isPresent()).toBe(true);
 
-        myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]').click();
-        browser.wait(EC.alertIsPresent(), 10000, "Remove inventory Alert is not present");
-        browser.switchTo().alert().accept();
-        // expect(myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]').isDisabled()).toBe(true);
-
         browser.wait(EC.presenceOf(myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]')), 120000);
         myNewOrg.$('[ng-click="confirm_org_delete(org)"]').click();
-        browser.wait(EC.alertIsPresent(), 10000, "Remove org Alert is not present");
+        browser.wait(EC.alertIsPresent(), 2000, "Remove org Alert is not present");
         browser.switchTo().alert().accept();
+
         // accept again
-        browser.wait(EC.alertIsPresent(), 10000, "Second remove org Alert is not present");
+        browser.wait(EC.alertIsPresent(), 2000, "Second remove org Alert is not present");
         browser.switchTo().alert().accept();
-        browser.sleep(5000)
+
+        browser.wait(EC.not(EC.presenceOf(myNewOrg.$('.progress-bar.progress-bar-danger'))), 50000);
         expect(myNewOrg.isPresent()).toBe(false);
-    });
- });
+    }, 60000);
+});

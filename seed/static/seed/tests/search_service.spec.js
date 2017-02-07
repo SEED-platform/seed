@@ -571,7 +571,7 @@ describe('The search_service service', function() {
             },
             {
                 name: 'two',
-                id: 2
+                id: 2,
                 checked: false
             }
         ]});
@@ -609,11 +609,13 @@ describe('The search_service service', function() {
         httpBackend.expectPOST(test_url).respond(201, {buildings: [
             {
                 name: 'one',
-                id: 1
+                id: 1,
+                checked: false
             },
             {
                 name: 'two',
-                id: 2
+                id: 2,
+                checked: false
             }
         ]});
         httpBackend.flush();

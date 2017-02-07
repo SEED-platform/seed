@@ -210,7 +210,7 @@ describe('controller: dataset_list_controller', function () {
     dataset_list_controller_scope.$digest();
 
     // assertions
-    expect($state.href('matching', { importfile_id: 3 })).toBe('#/data/matching/3');
+    expect($state.href('matching', { importfile_id: 3 })).toBe('#/data/matching/3/');
   });
 
 
