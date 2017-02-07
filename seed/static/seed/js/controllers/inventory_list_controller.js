@@ -138,12 +138,14 @@ angular.module('BE.seed.controller.inventory_list', [])
         '  </a>' +
         '</div>',
         enableColumnMenu: false,
+        enableColumnMoving: false,
         enableColumnResizing: false,
         enableFiltering: false,
         enableHiding: false,
         enableSorting: false,
         exporterSuppressExport: true,
         pinnedLeft: true,
+        visible: true,
         width: 30
       });
 
@@ -360,7 +362,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           col.pinnedLeft = col.renderContainer == 'left' && col.visible;
           return col;
         });
-        var oldSettings = inventory_service.loadSettings(localStorageKey, all_columns);
+        var oldSettings = inventory_service.loadSettings(localStorageKey, angular.copy(all_columns));
         oldSettings = _.map(oldSettings, function (col) {
           col.pinnedLeft = false;
           col.visible = false;
@@ -430,11 +432,17 @@ angular.module('BE.seed.controller.inventory_list', [])
             angular.element($window).off('resize', debouncedHeightUpdate);
           });
 
-          gridApi.colMovable.on.columnPositionChanged($scope, saveSettings);
-          gridApi.core.on.columnVisibilityChanged($scope, function () {
-            $scope.columns = _.filter($scope.columns, 'visible');
+          gridApi.colMovable.on.columnPositionChanged($scope, function () {
+            // Ensure that 'id' remains first
+            var idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
+            if (idIndex != 2) {
+              var col = $scope.gridApi.grid.columns[idIndex];
+              $scope.gridApi.grid.columns.splice(idIndex, 1);
+              $scope.gridApi.grid.columns.splice(2, 0, col);
+            }
             saveSettings();
           });
+          gridApi.core.on.columnVisibilityChanged($scope, saveSettings);
           gridApi.core.on.filterChanged($scope, _.debounce(saveGridSettings, 150));
           gridApi.core.on.sortChanged($scope, _.debounce(saveGridSettings, 150));
           gridApi.pinning.on.columnPinned($scope, saveSettings);
