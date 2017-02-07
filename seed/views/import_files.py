@@ -315,7 +315,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     def perform_mapping(self, request, pk=None):
         """
         Starts a background task to convert imported raw data into
-        BuildingSnapshots, using user's column mappings.
+        PropertyState and TaxLotState, using user's column mappings.
         ---
         type:
             status:
@@ -610,6 +610,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'matched': Number of BuildingSnapshot objects that have matches,
                 'unmatched': Number of BuildingSnapshot objects with no matches.
             }
+
         """
         import_file_id = pk
 
@@ -625,7 +626,6 @@ class ImportFileViewSet(viewsets.ViewSet):
             merge_state=MERGE_STATE_MERGED,
         ).count()
 
-        # properties
         tax_lots_new = TaxLotState.objects.filter(
             import_file__pk=import_file_id,
             data_state=DATA_STATE_MATCHING,
@@ -636,8 +636,6 @@ class ImportFileViewSet(viewsets.ViewSet):
             data_state=DATA_STATE_MATCHING,
             merge_state=MERGE_STATE_MERGED,
         ).count()
-
-        # taxlots
 
         return {
             'status': 'success',

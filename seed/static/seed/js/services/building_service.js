@@ -105,7 +105,9 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
 
       building_factory.get_matching_results = function (import_file_id) {
         return $http.get("/api/v2/import_files/" + import_file_id + "/matching_results/", {
-          params: {}
+          params: {
+            organization_id: user_service.get_organization().id
+          }
         }).then(function (response) {
           return response.data;
         });
