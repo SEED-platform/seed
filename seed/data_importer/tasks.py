@@ -528,7 +528,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
         # sanitize c and remove any diacritics
         new_chunk = {}
         for k, v in c.iteritems():
-            # remove extra spaces surrounding keys
+            # remove extra spaces surrounding keys.
             key = k.strip()
             if isinstance(v, unicode):
                 new_chunk[key] = unidecode(v)
@@ -586,7 +586,7 @@ def cache_first_rows(import_file, parser):
     """
 
     # return the first row of the headers which are cleaned
-    first_row = parser.headers()
+    first_row = parser.headers
     first_five_rows = parser.first_five_rows
 
     _log.debug(first_five_rows)
