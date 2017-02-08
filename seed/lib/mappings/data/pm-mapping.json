@@ -93,6 +93,15 @@
     "display_name": "ENERGY STAR Score",
     "to_field": "energy_score",
     "to_table_name": "PropertyState",
+    "from_field": "Energy Score",
+    "units": "",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "ENERGY STAR Score",
+    "to_field": "energy_score",
+    "to_table_name": "PropertyState",
     "from_field": "score",
     "units": "",
     "type": "float",
@@ -247,6 +256,15 @@
     "to_field": "pm_property_id",
     "to_table_name": "PropertyState",
     "from_field": "Property Id",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "PM Parent Property ID",
+    "to_field": "pm_parent_property_id",
+    "to_table_name": "PropertyState",
+    "from_field": "Parent Property ID",
     "units": "",
     "type": "string",
     "schema": ""
