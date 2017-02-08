@@ -362,7 +362,7 @@ describe('When I go to admin page', function () {
         browser.ignoreSynchronization = false;
         browser.get("/app/#/profile/admin");
         var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
-            expect(rows.length).toBeLessThan(1);
+            expect(rows.length).not.toBeLessThan(1);
             return rows.getText().then(function (label) {
                 return label.includes(browser.params.testOrg.parent);
             });
@@ -397,7 +397,7 @@ describe('When I go to admin page', function () {
         browser.wait(EC.alertIsPresent(), 2000, "Second remove org Alert is not present");
         browser.switchTo().alert().accept();
 
-        browser.wait(EC.not(EC.presenceOf(myNewSubOrg.$('.progress-bar.progress-bar-danger'))), 50000);
+        browser.wait(EC.not(EC.presenceOf(myNewSubOrg.$('.progress-bar.progress-bar-danger'))), 30000);
         expect(myNewSubOrg.isPresent()).toBe(false);
     }, 60000);
 
@@ -421,7 +421,7 @@ describe('When I go to admin page', function () {
         browser.wait(EC.alertIsPresent(), 2000, "Second remove org Alert is not present");
         browser.switchTo().alert().accept();
 
-        browser.wait(EC.not(EC.presenceOf(myNewOrg.$('.progress-bar.progress-bar-danger'))), 50000);
+        browser.wait(EC.not(EC.presenceOf(myNewOrg.$('.progress-bar.progress-bar-danger'))), 30000);
         expect(myNewOrg.isPresent()).toBe(false);
     }, 60000);
 });
