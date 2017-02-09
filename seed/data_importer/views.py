@@ -117,7 +117,7 @@ def handle_s3_upload_complete(request):
     # Add Program & Version fields (empty string if not given)
     kw_fields = {
         f: request.POST.get(f, '') for f in ['source_program', 'source_program_version']
-        }
+    }
 
     f = ImportFile.objects.create(import_record=record,
                                   file=filename,
@@ -480,7 +480,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 dict(
                     zip(import_file.first_row_columns, row)
                 ) for row in rows
-                ]
+            ]
         })
 
     @api_endpoint_class
