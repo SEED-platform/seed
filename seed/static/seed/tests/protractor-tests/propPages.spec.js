@@ -17,6 +17,15 @@ describe('When I go to the inventory page', function () {
 		})
 	});
 
+	it('should filter semi colon and expand', function () {
+		var jurisTL = $$('[role="columnheader"]').filter(function(elm) {
+			return elm.getText().then(function (label) {
+				return label.includes('Jurisdiction Tax Lot ID');
+			});
+		}).first();
+		jurisTL.$$('[ng-model="colFilter.term"]').first().sendKeys(';');
+	});
+
 	it('should filter', function () {
 		var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
 					.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
@@ -35,32 +44,45 @@ describe('When I go to the inventory page', function () {
 		$$('[ng-model="colFilter.term"]').first().element(by.xpath('..')).$('[ui-grid-one-bind-aria-label="aria.removeFilter"]').click();
 	});
 
-	it('should filter semi colon and expand', function () {
-		var jurisTL = $$('[role="columnheader"]').filter(function(elm) {
-			return elm.getText().then(function (label) {
-				return label.includes('Jurisdiction Tax Lot ID');
-			});
-		}).first();
-		jurisTL.$$('[ng-model="colFilter.term"]').first().sendKeys(';');
-	});
-
 	it('should go to info pages', function () {
 		$$('[ng-click="treeButtonClick(row, $event)"]').first().click();
 		$$('.ui-grid-icon-info-circled').first().click();
 		expect(browser.getCurrentUrl()).toContain("/app/#/properties");
 		expect($('.page_title').getText()).toEqual('Property Detail');
-		$('a.page_action.ng-binding').click();
 
+		// no historical items
+		var historicalItems = element.all(by.repeater('historical_item in historical_items'));
+		expect(historicalItems.count()).toBeLessThan(1);
+		
+		//make change
+		$('[ng-click="on_edit()"]').click();
+		var firstInput = $$('#edit_attribute_id').first();
+		firstInput.sendKeys('protractor unique stuff');
+		$('[ng-click="on_save()"]').click();
 
-		// add more about info mages here: TODO
-		// repeater: historical_item in historical_items should be 0
-		// edit, save, should be 1
+		// now historical items
+		var historicalItems = element.all(by.repeater('historical_item in historical_items'));
+		expect(historicalItems.count()).not.toBeLessThan(1);
+
+		var labels = element.all(by.repeater('label in labels'));
+		expect(labels.count()).toBeLessThan(1);
+
 		// add label
-		// after you go back, look for your edit
-		// filter by label (should only have 1 row)
-		// clear labels
+		$('[ng-click="open_update_labels_modal(inventory.id, inventory_type)"]').click();
+		$('.modal-title').getText().then(function (label) {
+			expect(label).toContain('Labels');
+		});
+		$$('[ng-model="label.is_checked_add"]').first().click();
+		$('[ng-click="done()"]').click();
 
+		var labels = element.all(by.repeater('label in labels'));
+		expect(labels.count()).not.toBeLessThan(1);
 
+		$('a.page_action.ng-binding').click();
+		
+	});
+
+	it('should get taxlot info from linked properties', function () {
 		// re expand
 		$$('[ng-click="treeButtonClick(row, $event)"]').first().click();
 		
@@ -71,8 +93,24 @@ describe('When I go to the inventory page', function () {
 		expect(browser.getCurrentUrl()).toContain("/app/#/taxlots");
 	});
 
-	it('should change columns', function () {
+	it('should filter labels and see info update', function () {
 		browser.get("/app/#/properties");
+		$('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
+		$('#tagsInput').click();
+		$('#tagsInput').all(by.repeater('item in suggestionList.items')).first().click();
+		var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
+				.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
+		expect(rows.count()).toBe(1);
+		rows.first().getText().then(function (label) {
+			expect(label).toContain('protractor unique stuff');
+		});
+		$('[ng-click="clear_labels()"]').click();
+		var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
+				.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
+		expect(rows.count()).not.toBeLessThan(2);
+	});
+
+	it('should change columns', function () {
 		$('#list-settings').click();
 		$('[ng-if="grid.options.enableSelectAll"]').click().click();
 		$$('[ng-class="{\'ui-grid-row-selected\': row.isSelected}"]').first().click();
@@ -82,14 +120,4 @@ describe('When I go to the inventory page', function () {
 	});
 
 	//TODO reports?
-
-	//Taxlots
 });
-
-
-// Delete created dataset:
-// describe('When I go to the dataset page', function () {
-//     it('should delete dataset', function () {
-//     // click dataset 
-//     });
-// });
