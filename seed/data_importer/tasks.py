@@ -126,7 +126,7 @@ def finish_import_record(import_record_pk):
 def finish_mapping(import_file_id, mark_as_done):
     import_file = ImportFile.objects.get(pk=import_file_id)
 
-    # Do not set the mapping_done flag unless mark_as_done is set. This allows the an actual
+    # Do not set the mapping_done flag unless mark_as_done is set. This allows an actual
     # user to review the mapping before it is saved and matching starts.
     if mark_as_done:
         import_file.mapping_done = True
