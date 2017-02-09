@@ -5,9 +5,9 @@
 :author
 """
 
-
-import logging
 import csv
+import logging
+
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
@@ -25,6 +25,7 @@ from seed.data_importer.tasks import (
     save_raw_data as task_save_raw,
 )
 from seed.decorators import ajax_request_class, get_prog_key
+from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     obj_to_dict,
@@ -40,7 +41,6 @@ from seed.models import (
 )
 from seed.utils.api import api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
-from seed.lib.mappings.mapping_data import MappingData
 
 _log = logging.getLogger(__name__)
 
@@ -177,8 +177,9 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         import_file = ImportFile.objects.get(pk=pk)
         if import_file is None:
-            return JsonResponse({'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                pk)}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
+                    pk)}, status=status.HTTP_400_BAD_REQUEST)
         if import_file.cached_second_to_fifth_row is None:
             return JsonResponse({'status': 'error',
                                  'message': 'Internal problem occurred, import file first five rows not cached'},
@@ -307,7 +308,6 @@ class ImportFileViewSet(viewsets.ViewSet):
             'number_tax_lots_matching_search': len(tax_lots),
         }
 
-    # Move to data_mapping
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -332,7 +332,19 @@ class ImportFileViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
-        return JsonResponse(map_data(pk))
+
+        body = request.data
+
+        remap = body.get('remap', False)
+        mark_as_done = body.get('mark_as_done', True)
+        if not ImportFile.objects.filter(pk=pk).exists():
+            return {
+                'status': 'error',
+                'message': 'ImportFile {} does not exist'.format(pk)
+            }
+
+        # return remap_data(import_file_id)
+        return JsonResponse(map_data(pk, remap, mark_as_done))
 
     @api_endpoint_class
     @ajax_request_class
@@ -539,6 +551,48 @@ class ImportFileViewSet(viewsets.ViewSet):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse(task_save_raw(import_file_id))
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['PUT'])
+    def mapping_done(self, request, pk=None):
+        """
+        Tell the backend that the mapping is complete.
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: either success or error
+            message:
+                required: false
+                type: string
+                description: error message, if any
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Import file ID
+              required: true
+              paramType: path
+        """
+        import_file_id = pk
+        if not import_file_id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'must pass import_file_id'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        import_file = ImportFile.objects.get(pk=import_file_id)
+        import_file.mapping_done = True
+        import_file.save()
+
+        return JsonResponse(
+            {
+                'status': 'success',
+                'message': ''
+            }
+        )
 
     @api_endpoint_class
     @ajax_request_class
