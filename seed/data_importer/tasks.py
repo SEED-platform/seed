@@ -507,7 +507,7 @@ def map_data(import_file_id, remap=False, mark_as_done=True, *args, **kwargs):
     """
     Map data task. By default this method will run through the mapping and mark it as complete.
     :param import_file_id: Import File ID
-    :param remap: bool,
+    :param remap: bool, if remapping, then delete previous objects from the database
     :param mark_as_done: bool, if skip review then the mapping_done flag will be set to true at the
     end.
     :return: JSON
@@ -515,7 +515,7 @@ def map_data(import_file_id, remap=False, mark_as_done=True, *args, **kwargs):
 
     import_file = ImportFile.objects.get(pk=import_file_id)
     if remap:
-        # Check to ensure that the building has not already been merged.
+        # Check to ensure that import files has not already been matched/merged.
         if import_file.matching_done or import_file.matching_completion:
             result = {
                 'status': 'warning',
