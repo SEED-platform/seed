@@ -58,21 +58,7 @@ angular.module('BE.seed.controller.mapping', [])
         db_field_columns[i] = $filter('titleCase')(db_field_columns[i]);
       }
 
-      $scope.typeahead_columns = db_field_columns.concat(extra_data_columns);
-
-      // remove dupes
-      function uniquify(params) {
-        var result = [];
-        for (i = 0; i < params.length; i++) {
-          var current = params[i];
-          if (!_.includes(result, current)) {
-            result.push(current);
-          }
-        }
-        return result;
-      }
-
-      $scope.typeahead_columns = uniquify($scope.typeahead_columns);
+      $scope.typeahead_columns = _.uniq(db_field_columns.concat(_.map(extra_data_columns, 'name')));
       $scope.tabs = {
         one_active: true,
         two_active: false,
