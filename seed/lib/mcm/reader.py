@@ -122,7 +122,7 @@ class ExcelParser(object):
         # called later (which it is in `seek_to_beginning` then don't reparse the headers
         if not self.cache_headers:
             for j in range(sheet.ncols):
-                self.cache_headers.append(self.get_value(sheet.cell(header_row, j)))
+                self.cache_headers.append(self.get_value(sheet.cell(header_row, j)).strip())
 
         def item(i, j):
             """returns a tuple (column header, cell value)"""
@@ -161,6 +161,7 @@ class ExcelParser(object):
         """gets the number of columns for the file"""
         return self.sheet.ncols
 
+    @property
     def headers(self):
         """return ordered list of clean headers"""
         return self.cache_headers
@@ -232,9 +233,10 @@ class CSVParser(object):
         """gets the number of columns for the file"""
         return len(self.csvreader.unicode_fieldnames)
 
+    @property
     def headers(self):
-        """original ordered list of headers"""
-        return self.csvreader.unicode_fieldnames
+        """original ordered list of headers with leading and trailing spaces stripped"""
+        return [entry.strip() for entry in self.csvreader.unicode_fieldnames]
 
 
 class MCMParser(object):
@@ -313,19 +315,15 @@ class MCMParser(object):
         """returns the number of columns of the file"""
         return self.reader.num_columns()
 
-    # TODO: return these are properties
+    @property
     def headers(self):
-        """original ordered list of spreadsheet headers"""
-        return self.reader.headers()
+        """original ordered list of spreadsheet headers that are not cleaned"""
+        return self.reader.headers
 
     @property
     def first_five_rows(self):
         """
         Return the first five rows of the file.
-
-        Supposedly (NL 11/30/16) this is duplicated logic from data_importer,
-        but since data_importer makes many faulty assumptions we need to do
-        it differently.
 
         :return: list of rows with ROW_DELIMITER
         """
@@ -337,13 +335,17 @@ class MCMParser(object):
             try:
                 row = rows.next()
                 if row:
-                    validation_rows.append(row)
+                    # Trim out the spaces around the keys
+                    new_row = {}
+                    for k, v in row.iteritems():
+                        new_row[k.strip()] = v
+                    validation_rows.append(new_row)
             except StopIteration:
                 """Less than 5 rows in file"""
                 break
 
         # return the first row of the headers which are cleaned
-        first_row = self.headers()
+        first_row = self.headers
 
         tmp = []
         for r in validation_rows:
