@@ -52,9 +52,9 @@ angular.module('BE.seed.controller.matching', [])
       $scope.selectedCycle = _.find($scope.cycles, {id: $scope.import_file.cycle});
 
       if ($scope.inventory_type == 'properties') {
-        $scope.buildings = inventory_payload.properties;
+        $scope.inventory = inventory_payload.properties;
       } else {
-        $scope.buildings = inventory_payload.tax_lots;
+        $scope.inventory = inventory_payload.tax_lots;
       }
       $scope.q = '';
       $scope.number_per_page = 10;
@@ -116,9 +116,9 @@ angular.module('BE.seed.controller.matching', [])
             inventory_payload = data;
 
             if ($scope.inventory_type == 'properties') {
-              $scope.buildings = data.properties;
+              $scope.inventory = data.properties;
             } else {
-              $scope.buildings = data.tax_lots;
+              $scope.inventory = data.tax_lots;
             }
             $scope.number_properties_matching_search = data.number_properties_matching_search;
             $scope.number_tax_lots_matching_search = data.number_tax_lots_matching_search;
@@ -392,7 +392,7 @@ angular.module('BE.seed.controller.matching', [])
        */
 
       $scope.order_by_field = function (field, reverse) {
-        $scope.buildings = order_by($scope.buildings, field, reverse);
+        $scope.inventory = order_by($scope.inventory, field, reverse);
       };
 
       $scope.cycleChanged = function () {
@@ -413,7 +413,7 @@ angular.module('BE.seed.controller.matching', [])
 
       /**
        * init: sets the default pagination, gets the columns that should be displayed
-       *   in the matching list table, sets the table buildings from the building_payload
+       *   in the matching list table, sets the table inventory from the inventory_payload
        */
       $scope.init = function () {
         $scope.cycleChanged();
@@ -424,10 +424,10 @@ angular.module('BE.seed.controller.matching', [])
         $scope.number_tax_lots_returned = inventory_payload.number_tax_lots_returned;
 
         if ($scope.inventory_type == 'properties') {
-          $scope.buildings = inventory_payload.properties;
+          $scope.inventory = inventory_payload.properties;
           $scope.num_pages = Math.ceil(inventory_payload.number_properties_matching_search / $scope.number_per_page);
         } else {
-          $scope.buildings = inventory_payload.tax_lots;
+          $scope.inventory = inventory_payload.tax_lots;
           $scope.num_pages = Math.ceil(inventory_payload.number_tax_lots_matching_search / $scope.number_per_page);
         }
         update_start_end_paging();
