@@ -3,7 +3,6 @@ exports.config = {
 	// framework: 'jasmine2',
 	// seleniumAddress: 'http://localhost:4444/wd/hub',
 	specs: [
-		// 'e2eTest.spec.js',
 		'adminLogin.spec.js',
 		'jasmineTests.spec.js',
 		'adminCreateOrgs.spec.js',
