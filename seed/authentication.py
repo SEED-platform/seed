@@ -18,7 +18,10 @@ class SEEDAuthentication(authentication.BaseAuthentication):
     """
 
     def authenticate(self, request):
-        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        auth_header = request.META.get('Authorization')
+
+        if not auth_header:
+            auth_header = request.META.get('HTTP_AUTHORIZATION')
 
         if not auth_header:
             return None

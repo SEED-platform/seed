@@ -4,6 +4,7 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import base64
 import datetime
 import json
 import os
@@ -57,7 +58,10 @@ class ApiAuthenticationTests(TestCase):
             'building_id': cb.pk,
             'organization_id': self.org.pk,
         }
-        self.auth_string = '%s:%s' % (self.user.username, self.user.api_key)
+        auth_string = base64.urlsafe_b64encode(
+            '{}:{}'.format(self.user.username, self.user.api_key)
+        )
+        self.auth_string = 'Basic {}'.format(auth_string)
 
     # TODO replace with test for inventory report
     @skip("Fix for new data model")
@@ -65,7 +69,7 @@ class ApiAuthenticationTests(TestCase):
         """
         Test auth via GET parameter.
         """
-        headers = {'HTTP_AUTHORIZATION': self.auth_string}
+        headers = {'Authorization': self.auth_string}
         resp = self.client.get(self.api_url, data=self.params, **headers)
         self.assertEqual(resp.status_code, 200)
         body = json.loads(resp.content)
@@ -139,8 +143,11 @@ class TestApi(TestCase):
             start=datetime.datetime(2015, 1, 1),
             end=datetime.datetime(2015, 12, 31),
         )
-
-        self.headers = {'HTTP_AUTHORIZATION': '%s:%s' % (self.user.username, self.user.api_key)}
+        auth_string = base64.urlsafe_b64encode(
+            '{}:{}'.format(self.user.username, self.user.api_key)
+        )
+        self.auth_string = 'Basic {}'.format(auth_string)
+        self.headers = {'Authorization': self.auth_string}
 
     def get_org_id(self, dict, username):
         '''Return the org id from the passed dictionary and username'''
