@@ -31,6 +31,8 @@ env:
 install:
 - pip install --upgrade pip
 - pip install tox==2.3.2
+- npm install npm@latest -g
+- nvm install stable
 before_script:
 - psql -c "create database seeddb;" -U postgres
 script:
