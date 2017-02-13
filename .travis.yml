@@ -27,19 +27,11 @@ env:
   - TOX_ENV=python
   - TOX_ENV=flake8
   - TOX_ENV=spelling
+  - TOX_ENV=functional
 install:
 - pip install --upgrade pip
 - pip install tox==2.3.2
-- npm install npm@latest -g
-- nvm install stable
-- npm install
 before_script:
-- ./node_modules/protractor/bin/webdriver-manager update
 - psql -c "create database seeddb;" -U postgres
-- ./manage.py create_default_user --username=demo@example.com --password=demo123
-- yes | ./manage.py make_superuser --user demo@example.com
-- celery -A seed worker -l INFO -c 2 -B --events --maxtasksperchild 1000 &
-- ./manage.py runserver --settings=config.settings.travis &
 script:
 - tox -e $TOX_ENV
-- npm test
