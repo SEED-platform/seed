@@ -37,9 +37,10 @@ before_script:
 - ./node_modules/protractor/bin/webdriver-manager update
 - psql -c "create database seeddb;" -U postgres
 - celery -A seed worker -l INFO -c 2 -B --events --maxtasksperchild 1000 &
-- python manage.py runserver --settings=config.settings.travis &
-- python manage.py create_default_user --username=demo@example.com --password=demo123
-- yes | python manage.py make_superuser --user demo@example.com
+- which python
+- ./manage.py runserver --settings=config.settings.travis &
+- ./manage.py create_default_user --username=demo@example.com --password=demo123
+- yes | ./manage.py make_superuser --user demo@example.com
 script:
 - tox -e $TOX_ENV
 - npm test
