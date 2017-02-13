@@ -35,5 +35,6 @@ install:
 - nvm install stable
 before_script:
 - psql -c "create database seeddb;" -U postgres
+- mv config/settings/test_local_untracked.py config/settings/local_untracked.py
 script:
 - tox -e $TOX_ENV
