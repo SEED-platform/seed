@@ -3292,8 +3292,6 @@ class InventoryViewTests(TestCase):
         }
         response = self.client.get("/api/v2/taxlots/", params)
         results = json.loads(response.content)['results']
-        print "\nhere"
-        print results
         self.assertEquals(len(results), 2)
 
         result = results[0]
