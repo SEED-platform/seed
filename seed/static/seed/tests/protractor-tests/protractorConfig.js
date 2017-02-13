@@ -16,8 +16,8 @@ exports.config = {
 	rootElement: '.app',
 	params: {
 		login: {
-			user: 'daniel@devetry.com',
-			password: 'test'
+			user: 'demo@example.com',
+			password: 'demo123'
 		},
 		testOrg: {
 			parent: "Protractor test org",
