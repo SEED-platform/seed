@@ -30,9 +30,13 @@ env:
 install:
 - pip install --upgrade pip
 - pip install tox==2.3.2
+- npm install npm@latest -g
 - npm install
 before_script:
+- ./node_modules/protractor/bin/webdriver-manager update
 - psql -c "create database seeddb;" -U postgres
+- celery -A seed worker -l INFO -c 2 -B --events --maxtasksperchild 1000
+- python manage.py runserver --settings=config.settings.travis
 script:
 - tox -e $TOX_ENV
 - npm test
