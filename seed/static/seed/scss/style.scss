@@ -2620,6 +2620,9 @@ gs-input .tags .tag-item .remove-button {
 }
 
 // Pairing page:
+.pairing {
+  padding-bottom: 20px;
+}
 // Main container: initialize the flex, direction is row
 .pairing-data-row, .pairing-headers-row {
   display: flex;

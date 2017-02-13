@@ -60,7 +60,8 @@
                 </div>
             </div>
             <div class="pairing-text-left">
-                <span>Showing {$ leftData.length $} {$ inventoryType $} ({$ leftNumUnpaired() $} unpaired)</span>
+                <span ng-show="inventoryType == 'Property'">Showing {$ leftData.length $} <ng-pluralize count="leftData.length" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize> ({$ leftNumUnpaired() $} unpaired)</span>
+                <span ng-show="inventoryType == 'Tax Lot'">Showing {$ leftData.length $} <ng-pluralize count="leftData.length" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize> ({$ leftNumUnpaired() $} unpaired)</span>
             </div>
         </div>
         <div class="pairing-inventory-other col-md-6">
@@ -99,7 +100,8 @@
                 </div>
             </div>
             <div class="pairing-text-right">
-                <span>Showing {$ rightData.length $} {$ otherInventory() $} ({$ rightNumUnpaired() $} unpaired)</span>
+                <span ng-show="inventoryType == 'Property'">Showing {$ rightData.length $} <ng-pluralize count="rightData.length" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize> ({$ rightNumUnpaired() $} unpaired)</span>
+                <span ng-show="inventoryType == 'Tax Lot'">Showing {$ rightData.length $} <ng-pluralize count="rightData.length" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize> ({$ rightNumUnpaired() $} unpaired)</span>
             </div>
         </div>
     </div>
