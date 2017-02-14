@@ -31,6 +31,7 @@ describe('When I visit the data set page', function () {
         var fileToUpload = '../../../../tests/data/protractorProperties.xlsx';
         // var fileToUpload = '../../../../tests/data/protractorTaxlots.xlsx';
         var absolutePath = path.resolve(__dirname, fileToUpload);
+        expect(absolutePath).toEqual('myDir');
 
         browser.ignoreSynchronization = true; //not angular based
         element.all(by.xpath('//input[@type="file"]')).first().sendKeys(absolutePath);
