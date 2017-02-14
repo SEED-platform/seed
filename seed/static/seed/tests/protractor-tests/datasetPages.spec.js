@@ -1,6 +1,9 @@
 // create and test new dataset with import
 var EC = protractor.ExpectedConditions;
 
+var path = require('path');
+var remote = require('selenium-webdriver/remote');
+
 // Data Set page
 // Select my new sub org
 describe('When I click the orgs button', function () {
@@ -26,12 +29,11 @@ describe('When I visit the data set page', function () {
         element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
         // $('[buttontext="Upload a Spreadsheet"]').$('.qq-uploader').click();
 
-        var path = require('path');
-        // Select image
+        // for remote travis ci to grab files
+        browser.setFileDetector(new remote.FileDetector());
+
         var fileToUpload = '../../../../tests/data/protractorProperties.xlsx';
-        // var fileToUpload = '../../../../tests/data/protractorTaxlots.xlsx';
         var absolutePath = path.resolve(__dirname, fileToUpload);
-        expect(absolutePath).toEqual('myDir');
 
         browser.ignoreSynchronization = true; //not angular based
         element.all(by.xpath('//input[@type="file"]')).first().sendKeys(absolutePath);
@@ -84,7 +86,9 @@ describe('When I visit the data set page', function () {
         element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
         // $('[buttontext="Upload a Spreadsheet"]').$('.qq-uploader').click();
 
-        var path = require('path');
+        // for remote travis ci to grab the files
+        browser.setFileDetector(new remote.FileDetector());
+
         var fileToUpload = '../../../../tests/data/protractorTaxlots.xlsx';
         var absolutePath = path.resolve(__dirname, fileToUpload);
 
