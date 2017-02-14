@@ -221,6 +221,7 @@ class PropertyViewSet(GenericViewSet):
             p['id'] = prop.property_id
 
             p['property_state_id'] = prop.state.id
+            p['property_view_id'] = prop.id
 
             p['campus'] = prop.property.campus
 
@@ -991,6 +992,7 @@ class TaxLotViewSet(GenericViewSet):
             l['id'] = lot.taxlot_id
 
             l['taxlot_state_id'] = lot.state.id
+            l['taxlot_view_id'] = lot.id
 
             # All the related property states.
             l['related'] = join_map.get(lot.pk, [])

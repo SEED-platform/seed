@@ -29,7 +29,6 @@ from seed.models import (
     ColumnMapping,
     Cycle,
     FLOAT,
-    PORTFOLIO_BS,
     Property,
     ProjectBuilding,
     PropertyState,
@@ -47,7 +46,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory
 )
 from seed.tests import util as test_util
-from seed.utils.cache import set_cache, get_cache
+from seed.utils.cache import set_cache
 from seed.views.main import (
     DEFAULT_CUSTOM_COLUMNS,
     _parent_tree_coparents,
@@ -2425,52 +2424,6 @@ class TestMCMViews(TestCase):
         body = json.loads(resp.content)
         self.assertEqual(body.get('progress', 0), test_progress['progress'])
         self.assertEqual(body.get('progress_key', ''), progress_key)
-
-    @skip('Fix for new data model')
-    def test_remap_buildings(self):
-        """Test good case for resetting mapping."""
-        # Make raw BSes, these should stick around.
-        for x in range(10):
-            test_util.make_fake_property(self.import_file, {}, ASSESSED_RAW)
-
-        # Make "mapped" BSes, these should get removed.
-        for x in range(10):
-            test_util.make_fake_property(self.import_file, {}, ASSESSED_BS)
-
-        # Set import file like we're done mapping
-        self.import_file.mapping_done = True
-        self.import_file.mapping_progress = 100
-        self.import_file.save()
-
-        # Set cache like we're done mapping.
-        cache_key = decorators.get_prog_key('map_data', self.import_file.pk)
-        set_cache(cache_key, 'success', 100)
-
-        resp = self.client.post(
-            reverse_lazy('seed:remap_buildings'),
-            data=json.dumps({
-                'file_id': self.import_file.pk,
-            }),
-            content_type='application/json'
-        )
-
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(
-            BuildingSnapshot.objects.filter(
-                import_file=self.import_file,
-                source_type__in=(ASSESSED_BS, PORTFOLIO_BS)
-            ).count(),
-            0
-        )
-
-        self.assertEqual(
-            BuildingSnapshot.objects.filter(
-                import_file=self.import_file,
-            ).count(),
-            10
-        )
-
-        self.assertEqual(get_cache(cache_key)['progress'], 0)
 
     @skip('Fix for new data model')
     def test_reset_mapped_w_previous_matches(self):

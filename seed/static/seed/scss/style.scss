@@ -1512,6 +1512,12 @@ a:not([href]) {
         ul.pager, ul.pagination {
           float: right;
           margin: 0;
+          li.disabled {
+            cursor: not-allowed;
+            > a {
+              pointer-events: none;
+            }
+          }
         }
       }
       .table_footer_right {
@@ -2521,9 +2527,11 @@ gs-input .tags .tag-item .remove-button {
 .ui-grid-row:nth-child(odd) .ui-grid-cell .inventory-settings-cell::after {
   color: #d7d7d7;
 }
+
 .ui-grid-row:nth-child(even) .ui-grid-cell .inventory-settings-cell::after {
   color: #cbcbcb;
 }
+
 .inventory-settings-cell {
   &::after {
     content: attr(data-after-content);
@@ -2612,12 +2620,19 @@ gs-input .tags .tag-item .remove-button {
 }
 
 // Pairing page:
+.pairing {
+  padding-bottom: 20px;
+}
 // Main container: initialize the flex, direction is row
 .pairing-data-row, .pairing-headers-row {
-  display: flex;           display: -webkit-flex;
-  flex-direction: row;     -webkit-flex-direction: row;
-  flex-grow: 0;            -webkit-flex-grow: 0;
-  flex-wrap: wrap;         -webkit-flex-wrap: wrap;
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  flex-grow: 0;
+  -webkit-flex-grow: 0;
+  flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
   width: 100%;
 
   border-bottom: 2px solid #e0e0e0;
@@ -2632,16 +2647,21 @@ gs-input .tags .tag-item .remove-button {
 .pairing-data-row:nth-child(even) {
   background-color: #fdfdfd;
 }
+
 .pairing-data-row:nth-child(odd) {
   background-color: #f3f3f3;
 }
 
 // Child rows, indented
-.pairing-data-row-indent{
-  display: flex;           display: -webkit-flex;
-  flex-direction: row;     -webkit-flex-direction: row;
-  flex-grow: 0;            -webkit-flex-grow: 0;
-  flex-wrap: wrap;         -webkit-flex-wrap: wrap;
+.pairing-data-row-indent {
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  flex-grow: 0;
+  -webkit-flex-grow: 0;
+  flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
   width: 100%;
   padding-left: 40px;
   padding-right: 15px;

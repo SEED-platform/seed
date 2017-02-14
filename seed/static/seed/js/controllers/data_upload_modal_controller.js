@@ -24,6 +24,7 @@
  */
 angular.module('BE.seed.controller.data_upload_modal', [])
   .controller('data_upload_modal_controller', [
+    '$http',
     '$scope',
     '$uibModalInstance',
     '$log',
@@ -37,7 +38,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     'step',
     'dataset',
     'cycles',
-    function ($scope,
+    function ($http,
+              $scope,
               $uibModalInstance,
               $log,
               $timeout,
@@ -93,6 +95,20 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         progress: 0,
         complete: false,
         status_message: ''
+      };
+
+      /**
+       * Tell the backend that the mapping is done and start the next step
+       */
+      $scope.save_mappings = function () {
+        // API request to tell backend that it is finished with the mappings
+        $http.put('/api/v2/import_files/' + $scope.dataset.import_file_id + '/mapping_done/',
+            { params: { organization_id: $scope.organization_id }}
+        ).then(function (response) {
+                // console.log(response);
+                $scope.goto_step(7);
+                $scope.find_matches();
+        });
       };
 
       /**

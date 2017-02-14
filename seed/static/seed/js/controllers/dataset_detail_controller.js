@@ -7,9 +7,10 @@ angular.module('BE.seed.controller.dataset_detail', [])
     'dataset_payload',
     '$log',
     'dataset_service',
+    'cycles',
     '$uibModal',
     'urls',
-    function ($scope, dataset_payload, $log, dataset_service, $uibModal, urls) {
+    function ($scope, dataset_payload, $log, dataset_service, cycles, $uibModal, urls) {
       $scope.dataset = dataset_payload.dataset;
 
       _.forOwn($scope.dataset.importfiles, function (value, key) {
@@ -64,6 +65,11 @@ angular.module('BE.seed.controller.dataset_detail', [])
             // dismiss
             init();
           });
+      };
+
+      $scope.getCycleName = function (id) {
+        var cycle = _.find(cycles.cycles, {id: id});
+        return cycle ? cycle.name : '';
       };
 
       var init = function () {

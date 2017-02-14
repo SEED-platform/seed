@@ -13,7 +13,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'inventory',
     'cycles',
     'labels',
-    // 'columns',
+    'all_columns',
     'urls',
     'spinner_utility',
     'naturalSort',
@@ -26,7 +26,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               inventory,
               cycles,
               labels,
-              // columns,
+              all_columns,
               urls,
               spinner_utility,
               naturalSort) {
@@ -37,7 +37,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = inventory.results;
       $scope.pagination = inventory.pagination;
-      $scope.columns = inventory.columns;
+      $scope.columns = _.filter(inventory.columns, 'visible');
       $scope.total = $scope.pagination.total;
       $scope.number_per_page = 999999999;
       $scope.restoring = false;
@@ -138,12 +138,14 @@ angular.module('BE.seed.controller.inventory_list', [])
         '  </a>' +
         '</div>',
         enableColumnMenu: false,
+        enableColumnMoving: false,
         enableColumnResizing: false,
         enableFiltering: false,
         enableHiding: false,
         enableSorting: false,
         exporterSuppressExport: true,
         pinnedLeft: true,
+        visible: true,
         width: 30
       });
 
@@ -360,7 +362,18 @@ angular.module('BE.seed.controller.inventory_list', [])
           col.pinnedLeft = col.renderContainer == 'left' && col.visible;
           return col;
         });
-        inventory_service.saveSettings(localStorageKey, cols);
+        var oldSettings = inventory_service.loadSettings(localStorageKey, angular.copy(all_columns));
+        oldSettings = _.map(oldSettings, function (col) {
+          col.pinnedLeft = false;
+          col.visible = false;
+          return col;
+        });
+        var visibleColumns = _.map(cols, 'name');
+        oldSettings = _.filter(oldSettings, function (col) {
+          return !_.includes(visibleColumns, col.name);
+        });
+
+        inventory_service.saveSettings(localStorageKey, cols.concat(oldSettings));
       };
 
       var saveGridSettings = function () {
@@ -419,7 +432,16 @@ angular.module('BE.seed.controller.inventory_list', [])
             angular.element($window).off('resize', debouncedHeightUpdate);
           });
 
-          gridApi.colMovable.on.columnPositionChanged($scope, saveSettings);
+          gridApi.colMovable.on.columnPositionChanged($scope, function () {
+            // Ensure that 'id' remains first
+            var idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
+            if (idIndex != 2) {
+              var col = $scope.gridApi.grid.columns[idIndex];
+              $scope.gridApi.grid.columns.splice(idIndex, 1);
+              $scope.gridApi.grid.columns.splice(2, 0, col);
+            }
+            saveSettings();
+          });
           gridApi.core.on.columnVisibilityChanged($scope, saveSettings);
           gridApi.core.on.filterChanged($scope, _.debounce(saveGridSettings, 150));
           gridApi.core.on.sortChanged($scope, _.debounce(saveGridSettings, 150));

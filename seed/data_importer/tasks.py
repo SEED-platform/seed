@@ -123,12 +123,17 @@ def finish_import_record(import_record_pk):
 
 
 @shared_task
-def finish_mapping(file_pk):
-    import_file = ImportFile.objects.get(pk=file_pk)
-    import_file.mapping_done = True
-    import_file.save()
+def finish_mapping(import_file_id, mark_as_done):
+    import_file = ImportFile.objects.get(pk=import_file_id)
+
+    # Do not set the mapping_done flag unless mark_as_done is set. This allows an actual
+    # user to review the mapping before it is saved and matching starts.
+    if mark_as_done:
+        import_file.mapping_done = True
+        import_file.save()
+
     finish_import_record(import_file.import_record.pk)
-    prog_key = get_prog_key('map_data', file_pk)
+    prog_key = get_prog_key('map_data', import_file_id)
     result = {
         'status': 'success',
         'progress': 100,
@@ -137,7 +142,7 @@ def finish_mapping(file_pk):
     set_cache(prog_key, result['status'], result)
 
     # now call cleansing
-    _cleanse_data(file_pk)
+    _cleanse_data(import_file_id)
 
 
 def _translate_unit_to_type(unit):
@@ -378,33 +383,24 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
 
 @shared_task
 @lock_and_track
-def _map_data(file_pk, *args, **kwargs):
-    """Get all of the raw data and process it using appropriate mapping.
+def _map_data(import_file_id, mark_as_done, *args, **kwargs):
+    """
+    Get all of the raw data and process it using appropriate mapping.
     @lock_and_track returns a progress_key
 
-    :param file_pk: int, the id of the import_file we're working with.
-
+    :param import_file_id: int, the id of the import_file we're working with.
+    :param mark_as_done: bool, tell finish_mapping that import_file.mapping_done is True
+    :return:
     """
     _log.debug("Starting to map the data")
-    prog_key = get_prog_key('map_data', file_pk)
-    import_file = ImportFile.objects.get(pk=file_pk)
-    # Don't perform this task if it's already been completed.
-    if import_file.mapping_done:
-        _log.debug("_map_data mapping_done is true")
-        result = {
-            'status': 'warning',
-            'progress': 100,
-            'message': 'mapping already complete',
-            'progress_key': prog_key
-        }
-        set_cache(prog_key, result['status'], result)
-        return result
+    prog_key = get_prog_key('map_data', import_file_id)
+    import_file = ImportFile.objects.get(pk=import_file_id)
 
     # If we haven't finished saving, we shouldn't proceed with mapping
     # Re-queue this task.
     if not import_file.raw_save_done:
         _log.debug("_map_data raw_save_done is false, queueing the task until raw_save finishes")
-        map_data.apply_async(args=[file_pk], countdown=60, expires=120)
+        map_data.apply_async(args=[import_file_id], countdown=60, expires=120)
         return {
             'status': 'error',
             'message': 'waiting for raw data save.',
@@ -426,20 +422,20 @@ def _map_data(file_pk, *args, **kwargs):
 
     id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
     increment = get_cache_increment_value(id_chunks)
-    tasks = [map_row_chunk.s(ids, file_pk, source_type, prog_key, increment)
+    tasks = [map_row_chunk.s(ids, import_file_id, source_type, prog_key, increment)
              for ids in id_chunks]
 
     if tasks:
         # specify the chord as an immutable with .si
-        chord(tasks, interval=15)(finish_mapping.si(file_pk))
+        chord(tasks, interval=15)(finish_mapping.si(import_file_id, mark_as_done))
     else:
         _log.debug("Not creating finish_mapping chord, calling directly")
-        finish_mapping.si(file_pk)
+        finish_mapping.si(import_file_id, mark_as_done)
 
 
 @shared_task
 @lock_and_track
-def _cleanse_data(file_pk, record_type='property'):
+def _cleanse_data(import_file_id, record_type='property'):
     """
 
     Get the mapped data and run the cleansing class against it in chunks. The
@@ -447,7 +443,7 @@ def _cleanse_data(file_pk, record_type='property'):
 
     @lock_and_track returns a progress_key
 
-    :param file_pk: int, the id of the import_file we're working with.
+    :param import_file_id: int, the id of the import_file we're working with.
     :param report: string, 'property' or 'taxlot', defaults to property
 
     """
@@ -456,7 +452,7 @@ def _cleanse_data(file_pk, record_type='property'):
     # this function and had record_type to  default to PropertyState,
     # I did not change anything where it gets called.
 
-    import_file = ImportFile.objects.get(pk=file_pk)
+    import_file = ImportFile.objects.get(pk=import_file_id)
 
     source_type_dict = {
         'Portfolio Raw': PORTFOLIO_BS,
@@ -481,22 +477,22 @@ def _cleanse_data(file_pk, record_type='property'):
     ).only('id').iterator()
 
     # initialize the cache for the cleansing results using the cleansing static method
-    Cleansing.initialize_cache(file_pk)
+    Cleansing.initialize_cache(import_file_id)
 
-    prog_key = get_prog_key('cleanse_data', file_pk)
+    prog_key = get_prog_key('cleanse_data', import_file_id)
 
     id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
     increment = get_cache_increment_value(id_chunks)
     tasks = [
-        cleanse_data_chunk.s(record_type, ids, file_pk, increment)
+        cleanse_data_chunk.s(record_type, ids, import_file_id, increment)
         for ids in id_chunks
     ]
 
     if tasks:
         # specify the chord as an immutable with .si
-        chord(tasks, interval=15)(finish_cleansing.si(file_pk))
+        chord(tasks, interval=15)(finish_cleansing.si(import_file_id))
     else:
-        finish_cleansing.s(file_pk)
+        finish_cleansing.s(import_file_id)
 
     result = {
         'status': 'success',
@@ -507,11 +503,47 @@ def _cleanse_data(file_pk, record_type='property'):
 
 
 @shared_task
-def map_data(file_pk, *args, **kwargs):
-    """Small wrapper to ensure we isolate our mapping process from requests."""
-    _map_data.delay(file_pk)
-    prog_key = get_prog_key('map_data', file_pk)
-    return {'status': 'started', 'progress_key': prog_key}
+def map_data(import_file_id, remap=False, mark_as_done=True, *args, **kwargs):
+    """
+    Map data task. By default this method will run through the mapping and mark it as complete.
+    :param import_file_id: Import File ID
+    :param remap: bool, if remapping, then delete previous objects from the database
+    :param mark_as_done: bool, if skip review then the mapping_done flag will be set to true at the
+    end.
+    :return: JSON
+    """
+
+    import_file = ImportFile.objects.get(pk=import_file_id)
+    if remap:
+        # Check to ensure that import files has not already been matched/merged.
+        if import_file.matching_done or import_file.matching_completion:
+            result = {
+                'status': 'warning',
+                'progress': 100,
+                'message': 'Mapped buildings already merged',
+            }
+            return result
+
+        # Delete properties already mapped for this file.
+        PropertyState.objects.filter(
+            import_file=import_file,
+            data_state=DATA_STATE_MAPPING,
+        ).delete()
+
+        # Delete properties already mapped for this file.
+        TaxLotState.objects.filter(
+            import_file=import_file,
+            data_state=DATA_STATE_MAPPING,
+        ).delete()
+
+        # Reset various flags
+        import_file.mapping_done = False
+        import_file.mapping_completion = None
+        import_file.save()
+
+    _map_data.delay(import_file_id, mark_as_done)
+    prog_key = get_prog_key('map_data', import_file_id)
+    return {'status': 'success', 'progress_key': prog_key}
 
 
 @shared_task
@@ -528,7 +560,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
         # sanitize c and remove any diacritics
         new_chunk = {}
         for k, v in c.iteritems():
-            # remove extra spaces surrounding keys
+            # remove extra spaces surrounding keys.
             key = k.strip()
             if isinstance(v, unicode):
                 new_chunk[key] = unidecode(v)
@@ -586,7 +618,7 @@ def cache_first_rows(import_file, parser):
     """
 
     # return the first row of the headers which are cleaned
-    first_row = parser.headers()
+    first_row = parser.headers
     first_five_rows = parser.first_five_rows
 
     _log.debug(first_five_rows)
@@ -1366,69 +1398,6 @@ def _match_properties_and_taxlots(file_pk, user_pk):
     return _finish_matching(import_file, prog_key)
 
 
-@shared_task
-@lock_and_track
-def _remap_data(import_file_pk):
-    """The delicate parts of deleting and remapping data for a file.
-    Deprecate this method and integrate the "delicate parts" of this into map_data.
-
-    :param import_file_pk: int, the ImportFile primary key.
-    :param mapping_cache_key: str, the cache key for this file's mapping prog.
-
-    """
-    # Reset mapping progress cache as well.
-    import_file = ImportFile.objects.get(pk=import_file_pk)
-
-    # Delete properties already mapped for this file.
-    PropertyState.objects.filter(
-        import_file=import_file,
-        data_state=DATA_STATE_MAPPING,
-    ).delete()
-
-    # Delete properties already mapped for this file.
-    TaxLotState.objects.filter(
-        import_file=import_file,
-        data_state=DATA_STATE_MAPPING,
-    ).delete()
-
-    import_file.mapping_done = False
-    import_file.mapping_completion = None
-    import_file.save()
-
-    map_data(import_file_pk)
-
-
-@shared_task
-def remap_data(import_file_pk):
-    """"Delete mapped buildings for current import file, re-map them."""
-    import_file = ImportFile.objects.get(pk=import_file_pk)
-    # Check to ensure that the building has not already been merged.
-    mapping_cache_key = get_prog_key('map_data', import_file.pk)
-    if import_file.matching_done or import_file.matching_completion:
-        result = {
-            'status': 'warning',
-            'progress': 100,
-            'message': 'Mapped buildings already merged',
-            'progress_key': mapping_cache_key
-        }
-        set_cache(mapping_cache_key, result['status'], result)
-        return result
-
-    # Make sure that our mapping cache progress is reset.
-    result = {
-        'status': 'success',
-        'progress': 0,
-        'message': 'Initializing mapping cache',
-        'progress_key': mapping_cache_key
-    }
-    set_cache(mapping_cache_key, result['status'], result)
-
-    _remap_data.delay(import_file_pk)
-
-    result = get_cache(mapping_cache_key)
-    return result
-
-
 def list_canonical_property_states(org_id):
     """
     Return a QuerySet of the property states that are part of the inventory
@@ -1440,7 +1409,6 @@ def list_canonical_property_states(org_id):
         QuerySet
 
     """
-
     pvs = PropertyView.objects.filter(
         state__organization=org_id,
         state__data_state__in=[DATA_STATE_MATCHING]
@@ -1592,7 +1560,8 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     global property_m2m_keygen
 
     taxlot_m2m_keygen = EquivalencePartitioner(tax_cmp_fmt, ["jurisdiction_tax_lot_id"])
-    property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt, ["pm_property_id", "jurisdiction_property_id"])
+    property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt,
+                                                 ["pm_property_id", "jurisdiction_property_id"])
 
     property_views = PropertyView.objects.filter(state__organization=org, cycle=cycle).values_list(
         *prop_comparison_field_names)
@@ -1633,7 +1602,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
                 property_keys[tuple(k_copy)] = property_keys_orig[k]
         else:
             property_keys[k] = property_keys_orig[k]
-    print "Done"
+
     taxlot_keys = dict(
         [(taxlot_m2m_keygen.calculate_comparison_key(p), p.pk) for p in taxlot_objects])
 
@@ -1666,7 +1635,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
             if property_m2m_keygen.calculate_key_equivalence(tlv_key, pv_key):
                 possible_merges.append((property_keys[pv_key], taxlot_keys[tlv_key]))
 
-    print "Found {} merges".format(len(possible_merges))
+    # print "Found {} merges".format(len(possible_merges))
     for m2m in set(possible_merges):
         pv_pk, tlv_pk = m2m
         pv = PropertyView.objects.get(pk=pv_pk)
@@ -1683,5 +1652,4 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
                                   primary=is_primary)
         m2m_join.save()
 
-    print "Done with JOIN CODE"
     return

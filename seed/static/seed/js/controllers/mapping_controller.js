@@ -58,21 +58,7 @@ angular.module('BE.seed.controller.mapping', [])
         db_field_columns[i] = $filter('titleCase')(db_field_columns[i]);
       }
 
-      $scope.typeahead_columns = db_field_columns.concat(extra_data_columns);
-
-      // remove dupes
-      function uniquify(params) {
-        var result = [];
-        for (i = 0; i < params.length; i++) {
-          var current = params[i];
-          if (!_.includes(result, current)) {
-            result.push(current);
-          }
-        }
-        return result;
-      }
-
-      $scope.typeahead_columns = uniquify($scope.typeahead_columns);
+      $scope.typeahead_columns = _.uniq(db_field_columns.concat(_.map(extra_data_columns, 'name')));
       $scope.tabs = {
         one_active: true,
         two_active: false,
@@ -370,7 +356,7 @@ angular.module('BE.seed.controller.mapping', [])
       /*
        * get_mapped_buildings: gets mapped buildings for the preview table
        */
-      $scope.get_mapped_buildings = function () {
+      $scope.get_mapped_buildings = function (review) {
         $scope.import_file.progress = 0;
         $scope.save_mappings = true;
         $scope.review_mappings = true;
@@ -380,7 +366,8 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.save_mappings = false;
 
         spinner_utility.show();
-        $http.post('/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/', {}).then(function (response) {
+        $http.post('/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/',
+            { "review": review }).then(function (response) {
           spinner_utility.hide();
 
           var data = response.data
@@ -500,25 +487,25 @@ angular.module('BE.seed.controller.mapping', [])
         return mappings;
       };
 
-      /*
-       * show_mapping_progress: shows the progress bar and kicks off the mapping,
-       *   after saving column mappings
-       */
-      $scope.show_mapping_progress = function () {
-        $scope.import_file.progress = 0;
-        $scope.save_mappings = true;
-        mapping_service.save_mappings(
-          $scope.import_file.id,
-          $scope.get_mappings()
-        )
-          .then(function (data) {
-            // start mapping
-            mapping_service.start_mapping($scope.import_file.id).then(function (data) {
-              // save maps start mapping data
-              check_mapping(data.progress_key);
-            });
-          });
-      };
+      // As far as I can tell, this is never used.
+      // /*
+      //  * show_mapping_progress: shows the progress bar and kicks off the mapping,
+      //  *   after saving column mappings
+      //  */
+      // $scope.show_mapping_progress = function () {
+      //   $scope.import_file.progress = 0;
+      //   $scope.save_mappings = true;
+      //   mapping_service.save_mappings(
+      //     $scope.import_file.id,
+      //     $scope.get_mappings()
+      //   ).then(function (data) {
+      //       // start mapping
+      //       mapping_service.start_mapping($scope.import_file.id).then(function (data) {
+      //         // save maps start mapping data
+      //         check_mapping(data.progress_key);
+      //       });
+      //     });
+      // };
 
 
       /**

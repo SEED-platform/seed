@@ -69,7 +69,7 @@
             <div class="left section_action_container"></div>
             <div class="right section_action_container section_action_btn">
                 <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="check_fields()" ng-click="remap_buildings()" ng-hide="import_file.matching_done">Map Your Data</button>
-                <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done">Review Mapped Data</button>
+                <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings(true)" ng-show="import_file.matching_done">Review Mapped Data</button>
             </div>
         </div>
     </div>
@@ -252,7 +252,7 @@
         </div>
         <div class="col-sm-6" ng-hide="review_mappings">
             <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="check_fields()" ng-click="remap_buildings()" ng-hide="import_file.matching_done" id="map-data-button">Map Your Data</button>
-            <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done">Review Mapped Data</button>
+            <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings(true)" ng-show="import_file.matching_done">Review Mapped Data</button>
         </div>
         <div class="col-sm-6" ng-show="show_mapped_buildings">
             <a ui-sref="mapping({importfile_id: import_file.id})">
