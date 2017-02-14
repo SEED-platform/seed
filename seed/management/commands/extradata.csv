@@ -1495,7 +1495,7 @@
 ,City of Philadelphia,,,,,,"RM (6/17/2016): Send Rupal email to edit the gdoc with her fields in it
 RM (6/21/2016): Did first cut at the fields, email Rupal to verify a few, haven't heard back yet
 RM (6/22/2016): Final version -- added edits from Rupal",
-1,20,,Address 1,Property,extra_data,PM,This address is from PM -- should it be the Property Address (not the Tax Lot address?),
+1,20,,Address 1,Property,extra_data/Address 1,PM,This address is from PM -- should it be the Property Address (not the Tax Lot address?),
 1,20,,2013 Reporting Status,Tax,extra_data,CBL,,
 1,20,,2014 Reporting Status,Tax,extra_data,CBL,,
 1,20,,2015 Reporting Status,Tax,extra_data,CBL,,
