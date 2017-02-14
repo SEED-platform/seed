@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 new tables.
 """
 
+import pdb
 from IPython import embed
 from django.core.management.base import BaseCommand
 from seed.lib.superperms.orgs.models import Organization
@@ -287,8 +288,8 @@ def load_cycle(org, node, year_ending=True, fallback=True):
 
     # Only Berkeley is allowed
     orgs_allowing_2016 = set([117])
-    if org.pk not in orgs_allowing_2016 and time.year == 2016:
-        time = datetime.date(2015, 12, 31)
+    # if org.pk not in orgs_allowing_2016 and time.year == 2016:
+    #     time = datetime.date(2015, 12, 31)
 
     time = datetime.datetime(year=time.year, month=time.month, day=time.day)
 
@@ -297,7 +298,7 @@ def load_cycle(org, node, year_ending=True, fallback=True):
 
     # Rules definitions for how to handle ambiguous data.
     remap_year = {}
-    remap_year[20] = 2014
+    remap_year[20] = 2015
     remap_year[7] = 2015
     remap_year[49] = 2015
     remap_year[69] = 2015
@@ -587,6 +588,8 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     """Take tree structure describing a single Property/TaxLot over time and create the entities."""
     logging_info("Populating new blue sky entities for canonical snapshot tree!")
 
+    print "Processing {}/{}/{}".format(len(import_buildingsnapshots), 1, len(other_buildingsnapshots))
+
     tax_lot_created = 0
     property_created = 0
     tax_lot_view_created = 0
@@ -624,21 +627,23 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     last_taxlot_view = collections.defaultdict(lambda: False)
     last_property_view = collections.defaultdict(lambda: False)
 
-    # HOHO: TODO: The original code had these in reverse creation
-    # order but that definitely seems wrong.
     all_nodes = list(
-        itertools.chain(import_buildingsnapshots, [leaf_building], other_buildingsnapshots))
+        itertools.chain(import_buildingsnapshots, other_buildingsnapshots, [leaf_building]))
     all_nodes.sort(key=lambda rec: rec.created)  # Sort from first to last
-    # all_nodes = list(reversed(all_nodes)) # FIXME: Test this thoroughly.
 
+    x = None
+    for ndx, node in enumerate(all_nodes):
 
-    for node in all_nodes:
+        # if node.pk == leaf_building.pk:
+        #     pdb.set_trace()
+
         node_type = classify_node(node, org)
-
-        if node_type == TAX_IMPORT or node_type == COMBO_IMPORT:
+        if node_type == TAX_IMPORT or node_type == COMBO_IMPORT or node_type == MERGE:
             # Get the cycle associated with the node
-
             import_cycle = load_cycle(org, node)
+            if import_cycle.start.year == 2015: x = import_cycle
+
+            # print "Node {} cycle is {} with address {}, {}".format(node, import_cycle, node.extra_data['Building Address'] if 'Building Address' in node.extra_data.keys() else "NONE", node.gross_floor_area)
             tax_lot_state = create_tax_lot_state_for_node(node, org, cb)
             tax_lot_state_created += 1
 
@@ -656,9 +661,14 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                 taxlotview.save()
 
             last_taxlot_view[taxlotview.cycle] = taxlotview
-        elif node_type == PROPERTY_IMPORT or node_type == COMBO_IMPORT:
+
+        if node_type == PROPERTY_IMPORT or node_type == COMBO_IMPORT or node_type == MERGE:
             import_cycle = load_cycle(org, node)
             property_state = create_property_state_for_node(node, org, cb)
+
+            # if import_cycle.start.year == 2015:
+            #     print property_state.extra_data['Building Address']
+
             property_state_created += 1
 
             query = seed.models.PropertyView.objects.filter(property=property_obj,
@@ -736,6 +746,8 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                         taxlot_view=last_taxlot_view[import_cycle],
                         cycle=import_cycle)
                     m2m_created += int(created)
+            print "{}: {}".format(ndx, last_taxlot_view[x].state.extra_data["Building Address"] if "Building Address" in last_taxlot_view[x].state.extra_data.keys() else last_taxlot_view[x].state.extra_data.keys())
+            a = 10
 
     logging_info(
         "{} Tax Lot, {} Property, {} TaxLotView, {} PropertyView, {} TaxLotState, {} PropertyState, {} m2m created.".format(
