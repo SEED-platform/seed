@@ -5,6 +5,8 @@
 :author
 """
 
+import logging
+
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -16,8 +18,6 @@ from seed.models.models import (
     Unit,
     SEED_DATA_SOURCES,
 )
-
-import logging
 
 _log = logging.getLogger(__name__)
 
@@ -486,3 +486,16 @@ class ColumnMapping(models.Model):
         #     }
         # }
         return container
+
+    @staticmethod
+    def delete_mappings(organization):
+        """
+        Delete all the mappings for an organization. Note that this will erase all the mappings
+        so if a user views an existing Data Mapping the mappings will not show up as the actual
+        mapping, rather, it will show up as new suggested mappings
+
+        :param organization: instance, Organization
+        :return: int, Number of records that were deleted
+        """
+        count, _ = ColumnMapping.objects.filter(super_organization=organization).delete()
+        return count
