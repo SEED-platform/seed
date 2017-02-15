@@ -601,10 +601,14 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     logging_info("Creating Property/TaxLot from {} nodes".format(
         sum(map(len, ([leaf_building], other_buildingsnapshots, import_buildingsnapshots)))))
 
+
     tax_lot = None
     property_obj = None
 
-    if node_has_tax_lot_info(leaf_building, org):
+    leaf_node_type = classify_node(leaf_building, org)
+
+    #if node_has_tax_lot_info(leaf_building, org):
+    if leaf_node_type in [TAX_IMPORT, COMBO_IMPORT, MERGE]:
         tax_lot, created = find_or_create_bluesky_taxlot_associated_with_building_snapshot(
             leaf_building, org)
         # tax_lot = seed.models.TaxLot(organization=org)
@@ -612,7 +616,8 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
         tax_lot.save()
         tax_lot_created += int(created)
 
-    if node_has_property_info(leaf_building, org):
+    # if node_has_property_info(leaf_building, org):
+    if leaf_node_type in [PROPERTY_IMPORT, COMBO_IMPORT, MERGE]:
         property_obj, created = find_or_create_bluesky_property_associated_with_building_snapshot(
             leaf_building, org)
         # property_obj = seed.models.Property(organization=org)
