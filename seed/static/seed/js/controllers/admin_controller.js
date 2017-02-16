@@ -8,9 +8,11 @@ angular.module('BE.seed.controller.admin', [])
     '$state',
     'user_service',
     'organization_service',
+    'column_mappings_service',
     'uploader_service',
     'user_profile_payload',
-    function ($scope, $state, user_service, organization_service, uploader_service, user_profile_payload) {
+    'Notification',
+    function ($scope, $state, user_service, organization_service, column_mappings_service, uploader_service, user_profile_payload, Notification) {
       $scope.user = {};
       $scope.temp_users = [];
       $scope.org = {};
@@ -140,6 +142,26 @@ angular.module('BE.seed.controller.admin', [])
           // reject promise
           console.log({message: 'error from data call', status: status, data: data});
           update_alert(false, 'error removing user from organization: ' + data.message);
+        });
+      };
+
+      $scope.confirm_column_mappings_delete = function (org) {
+        var yes = confirm('Are you sure you want to delete the \'' + org.name + '\' column mappings?  This will invalidate preexisting mapping review data');
+        if (yes) {
+          $scope.delete_org_column_mappings(org);
+        }
+      };
+
+      $scope.delete_org_column_mappings = function (org) {
+        column_mappings_service.delete_all_column_mappings_for_org(org.org_id).then(function (data) {
+          if (data.delete_count == 0) {
+            Notification.info('No column mappings exist.');
+          } else if (data.delete_count == 1) {
+            Notification.success(data.delete_count + ' column mapping deleted.');
+          } else {
+            Notification.success(data.delete_count + ' column mappings deleted.');
+          }
+
         });
       };
 

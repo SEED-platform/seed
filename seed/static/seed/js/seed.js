@@ -97,6 +97,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.auth',
   'BE.seed.service.building',
   'BE.seed.service.cleansing',
+  'BE.seed.service.column_mappings',
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
   'BE.seed.service.export',
