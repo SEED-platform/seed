@@ -536,7 +536,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.saveSettings = function (key, columns) {
       key += '.' + user_service.get_organization().id;
       var toSave = inventory_service.reorderSettings(_.map(columns, function (col) {
-        return _.pick(col, ['name', 'pinnedLeft', 'visible']);
+        return _.pick(col, ['name', 'pinnedLeft', 'related', 'visible']);
       }));
       localStorage.setItem(key, JSON.stringify(toSave));
     };
@@ -552,13 +552,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       if (!_.isNull(localColumns)) {
         var existingColumnNames = _.map(columns, 'name');
         localColumns = JSON.parse(localColumns);
+        // Remove deprecated columns missing 'related' field
+        _.remove(localColumns, function (col) {
+          return !_.has(col, 'related');
+        });
+
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
           return !_.includes(existingColumnNames, col.name);
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
-          return _.defaults(col, _.remove(columns, {name: col.name})[0])
+          return _.defaults(col, _.remove(columns, {name: col.name, related: col.related})[0])
         });
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {
