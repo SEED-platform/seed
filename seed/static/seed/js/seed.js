@@ -109,6 +109,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.mapping',
   'BE.seed.service.matching',
   'BE.seed.service.organization',
+  'BE.seed.service.pairing',
   'BE.seed.service.project',
   'BE.seed.service.search',
   'BE.seed.service.simple_modal',
@@ -733,7 +734,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'pairing',
-        url: '/data/pairing/{importfile_id:int}',
+        url: '/data/pairing/{importfile_id:int}/{inventory_type:properties|taxlots}',
         templateUrl: static_url + 'seed/partials/pairing.html',
         controller: 'pairing_controller',
         resolve: {

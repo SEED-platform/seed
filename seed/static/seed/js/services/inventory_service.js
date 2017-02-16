@@ -399,14 +399,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     inventory_service.get_last_cycle = function () {
       var organization_id = user_service.get_organization().id;
-      return (JSON.parse(sessionStorage.getItem('cycles')) || {})[organization_id];
+      return (JSON.parse(localStorage.getItem('cycles')) || {})[organization_id];
     };
 
     inventory_service.save_last_cycle = function (pk) {
       var organization_id = user_service.get_organization().id,
-        cycles = JSON.parse(sessionStorage.getItem('cycles')) || {};
+        cycles = JSON.parse(localStorage.getItem('cycles')) || {};
       cycles[organization_id] = _.toInteger(pk);
-      sessionStorage.setItem('cycles', JSON.stringify(cycles));
+      localStorage.setItem('cycles', JSON.stringify(cycles));
     };
 
 

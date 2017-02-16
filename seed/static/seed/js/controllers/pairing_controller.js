@@ -8,10 +8,13 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
   '$uibModal',
   'inventory_service',
   'user_service',
+  'pairing_service',
   'propertyInventory',
   'taxlotInventory',
   'cycles',
   '$http',
+  '$state',
+  '$stateParams',
   'spinner_utility',
   'dragulaService',
   function ($scope,
@@ -19,18 +22,20 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
             $uibModal,
             inventory_service,
             user_service,
+            pairing_service,
             propertyInventory,
             taxlotInventory,
             cycles,
             $http,
+            $state,
+            $stateParams,
             spinner_utility,
             dragulaService) {
     spinner_utility.show();
+
+    $scope.inventory_type = $stateParams.inventory_type;
     $scope.selectedCount = 0;
     $scope.selectedParentCount = 0;
-
-    $scope.inventoryType = 'Property';
-    $scope.inventoryOptions = ['Property', 'Tax Lot'];
 
     $scope.showPaired = 'All';
     $scope.showPairedOptions = ['All', 'Show Paired', 'Show Unpaired'];
@@ -38,9 +43,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     $scope.propertyData = propertyInventory.results;
     $scope.taxlotData = taxlotInventory.results;
     $scope.allPropertyColumns = propertyInventory.columns;
-    $scope.propertyColumns = _.filter(propertyInventory.columns, function (o) {
-      return o.name !== 'jurisdiction_tax_lot_id'
-    });
+    $scope.propertyColumns = _.reject(propertyInventory.columns, {name: 'jurisdiction_tax_lot_id'});
     $scope.taxlotColumns = taxlotInventory.columns;
 
     var organization_id = user_service.get_organization().id;
@@ -62,41 +65,40 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     var refreshObjects = function () {
       var visiblePropertyColumns = _.map($scope.allPropertyColumns, 'name');
       var visibleTaxlotColumns = _.map($scope.taxlotColumns, 'name');
-      inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, visiblePropertyColumns).then(function (properties) {
+      return inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, visiblePropertyColumns).then(function (properties) {
         $scope.propertyData = properties.results;
-        inventory_service.get_taxlots(1, undefined, $scope.cycle.selected_cycle, visibleTaxlotColumns).then(function (taxlots) {
+        return inventory_service.get_taxlots(1, undefined, $scope.cycle.selected_cycle, visibleTaxlotColumns).then(function (taxlots) {
           $scope.taxlotData = taxlots.results;
           createMap();
           $scope.updateLeftRight();
+          spinner_utility.hide();
         });
       });
     };
 
-    $scope.updateCycle = function (cycle) {
+    $scope.cycleChanged = function () {
       spinner_utility.show();
-      inventory_service.save_last_cycle(cycle.id);
-      $scope.cycle.selected_cycle = cycle;
+      inventory_service.save_last_cycle($scope.cycle.selected_cycle.id);
       refreshObjects();
     };
 
-    $scope.updateInventoryType = function () {
-      spinner_utility.show();
-      // console.log('inv: ', $scope.inventoryType)
-      $scope.updateLeftRight();
-      // console.log('pTot: ', $scope.propToTaxlot)
-      // console.log('leftData: ', $scope.leftData)
+    $scope.inventoryTypeChanged = function () {
+      $state.go('pairing', {
+        importfile_id: $stateParams.importfile_id,
+        inventory_type: $scope.inventory_type
+      });
     };
 
     $scope.whichColumns = function (side) {
       if (side === 'left') {
-        return $scope.inventoryType === 'Property' ? allPropertyColumns : allTaxlotColumns;
+        return $scope.inventory_type == 'properties' ? allPropertyColumns : allTaxlotColumns;
       } else {
-        return $scope.inventoryType !== 'Property' ? allPropertyColumns : allTaxlotColumns;
+        return $scope.inventory_type != 'properties' ? allPropertyColumns : allTaxlotColumns;
       }
     };
 
     $scope.whichChildren = function (row) {
-      if ($scope.inventoryType === 'Property') {
+      if ($scope.inventory_type == 'properties') {
         return $scope.taxlotToProp[row.taxlot_view_id]
       } else {
         // console.log('which row: ', row, $scope.propToTaxlot)
@@ -104,16 +106,8 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       }
     };
 
-    $scope.otherInventory = function () {
-      if ($scope.inventoryType === 'Property') {
-        return "Tax Lot"
-      } else {
-        return "Property"
-      }
-    };
-
     $scope.whichChildData = function (propId, col) {
-      if ($scope.inventoryType === 'Property') {
+      if ($scope.inventory_type == 'properties') {
         return $scope.propertyMap[propId][col]
       } else {
         // console.log('child: ', propId, $scope.taxlotMap)
@@ -125,21 +119,19 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       var ids = getIdsFromDOM(angular.element($event.target.parentNode));
 
       // call with PUT /api/v2/taxlots/1/unpair/?property_id=1&organization_id=1
-      if ($scope.inventoryType === 'Property') {
-        var url = '/api/v2/taxlots/' + ids.taxlotId + '/unpair/?property_id=' + ids.propertyId + '&organization_id=' + organization_id;
+      var promise;
+      if ($scope.inventory_type == 'properties') {
+        promise = pairing_service.unpair_property_from_taxlot(ids.taxlotId, ids.propertyId);
       } else {
-        var url = '/api/v2/properties/' + ids.propertyId + '/unpair/?taxlot_id=' + ids.taxlotId + '&organization_id=' + organization_id;
+        promise = pairing_service.unpair_taxlot_from_property(ids.propertyId, ids.taxlotId);
       }
 
-      // console.log('unpairing: ' + ids.propertyId+ " prop with tl: "+ids.taxlotId)
-      $http.put(url, {}).then(function (response) {
+      promise.then(function (data) {
         //if success remove from maps
         _.pull($scope.taxlotToProp[ids.taxlotId], ids.propertyId);
         _.pull($scope.propToTaxlot[ids.propertyId], ids.taxlotId);
-        // console.log('tTop: ', $scope.taxlotToProp)
-        // console.log('pTot: ', $scope.propToTaxlot)
-      }).catch(function (response) {
-        console.error(response);
+        // console.log('tTop: ', $scope.taxlotToProp);
+        // console.log('pTot: ', $scope.propToTaxlot);
       });
     };
 
@@ -183,7 +175,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
 
 
     $scope.leftPaired = function (row) {
-      if ($scope.inventoryType !== 'Property') {
+      if ($scope.inventory_type != 'properties') {
         return $scope.taxlotToProp[row.taxlot_view_id] ? $scope.taxlotToProp[row.taxlot_view_id].length : false;
       } else {
         return $scope.propToTaxlot[row.property_view_id] ? $scope.propToTaxlot[row.property_view_id].length : false;
@@ -192,7 +184,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
 
     $scope.leftNumUnpaired = function () {
       var count = 0;
-      if ($scope.inventoryType === 'Property') {
+      if ($scope.inventory_type == 'properties') {
         $scope.leftData.forEach(function (data) {
           count += $scope.propToTaxlot[data.property_view_id] && $scope.propToTaxlot[data.property_view_id].length > 0 ? 0 : 1;
         })
@@ -206,7 +198,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
 
     $scope.rightNumUnpaired = function () {
       var count = 0;
-      if ($scope.inventoryType !== 'Property') {
+      if ($scope.inventory_type != 'properties') {
         $scope.rightData.forEach(function (data) {
           count += $scope.propToTaxlot[data.property_view_id] && $scope.propToTaxlot[data.property_view_id].length > 0 ? 0 : 1;
         })
@@ -220,8 +212,8 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
 
     $scope.getLeftData = function () {
       var newLeftData = [];
-      var leftMap = $scope.inventoryType === 'Property' ? $scope.propToTaxlot : $scope.taxlotToProp;
-      var leftId = $scope.inventoryType === 'Property' ? "property_view_id" : "taxlot_view_id"
+      var leftMap = $scope.inventory_type == 'properties' ? $scope.propToTaxlot : $scope.taxlotToProp;
+      var leftId = $scope.inventory_type == 'properties' ? 'property_view_id' : 'taxlot_view_id';
       if ($scope.showPaired === 'All') {
         newLeftData = $scope.leftData;
       } else if ($scope.showPaired === 'Show Paired') {
@@ -244,9 +236,9 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
 
     var getIdsFromDOM = function (el) {
       var parentRow = el.scope().row;
-      var parentId = $scope.inventoryType === 'Property' ? parentRow.taxlot_view_id : parentRow.property_view_id;
+      var parentId = $scope.inventory_type == 'properties' ? parentRow.taxlot_view_id : parentRow.property_view_id;
       var parentAddr = parentRow.address_line_1;
-      var parentNum = $scope.inventoryType === 'Property' ? parentRow.jurisdiction_tax_lot_id : parentRow.pm_property_id;
+      var parentNum = $scope.inventory_type == 'properties' ? parentRow.jurisdiction_tax_lot_id : parentRow.pm_property_id;
       var parentCus = parentRow.custom_id_1;
       var childAddr = el.children()[0].innerText.trim();
       var childNum = el.children()[1].innerText.trim();
@@ -256,7 +248,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
 
       var taxlotId;
       var propertyId;
-      if ($scope.inventoryType === 'Property') {
+      if ($scope.inventory_type == 'properties') {
         taxlotId = parentId;
         propertyId = _.findKey($scope.propertyMap, function (o) {
           return (o.address_line_1 == childAddr || o.pm_property_id == childNum || o.custom_id_1 == childCus)
@@ -288,7 +280,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     };
 
     $scope.updateLeftRight = function () {
-      if ($scope.inventoryType === 'Property') {
+      if ($scope.inventory_type == 'properties') {
         $scope.rightData = $scope.taxlotData;
         $scope.leftData = $scope.propertyData;
 
@@ -304,7 +296,6 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       $scope.getLeftData();
       // console.log('prop map: ', $scope.propToTaxlot);
       // console.log('tl map: ', $scope.taxlotToProp);
-      spinner_utility.hide();
     };
 
     //Dragula stuff:
@@ -336,23 +327,22 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       var ids = getIdsFromDOM(el);
       // console.log('ids: ', ids)
       // call with PUT /api/v2/taxlots/1/pair/?property_id=1&organization_id=1
-      if ($scope.inventoryType === 'Property') {
-        var url = '/api/v2/taxlots/' + ids.taxlotId + '/pair/?property_id=' + ids.propertyId + '&organization_id=' + organization_id;
+      var promise;
+      if ($scope.inventory_type == 'properties') {
+        promise = pairing_service.pair_property_to_taxlot(ids.taxlotId, ids.propertyId);
       } else {
-        var url = '/api/v2/properties/' + ids.propertyId + '/pair/?taxlot_id=' + ids.taxlotId + '&organization_id=' + organization_id;
+        promise = pairing_service.pair_taxlot_to_property(ids.propertyId, ids.taxlotId);
       }
 
-      // console.log('pairing: ' + ids.propertyId+ " prop with tl: "+ids.taxlotId)
-      $http.put(url, {}).then(function (response) {
+      promise.then(function (data) {
         addTtoP(ids.taxlotId, ids.propertyId);
         addPtoT(ids.taxlotId, ids.propertyId);
         $scope.getLeftData();
         // $scope.$apply();
-        // console.log('tTop: ', $scope.taxlotToProp)
-        // console.log('pTot: ', $scope.propToTaxlot)
-      }).catch(function (response) {
-        console.error(response);
+        // console.log('tTop: ', $scope.taxlotToProp);
+        // console.log('pTot: ', $scope.propToTaxlot);
       });
+
 
       el.remove();
     });
