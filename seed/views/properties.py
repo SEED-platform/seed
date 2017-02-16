@@ -642,14 +642,15 @@ class PropertyViewSet(GenericViewSet):
             while any(col['name'] == name and not col['related'] for col in columns):
                 name += '_extra'
 
-            display_name = c.column_name.title()
-            columns.append({
-                'name': name,
-                'displayName': display_name,
-                'related': c.extra_data_source != Column.SOURCE_PROPERTY and
-                           c.table_name != 'PropertyState',
-                           'extraData': True
-                           })
+            display_name = c.column_name.title().replace('_', ' ')
+            columns.append(
+                {
+                    'name': name,
+                    'displayName': display_name,
+                    'related': c.table_name != 'PropertyState',
+                    'extraData': True
+                }
+            )
 
         return JsonResponse({'columns': columns})
 
@@ -1424,14 +1425,15 @@ class TaxLotViewSet(GenericViewSet):
             while any(col['name'] == name and not col['related'] for col in columns):
                 name += '_extra'
 
-            display_name = c.column_name.title()
-            columns.append({
-                'name': name,
-                'displayName': display_name,
-                'related': c.extra_data_source != Column.SOURCE_TAXLOT and
-                           c.table_name != 'TaxLotState',
-                           'extraData': True
-                           })
+            display_name = c.column_name.title().replace('_', ' ')
+            columns.append(
+                {
+                    'name': name,
+                    'displayName': display_name,
+                    'related': c.table_name != 'TaxLotState',
+                    'extraData': True
+                }
+            )
 
         return JsonResponse({'columns': columns})
 

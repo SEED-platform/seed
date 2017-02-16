@@ -129,7 +129,7 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
         data_columns = Column.objects.filter(
             organization=self.org,
             is_extra_data=True
-        )
+        ).exclude(table_name='')
 
         # There's only one piece of data that didn't cleanly map.
         # Note that as of 09/15/2016 - extra data still needs to be defined in the mappings, it
