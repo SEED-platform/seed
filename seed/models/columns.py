@@ -331,6 +331,29 @@ class Column(models.Model):
                 table_name=model_obj.__class__.__name__
             )
 
+    def to_dict(self):
+        """
+        Convert the column object to a dictionary
+
+        :return: dict
+        """
+
+        c = {}
+        c['pk'] = self.id
+        c['id'] = self.id
+        c['organization_id'] = self.organization.id
+        c['table_name'] = self.table_name
+        c['column_name'] = self.column_name
+        c['is_extra_data'] = self.is_extra_data
+        if self.unit:
+            c['unit_name'] = self.unit.unit_name
+            c['unit_type'] = self.unit.unit_type
+        else:
+            c['unit_name'] = None
+            c['unit_type'] = None
+
+        return c
+
 
 class ColumnMapping(models.Model):
     """Stores previous user-defined column mapping.
@@ -381,6 +404,31 @@ class ColumnMapping(models.Model):
                 'super_organization': self.super_organization
             }
         ).exclude(pk=self.pk).delete()
+
+    def to_dict(self):
+        """
+        Convert the ColumnMapping object to a dictionary
+
+        :return: dict
+        """
+
+        c = {}
+        c['pk'] = self.id
+        c['id'] = self.id
+        c['user_id'] = self.user.id
+        c['source_type'] = self.source_type
+        c['organization_id'] = self.super_organization.id
+        if self.column_raw and self.column_raw.first():
+            c['from_column'] = self.column_raw.first().to_dict()
+        else:
+            c['from_column'] = None
+
+        if self.column_mapped and self.column_mapped.first():
+            c['to_column'] = self.column_mapped.first().to_dict()
+        else:
+            c['to_column'] = None
+
+        return c
 
     def save(self, *args, **kwargs):
         """

@@ -17,7 +17,6 @@ from seed.authentication import SEEDAuthentication
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from seed.models import obj_to_dict
 from seed.models.columns import Column, ColumnMapping
 from seed.utils.api import api_endpoint_class
 
@@ -56,8 +55,8 @@ class ColumnViewSet(viewsets.ViewSet):
         org_id = request.query_params.get('organization_id', None)
         org = Organization.objects.get(pk=org_id)
         columns = []
-        for d in Column.objects.filter(organization=org).order_by('table_name', 'column_name'):
-            columns.append(obj_to_dict(d))
+        for c in Column.objects.filter(organization=org).order_by('table_name', 'column_name'):
+            columns.append(c.to_dict())
 
         return JsonResponse({
             'status': 'success',
@@ -122,10 +121,9 @@ class ColumnViewSet(viewsets.ViewSet):
                 'message': 'Organization ID mismatch between column and organization'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        column = obj_to_dict(c)
         return JsonResponse({
             'status': 'success',
-            'column': column,
+            'column': c.to_dict(),
         })
 
 
@@ -163,11 +161,7 @@ class ColumnMappingViewSet(viewsets.ViewSet):
         column_mappings = []
         for cm in ColumnMapping.objects.filter(super_organization=org):
             # find the raw and mapped column
-            c = obj_to_dict(cm)
-            # TODO: Verify that we will only have one raw/mapped column per column_mapping object
-            c['column_raw'] = obj_to_dict(cm.column_raw.first())
-            c['column_mapped'] = obj_to_dict(cm.column_mapped.first())
-            column_mappings.append(c)
+            column_mappings.append(cm.to_dict())
 
         return JsonResponse({
             'status': 'success',
@@ -232,14 +226,9 @@ class ColumnMappingViewSet(viewsets.ViewSet):
                 'message': 'Organization ID mismatch between column_mappings and organization'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        column_mapping = obj_to_dict(cm)
-        # TODO: Verify that we will only have one raw/mapped column per column_mapping object
-        column_mapping['column_raw'] = obj_to_dict(cm.column_raw.first())
-        column_mapping['column_mapped'] = obj_to_dict(cm.column_mapped.first())
-
         return JsonResponse({
             'status': 'success',
-            'column_mapping': column_mapping,
+            'column_mapping': cm.to_dict(),
         })
 
     @api_endpoint_class
