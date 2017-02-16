@@ -280,25 +280,43 @@ class Column(models.Model):
             db_field = md.find_column(field['to_table_name'], field['to_field'])
             is_extra_data = False if db_field else True  # yes i am a db column, thus I am not extra_data
 
-            # find the to_column
-            to_org_col = Column.objects.filter(organization=organization,
-                                               column_name=field['to_field'],
-                                               table_name=field['to_table_name'],
-                                               is_extra_data=is_extra_data).first()
-            from_org_col = Column.objects.filter(organization=organization,
-                                                 column_name=field['from_field'],
-                                                 is_extra_data=is_extra_data).first()
+            try:
+                to_org_col, _ = Column.objects.get_or_create(
+                    organization=organization,
+                    column_name=field['to_field'],
+                    table_name=field['to_table_name'],
+                    is_extra_data=is_extra_data
+                )
+            except Column.MultipleObjectsReturned:
+                _log.debug("More than one to_column found for {}.{}".format(field['to_table_name'],
+                                                                            field['to_field']))
+                raise Exception("Cannot handle more than one to_column returned for {}.{}".format(
+                    field['to_field'], field['to_table_name']))
 
-            new_field['to_column_object'] = select_col_obj(
-                field['to_field'],
-                field['to_table_name'],
-                to_org_col
-            )
-            new_field['from_column_object'] = select_col_obj(
-                field['from_field'],
-                "",
-                from_org_col)
+            try:
+                # the from column is the field in the import file, thus the table_name needs to be
+                # blank. Eventually need to handle passing in import_file_id
+                from_org_col, _ = Column.objects.get_or_create(
+                    organization=organization,
+                    table_name__in=[None, ''],
+                    column_name=field['from_field'],
+                    is_extra_data=is_extra_data
+                )
+            except Column.MultipleObjectsReturned:
+                _log.debug(
+                    "More than one from_column found for {}.{}".format(field['to_table_name'],
+                                                                       field['to_field']))
 
+                # TODO: write something to remove the duplicate columns
+                from_org_col = Column.objects.filter(organization=organization,
+                                                     table_name__in=[None, ''],
+                                                     column_name=field['from_field'],
+                                                     is_extra_data=is_extra_data).first()
+                _log.debug("Grabbing the first from_column")
+
+            new_field['to_column_object'] = select_col_obj(field['to_field'],
+                                                           field['to_table_name'], to_org_col)
+            new_field['from_column_object'] = select_col_obj(field['from_field'], "", from_org_col)
             new_data.append(new_field)
 
         return new_data
@@ -307,7 +325,7 @@ class Column(models.Model):
     def save_column_names(model_obj):
         """Save unique column names for extra_data in this organization.
 
-        Basically this is a record of all the extra_data keys we've ever seen
+        This is a record of all the extra_data keys we've ever seen
         for a particular organization.
 
         :param model_obj: model_obj instance (either PropertyState or TaxLotState).
@@ -415,7 +433,10 @@ class ColumnMapping(models.Model):
         c = {}
         c['pk'] = self.id
         c['id'] = self.id
-        c['user_id'] = self.user.id
+        if self.user:
+            c['user_id'] = self.user.id
+        else:
+            c['user_id'] = None
         c['source_type'] = self.source_type
         c['organization_id'] = self.super_organization.id
         if self.column_raw and self.column_raw.first():
