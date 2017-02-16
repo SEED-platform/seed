@@ -751,7 +751,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                         taxlot_view=last_taxlot_view[import_cycle],
                         cycle=import_cycle)
                     m2m_created += int(created)
-            print "{}: {}".format(ndx, last_taxlot_view[x].state.extra_data["Building Address"] if "Building Address" in last_taxlot_view[x].state.extra_data.keys() else last_taxlot_view[x].state.extra_data.keys())
+                # print "{}: {}".format(ndx, last_taxlot_view[x].state.extra_data["Building Address"] if "Building Address" in last_taxlot_view[x].state.extra_data.keys() else last_taxlot_view[x].state.extra_data.keys())
             a = 10
 
     logging_info(
