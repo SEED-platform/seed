@@ -198,7 +198,8 @@ class PropertyViewSet(GenericViewSet):
         for join in joins:
             join_dict = taxlot_map[join.taxlot_view_id].copy()
             join_dict.update({
-                'primary': 'P' if join.primary else 'S'
+                'primary': 'P' if join.primary else 'S',
+                'taxlot_view_id': join.taxlot_view_id
             })
             try:
                 join_map[join.property_view_id].append(join_dict)
