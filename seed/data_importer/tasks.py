@@ -831,6 +831,7 @@ def match_buildings(file_pk, user_pk):
     """
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
+    delete_cache(prog_key)
     if import_file.matching_done:
         return {
             'status': 'warning',
