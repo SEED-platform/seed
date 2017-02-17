@@ -276,13 +276,13 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
             for k, d in delimited_fields.iteritems():
                 if d['to_table'] == table:
                     expand_row = True
-            _log.debug("Expand row is set to {}".format(expand_row))
+            # _log.debug("Expand row is set to {}".format(expand_row))
 
             delimited_field_list = []
             for _, v in delimited_fields.iteritems():
                 delimited_field_list.append(v['from_field'])
 
-            _log.debug("delimited_field_list is set to {}".format(delimited_field_list))
+            # _log.debug("delimited_field_list is set to {}".format(delimited_field_list))
 
             # Weeee... the data are in the extra_data column.
             for row in expand_rows(original_row.extra_data, delimited_field_list, expand_row):

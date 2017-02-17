@@ -483,17 +483,21 @@ class ColumnMapping(models.Model):
         call it after all of the mappings have been saved to the ``ColumnMapping``
         table.
         """
-        from seed.utils.mapping import _get_table_and_column_names
-
-        source_mappings = ColumnMapping.objects.filter(
+        column_mappings = ColumnMapping.objects.filter(
             super_organization=organization
         )
         mapping = {}
-        for item in source_mappings:
-            if not item.column_mapped.all().exists():
+        for cm in column_mappings:
+            # What in the world is this doings? -- explanation please
+            if not cm.column_mapped.all().exists():
                 continue
-            key = _get_table_and_column_names(item, attr_name='column_raw')[0]
-            value = _get_table_and_column_names(item, attr_name='column_mapped')[0]
+
+            key = cm.column_raw.all().values_list('table_name', 'column_name')
+            value = cm.column_mapped.all().values_list('table_name', 'column_name')
+
+            # Should only have one value, if not, then we should probably catch the error
+            key = key[0]
+            value = value[0]
 
             # Concat is not used as of 2016-09-14: commenting out.
             # if isinstance(key, list) and len(key) > 1:
