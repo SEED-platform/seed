@@ -28,4 +28,3 @@ unset PGPASSWORD
 
 # Delete files older than 30 days
 find ${BACKUP_DIR} -mtime +30 -type f -name '*.sql' -delete
-find /home/ubuntu/seed-backups -type f -name '*.sql' -delete
