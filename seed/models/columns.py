@@ -116,7 +116,7 @@ class Column(models.Model):
             'organization', 'column_name', 'is_extra_data', 'extra_data_source')
 
     def __unicode__(self):
-        return u'{0}'.format(self.column_name)
+        return u'{} - {}'.format(self.pk, self.column_name)
 
     @staticmethod
     def create_mappings(mappings, organization, user):
