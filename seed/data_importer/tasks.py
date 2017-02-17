@@ -80,7 +80,7 @@ from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.buildings import get_source_type
-from seed.utils.cache import set_cache, increment_cache, get_cache
+from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache
 
 _log = get_task_logger(__name__)
 
@@ -541,8 +541,10 @@ def map_data(import_file_id, remap=False, mark_as_done=True, *args, **kwargs):
         import_file.mapping_completion = None
         import_file.save()
 
-    _map_data.delay(import_file_id, mark_as_done)
+    # delete the prog key -- in case it exists
     prog_key = get_prog_key('map_data', import_file_id)
+    delete_cache(prog_key)
+    _map_data.delay(import_file_id, mark_as_done)
     return {'status': 'success', 'progress_key': prog_key}
 
 
