@@ -300,7 +300,7 @@ class Column(models.Model):
                     organization=organization,
                     table_name__in=[None, ''],
                     column_name=field['from_field'],
-                    is_extra_data=is_extra_data
+                    is_extra_data=False  # data from header rows in the files are NEVER extra data
                 )
             except Column.MultipleObjectsReturned:
                 _log.debug(
