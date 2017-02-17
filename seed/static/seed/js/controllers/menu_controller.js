@@ -95,7 +95,7 @@ angular.module('BE.seed.controller.menu', [])
       $scope.$on('finished_saving', function (event, data) {
         $scope.saving_indicator = false;
       });
-      $scope.$on('organization_deleted', function (event, data) {
+      $scope.$on('organization_list_updated', function (event, data) {
         init();
       });
 

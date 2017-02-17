@@ -80,7 +80,7 @@ from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.buildings import get_source_type
-from seed.utils.cache import set_cache, increment_cache, get_cache
+from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache
 
 _log = get_task_logger(__name__)
 
@@ -276,13 +276,13 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
             for k, d in delimited_fields.iteritems():
                 if d['to_table'] == table:
                     expand_row = True
-            _log.debug("Expand row is set to {}".format(expand_row))
+            # _log.debug("Expand row is set to {}".format(expand_row))
 
             delimited_field_list = []
             for _, v in delimited_fields.iteritems():
                 delimited_field_list.append(v['from_field'])
 
-            _log.debug("delimited_field_list is set to {}".format(delimited_field_list))
+            # _log.debug("delimited_field_list is set to {}".format(delimited_field_list))
 
             # Weeee... the data are in the extra_data column.
             for row in expand_rows(original_row.extra_data, delimited_field_list, expand_row):
@@ -541,8 +541,10 @@ def map_data(import_file_id, remap=False, mark_as_done=True, *args, **kwargs):
         import_file.mapping_completion = None
         import_file.save()
 
-    _map_data.delay(import_file_id, mark_as_done)
+    # delete the prog key -- in case it exists
     prog_key = get_prog_key('map_data', import_file_id)
+    delete_cache(prog_key)
+    _map_data.delay(import_file_id, mark_as_done)
     return {'status': 'success', 'progress_key': prog_key}
 
 
@@ -829,6 +831,7 @@ def match_buildings(file_pk, user_pk):
     """
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
+    delete_cache(prog_key)
     if import_file.matching_done:
         return {
             'status': 'warning',
