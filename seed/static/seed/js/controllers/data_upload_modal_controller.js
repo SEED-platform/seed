@@ -133,7 +133,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         };
         $scope.goto_data_matching = function () {
           $uibModalInstance.close();
-          $state.go('matching', {importfile_id: $scope.dataset.import_file_id});
+          $state.go('matching_list', {importfile_id: $scope.dataset.import_file_id});
         };
         $scope.view_my_properties = function () {
           $uibModalInstance.close();

@@ -2,8 +2,8 @@
  * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-angular.module('BE.seed.controller.matching', [])
-  .controller('matching_controller', [
+angular.module('BE.seed.controller.matching_list', [])
+  .controller('matching_list_controller', [
     '$scope',
     '$state',
     '$stateParams',
@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.matching', [])
     'building_services',
     'default_columns',
     'all_columns',
+    'columns',
     'cycles',
     'urls',
     '$uibModal',
@@ -19,7 +20,8 @@ angular.module('BE.seed.controller.matching', [])
     'search_service',
     'matching_service',
     'inventory_service',
-    '$filter',
+    'naturalSort',
+    'spinner_utility',
     function ($scope,
               $state,
               $stateParams,
@@ -28,6 +30,7 @@ angular.module('BE.seed.controller.matching', [])
               building_services,
               default_columns,
               all_columns,
+              columns,
               cycles,
               urls,
               $uibModal,
@@ -35,7 +38,9 @@ angular.module('BE.seed.controller.matching', [])
               search_service,
               matching_service,
               inventory_service,
-              $filter) {
+              naturalSort,
+              spinner_utility) {
+      spinner_utility.show();
       // Remove import_files that haven't yet been mapped
       _.remove(import_file_payload.import_file.dataset.importfiles, function (importfile) {
         return importfile.mapping_done !== true;
@@ -51,18 +56,12 @@ angular.module('BE.seed.controller.matching', [])
       });
       $scope.selectedCycle = _.find($scope.cycles, {id: $scope.import_file.cycle});
 
-      if ($scope.inventory_type == 'properties') {
-        $scope.inventory = inventory_payload.properties;
-      } else {
-        $scope.inventory = inventory_payload.tax_lots;
-      }
+      $scope.inventory = [];
       $scope.q = '';
       $scope.number_per_page = 10;
       $scope.current_page = 1;
       $scope.order_by = '';
       $scope.sort_reverse = false;
-      $scope.filter_params = {};
-      $scope.existing_filter_params = {};
       $scope.project_slug = null;
       $scope.number_properties_matching_search = 0;
       $scope.number_tax_lots_matching_search = 0;
@@ -75,7 +74,6 @@ angular.module('BE.seed.controller.matching', [])
       $scope.pagination.number_per_page_options = [10, 25, 50, 100];
       $scope.pagination.number_per_page_options_model = 10;
       $scope.loading_pills = true;
-      $scope.show_building_list = true;
       $scope.selected_row = '';
       $scope.fields = all_columns.fields;
       $scope.default_columns = default_columns.columns;
@@ -89,7 +87,6 @@ angular.module('BE.seed.controller.matching', [])
       };
       $scope.importfile_id = $stateParams.importfile_id;
       $scope.inventory_type = $stateParams.inventory_type;
-      var order_by = $filter('orderBy');
 
       /* Handle 'update filters' button click */
       $scope.do_update_filters = function () {
@@ -108,27 +105,25 @@ angular.module('BE.seed.controller.matching', [])
        *   and pagination here.
        */
       $scope.filter_search = function () {
+        console.debug('filter_search called');
         $scope.update_number_matched();
         inventory_service.search_matching_inventory($scope.q, $scope.number_per_page, $scope.current_page,
-          $scope.order_by, $scope.sort_reverse, $scope.filter_params, $scope.file_select.file.id)
+          $scope.order_by, $scope.sort_reverse, {}, $scope.file_select.file.id)
           .then(function (data) {
             // safe-guard against future init() calls
             inventory_payload = data;
 
             if ($scope.inventory_type == 'properties') {
               $scope.inventory = data.properties;
+              $scope.num_pages = Math.ceil(data.number_properties_matching_search / $scope.number_per_page);
             } else {
               $scope.inventory = data.tax_lots;
+              $scope.num_pages = Math.ceil(data.number_tax_lots_matching_search / $scope.number_per_page);
             }
             $scope.number_properties_matching_search = data.number_properties_matching_search;
             $scope.number_tax_lots_matching_search = data.number_tax_lots_matching_search;
             $scope.number_properties_returned = data.number_properties_returned;
             $scope.number_tax_lots_returned = data.number_tax_lots_returned;
-            if ($scope.inventory_type == 'properties') {
-              $scope.num_pages = Math.ceil(data.number_properties_matching_search / $scope.number_per_page);
-            } else {
-              $scope.num_pages = Math.ceil(data.number_tax_lots_matching_search / $scope.number_per_page);
-            }
             update_start_end_paging();
           })
           .catch(function (data, status) {
@@ -142,44 +137,15 @@ angular.module('BE.seed.controller.matching', [])
         $scope.alerts.splice(index, 1);
       };
 
-      /**
-       *  Code for filter dropdown
-       */
+      $scope.SHOW_ALL = 'Show All';
+      $scope.SHOW_MATCHED = 'Show Matched';
+      $scope.SHOW_UNMATCHED = 'Show Unmatched';
 
-      var SHOW_ALL = 'Show All';
-      var SHOW_MATCHED = 'Show Matched';
-      var SHOW_UNMATCHED = 'Show Unmatched';
+      $scope.filter_options = [$scope.SHOW_ALL, $scope.SHOW_MATCHED, $scope.SHOW_UNMATCHED];
 
-      $scope.filter_options = [
-        {id: SHOW_ALL, value: SHOW_ALL},
-        {id: SHOW_MATCHED, value: SHOW_MATCHED},
-        {id: SHOW_UNMATCHED, value: SHOW_UNMATCHED}
-      ];
-
-      $scope.filter_selection = {selected: SHOW_ALL};     //default setting
-
-      $scope.update_show_filter = function (optionValue) {
-
-        switch (optionValue) {
-          case SHOW_ALL:
-            $scope.filter_params.children__isnull = undefined;
-            break;
-          case SHOW_MATCHED:
-            $scope.filter_params.children__isnull = false;  //has children therefore is matched
-            break;
-          case SHOW_UNMATCHED:
-            $scope.filter_params.children__isnull = true;   //does not have children therefore is unmatched
-            break;
-          default:
-            $log.error('#matching_controller: unexpected filter value: ', optionValue);
-            return;
-        }
-
-        $scope.current_page = 1;
-        $scope.filter_search();
-
+      $scope.log = function(data) {
+        console.info(data);
       };
-
 
       /**
        * Pagination code
@@ -291,48 +257,6 @@ angular.module('BE.seed.controller.matching', [])
         });
       };
 
-      /*
-       * match_building: loads/shows the matching detail table and hides the
-       *  matching list table
-       */
-      $scope.match_building = function (building) {
-        // shows a matched building detail page
-        $scope.search.filter_params = {};
-        // chain promises to exclude the match_tree from the search of
-        // existing buildings
-        matching_service.get_match_tree(building.id)
-          .then(function (data) {
-            $scope.tip = data.tip;
-            $scope.detail.match_tree = data.coparents.map(function (b) {
-              // the backend doesn't set a matched field so add one here
-              b.matched = true;
-              return b;
-            }).filter(function (b) {
-              // this is tricky, we only want to show the tree nodes which
-              // are original, i.e. don't have parents
-              if (b.id !== building.id) {
-                return b;
-              }
-            });
-            $scope.search.filter_params.exclude = {
-              id__in: data.coparents.map(function (b) {
-                return b.id;
-              }).concat([building.id])
-            };
-            return $scope.search.search_buildings();
-          })
-          .then(function (data) {
-            $scope.$broadcast('matching_loaded', {
-              matching_buildings: data.buildings,
-              building: building
-            });
-            console.log({building: building, match_tree: $scope.detail.match_tree});
-            $scope.show_building_list = false;
-            $scope.selected_row = building.id;
-          });
-
-      };
-
       /**
        * open_edit_columns_modal: opens the edit columns modal to select and set
        *   the columns used in the matching list table and matching detail table
@@ -379,20 +303,21 @@ angular.module('BE.seed.controller.matching', [])
           });
       };
 
-      /**
-       * back_to_list: shows the matching list table, hides the matching detail
-       *   table
-       */
-      $scope.back_to_list = function () {
-        $scope.show_building_list = true;
-      };
-
       /*
        * order_by_field: toggle between ordering table rows in ascending or descending order of field value
        */
 
-      $scope.order_by_field = function (field, reverse) {
-        $scope.inventory = order_by($scope.inventory, field, reverse);
+      $scope.order_by_field = function (is_extra_data, field) {
+        if ($scope.order_by != field) {
+          $scope.sort_reverse = false;
+        } else {
+          $scope.sort_reverse = !$scope.sort_reverse;
+        }
+        $scope.order_by = field;
+        $scope.inventory = $scope.inventory.sort(function (a, b) {
+          if (!$scope.sort_reverse) return is_extra_data ? naturalSort(a.extra_data[field], b.extra_data[field]) : naturalSort(a[field], b[field]);
+          else return is_extra_data ? naturalSort(b.extra_data[field], a.extra_data[field]) : naturalSort(b[field], a[field]);
+        });
       };
 
       $scope.cycleChanged = function () {
@@ -408,7 +333,7 @@ angular.module('BE.seed.controller.matching', [])
       };
 
       $scope.fileChanged = function () {
-        $state.go('matching', {importfile_id: $scope.file_select.file.id});
+        $state.go('matching_list', {importfile_id: $scope.file_select.file.id});
       };
 
       /**
@@ -417,7 +342,11 @@ angular.module('BE.seed.controller.matching', [])
        */
       $scope.init = function () {
         $scope.cycleChanged();
-        $scope.columns = search_service.generate_columns($scope.fields, $scope.default_columns);
+        console.debug('default_columns:', default_columns.columns);
+        console.debug('fields', angular.copy($scope.fields));
+        // $scope.columns = search_service.generate_columns($scope.fields, $scope.default_columns);
+        $scope.columns = columns;
+        console.debug('final columns', angular.copy($scope.columns));
         $scope.number_properties_matching_search = inventory_payload.number_properties_matching_search;
         $scope.number_tax_lots_matching_search = inventory_payload.number_tax_lots_matching_search;
         $scope.number_properties_returned = inventory_payload.number_properties_returned;
@@ -433,6 +362,10 @@ angular.module('BE.seed.controller.matching', [])
         update_start_end_paging();
 
         $scope.update_number_matched();
+
+        _.delay(function () {
+          spinner_utility.hide();
+        }, 150);
       };
       $scope.init();
     }]);

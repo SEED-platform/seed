@@ -60,8 +60,9 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_settings',
   'BE.seed.controller.label_admin',
   'BE.seed.controller.mapping',
-  'BE.seed.controller.matching',
+  'BE.seed.controller.matching_list',
   'BE.seed.controller.matching_detail',
+  'BE.seed.controller.matching_detail_table',
   'BE.seed.controller.members',
   'BE.seed.controller.menu',
   'BE.seed.controller.new_member_modal',
@@ -695,10 +696,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'matching',
+        name: 'matching_list',
         url: '/data/matching/{importfile_id:int}/{inventory_type:properties|taxlots}',
-        templateUrl: static_url + 'seed/partials/matching.html',
-        controller: 'matching_controller',
+        templateUrl: static_url + 'seed/partials/matching_list.html',
+        controller: 'matching_list_controller',
         resolve: {
           import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
@@ -713,6 +714,88 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           all_columns: ['building_services', function (building_services) {
             return building_services.get_columns();
+          }],
+          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                console.debug(angular.copy(columns));
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            }
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_member'])
+              .then(function (data) {
+                if (data.auth.requires_member) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'matching_detail',
+        url: '/data/matching/{importfile_id:int}/{inventory_type:properties|taxlots}/{state_id:int}',
+        templateUrl: static_url + 'seed/partials/matching_detail.html',
+        controller: 'matching_detail_controller',
+        resolve: {
+          import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return dataset_service.get_import_file(importfile_id);
+          }],
+          inventory_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return inventory_service.search_matching_inventory('', 10, 1, '', false, {}, importfile_id);
+          }],
+          default_columns: ['user_service', function (user_service) {
+            return user_service.get_default_columns();
+          }],
+          all_columns: ['building_services', function (building_services) {
+            return building_services.get_columns();
+          }],
+          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                console.debug(angular.copy(columns));
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            }
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
