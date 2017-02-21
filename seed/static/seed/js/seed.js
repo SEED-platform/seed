@@ -680,6 +680,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           taxlot_columns: ['inventory_service', function (inventory_service) {
             return inventory_service.get_taxlot_columns();
           }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
           auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
             var organization_id = user_service.get_organization().id;
             return auth_service.is_authorized(organization_id, ['requires_member'])

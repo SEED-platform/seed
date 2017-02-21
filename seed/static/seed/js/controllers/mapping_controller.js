@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.mapping', [])
     'first_five_rows_payload',
     'property_columns',
     'taxlot_columns',
+    'cycles',
     'building_services',
     'mappingValidatorService',
     'mapping_service',
@@ -31,6 +32,7 @@ angular.module('BE.seed.controller.mapping', [])
               first_five_rows_payload,
               property_columns,
               taxlot_columns,
+              cycles,
               building_services,
               mappingValidatorService,
               mapping_service,
@@ -44,7 +46,6 @@ angular.module('BE.seed.controller.mapping', [])
               $filter,
               cleansing_service,
               inventory_service) {
-
       var db_field_columns = suggested_mappings_payload.column_names;
       var columns = suggested_mappings_payload.columns;
       var extra_data_columns = _.filter(columns, 'extra_data');
@@ -90,6 +91,8 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.search = angular.copy(search_service);
       $scope.search.has_checkbox = false;
       $scope.search.update_results();
+
+      $scope.isValidCycle = !!_.find(cycles.cycles, {id: $scope.import_file.cycle});
 
       /*
        * Opens modal for making changes to concatenation changes.
@@ -706,9 +709,7 @@ angular.module('BE.seed.controller.mapping', [])
           templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
           controller: 'data_upload_modal_controller',
           resolve: {
-            cycles: ['cycle_service', function (cycle_service) {
-              return cycle_service.get_cycles();
-            }],
+            cycles: cycles,
             step: function () {
               return step;
             },

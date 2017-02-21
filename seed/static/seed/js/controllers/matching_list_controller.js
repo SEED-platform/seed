@@ -286,7 +286,7 @@ angular.module('BE.seed.controller.matching_list', [])
       $scope.cycleChanged = function () {
         var initial = _.isUndefined($scope.import_files);
         $scope.import_files = _.filter($scope.import_file.dataset.importfiles, function (file) {
-          return file.cycle == $scope.selectedCycle.id;
+          return file.cycle == _.get($scope.selectedCycle, 'id');
         });
         if (!initial) {
           // If not first load, default to the first available file in the newly selected cycle

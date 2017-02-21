@@ -88,16 +88,16 @@
                             <th class="source_data" colspan="{$ columns.length $}" ng-hide="filter_selected == SHOW_UNMATCHED">Matched {$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $}</th>
                         </tr>
                         <tr>
-                            <th ng-repeat="c in columns" class="pointer" ng-click="order_by_field(c.extraData, c.name)">
-                                {$ c.displayName $} <span class="subtitle">{$ c.subtitle $}</span>
-                                <span ng-hide="c.name != order_by || sort_reverse" class="fa fa-caret-up"></span>
-                                <span ng-hide="c.name != order_by || !sort_reverse" class="fa fa-caret-down"></span>
+                            <th ng-repeat="col in columns" class="pointer" ng-click="order_by_field(col.extraData, col.name)">
+                                {$ col.displayName $} <span class="subtitle">{$ col.subtitle $}</span>
+                                <span ng-hide="col.name != order_by || sort_reverse" class="fa fa-caret-up"></span>
+                                <span ng-hide="col.name != order_by || !sort_reverse" class="fa fa-caret-down"></span>
                             </th>
                             <th class="sub_head is_aligned_center" ng-hide="filter_selected == SHOW_UNMATCHED">Match</th>
-                            <th ng-repeat="c in columns" class="pointer" ng-hide="filter_selected == SHOW_UNMATCHED" ng-click="order_by_field(c.extraData, c.name)">
-                                {$ c.displayName $} <span class="subtitle">{$ c.subtitle $}</span>
-                                <span ng-hide="c.name != order_by || sort_reverse" class="fa fa-caret-up"></span>
-                                <span ng-hide="c.name != order_by || !sort_reverse" class="fa fa-caret-down"></span>
+                            <th ng-repeat="col in columns" class="pointer" ng-hide="filter_selected == SHOW_UNMATCHED" ng-click="order_by_field(col.extraData, col.name)">
+                                {$ col.displayName $} <span class="subtitle">{$ col.subtitle $}</span>
+                                <span ng-hide="col.name != order_by || sort_reverse" class="fa fa-caret-up"></span>
+                                <span ng-hide="col.name != order_by || !sort_reverse" class="fa fa-caret-down"></span>
                             </th>
                         </tr>
                         <tr>

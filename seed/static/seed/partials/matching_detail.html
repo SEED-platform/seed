@@ -82,7 +82,7 @@
                         <tr>
                             <th class="sub_head"></th>
                             <th class="sub_head" ng-repeat="col in columns">
-                                <input type="text" class="form-control input-sm show" ng-class="{active: search.filter_params[col.name].length}" placeholder="{$ col.displayName $}" ng-change="search.filter_search()" ng-model="search.filter_params[col.name]">
+                                <input type="text" class="form-control input-sm show" ng-class="{active: search.filter_params[col.name].length}" ng-change="search.filter_search()" ng-model="search.filter_params[col.name]">
                             </th>
                         </tr>
                     </thead>

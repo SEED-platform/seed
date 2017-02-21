@@ -785,7 +785,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def get_cached_mapped_columns(self):
         # create a list of tuples
-        data = json.loads(self.cached_mapped_columns)
+        data = json.loads(self.cached_mapped_columns or '{}')
         result = []
         for d in data:
             result.append((d['to_table_name'], d['to_field']))
