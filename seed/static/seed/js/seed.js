@@ -707,13 +707,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           inventory_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
-            return inventory_service.search_matching_inventory('', 10, 1, '', false, {}, importfile_id);
-          }],
-          default_columns: ['user_service', function (user_service) {
-            return user_service.get_default_columns();
-          }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
+            return inventory_service.search_matching_inventory(importfile_id, true);
           }],
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
@@ -721,7 +715,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 _.remove(columns, function (col) {
                   return col.related === true;
                 });
-                console.debug(angular.copy(columns));
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -742,16 +735,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
             var organization_id = user_service.get_organization().id;
-            return auth_service.is_authorized(organization_id, ['requires_member'])
-              .then(function (data) {
-                if (data.auth.requires_member) {
-                  return data;
-                } else {
-                  return $q.reject('not authorized');
-                }
-              }, function (data) {
-                return $q.reject(data.message);
-              });
+            return auth_service.is_authorized(organization_id, ['requires_member']).then(function (data) {
+              if (data.auth.requires_member) {
+                return data;
+              } else {
+                return $q.reject('not authorized');
+              }
+            }, function (data) {
+              return $q.reject(data.message);
+            });
           }]
         }
       })
@@ -767,13 +759,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           inventory_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
-            return inventory_service.search_matching_inventory('', 10, 1, '', false, {}, importfile_id);
-          }],
-          default_columns: ['user_service', function (user_service) {
-            return user_service.get_default_columns();
-          }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
+            return inventory_service.search_matching_inventory(importfile_id, true);
           }],
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
@@ -781,7 +767,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 _.remove(columns, function (col) {
                   return col.related === true;
                 });
-                console.debug(angular.copy(columns));
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -797,21 +782,17 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               });
             }
           }],
-          cycles: ['cycle_service', function (cycle_service) {
-            return cycle_service.get_cycles();
-          }],
           auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
             var organization_id = user_service.get_organization().id;
-            return auth_service.is_authorized(organization_id, ['requires_member'])
-              .then(function (data) {
-                if (data.auth.requires_member) {
-                  return data;
-                } else {
-                  return $q.reject('not authorized');
-                }
-              }, function (data) {
-                return $q.reject(data.message);
-              });
+            return auth_service.is_authorized(organization_id, ['requires_member']).then(function (data) {
+              if (data.auth.requires_member) {
+                return data;
+              } else {
+                return $q.reject('not authorized');
+              }
+            }, function (data) {
+              return $q.reject(data.message);
+            });
           }]
         }
       })

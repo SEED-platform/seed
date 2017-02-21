@@ -1334,8 +1334,7 @@ def _match_properties_and_taxlots(file_pk, user_pk):
 
         # Filter out the duplicates.  Do we actually want to delete them
         # here?  Mark their abandonment in the Audit Logs?
-        unmatched_properties, duplicate_property_states = filter_duplicated_states(
-            all_unmatched_properties)
+        unmatched_properties, duplicate_property_states = filter_duplicated_states(all_unmatched_properties)
 
         property_partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
 
@@ -1343,13 +1342,17 @@ def _match_properties_and_taxlots(file_pk, user_pk):
         # provided by the partitioner.
         unmatched_properties, property_equivalence_keys = match_and_merge_unmatched_objects(
             unmatched_properties,
-            property_partitioner, org,
+            property_partitioner,
+            org,
             import_file)
 
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.
-        merged_property_views = merge_unmatched_into_views(unmatched_properties,
-                                                           property_partitioner, org, import_file)
+        merged_property_views = merge_unmatched_into_views(
+            unmatched_properties,
+            property_partitioner,
+            org,
+            import_file)
     else:
         duplicate_property_states = []
         merged_property_views = []
@@ -1358,15 +1361,18 @@ def _match_properties_and_taxlots(file_pk, user_pk):
     all_unmatched_tax_lots = import_file.find_unmatched_tax_lot_states()
 
     if all_unmatched_tax_lots:
-        unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(
-            all_unmatched_tax_lots)
+        unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(all_unmatched_tax_lots)
         taxlot_partitioner = EquivalencePartitioner.make_default_state_equivalence(TaxLotState)
         unmatched_tax_lots, taxlot_equivalence_keys = match_and_merge_unmatched_objects(
             unmatched_tax_lots,
-            taxlot_partitioner, org,
+            taxlot_partitioner,
+            org,
             import_file)
-        merged_taxlot_views = merge_unmatched_into_views(unmatched_tax_lots, taxlot_partitioner,
-                                                         org, import_file)
+        merged_taxlot_views = merge_unmatched_into_views(
+            unmatched_tax_lots,
+            taxlot_partitioner,
+            org,
+            import_file)
     else:
         duplicate_tax_lot_states = []
         merged_taxlot_views = []

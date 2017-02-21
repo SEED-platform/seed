@@ -19,6 +19,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import FileSystemStorage
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.http import HttpResponse
 from django.http import JsonResponse
 from rest_framework import serializers
@@ -57,7 +58,8 @@ from seed.models import (
     MERGE_STATE_NEW,
     Cycle,
     Column,
-)
+    PropertyAuditLog,
+    TaxLotAuditLog)
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
 
@@ -530,7 +532,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         import_file_id = pk
 
-        review = request.data.get('review', False)
+        get_coparents = request.data.get('get_coparents', False)
 
         # get the field names that were in the mapping
         import_file = ImportFile.objects.get(id=import_file_id)
@@ -538,7 +540,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         # get the columns in the db...
         md = MappingData()
-        _log.debug("md.keys_with_table_names are: {}".format(md.keys_with_table_names))
+        _log.debug('md.keys_with_table_names are: {}'.format(md.keys_with_table_names))
 
         raw_db_fields = []
         for db_field in md.keys_with_table_names:
@@ -546,28 +548,80 @@ class ImportFileViewSet(viewsets.ViewSet):
                 raw_db_fields.append(db_field)
 
         # go through the list and find the ones that are properties
-        fields = {'PropertyState': ['extra_data', 'lot_number'], 'TaxLotState': ['extra_data']}
+        fields = {'PropertyState': ['id', 'extra_data', 'lot_number'], 'TaxLotState': ['id', 'extra_data']}
         for f in raw_db_fields:
             fields[f[0]].append(f[1])
 
-        _log.debug("Field names that will be returned are: {}".format(fields))
+        _log.debug('Field names that will be returned are: {}'.format(fields))
 
         properties = PropertyState.objects.order_by('id').filter(
-            import_file__pk=import_file_id,
-            data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+            import_file_id=import_file_id,
+            data_state=DATA_STATE_MATCHING,
+            merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
         ).values(*fields['PropertyState'])
         tax_lots = TaxLotState.objects.order_by('id').filter(
-            import_file__pk=import_file_id,
-            data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+            import_file_id=import_file_id,
+            data_state=DATA_STATE_MATCHING,
+            merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
         ).values(*fields['TaxLotState'])
-        if review:
-            properties = properties.exclude(merge_state=MERGE_STATE_UNKNOWN)
-            tax_lots = tax_lots.exclude(merge_state=MERGE_STATE_UNKNOWN)
+        if get_coparents:
+            for state in properties:
+                state['matched'] = False
+
+                # Prefetch related?
+                audit_creation_id = PropertyAuditLog.objects.only('id').get(
+                    state_id=state['id'],
+                    name='Import Creation'
+                )
+                merged_record = PropertyAuditLog.objects.only('state_id', 'parent1_id', 'parent2_id').filter(
+                    Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id)
+                )
+                if merged_record.count() > 1:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Internal problem occurred, more than one merge record found'},
+                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                elif merged_record.count() == 1:
+                    state['matched'] = True
+                    state['coparent'] = {}
+                    if merged_record.first().parent1_id == state['id']:
+                        coparent = merged_record.first().parent2.state
+                    else:
+                        coparent = merged_record.first().parent1.state
+
+                    for k in fields['PropertyState']:
+                        state['coparent'][k] = getattr(coparent, k)
+
+            for state in tax_lots:
+                state['matched'] = False
+
+                # Prefetch related?
+                audit_creation_id = TaxLotAuditLog.objects.only('id').get(
+                    state_id=state['id'],
+                    name='Import Creation'
+                )
+                merged_record = TaxLotAuditLog.objects.only('state_id', 'parent1_id', 'parent2_id').filter(
+                    Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id)
+                )
+                if merged_record.count() > 1:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Internal problem occurred, more than one merge record found'},
+                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                elif merged_record.count() == 1:
+                    state['matched'] = True
+                    state['coparent'] = {}
+                    if merged_record.first().parent1_id == state['id']:
+                        coparent = merged_record.first().parent2.state
+                    else:
+                        coparent = merged_record.first().parent1.state
+
+                    for k in fields['TaxLotState']:
+                        state['coparent'][k] = getattr(coparent, k)
+
         properties = list(properties)
         tax_lots = list(tax_lots)
 
-        _log.debug("Found {} properties".format(len(properties)))
-        _log.debug("Found {} tax lots".format(len(tax_lots)))
+        _log.debug('Found {} properties'.format(len(properties)))
+        _log.debug('Found {} tax lots'.format(len(tax_lots)))
 
         return {
             'status': 'success',
@@ -923,7 +977,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @detail_route(methods=['GET'])
     def matching_results(self, request, pk=None):
         """
-        Retrieves the number of matched and unmatched BuildingSnapshots for
+        Retrieves the number of matched and unmatched properties & tax lots for
         a given ImportFile record.
 
         :GET: Expects import_file_id corresponding to the ImportFile in question.
@@ -932,45 +986,76 @@ class ImportFileViewSet(viewsets.ViewSet):
 
             {
                 'status': 'success',
-                'matched': Number of BuildingSnapshot objects that have matches,
-                'unmatched': Number of BuildingSnapshot objects with no matches.
+                'properties': {
+                    'matched': Number of PropertyStates that have been matched,
+                    'unmatched': Number of PropertyStates that are unmatched new imports
+                },
+                'tax_lots': {
+                    'matched': Number of TaxLotStates that have been matched,
+                    'unmatched': Number of TaxLotStates that are unmatched new imports
+                }
             }
 
         """
         import_file_id = pk
 
         # property views associated with this imported file (including merges)
-        properties_new = PropertyState.objects.filter(
-            import_file__pk=import_file_id,
-            data_state=DATA_STATE_MATCHING,
-            merge_state=MERGE_STATE_NEW,
-        ).count()
-        properties_matched = PropertyState.objects.filter(
+        properties_new = []
+        properties_matched = list(PropertyState.objects.filter(
             import_file__pk=import_file_id,
             data_state=DATA_STATE_MATCHING,
             merge_state=MERGE_STATE_MERGED,
-        ).count()
+        ).values_list('id', flat=True))
 
-        tax_lots_new = TaxLotState.objects.filter(
-            import_file__pk=import_file_id,
-            data_state=DATA_STATE_MATCHING,
-            merge_state=MERGE_STATE_NEW,
-        ).count()
-        tax_lots_matched = TaxLotState.objects.filter(
+        # Check audit log in case PropertyStates are listed as "new" but were merged into a different tax lot
+        for state in PropertyState.objects.filter(
+                import_file__pk=import_file_id,
+                data_state=DATA_STATE_MATCHING,
+                merge_state=MERGE_STATE_NEW,
+        ):
+            audit_creation_id = PropertyAuditLog.objects.only('id').get(
+                state_id=state.id,
+                name='Import Creation'
+            )
+            if PropertyAuditLog.objects.filter(parent1_id=audit_creation_id).exists():
+                properties_matched.append(state.id)
+            else:
+                properties_new.append(state.id)
+
+        tax_lots_new = []
+        tax_lots_matched = list(TaxLotState.objects.only('id').filter(
             import_file__pk=import_file_id,
             data_state=DATA_STATE_MATCHING,
             merge_state=MERGE_STATE_MERGED,
-        ).count()
+        ).values_list('id', flat=True))
+
+        # Check audit log in case TaxLotStates are listed as "new" but were merged into a different tax lot
+        for state in TaxLotState.objects.filter(
+                import_file__pk=import_file_id,
+                data_state=DATA_STATE_MATCHING,
+                merge_state=MERGE_STATE_NEW,
+        ):
+            audit_creation_id = TaxLotAuditLog.objects.only('id').get(
+                state_id=state.id,
+                name='Import Creation'
+            )
+            if TaxLotAuditLog.objects.filter(parent1_id=audit_creation_id).exists():
+                tax_lots_matched.append(state.id)
+            else:
+                tax_lots_new.append(state.id)
 
         return {
             'status': 'success',
             'properties': {
-                'matched': properties_matched,
-                'unmatched': properties_new,
+                'matched': len(properties_matched),
+                'matched_ids': properties_matched,
+                'unmatched': len(properties_new),
+                'unmatched_ids': properties_new
             },
             'tax_lots': {
-                'matched': tax_lots_matched,
-                'unmatched': tax_lots_new,
+                'matched': len(tax_lots_matched),
+                'matched_ids': tax_lots_matched,
+                'unmatched': len(tax_lots_new),
+                'unmatched_ids': tax_lots_new
             }
-
         }

@@ -145,9 +145,6 @@ angular.module('BE.seed.controller.mapping', [])
         if (tcm.suggestion === '') {
           return '';
         }
-        if (tcm.validity === 'valid') {
-          return 'success';
-        }
         for (
           var i = 0; _.isUndefined(tcm.invalids) &&
         i < tcm.invalids.length; i++
@@ -356,7 +353,7 @@ angular.module('BE.seed.controller.mapping', [])
       /*
        * get_mapped_buildings: gets mapped buildings for the preview table
        */
-      $scope.get_mapped_buildings = function (review) {
+      $scope.get_mapped_buildings = function () {
         $scope.import_file.progress = 0;
         $scope.save_mappings = true;
         $scope.review_mappings = true;
@@ -365,13 +362,7 @@ angular.module('BE.seed.controller.mapping', [])
 
         $scope.save_mappings = false;
 
-        spinner_utility.show();
-        $http.post('/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/', {
-          review: review
-        }).then(function (response) {
-          spinner_utility.hide();
-
-          var data = response.data;
+        inventory_service.search_matching_inventory($scope.import_file.id).then(function (data) {
           $scope.mappedData = data;
 
           var gridOptions = {

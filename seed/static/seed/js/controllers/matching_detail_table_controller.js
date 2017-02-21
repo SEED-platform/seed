@@ -21,7 +21,7 @@ angular.module('BE.seed.controller.matching_detail_table', [])
             }
           );
       };
-      $scope.filter_current_building = function (value, index) {
+      $scope.filter_current_building = function (value) {
         var is_tip = false;
         if ($scope.tip) {
           is_tip = (value.id === $scope.tip.id);

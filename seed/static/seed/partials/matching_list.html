@@ -109,21 +109,17 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="b in inventory" ng-class="{'info': !b.matched && (selected_row === b.id || selected_row === b.coparent.id), 'success': b.matched && (selected_row === b.id || selected_row === b.coparent.id)}">
-                            <td ng-repeat="c in columns">
-                                <a ng-if="c.extraData" ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: 1})" ng-click="log(b)">{$ b.extra_data[c.name] $}</a>
-                                <a ng-if="!c.extraData" ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: 1})" ng-click="log(b)">{$ b[c.name] $}</a>
+                        <tr ng-repeat="i in inventory">
+                            <td ng-repeat="col in columns">
+                                <a ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})">{$ col.extraData ? i.extra_data[col.name] : i[col.name] $}</a>
                             </td>
                             <td class="is_aligned_center has_no_padding" ng-hide="filter_selected == SHOW_UNMATCHED">
                                 <label class="checkbox_fill_area">
-                                    <input type="checkbox" ng-model="b.matched" ng-change="toggle_match(b)" ng-disabled="!b.coparent.id">
+                                    <input type="checkbox" ng-model="i.matched" ng-change="unmatch(i)" ng-disabled="!i.coparent.id">
                                 </label>
                             </td>
-                            <td ng-repeat="c in columns" ng-hide="filter_selected == SHOW_UNMATCHED">
-                                <!--<a ng-if="c.extraData" ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b.coparent)">{$ b.coparent.extra_data[c.name] $}</a>
-                                <a ng-if="!c.extraData" ui-sref="matching({importfile_id: import_file.id})" ng-click="match_building(b.coparent)">{$ b.coparent[c.name] $}</a>-->
-                                <span ng-if="c.extraData">{$ b.coparent.extra_data[c.name] $}</span>
-                                <span ng-if="!c.extraData">{$ b.coparent[c.name] $}</span>
+                            <td ng-repeat="col in columns" ng-hide="filter_selected == SHOW_UNMATCHED">
+                                <span>{$ col.extraData ? i.coparent.extra_data[col.name] : i.coparent[col.name] $}</span>
                             </td>
                         </tr>
                     </tbody>
@@ -142,17 +138,16 @@
                 </div>
                 <div class="pager_container col-sm-5">
                     <ul class="pager">
-                        <li ng-class="{disabled: prev_page_disabled}">
+                        <li ng-class="{disabled: current_page == 1}">
                             <a ng-click="pagination.first_page()"><i class="fa fa-angle-double-left"></i> First Record</a>
                         </li>
-                        <li ng-class="{disabled: prev_page_disabled}">
+                        <li ng-class="{disabled: current_page == 1}">
                             <a ng-click="pagination.prev_page()"><i class="fa fa-angle-left"></i> Previous</a>
                         </li>
-
-                        <li ng-class="{disabled: next_page_disabled}"><a ng-click="pagination.next_page()">Next
+                        <li ng-class="{disabled: current_page == num_pages}"><a ng-click="pagination.next_page()">Next
                             <i class="fa fa-angle-right"></i></a>
                         </li>
-                        <li ng-class="{disabled: next_page_disabled}"><a ng-click="pagination.last_page()">Last Record
+                        <li ng-class="{disabled: current_page == num_pages}"><a ng-click="pagination.last_page()">Last Record
                             <i class="fa fa-angle-double-right"></i></a>
                         </li>
                     </ul>
