@@ -625,11 +625,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return pinned.concat(selected).concat(columns);
     };
 
-    inventory_service.search_matching_inventory = function (import_file_id, get_coparents) {
+    inventory_service.search_matching_inventory = function (import_file_id, options) {
       spinner_utility.show();
-      return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', {
-        get_coparents: Boolean(get_coparents)
-      }).then(function (response) {
+      return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', options).then(function (response) {
         return response.data;
       }).finally(function () {
         spinner_utility.hide();

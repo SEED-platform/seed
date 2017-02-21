@@ -125,10 +125,6 @@ angular.module('BE.seed.controller.matching_list', [])
 
       $scope.filter_options = [$scope.SHOW_ALL, $scope.SHOW_MATCHED, $scope.SHOW_UNMATCHED];
 
-      $scope.log = function(data) {
-        console.info(data);
-      };
-
       /**
        * Pagination code
        */

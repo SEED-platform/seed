@@ -90,7 +90,7 @@
                         <tr>
                             <td class="potential_matches" colspan="{$ columns.length + 1 $}">
                                 <span>Record from Source: <strong>{$ import_file.uploaded_filename $}</strong></span>
-                                <span class="label label-success matched" ng-show="detail.match_tree.length > 0">Matched!</span>
+                                <span class="label label-success matched" ng-show="state.matched">Matched!</span>
                             </td>
                         </tr>
                         <tr ng-class="{'info': !state.matched, 'success': state.matched}">
@@ -104,13 +104,13 @@
                             <td class="potential_matches" colspan="{$ columns.length + 1 $}"><span>Potential Matches from Source: <strong>Existing {$ inventory_type == 'properties' ? 'Properties' : 'Tax Lots' $}</strong></span>
                             </td>
                         </tr>
-                        <!-- matched building -->
-                        <tr class="success" ng-repeat="b in detail.match_tree | filter:filter_current_building">
+                        <!-- matched record -->
+                        <tr class="success" ng-if="state.matched">
                             <td class="is_aligned_center">
-                                <input type="checkbox" ng-model="b.matches_current" ng-change="detail.toggle_match(b)">
+                                <input type="checkbox" ng-model="state.matched" ng-change="unmatch()">
                             </td>
                             <td ng-repeat="col in columns">
-                                <span>{$ col.extraData ? b.extra_data[col.name] : b[col.name] $}</span>
+                                <span>{$ col.extraData ? state.coparent.extra_data[col.name] : state.coparent[col.name] $}</span>
                             </td>
                         </tr>
                         <!-- search results -->
@@ -125,7 +125,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="table_footer">
+            <!--<div class="table_footer">
                 <div class="display_number_entries col-sm-3" ng-hide="false">
                     <div class="display_number_entries_text">Display:</div>
                     <div class="display_number_entries_select">
@@ -152,7 +152,7 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </div>-->
         </div>
     </div>
 </div>

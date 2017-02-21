@@ -707,7 +707,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           inventory_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
-            return inventory_service.search_matching_inventory(importfile_id, true);
+            return inventory_service.search_matching_inventory(importfile_id, {
+              get_coparents: true
+            });
           }],
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
@@ -757,9 +759,13 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var importfile_id = $stateParams.importfile_id;
             return dataset_service.get_import_file(importfile_id);
           }],
-          inventory_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
+          state_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
-            return inventory_service.search_matching_inventory(importfile_id, true);
+            return inventory_service.search_matching_inventory(importfile_id, {
+              get_coparents: true,
+              inventory_type: $stateParams.inventory_type,
+              state_id: $stateParams.state_id
+            });
           }],
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {

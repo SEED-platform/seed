@@ -51,7 +51,6 @@ from seed.models import (
     obj_to_dict,
     PropertyState,
     TaxLotState,
-    DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     MERGE_STATE_UNKNOWN,
     MERGE_STATE_MERGED,
@@ -530,9 +529,50 @@ class ImportFileViewSet(viewsets.ViewSet):
         response_serializer: MappingResultsResponseSerializer
         """
 
+        def get_coparent(state_id, inventory_type):
+            # Prefetch related?
+            if inventory_type == 'properties':
+                audit_creation_id = PropertyAuditLog.objects.only('id').get(
+                    state_id=state_id,
+                    name='Import Creation'
+                )
+                merged_record = PropertyAuditLog.objects.only('state_id', 'parent1_id', 'parent2_id').filter(
+                    Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id)
+                )
+            else:
+                audit_creation_id = TaxLotAuditLog.objects.only('id').get(
+                    state_id=state_id,
+                    name='Import Creation'
+                )
+                merged_record = TaxLotAuditLog.objects.only('state_id', 'parent1_id', 'parent2_id').filter(
+                    Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id)
+                )
+
+            result = None
+            if merged_record.count() > 1:
+                return JsonResponse({'status': 'error',
+                                     'message': 'Internal problem occurred, more than one merge record found'},
+                                    status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif merged_record.count() == 1:
+                result = {}
+                if merged_record.first().parent1.state.id == state_id:
+                    coparent = merged_record.first().parent2.state
+                else:
+                    coparent = merged_record.first().parent1.state
+
+                if inventory_type == 'properties':
+                    for k in fields['PropertyState']:
+                        result[k] = getattr(coparent, k)
+                else:
+                    for k in fields['TaxLotState']:
+                        result[k] = getattr(coparent, k)
+
+            return result
+
         import_file_id = pk
 
         get_coparents = request.data.get('get_coparents', False)
+        get_state_id = request.data.get('state_id', False)
 
         # get the field names that were in the mapping
         import_file = ImportFile.objects.get(id=import_file_id)
@@ -548,90 +588,79 @@ class ImportFileViewSet(viewsets.ViewSet):
                 raw_db_fields.append(db_field)
 
         # go through the list and find the ones that are properties
-        fields = {'PropertyState': ['id', 'extra_data', 'lot_number'], 'TaxLotState': ['id', 'extra_data']}
+        fields = {
+            'PropertyState': ['id', 'extra_data', 'lot_number'],
+            'TaxLotState': ['id', 'extra_data']
+        }
         for f in raw_db_fields:
             fields[f[0]].append(f[1])
 
         _log.debug('Field names that will be returned are: {}'.format(fields))
 
-        properties = PropertyState.objects.order_by('id').filter(
-            import_file_id=import_file_id,
-            data_state=DATA_STATE_MATCHING,
-            merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
-        ).values(*fields['PropertyState'])
-        tax_lots = TaxLotState.objects.order_by('id').filter(
-            import_file_id=import_file_id,
-            data_state=DATA_STATE_MATCHING,
-            merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
-        ).values(*fields['TaxLotState'])
-        if get_coparents:
-            for state in properties:
-                state['matched'] = False
+        if get_state_id:
+            inventory_type = request.data.get('inventory_type', 'properties')
+            result = {}
+            if inventory_type == 'properties':
+                state = PropertyState.objects.get(id=get_state_id)
+                for k in fields['PropertyState']:
+                    result[k] = getattr(state, k)
+            else:
+                state = TaxLotState.objects.get(id=get_state_id)
+                for k in fields['TaxLotState']:
+                    result[k] = getattr(state, k)
 
-                # Prefetch related?
-                audit_creation_id = PropertyAuditLog.objects.only('id').get(
-                    state_id=state['id'],
-                    name='Import Creation'
-                )
-                merged_record = PropertyAuditLog.objects.only('state_id', 'parent1_id', 'parent2_id').filter(
-                    Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id)
-                )
-                if merged_record.count() > 1:
-                    return JsonResponse({'status': 'error',
-                                         'message': 'Internal problem occurred, more than one merge record found'},
-                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                elif merged_record.count() == 1:
-                    state['matched'] = True
-                    state['coparent'] = {}
-                    if merged_record.first().parent1_id == state['id']:
-                        coparent = merged_record.first().parent2.state
-                    else:
-                        coparent = merged_record.first().parent1.state
+            if get_coparents:
+                result['matched'] = False
+                coparent = get_coparent(state.id, inventory_type)
+                if coparent:
+                    result['matched'] = True
+                    result['coparent'] = coparent
 
-                    for k in fields['PropertyState']:
-                        state['coparent'][k] = getattr(coparent, k)
+            return {
+                'status': 'success',
+                'state': result
+            }
+        else:
+            properties = PropertyState.objects.order_by('id').filter(
+                import_file_id=import_file_id,
+                data_state=DATA_STATE_MATCHING,
+                merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
+            ).values(*fields['PropertyState'])
+            tax_lots = TaxLotState.objects.order_by('id').filter(
+                import_file_id=import_file_id,
+                data_state=DATA_STATE_MATCHING,
+                merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
+            ).values(*fields['TaxLotState'])
+            if get_coparents:
+                for state in properties:
+                    state['matched'] = False
+                    coparent = get_coparent(state['id'], 'properties')
+                    if coparent:
+                        state['matched'] = True
+                        state['coparent'] = coparent
 
-            for state in tax_lots:
-                state['matched'] = False
+                for state in tax_lots:
+                    state['matched'] = False
+                    coparent = get_coparent(state['id'], 'taxlots')
+                    if coparent:
+                        state['matched'] = True
+                        state['coparent'] = coparent
 
-                # Prefetch related?
-                audit_creation_id = TaxLotAuditLog.objects.only('id').get(
-                    state_id=state['id'],
-                    name='Import Creation'
-                )
-                merged_record = TaxLotAuditLog.objects.only('state_id', 'parent1_id', 'parent2_id').filter(
-                    Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id)
-                )
-                if merged_record.count() > 1:
-                    return JsonResponse({'status': 'error',
-                                         'message': 'Internal problem occurred, more than one merge record found'},
-                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                elif merged_record.count() == 1:
-                    state['matched'] = True
-                    state['coparent'] = {}
-                    if merged_record.first().parent1_id == state['id']:
-                        coparent = merged_record.first().parent2.state
-                    else:
-                        coparent = merged_record.first().parent1.state
+            properties = list(properties)
+            tax_lots = list(tax_lots)
 
-                    for k in fields['TaxLotState']:
-                        state['coparent'][k] = getattr(coparent, k)
+            _log.debug('Found {} properties'.format(len(properties)))
+            _log.debug('Found {} tax lots'.format(len(tax_lots)))
 
-        properties = list(properties)
-        tax_lots = list(tax_lots)
-
-        _log.debug('Found {} properties'.format(len(properties)))
-        _log.debug('Found {} tax lots'.format(len(tax_lots)))
-
-        return {
-            'status': 'success',
-            'properties': properties,
-            'tax_lots': tax_lots,
-            'number_properties_returned': len(properties),
-            'number_properties_matching_search': len(properties),
-            'number_tax_lots_returned': len(tax_lots),
-            'number_tax_lots_matching_search': len(tax_lots),
-        }
+            return {
+                'status': 'success',
+                'properties': properties,
+                'tax_lots': tax_lots,
+                'number_properties_returned': len(properties),
+                'number_properties_matching_search': len(properties),
+                'number_tax_lots_returned': len(tax_lots),
+                'number_tax_lots_matching_search': len(tax_lots),
+            }
 
     @api_endpoint_class
     @ajax_request_class

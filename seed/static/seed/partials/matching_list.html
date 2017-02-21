@@ -101,15 +101,15 @@
                             </th>
                         </tr>
                         <tr>
-                            <th class="sub_head" ng-repeat="c in columns">
-                                <input type="text" class="form-control input-sm show" ng-model="filter_params[c.name]" sd-enter="on_filter_enter_key()" ng-class="{active: filter_params[c.name].length > 0}">
+                            <th class="sub_head" ng-repeat="col in columns">
+                                <input type="text" class="form-control input-sm show" ng-model="filter_params[col.name]" sd-enter="on_filter_enter_key()" ng-class="{active: filter_params[col.name].length}">
                             </th>
                             <th class="sub_head" ng-hide="filter_selected == SHOW_UNMATCHED"></th>
-                            <th class="sub_head" ng-repeat="c in columns" ng-hide="filter_selected == SHOW_UNMATCHED"></th>
+                            <th class="sub_head" ng-repeat="col in columns" ng-hide="filter_selected == SHOW_UNMATCHED"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="i in inventory">
+                        <tr ng-repeat="i in inventory | filter:(selectedFilter == SHOW_ALL) ? undefined : {matched: selectedFilter == SHOW_MATCHED}">
                             <td ng-repeat="col in columns">
                                 <a ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})">{$ col.extraData ? i.extra_data[col.name] : i[col.name] $}</a>
                             </td>
