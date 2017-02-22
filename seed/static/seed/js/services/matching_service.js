@@ -26,6 +26,19 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
       });
     };
 
+    matching_factory.available_matches = function (import_file_id, inventory_type, state_id) {
+      return $http.post('/api/v2/import_files/' + import_file_id + '/available_matches/', {
+        inventory_type: inventory_type,
+        state_id: state_id
+      }, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
     matching_factory.get_match_nodes = function (building_id) {
       return $http.get(generated_urls.seed.get_relevant_nodes, {
         params: {

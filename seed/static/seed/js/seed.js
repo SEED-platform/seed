@@ -62,7 +62,6 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.mapping',
   'BE.seed.controller.matching_list',
   'BE.seed.controller.matching_detail',
-  'BE.seed.controller.matching_detail_table',
   'BE.seed.controller.members',
   'BE.seed.controller.menu',
   'BE.seed.controller.new_member_modal',
@@ -503,7 +502,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 _.remove(columns, function (col) {
                   return col.related === true;
                 });
-                console.debug(angular.copy(columns));
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -759,16 +757,17 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         controller: 'matching_detail_controller',
         resolve: {
           import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
-            var importfile_id = $stateParams.importfile_id;
-            return dataset_service.get_import_file(importfile_id);
+            return dataset_service.get_import_file($stateParams.importfile_id);
           }],
           state_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
-            var importfile_id = $stateParams.importfile_id;
-            return inventory_service.search_matching_inventory(importfile_id, {
+            return inventory_service.search_matching_inventory($stateParams.importfile_id, {
               get_coparents: true,
               inventory_type: $stateParams.inventory_type,
               state_id: $stateParams.state_id
             });
+          }],
+          available_matches: ['matching_service', '$stateParams', function (matching_service, $stateParams) {
+            return matching_service.available_matches($stateParams.importfile_id, $stateParams.inventory_type, $stateParams.state_id);
           }],
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {

@@ -15,7 +15,7 @@
     <uib-alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{$ alert.msg $}</uib-alert>
 
     <div class="section_tab_container">
-        <uib-tabset>
+        <uib-tabset active="1">
             <uib-tab heading="Auto Matching">
                 <div class="row">
                     <div class="col-sm-6 tab_content wide">
@@ -34,7 +34,7 @@
                     </div>
                 </div>
             </uib-tab>
-            <uib-tab heading="Manual Matching" active="tab.active" disabled="tab.disabled">
+            <uib-tab heading="Manual Matching">
                 <div class="row">
                     <div class="col-sm-6 tab_content wide">
                         <p><strong>HOW TO MANUALLY MATCH YOUR PROPERTIES &amp; TAX LOTS:</strong></p>
@@ -70,7 +70,7 @@
         </div>
     </div>
 
-    <div class="section_content_container" ng-controller="matching_detail_table_controller">
+    <div class="section_content_container">
         <div class="section_content">
             <div class="table_list_container matching_detail" ng-cloak>
                 <table class="table table-striped">
@@ -114,12 +114,12 @@
                             </td>
                         </tr>
                         <!-- search results -->
-                        <tr ng-repeat="b in search.buildings | filter:filter_current_building" ng-class="{'success': b.matches_current}" ng-hide="b.id == state.coparent.id">
+                        <tr ng-repeat="state in available_matches">
                             <td class="is_aligned_center">
-                                <input type="checkbox" ng-model="b.matches_current" ng-change="detail.toggle_match(b)">
+                                <input type="checkbox" ng-model="state.checked">
                             </td>
                             <td ng-repeat="col in columns">
-                                <span>{$ col.extraData ? b.extra_data[col.name] : b[col.name] $}</span>
+                                <span>{$ col.extraData ? state.extra_data[col.name] : state[col.name] $}</span>
                             </td>
                         </tr>
                     </tbody>

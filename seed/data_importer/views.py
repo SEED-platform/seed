@@ -58,7 +58,9 @@ from seed.models import (
     Cycle,
     Column,
     PropertyAuditLog,
-    TaxLotAuditLog)
+    TaxLotAuditLog,
+    PropertyView,
+    TaxLotView)
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
 
@@ -661,6 +663,110 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'number_tax_lots_returned': len(tax_lots),
                 'number_tax_lots_matching_search': len(tax_lots),
             }
+
+    @api_endpoint_class
+    @ajax_request_class
+    @detail_route(methods=['POST'])
+    def available_matches(self, request, pk=None):
+        body = request.data
+
+        import_file_id = pk
+        inventory_type = body.get('inventory_type', 'properties')
+        source_state_id = body.get('state_id', None)
+
+        import_file = ImportFile.objects.get(id=import_file_id)
+        field_names = import_file.get_cached_mapped_columns
+
+        # get the columns in the db...
+        md = MappingData()
+        _log.debug('md.keys_with_table_names are: {}'.format(md.keys_with_table_names))
+
+        raw_db_fields = []
+        for db_field in md.keys_with_table_names:
+            if db_field in field_names:
+                raw_db_fields.append(db_field)
+
+        # go through the list and find the ones that are properties
+        fields = {
+            'PropertyState': ['id', 'extra_data', 'lot_number'],
+            'TaxLotState': ['id', 'extra_data']
+        }
+        for f in raw_db_fields:
+            fields[f[0]].append(f[1])
+
+        def state_to_dict(state):
+            result = {}
+            if inventory_type == 'properties':
+                for k in fields['PropertyState']:
+                    result[k] = getattr(state, k)
+            else:
+                for k in fields['TaxLotState']:
+                    result[k] = getattr(state, k)
+            return result
+
+        if inventory_type == 'properties':
+            views = PropertyView.objects.filter(cycle_id=import_file.cycle_id).prefetch_related('state')
+        else:
+            views = TaxLotView.objects.filter(cycle_id=import_file.cycle_id).prefetch_related('state')
+
+        source_state = {'found': False}
+        states = []
+        for v in views:
+            if v.state_id == source_state_id:
+                source_state['found'] = True
+            else:
+                states.append(v.state)
+
+        results = []
+        if inventory_type == 'properties':
+            audit_log = PropertyAuditLog
+        else:
+            audit_log = TaxLotAuditLog
+
+        # return true if initial state was inherited
+        def check_audit_merge_history(audit_entry):
+            if source_state['found']:
+                return True
+
+            if audit_entry.parent1_id:
+                parent1_state_id = audit_entry.parent1.state_id
+                if parent1_state_id == source_state_id:
+                    source_state['found'] = True
+                    return True
+                else:
+                    source_state['found'] = check_audit_merge_history(audit_entry.parent1)
+
+            if source_state['found']:
+                return True
+
+            if audit_entry.parent2_id:
+                parent2_state_id = audit_entry.parent2.state_id
+                if parent2_state_id == source_state_id:
+                    source_state['found'] = True
+                    return True
+                else:
+                    source_state['found'] = check_audit_merge_history(audit_entry.parent2)
+
+            return source_state['found']
+
+        for state in states:
+            if source_state['found']:
+                results.append(state_to_dict(state))
+            else:
+                if state.merge_state == 1:
+                    # state is a new record with no parents
+                    results.append(state_to_dict(state))
+                else:
+                    # Look through parents in the audit log to rule out the view that inherited from the initial state
+                    audit_merge = audit_log.objects.filter(state_id=state.id).order_by('-id').first()
+
+                    if not check_audit_merge_history(audit_merge):
+                        results.append(state_to_dict(state))
+
+        return {
+            'status': 'success',
+            'states': results
+        }
 
     @api_endpoint_class
     @ajax_request_class

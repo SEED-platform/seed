@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.matching_detail', [])
     '$stateParams',
     'import_file_payload',
     'state_payload',
+    'available_matches',
     'building_services',
     'columns',
     'urls',
@@ -22,6 +23,7 @@ angular.module('BE.seed.controller.matching_detail', [])
               $stateParams,
               import_file_payload,
               state_payload,
+              available_matches,
               building_services,
               columns,
               urls,
@@ -35,14 +37,10 @@ angular.module('BE.seed.controller.matching_detail', [])
       $scope.search.url = urls.search_buildings;
 
       $scope.import_file = import_file_payload.import_file;
+      $scope.available_matches = available_matches.states;
 
-      $scope.inventory = [];
       $scope.number_per_page = 10;
       $scope.current_page = 1;
-      $scope.order_by = '';
-      $scope.sort_reverse = false;
-      $scope.filter_params = {};
-      $scope.existing_filter_params = {};
       $scope.number_properties_matching_search = 0;
       $scope.number_tax_lots_matching_search = 0;
       $scope.number_properties_returned = 0;
@@ -88,10 +86,8 @@ angular.module('BE.seed.controller.matching_detail', [])
           state_payload = data;
 
           if ($scope.inventory_type == 'properties') {
-            $scope.inventory = data.properties;
             $scope.num_pages = Math.ceil(data.number_properties_matching_search / $scope.number_per_page);
           } else {
-            $scope.inventory = data.tax_lots;
             $scope.num_pages = Math.ceil(data.number_tax_lots_matching_search / $scope.number_per_page);
           }
           $scope.number_properties_matching_search = data.number_properties_matching_search;
