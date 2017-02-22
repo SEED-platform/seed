@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0047_auto_20170119_1318'),
     ]
@@ -15,11 +14,15 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='propertystate',
             name='merge_state',
-            field=models.IntegerField(choices=[(0, b'Unknown'), (1, b'New Record'), (2, b'Merged Record'), (3, b'Duplicate Record'), (4, b'Delete Record')], default=0, null=True),
+            field=models.IntegerField(
+                choices=[(0, b'Unknown'), (1, b'New Record'), (2, b'Merged Record'),
+                         (3, b'Duplicate Record'), (4, b'Delete Record')], default=0, null=True),
         ),
         migrations.AlterField(
             model_name='taxlotstate',
             name='merge_state',
-            field=models.IntegerField(choices=[(0, b'Unknown'), (1, b'New Record'), (2, b'Merged Record'), (3, b'Duplicate Record'), (4, b'Delete Record')], default=0, null=True),
+            field=models.IntegerField(
+                choices=[(0, b'Unknown'), (1, b'New Record'), (2, b'Merged Record'),
+                         (3, b'Duplicate Record'), (4, b'Delete Record')], default=0, null=True),
         ),
     ]
