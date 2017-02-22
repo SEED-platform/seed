@@ -68,6 +68,57 @@ def copy_extra_data_excluding(extra_data, bad_fields):
     return {x: y for (x, y) in extra_data.items() if x not in bad_fields}
 
 
+def node_has_associated_import_name(node):
+    try:
+        if node.import_file is not None and node.import_file.file.name:
+            return True
+        else:
+            return False
+    except:
+        return False
+
+
+def get_organization_cycle_date(org, node):
+    mappings = collections.defaultdict(lambda: collections.defaultdict(lambda : False))
+    mappings[69][u'data_imports/BEUDO%20Masterlist%202016_5.16.16.xlsx.1469546768'] = datetime.datetime(2016, 5, 1)
+    mappings[69][u'data_imports/PM%20Reports%202015_5.16.16.xlsx.1463604454'] = datetime.datetime(2015, 5, 1)
+    mappings[69][u'data_imports/PM%20Reports%202016_8.11.16.xlsx.1471284203'] = datetime.datetime(2016, 5, 1)
+    mappings[69][u'data_imports/BEUDO%20Masterlist%202015_5.16.16.xlsx.1463605948'] = datetime.datetime(2015, 5, 1)
+    mappings[69][u'data_imports/BEUDO%20Masterlist%202015_5.16.16.xlsx.1463603666'] = datetime.datetime(2015, 5, 1)
+    mappings[69][u'data_imports/MIT%20PM%20Reports%202016_9.6.16.xlsx.1473186628']  = datetime.datetime(2016, 5, 1)
+
+    return mappings[org.pk][get_possible_import_filename(node)]
+
+
+def get_possible_import_filename(node):
+    try:
+        return str(node.import_file.file.name)
+    except:
+        return ''
+
+
+def get_possible_import_notes(node):
+    try:
+        return str(node.import_file.import_record.notes)
+    except:
+        return ''
+    return
+
+
+def get_possible_import_user_email(node):
+    try:
+        return str(node.import_file.import_record.owner.email)
+    except:
+        return ''
+
+
+def get_possible_import_time(node):
+    try:
+        return str(node.import_file.import_record.start_time.strftime("%m-%d-%Y"))
+    except:
+        return ''
+
+
 def create_property_state_for_node(node, org, cb):
     property_columns = get_property_columns(org)
     taxlot_columns = get_taxlot_columns(org)
@@ -111,6 +162,16 @@ def create_property_state_for_node(node, org, cb):
     if ADD_METADATA:
         property_state_extra_data["prop_cb_id"] = cb.pk
         property_state_extra_data["prop_bs_id"] = node.pk
+
+        import_filename = get_possible_import_filename(node)
+        import_username = get_possible_import_user_email(node)
+        import_notes = get_possible_import_notes(node)
+        import_time = get_possible_import_time(node)
+
+        property_state_extra_data["import_file"] = import_filename
+        property_state_extra_data["import_user"] = import_username
+        property_state_extra_data["import_notes"] = import_notes
+        property_state_extra_data["import_date"] = import_time
 
     property_state = seed.models.PropertyState(organization=org,
                                                confidence=node.confidence,
@@ -192,8 +253,25 @@ def create_tax_lot_state_for_node(node, org, cb):
         taxlot_extra_data["random"] = str(random.random())
 
     if ADD_METADATA:
+        import_filename = get_possible_import_filename(node)
+        import_username = get_possible_import_user_email(node)
+        import_notes = get_possible_import_notes(node)
+        import_time = get_possible_import_time(node)
+
+        taxlot_extra_data["import_file"] = import_filename
+        taxlot_extra_data["import_user"] = import_username
+        taxlot_extra_data["import_notes"] = import_notes
+        taxlot_extra_data["import_date"] = import_time
+
         taxlot_extra_data["taxlot_cb_id"] = cb.pk
         taxlot_extra_data["taxlot_bs_id"] = node.pk
+
+    try:
+        filename = node.import_file.file.name
+    except:
+        filename = "NO FILENAME"
+
+    print filename
 
     taxlotstate = seed.models.TaxLotState.objects.create(organization=org,
                                                          confidence=node.confidence,
@@ -279,10 +357,14 @@ def load_cycle(org, node, year_ending=True, fallback=True):
         if not fallback:
             assert time is not None, "Got no time!"
         elif time is None:
-            # logging_debug("Node does not have 'year ending' field.")
-            time = node.modified
+
+            time = get_organization_cycle_date(org, node)
+            if not time:
+                # logging_debug("Node does not have 'year ending' field.")
+                time = node.modified
     else:
-        time = node.modified
+        if not time:
+            time = node.modified
 
     # FIXME: Refactor.
 
