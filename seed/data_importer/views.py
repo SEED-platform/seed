@@ -534,7 +534,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         def get_coparent(state_id, inventory_type):
             # Prefetch related?
             if inventory_type == 'properties':
-                audit_creation_id = PropertyAuditLog.objects.only('id').get(
+                audit_creation_id = PropertyAuditLog.objects.only('id').exclude(import_filename=None).get(
                     state_id=state_id,
                     name='Import Creation'
                 )
@@ -542,7 +542,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                     Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id)
                 )
             else:
-                audit_creation_id = TaxLotAuditLog.objects.only('id').get(
+                audit_creation_id = TaxLotAuditLog.objects.only('id').exclude(import_filename=None).get(
                     state_id=state_id,
                     name='Import Creation'
                 )
@@ -557,10 +557,10 @@ class ImportFileViewSet(viewsets.ViewSet):
                                     status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             elif merged_record.count() == 1:
                 result = {}
-                if merged_record.first().parent1.state.id == state_id:
-                    coparent = merged_record.first().parent2.state
+                if merged_record.first().parent_state1_id == state_id:
+                    coparent = merged_record.first().parent_state2
                 else:
-                    coparent = merged_record.first().parent1.state
+                    coparent = merged_record.first().parent_state1
 
                 if inventory_type == 'properties':
                     for k in fields['PropertyState']:
@@ -729,8 +729,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 return True
 
             if audit_entry.parent1_id:
-                parent1_state_id = audit_entry.parent1.state_id
-                if parent1_state_id == source_state_id:
+                if audit_entry.parent_state1_id == source_state_id:
                     source_state['found'] = True
                     return True
                 else:
@@ -740,8 +739,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 return True
 
             if audit_entry.parent2_id:
-                parent2_state_id = audit_entry.parent2.state_id
-                if parent2_state_id == source_state_id:
+                if audit_entry.parent_state2_id == source_state_id:
                     source_state['found'] = True
                     return True
                 else:
@@ -1148,7 +1146,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 data_state=DATA_STATE_MATCHING,
                 merge_state=MERGE_STATE_NEW,
         ):
-            audit_creation_id = PropertyAuditLog.objects.only('id').get(
+            audit_creation_id = PropertyAuditLog.objects.only('id').exclude(import_filename=None).get(
                 state_id=state.id,
                 name='Import Creation'
             )
@@ -1170,7 +1168,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 data_state=DATA_STATE_MATCHING,
                 merge_state=MERGE_STATE_NEW,
         ):
-            audit_creation_id = TaxLotAuditLog.objects.only('id').get(
+            audit_creation_id = TaxLotAuditLog.objects.only('id').exclude(import_filename=None).get(
                 state_id=state.id,
                 name='Import Creation'
             )
