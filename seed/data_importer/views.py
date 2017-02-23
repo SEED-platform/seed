@@ -787,12 +787,12 @@ class ImportFileViewSet(viewsets.ViewSet):
     @ajax_request_class
     @detail_route(methods=['POST'])
     def unmatch(self, request, pk=None):
-        body = request.data
+        # body = request.data
 
-        import_file_id = int(pk)
-        inventory_type = body.get('inventory_type', 'properties')
-        source_state_id = int(body.get('state_id', None))
-        coparent_id = int(body.get('state_id', None))
+        # import_file_id = int(pk)
+        # inventory_type = body.get('inventory_type', 'properties')
+        # source_state_id = int(body.get('state_id', None))
+        # coparent_id = int(body.get('state_id', None))
 
         # - Relevant PropertyView needs to be split in 2, get state_id
         #   - Lookup PropertyState, verify that data_state == 3, merge_state == 2, so that it can be unmerged
@@ -805,8 +805,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         #     - Delete previous audit log "match" record
 
         return {
-            'status': 'success',
-            'unmatch': True
+            'status': 'success'
         }
 
     @api_endpoint_class

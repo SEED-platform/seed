@@ -19,7 +19,6 @@ from seed.data_importer.models import ImportRecord
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from seed.models import BuildingSnapshot
 from seed.models import obj_to_dict
 from seed.utils.api import api_endpoint_class
 from seed.utils.time import convert_to_js_timestamp

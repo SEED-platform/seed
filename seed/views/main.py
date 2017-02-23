@@ -38,7 +38,6 @@ from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
-    BuildingSnapshot,  # TO REMOVE
     CanonicalBuilding,
     Column,
     ProjectBuilding,
