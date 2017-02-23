@@ -8,7 +8,8 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
   '$http',
   'user_service',
   'generated_urls',
-  function ($http, user_service, generated_urls) {
+  'spinner_utility',
+  function ($http, user_service, generated_urls, spinner_utility) {
 
     var matching_factory = {};
 
@@ -36,6 +37,22 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
         }
       }).then(function (response) {
         return response.data;
+      });
+    };
+
+    matching_factory.unmatch = function (import_file_id, inventory_type, state_id) {
+      spinner_utility.show();
+      return $http.post('/api/v2/import_files/' + import_file_id + '/unmatch/', {
+        inventory_type: inventory_type,
+        state_id: state_id
+      }, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
       });
     };
 

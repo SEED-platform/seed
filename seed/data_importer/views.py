@@ -705,9 +705,9 @@ class ImportFileViewSet(viewsets.ViewSet):
             return result
 
         if inventory_type == 'properties':
-            views = PropertyView.objects.filter(cycle_id=import_file.cycle_id).prefetch_related('state')
+            views = PropertyView.objects.filter(cycle_id=import_file.cycle_id).select_related('state')
         else:
-            views = TaxLotView.objects.filter(cycle_id=import_file.cycle_id).prefetch_related('state')
+            views = TaxLotView.objects.filter(cycle_id=import_file.cycle_id).select_related('state')
 
         source_state = {'found': False}
         states = []
@@ -764,6 +764,31 @@ class ImportFileViewSet(viewsets.ViewSet):
         return {
             'status': 'success',
             'states': results
+        }
+
+    @api_endpoint_class
+    @ajax_request_class
+    @detail_route(methods=['POST'])
+    def unmatch(self, request, pk=None):
+        body = request.data
+
+        import_file_id = pk
+        inventory_type = body.get('inventory_type', 'properties')
+        source_state_id = body.get('state_id', None)
+
+        # - Relevant PropertyView needs to be split in 2, get state_id
+        #   - Lookup PropertyState, verify that data_state == 3, merge_state == 2, so that it can be unmerged
+        #     - Lookup newest record using state_id in audit log, get 2 parents
+        #     - In PropertyState, make the two parents 3,2 (IF audit log says name != 'Import Creation') or 3,1 (IF
+        #         audit log says name == 'Import Creation'), make the merged state 3,4 (deleted)
+        #     - Update the PropertyView table to change the merged PropertyState id to one of the parents, clone the row
+        #         using the other parent state_id with a cloned property
+        #     - In TaxlotProperty, clone the relevant row with the new PropertyView (same taxlot)
+        #     - Delete previous audit log "match" record
+
+        return {
+            'status': 'success',
+            'unmatch': True
         }
 
     @api_endpoint_class

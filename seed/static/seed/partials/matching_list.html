@@ -99,13 +99,13 @@
                                 <span ng-hide="col.name != order_by || !sort_reverse" class="fa fa-caret-down"></span>
                             </th>
                         </tr>
-                        <tr>
+                        <!--<tr>
                             <th class="sub_head" ng-repeat="col in columns">
                                 <input type="text" class="form-control input-sm show" ng-model="filter_params[col.name]" sd-enter="on_filter_enter_key()" ng-class="{active: filter_params[col.name].length}">
                             </th>
                             <th class="sub_head" ng-hide="filter_selected == SHOW_UNMATCHED"></th>
                             <th class="sub_head" ng-repeat="col in columns" ng-hide="filter_selected == SHOW_UNMATCHED"></th>
-                        </tr>
+                        </tr>-->
                     </thead>
                     <tbody>
                         <tr ng-repeat="i in inventory | filter:(selectedFilter == SHOW_ALL) ? undefined : {matched: selectedFilter == SHOW_MATCHED}">
@@ -125,14 +125,19 @@
                 </table>
             </div>
             <div class="table_footer">
-                <div class="display_number_entries col-sm-3">
+                <!--<div class="display_number_entries col-sm-3">
                     <div class="display_number_entries_text">Display:</div>
                     <div class="display_number_entries_select">
                         <select class="form-control input-sm col-xs-2" name="number_per_page_select" id="number_per_page_select" ng-options="number_per_page_option for number_per_page_option in pagination.number_per_page_options" ng-model="pagination.number_per_page_options_model" ng-change="pagination.update_number_per_page()"> </select>
                     </div>
                     <div class="display_number_entries_text">{$ inventory_type == 'taxlots' ? 'tax lots' : 'properties' $}</div>
+                </div>-->
+                <div class="counts col-sm-4 col-sm-offset-4" style="text-align: center;">
+                    <span ng-if="selectedFilter == SHOW_ALL">Showing {$ matched_buildings + unmatched_buildings == 0 ? 0 : showing.start $} to {$ matched_buildings + unmatched_buildings $} of {$ matched_buildings + unmatched_buildings $} {$ inventory_type == 'properties' ? 'properties' : 'tax lots' $} <span class="number_unmatched">({$ unmatched_buildings $} unmatched)</span></span>
+                    <span ng-if="selectedFilter == SHOW_MATCHED">Showing {$ matched_buildings == 0 ? 0 : showing.start $} to {$ matched_buildings $} of {$ matched_buildings + unmatched_buildings $} {$ inventory_type == 'properties' ? 'properties' : 'tax lots' $}</span>
+                    <span ng-if="selectedFilter == SHOW_UNMATCHED">Showing {$ unmatched_buildings == 0 ? 0 : showing.start $} to {$ unmatched_buildings $} of {$ matched_buildings + unmatched_buildings $} {$ inventory_type == 'properties' ? 'properties' : 'tax lots' $}</span>
                 </div>
-                <div class="counts col-sm-4">
+                <!--<div class="counts col-sm-4">
                     <span>Showing {$ showing.start | number:0 $} to {$ showing.end | number:0 $} of {$ inventory_type == 'taxlots' ? number_tax_lots_matching_search + ' tax lots' : number_properties_matching_search + ' properties' $} <span class="number_unmatched">({$ unmatched_buildings $} unmatched)</span></span>
                 </div>
                 <div class="pager_container col-sm-5">
@@ -150,7 +155,7 @@
                             <i class="fa fa-angle-double-right"></i></a>
                         </li>
                     </ul>
-                </div>
+                </div>-->
             </div>
         </div>
     </div>

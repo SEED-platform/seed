@@ -16,6 +16,17 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       });
     };
 
+    organization_factory.get_organizations_brief = function () {
+      return $http.get('/api/v2/organizations/', {
+        params: {
+          brief: true
+        }
+      }).then(function (response) {
+        organization_factory.total_organizations_for_user = _.has(response.data.organizations, 'length') ? response.data.organizations.length : 0;
+        return response.data;
+      });
+    };
+
     organization_factory.add = function (org) {
       return $http.post('/api/v2/organizations/', {
         user_id: org.email.user_id,

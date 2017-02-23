@@ -176,39 +176,9 @@ angular.module('BE.seed.controller.matching_detail', [])
        */
 
       $scope.unmatch = function () {
-        console.debug('Unmatch called');
-        // var source, target, create;
-        // if (building.coparent && building.coparent.id) {
-        //   if (building.matched) {
-        //     source = building.id;
-        //     target = building.coparent.id;
-        //   } else {
-        //     source = building.coparent.id;
-        //     target = building.id;
-        //   }
-        //   create = building.matched;
-        // } else {
-        //   building.matched = false;
-        //   return;
-        // }
-        //
-        // // creates or removes a match
-        // var save_promise = null;
-        // if ($scope.inventory_type == 'properties') save_promise = inventory_service.save_property_match(source, target, create);
-        // else save_promise = inventory_service.save_taxlot_match(source, target, create);
-        // save_promise.then(function (data) {
-        //   // update building and coparent's child in case of a unmatch
-        //   // without a page refresh
-        //   if (building.matched) {
-        //     building.children = building.children || [0];
-        //     building.children[0] = data.child_id;
-        //   }
-        //   $scope.update_number_matched();
-        //   $scope.$emit('finished_saving');
-        // }, function (data, status) {
-        //   building.matched = !building.matched;
-        //   $scope.$emit('finished_saving');
-        // });
+        matching_service.unmatch($scope.importfile_id, $scope.inventory_type, $scope.state_id).then(function (data) {
+          console.debug('Unmatching done');
+        });
       };
 
       /*
