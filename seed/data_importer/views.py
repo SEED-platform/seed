@@ -35,22 +35,24 @@ from seed.authentication import SEEDAuthentication
 from seed.cleansing.models import Cleansing
 from seed.data_importer.models import (
     ImportFile,
-    ImportRecord,
+    ImportRecord
 )
 from seed.data_importer.models import ROW_DELIMITER
 from seed.data_importer.tasks import (
     map_data,
     match_buildings,
-    save_raw_data as task_save_raw,
+    save_raw_data as task_save_raw
 )
 from seed.decorators import ajax_request, ajax_request_class
 from seed.decorators import get_prog_key
 from seed.lib.mappings.mapping_data import MappingData
+from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     obj_to_dict,
     PropertyState,
     TaxLotState,
+    DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     MERGE_STATE_UNKNOWN,
     MERGE_STATE_MERGED,
@@ -60,7 +62,12 @@ from seed.models import (
     PropertyAuditLog,
     TaxLotAuditLog,
     PropertyView,
-    TaxLotView)
+    TaxLotView,
+    USER_MATCH,
+    AUDIT_IMPORT,
+    Property,
+    TaxLot,
+    TaxLotProperty)
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
 
@@ -532,23 +539,17 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
 
         def get_coparent(state_id, inventory_type):
-            # Prefetch related?
             if inventory_type == 'properties':
-                audit_creation_id = PropertyAuditLog.objects.only('id').exclude(import_filename=None).get(
-                    state_id=state_id,
-                    name='Import Creation'
-                )
-                merged_record = PropertyAuditLog.objects.only('state_id', 'parent1_id', 'parent2_id').filter(
-                    Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id)
-                )
+                audit_log = PropertyAuditLog
             else:
-                audit_creation_id = TaxLotAuditLog.objects.only('id').exclude(import_filename=None).get(
-                    state_id=state_id,
-                    name='Import Creation'
-                )
-                merged_record = TaxLotAuditLog.objects.only('state_id', 'parent1_id', 'parent2_id').filter(
-                    Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id)
-                )
+                audit_log = TaxLotAuditLog
+            audit_creation_id = audit_log.objects.only('id').exclude(import_filename=None).get(
+                state_id=state_id,
+                name='Import Creation'
+            )
+            merged_record = audit_log.objects.only('state_id', 'parent1_id', 'parent2_id').filter(
+                Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id)
+            )
 
             result = None
             if merged_record.count() > 1:
@@ -600,14 +601,15 @@ class ImportFileViewSet(viewsets.ViewSet):
         _log.debug('Field names that will be returned are: {}'.format(fields))
 
         if get_state_id:
+            state_id = int(get_state_id)
             inventory_type = request.data.get('inventory_type', 'properties')
             result = {}
             if inventory_type == 'properties':
-                state = PropertyState.objects.get(id=get_state_id)
+                state = PropertyState.objects.get(id=state_id)
                 for k in fields['PropertyState']:
                     result[k] = getattr(state, k)
             else:
-                state = TaxLotState.objects.get(id=get_state_id)
+                state = TaxLotState.objects.get(id=state_id)
                 for k in fields['TaxLotState']:
                     result[k] = getattr(state, k)
 
@@ -625,12 +627,12 @@ class ImportFileViewSet(viewsets.ViewSet):
         else:
             properties = PropertyState.objects.order_by('id').filter(
                 import_file_id=import_file_id,
-                data_state=DATA_STATE_MATCHING,
+                data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
                 merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
             ).values(*fields['PropertyState'])
             tax_lots = TaxLotState.objects.order_by('id').filter(
                 import_file_id=import_file_id,
-                data_state=DATA_STATE_MATCHING,
+                data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
                 merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
             ).values(*fields['TaxLotState'])
             if get_coparents:
@@ -670,9 +672,9 @@ class ImportFileViewSet(viewsets.ViewSet):
     def available_matches(self, request, pk=None):
         body = request.data
 
-        import_file_id = pk
+        import_file_id = int(pk)
         inventory_type = body.get('inventory_type', 'properties')
-        source_state_id = body.get('state_id', None)
+        source_state_id = int(body.get('state_id', None))
 
         import_file = ImportFile.objects.get(id=import_file_id)
         field_names = import_file.get_cached_mapped_columns
@@ -723,7 +725,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         else:
             audit_log = TaxLotAuditLog
 
-        # return true if initial state was inherited
+        # return true if initial state was inherited, or if the record was inherited from the same import file
         def check_audit_merge_history(audit_entry):
             if source_state['found']:
                 return True
@@ -733,19 +735,20 @@ class ImportFileViewSet(viewsets.ViewSet):
                     source_state['found'] = True
                     return True
                 else:
-                    source_state['found'] = check_audit_merge_history(audit_entry.parent1)
-
-            if source_state['found']:
-                return True
+                    result = check_audit_merge_history(audit_entry.parent1)
+                    if result:
+                        return True
 
             if audit_entry.parent2_id:
                 if audit_entry.parent_state2_id == source_state_id:
                     source_state['found'] = True
                     return True
                 else:
-                    source_state['found'] = check_audit_merge_history(audit_entry.parent2)
+                    result = check_audit_merge_history(audit_entry.parent2)
+                    if result:
+                        return True
 
-            return source_state['found']
+            return False
 
         for state in states:
             if source_state['found']:
@@ -766,15 +769,30 @@ class ImportFileViewSet(viewsets.ViewSet):
             'states': results
         }
 
+    @staticmethod
+    def has_coparent(state_id, inventory_type):
+        if inventory_type == 'properties':
+            audit_log = PropertyAuditLog
+        else:
+            audit_log = TaxLotAuditLog
+        audit_creation_id = audit_log.objects.only('id').exclude(import_filename=None).get(
+            state_id=state_id,
+            name='Import Creation'
+        )
+        return audit_log.objects.filter(
+            Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id)
+        ).exists()
+
     @api_endpoint_class
     @ajax_request_class
     @detail_route(methods=['POST'])
     def unmatch(self, request, pk=None):
         body = request.data
 
-        import_file_id = pk
+        import_file_id = int(pk)
         inventory_type = body.get('inventory_type', 'properties')
-        source_state_id = body.get('state_id', None)
+        source_state_id = int(body.get('state_id', None))
+        coparent_id = int(body.get('state_id', None))
 
         # - Relevant PropertyView needs to be split in 2, get state_id
         #   - Lookup PropertyState, verify that data_state == 3, merge_state == 2, so that it can be unmerged
@@ -797,14 +815,109 @@ class ImportFileViewSet(viewsets.ViewSet):
     def match(self, request, pk=None):
         body = request.data
 
-        import_file_id = pk
+        # import_file_id = pk
         inventory_type = body.get('inventory_type', 'properties')
-        source_state_id = body.get('state_id', None)
-        matching_state_id = body.get('matching_state_id', None)
+        source_state_id = int(body.get('state_id', None))
+        matching_state_id = int(body.get('matching_state_id', None))
+        organization_id = int(request.query_params.get('organization_id', None))
+
+        # Make sure the state isn't already matched
+        if self.has_coparent(source_state_id, inventory_type):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Source state is already matched'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if inventory_type == 'properties':
+            audit_log = PropertyAuditLog
+            inventory = Property
+            state = PropertyState
+            view = PropertyView
+        else:
+            audit_log = TaxLotAuditLog
+            inventory = TaxLot
+            state = TaxLotState
+            view = TaxLotView
+
+        state1 = state.objects.get(id=matching_state_id)
+        state2 = state.objects.get(id=source_state_id)
+
+        merged_state = state.objects.create(organization_id=organization_id)
+        merged_state, changes = merging.merge_state(merged_state,
+                                                    state1,
+                                                    state2,
+                                                    merging.get_state_attrs([state1, state2]),
+                                                    conf=None,
+                                                    default=state2,
+                                                    match_type=USER_MATCH)
+
+        state_1_audit_log = audit_log.objects.filter(state=state1).first()
+        state_2_audit_log = audit_log.objects.filter(state=state2).first()
+
+        audit_log.objects.create(organization=state1.organization,
+                                 parent1=state_1_audit_log,
+                                 parent2=state_2_audit_log,
+                                 parent_state1=state1,
+                                 parent_state2=state2,
+                                 state=merged_state,
+                                 name='Manual Match',
+                                 description='Automatic Merge',
+                                 import_filename=None,
+                                 record_type=AUDIT_IMPORT)
+
+        # Set the merged_state to merged
+        merged_state.data_state = DATA_STATE_MATCHING
+        merged_state.merge_state = MERGE_STATE_MERGED
+        merged_state.save()
+        state2.merge_state = MERGE_STATE_UNKNOWN
+        state2.save()
+
+        # Delete existing views and inventory records
+        views = view.objects.filter(state_id__in=[source_state_id, matching_state_id])
+        view_ids = views.values_list('id', flat=True)
+        cycle_id = views.first().cycle_id
+        for v in views:
+            if inventory_type == 'properties':
+                v.property.delete()
+            else:
+                v.taxlot.delete()
+
+        # Get paired view ids
+        if inventory_type == 'properties':
+            paired_view_ids = TaxLotProperty.objects.filter(property_view_id__in=view_ids) \
+                .order_by('taxlot_view_id').distinct('taxlot_view_id').values_list('taxlot_view_id', flat=True)
+        else:
+            paired_view_ids = TaxLotProperty.objects.filter(taxlot_view_id__in=view_ids) \
+                .order_by('property_view_id').distinct('property_view_id').values_list('property_view_id', flat=True)
+        views.delete()
+
+        # Create new inventory record
+        inventory_record = inventory(organization_id=organization_id)
+        inventory_record.save()
+
+        # Create new view
+        if inventory_type == 'properties':
+            new_view = view(cycle_id=cycle_id, state_id=merged_state.id, property_id=inventory_record.id)
+        else:
+            new_view = view(cycle_id=cycle_id, state_id=merged_state.id, taxlot_id=inventory_record.id)
+        new_view.save()
+
+        # Delete existing pairs and re-pair all to new view
+        if inventory_type == 'properties':
+            # Probably already deleted by cascade
+            TaxLotProperty.objects.filter(property_view_id__in=view_ids).delete()
+            for paired_view_id in paired_view_ids:
+                TaxLotProperty(primary=True, cycle_id=cycle_id,
+                               property_view_id=new_view, taxlot_view_id=paired_view_id).save()
+        else:
+            # Probably already deleted by cascade
+            TaxLotProperty.objects.filter(taxlot_view_id__in=view_ids).delete()
+            for paired_view_id in paired_view_ids:
+                TaxLotProperty(primary=True, cycle_id=cycle_id,
+                               property_view_id=paired_view_id, taxlot_view_id=new_view).save()
 
         return {
-            'status': 'success',
-            'match': True
+            'status': 'success'
         }
 
     @api_endpoint_class

@@ -48,11 +48,11 @@ from seed.lib.mcm.data.ESPM import espm as espm_schema
 from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
+from seed.lib.merging import merging
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     ASSESSED_BS,
     ASSESSED_RAW,
-    # BS_VALUES_LIST,
     GREEN_BUTTON_BS,
     GREEN_BUTTON_RAW,
     PORTFOLIO_BS,
@@ -60,10 +60,6 @@ from seed.models import (
     SYSTEM_MATCH,
     Column,
     ColumnMapping,
-    # find_canonical_building_values,
-    # initialize_canonical_building,
-    # save_snapshot_match,
-    # BuildingSnapshot,
     PropertyState,
     PropertyView,
     TaxLotView,
@@ -1489,16 +1485,14 @@ def is_same_snapshot(s1, s2):
 
 def save_state_match(state1, state2, confidence=None, user=None,
                      match_type=None, default_match=None, import_filename=None):
-    from seed.lib.merging import merging as seed_merger
-
     merged_state = type(state1).objects.create(organization=state1.organization)
 
-    merged_state, changes = seed_merger.merge_state(merged_state,
-                                                    state1, state2,
-                                                    seed_merger.get_state_attrs([state1, state2]),
-                                                    conf=confidence,
-                                                    default=state2,
-                                                    match_type=SYSTEM_MATCH)
+    merged_state, changes = merging.merge_state(merged_state,
+                                                state1, state2,
+                                                merging.get_state_attrs([state1, state2]),
+                                                conf=confidence,
+                                                default=state2,
+                                                match_type=SYSTEM_MATCH)
 
     AuditLogClass = PropertyAuditLog if isinstance(merged_state, PropertyState) else TaxLotAuditLog
 

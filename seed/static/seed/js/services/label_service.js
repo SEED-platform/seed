@@ -256,10 +256,7 @@ angular.module('BE.seed.service.label',
       }];
     }
 
-    /* "PRIVATE" METHODS */
-    /* ~~~~~~~~~~~~~~~~~ */
-
-    var lookup_label = function (color) {
+    function lookup_label (color) {
       var lookup_colors = {
         red: 'danger',
         gray: 'default',
@@ -274,7 +271,10 @@ angular.module('BE.seed.service.label',
         console.error(err);
         return lookup_colors.gray;
       }
-    };
+    }
+
+    /* "PRIVATE" METHODS */
+    /* ~~~~~~~~~~~~~~~~~ */
 
     /*  Add a few properties to the label object so that it
      works well with UI components.
@@ -305,7 +305,8 @@ angular.module('BE.seed.service.label',
       delete_label_for_org: delete_label_for_org,
       update_property_labels: update_property_labels,
       update_taxlot_labels: update_taxlot_labels,
-      get_available_colors: get_available_colors
+      get_available_colors: get_available_colors,
+      lookup_label: lookup_label
 
     };
 

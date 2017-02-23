@@ -11,13 +11,12 @@ angular.module('BE.seed.controller.inventory_detail', [])
     '$filter',
     '$stateParams',
     'urls',
-    'label_helper_service',
     'label_service',
     'inventory_service',
     'inventory_payload',
     'columns',
     'labels_payload',
-    function ($state, $scope, $uibModal, $log, $filter, $stateParams, urls, label_helper_service, label_service,
+    function ($state, $scope, $uibModal, $log, $filter, $stateParams, urls, label_service,
               inventory_service, inventory_payload, columns, labels_payload) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
@@ -65,7 +64,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       $scope.init_labels = function (item) {
         return _.map(item.labels, function (lbl) {
-          lbl.label = label_helper_service.lookup_label(lbl.color);
+          lbl.label = label_service.lookup_label(lbl.color);
           return lbl;
         });
       };

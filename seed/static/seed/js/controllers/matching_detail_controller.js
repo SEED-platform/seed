@@ -174,13 +174,13 @@ angular.module('BE.seed.controller.matching_detail', [])
        */
 
       $scope.unmatch = function () {
-        matching_service.unmatch($scope.importfile_id, $scope.inventory_type, $scope.state_id).then(function (data) {
+        matching_service.unmatch($scope.importfile_id, $scope.inventory_type, $scope.state_id, $scope.state.coparent.id).then(function (data) {
           console.debug('Unmatching done');
         });
       };
 
-      $scope.match = function (state_id) {
-        matching_service.match($scope.importfile_id, $scope.inventory_type, $scope.state_id, state_id).then(function (data) {
+      $scope.match = function (state) {
+        matching_service.match($scope.importfile_id, $scope.inventory_type, $scope.state_id, state.id).then(function (data) {
           console.debug('Matching done');
         });
       };
