@@ -303,22 +303,22 @@ angular.module('BE.seed.controller.menu', [])
       );
 
       var init = function () {
-        if (_.isUndefined($scope.menu.user.organization)) $scope.menu.user.organization = user_service.get_organization();
-
-        project_service.get_datasets_count().then(function (data) {
-          $scope.datasets_count = data.datasets_count;
-        });
-        // project_service.get_projects_count().then(function (data) {
-        //   // resolve promise
-        //   $scope.projects_count = data.projects_count;
-        // });
         organization_service.get_organizations_brief().then(function (data) {
           $scope.organizations_count = data.organizations.length;
           $scope.menu.user.organizations = data.organizations;
 
           // get the default org for the user
-          $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(window.BE.initial_org_id)});
+          $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
         });
+
+        project_service.get_datasets_count().then(function (data) {
+          $scope.datasets_count = data.datasets_count;
+        });
+
+        // project_service.get_projects_count().then(function (data) {
+        //   // resolve promise
+        //   $scope.projects_count = data.projects_count;
+        // });
       };
       init();
       init_menu();
