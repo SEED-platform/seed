@@ -9,7 +9,6 @@ angular.module('BE.seed.controller.matching_list', [])
     '$stateParams',
     'import_file_payload',
     'inventory_payload',
-    'building_services',
     'columns',
     'cycles',
     'urls',
@@ -24,7 +23,6 @@ angular.module('BE.seed.controller.matching_list', [])
               $stateParams,
               import_file_payload,
               inventory_payload,
-              building_services,
               columns,
               cycles,
               urls,
@@ -254,7 +252,7 @@ angular.module('BE.seed.controller.matching_list', [])
        *   buildings
        */
       $scope.update_number_matched = function () {
-        building_services.get_matching_results($scope.file_select.file.id)
+        inventory_service.get_matching_results($scope.file_select.file.id)
           .then(function (data) {
             if ($scope.inventory_type == 'properties') {
               $scope.matched_buildings = data.properties.matched;

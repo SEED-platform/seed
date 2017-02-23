@@ -33,7 +33,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       '$state',
       'mapping_service',
       'matching_service',
-      'building_services',
+      'inventory_service',
       'spinner_utility',
       'step',
       'dataset',
@@ -47,7 +47,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 $state,
                 mapping_service,
                 matching_service,
-                building_services,
+                inventory_service,
                 spinner_utility,
                 step,
                 dataset,
@@ -329,7 +329,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               $scope.step_10_title = data.message;
             } else {
               uploader_service.check_progress_loop(data.progress_key, 0, 1, function (data) {
-                    building_services.get_matching_results($scope.dataset.import_file_id).then(function (data) {
+                    inventory_service.get_matching_results($scope.dataset.import_file_id).then(function (data) {
                       $scope.matched_properties = data.properties.matched;
                       $scope.unmatched_properties = data.properties.unmatched;
                       $scope.matched_taxlots = data.tax_lots.matched;
@@ -341,7 +341,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                         $scope.step.number = 8;
                       } else {
                         $scope.step.number = 10;
-                        // building_services.get_total_number_of_buildings_for_user();
                       }
                     });
                   }, function (data) {

@@ -793,6 +793,22 @@ class ImportFileViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
+    @detail_route(methods=['POST'])
+    def match(self, request, pk=None):
+        body = request.data
+
+        import_file_id = pk
+        inventory_type = body.get('inventory_type', 'properties')
+        source_state_id = body.get('state_id', None)
+        matching_state_id = body.get('matching_state_id', None)
+
+        return {
+            'status': 'success',
+            'match': True
+        }
+
+    @api_endpoint_class
+    @ajax_request_class
     @has_perm_class('can_modify_data')
     @detail_route(methods=['POST'])
     def perform_mapping(self, request, pk=None):

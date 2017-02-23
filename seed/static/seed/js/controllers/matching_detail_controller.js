@@ -10,7 +10,6 @@ angular.module('BE.seed.controller.matching_detail', [])
     'import_file_payload',
     'state_payload',
     'available_matches',
-    'building_services',
     'columns',
     'urls',
     '$uibModal',
@@ -24,7 +23,6 @@ angular.module('BE.seed.controller.matching_detail', [])
               import_file_payload,
               state_payload,
               available_matches,
-              building_services,
               columns,
               urls,
               $uibModal,
@@ -181,43 +179,10 @@ angular.module('BE.seed.controller.matching_detail', [])
         });
       };
 
-      /*
-       * match_building: loads/shows the matching detail table and hides the
-       *  matching list table
-       */
-      $scope.match_building = function (building) {
-        // shows a matched building detail page
-        $scope.search.filter_params = {};
-        // chain promises to exclude the match_tree from the search of
-        // existing buildings
-        matching_service.get_match_tree(building.id)
-          .then(function (data) {
-            $scope.tip = data.tip;
-            $scope.detail.match_tree = data.coparents.map(function (b) {
-              // the backend doesn't set a matched field so add one here
-              b.matched = true;
-              return b;
-            }).filter(function (b) {
-              // this is tricky, we only want to show the tree nodes which
-              // are original, i.e. don't have parents
-              if (b.id !== building.id) {
-                return b;
-              }
-            });
-            $scope.search.filter_params.exclude = {
-              id__in: data.coparents.map(function (b) {
-                return b.id;
-              }).concat([building.id])
-            };
-            return $scope.search.search_buildings();
-          })
-          .then(function (data) {
-            $scope.$broadcast('matching_loaded', {
-              matching_buildings: data.buildings,
-              building: building
-            });
-          });
-
+      $scope.match = function (state_id) {
+        matching_service.match($scope.importfile_id, $scope.inventory_type, $scope.state_id, state_id).then(function (data) {
+          console.debug('Matching done');
+        });
       };
 
       /**

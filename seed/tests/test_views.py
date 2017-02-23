@@ -1614,13 +1614,6 @@ class ImportFileViewsTests(TestCase):
             '/api/v2/import_files/' + str(self.import_file.pk) + '/matching_results/')
         self.assertEqual('success', json.loads(response.content)['status'])
 
-    def test_delete_duplicates_from_import_file(self):
-        response = self.client.get(
-            reverse('seed:delete_duplicates_from_import_file'),
-            {'import_file_id': self.import_file.pk}
-        )
-        self.assertEqual('success', json.loads(response.content)['status'])
-
 
 @skip('Fix for new data model')
 class ReportViewsTests(TestCase):
@@ -2007,70 +2000,6 @@ class BuildingDetailViewTests(TestCase):
         self.assertTrue('save_match' in audit_log.action)
         self.assertEqual(audit_log.action_note, 'Matched building.')
         self.assertEqual(audit_log.audit_type, LOG)
-
-    @skip('Fix for new data model')
-    def test_get_match_tree(self):
-        """tests get_match_tree"""
-        # arrange
-        self.client.put(
-            reverse_lazy('seed:save_match'),
-            data=json.dumps({
-                'organization_id': self.org.pk,
-                'source_building_id': self.parent_1.pk,
-                'target_building_id': self.parent_2.pk,
-                'create_match': True
-            }),
-            content_type='application/json'
-        )
-
-        # act
-        resp = self.client.get(
-            reverse_lazy('seed:get_match_tree'),
-            {
-                'organization_id': self.org.pk,
-                'building_id': self.parent_1.pk,
-            },
-            content_type='application/json'
-        )
-
-        # assert
-        body = json.loads(resp.content)
-        ids = [b['id'] for b in body['match_tree']]
-        self.assertIn(self.parent_1.pk, ids)
-        self.assertIn(self.parent_2.pk, ids)
-        self.assertIn(self.parent_1.children.first().pk, ids)
-
-    @skip('Fix for new data model')
-    def test_get_match_tree_from_child(self):
-        """tests get_match_tree from the child"""
-        # arrange
-        self.client.put(
-            reverse_lazy('seed:save_match'),
-            data=json.dumps({
-                'organization_id': self.org.pk,
-                'source_building_id': self.parent_1.pk,
-                'target_building_id': self.parent_2.pk,
-                'create_match': True
-            }),
-            content_type='application/json'
-        )
-
-        # act
-        resp = self.client.get(
-            reverse_lazy('seed:get_match_tree'),
-            {
-                'organization_id': self.org.pk,
-                'building_id': self.parent_1.children.first().pk,
-            },
-            content_type='application/json'
-        )
-
-        # assert
-        body = json.loads(resp.content)
-        ids = [b['id'] for b in body['match_tree']]
-        self.assertIn(self.parent_1.pk, ids)
-        self.assertIn(self.parent_2.pk, ids)
-        self.assertIn(self.parent_1.children.first().pk, ids)
 
     def test_save_match_wrong_perms_org_id(self):
         """tests that a building match is valid for the org id"""
@@ -2699,12 +2628,6 @@ class MatchTreeTests(TestCase):
 
         self.assertEqual(bs4_root, self.bs3)
         self.assertItemsEqual(bs4_cps, bs4_expected_parent_coparents)
-
-    def test_get_coparents(self):
-        response = self.client.get(reverse('seed:get_coparents'),
-                                   {'organization_id': self.org.pk,
-                                    'building_id': self.cb0.canonical_snapshot.pk})
-        self.assertEqual('success', json.loads(response.content)['status'])
 
 
 class InventoryViewTests(TestCase):

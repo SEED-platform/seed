@@ -65,10 +65,6 @@ class DatasetViewSet(viewsets.ViewSet):
             dataset['importfiles'] = importfiles
             if d.last_modified_by:
                 dataset['last_modified_by'] = d.last_modified_by.email
-            dataset['number_of_buildings'] = BuildingSnapshot.objects.filter(
-                import_file__in=d.files,
-                canonicalbuilding__active=True,
-            ).count()
             dataset['updated_at'] = convert_to_js_timestamp(d.updated_at)
             datasets.append(dataset)
 
@@ -150,7 +146,7 @@ class DatasetViewSet(viewsets.ViewSet):
                     required: true
                     type: dictionary
                     description: A dictionary of a full dataset structure, including
-                                 keys ''name'', ''number_of_buildings'', ''id'', ''updated_at'',
+                                 keys ''name'', ''id'', ''updated_at'',
                                  ''last_modified_by'', ''importfiles'', ...
             parameter_strategy: replace
             parameters:
@@ -211,9 +207,6 @@ class DatasetViewSet(viewsets.ViewSet):
         dataset['importfiles'] = importfiles
         if d.last_modified_by:
             dataset['last_modified_by'] = d.last_modified_by.email
-        dataset['number_of_buildings'] = BuildingSnapshot.objects.filter(
-            import_file__in=d.files
-        ).count()
         dataset['updated_at'] = convert_to_js_timestamp(d.updated_at)
 
         return JsonResponse({
@@ -346,13 +339,5 @@ class DatasetViewSet(viewsets.ViewSet):
         """
         org_id = int(request.query_params.get('organization_id', None))
 
-        # first make sure that the organization id exists
-        if Organization.objects.filter(pk=org_id).exists():
-            datasets_count = Organization.objects.get(pk=org_id).import_records. \
-                all().distinct().count()
-            return JsonResponse({'status': 'success', 'datasets_count': datasets_count})
-        else:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Could not find organization_id: {}'.format(org_id)
-            }, status=status.HTTP_400_BAD_REQUEST)
+        datasets_count = ImportRecord.objects.filter(super_organization_id=org_id).count()
+        return JsonResponse({'status': 'success', 'datasets_count': datasets_count})

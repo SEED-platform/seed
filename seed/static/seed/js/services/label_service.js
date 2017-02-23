@@ -1,13 +1,9 @@
 angular.module('BE.seed.service.label',
   []).factory('label_service', [
   '$http',
-  '$log',
   'user_service',
-  'label_helper_service',
   function ($http,
-            $log,
-            user_service,
-            label_helper_service) {
+            user_service) {
 
 
     /** Label Service:
@@ -263,6 +259,22 @@ angular.module('BE.seed.service.label',
     /* "PRIVATE" METHODS */
     /* ~~~~~~~~~~~~~~~~~ */
 
+    var lookup_label = function (color) {
+      var lookup_colors = {
+        red: 'danger',
+        gray: 'default',
+        orange: 'warning',
+        green: 'success',
+        blue: 'primary',
+        'light blue': 'info'
+      };
+      try {
+        return lookup_colors[color];
+      } catch (err) {
+        console.error(err);
+        return lookup_colors.gray;
+      }
+    };
 
     /*  Add a few properties to the label object so that it
      works well with UI components.
@@ -270,7 +282,7 @@ angular.module('BE.seed.service.label',
     function update_label_w_local_props(lbl) {
       if (lbl) {
         // add bootstrap label class names
-        lbl.label = label_helper_service.lookup_label(lbl.color);
+        lbl.label = lookup_label(lbl.color);
         // create 'text' property needed for ngTagsInput control
         lbl.text = lbl.name;
       }

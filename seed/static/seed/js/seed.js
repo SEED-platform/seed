@@ -34,14 +34,12 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
   'BE.seed.controller.api',
-  'BE.seed.controller.building_list',
-  'BE.seed.controller.buildings_settings',
   'BE.seed.controller.cleansing',
   'BE.seed.controller.cleansing_admin',
   'BE.seed.controller.cycle_admin',
   'BE.seed.controller.concat_modal',
   'BE.seed.controller.create_note_modal',
-  'BE.seed.controller.create_organization_modal',
+  'BE.seed.controller.create_sub_organization_modal',
   'BE.seed.controller.data_upload_modal',
   'BE.seed.controller.dataset',
   'BE.seed.controller.dataset_detail',
@@ -65,10 +63,11 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.members',
   'BE.seed.controller.menu',
   'BE.seed.controller.new_member_modal',
-  'BE.seed.controller.pairing',
-  'BE.seed.controller.profile',
   'BE.seed.controller.organization',
   'BE.seed.controller.organization_settings',
+  'BE.seed.controller.organization_sharing',
+  'BE.seed.controller.pairing',
+  'BE.seed.controller.profile',
   'BE.seed.controller.project',
   'BE.seed.controller.security',
   'BE.seed.controller.update_item_labels_modal'
@@ -95,7 +94,6 @@ angular.module('BE.seed.directives', [
 angular.module('BE.seed.services', [
   'BE.seed.service.audit',
   'BE.seed.service.auth',
-  'BE.seed.service.building',
   'BE.seed.service.cleansing',
   'BE.seed.service.column_mappings',
   'BE.seed.service.cycle',
@@ -345,110 +343,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       //     }
       //   }
       // })
-      // .state({
-      //   name: 'building_detail_section',
-      //   url: '/projects/{project_id:int}/{building_id:int}',
-      //   templateUrl: static_url + 'seed/partials/building_detail_section.html',
-      //   controller: 'building_detail_controller',
-      //   resolve: {
-      //     building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-      //       var building_id = $stateParams.building_id;
-      //       return building_services.get_building(building_id);
-      //     }],
-      //     all_columns: ['building_services', function (building_services) {
-      //       return building_services.get_columns();
-      //     }],
-      //     audit_payload: function () {
-      //       return {audit_logs: {}};
-      //     },
-      //     default_columns: ['user_service', function (user_service) {
-      //       return user_service.get_default_building_detail_columns();
-      //     }]
-      //   }
-      // })
-      // .state({
-      //   name: 'buildings',
-      //   url: '/buildings',
-      //   templateUrl: static_url + 'seed/partials/buildings.html',
-      //   controller: 'building_list_controller',
-      //   resolve: {
-      //     search_payload: ['building_services', '$state', '$stateParams', function (building_services, $state, $stateParams) {
-      //       // Defaults
-      //
-      //       var q = $stateParams.q || '';
-      //       var orderBy = '';
-      //       var sortReverse = false;
-      //       var params = {};
-      //       var numberPerPage = 10;
-      //       var pageNumber = 1;
-      //
-      //       // Check session storage for order, sort, and filter values.
-      //       if (!_.isUndefined(Storage)) {
-      //
-      //         var prefix = $state.current.url;
-      //
-      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
-      //           orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
-      //         }
-      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
-      //           sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
-      //         }
-      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
-      //           params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
-      //         }
-      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
-      //           numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
-      //         }
-      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
-      //           pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
-      //         }
-      //       }
-      //
-      //       // params: (query, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id)
-      //       return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null);
-      //     }],
-      //     default_columns: ['user_service', function (user_service) {
-      //       return user_service.get_default_columns();
-      //     }],
-      //     all_columns: ['building_services', function (building_services) {
-      //       return building_services.get_columns();
-      //     }],
-      //     project_payload: function () {
-      //       return {
-      //         project: {}
-      //       };
-      //     }
-      //   }
-      // })
-      // .state({
-      //   name: 'buildings_settings',
-      //   url: '/buildings/settings',
-      //   templateUrl: static_url + 'seed/partials/buildings_settings.html',
-      //   controller: 'buildings_settings_controller',
-      //   resolve: {
-      //     all_columns: ['building_services', function (building_services) {
-      //       return building_services.get_columns();
-      //     }],
-      //     default_columns: ['user_service', function (user_service) {
-      //       return user_service.get_default_columns();
-      //     }],
-      //     shared_fields_payload: ['user_service', function (user_service) {
-      //       return user_service.get_shared_buildings();
-      //     }],
-      //     $uibModalInstance: function () {
-      //       return {
-      //         close: function () {
-      //         }
-      //       };
-      //     },
-      //     project_payload: function () {
-      //       return {project: {}};
-      //     },
-      //     building_payload: function () {
-      //       return {building: {}};
-      //     }
-      //   }
-      // })
       .state({
         name: 'reports',
         url: '/{inventory_type:properties|taxlots}/reports',
@@ -517,131 +411,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               });
             }
           }]
-        }
-      })
-      .state({
-        name: 'building_detail',
-        url: '/buildings/{building_id:int}',
-        templateUrl: static_url + 'seed/partials/building_detail_section.html',
-        controller: 'building_detail_controller',
-        resolve: {
-          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-            // load `get_building` before page is loaded to avoid
-            // page flicker.
-            var building_id = $stateParams.building_id;
-            return building_services.get_building(building_id);
-          }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
-          }],
-          audit_payload: function () {
-            return {audit_logs: {}};
-          },
-          default_columns: ['user_service', function (user_service) {
-            return user_service.get_default_building_detail_columns();
-          }]
-        }
-      })
-      .state({
-        name: 'building_projects',
-        url: '/buildings/{building_id:int}/projects',
-        templateUrl: static_url + 'seed/partials/building_projects_section.html',
-        controller: 'building_detail_controller',
-        resolve: {
-          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-            // load `get_building` before page is loaded to avoid
-            // page flicker.
-            var building_id = $stateParams.building_id;
-            return building_services.get_building(building_id);
-          }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
-          }],
-          audit_payload: function () {
-            return {audit_logs: {}};
-          },
-          default_columns: function () {
-            return {columns: {}};
-          }
-        }
-      })
-      .state({
-        name: 'building_audit_log',
-        url: '/buildings/{building_id:int}/audit',
-        templateUrl: static_url + 'seed/partials/building_audit_log.html',
-        controller: 'building_detail_controller',
-        resolve: {
-          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-            // load `get_building` before page is loaded to avoid
-            // page flicker.
-            var building_id = $stateParams.building_id;
-            return building_services.get_building(building_id);
-          }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
-          }],
-          audit_payload: ['audit_service', '$stateParams', function (audit_service, $stateParams) {
-            var building_id = $stateParams.building_id;
-            return audit_service.get_building_logs(building_id);
-          }],
-          default_columns: function () {
-            return {columns: {}};
-          }
-        }
-      })
-      .state({
-        name: 'building_energy',
-        url: '/buildings/{building_id:int}/energy',
-        templateUrl: static_url + 'seed/partials/building_energy_section.html',
-        controller: 'building_detail_controller',
-        resolve: {
-          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-            // load `get_building` before page is loaded to avoid
-            // page flicker.
-            var building_id = $stateParams.building_id;
-            return building_services.get_building(building_id);
-          }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
-          }],
-          audit_payload: function () {
-            return {audit_logs: {}};
-          },
-          default_columns: function () {
-            return {columns: {}};
-          }
-        }
-      })
-      .state({
-        name: 'building_settings',
-        url: '/buildings/{building_id:int}/settings',
-        templateUrl: static_url + 'seed/partials/building_settings_section.html',
-        controller: 'buildings_settings_controller',
-        resolve: {
-          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-            // load `get_building` before page is loaded to avoid
-            // page flicker.
-            var building_id = $stateParams.building_id;
-            return building_services.get_building(building_id);
-          }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
-          }],
-          default_columns: ['user_service', function (user_service) {
-            return user_service.get_default_building_detail_columns();
-          }],
-          shared_fields_payload: function () {
-            return {show_shared_buildings: false};
-          },
-          $uibModalInstance: function () {
-            return {
-              close: function () {
-              }
-            };
-          },
-          project_payload: function () {
-            return {project: {}};
-          }
         }
       })
       .state({
@@ -973,23 +742,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       .state({
         name: 'organization_settings',
         url: '/accounts/{organization_id:int}',
-        templateUrl: static_url + 'seed/partials/settings.html',
+        templateUrl: static_url + 'seed/partials/organization_settings.html',
         controller: 'organization_settings_controller',
         resolve: {
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns(true);
-          }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
             return organization_service.get_organization(organization_id);
-          }],
-          query_threshold_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            var organization_id = $stateParams.organization_id;
-            return organization_service.get_query_threshold(organization_id);
-          }],
-          shared_fields_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            var organization_id = $stateParams.organization_id;
-            return organization_service.get_shared_fields(organization_id);
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
@@ -1009,11 +767,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       .state({
         name: 'organization_sharing',
         url: '/accounts/{organization_id:int}/sharing',
-        templateUrl: static_url + 'seed/partials/sharing.html',
-        controller: 'organization_settings_controller',
+        templateUrl: static_url + 'seed/partials/organization_sharing.html',
+        controller: 'organization_sharing_controller',
         resolve: {
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
+          all_columns: ['inventory_service', function (inventory_service) {
+            return inventory_service.get_columns();
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
@@ -1048,8 +806,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/cleansing_admin.html',
         controller: 'cleansing_admin_controller',
         resolve: {
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
+          all_columns: ['inventory_service', function (inventory_service) {
+            return inventory_service.get_columns();
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
