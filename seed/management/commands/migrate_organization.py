@@ -284,6 +284,11 @@ def create_tax_lot_state_for_node(node, org, cb):
                                                          postal_code=node.postal_code,
                                                          number_properties=node.building_count,
                                                          extra_data=taxlot_extra_data)
+    if org.pk == 69:
+        taxlotstate.extra_data["Assessors City"] = taxlotstate.city
+        taxlotstate.extra_data["Assessors State"] = taxlotstate.state
+        taxlotstate.extra_data["Assessors Zip"] = taxlotstate.postal_code
+
 
     for (field_origin, field_dest) in mapping.items():
         value = get_value_for_key(node, field_origin)
@@ -380,10 +385,10 @@ def load_cycle(org, node, year_ending=True, fallback=True):
 
     # Rules definitions for how to handle ambiguous data.
     remap_year = {}
-    remap_year[20] = 2015
+    # remap_year[20] = 2015
     remap_year[7] = 2015
     remap_year[49] = 2015
-    remap_year[69] = 2015
+    # remap_year[69] = 2015
     remap_year[10] = 2015
     remap_year[184] = 2015
     remap_year[156] = 2015
@@ -408,11 +413,17 @@ def load_cycle(org, node, year_ending=True, fallback=True):
         except ValueError:
             pass # Bad value in extra_data; skip it and use the default.
 
+
     cycle_start = time.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
     cycle_end = cycle_start.replace(year=cycle_start.year + 1) - datetime.timedelta(seconds=1)
+
+    if org.pk in [69, 20]:
+        cycle_name = "{} Compliance Year".format(cycle_start.year+1)
+    else:
+        cycle_name = "{} Calendar Year".format(cycle_start.year)
+
     cycle, created = seed.models.Cycle.objects.get_or_create(organization=org,
-                                                             name="{} Calendar Year".format(
-                                                                 cycle_start.year),
+                                                             name=cycle_name,
                                                              start=cycle_start,
                                                              end=cycle_end)
     return cycle
