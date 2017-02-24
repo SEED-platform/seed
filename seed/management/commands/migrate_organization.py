@@ -385,10 +385,10 @@ def load_cycle(org, node, year_ending=True, fallback=True):
 
     # Rules definitions for how to handle ambiguous data.
     remap_year = {}
-    # remap_year[20] = 2015
+    remap_year[20] = 2015
     remap_year[7] = 2015
     remap_year[49] = 2015
-    # remap_year[69] = 2015
+    remap_year[69] = 2015
     remap_year[10] = 2015
     remap_year[184] = 2015
     remap_year[156] = 2015
