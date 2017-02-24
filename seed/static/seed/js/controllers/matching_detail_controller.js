@@ -17,6 +17,7 @@ angular.module('BE.seed.controller.matching_detail', [])
     'matching_service',
     'inventory_service',
     'spinner_utility',
+    'Notification',
     function ($scope,
               $state,
               $stateParams,
@@ -29,7 +30,8 @@ angular.module('BE.seed.controller.matching_detail', [])
               search_service,
               matching_service,
               inventory_service,
-              spinner_utility) {
+              spinner_utility,
+              Notification) {
       spinner_utility.show();
       $scope.search = angular.copy(search_service);
       $scope.search.url = urls.search_buildings;
@@ -49,12 +51,14 @@ angular.module('BE.seed.controller.matching_detail', [])
       $scope.showing = {};
       $scope.pagination.number_per_page_options = [10, 25, 50, 100];
       $scope.pagination.number_per_page_options_model = 10;
-      $scope.columns = [];
       $scope.alerts = [];
 
       $scope.importfile_id = $stateParams.importfile_id;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.state_id = $stateParams.state_id;
+
+      $scope.columns = columns;
+      $scope.state = state_payload.state;
 
       /* Handle 'update filters' button click */
       $scope.do_update_filters = function () {
@@ -173,16 +177,71 @@ angular.module('BE.seed.controller.matching_detail', [])
        * end pagination code
        */
 
+      var refresh = function () {
+        spinner_utility.show();
+        // update state (particularly if coparent)
+        return inventory_service.search_matching_inventory($stateParams.importfile_id, {
+          get_coparents: true,
+          inventory_type: $stateParams.inventory_type,
+          state_id: $stateParams.state_id
+        }).then(function (data) {
+          $scope.state = data.state;
+        }).then(function () {
+          return matching_service.available_matches($scope.importfile_id, $scope.inventory_type, $scope.state_id).then(function (data) {
+            $scope.available_matches = data.states;
+            spinner_utility.hide();
+          });
+        });
+      };
+
       $scope.unmatch = function () {
-        matching_service.unmatch($scope.importfile_id, $scope.inventory_type, $scope.state_id, $scope.state.coparent.id).then(function (data) {
-          console.debug('Unmatching done');
+        return matching_service.unmatch($scope.importfile_id, $scope.inventory_type, $scope.state_id, $scope.state.coparent.id).then(function () {
+          delete $scope.state.coparent;
+          Notification.success('Successfully unmerged ' + ($scope.inventory_type == 'properties' ? 'properties' : 'tax lots'));
+          return refresh();
+        }, function (err) {
+          console.error(err);
+          $scope.state.matched = true;
+          Notification.error('Failed to unmerge ' + ($scope.inventory_type == 'properties' ? 'properties' : 'tax lots'));
+          return refresh();
         });
       };
 
       $scope.match = function (state) {
-        matching_service.match($scope.importfile_id, $scope.inventory_type, $scope.state_id, state.id).then(function (data) {
-          console.debug('Matching done');
+        return matching_service.match($scope.importfile_id, $scope.inventory_type, $scope.state_id, state.id).then(function () {
+          Notification.success('Successfully merged ' + ($scope.inventory_type == 'properties' ? 'properties' : 'tax lots'));
+          return refresh();
+        }, function (err) {
+          console.error(err);
+          $scope.state.matched = false;
+          Notification.error('Failed to merge ' + ($scope.inventory_type == 'properties' ? 'properties' : 'tax lots'));
+          return refresh();
         });
+      };
+
+      $scope.checkbox_match = function (state) {
+        if ($scope.state.matched) {
+          var modalInstance = $uibModal.open({
+            templateUrl: urls.static_url + 'seed/partials/unmerge_modal.html',
+            controller: 'unmerge_modal_controller',
+            resolve: {
+              inventory_type: function () {
+                return $scope.inventory_type;
+              }
+            }
+          });
+
+          return modalInstance.result.then(function () {
+              return $scope.unmatch().then(function () {
+                return $scope.match(state);
+              });
+            }, function () {
+              state.checked = false;
+            }
+          );
+        } else {
+          return $scope.match(state);
+        }
       };
 
       /**
@@ -207,15 +266,7 @@ angular.module('BE.seed.controller.matching_detail', [])
       //   });
       // };
 
-      $scope.init = function () {
-        // $scope.columns = search_service.generate_columns($scope.fields, $scope.default_columns);
-        $scope.columns = columns;
-
-        $scope.state = state_payload.state;
-
-        _.delay(function () {
-          spinner_utility.hide();
-        }, 150);
-      };
-      $scope.init();
+      _.delay(function () {
+        spinner_utility.hide();
+      }, 150);
     }]);

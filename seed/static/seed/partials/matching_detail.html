@@ -4,7 +4,7 @@
             <a class="page_action" ui-sref="dataset_detail({dataset_id: import_file.dataset.id})"><i class="fa fa-chevron-left"></i> {$ import_file.dataset.name $}</a>
         </div>
         <div class="page_title">
-            <h1>Data Matching ({$ import_file.dataset.name $})</h1>
+            <h1>Data Matching ({$ import_file.uploaded_filename $})</h1>
         </div>
         <div class="right page_action_container"></div>
     </div>
@@ -116,7 +116,7 @@
                         <!-- search results -->
                         <tr ng-repeat="state in available_matches">
                             <td class="is_aligned_center">
-                                <input type="checkbox" ng-model="state.checked" ng-change="match(state)">
+                                <input type="checkbox" ng-model="state.checked" ng-change="checkbox_match(state)">
                             </td>
                             <td ng-repeat="col in columns">
                                 <span>{$ col.extraData ? state.extra_data[col.name] : state[col.name] $}</span>

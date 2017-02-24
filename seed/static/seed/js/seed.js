@@ -70,6 +70,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.profile',
   'BE.seed.controller.project',
   'BE.seed.controller.security',
+  'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal'
 ]);
 angular.module('BE.seed.filters', [

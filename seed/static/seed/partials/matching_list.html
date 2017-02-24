@@ -4,7 +4,7 @@
             <a class="page_action" ui-sref="dataset_detail({dataset_id: import_file.dataset.id})"><i class="fa fa-chevron-left"></i> {$ import_file.dataset.name $}</a>
         </div>
         <div class="page_title">
-            <h1>Data Matching ({$ import_file.dataset.name $})</h1>
+            <h1>Data Matching ({$ import_file.uploaded_filename $})</h1>
         </div>
         <div class="right page_action_container"></div>
     </div>
@@ -83,28 +83,25 @@
                                     </div>
                                 </form>
                             </th>
-                            <th class="source_data blank" ng-hide="filter_selected == SHOW_UNMATCHED"></th>
-                            <th class="source_data" colspan="{$ columns.length $}" ng-hide="filter_selected == SHOW_UNMATCHED">Matched {$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $}</th>
+                            <th class="source_data blank" ng-hide="selectedFilter == SHOW_UNMATCHED"></th>
+                            <th class="source_data" colspan="{$ all_columns.length $}" ng-hide="selectedFilter == SHOW_UNMATCHED">Matched {$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $} {$ filter_selected $}</th>
                         </tr>
                         <tr>
-                            <th ng-repeat="col in columns" class="pointer" ng-click="order_by_field(col.extraData, col.name)">
+                            <th ng-repeat="col in columns" class="pointer noselect" ng-click="order_by_field(col.extraData, col.name)">
                                 {$ col.displayName $} <span class="subtitle">{$ col.subtitle $}</span>
-                                <span ng-hide="col.name != order_by || sort_reverse" class="fa fa-caret-up"></span>
-                                <span ng-hide="col.name != order_by || !sort_reverse" class="fa fa-caret-down"></span>
+                                <span ng-hide="col.name != order_by" class="fa" ng-class="sort_reverse ? 'fa-caret-down' : 'fa-caret-up'"></span>
                             </th>
-                            <th class="sub_head is_aligned_center" ng-hide="filter_selected == SHOW_UNMATCHED">Match</th>
-                            <th ng-repeat="col in columns" class="pointer" ng-hide="filter_selected == SHOW_UNMATCHED" ng-click="order_by_field(col.extraData, col.name)">
+                            <th class="sub_head is_aligned_center" ng-hide="selectedFilter == SHOW_UNMATCHED">Match</th>
+                            <th ng-repeat="col in all_columns" class="pointer noselect" ng-hide="selectedFilter == SHOW_UNMATCHED">
                                 {$ col.displayName $} <span class="subtitle">{$ col.subtitle $}</span>
-                                <span ng-hide="col.name != order_by || sort_reverse" class="fa fa-caret-up"></span>
-                                <span ng-hide="col.name != order_by || !sort_reverse" class="fa fa-caret-down"></span>
                             </th>
                         </tr>
                         <!--<tr>
                             <th class="sub_head" ng-repeat="col in columns">
                                 <input type="text" class="form-control input-sm show" ng-model="filter_params[col.name]" sd-enter="on_filter_enter_key()" ng-class="{active: filter_params[col.name].length}">
                             </th>
-                            <th class="sub_head" ng-hide="filter_selected == SHOW_UNMATCHED"></th>
-                            <th class="sub_head" ng-repeat="col in columns" ng-hide="filter_selected == SHOW_UNMATCHED"></th>
+                            <th class="sub_head" ng-hide="selectedFilter == SHOW_UNMATCHED"></th>
+                            <th class="sub_head" ng-repeat="col in columns" ng-hide="selectedFilter == SHOW_UNMATCHED"></th>
                         </tr>-->
                     </thead>
                     <tbody>
@@ -112,12 +109,12 @@
                             <td ng-repeat="col in columns">
                                 <a ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})">{$ col.extraData ? i.extra_data[col.name] : i[col.name] $}</a>
                             </td>
-                            <td class="is_aligned_center has_no_padding" ng-hide="filter_selected == SHOW_UNMATCHED">
+                            <td class="is_aligned_center has_no_padding" ng-hide="selectedFilter == SHOW_UNMATCHED">
                                 <label class="checkbox_fill_area">
-                                    <input type="checkbox" ng-model="i.matched" ng-change="unmatch(i)" ng-disabled="!i.coparent.id">
+                                    <input type="checkbox" ng-model="i.matched" ng-change="unmatch(i)" ng-disabled="!i.matched">
                                 </label>
                             </td>
-                            <td ng-repeat="col in columns" ng-hide="filter_selected == SHOW_UNMATCHED">
+                            <td ng-repeat="col in all_columns" ng-hide="selectedFilter == SHOW_UNMATCHED">
                                 <span>{$ col.extraData ? i.coparent.extra_data[col.name] : i.coparent[col.name] $}</span>
                             </td>
                         </tr>

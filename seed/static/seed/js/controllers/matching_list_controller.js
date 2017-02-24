@@ -18,6 +18,7 @@ angular.module('BE.seed.controller.matching_list', [])
     'inventory_service',
     'naturalSort',
     'spinner_utility',
+    'Notification',
     function ($scope,
               $state,
               $stateParams,
@@ -31,7 +32,8 @@ angular.module('BE.seed.controller.matching_list', [])
               matching_service,
               inventory_service,
               naturalSort,
-              spinner_utility) {
+              spinner_utility,
+              Notification) {
       spinner_utility.show();
       // Remove import_files that haven't yet been mapped
       _.remove(import_file_payload.import_file.dataset.importfiles, function (importfile) {
@@ -61,13 +63,26 @@ angular.module('BE.seed.controller.matching_list', [])
       $scope.showing = {};
       $scope.pagination.number_per_page_options = [10, 25, 50, 100];
       $scope.pagination.number_per_page_options_model = 10;
-      $scope.columns = [];
       $scope.alerts = [];
       $scope.file_select = {
         file: $scope.import_file.dataset.importfiles[0]
       };
       $scope.importfile_id = $stateParams.importfile_id;
       $scope.inventory_type = $stateParams.inventory_type;
+
+      // Reduce columns to only the ones that are populated
+      $scope.all_columns = columns;
+      $scope.columns = [];
+      var inventory = $scope.inventory_type == 'properties' ? inventory_payload.properties : inventory_payload.tax_lots;
+      var existing_keys = _.pull(_.keys(_.first(inventory)), 'id', 'matched', 'extra_data', 'coparent');
+      var existing_extra_keys = _.keys(_.get(inventory, '[0].extra_data', null));
+      _.forEach(columns, function (col) {
+        if (!col.extraData) {
+          if (_.includes(existing_keys, col.name)) $scope.columns.push(col);
+        } else {
+          if (_.includes(existing_extra_keys, col.name)) $scope.columns.push(col);
+        }
+      });
 
       /* Handle 'update filters' button click */
       $scope.do_update_filters = function () {
@@ -188,40 +203,24 @@ angular.module('BE.seed.controller.matching_list', [])
        * end pagination code
        */
 
+      var refresh = function () {
+        spinner_utility.show();
+        return $scope.update_number_matched().then(function () {
+          spinner_utility.hide();
+        });
+      };
+
       $scope.unmatch = function (inventory) {
-        console.debug('Unmatch called for ' + inventory.id);
-        // var source, target, create;
-        // if (building.coparent && building.coparent.id) {
-        //   if (building.matched) {
-        //     source = building.id;
-        //     target = building.coparent.id;
-        //   } else {
-        //     source = building.coparent.id;
-        //     target = building.id;
-        //   }
-        //   create = building.matched;
-        // } else {
-        //   building.matched = false;
-        //   return;
-        // }
-        //
-        // // creates or removes a match
-        // var save_promise = null;
-        // if ($scope.inventory_type == 'properties') save_promise = inventory_service.save_property_match(source, target, create);
-        // else save_promise = inventory_service.save_taxlot_match(source, target, create);
-        // save_promise.then(function (data) {
-        //   // update building and coparent's child in case of a unmatch
-        //   // without a page refresh
-        //   if (building.matched) {
-        //     building.children = building.children || [0];
-        //     building.children[0] = data.child_id;
-        //   }
-        //   $scope.update_number_matched();
-        //   $scope.$emit('finished_saving');
-        // }, function (data, status) {
-        //   building.matched = !building.matched;
-        //   $scope.$emit('finished_saving');
-        // });
+        return matching_service.unmatch($scope.importfile_id, $scope.inventory_type, inventory.id, inventory.coparent.id).then(function () {
+          delete inventory.coparent;
+          Notification.success('Successfully unmerged ' + ($scope.inventory_type == 'properties' ? 'properties' : 'tax lots'));
+          return refresh();
+        }, function (err) {
+          console.error(err);
+          inventory.matched = true;
+          Notification.error('Failed to unmerge ' + ($scope.inventory_type == 'properties' ? 'properties' : 'tax lots'));
+          return refresh();
+        });
       };
 
       /**
@@ -252,16 +251,25 @@ angular.module('BE.seed.controller.matching_list', [])
        *   buildings
        */
       $scope.update_number_matched = function () {
-        inventory_service.get_matching_results($scope.file_select.file.id)
-          .then(function (data) {
-            if ($scope.inventory_type == 'properties') {
-              $scope.matched_buildings = data.properties.matched;
-              $scope.unmatched_buildings = data.properties.unmatched;
-            } else {
-              $scope.matched_buildings = data.tax_lots.matched;
-              $scope.unmatched_buildings = data.tax_lots.unmatched;
+        return inventory_service.get_matching_results($scope.file_select.file.id).then(function (data) {
+          var unmatched_ids;
+          if ($scope.inventory_type == 'properties') {
+            $scope.matched_buildings = data.properties.matched;
+            $scope.unmatched_buildings = data.properties.unmatched;
+            unmatched_ids = data.properties.unmatched_ids;
+          } else {
+            $scope.matched_buildings = data.tax_lots.matched;
+            $scope.unmatched_buildings = data.tax_lots.unmatched;
+            unmatched_ids = data.tax_lots.unmatched_ids;
+          }
+          // Check that no other rows became unmatched
+          _.forEach(inventory, function (i) {
+            if (_.includes(unmatched_ids, i.id)) {
+              i.matched = false;
+              delete i.coparent;
             }
           });
+        });
       };
 
       /*
@@ -304,7 +312,6 @@ angular.module('BE.seed.controller.matching_list', [])
       $scope.init = function () {
         $scope.cycleChanged();
         // $scope.columns = search_service.generate_columns($scope.fields, $scope.default_columns);
-        $scope.columns = columns;
         $scope.number_properties_matching_search = inventory_payload.number_properties_matching_search;
         $scope.number_tax_lots_matching_search = inventory_payload.number_tax_lots_matching_search;
         $scope.number_properties_returned = inventory_payload.number_properties_returned;
