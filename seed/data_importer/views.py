@@ -55,8 +55,9 @@ from seed.models import (
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     MERGE_STATE_UNKNOWN,
-    MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
+    MERGE_STATE_MERGED,
+    MERGE_STATE_DELETE,
     Cycle,
     Column,
     PropertyAuditLog,
@@ -539,38 +540,19 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
 
         def get_coparent(state_id, inventory_type):
-            if inventory_type == 'properties':
-                audit_log = PropertyAuditLog
-            else:
-                audit_log = TaxLotAuditLog
-            audit_creation_id = audit_log.objects.only('id').exclude(import_filename=None).get(
-                state_id=state_id,
-                name='Import Creation'
-            )
-            merged_record = audit_log.objects.only('state_id', 'parent1_id', 'parent2_id').filter(
-                Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id)
-            )
+            coparent = self.has_coparent(state_id, inventory_type)
 
-            result = None
-            if merged_record.count() > 1:
-                return JsonResponse({'status': 'error',
-                                     'message': 'Internal problem occurred, more than one merge record found'},
-                                    status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            elif merged_record.count() == 1:
+            if coparent:
                 result = {}
-                if merged_record.first().parent_state1_id == state_id:
-                    coparent = merged_record.first().parent_state2
-                else:
-                    coparent = merged_record.first().parent_state1
-
                 if inventory_type == 'properties':
                     for k in fields['PropertyState']:
                         result[k] = getattr(coparent, k)
                 else:
                     for k in fields['TaxLotState']:
                         result[k] = getattr(coparent, k)
-
-            return result
+                return result
+            else:
+                return None
 
         import_file_id = pk
 
@@ -759,7 +741,10 @@ class ImportFileViewSet(viewsets.ViewSet):
                     results.append(state_to_dict(state))
                 else:
                     # Look through parents in the audit log to rule out the view that inherited from the initial state
-                    audit_merge = audit_log.objects.filter(state_id=state.id).order_by('-id').first()
+                    audit_merge = audit_log.objects.filter(
+                        state_id=state.id,
+                        name__in=['Manual Match', 'System Match']
+                    ).order_by('-id').first()
 
                     if not check_audit_merge_history(audit_merge):
                         results.append(state_to_dict(state))
@@ -779,20 +764,32 @@ class ImportFileViewSet(viewsets.ViewSet):
             state_id=state_id,
             name='Import Creation'
         )
-        return audit_log.objects.filter(
-            Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id)
-        ).exists()
+        merged_record = audit_log.objects.only('parent_state1_id', 'parent_state2_id')\
+            .select_related('parent_state1', 'parent_state2')\
+            .filter(Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id))
+
+        if not merged_record.exists():
+            return False
+
+        if merged_record.count() > 1:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Internal problem occurred, more than one merge record found'},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        audit_entry = merged_record.first()
+        state_id1 = audit_entry.parent_state1_id
+        return audit_entry.parent_state1 if state_id1 != state_id else audit_entry.parent_state2
 
     @api_endpoint_class
     @ajax_request_class
     @detail_route(methods=['POST'])
     def unmatch(self, request, pk=None):
-        # body = request.data
+        body = request.data
 
         # import_file_id = int(pk)
-        # inventory_type = body.get('inventory_type', 'properties')
-        # source_state_id = int(body.get('state_id', None))
-        # coparent_id = int(body.get('state_id', None))
+        inventory_type = body.get('inventory_type', 'properties')
+        source_state_id = int(body.get('state_id', None))
+        coparent_id = int(body.get('coparent_id', None))
 
         # - Relevant PropertyView needs to be split in 2, get state_id
         #   - Lookup PropertyState, verify that data_state == 3, merge_state == 2, so that it can be unmerged
@@ -803,6 +800,116 @@ class ImportFileViewSet(viewsets.ViewSet):
         #         using the other parent state_id with a cloned property
         #     - In TaxlotProperty, clone the relevant row with the new PropertyView (same taxlot)
         #     - Delete previous audit log "match" record
+
+        # Make sure the state isn't already unmatched
+        coparent = self.has_coparent(source_state_id, inventory_type)
+        if not coparent:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Source state is already unmatched'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if coparent.id != coparent_id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Coparent ID in audit history doesn\'t match coparent_id parameter',
+                'found': coparent.id,
+                'passed_in': coparent_id
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if inventory_type == 'properties':
+            audit_log = PropertyAuditLog
+            state = PropertyState
+            view = PropertyView
+        else:
+            audit_log = TaxLotAuditLog
+            state = TaxLotState
+            view = TaxLotView
+
+        state1 = coparent
+        state2 = state.objects.get(id=source_state_id)
+
+        merged_record = audit_log.objects.select_related('state', 'parent1', 'parent2').get(
+            parent_state1__in=[state1, state2],
+            parent_state2__in=[state1, state2]
+        )
+
+        # Ensure that state numbers line up with parent numbers
+        if merged_record.parent_state1_id != state1.id:
+            state1_copy = state1
+            state1 = state2
+            state2 = state1_copy
+
+        merged_state = merged_record.state
+        old_view = view.objects.get(state=merged_state)
+
+        # Clone the property/taxlot record, then the view
+        if inventory_type == 'properties':
+            old_inventory = old_view.property
+        else:
+            old_inventory = old_view.taxlot
+        new_inventory = old_inventory
+        new_inventory.id = None
+        new_inventory.save()
+
+        new_view1 = old_view
+        new_view1.id = None
+        new_view1.state = state1
+        new_view2 = old_view
+        new_view2.id = None
+        new_view2.state = state2
+        if inventory_type == 'properties':
+            new_view1.property_id = new_inventory.id
+        else:
+            new_view1.taxlot_id = new_inventory.id
+        # problem here
+        new_view1.save()
+        new_view2.save()
+
+        # Mark the merged state as deleted
+        merged_state.merge_state = MERGE_STATE_DELETE
+        merged_state.save()
+
+        # Change the merge_state of the individual states
+        # State belongs to a new record
+        if merged_record.parent1.name == 'Import Creation' and merged_record.parent1.import_filename != '':
+            state1.merge_state = MERGE_STATE_NEW
+        else:
+            state1.merge_state = MERGE_STATE_MERGED
+        # State belongs to a new record
+        if merged_record.parent2.name == 'Import Creation' and merged_record.parent2.import_filename != '':
+            state2.merge_state = MERGE_STATE_NEW
+        else:
+            state2.merge_state = MERGE_STATE_MERGED
+        state1.save()
+        state2.save()
+
+        # Delete the audit log entry for the merge
+        merged_record.delete()
+
+        # Duplicate pairing
+        # problem here
+        cycle_id = old_view.cycle_id
+        if inventory_type == 'properties':
+            paired_view_ids = TaxLotProperty.objects.filter(property_view_id=old_view.id) \
+                .order_by('taxlot_view_id').values_list('taxlot_view_id', flat=True)
+
+            for paired_view_id in paired_view_ids:
+                TaxLotProperty(primary=True, cycle_id=cycle_id,
+                               property_view_id=new_view1, taxlot_view_id=paired_view_id).save()
+                TaxLotProperty(primary=True, cycle_id=cycle_id,
+                               property_view_id=new_view2, taxlot_view_id=paired_view_id).save()
+        else:
+            paired_view_ids = TaxLotProperty.objects.filter(taxlot_view_id=old_view.id) \
+                .order_by('property_view_id').values_list('property_view_id', flat=True)
+
+            for paired_view_id in paired_view_ids:
+                TaxLotProperty(primary=True, cycle_id=cycle_id,
+                               taxlot_view_id=new_view1, property_view_id=paired_view_id).save()
+                TaxLotProperty(primary=True, cycle_id=cycle_id,
+                               taxlot_view_id=new_view2, property_view_id=paired_view_id).save()
+
+        old_view.delete()
 
         return {
             'status': 'success'

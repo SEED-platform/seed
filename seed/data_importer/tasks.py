@@ -91,7 +91,7 @@ PUNCT_REGEX = re.compile('[{0}]'.format(
     re.escape(string.punctuation)
 ))
 
-STR_TO_CLASS = {"TaxLotState": TaxLotState, "PropertyState": PropertyState}
+STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
 
 
 def get_cache_increment_value(chunk):
@@ -190,7 +190,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
 
     """
 
-    _log.debug("Mapping row chunks")
+    _log.debug('Mapping row chunks')
     import_file = ImportFile.objects.get(pk=file_pk)
     save_type = PORTFOLIO_BS
     if source_type == ASSESSED_RAW:
@@ -206,7 +206,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # the demo this is an infix place, but is absolutely terrible and
     # should be removed ASAP!!!!!
     if 'PropertyState' not in table_mappings and 'TaxLotState' in table_mappings and '' in table_mappings:
-        _log.error("this code should not be running here...")
+        _log.error('this code should not be running here...')
         debug_inferred_prop_state_mapping = table_mappings['']
         table_mappings['PropertyState'] = debug_inferred_prop_state_mapping
 

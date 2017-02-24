@@ -92,7 +92,7 @@
                                 <span ng-hide="col.name != order_by" class="fa" ng-class="sort_reverse ? 'fa-caret-down' : 'fa-caret-up'"></span>
                             </th>
                             <th class="sub_head is_aligned_center" ng-hide="selectedFilter == SHOW_UNMATCHED">Match</th>
-                            <th ng-repeat="col in all_columns" class="pointer noselect" ng-hide="selectedFilter == SHOW_UNMATCHED">
+                            <th ng-repeat="col in all_columns" class="noselect" ng-hide="selectedFilter == SHOW_UNMATCHED">
                                 {$ col.displayName $} <span class="subtitle">{$ col.subtitle $}</span>
                             </th>
                         </tr>

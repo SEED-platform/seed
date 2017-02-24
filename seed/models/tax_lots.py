@@ -237,7 +237,8 @@ class TaxLotView(models.Model):
         super(TaxLotView, self).save(*args, **kwargs)
         if not audit_log_initialized:
             self.initialize_audit_logs(
-                description="Initial audit log added on creation/save.",
+                name='View Creation',
+                description='Initial audit log added on creation/save.',
                 record_type=AUDIT_IMPORT,
                 import_filename=import_filename
             )
