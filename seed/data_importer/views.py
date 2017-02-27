@@ -12,6 +12,7 @@ import json
 import logging
 import os
 
+from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.postgres.fields import JSONField
@@ -791,16 +792,6 @@ class ImportFileViewSet(viewsets.ViewSet):
         source_state_id = int(body.get('state_id', None))
         coparent_id = int(body.get('coparent_id', None))
 
-        # - Relevant PropertyView needs to be split in 2, get state_id
-        #   - Lookup PropertyState, verify that data_state == 3, merge_state == 2, so that it can be unmerged
-        #     - Lookup newest record using state_id in audit log, get 2 parents
-        #     - In PropertyState, make the two parents 3,2 (IF audit log says name != 'Import Creation') or 3,1 (IF
-        #         audit log says name == 'Import Creation'), make the merged state 3,4 (deleted)
-        #     - Update the PropertyView table to change the merged PropertyState id to one of the parents, clone the row
-        #         using the other parent state_id with a cloned property
-        #     - In TaxlotProperty, clone the relevant row with the new PropertyView (same taxlot)
-        #     - Delete previous audit log "match" record
-
         # Make sure the state isn't already unmatched
         coparent = self.has_coparent(source_state_id, inventory_type)
         if not coparent:
@@ -819,10 +810,12 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         if inventory_type == 'properties':
             audit_log = PropertyAuditLog
+            label = apps.get_model('seed', 'Property_labels')
             state = PropertyState
             view = PropertyView
         else:
             audit_log = TaxLotAuditLog
+            label = apps.get_model('seed', 'TaxLot_labels')
             state = TaxLotState
             view = TaxLotView
 
@@ -842,42 +835,64 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         merged_state = merged_record.state
         old_view = view.objects.get(state=merged_state)
+        cycle_id = old_view.cycle_id
 
-        # Clone the property/taxlot record, then the view
+        # Clone the property/taxlot record, then the labels
         if inventory_type == 'properties':
             old_inventory = old_view.property
+            label_ids = list(old_inventory.labels.all().values_list('id', flat=True))
+            new_inventory = old_inventory
+            new_inventory.id = None
+            new_inventory.save()
+
+            for label_id in label_ids:
+                label(property_id=new_inventory.id, statuslabel_id=label_id).save()
         else:
             old_inventory = old_view.taxlot
-        new_inventory = old_inventory
-        new_inventory.id = None
-        new_inventory.save()
+            label_ids = list(old_inventory.labels.all().values_list('id', flat=True))
+            new_inventory = old_inventory
+            new_inventory.id = None
+            new_inventory.save()
 
-        new_view1 = old_view
-        new_view1.id = None
-        new_view1.state = state1
-        new_view2 = old_view
-        new_view2.id = None
-        new_view2.state = state2
+            for label_id in label_ids:
+                label(taxlot_id=new_inventory.id, tatuslabel_id=label_id).save()
+
+        # Create the views
         if inventory_type == 'properties':
-            new_view1.property_id = new_inventory.id
+            new_view1 = view(
+                cycle_id=cycle_id,
+                property_id=new_inventory.id,
+                state=state1
+            )
+            new_view2 = view(
+                cycle_id=cycle_id,
+                property_id=old_view.property_id,
+                state=state2
+            )
         else:
-            new_view1.taxlot_id = new_inventory.id
-        # problem here
-        new_view1.save()
-        new_view2.save()
+            new_view1 = view(
+                cycle_id=cycle_id,
+                taxlot_id=new_inventory.id,
+                state=state1
+            )
+            new_view2 = view(
+                cycle_id=cycle_id,
+                taxlot_id=old_view.taxlot_id,
+                state=state2
+            )
 
         # Mark the merged state as deleted
         merged_state.merge_state = MERGE_STATE_DELETE
         merged_state.save()
 
         # Change the merge_state of the individual states
-        # State belongs to a new record
         if merged_record.parent1.name == 'Import Creation' and merged_record.parent1.import_filename != '':
+            # State belongs to a new record
             state1.merge_state = MERGE_STATE_NEW
         else:
             state1.merge_state = MERGE_STATE_MERGED
-        # State belongs to a new record
         if merged_record.parent2.name == 'Import Creation' and merged_record.parent2.import_filename != '':
+            # State belongs to a new record
             state2.merge_state = MERGE_STATE_NEW
         else:
             state2.merge_state = MERGE_STATE_MERGED
@@ -888,28 +903,37 @@ class ImportFileViewSet(viewsets.ViewSet):
         merged_record.delete()
 
         # Duplicate pairing
-        # problem here
-        cycle_id = old_view.cycle_id
         if inventory_type == 'properties':
-            paired_view_ids = TaxLotProperty.objects.filter(property_view_id=old_view.id) \
-                .order_by('taxlot_view_id').values_list('taxlot_view_id', flat=True)
-
-            for paired_view_id in paired_view_ids:
-                TaxLotProperty(primary=True, cycle_id=cycle_id,
-                               property_view_id=new_view1, taxlot_view_id=paired_view_id).save()
-                TaxLotProperty(primary=True, cycle_id=cycle_id,
-                               property_view_id=new_view2, taxlot_view_id=paired_view_id).save()
+            paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id=old_view.id)
+                                   .order_by('taxlot_view_id').values_list('taxlot_view_id', flat=True))
         else:
-            paired_view_ids = TaxLotProperty.objects.filter(taxlot_view_id=old_view.id) \
-                .order_by('property_view_id').values_list('property_view_id', flat=True)
-
-            for paired_view_id in paired_view_ids:
-                TaxLotProperty(primary=True, cycle_id=cycle_id,
-                               taxlot_view_id=new_view1, property_view_id=paired_view_id).save()
-                TaxLotProperty(primary=True, cycle_id=cycle_id,
-                               taxlot_view_id=new_view2, property_view_id=paired_view_id).save()
+            paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id=old_view.id)
+                                   .order_by('property_view_id').values_list('property_view_id', flat=True))
 
         old_view.delete()
+        new_view1.save()
+        new_view2.save()
+
+        if inventory_type == 'properties':
+            for paired_view_id in paired_view_ids:
+                TaxLotProperty(primary=True,
+                               cycle_id=cycle_id,
+                               property_view_id=new_view1.id,
+                               taxlot_view_id=paired_view_id).save()
+                TaxLotProperty(primary=True,
+                               cycle_id=cycle_id,
+                               property_view_id=new_view2.id,
+                               taxlot_view_id=paired_view_id).save()
+        else:
+            for paired_view_id in paired_view_ids:
+                TaxLotProperty(primary=True,
+                               cycle_id=cycle_id,
+                               taxlot_view_id=new_view1.id,
+                               property_view_id=paired_view_id).save()
+                TaxLotProperty(primary=True,
+                               cycle_id=cycle_id,
+                               taxlot_view_id=new_view2.id,
+                               property_view_id=paired_view_id).save()
 
         return {
             'status': 'success'
@@ -937,11 +961,13 @@ class ImportFileViewSet(viewsets.ViewSet):
         if inventory_type == 'properties':
             audit_log = PropertyAuditLog
             inventory = Property
+            label = apps.get_model('seed', 'Property_labels')
             state = PropertyState
             view = PropertyView
         else:
             audit_log = TaxLotAuditLog
             inventory = TaxLot
+            label = apps.get_model('seed', 'TaxLot_labels')
             state = TaxLotState
             view = TaxLotView
 
@@ -980,31 +1006,39 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         # Delete existing views and inventory records
         views = view.objects.filter(state_id__in=[source_state_id, matching_state_id])
-        view_ids = views.values_list('id', flat=True)
+        view_ids = list(views.values_list('id', flat=True))
         cycle_id = views.first().cycle_id
-        for v in views:
-            if inventory_type == 'properties':
-                v.property.delete()
-            else:
-                v.taxlot.delete()
-
+        label_ids = []
         # Get paired view ids
         if inventory_type == 'properties':
-            paired_view_ids = TaxLotProperty.objects.filter(property_view_id__in=view_ids) \
-                .order_by('taxlot_view_id').distinct('taxlot_view_id').values_list('taxlot_view_id', flat=True)
+            paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id__in=view_ids)
+                                   .order_by('taxlot_view_id').distinct('taxlot_view_id')
+                                   .values_list('taxlot_view_id', flat=True))
         else:
-            paired_view_ids = TaxLotProperty.objects.filter(taxlot_view_id__in=view_ids) \
-                .order_by('property_view_id').distinct('property_view_id').values_list('property_view_id', flat=True)
-        views.delete()
+            paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id__in=view_ids)
+                                   .order_by('property_view_id').distinct('property_view_id')
+                                   .values_list('property_view_id', flat=True))
+        for v in views:
+            if inventory_type == 'properties':
+                label_ids.extend(list(v.property.labels.all().values_list('id', flat=True)))
+                v.property.delete()
+            else:
+                label_ids.extend(list(v.taxlot.labels.all().values_list('id', flat=True)))
+                v.taxlot.delete()
+        label_ids = list(set(label_ids))
 
         # Create new inventory record
         inventory_record = inventory(organization_id=organization_id)
         inventory_record.save()
 
-        # Create new view
+        # Create new labels and view
         if inventory_type == 'properties':
+            for label_id in label_ids:
+                label(property_id=inventory_record.id, statuslabel_id=label_id).save()
             new_view = view(cycle_id=cycle_id, state_id=merged_state.id, property_id=inventory_record.id)
         else:
+            for label_id in label_ids:
+                label(taxlot_id=inventory_record.id, statuslabel_id=label_id).save()
             new_view = view(cycle_id=cycle_id, state_id=merged_state.id, taxlot_id=inventory_record.id)
         new_view.save()
 
@@ -1013,14 +1047,18 @@ class ImportFileViewSet(viewsets.ViewSet):
             # Probably already deleted by cascade
             TaxLotProperty.objects.filter(property_view_id__in=view_ids).delete()
             for paired_view_id in paired_view_ids:
-                TaxLotProperty(primary=True, cycle_id=cycle_id,
-                               property_view_id=new_view, taxlot_view_id=paired_view_id).save()
+                TaxLotProperty(primary=True,
+                               cycle_id=cycle_id,
+                               property_view_id=new_view.id,
+                               taxlot_view_id=paired_view_id).save()
         else:
             # Probably already deleted by cascade
             TaxLotProperty.objects.filter(taxlot_view_id__in=view_ids).delete()
             for paired_view_id in paired_view_ids:
-                TaxLotProperty(primary=True, cycle_id=cycle_id,
-                               property_view_id=paired_view_id, taxlot_view_id=new_view).save()
+                TaxLotProperty(primary=True,
+                               cycle_id=cycle_id,
+                               property_view_id=paired_view_id,
+                               taxlot_view_id=new_view.id).save()
 
         return {
             'status': 'success'

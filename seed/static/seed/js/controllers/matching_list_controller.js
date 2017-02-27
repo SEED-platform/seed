@@ -302,7 +302,7 @@ angular.module('BE.seed.controller.matching_list', [])
       };
 
       $scope.fileChanged = function () {
-        $state.go('matching_list', {importfile_id: $scope.file_select.file.id});
+        $state.go('matching_list', {importfile_id: $scope.file_select.file.id, inventory_type: $scope.inventory_type});
       };
 
       /**

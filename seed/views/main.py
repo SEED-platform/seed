@@ -1157,7 +1157,7 @@ def delete_organization_inventory(request):
             'progress_key': ID of background job, for retrieving job progress
         }
     """
-    org_id = request.GET.get('org_id', '')
+    org_id = request.GET.get('organization_id', None)
     deleting_cache_key = get_prog_key(
         'delete_organization_inventory',
         org_id

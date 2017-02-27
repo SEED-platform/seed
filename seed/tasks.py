@@ -542,30 +542,30 @@ def delete_organization_inventory(org_pk, deleting_cache_key, chunk_size=100, *a
 @shared_task
 def _delete_organization_property_chunk(del_ids, prog_key, increment, org_pk, *args, **kwargs):
     """deletes a list of ``del_ids`` and increments the cache"""
-    qs = Property.objects.filter(organization_id=org_pk)
-    qs.filter(pk__in=del_ids).delete()
+    qs = Property.objects.filter(organization_id=org_pk, pk__in=del_ids)
+    qs.delete()
     increment_cache(prog_key, increment * 100)
 
 
 @shared_task
 def _delete_organization_property_state_chunk(del_ids, prog_key, increment, org_pk, *args, **kwargs):
     """deletes a list of ``del_ids`` and increments the cache"""
-    qs = PropertyState.objects.filter(organization_id=org_pk)
-    qs.filter(pk__in=del_ids).delete()
+    qs = PropertyState.objects.filter(organization_id=org_pk, pk__in=del_ids)
+    qs.delete()
     increment_cache(prog_key, increment * 100)
 
 
 @shared_task
 def _delete_organization_taxlot_chunk(del_ids, prog_key, increment, org_pk, *args, **kwargs):
     """deletes a list of ``del_ids`` and increments the cache"""
-    qs = TaxLot.objects.filter(organization_id=org_pk)
-    qs.filter(pk__in=del_ids).delete()
+    qs = TaxLot.objects.filter(organization_id=org_pk, pk__in=del_ids)
+    qs.delete()
     increment_cache(prog_key, increment * 100)
 
 
 @shared_task
 def _delete_organization_taxlot_state_chunk(del_ids, prog_key, increment, org_pk, *args, **kwargs):
     """deletes a list of ``del_ids`` and increments the cache"""
-    qs = TaxLotState.objects.filter(organization_id=org_pk)
-    qs.filter(pk__in=del_ids).delete()
+    qs = TaxLotState.objects.filter(organization_id=org_pk, pk__in=del_ids)
+    qs.delete()
     increment_cache(prog_key, increment * 100)

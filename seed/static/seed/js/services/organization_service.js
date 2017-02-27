@@ -165,20 +165,10 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       });
     };
 
-    organization_factory.delete_organization_buildings = function (org_id) {
-      return $http.delete(window.BE.urls.delete_organization_buildings, {
-        params: {
-          org_id: org_id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
-    };
-
     organization_factory.delete_organization_inventory = function (org_id) {
-      return $http.delete(window.BE.urls.delete_organization_inventory, {
+      return $http.delete('/app/delete_organization_inventory/', {
         params: {
-          org_id: org_id
+          organization_id: org_id
         }
       }).then(function (response) {
         return response.data;

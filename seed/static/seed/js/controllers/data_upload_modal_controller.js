@@ -53,6 +53,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 dataset,
                 cycles) {
         $scope.cycles = cycles.cycles;
+        if ($scope.cycles.length) $scope.selectedCycle = $scope.cycles[0];
         $scope.step_10_style = 'info';
         $scope.step_10_title = 'load more data';
         $scope.step = {
@@ -133,13 +134,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         };
         $scope.goto_data_matching = function () {
           $uibModalInstance.close();
-          $state.go('matching_list', {importfile_id: $scope.dataset.import_file_id});
+          $state.go('matching_list', {importfile_id: $scope.dataset.import_file_id, inventory_type: 'properties'});
         };
         $scope.view_my_properties = function () {
           $uibModalInstance.close();
-          spinner_utility.show();
           $state.go('inventory_list', {inventory_type: 'properties'});
-          spinner_utility.hide();
         };
         /**
          * cancel: dismissed the modal, routes to the dismiss function of the parent
