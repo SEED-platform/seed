@@ -543,6 +543,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     inventory_service.loadSettings = function (key, columns) {
       key += '.' + user_service.get_organization().id;
+
+      var isDetailSetting = key.match(/^grid\.(properties|taxlots)\.detail\.\d+$/);
+
       // Hide extra data columns by default
       _.forEach(columns, function (col) {
         col.visible = !col.extraData;
@@ -552,10 +555,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       if (!_.isNull(localColumns)) {
         var existingColumnNames = _.map(columns, 'name');
         localColumns = JSON.parse(localColumns);
+
         // Remove deprecated columns missing 'related' field
-        _.remove(localColumns, function (col) {
-          return !_.has(col, 'related');
-        });
+        // NOT FOR DETAIL SETTINGS
+        if (!isDetailSetting) {
+          _.remove(localColumns, function (col) {
+            return !_.has(col, 'related');
+          });
+        }
 
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
@@ -563,7 +570,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
-          return _.defaults(col, _.remove(columns, {name: col.name, related: col.related})[0])
+          if (isDetailSetting) return _.defaults(col, _.remove(columns, {name: col.name})[0]);
+          else return _.defaults(col, _.remove(columns, {name: col.name, related: col.related})[0]);
         });
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {
