@@ -88,7 +88,9 @@ def process_org(org):
 
 
 def do_process_org_20():
-    for prop in PropertyState.objects.all():
+    count = PropertyState.objects.filter(organization_id=20).count()
+    for ndx, prop in enumerate(PropertyState.objects.filter(organization_id=20).all()):
+        print "Processing {}/{}".format(ndx+1, count)
         prop.extradata["Address 1"] = prop.address_line_1
         prop.extradata["Address 2"] = prop.address_line_2
         prop.extradata["Normalized Address"] = prop.normalized_address
