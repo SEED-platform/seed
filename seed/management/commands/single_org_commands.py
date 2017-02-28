@@ -83,46 +83,46 @@ class Command(BaseCommand):
 def process_org(org):
     if org == 20:
         do_process_org_20()
+    elif org == 69:
+        do_process_org_69()
 
     return
 
+def do_process_org_69():
+    print "Single Commands for org=69"
+    org_pk = 69
 
-def do_process_org_20():
-    count = PropertyState.objects.filter(organization_id=20).count()
-    for ndx, prop in enumerate(PropertyState.objects.filter(organization_id=20).all()):
-        print "Processing {}/{}".format(ndx+1, count)
-        prop.extra_data["Address 1"] = prop.address_line_1
-        prop.extra_data["Address 2"] = prop.address_line_2
-        prop.extra_data["Normalized Address"] = prop.normalized_address
-
-        prop.address_line_1 = None
-        prop.address_line_2 = None
-        prop.normalized_address = None
-        prop.save()
-
-    return
-
-
-
-
-def delete_data_from_org(org_pk):
-    tax_attrs_to_clear = collections.defaultdict(list)
-    property_attrs_to_clear = collections.defaultdict(list)
-
-    tax_attrs_to_clear[69] = ["address_line_1", "city", "state", "postal_code"]
-    property_attrs_to_clear[69] = ["address_line_1", "city", "state", "postal_code"]
-
+    tax_attrs_to_clear = ["address_line_1", "city", "state", "postal_code"]
+    property_attrs_to_clear = ["address_line_1", "city", "state", "postal_code"]
 
     for ndx, property_state in enumerate(PropertyState.objects.filter(organization_id=org_pk).all()):
-        for pa in property_attrs_to_clear[org_pk]:
+        for pa in property_attrs_to_clear:
             setattr(property_state, pa, None)
             property_state.save()
 
     for ndx, taxlot_state in enumerate(TaxLotState.objects.filter(organization_id=org_pk).all()):
-        for ta in tax_attrs_to_clear[org_pk]:
+        for ta in tax_attrs_to_clear:
             setattr(taxlot_state, ta, None)
             taxlot_state.save()
+    return
 
+def do_process_org_20():
+    print "Single Commands for org=20"
+    count = PropertyState.objects.filter(organization_id=20).count()
+    for ndx, prop in enumerate(PropertyState.objects.filter(organization_id=20).all()):
+        print "Processing {}/{}".format(ndx+1, count)
 
+        if prop.address_line_1:
+            prop.extra_data["Address 1"] = prop.address_line_1
+            prop.address_line_1 = None
 
+        if prop.address_line_2:
+            prop.extra_data["Address 2"] = prop.address_line_2
+            prop.address_line_2 = None
+
+        if prop.normalized_address:
+            prop.extra_data["Normalized Address"] = prop.normalized_address
+            prop.normalized_address = None
+
+        prop.save()
     return
