@@ -50,7 +50,6 @@ angular.module('BE.seed.controller.matching', [])
         return _.includes(validCycles, cycle.id);
       });
       $scope.selectedCycle = _.find($scope.cycles, {id: $scope.import_files.cycle});
-
       if ($scope.inventory_type == 'properties') {
         $scope.inventory = inventory_payload.properties;
       } else {
@@ -369,6 +368,7 @@ angular.module('BE.seed.controller.matching', [])
       $scope.update_number_matched = function () {
         building_services.get_matching_results($scope.file_select.file.id)
           .then(function (data) {
+            // console.log('type: ', $scope.inventory_type)
             if ($scope.inventory_type == 'properties') {
               $scope.matched_buildings = data.properties.matched;
               $scope.unmatched_buildings = data.properties.unmatched;

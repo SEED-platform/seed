@@ -193,7 +193,7 @@ describe('The search_service service', function() {
                     checked: false
                 }
             ]);
-        });
+        },1000);
     });
     it('should clear the error and alert after a successful search',
         function() {
