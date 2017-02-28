@@ -119,9 +119,9 @@ SEED_URL_APPS = (
 )
 
 MEDIA_ROOT = join(SITE_ROOT, 'collected_static')
-MEDIA_URL = "/media/"
+MEDIA_URL = '/media/'
 
-STATIC_ROOT = "collected_static"
+STATIC_ROOT = 'collected_static'
 STATIC_URL = '/static/'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -129,8 +129,8 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
-COMPRESS_ROOT = STATIC_ROOT
-COMPRESS_URL = STATIC_URL
+COMPRESS_ROOT = join(SITE_ROOT, 'collected_static')
+COMPRESS_URL = '/static/'
 COMPRESS_PRECOMPILERS = (
     ('text/less', 'lessc {infile} {outfile}'),
 )

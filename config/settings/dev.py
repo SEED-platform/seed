@@ -91,7 +91,7 @@ CELERY_QUEUES = (
 
 REQUIRE_UNIQUE_EMAIL = False
 
-COMPRESS_ENABLED = False
+COMPRESS_ENABLED = True
 if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
     COMPRESS_PRECOMPILERS = ()
     COMPRESS_CSS_FILTERS = ['compressor.filters.css_default.CssAbsoluteFilter']

@@ -32,22 +32,22 @@
         <link rel="shortcut icon" href="{{STATIC_URL}}seed/images/favicon.ico">
         <link href="//fonts.googleapis.com/css?family=PT+Sans:400,700|PT+Sans+Narrow:400,700" rel="stylesheet" type="text/css">
         {% compress css %}
-        <link href="{{STATIC_URL}}vendors/bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-        <link href="{{STATIC_URL}}vendors/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-        <link href="{{STATIC_URL}}vendors/bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css" rel="stylesheet" type="text/css">
-        <link href="{{STATIC_URL}}vendors/bower_components/angular-ui-grid/ui-grid.min.css" rel="stylesheet" type="text/css">
-        <link href="{{STATIC_URL}}vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.css" rel="stylesheet" type="text/css">
-        <link href="{{STATIC_URL}}vendors/bower_components/ng-tags-input/ng-tags-input.css" rel="stylesheet" type="text/css">
-        <link href="{{STATIC_URL}}vendors/bower_components/ng-tags-input/ng-tags-input.bootstrap.css" rel="stylesheet" type="text/css">
-        <link href="{{STATIC_URL}}vendors/bower_components/angular-xeditable/dist/css/xeditable.css" rel="stylesheet" type="text/css">
-        <link href="{{STATIC_URL}}vendors/bower_components/angular-ui-notification/dist/angular-ui-notification.min.css" rel="stylesheet" type="text/css">
-        <link href="{{STATIC_URL}}vendors/bower_components/angular-dragula/dist/dragula.min.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/angular-ui-grid/ui-grid.min.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/ng-tags-input/ng-tags-input.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/ng-tags-input/ng-tags-input.bootstrap.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/angular-xeditable/dist/css/xeditable.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/angular-ui-notification/dist/angular-ui-notification.min.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/angular-dragula/dist/dragula.min.css" rel="stylesheet" type="text/css">
         {% endcompress %}
 
         {% block css %}{{block.super}}
-        {% compress css %}
-        <link href="{{STATIC_URL}}seed/css/style.css" rel="stylesheet" type="text/css">
-        {% endcompress %}
+            {% compress css %}
+        <link href="/static/seed/css/style.css" rel="stylesheet" type="text/css">
+            {% endcompress %}
         {% endblock %}
 
         {% block js %}{{block.super}}
@@ -79,50 +79,50 @@
         {% include "seed/_js_urls.html" %}
 
         {% compress js %}
-        <script src="{{STATIC_URL}}vendors/bower_components/jquery/dist/jquery.min.js"></script>
-        <script src="{{STATIC_URL}}vendors/bower_components/jquery-ui/jquery-ui.min.js"></script>
-        <script src="{{STATIC_URL}}vendors/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="/static/vendors/bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="/static/vendors/bower_components/jquery-ui/jquery-ui.min.js"></script>
+        <script src="/static/vendors/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 
-        <script src="{{STATIC_URL}}vendors/bower_components/lodash/dist/lodash.min.js"></script>
+        <script src="/static/vendors/bower_components/lodash/dist/lodash.min.js"></script>
 
-        {% if not debug %}
-        <script src="{{STATIC_URL}}vendors/bower_components/angular/angular.min.js"></script>
-        {% else %}
-        <script src="{{STATIC_URL}}vendors/bower_components/angular/angular.js"></script>
-        {% endif %}
-        <script src="{{STATIC_URL}}vendors/bower_components/angular-cookies/angular-cookies.min.js"></script>
-        <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
-        <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-router.stateHelper/statehelper.min.js"></script>
+            {% if not debug %}
+        <script src="/static/vendors/bower_components/angular/angular.min.js"></script>
+            {% else %}
+        <script src="/static/vendors/bower_components/angular/angular.js"></script>
+            {% endif %}
+        <script src="/static/vendors/bower_components/angular-cookies/angular-cookies.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-ui-router.stateHelper/statehelper.min.js"></script>
 
-        {% if not debug and SENTRY_JS_DSN %}
+            {% if not debug and SENTRY_JS_DSN %}
         <script src="https://cdn.ravenjs.com/2.1.0/angular/raven.min.js"></script>
         <script>Raven.config('{{ SENTRY_JS_DSN }}').install();</script>
-        {% endif %}
+            {% endif %}
 
-        <script src="{{STATIC_URL}}vendors/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
-        <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-grid/ui-grid.min.js"></script>
-        <script src="{{STATIC_URL}}vendors/bower_components/ui-grid-draggable-rows/js/draggable-rows.js"></script>
-        <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.js"></script>
-        <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-sortable/sortable.min.js"></script>
-        <script src="{{STATIC_URL}}vendors/bower_components/angular-dragula/dist/angular-dragula.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-ui-grid/ui-grid.min.js"></script>
+        <script src="/static/vendors/bower_components/ui-grid-draggable-rows/js/draggable-rows.js"></script>
+        <script src="/static/vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-ui-sortable/sortable.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-dragula/dist/angular-dragula.min.js"></script>
 
-        <script src="{{STATIC_URL}}vendors/bower_components/moment/min/moment.min.js"></script>
+        <script src="/static/vendors/bower_components/moment/min/moment.min.js"></script>
 
         <!-- reports -->
-        <script src="{{STATIC_URL}}vendors/bower_components/d3/d3.min.js"></script>
-        <script src="{{STATIC_URL}}vendors/bower_components/dimple/dist/dimple.latest.min.js"></script>
+        <script src="/static/vendors/bower_components/d3/d3.min.js"></script>
+        <script src="/static/vendors/bower_components/dimple/dist/dimple.latest.min.js"></script>
         <!-- / reports -->
 
-        <script src="{{STATIC_URL}}vendors/bower_components/angular-xeditable/dist/js/xeditable.min.js"></script>
-        <script src="{{STATIC_URL}}vendors/bower_components/ng-tags-input/ng-tags-input.js"></script>
-        <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-notification/dist/angular-ui-notification.min.js"></script>
-        <script src="{{STATIC_URL}}vendors/bower_components/spin.js/spin.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-xeditable/dist/js/xeditable.min.js"></script>
+        <script src="/static/vendors/bower_components/ng-tags-input/ng-tags-input.js"></script>
+        <script src="/static/vendors/bower_components/angular-ui-notification/dist/angular-ui-notification.min.js"></script>
+        <script src="/static/vendors/bower_components/spin.js/spin.min.js"></script>
 
-        {% ifequal FILE_UPLOAD_DESTINATION 'S3' %}
-        <script src="{{STATIC_URL}}vendors/bower_components/fine-uploader/_build/s3.fineuploader.js"></script>
-        {% else %}
-        <script src="{{STATIC_URL}}vendors/bower_components/fine-uploader/_build/fineuploader.js"></script>
-        {% endifequal %}
+            {% ifequal FILE_UPLOAD_DESTINATION 'S3' %}
+        <script src="/static/vendors/bower_components/fine-uploader/_build/s3.fineuploader.js"></script>
+            {% else %}
+        <script src="/static/vendors/bower_components/fine-uploader/_build/fineuploader.js"></script>
+            {% endifequal %}
         {% endcompress %}
 
 
@@ -135,11 +135,9 @@
     {% block body %}
     <body>
         <div class="app" ng-app="BE.seed">
-        {% block content %}{% endblock %}
+        {% block content %}
+        {% endblock %}
         </div>
     </body>
 </html>
 {% endblock %}
-
-{% block js_scripts %}
-{% endblock js_scripts %}
