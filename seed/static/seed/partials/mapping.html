@@ -79,6 +79,7 @@
                 <div class="alert warning file_error_messages" ng-show="has_mapping_error_messages()" ng-bind-html="mapping_error_messages"></div>
                 <div class="alert alert-danger" ng-show="!required_fields_present()">At least one of the following is required: Address Line 1, Custom Id 1, Jurisdiction Tax Lot Id (with inventory type Tax Lot), or Pm Property Id (with inventory type Property).</div>
                 <div class="alert alert-danger" ng-show="duplicates_present()">Please review SEED headers.  Duplicate values are not allowed.</div>
+                <div class="alert alert-danger" ng-show="empty_fields_present()">Please review SEED headers.  Empty values are not allowed.</div>
                 <table class="table table-striped" ng-hide="review_mappings">
                     <thead>
                         <tr>

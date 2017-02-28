@@ -1181,6 +1181,7 @@ a:not([href]) {
           }
           input {
             font-weight: normal;
+            min-width: 50px;
           }
           &.is_master {
             padding: 0;

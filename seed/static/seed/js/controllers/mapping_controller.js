@@ -366,11 +366,12 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.save_mappings = false;
 
         spinner_utility.show();
-        $http.post('/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/',
-            { "review": review }).then(function (response) {
+        $http.post('/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/', {
+          review: review
+        }).then(function (response) {
           spinner_utility.hide();
 
-          var data = response.data
+          var data = response.data;
           $scope.mappedData = data;
 
           var gridOptions = {
@@ -619,10 +620,18 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       /*
+       * empty_fields_present: used to disable or enable the 'show & review
+       *   mappings' button.
+       */
+      $scope.empty_fields_present = function () {
+        return Boolean(_.find($scope.raw_columns, {suggestion: ''}));
+      };
+
+      /*
        * check_fields: called by ng-disabled for "Map Your Data" button.  Checks for duplicates and for required fields.
        */
       $scope.check_fields = function () {
-        return $scope.duplicates_present() || !$scope.required_fields_present();
+        return $scope.duplicates_present() || $scope.empty_fields_present() || !$scope.required_fields_present();
       };
 
       /*

@@ -2301,8 +2301,11 @@ class TestMCMViews(TestCase):
         float_unit = Unit.objects.create(unit_name='test energy use intensity',
                                          unit_type=FLOAT)
         Column.objects.create(
+            organization=self.org,
+            table_name='PropertyState',
             column_name='Global National Median Site Energy Use',
-            unit=float_unit)
+            unit=float_unit,
+            is_extra_data=True)
 
         resp = self.client.post(
             reverse_lazy('apiv2:import_files-save-column-mappings', args=[self.import_file.id]),
@@ -2337,8 +2340,7 @@ class TestMCMViews(TestCase):
         self.assertEquals(len(energy_use_columns), 1)
 
         eu_col = energy_use_columns.first()
-
-        assert (eu_col.unit is not None)
+        self.assertTrue(eu_col.unit is not None)
         self.assertEqual(eu_col.unit.unit_name, 'test energy use intensity')
         self.assertEqual(eu_col.unit.unit_type, FLOAT)
 
@@ -3504,12 +3506,12 @@ class InventoryViewTests(TestCase):
         self.column_factory.get_column(
             'property_extra_data_column',
             is_extra_data=True,
-            extra_data_source='property'
+            table_name='PropertyState'
         )
         self.column_factory.get_column(
             'taxlot_extra_data_column',
             is_extra_data=True,
-            extra_data_source='taxlot'
+            table_name='TaxLotState'
         )
         params = {
             'organization_id': self.org.pk,
@@ -3531,7 +3533,7 @@ class InventoryViewTests(TestCase):
         expected_property_extra_data_column = {
             'extraData': True,
             'name': 'property_extra_data_column',
-            'displayName': 'property_extra_data_column',
+            'displayName': 'Property Extra Data Column',
             'related': False,
         }
         self.assertIn(expected_property_extra_data_column, results)
@@ -3539,7 +3541,7 @@ class InventoryViewTests(TestCase):
         expected_taxlot_extra_data_column = {
             'extraData': True,
             'name': 'taxlot_extra_data_column',
-            'displayName': 'taxlot_extra_data_column',
+            'displayName': 'Taxlot Extra Data Column',
             'related': True,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
@@ -3548,12 +3550,12 @@ class InventoryViewTests(TestCase):
         self.column_factory.get_column(
             'property_extra_data_column',
             is_extra_data=True,
-            extra_data_source='property'
+            table_name='PropertyState'
         )
         self.column_factory.get_column(
             'taxlot_extra_data_column',
             is_extra_data=True,
-            extra_data_source='taxlot'
+            table_name='TaxLotState'
         )
         params = {
             'organization_id': self.org.pk,
@@ -3575,7 +3577,7 @@ class InventoryViewTests(TestCase):
         expected_property_extra_data_column = {
             'extraData': True,
             'name': 'property_extra_data_column',
-            'displayName': 'property_extra_data_column',
+            'displayName': u'Property Extra Data Column',
             'related': True,
         }
         self.assertIn(expected_property_extra_data_column, results)
@@ -3583,7 +3585,7 @@ class InventoryViewTests(TestCase):
         expected_taxlot_extra_data_column = {
             'extraData': True,
             'name': 'taxlot_extra_data_column',
-            'displayName': 'taxlot_extra_data_column',
+            'displayName': 'Taxlot Extra Data Column',
             'related': False,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)

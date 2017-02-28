@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 new tables.
 """
 
+import pdb
 from IPython import embed
 from django.core.management.base import BaseCommand
 from seed.lib.superperms.orgs.models import Organization
@@ -67,6 +68,57 @@ def copy_extra_data_excluding(extra_data, bad_fields):
     return {x: y for (x, y) in extra_data.items() if x not in bad_fields}
 
 
+def node_has_associated_import_name(node):
+    try:
+        if node.import_file is not None and node.import_file.file.name:
+            return True
+        else:
+            return False
+    except:
+        return False
+
+
+def get_organization_cycle_date(org, node):
+    mappings = collections.defaultdict(lambda: collections.defaultdict(lambda : False))
+    mappings[69][u'data_imports/BEUDO%20Masterlist%202016_5.16.16.xlsx.1469546768'] = datetime.datetime(2016, 5, 1)
+    mappings[69][u'data_imports/PM%20Reports%202015_5.16.16.xlsx.1463604454'] = datetime.datetime(2015, 5, 1)
+    mappings[69][u'data_imports/PM%20Reports%202016_8.11.16.xlsx.1471284203'] = datetime.datetime(2016, 5, 1)
+    mappings[69][u'data_imports/BEUDO%20Masterlist%202015_5.16.16.xlsx.1463605948'] = datetime.datetime(2015, 5, 1)
+    mappings[69][u'data_imports/BEUDO%20Masterlist%202015_5.16.16.xlsx.1463603666'] = datetime.datetime(2015, 5, 1)
+    mappings[69][u'data_imports/MIT%20PM%20Reports%202016_9.6.16.xlsx.1473186628']  = datetime.datetime(2016, 5, 1)
+
+    return mappings[org.pk][get_possible_import_filename(node)]
+
+
+def get_possible_import_filename(node):
+    try:
+        return str(node.import_file.file.name)
+    except:
+        return ''
+
+
+def get_possible_import_notes(node):
+    try:
+        return str(node.import_file.import_record.notes)
+    except:
+        return ''
+    return
+
+
+def get_possible_import_user_email(node):
+    try:
+        return str(node.import_file.import_record.owner.email)
+    except:
+        return ''
+
+
+def get_possible_import_time(node):
+    try:
+        return str(node.import_file.import_record.start_time.strftime("%m-%d-%Y"))
+    except:
+        return ''
+
+
 def create_property_state_for_node(node, org, cb):
     property_columns = get_property_columns(org)
     taxlot_columns = get_taxlot_columns(org)
@@ -110,6 +162,16 @@ def create_property_state_for_node(node, org, cb):
     if ADD_METADATA:
         property_state_extra_data["prop_cb_id"] = cb.pk
         property_state_extra_data["prop_bs_id"] = node.pk
+
+        import_filename = get_possible_import_filename(node)
+        import_username = get_possible_import_user_email(node)
+        import_notes = get_possible_import_notes(node)
+        import_time = get_possible_import_time(node)
+
+        property_state_extra_data["import_file"] = import_filename
+        property_state_extra_data["import_user"] = import_username
+        property_state_extra_data["import_notes"] = import_notes
+        property_state_extra_data["import_date"] = import_time
 
     property_state = seed.models.PropertyState(organization=org,
                                                confidence=node.confidence,
@@ -191,8 +253,25 @@ def create_tax_lot_state_for_node(node, org, cb):
         taxlot_extra_data["random"] = str(random.random())
 
     if ADD_METADATA:
+        import_filename = get_possible_import_filename(node)
+        import_username = get_possible_import_user_email(node)
+        import_notes = get_possible_import_notes(node)
+        import_time = get_possible_import_time(node)
+
+        taxlot_extra_data["import_file"] = import_filename
+        taxlot_extra_data["import_user"] = import_username
+        taxlot_extra_data["import_notes"] = import_notes
+        taxlot_extra_data["import_date"] = import_time
+
         taxlot_extra_data["taxlot_cb_id"] = cb.pk
         taxlot_extra_data["taxlot_bs_id"] = node.pk
+
+    try:
+        filename = node.import_file.file.name
+    except:
+        filename = "NO FILENAME"
+
+    print filename
 
     taxlotstate = seed.models.TaxLotState.objects.create(organization=org,
                                                          confidence=node.confidence,
@@ -205,6 +284,11 @@ def create_tax_lot_state_for_node(node, org, cb):
                                                          postal_code=node.postal_code,
                                                          number_properties=node.building_count,
                                                          extra_data=taxlot_extra_data)
+    if org.pk == 69:
+        taxlotstate.extra_data["Assessors City"] = taxlotstate.city
+        taxlotstate.extra_data["Assessors State"] = taxlotstate.state
+        taxlotstate.extra_data["Assessors Zip"] = taxlotstate.postal_code
+
 
     for (field_origin, field_dest) in mapping.items():
         value = get_value_for_key(node, field_origin)
@@ -278,17 +362,21 @@ def load_cycle(org, node, year_ending=True, fallback=True):
         if not fallback:
             assert time is not None, "Got no time!"
         elif time is None:
-            # logging_debug("Node does not have 'year ending' field.")
-            time = node.modified
+
+            time = get_organization_cycle_date(org, node)
+            if not time:
+                # logging_debug("Node does not have 'year ending' field.")
+                time = node.modified
     else:
-        time = node.modified
+        if not time:
+            time = node.modified
 
     # FIXME: Refactor.
 
     # Only Berkeley is allowed
     orgs_allowing_2016 = set([117])
-    if org.pk not in orgs_allowing_2016 and time.year == 2016:
-        time = datetime.date(2015, 12, 31)
+    # if org.pk not in orgs_allowing_2016 and time.year == 2016:
+    #     time = datetime.date(2015, 12, 31)
 
     time = datetime.datetime(year=time.year, month=time.month, day=time.day)
 
@@ -297,7 +385,7 @@ def load_cycle(org, node, year_ending=True, fallback=True):
 
     # Rules definitions for how to handle ambiguous data.
     remap_year = {}
-    remap_year[20] = 2014
+    remap_year[20] = 2015
     remap_year[7] = 2015
     remap_year[49] = 2015
     remap_year[69] = 2015
@@ -325,11 +413,17 @@ def load_cycle(org, node, year_ending=True, fallback=True):
         except ValueError:
             pass # Bad value in extra_data; skip it and use the default.
 
+
     cycle_start = time.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
     cycle_end = cycle_start.replace(year=cycle_start.year + 1) - datetime.timedelta(seconds=1)
+
+    if org.pk in [69, 20]:
+        cycle_name = "{} Compliance Year".format(cycle_start.year+1)
+    else:
+        cycle_name = "{} Calendar Year".format(cycle_start.year)
+
     cycle, created = seed.models.Cycle.objects.get_or_create(organization=org,
-                                                             name="{} Calendar Year".format(
-                                                                 cycle_start.year),
+                                                             name=cycle_name,
                                                              start=cycle_start,
                                                              end=cycle_end)
     return cycle
@@ -587,6 +681,8 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     """Take tree structure describing a single Property/TaxLot over time and create the entities."""
     logging_info("Populating new blue sky entities for canonical snapshot tree!")
 
+    print "Processing {}/{}/{}".format(len(import_buildingsnapshots), 1, len(other_buildingsnapshots))
+
     tax_lot_created = 0
     property_created = 0
     tax_lot_view_created = 0
@@ -598,10 +694,14 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     logging_info("Creating Property/TaxLot from {} nodes".format(
         sum(map(len, ([leaf_building], other_buildingsnapshots, import_buildingsnapshots)))))
 
+
     tax_lot = None
     property_obj = None
 
-    if node_has_tax_lot_info(leaf_building, org):
+    leaf_node_type = classify_node(leaf_building, org)
+
+    #if node_has_tax_lot_info(leaf_building, org):
+    if leaf_node_type in [TAX_IMPORT, COMBO_IMPORT, MERGE]:
         tax_lot, created = find_or_create_bluesky_taxlot_associated_with_building_snapshot(
             leaf_building, org)
         # tax_lot = seed.models.TaxLot(organization=org)
@@ -609,7 +709,8 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
         tax_lot.save()
         tax_lot_created += int(created)
 
-    if node_has_property_info(leaf_building, org):
+    # if node_has_property_info(leaf_building, org):
+    if leaf_node_type in [PROPERTY_IMPORT, COMBO_IMPORT, MERGE]:
         property_obj, created = find_or_create_bluesky_property_associated_with_building_snapshot(
             leaf_building, org)
         # property_obj = seed.models.Property(organization=org)
@@ -624,21 +725,23 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     last_taxlot_view = collections.defaultdict(lambda: False)
     last_property_view = collections.defaultdict(lambda: False)
 
-    # HOHO: TODO: The original code had these in reverse creation
-    # order but that definitely seems wrong.
     all_nodes = list(
-        itertools.chain(import_buildingsnapshots, [leaf_building], other_buildingsnapshots))
+        itertools.chain(import_buildingsnapshots, other_buildingsnapshots, [leaf_building]))
     all_nodes.sort(key=lambda rec: rec.created)  # Sort from first to last
-    # all_nodes = list(reversed(all_nodes)) # FIXME: Test this thoroughly.
 
+    x = None
+    for ndx, node in enumerate(all_nodes):
 
-    for node in all_nodes:
+        # if node.pk == leaf_building.pk:
+        #     pdb.set_trace()
+
         node_type = classify_node(node, org)
-
-        if node_type == TAX_IMPORT or node_type == COMBO_IMPORT:
+        if node_type == TAX_IMPORT or node_type == COMBO_IMPORT or node_type == MERGE:
             # Get the cycle associated with the node
-
             import_cycle = load_cycle(org, node)
+            if import_cycle.start.year == 2015: x = import_cycle
+
+            # print "Node {} cycle is {} with address {}, {}".format(node, import_cycle, node.extra_data['Building Address'] if 'Building Address' in node.extra_data.keys() else "NONE", node.gross_floor_area)
             tax_lot_state = create_tax_lot_state_for_node(node, org, cb)
             tax_lot_state_created += 1
 
@@ -656,9 +759,14 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                 taxlotview.save()
 
             last_taxlot_view[taxlotview.cycle] = taxlotview
-        elif node_type == PROPERTY_IMPORT or node_type == COMBO_IMPORT:
+
+        if node_type == PROPERTY_IMPORT or node_type == COMBO_IMPORT or node_type == MERGE:
             import_cycle = load_cycle(org, node)
             property_state = create_property_state_for_node(node, org, cb)
+
+            # if import_cycle.start.year == 2015:
+            #     print property_state.extra_data['Building Address']
+
             property_state_created += 1
 
             query = seed.models.PropertyView.objects.filter(property=property_obj,
@@ -736,6 +844,8 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                         taxlot_view=last_taxlot_view[import_cycle],
                         cycle=import_cycle)
                     m2m_created += int(created)
+                # print "{}: {}".format(ndx, last_taxlot_view[x].state.extra_data["Building Address"] if "Building Address" in last_taxlot_view[x].state.extra_data.keys() else last_taxlot_view[x].state.extra_data.keys())
+            a = 10
 
     logging_info(
         "{} Tax Lot, {} Property, {} TaxLotView, {} PropertyView, {} TaxLotState, {} PropertyState, {} m2m created.".format(

@@ -9,7 +9,7 @@ DB_USERNAME=$2
 DB_PASSWORD=$3
 
 function file_name(){
-    echo ${BACKUP_DIR}/${DB_NAME}_$(date '+%Y%m%d_%H%M%S').sql
+    echo ${BACKUP_DIR}/${DB_NAME}_$(date '+%Y%m%d_%H%M%S').dump
 }
 
 if [[ (-z ${DB_NAME}) || (-z ${DB_USERNAME}) || (-z ${DB_PASSWORD}) ]] ; then
@@ -28,4 +28,3 @@ unset PGPASSWORD
 
 # Delete files older than 30 days
 find ${BACKUP_DIR} -mtime +30 -type f -name '*.sql' -delete
-find /home/ubuntu/seed-backups -type f -name '*.sql' -delete
