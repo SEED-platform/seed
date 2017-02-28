@@ -125,4 +125,9 @@ def do_process_org_20():
             prop.normalized_address = None
 
         prop.save()
-    return
+
+    for ndx, tl in enumerate(TaxLotState.objects.filter(organization_id=20).all()):
+        tl.address_line_1 = None
+        tl.address_line_2 = None
+        tl.normalized_address = None
+        tl.save()
