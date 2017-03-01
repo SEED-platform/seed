@@ -1514,11 +1514,10 @@ class GetDatasetsViewsTests(TestCase):
         import_record.save()
         response = self.client.get(reverse('apiv2:datasets-count'),
                                    {'organization_id': 666})
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(200, response.status_code)
         j = json.loads(response.content)
-        self.assertEqual(j['status'], 'error')
-        self.assertEqual(j['message'],
-                         'Could not find organization_id: 666')
+        self.assertEqual(j['status'], 'success')
+        self.assertEqual(j['datasets_count'], 0)
 
     def test_get_dataset(self):
         import_record = ImportRecord.objects.create(owner=self.user)
