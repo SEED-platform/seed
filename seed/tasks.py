@@ -8,8 +8,6 @@ from __future__ import absolute_import
 
 import calendar
 import datetime
-import re
-import string
 
 from celery import chord
 from celery import shared_task

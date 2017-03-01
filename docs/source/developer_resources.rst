@@ -156,7 +156,7 @@ BEDES Compliance and Managing Columns
 
 Columns that do not represent hardcoded fields in the application are represented using
 a Django database model defined in the seed.models module. The goal of adding new columns
-to the database is to create seed.models.Columnrecords in the database for each column to
+to the database is to create seed.models.Column records in the database for each column to
 import. Currently, the list of Columns is dynamically populated by importing data.
 
 There are default mappings for ESPM are located here:

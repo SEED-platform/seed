@@ -12,8 +12,6 @@ import copy
 import datetime
 import hashlib
 import operator
-import re
-import string
 import time
 import traceback
 from _csv import Error
