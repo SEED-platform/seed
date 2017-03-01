@@ -6,6 +6,9 @@
 """
 import itertools
 import json
+import re
+
+from os import path
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
@@ -29,6 +32,7 @@ from seed.serializers.taxlots import (
     TaxLotViewSerializer, TaxLotStateSerializer, TaxLotSerializer
 )
 from seed.utils.api import api_endpoint_class
+from seed.utils.time import convert_to_js_timestamp
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -743,25 +747,56 @@ class PropertyViewSet(GenericViewSet):
     def get_history(self, property_view):
         """Return history in reverse order."""
         history = []
-        current = None
-        audit_logs = PropertyAuditLog.objects.select_related('state').filter(
-            view=property_view
-        ).order_by('-created', '-state_id')
-        for log in audit_logs:
-            changed_fields = json.loads(log.description) \
-                if log.record_type == AUDIT_USER_EDIT else None
-            record = {
+
+        def record_dict(log):
+            filename = None if not log.import_filename else path.basename(log.import_filename)
+            if filename:
+                # Attempt to remove NamedTemporaryFile suffix
+                name, ext = path.splitext(filename)
+                pattern = re.compile('(.*?)(_[a-zA-Z0-9]{7})$')
+                match = pattern.match(name)
+                if match:
+                    filename = match.groups()[0] + ext
+            return {
                 'state': PropertyStateSerializer(log.state).data,
-                'date_edited': log.created.ctime(),
+                'date_edited': convert_to_js_timestamp(log.created),
                 'source': log.get_record_type_display(),
-                'filename': log.import_filename,
-                'changed_fields': changed_fields
+                'filename': filename,
+                'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
             }
-            if log.state_id == property_view.state_id:
-                current = record
-            else:
-                history.append(record)
-        return history, current
+
+        log = PropertyAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
+            state_id=property_view.state_id,
+            view_id__isnull=True
+        ).order_by('-id').first()
+        master = {
+            'state': PropertyStateSerializer(log.state).data,
+            'date_edited': convert_to_js_timestamp(log.created),
+        }
+
+        # Traverse parents and add to history
+        if log.name in ['Manual Match', 'System Match']:
+            done_searching = False
+            while not done_searching:
+                if log.parent1_id is None and log.parent2_id is None:
+                    done_searching = True
+                else:
+                    tree = None
+                    if log.parent2.name == 'Import Creation':
+                        record = record_dict(log.parent2)
+                        history.append(record)
+                    else:
+                        tree = log.parent2
+                    if log.parent1.name == 'Import Creation':
+                        record = record_dict(log.parent1)
+                        history.append(record)
+                    else:
+                        tree = log.parent1
+
+                    if not tree:
+                        done_searching = True
+
+        return history, master
 
     @api_endpoint_class
     @ajax_request_class
@@ -791,8 +826,8 @@ class PropertyViewSet(GenericViewSet):
             result.pop('id')
             result['state'] = PropertyStateSerializer(property_view.state).data
             result['taxlots'] = self._get_taxlots(property_view.pk)
-            result['history'], current = self.get_history(property_view)
-            result = update_result_with_current(result, current)
+            result['history'], master = self.get_history(property_view)
+            result = update_result_with_master(result, master)
             status_code = status.HTTP_200_OK
         else:
             status_code = status.HTTP_404_NOT_FOUND
@@ -1510,25 +1545,56 @@ class TaxLotViewSet(GenericViewSet):
     def get_history(self, taxlot_view):
         """Return history in reverse order."""
         history = []
-        current = None
-        audit_logs = TaxLotAuditLog.objects.select_related('state').filter(
-            view=taxlot_view
-        ).order_by('-created', '-state_id')
-        for log in audit_logs:
-            changed_fields = json.loads(log.description) \
-                if log.record_type == AUDIT_USER_EDIT else None
-            record = {
+
+        def record_dict(log):
+            filename = None if not log.import_filename else path.basename(log.import_filename)
+            if filename:
+                # Attempt to remove NamedTemporaryFile suffix
+                name, ext = path.splitext(filename)
+                pattern = re.compile('(.*?)(_[a-zA-Z0-9]{7})$')
+                match = pattern.match(name)
+                if match:
+                    filename = match.groups()[0] + ext
+            return {
                 'state': TaxLotStateSerializer(log.state).data,
-                'date_edited': log.created.ctime(),
+                'date_edited': convert_to_js_timestamp(log.created),
                 'source': log.get_record_type_display(),
-                'filename': log.import_filename,
-                'changed_fields': changed_fields
+                'filename': filename,
+                'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
             }
-            if log.state_id == taxlot_view.state_id:
-                current = record
-            else:
-                history.append(record)
-        return history, current
+
+        log = TaxLotAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
+            state_id=taxlot_view.state_id,
+            view_id__isnull=True
+        ).order_by('-id').first()
+        master = {
+            'state': TaxLotStateSerializer(log.state).data,
+            'date_edited': convert_to_js_timestamp(log.created),
+        }
+
+        # Traverse parents and add to history
+        if log.name in ['Manual Match', 'System Match']:
+            done_searching = False
+            while not done_searching:
+                if log.parent1_id is None and log.parent2_id is None:
+                    done_searching = True
+                else:
+                    tree = None
+                    if log.parent2.name == 'Import Creation':
+                        record = record_dict(log.parent2)
+                        history.append(record)
+                    else:
+                        tree = log.parent2
+                    if log.parent1.name == 'Import Creation':
+                        record = record_dict(log.parent1)
+                        history.append(record)
+                    else:
+                        tree = log.parent1
+
+                    if not tree:
+                        done_searching = True
+
+        return history, master
 
     def _get_properties(self, taxlot_view_pk):
         property_view_pks = TaxLotProperty.objects.filter(
@@ -1579,8 +1645,8 @@ class TaxLotViewSet(GenericViewSet):
             result.pop('id')
             result['state'] = TaxLotStateSerializer(taxlot_view.state).data
             result['properties'] = self._get_properties(taxlot_view.pk)
-            result['history'], current = self.get_history(taxlot_view)
-            result = update_result_with_current(result, current)
+            result['history'], master = self.get_history(taxlot_view)
+            result = update_result_with_master(result, master)
             status_code = status.HTTP_200_OK
         else:
             status_code = status.HTTP_404_NOT_FOUND
@@ -1685,9 +1751,9 @@ def diffupdate(old, new):
     return changed_fields, changed_extra_data
 
 
-def update_result_with_current(result, cur):
-    result['changed_fields'] = cur.get('changed_fields', None) if cur else None
-    result['date_edited'] = cur.get('date_edited', None) if cur else None
-    result['source'] = cur.get('source', None) if cur else None
-    result['filename'] = cur.get('filename', None) if cur else None
+def update_result_with_master(result, master):
+    result['changed_fields'] = master.get('changed_fields', None) if master else None
+    result['date_edited'] = master.get('date_edited', None) if master else None
+    result['source'] = master.get('source', None) if master else None
+    result['filename'] = master.get('filename', None) if master else None
     return result

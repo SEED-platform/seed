@@ -886,12 +886,12 @@ class ImportFileViewSet(viewsets.ViewSet):
         merged_state.save()
 
         # Change the merge_state of the individual states
-        if merged_record.parent1.name == 'Import Creation' and merged_record.parent1.import_filename != '':
+        if merged_record.parent1.name == 'Import Creation' and merged_record.parent1.import_filename is not None:
             # State belongs to a new record
             state1.merge_state = MERGE_STATE_NEW
         else:
             state1.merge_state = MERGE_STATE_MERGED
-        if merged_record.parent2.name == 'Import Creation' and merged_record.parent2.import_filename != '':
+        if merged_record.parent2.name == 'Import Creation' and merged_record.parent2.import_filename is not None:
             # State belongs to a new record
             state2.merge_state = MERGE_STATE_NEW
         else:
