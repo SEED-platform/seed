@@ -135,8 +135,6 @@ def handle_s3_upload_complete(request):
                                   file=filename,
                                   source_type=source_type,
                                   **kw_fields)
-    _log.info("Created ImportFile. kw_fields={} from-PM={}"
-              .format(kw_fields, f.from_portfolio_manager))
     return JsonResponse({'success': True, "import_file_id": f.pk})
 
 
@@ -233,9 +231,6 @@ class LocalUploaderViewSet(viewsets.GenericViewSet):
                                       file=path,
                                       source_type=source_type,
                                       **kw_fields)
-
-        _log.info("Created ImportFile. kw_fields={} from-PM={}"
-                  .format(kw_fields, f.from_portfolio_manager))
 
         return JsonResponse({'success': True, "import_file_id": f.pk})
 

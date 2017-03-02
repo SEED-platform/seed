@@ -222,7 +222,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # Add custom mappings for cross-related data. Right now these are hard coded, but could
     # be a setting if so desired.
     if delimited_fields and delimited_fields[
-        'jurisdiction_tax_lot_id'] and 'PropertyState' in table_mappings.keys():
+            'jurisdiction_tax_lot_id'] and 'PropertyState' in table_mappings.keys():
         table_mappings['PropertyState'][
             delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
             'PropertyState', 'lot_number')
@@ -469,7 +469,7 @@ def _cleanse_data(import_file_id, record_type='property'):
     tasks = [
         cleanse_data_chunk.s(record_type, ids, import_file_id, increment)
         for ids in id_chunks
-        ]
+    ]
 
     if tasks:
         # specify the chord as an immutable with .si
@@ -826,7 +826,8 @@ def match_buildings(file_pk, user_pk):
         }
 
     if import_file.cycle is None:
-        print "DANGER"
+        _log.warn("This should never happen in production")
+
     _match_properties_and_taxlots.delay(file_pk, user_pk)
 
     return {
@@ -835,74 +836,6 @@ def match_buildings(file_pk, user_pk):
         'progress_key': prog_key
     }
 
-
-# def handle_id_matches(unmatched_property_states, unmatched_property_state, import_file, user_pk):
-#     """
-#     Deals with exact matches in the IDs of buildings.
-
-#     :param unmatched_property_states:
-#     :param unmatched_property_state:
-#     :param import_file:
-#     :param user_pk:
-#     :return:
-#     """
-
-#     # TODO: this only works for PropertyStates right now because the unmatched_property_states is a QuerySet
-#     # of PropertyState of which have the .pm_property_id and .custom_id_1 fields.
-#     id_matches = query_property_matches(
-#         unmatched_property_states,
-#         unmatched_property_state.pm_property_id,
-#         unmatched_property_state.custom_id_1
-#     )
-#     if not id_matches.exists():
-#         return
-
-#     # Check to see if there are any duplicates here
-#     # for match in id_matches:
-#     #     if is_same_snapshot(unmatched_property_states, match):
-#     #         raise DuplicateDataError(match.pk)
-
-#     # Reading the code, this appears to be the intention of the code.
-
-#     # Combinations returns every combination once without regard to
-#     # order and does not include self-combinations.
-#     # e.g combinations(ABC) = AB, AC, BC
-#     for (m1, m2) in itertools.combinations(id_matches, 2):
-#         if is_same_snapshot(m1, m2):
-#             raise DuplicateDataError(match.pk)
-
-#     # Merge Everything Together
-#     merged_result = id_matches[0]
-#     for match in id_matches:
-#         merged_result, changes = save_state_match(merged_result,
-#                                                   match,
-#                                                   confidence=0.9,
-#                                                   match_type=SYSTEM_MATCH,
-#                                                   user=import_file.import_record.owner
-#                                                   # What does this param do?
-#                                                   # default_pk=unmatched_property_states.pk
-#         )
-#     else:
-#         # TODO - coordinate with Nick on how to get the correct cycle,
-#         # rather than the most recent one.
-
-#         org = Organization.objects.filter(users=import_file.import_record.owner).first()
-#         default_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
-#         merged_result.promote(default_cycle) # Make sure this creates the View.
-
-#         # AuditLog.objects.create(
-#         #     user_id=user_pk,
-#         #     content_object=canon,
-#         #     action_note=action_note,
-#         #     action='save_system_match',
-#         #     organization=unmatched_property_states.super_organization,
-#         # )
-
-#     # Returns the most recent child of all merging.
-#     return merged_result
-
-
-# def merge_property_matches(match.
 
 def _finish_matching(import_file, progress_key):
     import_file.matching_done = True
@@ -1141,7 +1074,7 @@ class EquivalencePartitioner(object):
             for class_key in equivalence_classes:
                 if self.calculate_key_equivalence(class_key,
                                                   cmp_key) and not self.identities_are_different(
-                    identities_for_equivalence[class_key], identity_key):
+                        identities_for_equivalence[class_key], identity_key):
 
                     # Must check the identities to make sure all is a-ok.
                     equivalence_classes[class_key].append(ndx)

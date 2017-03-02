@@ -1021,8 +1021,6 @@ class TaxLotViewSet(GenericViewSet):
             jurisdiction_tax_lot_ids = filter(lambda x: x is not None, jurisdiction_tax_lot_ids)
 
             if none_in_jurisdiction_tax_lot_ids:
-                print "\nhere"
-                print jurisdiction_tax_lot_ids
                 jurisdiction_tax_lot_ids.append('Missing')
 
             # jurisdiction_tax_lot_ids = [""]

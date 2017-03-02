@@ -6,6 +6,7 @@
 """
 import datetime
 from decimal import Decimal
+from django.utils import timezone
 from unittest import TestCase
 
 from seed.lib.mcm import cleaners
@@ -65,7 +66,7 @@ class TestCleaners(TestCase):
         """We return the value if it's convertable to a python datetime."""
         self.assertEqual(
             cleaners.date_cleaner(u'2/12/2012'),
-            datetime.datetime(2012, 2, 12, 0, 0)
+            datetime.datetime(2012, 2, 12, 0, 0, tzinfo=timezone.get_current_timezone())
         )
         self.assertEqual(cleaners.date_cleaner(u''), None)
         self.assertEqual(cleaners.date_cleaner(u'some string'), None)
