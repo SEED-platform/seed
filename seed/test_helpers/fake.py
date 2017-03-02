@@ -20,6 +20,7 @@ import os
 import re
 import string
 from collections import namedtuple
+from django.utils import timezone
 
 import mock
 from django.db.models.fields.files import FieldFile
@@ -173,8 +174,7 @@ class FakeCycleFactory(BaseFake):
         if 'start' in kw:
             start = kw.pop('start')
         else:
-            start = self.fake.date_time_this_decade()
-            start = datetime.datetime(start.year, 0o1, 0o1)
+            start = datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone())
         if 'end' in kw:
             end = kw.pop('end')
         else:

@@ -101,12 +101,12 @@ class MappingColumns(object):
 
         # verify that the raw_column_name does not yet exist, if it does, then return false
         if raw_column in self.data.keys():
-            _log.warn('raw column mapping already exists for {}'.format(raw_column))
+            # _log.warn('raw column mapping already exists for {}'.format(raw_column))
             return False
 
         # if mappings are None or empty, then return false
         if mappings is None or not mappings:
-            _log.warn('there are no mappings for raw column {}'.format(raw_column))
+            # _log.warn('there are no mappings for raw column {}'.format(raw_column))
             return False
 
         self.data[raw_column] = {
