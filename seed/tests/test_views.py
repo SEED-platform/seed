@@ -59,6 +59,7 @@ COLUMNS_TO_SEND = DEFAULT_CUSTOM_COLUMNS + ['postal_code', 'pm_parent_property_i
 
 
 class MainViewTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1422,6 +1423,7 @@ class SearchViewTests(TestCase):
 
 
 class SearchBuildingSnapshotsViewTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1475,6 +1477,7 @@ class SearchBuildingSnapshotsViewTests(TestCase):
 
 
 class GetDatasetsViewsTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1561,6 +1564,7 @@ class GetDatasetsViewsTests(TestCase):
 
 
 class ImportFileViewsTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1612,6 +1616,7 @@ class ImportFileViewsTests(TestCase):
 
 @skip('Fix for new data model')
 class ReportViewsTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -2625,6 +2630,7 @@ class MatchTreeTests(TestCase):
 
 
 class InventoryViewTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',

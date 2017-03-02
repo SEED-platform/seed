@@ -354,7 +354,7 @@ def mock_queryset_factory(model, flatten=False, **kwargs):
         "{}_id".format(field.name)
         if field.get_internal_type() == 'ForeignKey' and flatten
         else field.name for field in fields
-        ]
+    ]
     Instance = namedtuple(model.__name__, field_names)
     count_name = field_names[0] if field_names[0] != auto_populate \
         else field_names[1]
@@ -363,6 +363,6 @@ def mock_queryset_factory(model, flatten=False, **kwargs):
         values = [
             kwargs[field][i] if field != auto_populate else i
             for field in field_names
-            ]
+        ]
         queryset.append(Instance(*values))
     return queryset

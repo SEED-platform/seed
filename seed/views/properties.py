@@ -1010,8 +1010,8 @@ class TaxLotViewSet(GenericViewSet):
         propToJurisdictionTL = defaultdict(list)
 
         # populate the mapping
-        for name, path in tuplePropToJurisdictionTL:
-            propToJurisdictionTL[name].append(path)
+        for name, pth in tuplePropToJurisdictionTL:
+            propToJurisdictionTL[name].append(pth)
 
         for join in joins:
             jurisdiction_tax_lot_ids = propToJurisdictionTL[join.property_view_id]
