@@ -45,6 +45,7 @@ Windfall Technical
 NREL
 - Nicholas Long (https://github.com/nllong)
 - Alex Swindler (https://github.com/axelstudios)
+- Edwin Lee (https://github.com/myoldmopar)
 
 ---
 Maalka
