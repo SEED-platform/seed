@@ -31,9 +31,6 @@ def forwards(apps, schema_editor):
                 c.table_name = 'PropertyState'
                 c.save()
 
-            if not c.is_extra_data:
-                print "    mapped column is not extra data, so the field display should be set!"
-
     print ""
     print ""
     print "-------------------------------------------------------------------"
