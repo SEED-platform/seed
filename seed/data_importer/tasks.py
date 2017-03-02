@@ -12,8 +12,6 @@ import copy
 import datetime
 import hashlib
 import operator
-import re
-import string
 import time
 import traceback
 from _csv import Error
@@ -44,7 +42,6 @@ from seed.decorators import lock_and_track
 from seed.green_button import xml_importer
 from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.mcm import cleaners, mapper, reader
-from seed.lib.mcm.data.ESPM import espm as espm_schema
 from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
@@ -83,17 +80,6 @@ from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache
 
 _log = get_task_logger(__name__)
-
-# Maximum number of possible matches under which we'll allow a system match.
-MAX_SEARCH = 5
-# Minimum confidence of two buildings being related.
-MIN_CONF = .80  # TODO: not used anymore?
-# Knows how to clean floats for ESPM data.
-ASSESSED_CLEANER = cleaners.Cleaner(seed_schema.schema)
-PORTFOLIO_CLEANER = cleaners.Cleaner(espm_schema.schema)
-PUNCT_REGEX = re.compile('[{0}]'.format(
-    re.escape(string.punctuation)
-))
 
 STR_TO_CLASS = {"TaxLotState": TaxLotState, "PropertyState": PropertyState}
 
@@ -761,14 +747,6 @@ def save_raw_data(file_pk, *args, **kwargs):
     _log.debug('Returning from save_raw_data')
     result = get_cache(prog_key)
     return result
-
-
-# TODO: Not used -- remove
-def _stringify(values):
-    """Take iterable of str and NoneTypes and reduce to space sep. str."""
-    return ' '.join(
-        [PUNCT_REGEX.sub('', value.lower()) for value in values if value]
-    )
 
 
 # def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
