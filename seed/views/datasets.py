@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 # encoding: utf-8
 """
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
@@ -6,6 +5,7 @@
 """
 
 import datetime
+from django.utils import timezone
 import logging
 
 from django.http import JsonResponse
@@ -293,9 +293,6 @@ class DatasetViewSet(viewsets.ViewSet):
         org_id = int(request.query_params.get('organization_id', None))
 
         try:
-            _log.info(
-                "create_dataset: getting Organization for id=({})".format(
-                    org_id))
             org = Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'organization_id not provided'},
@@ -303,8 +300,8 @@ class DatasetViewSet(viewsets.ViewSet):
         record = ImportRecord.objects.create(
             name=body['name'],
             app='seed',
-            start_time=datetime.datetime.now(),
-            created_at=datetime.datetime.now(),
+            start_time=timezone.now(),
+            created_at=timezone.now(),
             last_modified_by=request.user,
             super_organization=org,
             owner=request.user

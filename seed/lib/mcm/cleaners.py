@@ -7,6 +7,7 @@
 import re
 import string
 from datetime import datetime, date
+from django.utils import timezone
 
 import dateutil
 import dateutil.parser
@@ -94,6 +95,7 @@ def date_cleaner(value, *args):
         # the dateutil parser only parses strings, make sure to return None if not a string
         if isinstance(value, basestring):
             value = dateutil.parser.parse(value)
+            value = timezone.make_aware(value, timezone.get_current_timezone())
         else:
             value = None
     except (TypeError, ValueError):

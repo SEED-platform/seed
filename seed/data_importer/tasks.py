@@ -9,7 +9,6 @@ from __future__ import absolute_import
 
 import collections
 import copy
-import datetime
 import hashlib
 import operator
 import time
@@ -24,6 +23,7 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError
 from django.db.models import Q
+from django.utils import timezone
 from unidecode import unidecode
 
 from seed.cleansing.models import Cleansing
@@ -99,7 +99,7 @@ def finish_import_record(import_record_pk):
                 value = True
             setattr(import_record, '{0}_{1}'.format(action, state), value)
 
-    import_record.finish_time = datetime.datetime.utcnow()
+    import_record.finish_time = timezone.now()
     import_record.status = STATUS_READY_TO_MERGE
     import_record.save()
 
@@ -222,7 +222,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # Add custom mappings for cross-related data. Right now these are hard coded, but could
     # be a setting if so desired.
     if delimited_fields and delimited_fields[
-            'jurisdiction_tax_lot_id'] and 'PropertyState' in table_mappings.keys():
+        'jurisdiction_tax_lot_id'] and 'PropertyState' in table_mappings.keys():
         table_mappings['PropertyState'][
             delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
             'PropertyState', 'lot_number')
@@ -351,10 +351,11 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                                                  import_filename=import_file,
                                                  record_type=AUDIT_IMPORT)
 
-                except:
+                except Exception as e:
                     # Could not save the record for some reason. Report out and keep moving
                     # TODO: Need to address this and report back to the user which records were not imported  #noqa
-                    _log.error("ERROR: Could not save the model with row {}".format(row))
+                    _log.error(
+                        "Unable to save row the model with row {}:{}".format(type(e), e.message))
 
         # Make sure that we've saved all of the extra_data column names from the first item in list
         if map_model_obj:
@@ -468,7 +469,7 @@ def _cleanse_data(import_file_id, record_type='property'):
     tasks = [
         cleanse_data_chunk.s(record_type, ids, import_file_id, increment)
         for ids in id_chunks
-    ]
+        ]
 
     if tasks:
         # specify the chord as an immutable with .si
@@ -1140,7 +1141,7 @@ class EquivalencePartitioner(object):
             for class_key in equivalence_classes:
                 if self.calculate_key_equivalence(class_key,
                                                   cmp_key) and not self.identities_are_different(
-                        identities_for_equivalence[class_key], identity_key):
+                    identities_for_equivalence[class_key], identity_key):
 
                     # Must check the identities to make sure all is a-ok.
                     equivalence_classes[class_key].append(ndx)
