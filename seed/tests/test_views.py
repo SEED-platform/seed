@@ -59,7 +59,6 @@ COLUMNS_TO_SEND = DEFAULT_CUSTOM_COLUMNS + ['postal_code', 'pm_parent_property_i
 
 
 class MainViewTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1423,7 +1422,6 @@ class SearchViewTests(TestCase):
 
 
 class SearchBuildingSnapshotsViewTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1477,7 +1475,6 @@ class SearchBuildingSnapshotsViewTests(TestCase):
 
 
 class GetDatasetsViewsTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1564,7 +1561,6 @@ class GetDatasetsViewsTests(TestCase):
 
 
 class ImportFileViewsTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -1616,7 +1612,6 @@ class ImportFileViewsTests(TestCase):
 
 @skip('Fix for new data model')
 class ReportViewsTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -2630,7 +2625,6 @@ class MatchTreeTests(TestCase):
 
 
 class InventoryViewTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -2836,7 +2830,6 @@ class InventoryViewTests(TestCase):
             'page', 10,
             'per_page', 999999999
         )
-        print('Filter properties URL: ' + filter_properties_url)
         response = self.client.post(filter_properties_url, data={'columns': COLUMNS_TO_SEND})
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 0)
@@ -2884,7 +2877,6 @@ class InventoryViewTests(TestCase):
         self.assertEqual(results['status'], 'success')
         self.assertEqual(results['history'], [])
         self.assertEqual(results['property']['labels'], [self.status_label.pk])
-        self.assertEqual(results['source'], 'ImportFile')
         self.assertEqual(results['changed_fields'], None)
 
         expected_property = {
@@ -2920,9 +2912,6 @@ class InventoryViewTests(TestCase):
         tstate = rtaxlot['state']
         self.assertEqual(tstate['id'], taxlot_state.pk)
         self.assertEqual(tstate['address_line_1'], taxlot_state.address_line_1)
-
-    def test_get_property_history(self):
-        pass  # TODO
 
     def test_get_property_multiple_taxlots(self):
         property_state = self.property_state_factory.get_property_state(self.org)
