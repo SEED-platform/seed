@@ -795,6 +795,9 @@ class PropertyViewSet(GenericViewSet):
 
                     if not tree:
                         done_searching = True
+        elif log.name == 'Import Creation':
+            record = record_dict(log)
+            history.append(record)
 
         return history, master
 
@@ -1593,6 +1596,9 @@ class TaxLotViewSet(GenericViewSet):
 
                     if not tree:
                         done_searching = True
+        elif log.name == 'Import Creation':
+            record = record_dict(log)
+            history.append(record)
 
         return history, master
 
