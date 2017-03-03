@@ -297,33 +297,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 if hasattr(map_model_obj, 'clean'):
                     map_model_obj.clean()
 
-                # --- BEGIN TEMP HACK ----
-                # TODO: fix these in the cleaner, but for now just get things to work, yuck.
-                # It appears that the cleaner pulls from some schema somewhere that defines the
-                # data types... stay tuned.
-                if hasattr(map_model_obj,
-                           'recent_sale_date') and map_model_obj.recent_sale_date == '':
-                    _log.debug("recent_sale_date was an empty string, setting to None")
-                    map_model_obj.recent_sale_date = None
-                if hasattr(map_model_obj,
-                           'generation_date') and map_model_obj.generation_date == '':
-                    _log.debug("generation_date was an empty string, setting to None")
-                    map_model_obj.generation_date = None
-                if hasattr(map_model_obj, 'release_date') and map_model_obj.release_date == '':
-                    _log.debug("release_date was an empty string, setting to None")
-                    map_model_obj.release_date = None
-                if hasattr(map_model_obj, 'year_ending') and map_model_obj.year_ending == '':
-                    _log.debug("year_ending was an empty string, setting to None")
-                    map_model_obj.year_ending = None
-
-                # TODO: Second temporary hack.  This should not happen but somehow it does.
-                # Removing hack... this should be handled on the front end.
-                # if isinstance(map_model_obj, PropertyState):
-                #     if map_model_obj.pm_property_id is None and map_model_obj.address_line_1 is None and map_model_obj.custom_id_1 is None:
-                #         print "Skipping!"
-                #         continue
-                # --- END TEMP HACK ----
-
                 # There is a potential thread safe issue here:
                 # This method is called in parallel on production systems, so we need to make
                 # sure that the object hasn't already been created.
