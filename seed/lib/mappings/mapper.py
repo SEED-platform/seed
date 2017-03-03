@@ -8,8 +8,9 @@ import json
 import logging
 import os
 import re
-from os.path import realpath, join, dirname
 from collections import OrderedDict
+from os.path import realpath, join, dirname
+
 from unidecode import unidecode
 
 LINEAR_UNITS = set([u'ft', u'm', u'in'])
@@ -30,8 +31,7 @@ def _sanitize_and_convert_keys_to_regex(key):
     # force unicode
     if isinstance(key, unicode):
         key = unidecode(key)
-        _log.info("Mapping key was unicode, converted key to  {}".format(key))
-        # remove some ascii encoded items
+        # _log.info("Mapping key was unicode, converted key to  {}".format(key))
 
     # fix superscripts - copied from old code
     found = False

@@ -5,6 +5,7 @@
 :author
 """
 import datetime
+from django.utils import timezone
 import json
 import os
 import time
@@ -136,8 +137,8 @@ class TestApi(TestCase):
         self.cycle, _ = Cycle.objects.get_or_create(
             name=u'Test Hack Cycle 2015',
             organization=self.org,
-            start=datetime.datetime(2015, 1, 1),
-            end=datetime.datetime(2015, 12, 31),
+            start=datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime.datetime(2015, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
 
         self.headers = {'HTTP_AUTHORIZATION': '%s:%s' % (self.user.username, self.user.api_key)}

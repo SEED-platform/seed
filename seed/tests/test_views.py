@@ -6,6 +6,7 @@
 """
 import json
 from datetime import date, datetime, timedelta
+from django.utils import timezone
 from unittest import skip
 
 from django.core.cache import cache
@@ -1574,7 +1575,7 @@ class ImportFileViewsTests(TestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org = Organization.objects.create()
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        self.cycle = self.cycle_factory.get_cycle(start=datetime(2016, 1, 1))
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()))
         OrganizationUser.objects.create(user=self.user, organization=self.org)
 
         self.import_record = ImportRecord.objects.create(owner=self.user)
@@ -2648,7 +2649,7 @@ class InventoryViewTests(TestCase):
         self.org_user = OrganizationUser.objects.create(
             user=self.user, organization=self.org
         )
-        self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10))
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
         self.status_label = StatusLabel.objects.create(
             name='test', super_organization=self.org
         )

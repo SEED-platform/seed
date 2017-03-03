@@ -520,7 +520,9 @@ class PropertyViewSet(GenericViewSet):
             }, {
                 'name': 'recent_sale_date',
                 'displayName': 'Recent Sale Date',
-                'related': False
+                'type': 'date',
+                'cellFilter': 'date:\'MM-dd-yyyy\'',
+                'related': False,
             }, {
                 'name': 'conditioned_floor_area',
                 'displayName': 'Conditioned Floor Area',
@@ -553,6 +555,8 @@ class PropertyViewSet(GenericViewSet):
             }, {
                 'name': 'generation_date',
                 'displayName': 'PM Generation Date',
+                'type': 'date',
+                'cellFilter': 'date:\'MM-dd-yyyy\'',
                 'related': False
             }, {
                 'name': 'release_date',
@@ -1021,8 +1025,6 @@ class TaxLotViewSet(GenericViewSet):
             jurisdiction_tax_lot_ids = filter(lambda x: x is not None, jurisdiction_tax_lot_ids)
 
             if none_in_jurisdiction_tax_lot_ids:
-                print "\nhere"
-                print jurisdiction_tax_lot_ids
                 jurisdiction_tax_lot_ids.append('Missing')
 
             # jurisdiction_tax_lot_ids = [""]
@@ -1353,7 +1355,8 @@ class TaxLotViewSet(GenericViewSet):
             }, {
                 'name': 'recent_sale_date',
                 'displayName': 'Recent Sale Date',
-                'related': True
+                'related': True,
+                'type': 'datetime'
             }, {
                 'name': 'conditioned_floor_area',
                 'displayName': 'Conditioned Floor Area',

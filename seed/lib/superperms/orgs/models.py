@@ -5,12 +5,13 @@
 :author
 """
 import logging
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import pre_delete
+from django.utils import timezone
 
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 
@@ -145,8 +146,8 @@ class Organization(models.Model):
             Cycle.objects.create(
                 name=cycle_name,
                 organization=self,
-                start=datetime(year, 1, 1),
-                end=datetime(year + 1, 1, 1) - timedelta(seconds=1)
+                start=datetime(year, 1, 1, tzinfo=timezone.get_current_timezone()),
+                end=datetime(year + 1, 12, 31, tzinfo=timezone.get_current_timezone())
             )
 
     def is_member(self, user):
