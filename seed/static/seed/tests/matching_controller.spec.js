@@ -75,7 +75,7 @@ describe('Controller: matching_controller', function () {
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_dataset_detail_controller() {
-    var buildings_payload = {
+    var inventory_payload = {
       buildings: [
         {
           pm_property_id: 1,
@@ -100,12 +100,21 @@ describe('Controller: matching_controller', function () {
     };
     matching_controller = controller('matching_controller', {
       $scope: matching_controller_scope,
-      buildings_payload: buildings_payload,
+      inventory_payload: inventory_payload,
       all_columns: {
         fields: [{sort_column: 'pm_property_id'}]
       },
       default_columns: {
         columns: ['pm_property_id']
+      },
+      cycles: {
+        cycles: [{
+          end: '2016-01-01T07:00:00Z',
+          name: '2015',
+          start: '2015-01-01T07:00:00Z',
+          user: null,
+          id: 1
+        }]
       },
       import_file_payload: {
         import_file: {

@@ -48,7 +48,8 @@ dump.rdb
 log
 *.log
 .tox
-
+Vagrantfile
+.vagrant*
 # Ignore tmp test data
 seed/data_importer/tests/data/tmp_*
 seed/data_importer/tests/data/~*

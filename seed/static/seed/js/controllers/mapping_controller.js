@@ -58,21 +58,7 @@ angular.module('BE.seed.controller.mapping', [])
         db_field_columns[i] = $filter('titleCase')(db_field_columns[i]);
       }
 
-      $scope.typeahead_columns = db_field_columns.concat(extra_data_columns);
-
-      // remove dupes
-      function uniquify(params) {
-        var result = [];
-        for (i = 0; i < params.length; i++) {
-          var current = params[i];
-          if (!_.includes(result, current)) {
-            result.push(current);
-          }
-        }
-        return result;
-      }
-
-      $scope.typeahead_columns = uniquify($scope.typeahead_columns);
+      $scope.typeahead_columns = _.uniq(db_field_columns.concat(_.map(extra_data_columns, 'name')));
       $scope.tabs = {
         one_active: true,
         two_active: false,
@@ -184,12 +170,12 @@ angular.module('BE.seed.controller.mapping', [])
         value: 'TaxLotState'
       }];
       $scope.setAllInventoryTypes = function () {
-        _.each($scope.valids, function (valid) {
+        _.forEach($scope.valids, function (valid) {
           valid.suggestion_table_name = $scope.setAllFields.value;
           $scope.change(valid);
           // Check if the mapping button should be disabled.
-          $scope.disable_mapping_button();
-        })
+          $scope.check_fields();
+        });
       };
       $scope.setInventoryType = function (tcm) {
         var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
@@ -370,7 +356,7 @@ angular.module('BE.seed.controller.mapping', [])
       /*
        * get_mapped_buildings: gets mapped buildings for the preview table
        */
-      $scope.get_mapped_buildings = function () {
+      $scope.get_mapped_buildings = function (review) {
         $scope.import_file.progress = 0;
         $scope.save_mappings = true;
         $scope.review_mappings = true;
@@ -380,10 +366,12 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.save_mappings = false;
 
         spinner_utility.show();
-        $http.post('/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/', {}).then(function (response) {
+        $http.post('/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/', {
+          review: review
+        }).then(function (response) {
           spinner_utility.hide();
 
-          var data = response.data
+          var data = response.data;
           $scope.mappedData = data;
 
           var gridOptions = {
@@ -500,25 +488,25 @@ angular.module('BE.seed.controller.mapping', [])
         return mappings;
       };
 
-      /*
-       * show_mapping_progress: shows the progress bar and kicks off the mapping,
-       *   after saving column mappings
-       */
-      $scope.show_mapping_progress = function () {
-        $scope.import_file.progress = 0;
-        $scope.save_mappings = true;
-        mapping_service.save_mappings(
-          $scope.import_file.id,
-          $scope.get_mappings()
-        )
-          .then(function (data) {
-            // start mapping
-            mapping_service.start_mapping($scope.import_file.id).then(function (data) {
-              // save maps start mapping data
-              check_mapping(data.progress_key);
-            });
-          });
-      };
+      // As far as I can tell, this is never used.
+      // /*
+      //  * show_mapping_progress: shows the progress bar and kicks off the mapping,
+      //  *   after saving column mappings
+      //  */
+      // $scope.show_mapping_progress = function () {
+      //   $scope.import_file.progress = 0;
+      //   $scope.save_mappings = true;
+      //   mapping_service.save_mappings(
+      //     $scope.import_file.id,
+      //     $scope.get_mappings()
+      //   ).then(function (data) {
+      //       // start mapping
+      //       mapping_service.start_mapping($scope.import_file.id).then(function (data) {
+      //         // save maps start mapping data
+      //         check_mapping(data.progress_key);
+      //       });
+      //     });
+      // };
 
 
       /**
@@ -631,12 +619,39 @@ angular.module('BE.seed.controller.mapping', [])
         return false;
       };
 
-      $scope.disable_mapping_button = function () {
-        if ($scope.duplicates_present()){
-          angular.element('.mapping-button').prop('disabled', true);
-        } else {
-          angular.element('.mapping-button').prop('disabled', false);
+      /*
+       * empty_fields_present: used to disable or enable the 'show & review
+       *   mappings' button.
+       */
+      $scope.empty_fields_present = function () {
+        return Boolean(_.find($scope.raw_columns, {suggestion: ''}));
+      };
+
+      /*
+       * check_fields: called by ng-disabled for "Map Your Data" button.  Checks for duplicates and for required fields.
+       */
+      $scope.check_fields = function () {
+        return $scope.duplicates_present() || $scope.empty_fields_present() || !$scope.required_fields_present();
+      };
+
+      /*
+       * required_fields_present: check for presence of at least one field used by SEED to match records
+       */
+      $scope.required_fields_present = function () {
+        var required_fields = [
+          {header: 'Jurisdiction Tax Lot Id', inventory_type: 'TaxLotState'},
+          {header: 'Pm Property Id', inventory_type: 'PropertyState'},
+          {header: 'Custom Id 1', inventory_type: 'PropertyState'},
+          {header: 'Custom Id 1', inventory_type: 'TaxLotState'},
+          {header: 'Address Line 1', inventory_type: 'PropertyState'},
+          {header: 'Address Line 1', inventory_type: 'TaxLotState'}
+        ];
+
+        function compare_fields(x, y) {
+          return x.header == y.suggestion && x.inventory_type == y.suggestion_table_name;
         }
+
+        return _.intersectionWith(required_fields, $scope.raw_columns, compare_fields).length > 0;
       };
 
       $scope.backToMapping = function () {

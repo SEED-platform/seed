@@ -9,12 +9,12 @@ import json
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
+from django.http import JsonResponse
 from rest_framework import status
+from rest_framework.decorators import list_route, detail_route
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.decorators import list_route, detail_route
-from django.http import JsonResponse
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -42,26 +42,74 @@ def unique(lol):
 
 
 def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair):
-    # TODO: validate against organization_id
+    # TODO: validate against organization_id, make sure cycle_ids are the same
+
+    try:
+        property_view = PropertyView.objects.get(pk=property_id)
+    except PropertyView.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'property view with id {} does not exist'.format(property_id)
+        }, status=status.HTTP_404_NOT_FOUND)
+    try:
+        taxlot_view = TaxLotView.objects.get(pk=taxlot_id)
+    except TaxLotView.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'tax lot view with id {} does not exist'.format(taxlot_id)
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    pv_cycle = property_view.cycle_id
+    tv_cycle = taxlot_view.cycle_id
+
+    if pv_cycle != tv_cycle:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Cycle mismatch between PropertyView and TaxLotView'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
     if pair:
-        string = 'paired'
+        string = 'pair'
+
+        if TaxLotProperty.objects.filter(property_view_id=property_id,
+                                         taxlot_view_id=taxlot_id).exists():
+            return JsonResponse({
+                'status': 'success',
+                'message': 'taxlot {} and property {} are already {}ed'.format(taxlot_id,
+                                                                               property_id, string)
+            })
+        TaxLotProperty(primary=True, cycle_id=pv_cycle, property_view_id=property_id,
+                       taxlot_view_id=taxlot_id) \
+            .save()
+
         success = True
-        pass  # TODO: Do pairing between property_id and taxlot_id
     else:
-        string = 'unpaired'
+        string = 'unpair'
+
+        if not TaxLotProperty.objects.filter(property_view_id=property_id,
+                                             taxlot_view_id=taxlot_id).exists():
+            return JsonResponse({
+                'status': 'success',
+                'message': 'taxlot {} and property {} are already {}ed'.format(taxlot_id,
+                                                                               property_id, string)
+            })
+        TaxLotProperty.objects.filter(property_view_id=property_id, taxlot_view_id=taxlot_id) \
+            .delete()
+
         success = True
-        pass  # TODO: Do unpairing between property_id and taxlot_id
-    # TODO: Return a JsonResponse object
+
     if success:
         return JsonResponse({
             'status': 'success',
-            'message': 'taxlot {} and property {} are now {}'.format(taxlot_id, property_id, string)
+            'message': 'taxlot {} and property {} are now {}ed'.format(taxlot_id, property_id,
+                                                                       string)
         })
     else:
         return JsonResponse({
             'status': 'error',
-            'message': 'Could not pair because reasons, maybe bad organization id={}'.format(organization_id)
-        }, status=status.HTTP_403_FORBIDDEN)
+            'message': 'Could not {} because reasons, maybe bad organization id={}'.format(string,
+                                                                                           organization_id)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PropertyViewSet(GenericViewSet):
@@ -75,8 +123,9 @@ class PropertyViewSet(GenericViewSet):
         org_id = request.query_params.get('organization_id', None)
         cycle_id = request.query_params.get('cycle')
         if not org_id:
-            return JsonResponse({'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
-                                status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
+                status=status.HTTP_400_BAD_REQUEST)
         if cycle_id:
             cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
         else:
@@ -129,7 +178,8 @@ class PropertyViewSet(GenericViewSet):
         taxlot_view_ids = [j.taxlot_view_id for j in joins]
 
         # Get all tax lot views that are related
-        taxlot_views = TaxLotView.objects.select_related('taxlot', 'state', 'cycle').filter(pk__in=taxlot_view_ids)
+        taxlot_views = TaxLotView.objects.select_related('taxlot', 'state', 'cycle').filter(
+            pk__in=taxlot_view_ids)
 
         # Map tax lot view id to tax lot view's state data, so we can reference these easily and save some queries.
         taxlot_map = {}
@@ -146,7 +196,8 @@ class PropertyViewSet(GenericViewSet):
                 taxlot_state_data[extra_data_field] = extra_data_value
 
             # Only return the requested rows. speeds up the json string time
-            taxlot_state_data = {key: value for key, value in taxlot_state_data.items() if key in columns}
+            taxlot_state_data = {key: value for key, value in taxlot_state_data.items() if
+                                 key in columns}
 
             taxlot_map[taxlot_view.pk] = taxlot_state_data
             # Replace taxlot_view id with taxlot id
@@ -157,7 +208,8 @@ class PropertyViewSet(GenericViewSet):
         for join in joins:
             join_dict = taxlot_map[join.taxlot_view_id].copy()
             join_dict.update({
-                'primary': 'P' if join.primary else 'S'
+                'primary': 'P' if join.primary else 'S',
+                'taxlot_view_id': join.taxlot_view_id
             })
             try:
                 join_map[join.property_view_id].append(join_dict)
@@ -180,6 +232,7 @@ class PropertyViewSet(GenericViewSet):
             p['id'] = prop.property_id
 
             p['property_state_id'] = prop.state.id
+            p['property_view_id'] = prop.id
 
             p['campus'] = prop.property.campus
 
@@ -259,7 +312,7 @@ class PropertyViewSet(GenericViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('can_modify_data')
     @detail_route(methods=['PUT'])
     def pair(self, request, pk=None):
         """
@@ -281,13 +334,14 @@ class PropertyViewSet(GenericViewSet):
               paramType: path
         """
         # TODO: Call with PUT /api/v2/properties/1/pair/?taxlot_id=1&organization_id=1
-        organization_id = request.query_params.get('organization_id')
-        taxlot_id = request.query_params.get('taxlot_id')
-        return pair_unpair_property_taxlot(pk, taxlot_id, organization_id, True)
+        organization_id = int(request.query_params.get('organization_id'))
+        property_id = int(pk)
+        taxlot_id = int(request.query_params.get('taxlot_id'))
+        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, True)
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('can_modify_data')
     @detail_route(methods=['PUT'])
     def unpair(self, request, pk=None):
         """
@@ -309,9 +363,10 @@ class PropertyViewSet(GenericViewSet):
               paramType: path
         """
         # TODO: Call with PUT /api/v2/properties/1/unpair/?taxlot_id=1&organization_id=1
-        organization_id = request.query_params.get('organization_id')
-        taxlot_id = request.query_params.get('taxlot_id')
-        return pair_unpair_property_taxlot(pk, taxlot_id, organization_id, False)
+        organization_id = int(request.query_params.get('organization_id'))
+        property_id = int(pk)
+        taxlot_id = int(request.query_params.get('taxlot_id'))
+        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
 
     # @require_organization_id
     # @require_organization_membership
@@ -321,8 +376,10 @@ class PropertyViewSet(GenericViewSet):
     @list_route(methods=['GET'])
     def columns(self, request):
         """
+        # TODO: Move this to the columns API as this is not really a properties API
+
         List all property columns
-        ---
+
         parameters:
             - name: organization_id
               description: The organization_id for this user's organization
@@ -573,31 +630,34 @@ class PropertyViewSet(GenericViewSet):
             }
         ]
 
+        # don't return columns that have no table_name as these are the columns of the import files
         extra_data_columns = Column.objects.filter(
             organization_id=request.query_params['organization_id'],
             is_extra_data=True
-        )
+        ).exclude(table_name='').exclude(table_name=None)
 
         for c in extra_data_columns:
             name = c.column_name
             if name == 'id':
                 name += '_extra'
-            while any(col['name'] == name for col in columns):
+            while any(col['name'] == name and not col['related'] for col in columns):
                 name += '_extra'
 
-            columns.append({
-                'name': name,
-                # '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source])
-                'displayName': c.column_name,
-                'related': c.extra_data_source != Column.SOURCE_PROPERTY and c.table_name != 'PropertyState',
-                'extraData': True
-            })
+            display_name = c.column_name.title().replace('_', ' ')
+            columns.append(
+                {
+                    'name': name,
+                    'displayName': display_name,
+                    'related': c.table_name != 'PropertyState',
+                    'extraData': True
+                }
+            )
 
         return JsonResponse({'columns': columns})
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('can_modify_data')
     @list_route(methods=['DELETE'])
     def batch_delete(self, request):
         """
@@ -657,12 +717,14 @@ class PropertyViewSet(GenericViewSet):
         """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         result = self._get_property_view(pk, cycle_pk)
         return JsonResponse(result)
 
     def _get_taxlots(self, pk):
-        lot_view_pks = TaxLotProperty.objects.filter(property_view_id=pk).values_list('taxlot_view_id', flat=True)
+        lot_view_pks = TaxLotProperty.objects.filter(property_view_id=pk).values_list(
+            'taxlot_view_id', flat=True)
         lot_views = TaxLotView.objects.filter(pk__in=lot_view_pks).select_related('cycle', 'state')
         lots = []
         for lot in lot_views:
@@ -719,7 +781,8 @@ class PropertyViewSet(GenericViewSet):
         """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         result = self._get_property_view(pk, cycle_pk)
         if result.get('status', None) != 'error':
             property_view = result.pop('property_view')
@@ -749,7 +812,8 @@ class PropertyViewSet(GenericViewSet):
         """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         data = request.data
         result = self._get_property_view(pk, cycle_pk)
         if result.get('status', None) != 'error':
@@ -814,8 +878,9 @@ class TaxLotViewSet(GenericViewSet):
         org_id = request.query_params.get('organization_id', None)
         cycle_id = request.query_params.get('cycle')
         if not org_id:
-            return JsonResponse({'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
-                                status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
+                status=status.HTTP_400_BAD_REQUEST)
 
         if cycle_id:
             cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
@@ -863,7 +928,8 @@ class TaxLotViewSet(GenericViewSet):
 
         # Ids of taxlotviews to look up in m2m
         lot_ids = [l.pk for l in taxlot_views]
-        joins = TaxLotProperty.objects.filter(taxlot_view_id__in=lot_ids).select_related('property_view')
+        joins = TaxLotProperty.objects.filter(taxlot_view_id__in=lot_ids).select_related(
+            'property_view')
 
         # Get all ids of properties on these joins
         property_view_ids = [j.property_view_id for j in joins]
@@ -898,7 +964,8 @@ class TaxLotViewSet(GenericViewSet):
         join_map = {}
         # Get whole taxlotstate table:
         tuplePropToJurisdictionTL = tuple(
-            TaxLotProperty.objects.values_list('property_view_id', 'taxlot_view__state__jurisdiction_tax_lot_id'))
+            TaxLotProperty.objects.values_list('property_view_id',
+                                               'taxlot_view__state__jurisdiction_tax_lot_id'))
         from collections import defaultdict
 
         # create a mapping that defaults to an empty list
@@ -948,6 +1015,7 @@ class TaxLotViewSet(GenericViewSet):
             l['id'] = lot.taxlot_id
 
             l['taxlot_state_id'] = lot.state.id
+            l['taxlot_view_id'] = lot.id
 
             # All the related property states.
             l['related'] = join_map.get(lot.pk, [])
@@ -1025,7 +1093,7 @@ class TaxLotViewSet(GenericViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('can_modify_data')
     @detail_route(methods=['PUT'])
     def pair(self, request, pk=None):
         """
@@ -1047,13 +1115,14 @@ class TaxLotViewSet(GenericViewSet):
               paramType: path
         """
         # TODO: Call with PUT /api/v2/taxlots/1/pair/?property_id=1&organization_id=1
-        organization_id = request.query_params.get('organization_id')
-        property_id = request.query_params.get('property_id')
-        return pair_unpair_property_taxlot(property_id, pk, organization_id, True)
+        organization_id = int(request.query_params.get('organization_id'))
+        property_id = int(request.query_params.get('property_id'))
+        taxlot_id = int(pk)
+        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, True)
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('can_modify_data')
     @detail_route(methods=['PUT'])
     def unpair(self, request, pk=None):
         """
@@ -1075,9 +1144,10 @@ class TaxLotViewSet(GenericViewSet):
               paramType: path
         """
         # TODO: Call with PUT /api/v2/taxlots/1/unpair/?property_id=1&organization_id=1
-        organization_id = request.query_params.get('organization_id')
-        property_id = request.query_params.get('property_id')
-        return pair_unpair_property_taxlot(property_id, pk, organization_id, False)
+        organization_id = int(request.query_params.get('organization_id'))
+        property_id = int(request.query_params.get('property_id'))
+        taxlot_id = int(pk)
+        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
 
     # @require_organization_id
     # @require_organization_membership
@@ -1343,30 +1413,34 @@ class TaxLotViewSet(GenericViewSet):
             }
         ]
 
+        # don't return columns that have no table_name as these are the columns of the import files
         extra_data_columns = Column.objects.filter(
-            organization_id=request.GET['organization_id'],
+            organization_id=request.query_params['organization_id'],
             is_extra_data=True
-        )
+        ).exclude(table_name='').exclude(table_name=None)
 
         for c in extra_data_columns:
             name = c.column_name
             if name == 'id':
                 name += '_extra'
-            while any(col['name'] == name for col in columns):
+            while any(col['name'] == name and not col['related'] for col in columns):
                 name += '_extra'
 
-            columns.append({
-                'name': name,
-                'displayName': c.column_name,
-                'related': c.extra_data_source != Column.SOURCE_TAXLOT and c.table_name != 'TaxLotState',
-                'extraData': True
-            })
+            display_name = c.column_name.title().replace('_', ' ')
+            columns.append(
+                {
+                    'name': name,
+                    'displayName': display_name,
+                    'related': c.table_name != 'TaxLotState',
+                    'extraData': True
+                }
+            )
 
         return JsonResponse({'columns': columns})
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('can_modify_data')
     @list_route(methods=['DELETE'])
     def batch_delete(self, request):
         """
@@ -1428,7 +1502,8 @@ class TaxLotViewSet(GenericViewSet):
         """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         result = self._get_taxlot_view(pk, cycle_pk)
         return JsonResponse(result)
 
@@ -1494,7 +1569,8 @@ class TaxLotViewSet(GenericViewSet):
         """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         result = self._get_taxlot_view(pk, cycle_pk)
         if result.get('status', None) != 'error':
             taxlot_view = result.pop('taxlot_view')
@@ -1525,7 +1601,8 @@ class TaxLotViewSet(GenericViewSet):
         data = request.data
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         result = self._get_taxlot_view(pk, cycle_pk)
         if result.get('status', None) != 'error':
             taxlot_view = result.pop('taxlot_view')

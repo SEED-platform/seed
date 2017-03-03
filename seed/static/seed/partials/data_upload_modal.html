@@ -41,6 +41,11 @@
                         <select id="selected-cycle" name="selected-cycle" class="form-control input-sm" ng-model="selectedCycle" ng-options="cycle.name for cycle in cycles track by cycle.id"></select>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-sm-10 col-sm-offset-4">
+                        <a ui-sref="organization_cycles({organization_id: organization_id})" ng-click="cancel()">Manage available cycles.</a>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="row">
@@ -235,10 +240,10 @@
     </div>
     <div ng-switch-when="11">
         <div class="row text-center">
-            <button type="button" id="confirm-mapping" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(7); find_matches();">Confirm mappings &amp; start matching</button>
+            <button type="button" id="confirm-mapping" class="btn btn-primary col-sm-6 center-block" ng-click="save_mappings()">Confirm mappings &amp; start matching</button>
         </div>
     </div>
     <div class="row text-center">
-        <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()">Cancel</button>
+        <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()">Dismiss</button>
     </div>
 </div>

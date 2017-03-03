@@ -515,11 +515,11 @@ class TestApi(TestCase):
 
         # Map the buildings with new column mappings.
         payload = {
-            'file_id': import_file_id,
+            'remap': True,
             'organization_id': organization_id
         }
-        r = self.client.post('/app/remap_buildings/', data=json.dumps(payload),
-                             content_type='application/json', follow=True, **self.headers)
+        r = self.client.post('/api/v2/import_files/' + str(import_file_id) + '/perform_mapping/',
+                             data=json.dumps(payload), content_type='application/json', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
 

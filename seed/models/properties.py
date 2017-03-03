@@ -6,16 +6,16 @@
 """
 from __future__ import unicode_literals
 
-import pdb
 import logging
+import pdb
 
 from django.db import models
 from django_pgjson.fields import JsonField
 
-from seed.lib.superperms.orgs.models import Organization
-from seed.utils.generic import split_model_fields, obj_to_dict
-from seed.utils.address import normalize_address_str
+from auditlog import AUDIT_IMPORT
+from auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Cycle,
     StatusLabel,
@@ -26,9 +26,8 @@ from seed.models import (
     MERGE_STATE_UNKNOWN,
     TaxLotProperty
 )
-
-from auditlog import AUDIT_IMPORT
-from auditlog import DATA_UPDATE_TYPE
+from seed.utils.address import normalize_address_str
+from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.time import convert_datestr
 
 logger = logging.getLogger(__name__)
@@ -160,15 +159,12 @@ class PropertyState(models.Model):
             if not self.organization:
                 pdb.set_trace()
 
-            prop = Property.objects.create(
-                organization=self.organization
-            )
+            prop = Property.objects.create(organization=self.organization)
 
             pv = PropertyView.objects.create(property=prop, cycle=cycle, state=self)
 
-            # This is legacy but still needed here to have the tests pass.
+            # This may be legacy and is definitely still needed here to have the tests pass.
             self.data_state = DATA_STATE_MATCHING
-
             self.save()
 
             return pv

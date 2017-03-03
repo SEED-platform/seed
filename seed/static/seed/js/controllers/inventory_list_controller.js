@@ -13,7 +13,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'inventory',
     'cycles',
     'labels',
-    // 'columns',
+    'all_columns',
     'urls',
     'spinner_utility',
     'naturalSort',
@@ -26,7 +26,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               inventory,
               cycles,
               labels,
-              // columns,
+              all_columns,
               urls,
               spinner_utility,
               naturalSort) {
@@ -37,16 +37,15 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = inventory.results;
       $scope.pagination = inventory.pagination;
-      $scope.columns = inventory.columns;
+      $scope.columns = _.filter(inventory.columns, 'visible');
       $scope.total = $scope.pagination.total;
       $scope.number_per_page = 999999999;
+      $scope.restoring = false;
 
       $scope.labels = labels;
       $scope.selected_labels = [];
 
-      // var localStorageKey = 'grid.' + $scope.inventory_type;
-
-      // $scope.columns = inventory_service.loadSettings(localStorageKey, columns);
+      var localStorageKey = 'grid.' + $scope.inventory_type;
 
       $scope.clear_labels = function () {
         $scope.selected_labels = [];
@@ -122,7 +121,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         var options = {};
         if (col.type == 'number') options.filter = inventory_service.numFilter();
         else options.filter = inventory_service.textFilter();
-        if (col.type == 'numberStr') options.sortingAlgorithm = naturalSort;
+        if (col.type == 'text' || col.type == 'numberStr') options.sortingAlgorithm = naturalSort;
         if (col.name == 'number_properties' && col.related) options.treeAggregationType = 'total';
         else if (col.related || col.extraData) options.treeAggregationType = 'uniqueList';
         return _.defaults(col, options, defaults);
@@ -139,12 +138,14 @@ angular.module('BE.seed.controller.inventory_list', [])
         '  </a>' +
         '</div>',
         enableColumnMenu: false,
+        enableColumnMoving: false,
         enableColumnResizing: false,
         enableFiltering: false,
         enableHiding: false,
         enableSorting: false,
         exporterSuppressExport: true,
         pinnedLeft: true,
+        visible: true,
         width: 30
       });
 
@@ -201,7 +202,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           aggregations = _.pickBy(_.mapValues(aggregations, function (values, key) {
             var cleanedValues = _.uniq(_.without(values, undefined, null, ''));
             if (key == 'number_properties') return _.sum(cleanedValues) || null;
-            else return _.join(_.uniq(cleanedValues), '; ');
+            else return _.join(_.uniq(cleanedValues).sort(naturalSort), '; ');
           }), function (result) {
             return _.isNumber(result) || !_.isEmpty(result);
           });
@@ -361,7 +362,41 @@ angular.module('BE.seed.controller.inventory_list', [])
           col.pinnedLeft = col.renderContainer == 'left' && col.visible;
           return col;
         });
-        inventory_service.saveSettings(localStorageKey, cols);
+        var oldSettings = inventory_service.loadSettings(localStorageKey, angular.copy(all_columns));
+        oldSettings = _.map(oldSettings, function (col) {
+          col.pinnedLeft = false;
+          col.visible = false;
+          return col;
+        });
+        var visibleColumns = _.map(cols, 'name');
+        oldSettings = _.filter(oldSettings, function (col) {
+          return !_.includes(visibleColumns, col.name);
+        });
+
+        inventory_service.saveSettings(localStorageKey, cols.concat(oldSettings));
+      };
+
+      var saveGridSettings = function () {
+        if (!$scope.restoring) {
+          var columns = _.filter($scope.gridApi.saveState.save().columns, function (col) {
+            return _.keys(col.sort).length + (_.get(col, 'filters[0].term', '') || '').length > 0;
+          });
+          inventory_service.saveGridSettings(localStorageKey + '.sort', {
+            columns: columns
+          });
+        }
+      };
+
+      var restoreGridSettings = function () {
+        $scope.restoring = true;
+        var state = inventory_service.loadGridSettings(localStorageKey + '.sort');
+        if (!_.isNull(state)) {
+          state = JSON.parse(state);
+          $scope.gridApi.saveState.restore($scope, state);
+        }
+        _.defer(function () {
+          $scope.restoring = false;
+        });
       };
 
       $scope.gridOptions = {
@@ -375,6 +410,16 @@ angular.module('BE.seed.controller.inventory_list', [])
         flatEntityAccess: true,
         gridMenuShowHideColumns: false,
         showTreeExpandNoChildren: false,
+        saveFocus: false,
+        saveGrouping: false,
+        saveGroupingExpandedStates: false,
+        saveOrder: false,
+        savePinning: false,
+        saveScroll: false,
+        saveSelection: false,
+        saveTreeView: false,
+        saveVisible: false,
+        saveWidths: false,
         columnDefs: $scope.columns,
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
@@ -387,8 +432,19 @@ angular.module('BE.seed.controller.inventory_list', [])
             angular.element($window).off('resize', debouncedHeightUpdate);
           });
 
-          gridApi.colMovable.on.columnPositionChanged($scope, saveSettings);
+          gridApi.colMovable.on.columnPositionChanged($scope, function () {
+            // Ensure that 'id' remains first
+            var idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
+            if (idIndex != 2) {
+              var col = $scope.gridApi.grid.columns[idIndex];
+              $scope.gridApi.grid.columns.splice(idIndex, 1);
+              $scope.gridApi.grid.columns.splice(2, 0, col);
+            }
+            saveSettings();
+          });
           gridApi.core.on.columnVisibilityChanged($scope, saveSettings);
+          gridApi.core.on.filterChanged($scope, _.debounce(saveGridSettings, 150));
+          gridApi.core.on.sortChanged($scope, _.debounce(saveGridSettings, 150));
           gridApi.pinning.on.columnPinned($scope, saveSettings);
 
           var selectionChanged = function () {
@@ -410,6 +466,10 @@ angular.module('BE.seed.controller.inventory_list', [])
               }
             });
           }, 150));
+
+          _.defer(function () {
+            restoreGridSettings();
+          });
         }
       };
 

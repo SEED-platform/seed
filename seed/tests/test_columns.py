@@ -168,7 +168,9 @@ class TestColumns(TestCase):
         self.assertTrue(test_mapping['Ewok'], 'Hattin')
 
         c_wookiee = Column.objects.filter(column_name='Wookiee')[0]
-        self.assertEqual(c_wookiee.is_extra_data, True)
+        # Since the raw column is wookiee, then it should NOT be extra data
+        self.assertEqual(c_wookiee.is_extra_data, False)
+        self.assertEqual(c_wookiee.table_name, '')
         c_merovingian = Column.objects.filter(column_name='Merovingian')[0]
         self.assertEqual(c_merovingian.is_extra_data, True)
         self.assertEqual(c_merovingian.table_name, 'TaxLotState')

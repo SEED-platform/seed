@@ -68,8 +68,8 @@
         <div class="section_header fixed_height">
             <div class="left section_action_container"></div>
             <div class="right section_action_container section_action_btn">
-                <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="monitor_typeahead_list()" ng-click="remap_buildings()" ng-hide="import_file.matching_done">Map Your Data</button>
-                <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done">Review Mapped Data</button>
+                <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="check_fields()" ng-click="remap_buildings()" ng-hide="import_file.matching_done">Map Your Data</button>
+                <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings(true)" ng-show="import_file.matching_done">Review Mapped Data</button>
             </div>
         </div>
     </div>
@@ -77,6 +77,9 @@
         <div class="section_content">
             <div class="table_list_container mapping" ng-cloak>
                 <div class="alert warning file_error_messages" ng-show="has_mapping_error_messages()" ng-bind-html="mapping_error_messages"></div>
+                <div class="alert alert-danger" ng-show="!required_fields_present()">At least one of the following is required: Address Line 1, Custom Id 1, Jurisdiction Tax Lot Id (with inventory type Tax Lot), or Pm Property Id (with inventory type Property).</div>
+                <div class="alert alert-danger" ng-show="duplicates_present()">Please review SEED headers.  Duplicate values are not allowed.</div>
+                <div class="alert alert-danger" ng-show="empty_fields_present()">Please review SEED headers.  Empty values are not allowed.</div>
                 <table class="table table-striped" ng-hide="review_mappings">
                     <thead>
                         <tr>
@@ -112,8 +115,8 @@
                             <td class="check is_aligned_center">
                                 <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
                             </td>
-                            <td ng-class="{'danger': tcm.is_duplicate == true, 'disable-mapping-btn': tcm.is_duplicate == true}" id="duplicate-row-input-{$ $index $}">
-                                <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:30" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" ng-keyup="disable_mapping_button()" ng-blur="disable_mapping_button()" typeahead-on-select='change(tcm)' id="duplicate-row-input-box-{$ $index $}">
+                            <td ng-class="{'danger': tcm.is_duplicate == true}" id="duplicate-row-input-{$ $index $}">
+                                <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:30" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)' id="duplicate-row-input-box-{$ $index $}">
                             </td>
                             <td class="check is_aligned_center">
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
@@ -159,8 +162,8 @@
                             <td class="check is_aligned_center">
                                 <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
                             </td>
-                            <td ng-class="{'danger': tcm.is_duplicate == true, 'disable-mapping-btn': tcm.is_duplicate == true}" id="mapped-row-input-{$ $index $}">
-                                <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" ng-keyup="disable_mapping_button()" ng-blur="disable_mapping_button()" typeahead-on-select='change(tcm)' id="mapped-row-input-box-{$ $index $}">
+                            <td ng-class="{'danger': tcm.is_duplicate == true}" id="mapped-row-input-{$ $index $}">
+                                <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)' id="mapped-row-input-box-{$ $index $}">
                             </td>
                             <!--td class="check is_aligned_center">
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
@@ -169,8 +172,8 @@
                             <td>
                                 <strong id="mapped-header-{$ $index $}">{$tcm.name$}</strong>
                             </td>
-                            <td ng-class="{'danger': tcm.is_duplicate == true, 'disable-mapping-btn': tcm.is_duplicate == true}" id="mapped-row-type-{$ $index $}">
-                                <select ng-model="tcm.suggestion_table_name" ng-change="setInventoryType(tcm); change(tcm); disable_mapping_button()" ng-blur="disable_mapping_button()">
+                            <td ng-class="{'danger': tcm.is_duplicate == true}" id="mapped-row-type-{$ $index $}">
+                                <select ng-model="tcm.suggestion_table_name" ng-change="setInventoryType(tcm); change(tcm)">
                                     <option value="PropertyState">Property</option>
                                     <option value="TaxLotState">Tax Lot</option>
                                 </select>
@@ -249,8 +252,8 @@
             </button>
         </div>
         <div class="col-sm-6" ng-hide="review_mappings">
-            <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="monitor_typeahead_list()" ng-click="remap_buildings()" ng-hide="import_file.matching_done" id="map-data-button">Map Your Data</button>
-            <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done">Review Mapped Data</button>
+            <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="check_fields()" ng-click="remap_buildings()" ng-hide="import_file.matching_done" id="map-data-button">Map Your Data</button>
+            <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings(true)" ng-show="import_file.matching_done">Review Mapped Data</button>
         </div>
         <div class="col-sm-6" ng-show="show_mapped_buildings">
             <a ui-sref="mapping({importfile_id: import_file.id})">

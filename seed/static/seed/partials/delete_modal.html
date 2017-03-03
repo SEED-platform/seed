@@ -9,20 +9,20 @@
 <div class="modal-body row" style="padding-bottom: 0;">
     <div class="col-sm-12" ng-show="delete_state == 'delete'">
         Are you sure you want to delete
-        <span ng-if="property_states.length"><strong>{$ property_states.length $}</strong> propert{$ property_states.length > 1 ? 'ies' : 'y' $}</span><!--
+        <span ng-if="property_states.length"><strong>{$ property_states.length $}</strong> <ng-pluralize count="property_states.length" when="{'one': 'property', 'other': 'properties'}"></ng-pluralize></span><!--
      --><span ng-if="property_states.length && taxlot_states.length"> and </span><!--
-     --><span ng-if="taxlot_states.length"><strong>{$ taxlot_states.length $}</strong> tax lot{$ taxlot_states.length > 1 ? 's' : '' $}</span>?
+     --><span ng-if="taxlot_states.length"><strong>{$ taxlot_states.length $}</strong> <ng-pluralize count="taxlot_states.length" when="{'one': 'tax lot', 'other': 'tax lots'}"></ng-pluralize></span>?
     </div>
     <div class="col-sm-12" ng-show="delete_state == 'incomplete' || delete_state == 'success'">
         <div ng-if="(deletedProperties + deletedTaxlots) > 0">
-            <span ng-if="deletedProperties"><strong>{$ deletedProperties $}</strong> propert{$ deletedProperties > 1 ? 'ies' : 'y' $}</span><!--
+            <span ng-if="deletedProperties"><strong>{$ deletedProperties $}</strong> <ng-pluralize count="deletedProperties" when="{'one': 'property', 'other': 'properties'}"></ng-pluralize></span><!--
          --><span ng-if="deletedProperties && deletedTaxlots"> and </span><!--
-         --><span ng-if="deletedTaxlots"><strong>{$ deletedTaxlots $}</strong> tax lot{$ deletedTaxlots > 1 ? 's' : '' $}</span>
-            ha{$ (deletedProperties + deletedTaxlots) == 1 ? 's' : 've' $} been deleted</div>
+         --><span ng-if="deletedTaxlots"><strong>{$ deletedTaxlots $}</strong> <ng-pluralize count="deletedTaxlots" when="{'one': 'tax lot', 'other': 'tax lots'}"></ng-pluralize></span>
+            <ng-pluralize count="deletedProperties + deletedTaxlots" when="{'one': 'has', 'other': 'have'}"></ng-pluralize> been deleted
         </div>
-        <div ng-if="(deletedProperties + deletedTaxlots) == 0">
-            <span>No action was taken</span>
-        </div>
+    </div>
+    <div ng-if="(deletedProperties + deletedTaxlots) == 0">
+        <span>No action was taken</span>
     </div>
     <div class="col-sm-12" ng-show="delete_state == 'fail'">{$ error $}</div>
 </div>

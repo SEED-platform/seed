@@ -37,7 +37,7 @@ angular.module('BE.seed.controller.cycle_admin', [])
         if (form.$invalid) {
           return;
         }
-        cycle_service.create_cycle_for_org($scope.new_cycle, $scope.org.id).then(function (result) {
+        cycle_service.create_cycle_for_org($scope.new_cycle, $scope.org.id).then(function (data) {
             var msg = 'Created new Cycle ' + getTruncatedName($scope.new_cycle.name);
             Notification.primary(msg);
             initialize_new_cycle();

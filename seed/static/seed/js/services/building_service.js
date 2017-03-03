@@ -70,22 +70,6 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         });
       };
 
-      // building_factory.search_mapping_results = function (query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id, project_id, project_slug) {
-      //   spinner_utility.show();
-      //   return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', {}).then(function (response) {
-      //     spinner_utility.hide();
-      //     return response.data;
-      //   });
-      // };
-      //
-      // building_factory.search_matching_buildings = function (query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id) {
-      //   spinner_utility.show({top: '75%'}, $('.section_content')[0]);
-      //   return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', {}).then(function (response) {
-      //     spinner_utility.hide();
-      //     return response.data;
-      //   });
-      // };
-
       building_factory.save_match = function (source_building_id, target_building_id, create_match) {
         return $http.post(urls.save_match, {
           source_building_id: source_building_id,
@@ -121,7 +105,9 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
 
       building_factory.get_matching_results = function (import_file_id) {
         return $http.get("/api/v2/import_files/" + import_file_id + "/matching_results/", {
-          params: {}
+          params: {
+            organization_id: user_service.get_organization().id
+          }
         }).then(function (response) {
           return response.data;
         });

@@ -21,7 +21,6 @@ from seed.views.main import (
     get_coparents,
     delete_duplicates_from_import_file,
     delete_file,
-    remap_buildings,
     public_search, export_buildings,
     export_buildings_progress,
     export_buildings_download,
@@ -99,8 +98,6 @@ urlpatterns = [
     # ),
 
     # New MCM endpoints
-    url(r'^' + apiv1 + r'remap_buildings/$', remap_buildings,
-        name='remap_buildings'),
     url(
         r'^' + apiv1 + r'public_search/$',
         public_search,

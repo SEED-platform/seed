@@ -25,9 +25,6 @@ from rest_framework.decorators import detail_route, api_view
 from seed import tasks
 from seed.authentication import SEEDAuthentication
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.data_importer.tasks import (
-    remap_data,
-)
 from seed.decorators import (
     ajax_request, ajax_request_class, get_prog_key, require_organization_id
 )
@@ -1137,38 +1134,6 @@ def delete_file(request):
     return {
         'status': 'success',
     }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def remap_buildings(request):
-    """
-    Re-run the background task to remap buildings as if it hadn't happened at
-    all. Deletes mapped buildings for a given ImportRecord, resets status.
-
-    NB: will not work if buildings have been merged into CanonicalBuilings.
-
-    Payload::
-
-        {
-            'file_id': The ID of the ImportFile to be remapped
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    body = json.loads(request.body)
-    import_file_id = body.get('file_id')
-    if not import_file_id:
-        return {'status': 'error', 'message': 'Import File does not exist'}
-
-    return remap_data(import_file_id)
 
 
 @api_endpoint
