@@ -44,13 +44,12 @@ angular.module('BE.seed.controller.matching', [])
       $scope.search = angular.copy(search_service);
       $scope.search.url = urls.search_buildings;
 
-      $scope.import_file = import_file_payload.import_file;
+      $scope.import_files = import_file_payload.import_file;
       var validCycles = _.uniq(_.map(import_file_payload.import_file.dataset.importfiles, 'cycle'));
       $scope.cycles = _.filter(cycles.cycles, function (cycle) {
         return _.includes(validCycles, cycle.id);
       });
-      $scope.selectedCycle = _.find($scope.cycles, {id: $scope.import_file.cycle});
-
+      $scope.selectedCycle = _.find($scope.cycles, {id: $scope.import_files.cycle});
       if ($scope.inventory_type == 'properties') {
         $scope.inventory = inventory_payload.properties;
       } else {
@@ -82,7 +81,7 @@ angular.module('BE.seed.controller.matching', [])
       $scope.columns = [];
       $scope.alerts = [];
       $scope.file_select = {
-        file: $scope.import_file.dataset.importfiles[0]
+        file: $scope.import_files.dataset.importfiles[0]
       };
       $scope.detail = {
         match_tree: []
@@ -369,6 +368,7 @@ angular.module('BE.seed.controller.matching', [])
       $scope.update_number_matched = function () {
         building_services.get_matching_results($scope.file_select.file.id)
           .then(function (data) {
+            // console.log('type: ', $scope.inventory_type)
             if ($scope.inventory_type == 'properties') {
               $scope.matched_buildings = data.properties.matched;
               $scope.unmatched_buildings = data.properties.unmatched;
@@ -397,7 +397,7 @@ angular.module('BE.seed.controller.matching', [])
 
       $scope.cycleChanged = function () {
         var initial = _.isUndefined($scope.import_files);
-        $scope.import_files = _.filter($scope.import_file.dataset.importfiles, function (file) {
+        $scope.import_files = _.filter($scope.import_files.dataset.importfiles, function (file) {
           return file.cycle == $scope.selectedCycle.id;
         });
         if (!initial) {

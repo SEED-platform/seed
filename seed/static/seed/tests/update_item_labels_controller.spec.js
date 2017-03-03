@@ -1,6 +1,6 @@
-describe('controller: update_building_labels_modal_controller', function () {
+describe('controller: update_item_labels_modal_controller', function () {
   // globals set up and used in each test scenario
-  var mock_label_service, mock_search_service, scope, controller, modal_state, mock_notification, mock_new_label_form;
+  var mock_label_service, mock_search_service, scope, controller, modal_state, mock_notification, mock_new_label_form, mock_inventory_ids;
   var update_controller, update_controller_scope, modalInstance, labels;
 
 
@@ -79,7 +79,7 @@ describe('controller: update_building_labels_modal_controller', function () {
   });
 
   // inject AngularJS dependencies for the controller
-  beforeEach(inject(function ($controller, $rootScope, $uibModal, $q, label_service, search_service, Notification) {
+  beforeEach(inject(function ($controller, $rootScope, $uibModal, $q, label_service, Notification) {
 
     controller = $controller;
     scope = $rootScope;
@@ -88,7 +88,6 @@ describe('controller: update_building_labels_modal_controller', function () {
     // mock the label_service factory methods used in the controller
     // and return their promises (if necessary).
     mock_label_service = label_service;
-    mock_search_service = search_service;
 
     spyOn(mock_label_service, 'get_labels')
       .andCallFake(function () {
@@ -102,23 +101,9 @@ describe('controller: update_building_labels_modal_controller', function () {
           return $q.when(return_obj_for_create_label);
         }
       );
-    spyOn(mock_label_service, 'update_building_labels')
-      .andCallFake(function () {
-          // return $q.reject for error scenario
-          return $q.when({status: 'success'});
-        }
-      );
     spyOn(mock_label_service, 'get_available_colors')
       .andCallFake(function () {
           return available_colors;
-        }
-      );
-
-    //mock the search_service service
-    spyOn(mock_search_service, 'construct_search_query')
-      .andCallFake(function () {
-          // return $q.reject for error scenario
-          return {};
         }
       );
 
@@ -142,7 +127,7 @@ describe('controller: update_building_labels_modal_controller', function () {
   }));
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_update_building_labels_modal_controller() {
+  function create_update_item_labels_modal_controller() {
 
 
     // We only need to mock three properties of the search object for this controller
@@ -170,7 +155,7 @@ describe('controller: update_building_labels_modal_controller', function () {
     }];
 
     //function ($scope, $uibModalInstance, label_service, search, notification) {
-    update_controller = controller('update_building_labels_modal_controller', {
+    update_controller = controller('update_item_labels_modal_controller', {
       $scope: update_controller_scope,
       $uibModalInstance: {
         close: function () {
@@ -181,7 +166,8 @@ describe('controller: update_building_labels_modal_controller', function () {
         }
       },
       label_service: mock_label_service,
-      search: mock_search_service,
+      inventory_ids: [],
+      inventory_type: 'properties',
       notification: mock_notification
     });
 
@@ -194,7 +180,7 @@ describe('controller: update_building_labels_modal_controller', function () {
   it('should initialize the default \'new\' label', function () {
 
     // arrange
-    create_update_building_labels_modal_controller();
+    create_update_item_labels_modal_controller();
     // act
     update_controller_scope.$digest();
     update_controller_scope.initialize_new_label();
@@ -207,7 +193,7 @@ describe('controller: update_building_labels_modal_controller', function () {
   it('should create a new label and add it to labels array', function () {
 
     //arrange
-    create_update_building_labels_modal_controller();
+    create_update_item_labels_modal_controller();
     //assume user entered following value on form and bindings were updated
     update_controller_scope.new_label = new_label_by_user;
     update_controller_scope.newLabelForm = mock_new_label_form;

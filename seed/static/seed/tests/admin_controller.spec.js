@@ -1,7 +1,7 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
-describe('controller: seed_admin_controller', function(){
+describe('controller: admin_controller', function(){
     var mock_organization_service;
 
     beforeEach(function() {
@@ -9,7 +9,7 @@ describe('controller: seed_admin_controller', function(){
     });
     beforeEach(inject(function($controller, $rootScope, user_service, organization_service, $q) {
         this.scope = $rootScope.$new();
-        $controller('seed_admin_controller', {
+        $controller('admin_controller', {
             $scope: this.scope,
             user_service: user_service,
             organization_service: organization_service,
@@ -19,7 +19,7 @@ describe('controller: seed_admin_controller', function(){
         });
 
         mock_organization_service = organization_service;
-        spyOn(mock_organization_service, 'delete_organization_buildings')
+        spyOn(mock_organization_service, 'delete_organization_inventory')
                 .andCallFake(function(){
                     // return $q.reject for error scenario
                     return $q.when(
@@ -43,14 +43,14 @@ describe('controller: seed_admin_controller', function(){
         });
     });
 
-    it('should call the delete_organization_buildings service', function() {
+    it('should call the delete_org_inventory service', function() {
         // arrange
 
         // act
-        this.scope.delete_org_buildings({org_id: 44});
+        this.scope.delete_org_inventory({org_id: 44});
 
         // assertions
-        expect(mock_organization_service.delete_organization_buildings)
+        expect(mock_organization_service.delete_organization_inventory)
         .toHaveBeenCalledWith(44);
     });
 
@@ -60,12 +60,12 @@ describe('controller: seed_admin_controller', function(){
         confirm = jasmine.createSpy();
 
         // act
-        this.scope.confirm_buildings_delete({org_id: 44, name: 'my new org'});
+        this.scope.confirm_inventory_delete({org_id: 44, name: 'my new org'});
 
         // assertions
         expect(confirm).toHaveBeenCalledWith(
             'Are you sure you want to PERMANENTLY delete \'' +
-            'my new org' + '\'s buildings?');
+            'my new org' + '\'s properties and tax lots?');
 
         confirm = oldConfirm;
     });
