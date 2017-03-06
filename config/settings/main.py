@@ -40,10 +40,6 @@ STATIC_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME
 
 # django-compressor
 COMPRESS_ENABLED = True
-if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
-    COMPRESS_PRECOMPILERS = ()
-    COMPRESS_CSS_FILTERS = ['compressor.filters.css_default.CssAbsoluteFilter']
-    COMPRESS_JS_FILTERS = []
 
 # Celery Backend
 cache_settings = aws.get_cache_endpoint()

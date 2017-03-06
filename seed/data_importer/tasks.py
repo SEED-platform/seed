@@ -9,11 +9,8 @@ from __future__ import absolute_import
 
 import collections
 import copy
-import datetime
 import hashlib
 import operator
-import re
-import string
 import time
 import traceback
 from _csv import Error
@@ -26,6 +23,7 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError
 from django.db.models import Q
+from django.utils import timezone
 from unidecode import unidecode
 
 from seed.cleansing.models import Cleansing
@@ -44,7 +42,6 @@ from seed.decorators import lock_and_track
 from seed.green_button import xml_importer
 from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.mcm import cleaners, mapper, reader
-from seed.lib.mcm.data.ESPM import espm as espm_schema
 from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
@@ -80,17 +77,6 @@ from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache
 
 _log = get_task_logger(__name__)
 
-# Maximum number of possible matches under which we'll allow a system match.
-MAX_SEARCH = 5
-# Minimum confidence of two buildings being related.
-MIN_CONF = .80  # TODO: not used anymore?
-# Knows how to clean floats for ESPM data.
-ASSESSED_CLEANER = cleaners.Cleaner(seed_schema.schema)
-PORTFOLIO_CLEANER = cleaners.Cleaner(espm_schema.schema)
-PUNCT_REGEX = re.compile('[{0}]'.format(
-    re.escape(string.punctuation)
-))
-
 STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
 
 
@@ -113,7 +99,7 @@ def finish_import_record(import_record_pk):
                 value = True
             setattr(import_record, '{0}_{1}'.format(action, state), value)
 
-    import_record.finish_time = datetime.datetime.utcnow()
+    import_record.finish_time = timezone.now()
     import_record.status = STATUS_READY_TO_MERGE
     import_record.save()
 
@@ -311,33 +297,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 if hasattr(map_model_obj, 'clean'):
                     map_model_obj.clean()
 
-                # --- BEGIN TEMP HACK ----
-                # TODO: fix these in the cleaner, but for now just get things to work, yuck.
-                # It appears that the cleaner pulls from some schema somewhere that defines the
-                # data types... stay tuned.
-                if hasattr(map_model_obj,
-                           'recent_sale_date') and map_model_obj.recent_sale_date == '':
-                    _log.debug("recent_sale_date was an empty string, setting to None")
-                    map_model_obj.recent_sale_date = None
-                if hasattr(map_model_obj,
-                           'generation_date') and map_model_obj.generation_date == '':
-                    _log.debug("generation_date was an empty string, setting to None")
-                    map_model_obj.generation_date = None
-                if hasattr(map_model_obj, 'release_date') and map_model_obj.release_date == '':
-                    _log.debug("release_date was an empty string, setting to None")
-                    map_model_obj.release_date = None
-                if hasattr(map_model_obj, 'year_ending') and map_model_obj.year_ending == '':
-                    _log.debug("year_ending was an empty string, setting to None")
-                    map_model_obj.year_ending = None
-
-                # TODO: Second temporary hack.  This should not happen but somehow it does.
-                # Removing hack... this should be handled on the front end.
-                # if isinstance(map_model_obj, PropertyState):
-                #     if map_model_obj.pm_property_id is None and map_model_obj.address_line_1 is None and map_model_obj.custom_id_1 is None:
-                #         print "Skipping!"
-                #         continue
-                # --- END TEMP HACK ----
-
                 # There is a potential thread safe issue here:
                 # This method is called in parallel on production systems, so we need to make
                 # sure that the object hasn't already been created.
@@ -365,10 +324,11 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                                                  import_filename=import_file,
                                                  record_type=AUDIT_IMPORT)
 
-                except:
+                except Exception as e:
                     # Could not save the record for some reason. Report out and keep moving
                     # TODO: Need to address this and report back to the user which records were not imported  #noqa
-                    _log.error("ERROR: Could not save the model with row {}".format(row))
+                    _log.error(
+                        "Unable to save row the model with row {}:{}".format(type(e), e.message))
 
         # Make sure that we've saved all of the extra_data column names from the first item in list
         if map_model_obj:
@@ -759,14 +719,6 @@ def save_raw_data(file_pk, *args, **kwargs):
     return result
 
 
-# TODO: Not used -- remove
-def _stringify(values):
-    """Take iterable of str and NoneTypes and reduce to space sep. str."""
-    return ' '.join(
-        [PUNCT_REGEX.sub('', value.lower()) for value in values if value]
-    )
-
-
 # def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
 #     """Seek IDs and save our snapshot match.
 #
@@ -847,7 +799,8 @@ def match_buildings(file_pk, user_pk):
         }
 
     if import_file.cycle is None:
-        print "DANGER"
+        _log.warn("This should never happen in production")
+
     _match_properties_and_taxlots.delay(file_pk, user_pk)
 
     return {
@@ -856,74 +809,6 @@ def match_buildings(file_pk, user_pk):
         'progress_key': prog_key
     }
 
-
-# def handle_id_matches(unmatched_property_states, unmatched_property_state, import_file, user_pk):
-#     """
-#     Deals with exact matches in the IDs of buildings.
-
-#     :param unmatched_property_states:
-#     :param unmatched_property_state:
-#     :param import_file:
-#     :param user_pk:
-#     :return:
-#     """
-
-#     # TODO: this only works for PropertyStates right now because the unmatched_property_states is a QuerySet
-#     # of PropertyState of which have the .pm_property_id and .custom_id_1 fields.
-#     id_matches = query_property_matches(
-#         unmatched_property_states,
-#         unmatched_property_state.pm_property_id,
-#         unmatched_property_state.custom_id_1
-#     )
-#     if not id_matches.exists():
-#         return
-
-#     # Check to see if there are any duplicates here
-#     # for match in id_matches:
-#     #     if is_same_snapshot(unmatched_property_states, match):
-#     #         raise DuplicateDataError(match.pk)
-
-#     # Reading the code, this appears to be the intention of the code.
-
-#     # Combinations returns every combination once without regard to
-#     # order and does not include self-combinations.
-#     # e.g combinations(ABC) = AB, AC, BC
-#     for (m1, m2) in itertools.combinations(id_matches, 2):
-#         if is_same_snapshot(m1, m2):
-#             raise DuplicateDataError(match.pk)
-
-#     # Merge Everything Together
-#     merged_result = id_matches[0]
-#     for match in id_matches:
-#         merged_result, changes = save_state_match(merged_result,
-#                                                   match,
-#                                                   confidence=0.9,
-#                                                   match_type=SYSTEM_MATCH,
-#                                                   user=import_file.import_record.owner
-#                                                   # What does this param do?
-#                                                   # default_pk=unmatched_property_states.pk
-#         )
-#     else:
-#         # TODO - coordinate with Nick on how to get the correct cycle,
-#         # rather than the most recent one.
-
-#         org = Organization.objects.filter(users=import_file.import_record.owner).first()
-#         default_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
-#         merged_result.promote(default_cycle) # Make sure this creates the View.
-
-#         # AuditLog.objects.create(
-#         #     user_id=user_pk,
-#         #     content_object=canon,
-#         #     action_note=action_note,
-#         #     action='save_system_match',
-#         #     organization=unmatched_property_states.super_organization,
-#         # )
-
-#     # Returns the most recent child of all merging.
-#     return merged_result
-
-
-# def merge_property_matches(match.
 
 def _finish_matching(import_file, progress_key):
     import_file.matching_done = True
@@ -1389,7 +1274,8 @@ def _match_properties_and_taxlots(file_pk, user_pk):
 
         # Filter out the duplicates.  Do we actually want to delete them
         # here?  Mark their abandonment in the Audit Logs?
-        unmatched_properties, duplicate_property_states = filter_duplicated_states(all_unmatched_properties)
+        unmatched_properties, duplicate_property_states = filter_duplicated_states(
+            all_unmatched_properties)
 
         property_partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
 
@@ -1416,7 +1302,8 @@ def _match_properties_and_taxlots(file_pk, user_pk):
     all_unmatched_tax_lots = import_file.find_unmatched_tax_lot_states()
 
     if all_unmatched_tax_lots:
-        unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(all_unmatched_tax_lots)
+        unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(
+            all_unmatched_tax_lots)
         taxlot_partitioner = EquivalencePartitioner.make_default_state_equivalence(TaxLotState)
         unmatched_tax_lots, taxlot_equivalence_keys = match_and_merge_unmatched_objects(
             unmatched_tax_lots,

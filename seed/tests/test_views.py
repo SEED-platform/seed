@@ -6,6 +6,7 @@
 """
 import json
 from datetime import date, datetime, timedelta
+from django.utils import timezone
 from unittest import skip
 
 from django.core.cache import cache
@@ -1514,11 +1515,10 @@ class GetDatasetsViewsTests(TestCase):
         import_record.save()
         response = self.client.get(reverse('apiv2:datasets-count'),
                                    {'organization_id': 666})
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(200, response.status_code)
         j = json.loads(response.content)
-        self.assertEqual(j['status'], 'error')
-        self.assertEqual(j['message'],
-                         'Could not find organization_id: 666')
+        self.assertEqual(j['status'], 'success')
+        self.assertEqual(j['datasets_count'], 0)
 
     def test_get_dataset(self):
         import_record = ImportRecord.objects.create(owner=self.user)
@@ -1575,7 +1575,7 @@ class ImportFileViewsTests(TestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org = Organization.objects.create()
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        self.cycle = self.cycle_factory.get_cycle(start=datetime(2016, 1, 1))
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()))
         OrganizationUser.objects.create(user=self.user, organization=self.org)
 
         self.import_record = ImportRecord.objects.create(owner=self.user)
@@ -2649,7 +2649,7 @@ class InventoryViewTests(TestCase):
         self.org_user = OrganizationUser.objects.create(
             user=self.user, organization=self.org
         )
-        self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10))
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
         self.status_label = StatusLabel.objects.create(
             name='test', super_organization=self.org
         )
@@ -2837,7 +2837,6 @@ class InventoryViewTests(TestCase):
             'page', 10,
             'per_page', 999999999
         )
-        print('Filter properties URL: ' + filter_properties_url)
         response = self.client.post(filter_properties_url, data={'columns': COLUMNS_TO_SEND})
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 0)
@@ -2885,7 +2884,6 @@ class InventoryViewTests(TestCase):
         self.assertEqual(results['status'], 'success')
         self.assertEqual(results['history'], [])
         self.assertEqual(results['property']['labels'], [self.status_label.pk])
-        self.assertEqual(results['source'], 'ImportFile')
         self.assertEqual(results['changed_fields'], None)
 
         expected_property = {
@@ -2921,9 +2919,6 @@ class InventoryViewTests(TestCase):
         tstate = rtaxlot['state']
         self.assertEqual(tstate['id'], taxlot_state.pk)
         self.assertEqual(tstate['address_line_1'], taxlot_state.address_line_1)
-
-    def test_get_property_history(self):
-        pass  # TODO
 
     def test_get_property_multiple_taxlots(self):
         property_state = self.property_state_factory.get_property_state(self.org)

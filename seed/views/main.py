@@ -900,11 +900,11 @@ def _tmp_mapping_suggestions(import_file_id, org_id, user):
 
     # Portfolio manager files have their own mapping scheme - yuck, really?
     if import_file.from_portfolio_manager:
-        _log.info("map Portfolio Manager input file")
+        _log.debug("map Portfolio Manager input file")
         suggested_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns,
                                                           resolve_duplicates=True)
     else:
-        _log.info("custom mapping of input file")
+        _log.debug("custom mapping of input file")
         # All other input types
         suggested_mappings = mapper.build_column_mapping(
             import_file.first_row_columns,

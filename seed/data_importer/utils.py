@@ -7,10 +7,9 @@
 """
 Utility methods pertaining to data import tasks (save, mapping, matching).
 """
-import datetime
-
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 
 def get_core_pk_column(table_column_mappings, primary_field):
@@ -28,7 +27,7 @@ def acquire_lock(name, expiration=None):
 
     Returns False if lock already belongs by another process.
     """
-    return cache.add(name, datetime.datetime.now(), expiration)
+    return cache.add(name, timezone.now(), expiration)
 
 
 def release_lock(name):
