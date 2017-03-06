@@ -1021,45 +1021,122 @@ def filter_duplicated_states(unmatched_states):
     return (canonical_states, noncanonical_states)
 
 
-# NJACHECK - Check function for accuracy
 class EquivalencePartitioner(object):
-    """ TODO: Document purpose of class. Move this class into its own location.
-    TODO: Fix lowerCamelCase methods"""
+    """Class for calculating equivalence classes on model States
+
+    The EquivalencePartitioner is configured with a list of rules
+    saying "two objects are equivalent if these two pieces of data are
+    identical" or "two objects are not equivalent if these two pieces
+    of data are different."  The partitioner then takes a group of
+    objects (typically PropertyState and TaxLotState objects) and
+    returns a partition of the objects (a collection of lists, where
+    each object is a member of exactly one of the lists), where each
+    list represents a "definitely distinct" element (i.e. two
+    PropertyState objects with no values for pm_property_id,
+    custom_id, etc may very well represent the same building, but we
+    can't say that for certain).
+
+    Some special cases that it handles based on SEED needs:
+
+    - special treatment for matching based on multiple fields
+
+    - Allowing one Field to hold "canonical" information (e.g. a
+      building_id) and others (e.g. a custom_id) to hold potential
+      information: when an alternate field (e.g. custom_id_1) is used,
+      the logic does not necessarily assume the custom_id_1 means the
+      portfolio manager id, unless p1.pm_property_id==p2.custom_id_1,
+      etc.
+
+    - equivalence/non-equivalence in both directions.  E.g. if
+      ps1.pm_property_id == ps2.pm_property_id then ps1 represents the
+      same object as ps2.  But if ps1.address_line_1 ==
+      ps2.address_line_1, then ps1 is related to ps2, unless
+      ps1.pm_property_id != ps2.pm_property_id, in which case ps1
+      definitely is not the same as ps2.
+
+    """
 
     def __init__(self, equivalence_class_description, identity_fields):
-        # If identify fields are not equal between two classes then we
-        # force the class to not be equivalent.
+        """Constructor for class.
 
-        # self.equiv_compare_func = self.makeKeyEquivalenceFunction(equivalence_class_description)
-        self.equiv_comparison_key_func = self.makeResolvedKeyCalculationFunction(
-            equivalence_class_description)
-        self.equiv_canonical_key_func = self.makeCanonicalKeyCalculationFunction(
+        Takes a list of mappings/conditions for object equivalence, as
+        well as a list of identity fields (if these are not identical,
+        the two objects are definitely different object)
+        """
+
+        self.equiv_comparison_key_func = self.make_resolved_key_calculation_function(
             equivalence_class_description)
 
-        self.identity_key_func = self.makeCanonicalKeyCalculationFunction(
+        self.equiv_canonical_key_func = self.make_canonical_key_calculation_function(
+            equivalence_class_description)
+
+        self.identity_key_func = self.make_canonical_key_calculation_function(
             [(x,) for x in identity_fields])
 
         return
 
     @classmethod
     def make_default_state_equivalence(kls, equivalence_type):
+        """Class for dynamically constructing an EquivalencePartitioner
+        depending on the type of its parameter.
+        """
         if equivalence_type == PropertyState:
-            return kls.makePropertyStateEquivalence()
+            return kls.make_PropertyState_equivalence()
         elif equivalence_type == TaxLotState:
-            return kls.makeTaxLotStateEquivalence()
+            return kls.make_TaxLotState_equivalence()
         else:
-            raise ValueError(
-                "Type '{}' does not have a default state equivalence set.".format(equivalence_type))
+            err_msg = ("Type '{}' does not have a default "
+                       "EquivalencePartitioner set.".format(equivalence_type.__class__.__name__))
+            raise ValueError(err_msg)
+
+    @classmethod
+    def make_PropertyState_equivalence(kls):
+        property_equivalence_fields = [
+            ("pm_property_id", "custom_id_1"),
+            ("custom_id_1",),
+            ("normalized_address",)
+        ]
+        property_noequivalence_fields = ["pm_property_id"]
+
+        return kls(property_equivalence_fields, property_noequivalence_fields)
+
+    @classmethod
+    def make_TaxLotState_equivalence(kls):
+        """Return default EquivalencePartitioner for TaxLotStates
+
+        Two tax lot states are indentical if:
+
+        - Their jurisdiction_tax_lot_ids are the same, which can be
+          found in jurisdiction_tax_lot_ids or custom_id_1
+        - Their custom_id_1 fields match
+        - Their normalized addresses match
+
+        They definitely do not match if :
+
+        - Their jurisdiction_tax_lot_ids do not match.
+        """
+        tax_lot_equivalence_fields = [
+            ("jurisdiction_tax_lot_id", "custom_id_1"),
+            ("custom_id_1",),
+            ("normalized_address",)
+        ]
+        tax_lot_noequivalence_fields = ["jurisdiction_tax_lot_id"]
+        return kls(tax_lot_equivalence_fields, tax_lot_noequivalence_fields)
+
 
     @staticmethod
-    def makeCanonicalKeyCalculationFunction(list_of_fieldlists):
+    def make_canonical_key_calculation_function(list_of_fieldlists):
+        """Create a function that returns the "canonical" key for the object -
+        where the official value for any position in the tuple can
+        only come from the first object.
+        """
         # The official key can only come from the first field in the
         # list.
         canonical_fields = [fieldlist[0] for fieldlist in list_of_fieldlists]
         return (lambda obj: tuple([getattr(obj, field) for field in canonical_fields]))
 
     @classmethod
-    def makeResolvedKeyCalculationFunction(kls, list_of_fieldlists):
+    def make_resolved_key_calculation_function(kls, list_of_fieldlists):
         # This "resolves" the object to the best potential value in
         # each field.
         return (lambda obj: tuple(
@@ -1093,27 +1170,6 @@ class EquivalencePartitioner(object):
                 return True
         else:
             return False
-
-    @classmethod
-    def makePropertyStateEquivalence(kls):
-        property_equivalence_fields = [
-            ("pm_property_id", "custom_id_1"),
-            ("custom_id_1",),
-            ("normalized_address",)
-        ]
-        property_noequivalence_fields = ["pm_property_id"]
-
-        return kls(property_equivalence_fields, property_noequivalence_fields)
-
-    @classmethod
-    def makeTaxLotStateEquivalence(kls):
-        tax_lot_equivalence_fields = [
-            ("jurisdiction_tax_lot_id", "custom_id_1"),
-            ("custom_id_1",),
-            ("normalized_address",)
-        ]
-        tax_lot_noequivalence_fields = ["jurisdiction_tax_lot_id"]
-        return kls(tax_lot_equivalence_fields, tax_lot_noequivalence_fields)
 
     def calculate_comparison_key(self, obj):
         return self.equiv_comparison_key_func(obj)
@@ -1154,17 +1210,19 @@ class EquivalencePartitioner(object):
         # we are trying to ask what the pm_property_id of a State is
         # that has a blank pm_property, we would not want to say the
         # value in the custom_id must be the pm_property_id.
+
+
+
         for (ndx, obj) in enumerate(list_of_obj):
             cmp_key = self.calculate_comparison_key(obj)
-            can_key = self.calculate_canonical_key(obj)
             identity_key = self.calculate_identity_key(obj)
 
             for class_key in equivalence_classes:
-                if self.calculate_key_equivalence(class_key,
-                                                  cmp_key) and not self.identities_are_different(
-                        identities_for_equivalence[class_key], identity_key):
+                if self.calculate_key_equivalence(class_key, cmp_key) \
+                   and not \
+                   self.identities_are_different( identities_for_equivalence[class_key],
+                                                  identity_key):
 
-                    # Must check the identities to make sure all is a-ok.
                     equivalence_classes[class_key].append(ndx)
 
                     if self.key_needs_merging(class_key, cmp_key):
@@ -1173,6 +1231,7 @@ class EquivalencePartitioner(object):
                         identities_for_equivalence[merged_key] = identity_key
                     break
             else:
+                can_key = self.calculate_canonical_key(obj)
                 equivalence_classes[can_key].append(ndx)
                 identities_for_equivalence[can_key] = identity_key
         return equivalence_classes  # TODO: Make sure return is correct on this.
