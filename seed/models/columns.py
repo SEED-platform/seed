@@ -106,6 +106,8 @@ class Column(models.Model):
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
+
+    # The extra_data_source needs to be removed
     extra_data_source = models.CharField(
         max_length=1, null=True, blank=True,
         db_index=True, choices=SOURCE_CHOICES
