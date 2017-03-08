@@ -114,11 +114,17 @@ def _dict_org_brief(request, organizations):
 
     orgs = []
     for o in organizations:
+        user_role = None
+        try:
+            user_role = role_levels[o.id]
+        except KeyError:
+            pass
+
         org = {
             'name': o.name,
             'org_id': o.id,
             'id': o.id,
-            'user_role': role_levels[o.id]
+            'user_role': user_role
         }
         orgs.append(org)
 
