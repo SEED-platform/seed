@@ -4,6 +4,7 @@
  */
 angular.module('BE.seed.controller.pairing', []).controller('pairing_controller', [
   '$scope',
+  'import_file_payload',
   '$window',
   '$uibModal',
   'inventory_service',
@@ -18,6 +19,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
   'spinner_utility',
   'dragulaService',
   function ($scope,
+            import_file_payload,
             $window,
             $uibModal,
             inventory_service,
@@ -33,6 +35,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
             dragulaService) {
     spinner_utility.show();
 
+    $scope.import_file = import_file_payload.import_file;
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.selectedCount = 0;
     $scope.selectedParentCount = 0;
