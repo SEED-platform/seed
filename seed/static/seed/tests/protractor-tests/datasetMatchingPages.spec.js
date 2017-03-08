@@ -65,10 +65,16 @@ describe('When I go to the dataset options page', function () {
 
 	//Pairing
 	it('should edit pairing', function () {
-		$$('[ui-sref="dataset_detail({dataset_id: import_file.dataset.id})"]').first().click();
+		// should be later: $$('[ui-sref="dataset_detail({dataset_id: import_file.dataset.id})"]').first().click();
+
+		//temp
+		browser.get("/app/#/data");
+		$$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
+		// temp
+
 		$$('#data-pairing-0').first().click()
         expect($('.page_title').getText()).toContain('Pair Properties to Tax Lots');
-
+		
 	});
 
 	//Delete
