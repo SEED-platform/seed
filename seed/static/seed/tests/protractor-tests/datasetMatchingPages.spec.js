@@ -74,7 +74,29 @@ describe('When I go to the dataset options page', function () {
 
 		$$('#data-pairing-0').first().click()
         expect($('.page_title').getText()).toContain('Pair Properties to Tax Lots');
-		
+		element(by.cssContainingText('[ng-model="cycle.selected_cycle"]', browser.params.testOrg.cycle)).click();
+		expect($('.pairing-text-left').getText()).toContain('Showing 18 Properties (0 unpaired)');
+		expect($('.pairing-text-right').getText()).toContain('Showing 11 Tax Lots (0 unpaired)');
+
+		var rows = $$('.unpair-child').each(function (item) {
+			item.click();
+		});
+
+		expect($$('.unpair-child').count()).toBeLessThan(1);
+
+		element(by.cssContainingText('[ng-change="inventoryTypeChanged()"]', "Tax Lot")).click();
+        // browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),30000);       
+        expect($('.page_title').getText()).toContain('Pair Tax Lots to Properties');
+
+		expect($('.pairing-text-right').getText()).toContain('Showing 18 Properties (18 unpaired)');
+		expect($('.pairing-text-left').getText()).toContain('Showing 11 Tax Lots (11 unpaired)');
+
+		var dragElement = $$('.pairing-data-row.grab-pairing-left').first();
+    	var dropElement = $$('.pairing-text').first();
+    	browser.actions().dragAndDrop(dragElement, dropElement).perform();
+
+		expect($('.pairing-text-right').getText()).toContain('Showing 18 Properties (17 unpaired)');
+		expect($('.pairing-text-left').getText()).toContain('Showing 11 Tax Lots (10 unpaired)');
 	});
 
 	//Delete
