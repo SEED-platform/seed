@@ -1181,6 +1181,7 @@ a:not([href]) {
           }
           input {
             font-weight: normal;
+            min-width: 50px;
           }
           &.is_master {
             padding: 0;
@@ -1512,6 +1513,12 @@ a:not([href]) {
         ul.pager, ul.pagination {
           float: right;
           margin: 0;
+          li.disabled {
+            cursor: not-allowed;
+            > a {
+              pointer-events: none;
+            }
+          }
         }
       }
       .table_footer_right {
@@ -2418,8 +2425,7 @@ gs-input .tags .tag-item .remove-button {
          appear in the building list. So defining a style here that can hopefully be refactored into
          the styles above at a later point. */
 
-.inventory-list-tab-container {
-
+.inventory-list-tab-container, .matching-tab-container {
   margin-left: 10px;
   margin-bottom: -2px;
 
@@ -2453,6 +2459,25 @@ gs-input .tags .tag-item .remove-button {
   .nav-tabs > li > a:hover {
     background-color: $blue;
     color: #FFF;
+  }
+}
+
+.matching-tab-container {
+  margin-bottom: -1px;
+  .nav-tabs {
+    border-bottom: 0;
+  }
+  .nav-tabs > li > a {
+    background-color: #F1F1F1;
+    border: 1px solid #D1D1D1;
+    border-bottom: 0;
+  }
+  .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover {
+    background-color: #7B7B87;
+    border: 1px solid #D1D1D1;
+    border-bottom: 1px solid #7B7B87;
+    color: #FFF;
+    font-weight: bold;
   }
 }
 
@@ -2497,6 +2522,27 @@ gs-input .tags .tag-item .remove-button {
   &.pinnable[disabled] {
     color: #222;
     opacity: 0.1;
+  }
+}
+
+.ui-grid-row:nth-child(odd) .ui-grid-cell .inventory-settings-cell::after {
+  color: #d7d7d7;
+}
+
+.ui-grid-row:nth-child(even) .ui-grid-cell .inventory-settings-cell::after {
+  color: #cbcbcb;
+}
+
+.inventory-settings-cell {
+  &::after {
+    content: attr(data-after-content);
+    float: right;
+    opacity: 0;
+    transition: opacity .25s ease-in-out;
+  }
+
+  &:hover::after {
+    opacity: 1;
   }
 }
 
@@ -2574,4 +2620,114 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
+// Pairing page:
+.pairing {
+  padding-bottom: 20px;
+}
+// Main container: initialize the flex, direction is row
+.pairing-data-row, .pairing-headers-row {
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  flex-grow: 0;
+  -webkit-flex-grow: 0;
+  flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
+  width: 100%;
 
+  border-bottom: 2px solid #e0e0e0;
+  border-collapse: collapse;
+  padding: 2px;
+  .is-paired-child {
+    width: 10%;
+  }
+}
+
+// Mismatch row colors
+.pairing-data-row:nth-child(even) {
+  background-color: #fdfdfd;
+}
+
+.pairing-data-row:nth-child(odd) {
+  background-color: #f3f3f3;
+}
+
+// Child rows, indented
+.pairing-data-row-indent {
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  flex-grow: 0;
+  -webkit-flex-grow: 0;
+  flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
+  width: 100%;
+  padding-left: 40px;
+  padding-right: 15px;
+
+  border-collapse: collapse;
+  color: #A0A0A0;
+  .unpaired {
+    width: 100%;
+    color: lightskyblue;
+  }
+}
+
+.grab-pairing-left {
+  cursor: grab;
+}
+
+.unpair-child {
+  cursor: pointer;
+  color: #428bca;
+}
+
+.pairing-child {
+  width: 100%;
+  min-height: 15px;
+}
+
+.pairing-headers-row {
+  background-color: #E0E0E0;
+  border-bottom: 2px solid #A0A0A0;
+}
+
+.pairing-container {
+  border: 1px solid #A0A0A0;
+}
+
+.pairing-data-row-col, .pairing-headers {
+  width: 30%;
+}
+
+.pairing-rows {
+  height: 600px;
+  overflow-y: auto;
+}
+
+.pairing-list-controls-full {
+  margin-top: 15px;
+}
+
+.pairing-other-title {
+  margin-top: 40px;
+}
+
+.pairing-data-row-col-indent {
+  flex-grow: 1;
+}
+
+// Text based cells: grow, truncate and show ellipsis when there is not enough space
+.pairing-cell {
+  flex-grow: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-right: 20px;
+}
+
+table.import_results a[disabled] {
+  pointer-events: none;
+}

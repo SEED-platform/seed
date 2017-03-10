@@ -1,7 +1,18 @@
 Data Model
 ==========
 
-.. todo:: This is out of date and needs updated.
+.. image:: images/case-a.png
+
+.. image:: images/case-b.png
+
+.. image:: images/case-c.png
+
+.. image:: images/case-d.png
+
+.. image:: images/data-model.png
+
+
+.. todo:: Documentation below is out of state and needs updated.
 
 Our primary data model is based on a tree structure with BuildingSnapshot
 instances as nodes of the tree and the tip of the tree referenced by a

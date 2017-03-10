@@ -97,8 +97,8 @@ class CleansingDataTestCoveredBuilding(TestCase):
 
         c = Cleansing(self.org)
         c.cleanse(qs)
+        # print c.results
 
-        print c.results
         self.assertEqual(len(c.results), 2)
 
         result = [v for v in c.results.values() if

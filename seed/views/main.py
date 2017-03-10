@@ -20,14 +20,11 @@ from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, api_view
 
 from seed import tasks
 from seed.authentication import SEEDAuthentication
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.data_importer.tasks import (
-    remap_data,
-)
 from seed.decorators import (
     ajax_request, ajax_request_class, get_prog_key, require_organization_id
 )
@@ -41,7 +38,7 @@ from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
-    BuildingSnapshot,
+    BuildingSnapshot,  # TO REMOVE
     CanonicalBuilding,
     Column,
     ProjectBuilding,
@@ -142,6 +139,7 @@ def home(request):
 
 @api_endpoint
 @ajax_request
+@api_view(['GET'])
 def version(request):
     """
     Returns the SEED version and current git sha
@@ -154,10 +152,10 @@ def version(request):
     sha = subprocess.check_output(
         ['git', 'rev-parse', '--short', 'HEAD']).strip()
 
-    return {
+    return JsonResponse({
         'version': manifest['version'],
         'sha': sha
-    }
+    })
 
 
 @api_endpoint
@@ -402,7 +400,7 @@ def export_buildings_download(request):
         }
 
 
-# TO REMOVE
+# TODO: TO REMOVE
 @ajax_request
 @login_required
 def get_total_number_of_buildings_for_user(request):
@@ -786,65 +784,6 @@ def save_match(request):
 #     return resp
 
 
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def get_match_tree(request):
-    """returns the BuildingSnapshot tree
-
-    :GET: Expects organization_id and building_id in the query string
-
-    Returns::
-
-        {
-            'status': 'success',
-            'match_tree': [ // array of all the members of the tree
-                {
-                    "id": 333,
-                    "coparent": 223,
-                    "child": 443,
-                    "parents": [],
-                    "canonical_building_id": 1123
-                },
-                {
-                    "id": 223,
-                    "coparent": 333,
-                    "child": 443,
-                    "parents": [],
-                    "canonical_building_id": 1124
-                },
-                {
-                    "id": 443,
-                    "coparent": null,
-                    "child": 9933,
-                    "parents": [333, 223],
-                    "canonical_building_id": 1123
-                },
-                {
-                    "id": 9933,
-                    "coparent": null,
-                    "child": null,
-                    "parents": [443],
-                    "canonical_building_id": 1123
-                },
-                ...
-            ]
-        }
-    """
-    building_id = request.GET.get('building_id', '')
-    bs = BuildingSnapshot.objects.get(pk=building_id)
-    # since our tree has the structure of two parents and one child, we can go
-    # to the tip and look up, otherwise it's hard to keep track of the
-    # co-parent trees of the children.
-    tree = bs.tip.parent_tree + [bs.tip]
-    tree = map(lambda b: b.to_dict(), tree)
-    return {
-        'status': 'success',
-        'match_tree': tree,
-    }
-
-
 def _parent_tree_coparents(snapshot):
     """
     Takes a BuildingSnapshot inst. Climbs the snapshot tree upward and
@@ -990,50 +929,6 @@ def get_coparents(request):
 @api_endpoint
 @ajax_request
 @login_required
-def get_PM_filter_by_counts(request):
-    """
-    Retrieves the number of matched and unmatched BuildingSnapshots for
-    a given ImportFile record.
-
-    :GET: Expects import_file_id corresponding to the ImportFile in question.
-
-    Returns::
-
-        {
-            'status': 'success',
-            'matched': Number of BuildingSnapshot objects that have matches,
-            'unmatched': Number of BuildingSnapshot objects with no matches.
-        }
-    """
-    import_file_id = request.GET.get('import_file_id', '')
-
-    matched = BuildingSnapshot.objects.filter(
-        import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        children__isnull=False
-    ).count()
-    unmatched = BuildingSnapshot.objects.filter(
-        import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        children__isnull=True,
-        duplicate__isnull=True
-    ).count()
-    duplicates = BuildingSnapshot.objects.filter(
-        import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        duplicate__isnull=False
-    ).count()
-    return {
-        'status': 'success',
-        'matched': matched,
-        'unmatched': unmatched,
-        'duplicates': duplicates,
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
 def delete_duplicates_from_import_file(request):
     """
     Retrieves the number of matched and unmatched BuildingSnapshots for
@@ -1113,11 +1008,11 @@ def _tmp_mapping_suggestions(import_file_id, org_id, user):
 
     # Portfolio manager files have their own mapping scheme - yuck, really?
     if import_file.from_portfolio_manager:
-        _log.info("map Portfolio Manager input file")
+        _log.debug("map Portfolio Manager input file")
         suggested_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns,
                                                           resolve_duplicates=True)
     else:
-        _log.info("custom mapping of input file")
+        _log.debug("custom mapping of input file")
         # All other input types
         suggested_mappings = mapper.build_column_mapping(
             import_file.first_row_columns,
@@ -1198,56 +1093,6 @@ class DataFileViewSet(viewsets.ViewSet):
 @ajax_request
 @login_required
 @has_perm('requires_member')
-def save_column_mappings(request):
-    """
-    Saves the mappings between the raw headers of an ImportFile and the
-    destination fields in the `to_table_name` model which should be either
-    PropertyState or TaxLotState
-
-    Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
-
-    Payload::
-
-        {
-            "import_file_id": ID of the ImportFile record,
-            "mappings": [
-                {
-                    'from_field': 'eui',  # raw field in import file
-                    'to_field': 'energy_use_intensity',
-                    'to_table_name': 'PropertyState',
-                },
-                {
-                    'from_field': 'gfa',
-                    'to_field': 'gross_floor_area',
-                    'to_table_name': 'PropertyState',
-                }
-            ]
-        }
-
-    Returns::
-
-        {'status': 'success'}
-    """
-
-    body = json.loads(request.body)
-    import_file = ImportFile.objects.get(pk=body.get('import_file_id'))
-    organization = import_file.import_record.super_organization
-    mappings = body.get('mappings', [])
-    status = Column.create_mappings(mappings, organization, request.user)
-
-    # extract the to_table_name and to_field
-    column_mappings = [{'from_field': m['from_field'], 'to_field': m['to_field'], 'to_table_name': m['to_table_name']} for m in mappings]
-    if status:
-        import_file.save_cached_mapped_columns(column_mappings)
-        return {'status': 'success'}
-    else:
-        return {'status': 'error'}
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_member')
 def delete_file(request):
     """
     Deletes an ImportFile from a dataset.
@@ -1294,38 +1139,7 @@ def delete_file(request):
 @api_endpoint
 @ajax_request
 @login_required
-@has_perm('can_modify_data')
-def remap_buildings(request):
-    """
-    Re-run the background task to remap buildings as if it hadn't happened at
-    all. Deletes mapped buildings for a given ImportRecord, resets status.
-
-    NB: will not work if buildings have been merged into CanonicalBuilings.
-
-    Payload::
-
-        {
-            'file_id': The ID of the ImportFile to be remapped
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    body = json.loads(request.body)
-    import_file_id = body.get('file_id')
-    if not import_file_id:
-        return {'status': 'error', 'message': 'Import File does not exist'}
-
-    return remap_data(import_file_id)
-
-
-@api_endpoint
-@ajax_request
-@login_required
+@api_view(['POST'])
 def progress(request):
     """
     Get the progress (percent complete) for a task.
@@ -1344,16 +1158,16 @@ def progress(request):
         }
     """
 
-    progress_key = json.loads(request.body).get('progress_key')
+    progress_key = request.data.get('progress_key')
 
     if get_cache(progress_key):
-        return get_cache(progress_key)
+        return JsonResponse(get_cache(progress_key))
     else:
-        return {
+        return JsonResponse({
             'progress_key': progress_key,
             'progress': 0,
             'status': 'waiting'
-        }
+        })
 
 
 # @api_endpoint

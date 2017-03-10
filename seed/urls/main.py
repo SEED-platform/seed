@@ -18,13 +18,9 @@ from seed.views.main import (
     set_default_building_detail_columns,
     get_columns,
     save_match,
-    get_match_tree,
     get_coparents,
-    get_PM_filter_by_counts,
     delete_duplicates_from_import_file,
     delete_file,
-    save_column_mappings,
-    remap_buildings,
     public_search, export_buildings,
     export_buildings_progress,
     export_buildings_download,
@@ -33,23 +29,11 @@ from seed.views.main import (
     delete_organization_inventory,
     delete_buildings
 )
-from seed.views.properties import (
-    create_cycle,
-    get_cycles,
-    update_cycle,
-    delete_cycle
-)
 
 # prefix, to revert back to original endpoints, leave this blank
 apiv1 = r''  # r'api/v1/'
 
 urlpatterns = [
-
-    # cycle routes
-    url(r'^' + apiv1 + r'create_cycle/$', create_cycle, name='create_cycle'),
-    url(r'^' + apiv1 + r'get_cycles/$', get_cycles, name='get_cycles'),
-    url(r'^' + apiv1 + r'update_cycle/$', update_cycle, name='update_cycle'),
-    url(r'^' + apiv1 + r'delete_cycle/$', delete_cycle, name='delete_cycle'),
 
     # template routes
     url(r'^$', home, name='home'),
@@ -85,15 +69,8 @@ urlpatterns = [
     ),
     url(r'^' + apiv1 + r'get_columns/$', get_columns, name='get_columns'),
     url(r'^' + apiv1 + r'save_match/$', save_match, name='save_match'),
-    url(r'^' + apiv1 + r'get_match_tree/$', get_match_tree,
-        name='get_match_tree'),
     url(r'^' + apiv1 + r'get_coparents/$', get_coparents,
         name='get_coparents'),
-    url(
-        r'^' + apiv1 + r'get_PM_filter_by_counts/$',
-        get_PM_filter_by_counts,
-        name='get_PM_filter_by_counts'
-    ),
     url(
         r'^' + apiv1 + r'delete_duplicates_from_import_file/$',
         delete_duplicates_from_import_file,
@@ -121,13 +98,6 @@ urlpatterns = [
     # ),
 
     # New MCM endpoints
-    url(
-        r'^' + apiv1 + r'save_column_mappings/$',
-        save_column_mappings,
-        name='save_column_mappings'
-    ),
-    url(r'^' + apiv1 + r'remap_buildings/$', remap_buildings,
-        name='remap_buildings'),
     url(
         r'^' + apiv1 + r'public_search/$',
         public_search,

@@ -112,9 +112,9 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
     # extra_data field of the database
     if raw_field in mapping:
         table_name, field_name = mapping.get(raw_field)
+        # NL: 9/29/16 turn off all the debug logging because it was too verbose.
         # _log.debug("item is in the mapping: %s -- %s" % (table_name, field_name))
 
-        # NL: 9/29/16 turn off all the debug logging because it was too verbose.
         if is_extra_data:
             if hasattr(model, 'extra_data'):
                 # only save it if the model and the mapping are the same
@@ -192,7 +192,7 @@ def expand_rows(row, delimited_fields, expand_row):
     :return: list
     """
 
-    _log.debug('expand_row is {}'.format(expand_row))
+    # _log.debug('expand_row is {}'.format(expand_row))
     # go through the delimited fields and clean up the rows
     copy_row = copy.deepcopy(row)
     for d in delimited_fields:
@@ -228,7 +228,7 @@ def expand_rows(row, delimited_fields, expand_row):
 def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, concat=None, **kwargs):
     """Apply mapping of row data to model.
 
-    :param original_row: dict, parsed row data from csv.
+    :param row: dict, parsed row data from csv.
     :param mapping: dict, keys map row columns to model_class attrs.
     :param model_class: class, reference to model class we map against.
     :param extra_data_fields: list, list of raw columns that are considered extra data (per mapping)

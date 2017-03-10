@@ -140,7 +140,6 @@ class TestMapper(TestCase):
             'site Eui (kBTU/ft2)': (u'PropertyState', u'site_eui', 100),
             'site EUI': (u'PropertyState', u'site_eui', 100)
         }
-        print pm
 
         self.assertDictEqual(pm, expected)
 

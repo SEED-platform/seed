@@ -18,6 +18,17 @@ describe('controller: data_upload_modal_controller', function () {
     id: 2
   }];
 
+  var cycles = {
+    cycles: [{
+      end: "2015-01-01T07:59:59Z",
+      id:2017,
+      name:"2014 Calendar Year",
+      num_properties:1496,
+      num_taxlots:1519,
+      start:"2014-01-01T08:00:00Z"
+    }],
+    status: "success"
+  }
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
@@ -147,7 +158,8 @@ describe('controller: data_upload_modal_controller', function () {
         }
       },
       step: global_step,
-      dataset: global_dataset
+      dataset: global_dataset,
+      cycles: cycles
     });
   }
 
@@ -296,7 +308,8 @@ describe('controller: data_upload_modal_controller', function () {
     // act
     data_upload_controller_scope.uploaderfunc(message, {
       filename: filename,
-      file_id: 20140313
+      file_id: 20140313,
+      cycle_id: cycles.cycles[0].id
     });
     data_upload_controller_scope.$digest();
 

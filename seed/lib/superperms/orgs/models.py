@@ -4,15 +4,19 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import logging
+from datetime import date, datetime, timedelta
+
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import pre_delete
-from django.contrib.auth.models import User
 
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 
-USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', User)
+_log = logging.getLogger(__name__)
 
+USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', User)
 
 # Role Levels
 ROLE_VIEWER = 0
@@ -24,7 +28,6 @@ ROLE_LEVEL_CHOICES = (
     (ROLE_MEMBER, 'Member'),
     (ROLE_OWNER, 'Owner'),
 )
-
 
 # Invite status
 STATUS_PENDING = 'pending'
@@ -76,20 +79,22 @@ class OrganizationUser(models.Model):
         # If we're removing an owner
         if self.role_level == ROLE_OWNER:
             # If there are users, but no other owners in this organization.
-            if (
-                        OrganizationUser.objects.all().exclude(pk=self.pk).exists() and
-                            OrganizationUser.objects.filter(
-                                organization=self.organization,
-                                role_level=ROLE_OWNER
-                            ).exclude(pk=self.pk).count() == 0
-            ):
-                # Make next most high ranking person the owner.
-                other_user = OrganizationUser.objects.filter(
-                    organization=self.organization
-                ).exclude(pk=self.pk)[0]
+            if (OrganizationUser.objects.all().exclude(pk=self.pk).exists() and
+                        OrganizationUser.objects.filter(
+                            organization=self.organization,
+                            role_level=ROLE_OWNER
+                        ).exclude(pk=self.pk).count() == 0):
 
-                other_user.role_level = ROLE_OWNER
-                other_user.save()
+                try:
+                    # Make next most high ranking person the owner.
+                    other_user = OrganizationUser.objects.filter(
+                        organization=self.organization
+                    ).exclude(pk=self.pk)[0]
+
+                    other_user.role_level = ROLE_OWNER
+                    other_user.save()
+                except IndexError:
+                    print "Unable to promote secondary user, because there are no other users!"
 
         super(OrganizationUser, self).delete(*args, **kwargs)
 
@@ -126,13 +131,23 @@ class Organization(models.Model):
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
         # There can only be one.
-        if (
-                        self.parent_org is not None and
-                        self.parent_org.parent_org is not None
-        ):
+        if (self.parent_org is not None and self.parent_org.parent_org is not None):
             raise TooManyNestedOrgs
 
         super(Organization, self).save(*args, **kwargs)
+
+        # Create a default cycle for the organization if there isn't one already
+        from seed.models import Cycle
+        year = date.today().year - 1
+        cycle_name = 'Default ' + str(year) + ' Calendar Year'
+        if not Cycle.objects.filter(name=cycle_name, organization=self).exists():
+            _log.debug("Creating default cycle for new organization")
+            Cycle.objects.create(
+                name=cycle_name,
+                organization=self,
+                start=datetime(year, 1, 1),
+                end=datetime(year + 1, 1, 1) - timedelta(seconds=1)
+            )
 
     def is_member(self, user):
         """Return True if user object has a relation to this organization."""
@@ -146,9 +161,13 @@ class Organization(models.Model):
 
     def remove_member(self, user):
         """Remove user from organization."""
-        return OrganizationUser.objects.get(
-            user=user, organization=self
-        ).delete()
+        try:
+            user = OrganizationUser.objects.get(user=user, organization=self)
+        except OrganizationUser.DoesNotExist:
+            _log.info("Could not find user in organization")
+            return None
+
+        return user.delete()
 
     def is_owner(self, user):
         """

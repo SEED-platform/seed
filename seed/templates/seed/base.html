@@ -40,6 +40,7 @@
         <link href="{{STATIC_URL}}vendors/bower_components/ng-tags-input/ng-tags-input.bootstrap.css" rel="stylesheet" type="text/css">
         <link href="{{STATIC_URL}}vendors/bower_components/angular-xeditable/dist/css/xeditable.css" rel="stylesheet" type="text/css">
         <link href="{{STATIC_URL}}vendors/bower_components/angular-ui-notification/dist/angular-ui-notification.min.css" rel="stylesheet" type="text/css">
+        <link href="{{STATIC_URL}}vendors/bower_components/angular-dragula/dist/dragula.min.css" rel="stylesheet" type="text/css">
 
 
         {% block css %}{{block.super}}
@@ -55,6 +56,9 @@
                 window.BE.username = "{{ username }}";
                 if (window.BE.username === "") {
                     window.BE.username = "{{ request.user.first_name }} {{ request.user.last_name}}";
+                }
+                if (window.BE.username === " ") {
+                    window.BE.username = "{{ request.user.email }}"
                 }
                 window.BE.initial_org_id = "{{ initial_org_id }}";
                 window.BE.initial_org_user_role = "{{ initial_org_user_role }}";
@@ -96,7 +100,7 @@
             <script src="{{STATIC_URL}}vendors/bower_components/ui-grid-draggable-rows/js/draggable-rows.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.js"></script>
             <script src="{{STATIC_URL}}vendors/bower_components/angular-ui-sortable/sortable.min.js"></script>
-
+            <script src="{{STATIC_URL}}vendors/bower_components/angular-dragula/dist/angular-dragula.min.js"></script>
 
             <script src="{{STATIC_URL}}vendors/bower_components/moment/min/moment.min.js"></script>
 

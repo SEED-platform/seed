@@ -173,8 +173,8 @@ var makeFileSystemUploader = function(scope, element, attrs, filename) {
         element: element[0],
         request: {
             endpoint: '/api/v2/upload/',
-            paramsInBody: false,
-            forceMultipart: false,
+            paramsInBody: true,
+            forceMultipart: true,
             customHeaders: {
                 'X-CSRFToken': BE.csrftoken
              }
@@ -231,7 +231,7 @@ var makeFileSystemUploader = function(scope, element, attrs, filename) {
                         csrf_name: 'csrfmiddlewaretoken',
                         csrf_xname: 'X-CSRFToken',
                         import_record: scope.importrecord,
-                        qqfilename: fileName,
+                        file: fileName,
                         source_type: scope.sourcetype,
                         source_program: scope.sourceprog,
                         source_program_version: scope.sourcever

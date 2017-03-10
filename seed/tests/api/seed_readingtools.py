@@ -14,6 +14,7 @@ import datetime as dt
 import time
 from calendar import timegm
 
+
 # Three-step upload process
 
 
@@ -119,21 +120,28 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
                 contains details about where to send file and how.
 
         Returns:
-            {"import_file_id": 54,
-             "success": true,
-             "filename": "DataforSEED_dos15.csv"}
+            {
+                "import_file_id": 54,
+                "success": true,
+                "filename": "DataforSEED_dos15.csv"
+            }
         """
         upload_url = "%s%s" % (main_url, upload_details['upload_path'])
-        fsysparams = {'qqfile': upload_filepath,
-                      'import_record': upload_dataset_id,
-                      'source_type': upload_datatype}
+        fsysparams = {
+            'qqfile': upload_filepath,
+            'import_record': upload_dataset_id,
+            'source_type': upload_datatype
+        }
+
+        print upload_url
         return requests.post(upload_url,
                              params=fsysparams,
                              files={'filename': open(upload_filepath, 'rb')},
                              headers=upload_header)
 
     # Get the upload details.
-    upload_details = requests.get(main_url + '/data/get_upload_details/', headers=upload_header)
+    upload_details = requests.get(main_url + '/api/v2/get_upload_details/',
+                                  headers=upload_header)
     upload_details = upload_details.json()
 
     filename = os.path.basename(upload_filepath)
@@ -141,53 +149,118 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
     if upload_details['upload_mode'] == 'S3':
         return _upload_file_to_aws(upload_details)
     elif upload_details['upload_mode'] == 'filesystem':
+        print upload_details
         return _upload_file_to_file_system(upload_details)
     else:
         raise RuntimeError("Upload mode unknown: %s" %
                            upload_details['upload_mode'])
 
 
-def check_status(resultOut, partmsg, log, PIIDflag=None):
+def cycles(header, main_url, organization_id, log):
+    print ('API Function: get_cycles\n')
+    partmsg = 'get_cycles'
+    try:
+        result = requests.get(main_url + '/app/get_cycles/',
+                              headers=header,
+                              params={'organization_id': organization_id})
+        print result
+        check_status(result, partmsg, log, PIIDflag='cycles')
+
+        cycles = result.json()['cycles']
+        print "current cycles are {}".format(cycles)
+        for cyc in cycles:
+            if cyc['name'] == 'TestCycle':
+                cycle_id = cyc['id']
+                break
+        else:
+            # Create cycle (only if it doesn't exist, until there is a function to delete cycles)
+            print ('API Function: create_cycle\n')
+            partmsg = 'create_cycle'
+            payload = {
+                'start': "2015-01-01T08:00:00.000Z",
+                'end': "2016-01-01T08:00:00.000Z",
+                'name': "TestCycle"
+            }
+            result = requests.post(main_url + '/app/create_cycle/',
+                                   headers=header,
+                                   params={'organization_id': organization_id},
+                                   data=json.dumps(payload))
+            check_status(result, partmsg, log)
+
+            cycles = result.json()['cycles']
+            for cyc in cycles:
+                if cyc['name'] == 'TestCycle':
+                    cycle_id = cyc['id']
+                    break
+    except:
+        cycle_id = 138
+
+    # Update cycle
+    print ('\nAPI Function: update_cycle')
+    partmsg = 'update_cycle'
+    print cycle_id
+    payload = {
+        'start': "2015-01-01T08:00:00.000Z",
+        'end': "2016-01-01T08:00:00.000Z",
+        'name': "TestCycle",
+        'id': cycle_id
+    }
+    result = requests.put(main_url + '/app/update_cycle/',
+                          headers=header,
+                          params={'organization_id': organization_id},
+                          data=json.dumps(payload))
+    check_status(result, partmsg, log)
+
+    return cycle_id
+
+
+def check_status(result_out, part_msg, log, piid_flag=None):
     """Checks the status of the API endpoint and makes the appropriate print outs."""
     passed = '\033[1;32m...passed\033[1;0m'
     failed = '\033[1;31m...failed\033[1;0m'
 
-    if resultOut.status_code in [200, 403, 401]:
-        if PIIDflag == 'cleansing':
-            msg = pprint.pformat(resultOut.json(), indent=2, width=70)
+    if result_out.status_code in [200, 403, 401]:
+        if piid_flag == 'cleansing':
+            msg = pprint.pformat(result_out.json(), indent=2, width=70)
         else:
             try:
-                if 'status' in resultOut.json().keys() and resultOut.json()['status'] == 'error':
-                    msg = resultOut.json()['message']
-                    log.error(partmsg + failed)
+                if 'status' in result_out.json().keys() and result_out.json()['status'] == 'error':
+                    msg = result_out.json()['message']
+                    log.error(part_msg + failed)
                     log.debug(msg)
                     raise RuntimeError
-                elif 'success' in resultOut.json().keys() and not resultOut.json()['success']:
-                    msg = resultOut.json()
-                    log.error(partmsg + failed)
+                elif 'success' in result_out.json().keys() and not result_out.json()['success']:
+                    msg = result_out.json()
+                    log.error(part_msg + failed)
                     log.debug(msg)
                     raise RuntimeError
                 else:
-                    if PIIDflag == 'organizations':
-                        msg = 'Number of organizations:\t' + str(len(resultOut.json()['organizations'][0]))
-                    elif PIIDflag == 'users':
-                        msg = 'Number of users:\t' + str(len(resultOut.json()['users'][0]))
-                    elif PIIDflag == 'mappings':
-                        msg = pprint.pformat(resultOut.json()['suggested_column_mappings'], indent=2, width=70)
-                    elif PIIDflag == 'PM_filter':
-                        msg = "Duplicates: " + str(resultOut.json()['duplicates']) + ", Unmatched: " + str(resultOut.json()['unmatched']) + ", Matched: " + str(resultOut.json()['matched'])
+                    if piid_flag == 'organizations':
+                        msg = 'Number of organizations:\t' + str(
+                            len(result_out.json()['organizations'][0]))
+                    elif piid_flag == 'users':
+                        msg = 'Number of users:\t' + str(len(result_out.json()['users'][0]))
+                    elif piid_flag == 'mappings':
+                        msg = pprint.pformat(result_out.json()['suggested_column_mappings'],
+                                             indent=2, width=70)
+                    elif piid_flag == 'PM_filter':
+                        msg = "Duplicates: " + str(
+                            result_out.json()['duplicates']) + ", Unmatched: " + str(
+                            result_out.json()['unmatched']) + ", Matched: " + str(
+                            result_out.json()['matched'])
                     else:
-                        msg = pprint.pformat(resultOut.json(), indent=2, width=70)
+                        msg = pprint.pformat(result_out.json(), indent=2, width=70)
             except:
-                log.error(partmsg + failed)
+                log.error(part_msg + failed)
                 log.debug('Unknown error during request results recovery')
                 raise RuntimeError
 
-        log.info(partmsg + passed)
+        log.info(part_msg + passed)
         log.debug(msg)
     else:
-        msg = resultOut.reason
-        log.error(partmsg + failed)
+        msg = result_out.reason
+        print msg.json
+        log.error(part_msg + failed)
         log.debug(msg)
         raise RuntimeError
 
@@ -197,9 +270,9 @@ def check_status(resultOut, partmsg, log, PIIDflag=None):
 def check_progress(mainURL, Header, progress_key):
     """Delays the sequence until progress is at 100 percent."""
     time.sleep(5)
-    progressResult = requests.get(mainURL + '/api/v2/progress/',
-                                  headers=Header,
-                                  data=json.dumps({'progress_key': progress_key}))
+    progressResult = requests.post(mainURL + '/api/v2/progress/',
+                                   headers=Header,
+                                   data=json.dumps({'progress_key': progress_key}))
 
     if progressResult.json()['progress'] == 100:
         return (progressResult)

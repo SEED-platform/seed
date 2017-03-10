@@ -37,6 +37,7 @@ Chomsky
 chomsky
 chunked
 ci
+cmp
 collectstatic
 concat
 cond
@@ -128,6 +129,8 @@ metadata
 MIDDLEWARE
 middleware
 mixin
+multipart
+Multipart
 Munday
 MyBrowser
 namespace

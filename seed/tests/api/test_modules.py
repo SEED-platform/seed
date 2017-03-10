@@ -107,12 +107,12 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
     # check_status(result, partmsg, log)
 
     # Check number of matched and unmatched BuildingSnapshots
-    print ('API Function: get_PM_filter_by_counts\n'),
-    partmsg = 'get_PM_filter_by_counts'
+    print ('API Function: matching_results\n'),
+    partmsg = 'matching_results'
 
-    result = requests.get(main_url + '/app/get_PM_filter_by_counts/',
+    result = requests.get(main_url + '/api/v2/import_files/' + import_id + 'matching_results/',
                           headers=header,
-                          params={'import_file_id': import_id})
+                          params={})
     check_status(result, partmsg, log, PIIDflag='PM_filter')
 
 

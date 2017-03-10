@@ -16,37 +16,14 @@
         window.BE.urls.search_buildings_url = '{% url "seed:search_buildings" %}';
         window.BE.urls.save_match_url = '{% url "seed:save_match" %}';
         window.BE.urls.get_columns_url = '{% url "seed:get_columns" %}';
-        window.BE.urls.get_PM_filter_by_counts_url = '{% url "seed:get_PM_filter_by_counts" %}';
         window.BE.urls.delete_duplicates_from_import_file_url = '{% url "seed:delete_duplicates_from_import_file" %}';
         window.BE.urls.seed_home = '{% url "seed:home" %}';
 
         window.BE.urls.delete_file      = '{% url "seed:delete_file" %}';
-        {% comment %}
-        // window.BE.urls.update_building  = '{% url "seed:update_building" %}';
-        //reports URLs
-        //window.BE.urls.get_building_summary_report_data     = '{% url "seed:get_building_summary_report_data" %}';
-        //window.BE.urls.get_building_report_data             = '{% url "seed:get_building_report_data" %}';
-        //window.BE.urls.get_aggregated_building_report_data  = '{% url "seed:get_aggregated_building_report_data" %}';
-        {% endcomment %}
+
         // Reports URLS
         window.BE.urls.get_inventory_report_data             = '{% url "app:property_report_data" %}';
         window.BE.urls.get_aggregated_inventory_report_data  = '{% url "app:aggregated_property_report_data" %}';
-
-
-        //label management URLs
-        window.BE.urls.label_list               = '{% url "labels:label-list" %}';
-        window.BE.urls.taxlot_labels            = '{% url "labels:taxlot_labels" %}';
-        window.BE.urls.property_labels          = '{% url "labels:property_labels" %}';
-
-        // cycle URLs
-        window.BE.urls.create_cycle             = '{% url "seed:create_cycle" %}';
-        window.BE.urls.get_cycles               = '{% url "seed:get_cycles" %}';
-        window.BE.urls.update_cycle             = '{% url "seed:update_cycle" %}';
-        window.BE.urls.delete_cycle             = '{% url "seed:delete_cycle" %}';
-
-        // uploader URLs
-        window.BE.urls.save_column_mappings     = '{% url "seed:save_column_mappings" %}';
-        window.BE.urls.remap_buildings          = '{% url "seed:remap_buildings" %}';
 
         // export URLs
         window.BE.urls.export_buildings             = '{% url "seed:export_buildings" %}';
@@ -57,6 +34,4 @@
         window.BE.urls.delete_organization_buildings = '{% url "seed:delete_organization_buildings" %}';
         window.BE.urls.delete_organization_inventory = '{% url "seed:delete_organization_inventory" %}';
 
-
-
-    </script>
+</script>

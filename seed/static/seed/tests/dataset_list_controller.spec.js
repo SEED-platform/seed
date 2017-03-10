@@ -17,9 +17,10 @@ describe('controller: dataset_list_controller', function () {
   // inject AngularJS dependencies for the controller
   beforeEach(inject(
     function ($controller, $rootScope, $uibModal, urls, $q, uploader_service,
-              $location) {
+              $location, _$state_) {
       controller = $controller;
       scope = $rootScope;
+      $state = _$state_;
       dataset_list_controller_scope = $rootScope.$new();
       modal_state = '';
       location = $location;
@@ -191,53 +192,25 @@ describe('controller: dataset_list_controller', function () {
     // assertions
     expect(disabled).toEqual(false);
   });
-  it('should navigate to the mapping page of the first assessed' +
-    ' import file when the ``Mapping`` button is clicked', function () {
+  it('should respond to URL when the ``Mapping`` button is clicked', function () {
     // arrange
-    var dataset = {
-      importfiles: [
-        {
-          source_type: 'Assessed Raw',
-          id: 3
-        },
-        {
-          source_type: 'Assessed Raw',
-          id: 5
-        }
-      ]
-    };
     create_dataset_list_controller();
 
     // act
     dataset_list_controller_scope.$digest();
-    dataset_list_controller_scope.goto_mapping(dataset);
 
     // assertions
-    expect(location.path()).toBe('/data/mapping/3');
+    expect($state.href('mapping', { importfile_id: 3 })).toBe('#/data/mapping/3');
   });
-  it('should navigate to the matching page of the first Portfolio Manager' +
-    ' import file when the ``Matching`` button is clicked', function () {
+  it('should respond to URL when the ``Matching`` button is clicked', function () {
     // arrange
-    var dataset = {
-      importfiles: [
-        {
-          source_type: 'Portfolio Raw',
-          id: 3
-        },
-        {
-          source_type: 'Portfolio Raw',
-          id: 5
-        }
-      ]
-    };
     create_dataset_list_controller();
 
     // act
     dataset_list_controller_scope.$digest();
-    dataset_list_controller_scope.goto_matching(dataset);
 
     // assertions
-    expect(location.path()).toBe('/data/matching/3');
+    expect($state.href('matching', { importfile_id: 3 })).toBe('#/data/matching/3/');
   });
 
 
