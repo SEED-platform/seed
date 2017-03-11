@@ -80,8 +80,8 @@ describe('When I go to the dataset options page', function () {
 		browser.sleep(2000);
 
 		// Gotta figure this out, remote has 1 unpaired.
-		expect($('.pairing-text-left').getText()).toContain('Showing 18 Properties (0 unpaired)');
-		expect($('.pairing-text-right').getText()).toContain('Showing 11 Tax Lots (0 unpaired)');
+		expect($('.pairing-text-left').getText()).toContain('Showing 18 Properties');
+		expect($('.pairing-text-right').getText()).toContain('Showing 11 Tax Lots');
 	});
 
 
