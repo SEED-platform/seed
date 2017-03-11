@@ -78,7 +78,9 @@ describe('When I go to the dataset options page', function () {
 		expect($('.page_title').getText()).toContain('Pair Properties to Tax Lots');
 		element(by.cssContainingText('[ng-model="cycle.selected_cycle"] option', browser.params.testOrg.cycle)).click();
 		browser.sleep(2000);
-		expect($('.pairing-text-left').getText()).toContain('Showing 15 Properties (0 unpaired)');
+
+		// Gotta figure this out, remote has 1 unpaired.
+		expect($('.pairing-text-left').getText()).toContain('Showing 18 Properties (0 unpaired)');
 		expect($('.pairing-text-right').getText()).toContain('Showing 11 Tax Lots (0 unpaired)');
 	});
 
@@ -102,11 +104,14 @@ describe('When I go to the dataset options page', function () {
 		// browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),30000);       
 		expect($('.page_title').getText()).toContain('Pair Tax Lots to Properties');
 
-		expect($('.pairing-text-right').getText()).toContain('Showing 15 Properties (15 unpaired)');
+		expect($('.pairing-text-right').getText()).toContain('Showing 18 Properties (18 unpaired)');
 		expect($('.pairing-text-left').getText()).toContain('Showing 11 Tax Lots (11 unpaired)');
 
 		browser.sleep(2000);
 	});
+
+
+	// drag doesn't work on chrome....
 
 	// it('should edit drag pairs', function () {
 	// 	// var dragElement = $$('.pairing-data-row.grab-pairing-left').first();
