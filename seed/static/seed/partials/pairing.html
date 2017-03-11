@@ -91,7 +91,7 @@
                                 </div>
                             </div>
                             <div class="pairing-data-row-indent" ng-repeat="id in whichChildren(row) track by $index">
-                                <div class="pairing-data-row-col-indent" ng-repeat="col in whichColumns('left') track by $index">
+                                <div class="pairing-data-row-col-indent" viewId="{$ id $}" ng-repeat="col in whichColumns('left') track by $index">
                                     <div class="pairing-cell">
                                         <span class="pairing-text">{$ whichChildData(id,col) $}</span>
                                     </div>

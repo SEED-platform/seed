@@ -15,6 +15,9 @@ exports.config = {
 	],
 	baseUrl: 'http://localhost:8000/',
 	rootElement: '.app',
+	// capabilities: {
+	// 	'browserName': 'firefox'
+	// },
 	params: {
 		login: {
 			user: 'demo@example.com',
