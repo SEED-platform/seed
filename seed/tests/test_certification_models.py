@@ -7,14 +7,18 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author Paul Munday <paul@paulmunday.net>
 """
+# pylint:disable=no-name-in-module
 import datetime
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-# from seed.factory import SEEDFactory
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import (
+    Organization,
+    OrganizationUser,
+)
+
 from seed.models import (
     Cycle,
     GreenAssessment,
@@ -26,14 +30,9 @@ from seed.models import (
 )
 
 from seed.test_helpers.fake import (
-    # FakeCycleFactory,
     FakeGreenAssessmentFactory,
     FakeGreenAssessmentPropertyFactory, FakeGreenAssessmentURLFactory,
-    # FakePropertyFactory,
-    # FakePropertyViewFactory, FakePropertyStateFactory
 )
-
-# from seed.tests import util as test_util
 
 
 class GreenAssessmentTests(TestCase):
@@ -41,6 +40,7 @@ class GreenAssessmentTests(TestCase):
     # pylint: disable=too-many-instance-attributes
 
     def setUp(self):
+        self.maxDiff = None
         user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
@@ -50,10 +50,13 @@ class GreenAssessmentTests(TestCase):
         self.org = Organization.objects.create()
         OrganizationUser.objects.create(user=self.user, organization=self.org)
 
-        self.assessment_factory = FakeGreenAssessmentFactory()
+        self.assessment_factory = FakeGreenAssessmentFactory(
+            organization=self.org
+        )
         self.green_assessment = self.assessment_factory.get_green_assessment(
-            name="Green Test Score", body="Green TS Inc",
-            recognition_type=GreenAssessment.SCORE
+            name="Green Test Score", award_body="Green TS Inc",
+            recognition_type=GreenAssessment.SCORE,
+            validity_duration=(365 * 5)
         )
         self.url_factory = FakeGreenAssessmentURLFactory()
         self.gap_factory = FakeGreenAssessmentPropertyFactory(
@@ -69,9 +72,6 @@ class GreenAssessmentTests(TestCase):
             source='Assessor', status_date=self.status_date,
             version='1', eligibility=True
         )
-        # self.property_view_factory = FakePropertyViewFactory(
-        #     organization=self.org, user=self.user
-        # )
 
     def tearDown(self):
         Cycle.objects.all().delete()
@@ -92,18 +92,36 @@ class GreenAssessmentTests(TestCase):
         expected = u'Green TS Inc, Green Test Score: 5'
         self.assertEqual(expected, unicode(self.gap))
 
-    def test_properties(self):
+    def test_gap_properties(self):
         """Test properties on GreenAssessmentProperty."""
         self.assertEqual('Green Test Score', self.gap.name)
         self.assertEqual('Green TS Inc', self.gap.body)
-        self.assertEqual('Score', self.gap.recognition_type)
+        self.assertEqual('SCR', self.gap.recognition_type)
+        self.assertEqual('Score', self.gap.recognition_description)
         self.assertEqual(self.start_date.year, self.gap.year)
+        self.assertEqual(
+            self.green_assessment.organization, self.gap.organization
+        )
+
+    def test_url_properties(self):
+        """Test properties on GreenAssessmentURL."""
+        url = self.url_factory.get_url(property_assessment=self.gap)
+        expected = self.gap.organization
+        organization = url.organization
+        self.assertEqual(expected, organization)
 
     def test_score(self):
         """Test score/rating/metric properties"""
         # test score/metric
         self.assertEqual(5, self.gap.score)
         self.assertEqual(5, self.gap.metric)
+        self.assertIsInstance(self.gap.metric, int)
+        self.assertIsInstance(self.gap.score, int)
+        self.green_assessment.is_integer_score = False
+        self.assertIsInstance(self.gap.metric, float)
+        self.assertIsInstance(self.gap.score, float)
+        self.gap.score = 4
+        self.assertEqual(4.0, self.gap.score)
         with self.assertRaises(ValidationError) as conm:
             self.gap.rating = '5 stars'
         exception = conm.exception
@@ -126,7 +144,7 @@ class GreenAssessmentTests(TestCase):
 
     def test_expiration(self):
         """Test expiration_date and is_valid properties"""
-        expected_date = self.start_date + datetime.timedelta(5 * 365)
+        expected_date = self.start_date + datetime.timedelta(365 * 5)
         self.assertEqual(expected_date, self.gap.expiration_date)
         self.assertTrue(self.gap.is_valid)
 
@@ -156,9 +174,9 @@ class GreenAssessmentTests(TestCase):
             u'Assessment Eligibility': True,
             u'Assessment Level': None,
             u'Assessment Program URL': [
-                u'http://bright-martinez.org/sequi-quos-incidunt',
-                u'http://www.adams-wallace.com/sint-nostrum-ea',
-                u'http://www.ramos.com/enim-sequi-quam'
+                u'https://calderon-mcclain.org/sequi-quos-incidunt',
+                u'http://www.reed-horne.com/sint-nostrum-ea',
+                u'http://meyer.com/enim-sequi-quam'
             ],
         }
         self.assertEqual(expected, self.gap.to_bedes_dict())
@@ -175,9 +193,9 @@ class GreenAssessmentTests(TestCase):
             u'GreenVerificationVersion': '1',
             u'GreenVerificationYear': self.start_date.year,
             u'GreenVerificationURL': [
-                u'http://bright-martinez.org/sequi-quos-incidunt',
-                u'http://www.adams-wallace.com/sint-nostrum-ea',
-                u'http://www.ramos.com/enim-sequi-quam'
+                u'https://calderon-mcclain.org/sequi-quos-incidunt',
+                u'http://www.reed-horne.com/sint-nostrum-ea',
+                u'http://meyer.com/enim-sequi-quam'
             ],
         }
         self.assertEqual(expected, self.gap.to_reso_dict())
@@ -186,17 +204,17 @@ class GreenAssessmentTests(TestCase):
         """Test to_reso_dict method with substitution."""
         expected = {
             u'GreenBuildingVerificationType': 'Green Test Score',
-            u'GreenVerificationGreen Test ScoreBody': 'Green TS Inc',
-            u'GreenVerificationGreen Test ScoreSource': 'Assessor',
-            u'GreenVerificationGreen Test ScoreStatus': 'Pending',
-            u'GreenVerificationGreen Test ScoreMetric': 5,
-            u'GreenVerificationGreen Test ScoreRating': None,
-            u'GreenVerificationGreen Test ScoreVersion': '1',
-            u'GreenVerificationGreen Test ScoreYear': self.start_date.year,
-            u'GreenVerificationGreen Test ScoreURL': [
-                u'http://bright-martinez.org/sequi-quos-incidunt',
-                u'http://www.adams-wallace.com/sint-nostrum-ea',
-                u'http://www.ramos.com/enim-sequi-quam'
+            u'GreenVerificationGreenTestScoreBody': 'Green TS Inc',
+            u'GreenVerificationGreenTestScoreSource': 'Assessor',
+            u'GreenVerificationGreenTestScoreStatus': 'Pending',
+            u'GreenVerificationGreenTestScoreMetric': 5,
+            u'GreenVerificationGreenTestScoreRating': None,
+            u'GreenVerificationGreenTestScoreVersion': '1',
+            u'GreenVerificationGreenTestScoreYear': self.start_date.year,
+            u'GreenVerificationGreenTestScoreURL': [
+                u'https://calderon-mcclain.org/sequi-quos-incidunt',
+                u'http://www.reed-horne.com/sint-nostrum-ea',
+                u'http://meyer.com/enim-sequi-quam'
             ],
         }
         self.assertEqual(expected, self.gap.to_reso_dict(sub_name=True))
