@@ -87,8 +87,10 @@ class PropertyState(models.Model):
     # use properties to assess from instances
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
     address_line_2 = models.CharField(max_length=255, null=True, blank=True)
-    normalized_address = models.CharField(max_length=255, null=True, blank=True, editable=False)
-
+    # private so we can always get it via @property
+    _normalized_address = models.CharField(max_length=255, null=True,
+                                           blank=True, editable=False,
+                                           db_column="normalized_address")
     city = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
     postal_code = models.CharField(max_length=255, null=True, blank=True)
@@ -235,11 +237,20 @@ class PropertyState(models.Model):
     def save(self, *args, **kwargs):
         # Calculate and save the normalized address
         if self.address_line_1 is not None:
-            self.normalized_address = normalize_address_str(self.address_line_1)
+            self._normalized_address = normalize_address_str(self.address_line_1)
         else:
-            self.normalized_address = None
+            self._normalized_address = None
 
         return super(PropertyState, self).save(*args, **kwargs)
+
+    @property
+    def normalized_address(self):
+        """Ensure normalized address is always available"""
+        if not self._normalized_address and self.address_line_1:
+            self._normalized_address = normalize_address_str(
+                self.address_line_1
+            )
+        return self._normalized_address
 
 
 class PropertyView(models.Model):

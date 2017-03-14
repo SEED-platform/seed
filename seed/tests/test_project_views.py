@@ -101,7 +101,7 @@ class ProjectViewTests(TestCase):
         property_factory = fake.FakePropertyFactory(organization=self.org)
         property = property_factory.get_property()
         property_state_factory = fake.FakePropertyStateFactory()
-        state = property_state_factory.get_property_state(self.org)
+        state = property_state_factory.get_property_state(organization=self.org)
         cycle_factory = fake.FakeCycleFactory()
         cycle = cycle_factory.get_cycle()
         property_view, _ = PropertyView.objects.get_or_create(
