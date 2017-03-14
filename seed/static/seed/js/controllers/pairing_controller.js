@@ -346,7 +346,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     });
 
     $scope.$on('drag-pairing-row.drop', function (e, el, container) {
-      if (!el.scope()) {
+      if (!el || !container) {
         return; //dropped in left side
       }
       el.removeClass('grab-pairing-left');
