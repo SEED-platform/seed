@@ -53,7 +53,7 @@
                 </div>
                 <div class="pairing-rows" dragula='"drag-pairing-row"'>
                     <div class="pairing-data-row grab-pairing-left" ng-repeat="row in newLeftData | filter:leftSearch track by $index ">
-                        <div class="pairing-data-row-col" ng-repeat="col in whichColumns('left') track by $index">
+                        <div class="pairing-data-row-col" leftParentId="{$ getLeftParentId(row) $}" ng-repeat="col in whichColumns('left') track by $index">
                             <div class="pairing-cell">
                                 <span class="pairing-text">{$ row[col] $}</span>
                             </div>
@@ -82,7 +82,7 @@
                                 <span class="pairing-text">{$ row[col] $}</span>
                             </div>
                         </div>
-                        <div class="pairing-child cant-move" dragula='"drag-pairing-row"'>
+                        <div class="pairing-child cant-move" rightParentId="{$ getRightParentId(row) $}" dragula='"drag-pairing-row"'>
                             <div class="pairing-data-row-indent" ng-if="!whichChildren(row)">
                                 <div class="pairing-data-row-col-indent unpaired">
                                     <div class="pairing-cell">
@@ -96,7 +96,7 @@
                                         <span class="pairing-text">{$ whichChildData(id,col) $}</span>
                                     </div>
                                 </div>
-                                <div class="unpair-child" ng-click="unpairChild($event)">remove</div>
+                                <div class="unpair-child" viewId="{$ id $}" rightParentId="{$ getRightParentId(row) $}" ng-click="unpairChild($event)">remove</div>
                             </div>
                         </div>
                     </div>
