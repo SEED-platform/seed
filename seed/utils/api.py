@@ -283,7 +283,7 @@ class OrgCreateMixin(OrgMixin):
     """
     def perform_create(self, serializer):
         """Override to add org"""
-        org_id = self.get_organization_id(self.request)
+        org_id = self.get_organization(self.request)
         serializer.save(organization_id=org_id)
 
 
@@ -293,7 +293,7 @@ class OrgUpdateMixin(OrgMixin):
     """
     def perform_update(self, serializer):
         """Override to add org"""
-        org_id = self.get_organization_id(self.request)
+        org_id = self.get_organization(self.request)
         serializer.save(organization_id=org_id)
 
 
@@ -398,9 +398,9 @@ class OrgQuerySetMixin(OrgMixin):
         qs = getattr(self, 'queryset', None)
         force_parent = getattr(self, 'force_parent', False)
         if force_parent:
-            query_dict = {qsfilter: self.get_parent_org_id(self.request)}
+            query_dict = {qsfilter: self.get_parent_org(self.request)}
         else:
-            query_dict = {qsfilter: self.get_organization_id(self.request)}
+            query_dict = {qsfilter: self.get_organization(self.request)}
 
         if qs:
             query = qs.filter(**query_dict)
