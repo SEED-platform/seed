@@ -119,7 +119,7 @@ angular.module('BE.seed.service.search', [])
       search_service.clear_filters = function () {
         saas.filter_params = {};
         if (!_.isUndefined(Storage)) {
-          sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingFilterParams', {});
+          sessionStorage.setItem(this.prefix + ':' + 'seedBuildingFilterParams', {});
         }
         saas.filter_search();
       };
@@ -261,7 +261,7 @@ angular.module('BE.seed.service.search', [])
       search_service.first_page = function () {
         this.current_page = 1;
         if (!_.isUndefined(Storage)) {
-          sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
+          sessionStorage.setItem(this.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
         }
         this.search_buildings();
       };
@@ -282,11 +282,11 @@ angular.module('BE.seed.service.search', [])
        */
       search_service.last_page = function () {
         if (!_.isUndefined(Storage)) {
-          sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
+          sessionStorage.setItem(this.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
         }
         this.current_page = this.num_pages();
         if (!_.isUndefined(Storage)) {
-          sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
+          sessionStorage.setItem(this.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
         }
         this.search_buildings();
       };
@@ -301,7 +301,7 @@ angular.module('BE.seed.service.search', [])
           this.current_page = this.num_pages();
         }
         if (!_.isUndefined(Storage)) {
-          sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
+          sessionStorage.setItem(this.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
         }
         this.search_buildings();
       };
@@ -316,7 +316,7 @@ angular.module('BE.seed.service.search', [])
           this.current_page = 1;
         }
         if (!_.isUndefined(Storage)) {
-          sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
+          sessionStorage.setItem(this.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
         }
         this.search_buildings();
       };
@@ -423,8 +423,8 @@ angular.module('BE.seed.service.search', [])
           }
 
           if (!_.isUndefined(Storage)) {
-            sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingOrderBy', saas.sort_column);
-            sessionStorage.setItem(saas.prefix + ':' + 'seedBuildingSortReverse', saas.sort_reverse);
+            sessionStorage.setItem(this.prefix + ':' + 'seedBuildingOrderBy', saas.sort_column);
+            sessionStorage.setItem(this.prefix + ':' + 'seedBuildingSortReverse', saas.sort_reverse);
           }
 
           saas.order_by = this.sort_column;
