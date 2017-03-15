@@ -119,6 +119,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     };
 
     $scope.unpairChild = function ($event) {
+      $event.stopPropagation();
       var promise;
       var taxlotId;
       var propertyId;
@@ -325,6 +326,17 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       // console.log('tl map: ', $scope.taxlotToProp);
     };
 
+    $scope.doubleClick = function (side, event) {
+      // console.log('side: ', side, angular.element(event.currentTarget))
+      if (side == 'left') {
+        $scope.newElement = angular.element(event.currentTarget);
+        $scope.$emit('drag-pairing-row.drag', angular.element(event.currentTarget))
+      } else if (side == 'right') {
+        $scope.$emit('drag-pairing-row.drop', $scope.newElement, {container: angular.element(event.currentTarget), fromClick: true})
+      }
+
+    }
+
     //Dragula stuff:
     dragulaService.options($scope, 'drag-pairing-row', {
       copy: true,
@@ -341,22 +353,36 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
 
     $scope.$on('drag-pairing-row.drag', function (e, el) {
       // console.log('picked up e: ', e);
-      // console.log('picked up el: ', el.children()[0].getAttribute('leftParentId'));
+      // console.log('picked up el: ', el);
+      // alert('you picked it up!');
       $scope.pickedUpEle = +el.children()[0].getAttribute('leftParentId') 
     });
 
-    $scope.$on('drag-pairing-row.drop', function (e, el, container) {
+    $scope.$on('drag-pairing-row.drop', function (e, el, tempContainer) {
+      var container;
+      var fromClick;
+      if (tempContainer.fromClick) {
+        container = tempContainer.container;
+        fromClick = tempContainer.fromClick;
+      } else {
+        container = tempContainer;
+        fromClick = false;
+      }
+      // alert('you dropped it!');
       if (!el || !container) {
         return; //dropped in left side
       }
-      el.removeClass('grab-pairing-left');
-      el.removeClass('pairing-data-row');
-      // el.children.removeClass('pairing-data-row-col');
-      // el.children.addClass('pairing-data-row-col-indent');
-      el.addClass('pairing-data-row-indent');
-      el.attr('ng-repeat', 'id in whichChildren(row) track by $index');
-      el.parent().attr('style', '');
-
+      if (!fromClick) {
+        el.removeClass('grab-pairing-left');
+        el.removeClass('pairing-data-row');
+        // el.children.removeClass('pairing-data-row-col');
+        // el.children.addClass('pairing-data-row-col-indent');
+        el.addClass('pairing-data-row-indent');
+        el.attr('ng-repeat', 'id in whichChildren(row) track by $index');
+        el.parent().attr('style', '');
+      }
+      // console.log('el: ', el)
+      // console.log('container: ', container)
       // console.log('ids: ', container[0].getAttribute('rightParentId'))
       // call with PUT /api/v2/taxlots/1/pair/?property_id=1&organization_id=1
       var promise;
@@ -385,8 +411,8 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
         }
       });
 
-
-      el.remove();
+      if (!fromClick)
+        el.remove();
     });
 
     // get data and Set left right data initially

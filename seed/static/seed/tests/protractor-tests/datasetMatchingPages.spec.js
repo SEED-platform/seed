@@ -111,26 +111,32 @@ describe('When I go to the dataset options page', function () {
 	});
 
 
-	// drag doesn't work on chrome....
 
-	// it('should edit drag pairs', function () {
-	// 	// var dragElement = $$('.pairing-data-row.grab-pairing-left').first();
-	// 	var dragElement = element.all(by.repeater('row in newLeftData')).first();
-	// 	var dropElement = $$('.pairing-cell').first().$('.pairing-text');
-	// 	// console.log('drag: ', dragElement);
-	// 	// console.log('drop: ', dropElement);
-	// 	browser.actions().dragAndDrop(dragElement, dropElement).perform();
-	// 	// browser.actions().dragAndDrop(dragElement, dropElement).mouseUp().perform();
-	// 	browser.sleep(3000);
+	it('should edit drag pairs', function () {
+		browser.ignoreSynchronization = true;
+		// var dragElement = $$('.pairing-data-row.grab-pairing-left').first();
+		var dragElement = element.all(by.repeater('row in newLeftData')).first();
+		var dropElement = $$('.pairing-data-row-indent').first();
+		var lastDropElement = $$('.pairing-data-row-indent').last();
+		// console.log('drag: ', dragElement);
+		// console.log('drop: ', dropElement);
 
-	// 	browser.sleep(2000);
-	// 	expect($('.pairing-text-right').getText()).toContain('Showing 15 Properties (14 unpaired)');
-	// 	expect($('.pairing-text-left').getText()).toContain('Showing 11 Tax Lots (10 unpaired)');
-	// 	browser.sleep(2000);
-	// });
+		// drag doesn't work on chrome....so use click functionality
+		dragElement.click();
+		browser.sleep(200);
+		dropElement.click();
+		browser.sleep(200);
+		lastDropElement.click();
+		browser.sleep(200);
+
+		expect($('.pairing-text-right').getText()).toContain('Showing 18 Properties (16 unpaired)');
+		expect($('.pairing-text-left').getText()).toContain('Showing 11 Tax Lots (10 unpaired)');
+		browser.sleep(2000);
+	});
 
 	//Delete
 	it('should delete data stuffs', function () {
+		browser.ignoreSynchronization = false;
 		browser.get("/app/#/data");
 		$$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
 		$$('.delete_link').get(1).click();
