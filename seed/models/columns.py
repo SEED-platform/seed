@@ -292,8 +292,16 @@ class Column(models.Model):
             except Column.MultipleObjectsReturned:
                 _log.debug("More than one to_column found for {}.{}".format(field['to_table_name'],
                                                                             field['to_field']))
-                raise Exception("Cannot handle more than one to_column returned for {}.{}".format(
-                    field['to_field'], field['to_table_name']))
+                # raise Exception("Cannot handle more than one to_column returned for {}.{}".format(
+                #     field['to_field'], field['to_table_name']))
+
+                # TODO: write something to remove the duplicate columns
+                to_org_col = Column.objects.filter(organization=organization,
+                                                   column_name=field['to_field'],
+                                                   table_name=field['to_table_name'],
+                                                   is_extra_data=is_extra_data).first()
+                _log.debug("Grabbing the first from_column")
+
 
             try:
                 # the from column is the field in the import file, thus the table_name needs to be
