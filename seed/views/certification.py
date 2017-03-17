@@ -8,6 +8,7 @@ All rights reserved.  # NOQA
 :author Paul Munday <paul@paulmunday.net>
 """
 
+from seed.filtersets import GAPropertyFilterSet
 from seed.models import (
     GreenAssessment,
     GreenAssessmentProperty,
@@ -168,6 +169,7 @@ class GreenAssessmentViewSet(SEEDOrgCreateUpdateModelViewSet):
     """
     serializer_class = GreenAssessmentSerializer
     model = GreenAssessment
+    filter_fields = ('name', 'award_body', 'recognition_type')
 
 
 class GreenAssessmentURLViewSet(SEEDOrgModelViewSet):
@@ -270,6 +272,7 @@ class GreenAssessmentURLViewSet(SEEDOrgModelViewSet):
     serializer_class = GreenAssessmentURLSerializer
     model = GreenAssessmentURL
     orgfilter = 'property_assessment__assessment__organization_id'
+    filter_fields = ('property_assessment__id',)
 
 
 class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
@@ -481,3 +484,4 @@ class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
     serializer_class = GreenAssessmentPropertySerializer
     model = GreenAssessmentProperty
     orgfilter = 'assessment__organization_id'
+    filter_class = GAPropertyFilterSet
