@@ -5,7 +5,6 @@
 :author
 """
 import csv
-import datetime
 import hashlib
 import json
 import math
@@ -20,6 +19,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
+from django.utils import timezone
 from django.utils.timesince import timesince
 from django_extensions.db.models import TimeStampedModel
 
@@ -506,7 +506,7 @@ class ImportRecord(NotDeletableModel):
         self.merge_analysis_done = True
         self.merge_analysis_active = False
         self.is_imported_live = True
-        self.import_completed_at = datetime.datetime.now()
+        self.import_completed_at = timezone.now()
         self.save()
 
     def mark_merge_started(self):
@@ -568,7 +568,7 @@ class ImportRecord(NotDeletableModel):
                 'app': self.app,
                 'last_modified_time_ago': timesince(self.updated_at).split(",")[0],
                 'last_modified_seconds_ago': -1 * (
-                    self.updated_at - datetime.datetime.now()).total_seconds(),
+                    self.updated_at - timezone.now()).total_seconds(),
                 'last_modified_by': last_modified_by,
                 'notes': self.notes,
                 'merge_analysis_done': self.merge_analysis_done,
@@ -785,7 +785,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def get_cached_mapped_columns(self):
         # create a list of tuples
-        data = json.loads(self.cached_mapped_columns)
+        data = json.loads(self.cached_mapped_columns or '{}')
         result = []
         for d in data:
             result.append((d['to_table_name'], d['to_field']))

@@ -9,11 +9,15 @@ exports.config = {
 		'orgPages.spec.js',
 		'datasetPages.spec.js',
 		'propPages.spec.js',
-		// 'taxlotPages.spec.js',
+		'taxlotPages.spec.js',
+		'datasetMatchingPages.spec.js',
 		'adminLogout.spec.js',
 	],
 	baseUrl: 'http://localhost:8000/',
 	rootElement: '.app',
+	// capabilities: {
+	// 	'browserName': 'firefox'
+	// },
 	params: {
 		login: {
 			user: 'demo@example.com',

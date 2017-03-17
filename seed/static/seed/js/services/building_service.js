@@ -113,16 +113,6 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         });
       };
 
-      building_factory.delete_duplicates_from_import_file = function (import_file_id) {
-        $http.get(window.BE.urls.delete_duplicates_from_import_file_url, {
-          params: {
-            import_file_id: import_file_id
-          }
-        }).then(function (response) {
-          return response.data;
-        });
-      };
-
       /**
        * start the delete buildings process
        */

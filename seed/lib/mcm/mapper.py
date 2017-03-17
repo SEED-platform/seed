@@ -94,19 +94,6 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
 
     :rtype: model inst
     """
-    cleaned_value = None
-    tmp_field = raw_field
-
-    if cleaner:
-        if tmp_field not in (cleaner.float_columns or cleaner.date_columns):
-            # Try using a reverse mapping for dynamic maps;
-            # default to row name if it's not mapped
-            tmp_field = mapping.get(raw_field)
-            if tmp_field:
-                tmp_field = tmp_field[1]
-        cleaned_value = cleaner.clean_value(value, tmp_field)
-    else:
-        cleaned_value = default_cleaner(value)
 
     # If the item is the extra_data column, then make sure to save it to the
     # extra_data field of the database
@@ -114,6 +101,12 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
         table_name, field_name = mapping.get(raw_field)
         # NL: 9/29/16 turn off all the debug logging because it was too verbose.
         # _log.debug("item is in the mapping: %s -- %s" % (table_name, field_name))
+
+        cleaned_value = None
+        if cleaner:
+            cleaned_value = cleaner.clean_value(value, field_name)
+        else:
+            cleaned_value = default_cleaner(value)
 
         if is_extra_data:
             if hasattr(model, 'extra_data'):

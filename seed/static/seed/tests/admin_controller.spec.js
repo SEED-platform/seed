@@ -17,18 +17,6 @@ describe('controller: admin_controller', function(){
               user: {first_name: 'b', last_name: 'd'}
             }
         });
-
-        mock_organization_service = organization_service;
-        spyOn(mock_organization_service, 'delete_organization_inventory')
-                .andCallFake(function(){
-                    // return $q.reject for error scenario
-                    return $q.when(
-                        {
-                            status: 'success'
-                        }
-                    );
-                }
-            );
     }));
     describe('update_alert', function() {
         it('should set the show state to true', function() {
@@ -41,17 +29,6 @@ describe('controller: admin_controller', function(){
             expect(this.scope.alert.show).toBe(true);
             expect(this.scope.alert.message).toBe('test message');
         });
-    });
-
-    it('should call the delete_org_inventory service', function() {
-        // arrange
-
-        // act
-        this.scope.delete_org_inventory({org_id: 44});
-
-        // assertions
-        expect(mock_organization_service.delete_organization_inventory)
-        .toHaveBeenCalledWith(44);
     });
 
     it('should raise an confirm window when the delete buildings button is clicked', function() {

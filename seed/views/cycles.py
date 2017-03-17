@@ -4,10 +4,9 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Paul Munday<paul@paulmunday.net>
 """
-import datetime
-
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
@@ -108,7 +107,7 @@ class CycleView(GenericViewSet):
             name=body['name'],
             start=body['start'],
             end=body['end'],
-            created=datetime.datetime.now()
+            created=timezone.now()
         )
         return JsonResponse({'status': 'success', 'id': record.pk, 'name': record.name})
 

@@ -11,7 +11,7 @@ angular.module('BE.seed.controller.mapping', [])
     'first_five_rows_payload',
     'property_columns',
     'taxlot_columns',
-    'building_services',
+    'cycles',
     'mappingValidatorService',
     'mapping_service',
     'search_service',
@@ -31,7 +31,7 @@ angular.module('BE.seed.controller.mapping', [])
               first_five_rows_payload,
               property_columns,
               taxlot_columns,
-              building_services,
+              cycles,
               mappingValidatorService,
               mapping_service,
               search_service,
@@ -44,7 +44,6 @@ angular.module('BE.seed.controller.mapping', [])
               $filter,
               cleansing_service,
               inventory_service) {
-
       var db_field_columns = suggested_mappings_payload.column_names;
       var columns = suggested_mappings_payload.columns;
       var extra_data_columns = _.filter(columns, 'extra_data');
@@ -90,6 +89,8 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.search = angular.copy(search_service);
       $scope.search.has_checkbox = false;
       $scope.search.update_results();
+
+      $scope.isValidCycle = !!_.find(cycles.cycles, {id: $scope.import_file.cycle});
 
       /*
        * Opens modal for making changes to concatenation changes.
@@ -144,9 +145,6 @@ angular.module('BE.seed.controller.mapping', [])
         tcm = tcm || {};
         if (tcm.suggestion === '') {
           return '';
-        }
-        if (tcm.validity === 'valid') {
-          return 'success';
         }
         for (
           var i = 0; _.isUndefined(tcm.invalids) &&
@@ -356,7 +354,7 @@ angular.module('BE.seed.controller.mapping', [])
       /*
        * get_mapped_buildings: gets mapped buildings for the preview table
        */
-      $scope.get_mapped_buildings = function (review) {
+      $scope.get_mapped_buildings = function () {
         $scope.import_file.progress = 0;
         $scope.save_mappings = true;
         $scope.review_mappings = true;
@@ -365,13 +363,7 @@ angular.module('BE.seed.controller.mapping', [])
 
         $scope.save_mappings = false;
 
-        spinner_utility.show();
-        $http.post('/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/', {
-          review: review
-        }).then(function (response) {
-          spinner_utility.hide();
-
-          var data = response.data;
+        inventory_service.search_matching_inventory($scope.import_file.id).then(function (data) {
           $scope.mappedData = data;
 
           var gridOptions = {
@@ -715,9 +707,7 @@ angular.module('BE.seed.controller.mapping', [])
           templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
           controller: 'data_upload_modal_controller',
           resolve: {
-            cycles: ['cycle_service', function (cycle_service) {
-              return cycle_service.get_cycles();
-            }],
+            cycles: cycles,
             step: function () {
               return step;
             },

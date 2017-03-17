@@ -8,7 +8,8 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
   '$http',
   'user_service',
   'generated_urls',
-  function ($http, user_service, generated_urls) {
+  'spinner_utility',
+  function ($http, user_service, generated_urls, spinner_utility) {
 
     var matching_factory = {};
 
@@ -26,31 +27,50 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
       });
     };
 
-    matching_factory.get_match_nodes = function (building_id) {
-      return $http.get(generated_urls.seed.get_relevant_nodes, {
+    matching_factory.available_matches = function (import_file_id, inventory_type, state_id) {
+      return $http.post('/api/v2/import_files/' + import_file_id + '/available_matches/', {
+        inventory_type: inventory_type,
+        state_id: state_id
+      }, {
         params: {
-          organization_id: user_service.get_organization().id,
-          building_id: building_id
+          organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
         return response.data;
       });
     };
 
-    matching_factory.get_match_tree = function (building_id) {
-      return $http.get(generated_urls.seed.get_coparents, {
+    matching_factory.unmatch = function (import_file_id, inventory_type, state_id, coparent_id) {
+      spinner_utility.show();
+      return $http.post('/api/v2/import_files/' + import_file_id + '/unmatch/', {
+        inventory_type: inventory_type,
+        state_id: state_id,
+        coparent_id: coparent_id
+      }, {
         params: {
-          organization_id: user_service.get_organization().id,
-          building_id: building_id
+          organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
-        response.data.match_tree.map(function (b) {
-          b.matches_current = true;
-        });
-        response.data.coparents.map(function (b) {
-          b.matches_current = true;
-        });
         return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
+    matching_factory.match = function (import_file_id, inventory_type, state_id, matching_state_id) {
+      spinner_utility.show();
+      return $http.post('/api/v2/import_files/' + import_file_id + '/match/', {
+        inventory_type: inventory_type,
+        state_id: state_id,
+        matching_state_id: matching_state_id
+      }, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
       });
     };
 

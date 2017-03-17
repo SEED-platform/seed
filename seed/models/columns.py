@@ -106,6 +106,8 @@ class Column(models.Model):
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
+
+    # The extra_data_source needs to be removed
     extra_data_source = models.CharField(
         max_length=1, null=True, blank=True,
         db_index=True, choices=SOURCE_CHOICES
@@ -290,8 +292,16 @@ class Column(models.Model):
             except Column.MultipleObjectsReturned:
                 _log.debug("More than one to_column found for {}.{}".format(field['to_table_name'],
                                                                             field['to_field']))
-                raise Exception("Cannot handle more than one to_column returned for {}.{}".format(
-                    field['to_field'], field['to_table_name']))
+                # raise Exception("Cannot handle more than one to_column returned for {}.{}".format(
+                #     field['to_field'], field['to_table_name']))
+
+                # TODO: write something to remove the duplicate columns
+                to_org_col = Column.objects.filter(organization=organization,
+                                                   column_name=field['to_field'],
+                                                   table_name=field['to_table_name'],
+                                                   is_extra_data=is_extra_data).first()
+                _log.debug("Grabbing the first from_column")
+
 
             try:
                 # the from column is the field in the import file, thus the table_name needs to be

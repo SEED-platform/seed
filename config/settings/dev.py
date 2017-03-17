@@ -91,11 +91,7 @@ CELERY_QUEUES = (
 
 REQUIRE_UNIQUE_EMAIL = False
 
-COMPRESS_ENABLED = False
-if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
-    COMPRESS_PRECOMPILERS = ()
-    COMPRESS_CSS_FILTERS = ['compressor.filters.css_default.CssAbsoluteFilter']
-    COMPRESS_JS_FILTERS = []
+COMPRESS_ENABLED = True
 
 ALLOWED_HOSTS = ['*']
 

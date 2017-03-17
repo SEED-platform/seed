@@ -256,8 +256,8 @@ class UserViewSet(viewsets.ViewSet):
         response_serializer: ListUsersResponseSerializer
         """
         users = []
-        for u in User.objects.all():
-            users.append({'email': u.email, 'user_id': u.pk})
+        for user in User.objects.only('id', 'email'):
+            users.append({'email': user.email, 'user_id': user.id})
         return JsonResponse({'users': users})
 
     @ajax_request_class

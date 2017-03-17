@@ -5,4 +5,4 @@ AUDIT_USER_EDIT = 1
 
 DATA_UPDATE_TYPE = (
     (AUDIT_IMPORT, "ImportFile"),
-    ("AUDIT_USER_EDIT", "UserEdit"))
+    (AUDIT_USER_EDIT, "UserEdit"))

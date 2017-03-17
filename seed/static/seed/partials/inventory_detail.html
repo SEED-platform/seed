@@ -76,16 +76,16 @@
 
                             <!-- Show read-only current 'regular' field value -->
                             <td ng-if="edit_form_showing===false && !field.extraData" ng-class="changed_fields.regular_fields.indexOf(field.name)>=0 ? 'highlight' : ''" class="ellipsis">
-                            <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state[field.name] $}">
-                                {$ item_state[field.name] $}
-                            </span>
+                                <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state[field.name] $}">
+                                    {$ item_state[field.name] $}
+                                </span>
                             </td>
 
                             <!-- Show read-only current 'extra_data' field value -->
                             <td ng-if="edit_form_showing===false && field.extraData" ng-class="changed_fields.extra_data_fields.indexOf(field.name)>=0 ? 'highlight' : ''" class="ellipsis">
-                            <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state.extra_data[field.name] $}">
-                                {$ item_state.extra_data[field.name] $}
-                            </span>
+                                <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state.extra_data[field.name] $}">
+                                    {$ item_state.extra_data[field.name] $}
+                                </span>
                             </td>
 
                             <!-- Show input form to edit current field value -->
@@ -100,12 +100,12 @@
 
                             <!-- Show read-only historical field value -->
                             <td ng-repeat="historical_item in historical_items" ng-class="(!field.extraData && historical_item.changed_fields.extra_data_fields.indexOf(field.name)>=0) || historical_item.changed_fields.regular_fields.indexOf(field.name)>=0 ? 'highlight' : ''" class="ellipsis">
-                            <span ng-if="!field.extraData" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$ historical_item.state[field.name] $}">
-                                {$ historical_item.state[field.name] $}
-                            </span>
+                                <span ng-if="!field.extraData" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$ historical_item.state[field.name] $}">
+                                    {$ historical_item.state[field.name] $}
+                                </span>
                                 <span ng-if="field.extraData" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$ historical_item.state.extra_data[field.name]  $}">
-                                {$ historical_item.state.extra_data[field.name] $}
-                            </span>
+                                    {$ historical_item.state.extra_data[field.name] $}
+                                </span>
                             </td>
 
                         </tr>

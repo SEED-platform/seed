@@ -67,7 +67,7 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
     dataset_factory.get_import_file = function (import_file_id) {
       return $http.get('/api/v2/import_files/' + import_file_id + '/', {
         params: {
-          import_file_id: import_file_id
+          organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
         return response.data;
