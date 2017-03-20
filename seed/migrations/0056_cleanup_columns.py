@@ -39,7 +39,7 @@ def forwards(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0050_split_multipe_mappings'),
+        ('seed', '0055_split_multipe_mappings'),
     ]
 
     operations = [

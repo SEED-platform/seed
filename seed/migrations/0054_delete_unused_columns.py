@@ -15,6 +15,26 @@ def duplicate_column(column):
     return new_c
 
 
+def duplicate_mapping(mapping, column, raw_or_mapped):
+    new_m = ColumnMapping.objects.get(pk=mapping.id)
+    new_m.pk = None
+    new_m.save()
+
+    new_c = duplicate_column(column)
+
+    # duplicate any of the columns
+    if raw_or_mapped == 'mapped':
+        new_m.column_mapped.clear()
+        new_m.column_mapped.add(new_c)
+        new_m.save()
+    elif raw_or_mapped == 'raw':
+        new_m.column_raw.clear()
+        new_m.column_raw.add(new_c)
+        new_m.save()
+
+    return new_m, new_c
+
+
 def split_duplicate_mapping(cm):
     if cm.column_raw.count() == 0 or cm.column_mapped.count() == 0:
         raise Exception("column_raw or column_mapped is none")
@@ -34,27 +54,30 @@ def split_duplicate_mapping(cm):
 
 def forwards(apps, schema_editor):
     # find which columns are not used in column mappings
-    double_usage_count = 0
+    not_used_count = 0
 
     for c in Column.objects.all():
-        cm_duplicates = ColumnMapping.objects.filter(column_raw=c, column_mapped=c)
-        if cm_duplicates.count() > 0:
+        cm_raw = ColumnMapping.objects.filter(column_raw=c)
+        cm_mapped = ColumnMapping.objects.filter(column_mapped=c)
+
+        # check if the column isn't used
+        if cm_raw.count() == 0 and cm_mapped.count() == 0:
             print "Column {}: {}.{}".format(c.id, c.table_name, c.column_name)
-            print "    duplicate 'from' and 'to' column used in same mapping(s)"
-            for cm in cm_duplicates:
-                double_usage_count += 1
-                split_duplicate_mapping(cm)
+            print "    deleting column: not used in any mappings"
+            not_used_count += 1
+            c.delete()
+            continue
 
     print ""
     print ""
     print "-------------------------------------------------------------------"
-    print "Total from/to used duplicate columns: {}".format(double_usage_count)
+    print "Total unused columns: {}".format(not_used_count)
     print "Total Columns: {}".format(Column.objects.all().count())
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0047_auto_20170119_1318'),
+        ('seed', '0053_remove_same_column_in_mappings'),
     ]
 
     operations = [
