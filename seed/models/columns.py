@@ -302,7 +302,6 @@ class Column(models.Model):
                                                    is_extra_data=is_extra_data).first()
                 _log.debug("Grabbing the first from_column")
 
-
             try:
                 # the from column is the field in the import file, thus the table_name needs to be
                 # blank. Eventually need to handle passing in import_file_id
