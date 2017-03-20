@@ -580,10 +580,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/pairing.html',
         controller: 'pairing_controller',
         resolve: {
-          // import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
-          //   var importfile_id = $stateParams.importfile_id;
-          //   return dataset_service.get_import_file(importfile_id);
-          // }],
+          import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return dataset_service.get_import_file(importfile_id);
+          }],
           propertyInventory: ['inventory_service', function (inventory_service) {
             var myColumns = [{
               'displayName': 'Address Line 1 (Property)',

@@ -49,8 +49,11 @@ angular.module('BE.seed.controller.matching_list', [])
         return _.includes(validCycles, cycle.id);
       });
       $scope.selectedCycle = _.find($scope.cycles, {id: $scope.import_file.cycle});
-
-      $scope.inventory = [];
+      if ($scope.inventory_type == 'properties') {
+        $scope.inventory = inventory_payload.properties;
+      } else {
+        $scope.inventory = inventory_payload.tax_lots;
+      }
       $scope.number_per_page = 10;
       $scope.current_page = 1;
       $scope.order_by = '';

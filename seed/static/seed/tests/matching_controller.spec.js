@@ -3,7 +3,7 @@
  */
 describe('Controller: matching_controller', function () {
   // globals set up and used in each test scenario
-  var mock_building_services, scope, controller, delete_called;
+  var mock_matching_services, mock_inventory_services, mock_building_services, scope, controller, delete_called;
   var matching_controller, matching_controller_scope, modalInstance, labels;
 
 
@@ -14,30 +14,35 @@ describe('Controller: matching_controller', function () {
   });
 
   // inject AngularJS dependencies for the controller
-  beforeEach(inject(function ($controller, $rootScope, $uibModal, urls, $q, building_services) {
+  beforeEach(inject(function ($controller, $rootScope, $uibModal, urls, $q, matching_service, inventory_service, building_services) {
     controller = $controller;
     scope = $rootScope;
     matching_controller_scope = $rootScope.$new();
+    matching_controller_scope.inventory_type = 'properties';
 
+    mock_matching_services = matching_service;
     mock_building_services = building_services;
+    mock_inventory_services = inventory_service;
     spyOn(mock_building_services, 'get_matching_results')
-      .andCallFake(function (import_file) {
-          return $q.when({
-            status: 'success',
-            unmatched: 5,
-            matched: 10
-          });
-        }
-      );
-    spyOn(mock_building_services, 'save_match')
+        .andCallFake(function(import_file){
+            // return $q.reject for error scenario
+            return $q.when({
+              properties: {
+                status: 'success',
+                matched: 10,
+                unmatched: 5,
+                duplicates: 0
+              }
+            });
+        });
+    spyOn(mock_inventory_services, 'save_property_match')
       .andCallFake(function (b1, b2, create) {
           return $q.when({
             status: 'success',
             child_id: 3
           });
-        }
-      );
-    spyOn(mock_building_services, 'search_matching_buildings')
+        });
+    spyOn(mock_inventory_services, 'search_matching_inventory')
       .andCallFake(function (q, number_per_page, current_page, order_by, sort_reverse,
                              filter_params, file_id) {
         var bldgs;
@@ -61,14 +66,12 @@ describe('Controller: matching_controller', function () {
           }];
         }
 
-        var deferred = $q.defer();
-        deferred.resolve({
+        return $q.when({
           status: 'success',
-          number_returned: bldgs.length,
-          number_matching_search: bldgs.length,
-          buildings: bldgs
+          number_properties_returned: bldgs.length,
+          number_properties_matching_search: bldgs.length,
+          properties: bldgs
         });
-        return deferred.promise;
 
       });
   }));
@@ -76,7 +79,7 @@ describe('Controller: matching_controller', function () {
   // this is outside the beforeEach so it can be configured by each unit test
   function create_dataset_detail_controller() {
     var inventory_payload = {
-      buildings: [
+      properties: [
         {
           pm_property_id: 1,
           tax_lot_id: null,
@@ -95,12 +98,19 @@ describe('Controller: matching_controller', function () {
           }
         }
       ],
-      number_matching_search: 1,
-      number_returned: 1
+      number_properties_matching_search: 1,
+      number_properties_returned: 1
     };
     matching_controller = controller('matching_controller', {
       $scope: matching_controller_scope,
       inventory_payload: inventory_payload,
+      $stateParams: {
+          cycle_id: 2017,
+          inventory_id: 4,
+          inventory_type: 'properties',
+          project_id: 2,
+          import_file_id: 1
+      },
       all_columns: {
         fields: [{sort_column: 'pm_property_id'}]
       },
@@ -119,13 +129,18 @@ describe('Controller: matching_controller', function () {
       import_file_payload: {
         import_file: {
           id: 1,
+          cycle: 1,
           dataset: {
             importfiles: [{
               id: 1,
-              name: 'file_1.csv'
+              name: 'file_1.csv',
+              mapping_done: true,
+              cycle: 1
             }, {
               id: 2,
-              name: 'file_2.csv'
+              name: 'file_2.csv',
+              mapping_done: true,
+              cycle: 1
             }]
           }
         }
@@ -144,10 +159,10 @@ describe('Controller: matching_controller', function () {
 
     // act
     matching_controller_scope.$digest();
-    var b = matching_controller_scope.buildings[0];
+    var b = matching_controller_scope.inventory[0];
 
     // assertions
-    expect(matching_controller_scope.buildings.length).toBe(1);
+    expect(matching_controller_scope.inventory.length).toBe(1);
     expect(b.coparent.children).toEqual(b.children);
   });
 
@@ -157,10 +172,12 @@ describe('Controller: matching_controller', function () {
 
     // act
     matching_controller_scope.$digest();
+    matching_controller_scope.update_number_matched();
 
     // assertions
     expect(matching_controller_scope.matched_buildings).toEqual(10);
     expect(matching_controller_scope.unmatched_buildings).toEqual(5);
+    expect(mock_building_services.get_matching_results).toHaveBeenCalled();
   });
 
   it('should jump back to the matching list when the \'Back to list\' button is clicked', function () {
@@ -186,8 +203,8 @@ describe('Controller: matching_controller', function () {
 
       // assertions
       expect(matching_controller_scope.columns).toEqual([{sort_column: 'pm_property_id'}]);
-      expect(matching_controller_scope.number_matching_search).toEqual(1);
-      expect(matching_controller_scope.number_returned).toEqual(1);
+      expect(matching_controller_scope.number_properties_matching_search).toEqual(1);
+      expect(matching_controller_scope.number_properties_returned).toEqual(1);
       expect(matching_controller_scope.num_pages).toEqual(1);
       expect(mock_building_services.get_matching_results).toHaveBeenCalled();
     });
@@ -213,7 +230,7 @@ describe('Controller: matching_controller', function () {
     matching_controller_scope.$digest();
 
     // assertions
-    expect(mock_building_services.save_match).toHaveBeenCalledWith(b1.id, b2.id, true);
+    expect(mock_inventory_services.save_property_match).toHaveBeenCalledWith(b1.id, b2.id, true);
     expect(mock_building_services.get_matching_results).toHaveBeenCalled();
     expect(b1.children[0]).toEqual(3);
   });
@@ -226,9 +243,9 @@ describe('Controller: matching_controller', function () {
     matching_controller_scope.$digest();
 
     //assertions
-    //expect(mock_building_services.search_matching_buildings).toHaveBeenCalled();
-    expect(matching_controller_scope.buildings.length).toEqual(1);
-    expect(matching_controller_scope.number_returned).toEqual(1);
+    expect(mock_inventory_services.search_matching_inventory).toHaveBeenCalled();
+    expect(matching_controller_scope.inventory.length).toEqual(1);
+    expect(matching_controller_scope.number_properties_returned).toEqual(1);
   });
   it('Should update the list of buildings correctly when \'Show Unmatched\' is selected', function () {
     //arrange
@@ -239,9 +256,9 @@ describe('Controller: matching_controller', function () {
     matching_controller_scope.$digest();
 
     //assertions
-    //expect(mock_building_services.search_matching_buildings).toHaveBeenCalled();
-    expect(matching_controller_scope.buildings.length).toEqual(2);
-    expect(matching_controller_scope.number_returned).toEqual(2);
+    expect(mock_inventory_services.search_matching_inventory).toHaveBeenCalled();
+    expect(matching_controller_scope.inventory.length).toEqual(2);
+    expect(matching_controller_scope.number_properties_returned).toEqual(2);
   });
   it('Should update the list of buildings correctly when \'Show All\' is selected', function () {
     //arrange
@@ -252,9 +269,9 @@ describe('Controller: matching_controller', function () {
     matching_controller_scope.$digest();
 
     //assertions
-    //expect(mock_building_services.search_matching_buildings).toHaveBeenCalled();
-    expect(matching_controller_scope.buildings.length).toEqual(3);
-    expect(matching_controller_scope.number_returned).toEqual(3);
+    expect(mock_inventory_services.search_matching_inventory).toHaveBeenCalled();
+    expect(matching_controller_scope.inventory.length).toEqual(3);
+    expect(matching_controller_scope.number_properties_returned).toEqual(3);
   });
 
 

@@ -1008,7 +1008,6 @@ class EquivalencePartitioner(object):
         tax_lot_noequivalence_fields = ["jurisdiction_tax_lot_id"]
         return kls(tax_lot_equivalence_fields, tax_lot_noequivalence_fields)
 
-
     @staticmethod
     def make_canonical_key_calculation_function(list_of_fieldlists):
         """Create a function that returns the "canonical" key for the object -
@@ -1096,8 +1095,6 @@ class EquivalencePartitioner(object):
         # that has a blank pm_property, we would not want to say the
         # value in the custom_id must be the pm_property_id.
 
-
-
         for (ndx, obj) in enumerate(list_of_obj):
             cmp_key = self.calculate_comparison_key(obj)
             identity_key = self.calculate_identity_key(obj)
@@ -1105,8 +1102,8 @@ class EquivalencePartitioner(object):
             for class_key in equivalence_classes:
                 if self.calculate_key_equivalence(class_key, cmp_key) \
                    and not \
-                   self.identities_are_different( identities_for_equivalence[class_key],
-                                                  identity_key):
+                   self.identities_are_different(identities_for_equivalence[class_key],
+                                                 identity_key):
 
                     equivalence_classes[class_key].append(ndx)
 
