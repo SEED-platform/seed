@@ -5,6 +5,7 @@ from create_m2m_relationships_organization import Command as CreateM2MCommand
 from create_primarysecondary_taxlots import Command as CreatePrimarySecondaryCommand
 from migrate_extradata_columns import Command as MigrateColumnsCommand
 from migrate_labels import Command as MigrateLabelsCommand
+from single_org_commands import Command as SingleOrgCommand
 from django.core.management.base import BaseCommand
 from seed.models import CanonicalBuilding
 
@@ -114,5 +115,8 @@ class Command(BaseCommand):
         if migrate_labels:
             migrate_labels_command = MigrateLabelsCommand()
             migrate_labels_command.handle(*args, **options)
+
+        single_org_command = SingleOrgCommand()
+        single_org_command.handle(*args, **options)
 
         return

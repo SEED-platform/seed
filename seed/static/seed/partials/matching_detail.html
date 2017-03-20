@@ -1,119 +1,158 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a class="page_action" ui-sref="matching({importfile_id: import_file.id, inventory_type: 'properties'})"><i class="fa fa-chevron-left"></i> Matching</a>
+            <a class="page_action" ui-sref="dataset_detail({dataset_id: import_file.dataset.id})"><i class="fa fa-chevron-left"></i> {$ import_file.dataset.name $}</a>
         </div>
         <div class="page_title">
-            <h1>Matching ({$ import_file.file_name $})</h1>
+            <h1>Data Matching ({$ import_file.uploaded_filename $})</h1>
         </div>
-        <div class="right page_action_container">
-
-        </div>
+        <div class="right page_action_container"></div>
     </div>
 </div>
 
 <div class="section" ng-cloak>
+
+    <uib-alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{$ alert.msg $}</uib-alert>
+
+    <div class="section_tab_container">
+        <uib-tabset active="1">
+            <uib-tab heading="Auto Matching">
+                <div class="row">
+                    <div class="col-sm-6 tab_content wide">
+                        <p><strong>HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES &amp; TAX LOTS:</strong></p>
+                        <p>Your source data file(s) are presented in the table on the left. All properties/tax lots where a possible data match exists are presented in a table on the right. The system attempts to auto-match records using shared unique IDs like: PM Property ID, Jurisdiction Tax Lot ID, and Custom IDs as well as Address information. Where the system believes a match exists between a record in your source file and an existing record it will auto-check the 'match'
+                            <i class="fa fa-check-square-o"></i> checkbox &mdash; effectively making a match between these records.
+                        </p>
+                    </div>
+                    <div class="col-sm-6 key tab_content wide">
+                        <p class="important-tip"><strong>FIELDS NEEDED TO MAKE MATCHES:</strong></p>
+                        <p>The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our system will auto-match your records.</p>
+                        <p><span class="label label-warning">Jurisdiction Tax Lot ID</span>
+                            <span class="label label-warning">PM Property ID</span></p>
+                        <p><span class="label label-warning">Custom ID 1</span>
+                            <span class="label label-warning">Address Line 1</span></p>
+                    </div>
+                </div>
+            </uib-tab>
+            <uib-tab heading="Manual Matching">
+                <div class="row">
+                    <div class="col-sm-6 tab_content wide">
+                        <p><strong>HOW TO MANUALLY MATCH YOUR PROPERTIES &amp; TAX LOTS:</strong></p>
+                        <p>You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to.</p>
+                    </div>
+                    <!--<div class="col-sm-6 tab_content wide">
+                        <p><strong>VIEW/HIDE COLUMNS</strong></p>
+                        <p>You can customize the columns displayed in the table below by clicking the 'View/Hide Columns' button and then selecting the column headers you want to review from the modal window.</p>
+                    </div>-->
+                </div>
+
+            </uib-tab>
+            <uib-tab class="pull-right" heading="Collapse Tabs"></uib-tab>
+        </uib-tabset>
+    </div>
+    <div class="section_header_container has_no_border">
+        <div class="section_header fixed_height">
+            <div class="left section_action_container row matching_toggle" style="margin-left:0px;">
+
+                <a ui-sref="matching_list({importfile_id: import_file.id, inventory_type: inventory_type})" class="btn btn-primary btn-sm" style="margin-right:10px;">
+                    <i class="fa fa-chevron-left"></i> Back to List
+                </a>
+                <!--<button type="button" class="btn btn-primary btn-sm" ng-click="do_update_filters()">
+                    Update Filters
+                </button>-->
+
+            </div>
+            <!--<div class="right section_action_container section_action_btn">
+                <button type="button" class="btn btn-default btn-sm" ng-click="open_edit_columns_modal()">
+                    <i class="fa fa-columns"></i>View/Hide Columns
+                </button>
+            </div>-->
+        </div>
+    </div>
+
     <div class="section_content_container">
         <div class="section_content">
-            <div class="table_list_container matching">
-                <div class="file_to_import ng-cloak">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th class="source_data blank"></th>
-                                <th class="source_data" colspan="7">Building from: {$ import_file.file_name $}</th>
-                            </tr>
-                            <tr>
-                                <th class="is_aligned_center">Match</th>
-                                <th width="20%">Tax Lot ID</th>
-                                <th width="10%">Custom ID 1</th>
-                                <th width="10%">Name</th>
-                                <th width="15%">Address</th>
-                                <th width="15%">Year Built</th>
-                                <th width="10%">Postal Code</th>
-                                <th width="20%">Floor Area</th>
-                            </tr>
-                            <tr>
-                                <th class="sub_head"></th>
-                                <th class="sub_head">
-                                    <input type="text" class="form-control input-sm show" placeholder="ID" ng-model="filter_params.property_id" ng-class="{active: filter_params.property_id.length > 0}">
-                                </th>
-                                <th class="sub_head">
-                                    <input type="text" class="form-control input-sm show" placeholder="Custom ID" ng-model="filter_params.property_name" ng-class="{active: filter_params.property_name.length > 0}">
-                                </th>
-                                <th class="sub_head">
-                                    <input type="text" class="form-control input-sm show" placeholder="Name" ng-model="filter_params.property_name" ng-class="{active: filter_params.property_name.length > 0}">
-                                </th>
-                                 <th class="sub_head">
-                                    <input type="text" class="form-control input-sm show" placeholder="Address" ng-model="filter_params.address_line_1" ng-class="{active: filter_params.address_line_1.length > 0}">
-                                </th>
-                                <th class="sub_head">
-                                    <input type="text" class="form-control input-sm show" placeholder="Year Built" ng-model="filter_params.year_built" ng-class="{active: filter_params.year_built.length > 0}">
-                                </th>
-                                <th class="sub_head">
-                                    <input type="text" class="form-control input-sm show" placeholder="Postal Code" ng-model="filter_params.postal_code" ng-class="{active: filter_params.postal_code.length > 0}">
-                                </th>
-                                <th class="sub_head">
-                                    <input type="text" class="form-control input-sm show" placeholder="Floor Area" ng-model="filter_params.gross_floor_area" ng-class="{active: filter_params.gross_floor_area.length > 0}">
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="to_match check is_aligned_center" ng-show="!building.matched"><i class="fa fa-question-circle"></i></td>
-                                <td class="to_match check is_aligned_center" ng-show="building.matched"><i class="fa fa-check"></i></td>
-
-                                <td class="to_match">{$ building.property_id $}</td>
-                                <td class="to_match">{$ building.extra_data['Custom Property ID 1 - ID'] $}</td>
-                                <td class="to_match">{$ building.property_name $}</td>
-                                <td class="to_match">{$ building.address_line_1 $}</td>
-                                <td class="to_match">{$ building.year_built $}</td>
-                                <td class="to_match">{$ building.postal_code $}</td>
-                                <td class="to_match">{$ building.property_floor_area_bldg_park | number:0 $}</td>
-                            </tr>
-                            <tr ng-repeat="b in assessed_buildings | filter:filter_params:strict">
-                                <td class="is_aligned_center">
-                                    <input type="checkbox" ng-model="b.matched" ng-change="toggle_match(b)">
-                                </td>
-                                <td class="is_aligned_center">
-                                    <span class="badge low_confidence" ng-show="b.calculated_confidence < 0.4">low</span>
-                                    <span class="badge med_confidence" ng-show="b.calculated_confidence >= 0.4 && b.calculated_confidence < 0.7">medium</span>
-                                    <span class="badge high_confidence" ng-show="b.calculated_confidence >= 0.7">high</span>
-                                </td>
-                                <td>{$ b.property_id | stripImportPrefix $}</td>
-                                <td>{$ b.property_name $}</td>
-                                <td>{$ b.address_line_1 $}</td>
-                                <td>{$ b.year_built $}</td>
-                                <td>{$ b.postal_code $}</td>
-                                <td>{$ b.gross_floor_area | number:0 $}</td>
-                            </tr>
-
-                        </tbody>
-                    </table>
-                </div>
-                <div class="table_footer">
-                    <div class="display_number_entries col-sm-3 col-md-3" ng-hide="true">
-                        <div class="display_number_entries_text">Display:</div>
-                        <div class="display_number_entries_select">
-                            <select class="form-control input-sm col-xs-2" name="number_per_page_select" id="number_per_page_select" ng-options="number_per_page_option for number_per_page_option in number_per_page_options" ng-model="number_per_page_options_model" ng-change="update_number_per_page()">
-                            </select>
-                        </div>
-                        <div class="display_number_entries_text">buildings</div>
-                    </div>
-                    <div class="counts col-sm-4 col-md-4">
-                        <span>{$ assessed_buildings.length | number:0 $} possible matches</span>
-                    </div>
-                    <div class="pager_container col-sm-5 col-md-5" ng-hide="true">
-                        <ul class="pager">
-                            <li ng-class="{disabled: prev_page_disabled}"><a ng-click="first_page()"><i class="fa fa-angle-double-left"></i> First Record</a></li>
-                            <li ng-class="{disabled: prev_page_disabled}"><a ng-click="prev_page()"><i class="fa fa-angle-left"></i> Previous</a></li>
-
-                            <li ng-class="{disabled: next_page_disabled}"><a ng-click="next_page()">Next <i class="fa fa-angle-right"></i></a></li>
-                            <li ng-class="{disabled: next_page_disabled}"><a ng-click="last_page()">Last Record <i class="fa fa-angle-double-right"></i></a></li>
-                        </ul>
-                    </div>
-                </div>
+            <div class="table_list_container matching_detail" ng-cloak>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th class="is_aligned_center">Match</th>
+                            <th ng-repeat="col in columns">{$ col.displayName $}</th>
+                        </tr>
+                        <!--<tr>
+                            <th class="sub_head"></th>
+                            <th class="sub_head" ng-repeat="col in columns">
+                                <input type="text" class="form-control input-sm show" ng-class="{active: search.filter_params[col.name].length}" ng-change="search.filter_search()" ng-model="search.filter_params[col.name]">
+                            </th>
+                        </tr>-->
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="potential_matches" colspan="{$ columns.length + 1 $}">
+                                <span>Record from Source: <strong>{$ import_file.uploaded_filename $}</strong></span>
+                                <span class="label label-success matched" ng-show="state.matched">Matched!</span>
+                            </td>
+                        </tr>
+                        <tr ng-class="{'info': !state.matched, 'success': state.matched}">
+                            <td class="is_aligned_center">
+                                <i class="fa fa-check green" ng-show="state.matched"></i></td>
+                            <td ng-repeat="col in columns">
+                                <span>{$ col.extraData ? state.extra_data[col.name] : state[col.name] $}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="potential_matches" colspan="{$ columns.length + 1 $}"><span>Potential Matches from Source: <strong>Existing {$ inventory_type == 'properties' ? 'Properties' : 'Tax Lots' $}</strong></span>
+                            </td>
+                        </tr>
+                        <!-- matched record -->
+                        <tr class="success" ng-if="state.matched">
+                            <td class="is_aligned_center">
+                                <input type="checkbox" ng-model="state.matched" ng-change="unmatch()">
+                            </td>
+                            <td ng-repeat="col in columns">
+                                <span>{$ col.extraData ? state.coparent.extra_data[col.name] : state.coparent[col.name] $}</span>
+                            </td>
+                        </tr>
+                        <!-- search results -->
+                        <tr ng-repeat="state in available_matches">
+                            <td class="is_aligned_center">
+                                <input type="checkbox" ng-model="state.checked" ng-change="checkbox_match(state)">
+                            </td>
+                            <td ng-repeat="col in columns">
+                                <span>{$ col.extraData ? state.extra_data[col.name] : state[col.name] $}</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
+            <!--<div class="table_footer">
+                <div class="display_number_entries col-sm-3" ng-hide="false">
+                    <div class="display_number_entries_text">Display:</div>
+                    <div class="display_number_entries_select">
+                        <select class="form-control input-sm col-xs-2" name="number_per_page_select" id="number_per_page_select" ng-options="number_per_page_option for number_per_page_option in search.number_per_page_options" ng-model="search.number_per_page_options_model" ng-change="search.update_number_per_page()"> </select>
+                    </div>
+                    <div class="display_number_entries_text">{$ inventory_type == 'taxlots' ? 'tax lots' : 'properties' $}</div>
+                </div>
+                <div class="counts col-sm-4">
+                    <span>{$ search.number_matching_search | number:0 $} search results</span>
+                </div>
+                <div class="pager_container col-sm-5" ng-hide="false">
+                    <ul class="pager">
+                        <li ng-class="{disabled: search.prev_page_disabled}">
+                            <a ng-click="search.first_page()"><i class="fa fa-angle-double-left"></i> First Record</a>
+                        </li>
+                        <li ng-class="{disabled: search.prev_page_disabled}">
+                            <a ng-click="search.prev_page()"><i class="fa fa-angle-left"></i> Previous</a>
+                        </li>
+                        <li ng-class="{disabled: search.next_page_disabled}">
+                            <a ng-click="search.next_page()">Next <i class="fa fa-angle-right"></i></a>
+                        </li>
+                        <li ng-class="{disabled: search.next_page_disabled}">
+                            <a ng-click="search.last_page()">Last Record <i class="fa fa-angle-double-right"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>-->
         </div>
     </div>
 </div>

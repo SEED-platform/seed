@@ -69,7 +69,7 @@
             <div class="left section_action_container"></div>
             <div class="right section_action_container section_action_btn">
                 <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="check_fields()" ng-click="remap_buildings()" ng-hide="import_file.matching_done">Map Your Data</button>
-                <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings(true)" ng-show="import_file.matching_done">Review Mapped Data</button>
+                <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done && isValidCycle">Review Mapped Data</button>
             </div>
         </div>
     </div>
@@ -77,8 +77,9 @@
         <div class="section_content">
             <div class="table_list_container mapping" ng-cloak>
                 <div class="alert warning file_error_messages" ng-show="has_mapping_error_messages()" ng-bind-html="mapping_error_messages"></div>
-                <div class="alert alert-danger" ng-show="!required_fields_present()">At least one of the following is required: Address Line 1, Custom Id 1, Jurisdiction Tax Lot Id (with inventory type Tax Lot), or Pm Property Id (with inventory type Property).</div>
+                <div class="alert alert-danger" ng-show="!required_fields_present() && !import_file.matching_done">At least one of the following is required: Address Line 1, Custom Id 1, Jurisdiction Tax Lot Id (with inventory type Tax Lot), or Pm Property Id (with inventory type Property).</div>
                 <div class="alert alert-danger" ng-show="duplicates_present()">Please review SEED headers.  Duplicate values are not allowed.</div>
+                <div class="alert alert-danger" ng-show="empty_fields_present()">Please review SEED headers.  Empty values are not allowed.</div>
                 <table class="table table-striped" ng-hide="review_mappings">
                     <thead>
                         <tr>
@@ -124,7 +125,7 @@
                             <td>
                                 <strong id="duplicate-header-{$ $index $}">{$tcm.name$}</strong>
                             </td>
-                            <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning', 'success': set_td_class(tcm, cell_value) == 'success'}">
+                            <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning'}">
                                 {$ cell_value $}
                             </td>
                         </tr>
@@ -133,9 +134,9 @@
                         <tr>
                             <td></td>
                             <td style="border-right: 0 none;"><h3>Mapped Fields</h3></td>
-                            <td style="border-right: 0 none; text-align: right;">Set all fields to:</td>
+                            <td style="border-right: 0 none; text-align: right;"><span ng-hide="import_file.matching_done">Set all fields to:</span></td>
                             <td style="border-right: 0 none;">
-                                <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as item.name for item in setAllFieldsOptions track by item.value"></select>
+                                <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as item.name for item in setAllFieldsOptions track by item.value" ng-hide="import_file.matching_done"></select>
                             </td>
                             <td colspan="5"></td>
                         </tr>
@@ -172,12 +173,12 @@
                                 <strong id="mapped-header-{$ $index $}">{$tcm.name$}</strong>
                             </td>
                             <td ng-class="{'danger': tcm.is_duplicate == true}" id="mapped-row-type-{$ $index $}">
-                                <select ng-model="tcm.suggestion_table_name" ng-change="setInventoryType(tcm); change(tcm)">
+                                <select ng-model="tcm.suggestion_table_name" ng-change="setInventoryType(tcm); change(tcm)" ng-disabled="!tcm.mapped_row || import_file.matching_done">
                                     <option value="PropertyState">Property</option>
                                     <option value="TaxLotState">Tax Lot</option>
                                 </select>
                             </td>
-                            <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning', 'success': set_td_class(tcm, cell_value) == 'success'}">
+                            <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning'}">
                                 {$ cell_value $}
                             </td>
                         </tr>
@@ -252,7 +253,7 @@
         </div>
         <div class="col-sm-6" ng-hide="review_mappings">
             <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="check_fields()" ng-click="remap_buildings()" ng-hide="import_file.matching_done" id="map-data-button">Map Your Data</button>
-            <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings(true)" ng-show="import_file.matching_done">Review Mapped Data</button>
+            <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done && isValidCycle">Review Mapped Data</button>
         </div>
         <div class="col-sm-6" ng-show="show_mapped_buildings">
             <a ui-sref="mapping({importfile_id: import_file.id})">

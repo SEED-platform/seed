@@ -6,7 +6,12 @@
 // http://docs.angularjs.org/guide/dev_guide.unit-testing
 
 // create dummy angularJS app to attach filter(s)
-var mySDLabelDirectiveApp = angular.module('mySDLabelDirectiveApp', ['sdLabel']);
+var mySDLabelDirectiveApp = angular.module('mySDLabelDirectiveApp', ['sdLabel'], 
+    ['$interpolateProvider', '$qProvider', function ($interpolateProvider, $qProvider) {
+        $interpolateProvider.startSymbol('{$');
+        $interpolateProvider.endSymbol('$}');
+        $qProvider.errorOnUnhandledRejections(false);
+      }]);
 
 describe('The sdLabel directive', function() {
     var $compile;

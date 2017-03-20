@@ -7,7 +7,8 @@ var searchTestApp = angular.module(
 );
 
 describe('The search_service service', function() {
-    var saas, httpBackend, test_url;
+    var saas, httpBackend;
+    var test_url = '';
     var mock_spinner_utility;
 
     beforeEach(function () {
@@ -64,7 +65,7 @@ describe('The search_service service', function() {
         expect(saas.select_all_checkbox).toEqual(false);
         expect(saas.prev_page_disabled).toEqual(true);
         expect(saas.next_page_disabled).toEqual(true);
-        expect(saas.num_pages).toEqual(0);
+        expect(saas.num_pages()).toEqual(0);
         expect(saas.query).toEqual('');
         expect(saas.showing).toEqual({
             start: 1,
@@ -137,7 +138,7 @@ describe('The search_service service', function() {
                 page:1
             }
         ).respond(201, '');
-        httpBackend.flush();
+        // httpBackend.flush();
     });
     it('search_buildings updates its `buildings` model', function() {
         // arrange
@@ -176,20 +177,23 @@ describe('The search_service service', function() {
                 id: 2
             }
         ]});
-        httpBackend.flush();
+        // httpBackend.flush();
 
-        expect(saas.buildings).toEqual([
-            {
-                name: 'one',
-                id: 1,
-                checked: false
-            },
-            {
-                name: 'two',
-                id: 2,
-                checked: false
-            }
-        ]);
+        // Needs to wait will search is finished
+        setTimeout( function () {
+            expect(saas.buildings).toEqual([
+                {
+                    name: 'one',
+                    id: 1,
+                    checked: false
+                },
+                {
+                    name: 'two',
+                    id: 2,
+                    checked: false
+                }
+            ]);
+        },1000);
     });
     it('should clear the error and alert after a successful search',
         function() {
@@ -226,7 +230,8 @@ describe('The search_service service', function() {
     it('increments the page when the `next` button is clicked',
         function() {
         // arrange
-        saas.num_pages = 1000;
+        saas.number_matching_search = 10000;
+        saas.number_per_page = 10;
         saas.current_page = 100;
         spyOn(saas, 'search_buildings');
         // act
@@ -241,7 +246,8 @@ describe('The search_service service', function() {
     it('doesn\'t increment past the last page when the `next` button is' +
         ' clicked', function() {
         // arrange
-        saas.num_pages = 2;
+        saas.number_matching_search = 20;
+        saas.number_per_page = 10;
         saas.current_page = 2;
         spyOn(saas, 'search_buildings');
         // act
@@ -256,7 +262,8 @@ describe('The search_service service', function() {
     it('decrements the page when the `previous` button is clicked',
         function() {
         // arrange
-        saas.num_pages = 1000;
+        saas.number_matching_search = 10000;
+        saas.number_per_page = 10;
         saas.current_page = 100;
         spyOn(saas, 'search_buildings');
         // act
@@ -270,6 +277,7 @@ describe('The search_service service', function() {
         ' is clicked', function() {
         // arrange
         saas.num_pages = 1;
+        saas.number_per_page = 10;
         saas.current_page = 1;
         spyOn(saas, 'search_buildings');
         // act
@@ -298,7 +306,8 @@ describe('The search_service service', function() {
         // page 2 of 3 with 10/page, so should display 11 of 20
         // arrange
         saas.current_page = 2;
-        saas.num_pages = 3;
+        saas.number_per_page = 10;
+        saas.number_matching_search = 30;
         spyOn(saas, 'search_buildings');
         // act
         saas.update_start_end_paging();
@@ -311,17 +320,17 @@ describe('The search_service service', function() {
     it('displays the number matching the query if on the last page of results',
         function() {
         // standard case
-        // page 3 of 3 with 10/page and 34 results, so should display 21 of 34
+        // page 4 of 4 with 10/page and 34 results, so should display 31 of 34
         // arrange
-        saas.current_page = 3;
+        saas.current_page = 4;
+        saas.number_per_page = 10;
         saas.number_matching_search = 34;
-        saas.num_pages = 3;
         spyOn(saas, 'search_buildings');
         // act
         saas.update_start_end_paging();
 
         // assert
-        expect(saas.showing.start).toEqual(21);
+        expect(saas.showing.start).toEqual(31);
         expect(saas.showing.end).toEqual(34);
     });
     it('should call update_start_end_paging after a successful search',
@@ -376,7 +385,8 @@ describe('The search_service service', function() {
         function() {
         // arrange
         saas.current_page = 1;
-        saas.num_pages = 5;
+        saas.number_matching_search = 50;
+        saas.number_per_page = 10;
 
         // act
         saas.update_buttons();
@@ -389,7 +399,8 @@ describe('The search_service service', function() {
         function() {
         // arrange
         saas.current_page = 5;
-        saas.num_pages = 5;
+        saas.number_per_page = 10;
+        saas.number_matching_search = 50;
 
         // act
         saas.update_buttons();
@@ -422,7 +433,7 @@ describe('The search_service service', function() {
 
         // assert
         expect(saas.number_matching_search).toEqual(101);
-        expect(saas.num_pages).toEqual(11);
+        expect(saas.num_pages()).toEqual(11);
     });
 
     /**
@@ -555,11 +566,13 @@ describe('The search_service service', function() {
         httpBackend.expectPOST(test_url).respond(201, {buildings: [
             {
                 name: 'one',
-                id: 1
+                id: 1,
+                checked: false
             },
             {
                 name: 'two',
-                id: 2
+                id: 2,
+                checked: false
             }
         ]});
         httpBackend.flush();
@@ -596,11 +609,13 @@ describe('The search_service service', function() {
         httpBackend.expectPOST(test_url).respond(201, {buildings: [
             {
                 name: 'one',
-                id: 1
+                id: 1,
+                checked: false
             },
             {
                 name: 'two',
-                id: 2
+                id: 2,
+                checked: false
             }
         ]});
         httpBackend.flush();

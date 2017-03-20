@@ -6,6 +6,7 @@
 """
 import json
 from datetime import date, datetime, timedelta
+from django.utils import timezone
 from unittest import skip
 
 from django.core.cache import cache
@@ -1514,11 +1515,10 @@ class GetDatasetsViewsTests(TestCase):
         import_record.save()
         response = self.client.get(reverse('apiv2:datasets-count'),
                                    {'organization_id': 666})
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(200, response.status_code)
         j = json.loads(response.content)
-        self.assertEqual(j['status'], 'error')
-        self.assertEqual(j['message'],
-                         'Could not find organization_id: 666')
+        self.assertEqual(j['status'], 'success')
+        self.assertEqual(j['datasets_count'], 0)
 
     def test_get_dataset(self):
         import_record = ImportRecord.objects.create(owner=self.user)
@@ -1575,7 +1575,7 @@ class ImportFileViewsTests(TestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org = Organization.objects.create()
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        self.cycle = self.cycle_factory.get_cycle(start=datetime(2016, 1, 1))
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()))
         OrganizationUser.objects.create(user=self.user, organization=self.org)
 
         self.import_record = ImportRecord.objects.create(owner=self.user)
@@ -1612,13 +1612,6 @@ class ImportFileViewsTests(TestCase):
     def test_get_matching_results(self):
         response = self.client.get(
             '/api/v2/import_files/' + str(self.import_file.pk) + '/matching_results/')
-        self.assertEqual('success', json.loads(response.content)['status'])
-
-    def test_delete_duplicates_from_import_file(self):
-        response = self.client.get(
-            reverse('seed:delete_duplicates_from_import_file'),
-            {'import_file_id': self.import_file.pk}
-        )
         self.assertEqual('success', json.loads(response.content)['status'])
 
 
@@ -2008,70 +2001,6 @@ class BuildingDetailViewTests(TestCase):
         self.assertEqual(audit_log.action_note, 'Matched building.')
         self.assertEqual(audit_log.audit_type, LOG)
 
-    @skip('Fix for new data model')
-    def test_get_match_tree(self):
-        """tests get_match_tree"""
-        # arrange
-        self.client.put(
-            reverse_lazy('seed:save_match'),
-            data=json.dumps({
-                'organization_id': self.org.pk,
-                'source_building_id': self.parent_1.pk,
-                'target_building_id': self.parent_2.pk,
-                'create_match': True
-            }),
-            content_type='application/json'
-        )
-
-        # act
-        resp = self.client.get(
-            reverse_lazy('seed:get_match_tree'),
-            {
-                'organization_id': self.org.pk,
-                'building_id': self.parent_1.pk,
-            },
-            content_type='application/json'
-        )
-
-        # assert
-        body = json.loads(resp.content)
-        ids = [b['id'] for b in body['match_tree']]
-        self.assertIn(self.parent_1.pk, ids)
-        self.assertIn(self.parent_2.pk, ids)
-        self.assertIn(self.parent_1.children.first().pk, ids)
-
-    @skip('Fix for new data model')
-    def test_get_match_tree_from_child(self):
-        """tests get_match_tree from the child"""
-        # arrange
-        self.client.put(
-            reverse_lazy('seed:save_match'),
-            data=json.dumps({
-                'organization_id': self.org.pk,
-                'source_building_id': self.parent_1.pk,
-                'target_building_id': self.parent_2.pk,
-                'create_match': True
-            }),
-            content_type='application/json'
-        )
-
-        # act
-        resp = self.client.get(
-            reverse_lazy('seed:get_match_tree'),
-            {
-                'organization_id': self.org.pk,
-                'building_id': self.parent_1.children.first().pk,
-            },
-            content_type='application/json'
-        )
-
-        # assert
-        body = json.loads(resp.content)
-        ids = [b['id'] for b in body['match_tree']]
-        self.assertIn(self.parent_1.pk, ids)
-        self.assertIn(self.parent_2.pk, ids)
-        self.assertIn(self.parent_1.children.first().pk, ids)
-
     def test_save_match_wrong_perms_org_id(self):
         """tests that a building match is valid for the org id"""
         # arrange
@@ -2301,8 +2230,11 @@ class TestMCMViews(TestCase):
         float_unit = Unit.objects.create(unit_name='test energy use intensity',
                                          unit_type=FLOAT)
         Column.objects.create(
+            organization=self.org,
+            table_name='PropertyState',
             column_name='Global National Median Site Energy Use',
-            unit=float_unit)
+            unit=float_unit,
+            is_extra_data=True)
 
         resp = self.client.post(
             reverse_lazy('apiv2:import_files-save-column-mappings', args=[self.import_file.id]),
@@ -2337,8 +2269,7 @@ class TestMCMViews(TestCase):
         self.assertEquals(len(energy_use_columns), 1)
 
         eu_col = energy_use_columns.first()
-
-        assert (eu_col.unit is not None)
+        self.assertTrue(eu_col.unit is not None)
         self.assertEqual(eu_col.unit.unit_name, 'test energy use intensity')
         self.assertEqual(eu_col.unit.unit_type, FLOAT)
 
@@ -2698,12 +2629,6 @@ class MatchTreeTests(TestCase):
         self.assertEqual(bs4_root, self.bs3)
         self.assertItemsEqual(bs4_cps, bs4_expected_parent_coparents)
 
-    def test_get_coparents(self):
-        response = self.client.get(reverse('seed:get_coparents'),
-                                   {'organization_id': self.org.pk,
-                                    'building_id': self.cb0.canonical_snapshot.pk})
-        self.assertEqual('success', json.loads(response.content)['status'])
-
 
 class InventoryViewTests(TestCase):
 
@@ -2724,7 +2649,7 @@ class InventoryViewTests(TestCase):
         self.org_user = OrganizationUser.objects.create(
             user=self.user, organization=self.org
         )
-        self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10))
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
         self.status_label = StatusLabel.objects.create(
             name='test', super_organization=self.org
         )
@@ -2912,7 +2837,6 @@ class InventoryViewTests(TestCase):
             'page', 10,
             'per_page', 999999999
         )
-        print('Filter properties URL: ' + filter_properties_url)
         response = self.client.post(filter_properties_url, data={'columns': COLUMNS_TO_SEND})
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 0)
@@ -2960,7 +2884,6 @@ class InventoryViewTests(TestCase):
         self.assertEqual(results['status'], 'success')
         self.assertEqual(results['history'], [])
         self.assertEqual(results['property']['labels'], [self.status_label.pk])
-        self.assertEqual(results['source'], 'ImportFile')
         self.assertEqual(results['changed_fields'], None)
 
         expected_property = {
@@ -2996,9 +2919,6 @@ class InventoryViewTests(TestCase):
         tstate = rtaxlot['state']
         self.assertEqual(tstate['id'], taxlot_state.pk)
         self.assertEqual(tstate['address_line_1'], taxlot_state.address_line_1)
-
-    def test_get_property_history(self):
-        pass  # TODO
 
     def test_get_property_multiple_taxlots(self):
         property_state = self.property_state_factory.get_property_state(self.org)
@@ -3504,12 +3424,12 @@ class InventoryViewTests(TestCase):
         self.column_factory.get_column(
             'property_extra_data_column',
             is_extra_data=True,
-            extra_data_source='property'
+            table_name='PropertyState'
         )
         self.column_factory.get_column(
             'taxlot_extra_data_column',
             is_extra_data=True,
-            extra_data_source='taxlot'
+            table_name='TaxLotState'
         )
         params = {
             'organization_id': self.org.pk,
@@ -3531,7 +3451,7 @@ class InventoryViewTests(TestCase):
         expected_property_extra_data_column = {
             'extraData': True,
             'name': 'property_extra_data_column',
-            'displayName': 'property_extra_data_column',
+            'displayName': 'Property Extra Data Column',
             'related': False,
         }
         self.assertIn(expected_property_extra_data_column, results)
@@ -3539,7 +3459,7 @@ class InventoryViewTests(TestCase):
         expected_taxlot_extra_data_column = {
             'extraData': True,
             'name': 'taxlot_extra_data_column',
-            'displayName': 'taxlot_extra_data_column',
+            'displayName': 'Taxlot Extra Data Column',
             'related': True,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
@@ -3548,12 +3468,12 @@ class InventoryViewTests(TestCase):
         self.column_factory.get_column(
             'property_extra_data_column',
             is_extra_data=True,
-            extra_data_source='property'
+            table_name='PropertyState'
         )
         self.column_factory.get_column(
             'taxlot_extra_data_column',
             is_extra_data=True,
-            extra_data_source='taxlot'
+            table_name='TaxLotState'
         )
         params = {
             'organization_id': self.org.pk,
@@ -3575,7 +3495,7 @@ class InventoryViewTests(TestCase):
         expected_property_extra_data_column = {
             'extraData': True,
             'name': 'property_extra_data_column',
-            'displayName': 'property_extra_data_column',
+            'displayName': u'Property Extra Data Column',
             'related': True,
         }
         self.assertIn(expected_property_extra_data_column, results)
@@ -3583,7 +3503,7 @@ class InventoryViewTests(TestCase):
         expected_taxlot_extra_data_column = {
             'extraData': True,
             'name': 'taxlot_extra_data_column',
-            'displayName': 'taxlot_extra_data_column',
+            'displayName': 'Taxlot Extra Data Column',
             'related': False,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)

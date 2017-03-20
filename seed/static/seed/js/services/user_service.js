@@ -169,11 +169,12 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      * gets the current user's id
      */
     user_factory.get_user_id = function () {
-      if (!_.isNil(user_id)) return $q.resolve(user_id);
-      return $http.get('/api/v2/users/current_user_id/').then(function (response) {
-        user_id = response.data.pk;
-        return user_id;
-      });
+      if (_.isUndefined(user_id)) {
+        user_id = $http.get('/api/v2/users/current_user_id/').then(function (response) {
+          return response.data.pk;
+        });
+      }
+      return user_id;
     };
 
     return user_factory;

@@ -40,10 +40,10 @@ angular.module('BE.seed.controller.organization', [])
     /**
      * open the create a sub org modal
      */
-    $scope.create_organization_modal = function() {
+    $scope.create_sub_organization_modal = function() {
         var modalInstance = $uibModal.open({
-            templateUrl: urls.static_url + 'seed/partials/create_organization_modal.html',
-            controller: 'create_organization_modal_controller',
+            templateUrl: urls.static_url + 'seed/partials/create_sub_organization_modal.html',
+            controller: 'create_sub_organization_modal_controller',
             resolve: {
               organization: function () {
                 return $scope.org;

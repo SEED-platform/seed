@@ -1181,6 +1181,7 @@ a:not([href]) {
           }
           input {
             font-weight: normal;
+            min-width: 50px;
           }
           &.is_master {
             padding: 0;
@@ -2623,6 +2624,7 @@ gs-input .tags .tag-item .remove-button {
 .pairing {
   padding-bottom: 20px;
 }
+
 // Main container: initialize the flex, direction is row
 .pairing-data-row, .pairing-headers-row {
   display: flex;
@@ -2729,4 +2731,13 @@ gs-input .tags .tag-item .remove-button {
 
 table.import_results a[disabled] {
   pointer-events: none;
+}
+
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }

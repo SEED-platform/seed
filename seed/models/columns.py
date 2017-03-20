@@ -106,6 +106,8 @@ class Column(models.Model):
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
+
+    # The extra_data_source needs to be removed
     extra_data_source = models.CharField(
         max_length=1, null=True, blank=True,
         db_index=True, choices=SOURCE_CHOICES
@@ -280,25 +282,50 @@ class Column(models.Model):
             db_field = md.find_column(field['to_table_name'], field['to_field'])
             is_extra_data = False if db_field else True  # yes i am a db column, thus I am not extra_data
 
-            # find the to_column
-            to_org_col = Column.objects.filter(organization=organization,
-                                               column_name=field['to_field'],
-                                               table_name=field['to_table_name'],
-                                               is_extra_data=is_extra_data).first()
-            from_org_col = Column.objects.filter(organization=organization,
-                                                 column_name=field['from_field'],
-                                                 is_extra_data=is_extra_data).first()
+            try:
+                to_org_col, _ = Column.objects.get_or_create(
+                    organization=organization,
+                    column_name=field['to_field'],
+                    table_name=field['to_table_name'],
+                    is_extra_data=is_extra_data
+                )
+            except Column.MultipleObjectsReturned:
+                _log.debug("More than one to_column found for {}.{}".format(field['to_table_name'],
+                                                                            field['to_field']))
+                # raise Exception("Cannot handle more than one to_column returned for {}.{}".format(
+                #     field['to_field'], field['to_table_name']))
 
-            new_field['to_column_object'] = select_col_obj(
-                field['to_field'],
-                field['to_table_name'],
-                to_org_col
-            )
-            new_field['from_column_object'] = select_col_obj(
-                field['from_field'],
-                "",
-                from_org_col)
+                # TODO: write something to remove the duplicate columns
+                to_org_col = Column.objects.filter(organization=organization,
+                                                   column_name=field['to_field'],
+                                                   table_name=field['to_table_name'],
+                                                   is_extra_data=is_extra_data).first()
+                _log.debug("Grabbing the first from_column")
 
+            try:
+                # the from column is the field in the import file, thus the table_name needs to be
+                # blank. Eventually need to handle passing in import_file_id
+                from_org_col, _ = Column.objects.get_or_create(
+                    organization=organization,
+                    table_name__in=[None, ''],
+                    column_name=field['from_field'],
+                    is_extra_data=False  # data from header rows in the files are NEVER extra data
+                )
+            except Column.MultipleObjectsReturned:
+                _log.debug(
+                    "More than one from_column found for {}.{}".format(field['to_table_name'],
+                                                                       field['to_field']))
+
+                # TODO: write something to remove the duplicate columns
+                from_org_col = Column.objects.filter(organization=organization,
+                                                     table_name__in=[None, ''],
+                                                     column_name=field['from_field'],
+                                                     is_extra_data=is_extra_data).first()
+                _log.debug("Grabbing the first from_column")
+
+            new_field['to_column_object'] = select_col_obj(field['to_field'],
+                                                           field['to_table_name'], to_org_col)
+            new_field['from_column_object'] = select_col_obj(field['from_field'], "", from_org_col)
             new_data.append(new_field)
 
         return new_data
@@ -307,7 +334,7 @@ class Column(models.Model):
     def save_column_names(model_obj):
         """Save unique column names for extra_data in this organization.
 
-        Basically this is a record of all the extra_data keys we've ever seen
+        This is a record of all the extra_data keys we've ever seen
         for a particular organization.
 
         :param model_obj: model_obj instance (either PropertyState or TaxLotState).
@@ -415,7 +442,10 @@ class ColumnMapping(models.Model):
         c = {}
         c['pk'] = self.id
         c['id'] = self.id
-        c['user_id'] = self.user.id
+        if self.user:
+            c['user_id'] = self.user.id
+        else:
+            c['user_id'] = None
         c['source_type'] = self.source_type
         c['organization_id'] = self.super_organization.id
         if self.column_raw and self.column_raw.first():
@@ -462,17 +492,21 @@ class ColumnMapping(models.Model):
         call it after all of the mappings have been saved to the ``ColumnMapping``
         table.
         """
-        from seed.utils.mapping import _get_table_and_column_names
-
-        source_mappings = ColumnMapping.objects.filter(
+        column_mappings = ColumnMapping.objects.filter(
             super_organization=organization
         )
         mapping = {}
-        for item in source_mappings:
-            if not item.column_mapped.all().exists():
+        for cm in column_mappings:
+            # What in the world is this doings? -- explanation please
+            if not cm.column_mapped.all().exists():
                 continue
-            key = _get_table_and_column_names(item, attr_name='column_raw')[0]
-            value = _get_table_and_column_names(item, attr_name='column_mapped')[0]
+
+            key = cm.column_raw.all().values_list('table_name', 'column_name')
+            value = cm.column_mapped.all().values_list('table_name', 'column_name')
+
+            # Should only have one value, if not, then we should probably catch the error
+            key = key[0]
+            value = value[0]
 
             # Concat is not used as of 2016-09-14: commenting out.
             # if isinstance(key, list) and len(key) > 1:

@@ -17,7 +17,6 @@ from seed.models.projects import (
 )
 from seed.utils.generic import obj_to_dict
 
-
 # Represents the data source of a given BuildingSnapshot
 
 ASSESSED_RAW = 0
@@ -58,11 +57,13 @@ MERGE_STATE_UNKNOWN = 0
 MERGE_STATE_NEW = 1
 MERGE_STATE_MERGED = 2
 MERGE_STATE_DUPLICATE = 3
+MERGE_STATE_DELETE = 4
 MERGE_STATE = (
     (MERGE_STATE_UNKNOWN, 'Unknown'),
-    (MERGE_STATE_NEW, 'Orphaned as result of merge'),
+    (MERGE_STATE_NEW, 'New Record'),
     (MERGE_STATE_MERGED, 'Merged Record'),
     (MERGE_STATE_DUPLICATE, 'Duplicate Record'),
+    (MERGE_STATE_DELETE, 'Delete Record'),  # typically set after unmerging two records
 )
 
 SEARCH_CONFIDENCE_RANGES = {
@@ -135,6 +136,7 @@ COMPLIANCE_CHOICES = (
     (AUDITING_COMPLIANCE_CHOICE, _('Auditing')),
     (RETRO_COMMISSIONING_COMPLIANCE_CHOICE, _('Retro Commissioning')),
 )
+
 
 #
 # Used in ``tasks.match_buildings``
@@ -369,7 +371,6 @@ class StatusLabel(TimeStampedModel):
 
 
 class Compliance(TimeStampedModel):
-
     compliance_type = models.CharField(
         _('compliance_type'),
         max_length=30,

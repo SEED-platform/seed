@@ -11,7 +11,6 @@ angular.module('BE.seed.controller.menu', [])
     '$uibModal',
     '$log',
     'urls',
-    'building_services',
     'project_service',
     'organization_service',
     'user_service',
@@ -27,7 +26,6 @@ angular.module('BE.seed.controller.menu', [])
               $uibModal,
               $log,
               urls,
-              building_services,
               project_service,
               organization_service,
               user_service,
@@ -44,7 +42,6 @@ angular.module('BE.seed.controller.menu', [])
       $scope.wide_controller = false;
       $scope.username = window.BE.username;
       $scope.urls = urls;
-      $scope.buildings_count = 0;
       $scope.datasets_count = 0;
       $scope.projects_count = 0;
       $scope.search_input = '';
@@ -95,19 +92,9 @@ angular.module('BE.seed.controller.menu', [])
       $scope.$on('finished_saving', function (event, data) {
         $scope.saving_indicator = false;
       });
-      $scope.$on('organization_deleted', function (event, data) {
+      $scope.$on('organization_list_updated', function (event, data) {
         init();
       });
-
-      $scope.input_search = function () {
-        if (!_.includes($location.absUrl(), '#')) {
-          // not on SEED angularjs route managed page
-          $window.location.href = urls.seed_home + '#/buildings?q=' + $scope.search_input;
-        } else {
-          $location.path('/buildings').search('q=' + $scope.search_input);
-        }
-      };
-
 
       $scope.is_active = function (menu_item) {
         if (menu_item === $location.path()) {
@@ -280,7 +267,7 @@ angular.module('BE.seed.controller.menu', [])
         init();
       };
 
-      //DMcQ: Set up watch statements to keep nav updated with latest buildings_count, datasets_count, etc.
+      //DMcQ: Set up watch statements to keep nav updated with latest datasets_count, etc.
       //      This isn't the best solution but most expedient. This approach should be refactored later by
       //      a proper strategy of binding views straight to model properties.
       //      See my comments here: https://github.com/SEED-platform/seed/issues/44
@@ -294,16 +281,6 @@ angular.module('BE.seed.controller.menu', [])
         },
         true
       );
-
-      //watch buildings
-      // $scope.$watch(function () {
-      //     return building_services.total_number_of_buildings_for_user;
-      //   },
-      //   function (data) {
-      //     $scope.buildings_count = data;
-      //   },
-      //   true
-      // );
 
       //watch datasets
       $scope.$watch(function () {
@@ -326,25 +303,22 @@ angular.module('BE.seed.controller.menu', [])
       );
 
       var init = function () {
-        // get the default org for the user
-        $scope.menu.user.organization = user_service.get_organization();
-        // building_services.get_total_number_of_buildings_for_user().then(function (data) {
-        //   // resolve promise
-        //   $scope.buildings_count = data.buildings_count;
-        // });
+        organization_service.get_organizations_brief().then(function (data) {
+          $scope.organizations_count = data.organizations.length;
+          $scope.menu.user.organizations = data.organizations;
+
+          // get the default org for the user
+          $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
+        });
+
         project_service.get_datasets_count().then(function (data) {
-          // resolve promise
           $scope.datasets_count = data.datasets_count;
         });
+
         // project_service.get_projects_count().then(function (data) {
         //   // resolve promise
         //   $scope.projects_count = data.projects_count;
         // });
-        organization_service.get_organizations().then(function (data) {
-          // resolve promise
-          $scope.organizations_count = data.organizations.length;
-          $scope.menu.user.organizations = data.organizations;
-        });
       };
       init();
       init_menu();

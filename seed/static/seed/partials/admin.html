@@ -193,10 +193,10 @@
                                             <button class="btn btn-warning" type="button" style="margin-left:10px;" ng-click="confirm_column_mappings_delete(org)" ng-disabled="org.progress > -1">
                                                 <i class="fa fa-exclamation-triangle"></i> Remove Column Mappings
                                             </button>
-                                            <button class="btn btn-danger" type="button" style="margin-left:10px;" ng-click="confirm_org_delete(org)" ng-hide="org.progress > -1">
+                                            <button class="btn btn-danger" type="button" style="margin-left:10px;" ng-click="confirm_org_delete(org)" ng-disabled="org.progress > -1">
                                                 <i class="fa fa-exclamation-triangle"></i> Delete Organization
                                             </button>
-                                            <uib-progressbar class="progress-striped active" value="org.progress" type="danger" ng-show="org.progress > -1">{$ org.remove_message $}</uib-progressbar>
+                                            <uib-progressbar class="progress-striped active" value="org.progress" type="success" ng-show="org.progress > -1">{$ org.remove_message $}</uib-progressbar>
                                         </div>
                                     </td>
                                 </tr>

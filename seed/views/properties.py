@@ -6,15 +6,18 @@
 """
 import itertools
 import json
+import re
+
+from os import path
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
+from django.http import JsonResponse
 from rest_framework import status
+from rest_framework.decorators import list_route, detail_route
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.decorators import list_route, detail_route
-from django.http import JsonResponse
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -29,6 +32,7 @@ from seed.serializers.taxlots import (
     TaxLotViewSerializer, TaxLotStateSerializer, TaxLotSerializer
 )
 from seed.utils.api import api_endpoint_class
+from seed.utils.time import convert_to_js_timestamp
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -71,22 +75,27 @@ def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair):
     if pair:
         string = 'pair'
 
-        if TaxLotProperty.objects.filter(property_view_id=property_id, taxlot_view_id=taxlot_id).exists():
+        if TaxLotProperty.objects.filter(property_view_id=property_id,
+                                         taxlot_view_id=taxlot_id).exists():
             return JsonResponse({
                 'status': 'success',
-                'message': 'taxlot {} and property {} are already {}ed'.format(taxlot_id, property_id, string)
+                'message': 'taxlot {} and property {} are already {}ed'.format(taxlot_id,
+                                                                               property_id, string)
             })
-        TaxLotProperty(primary=True, cycle_id=pv_cycle, property_view_id=property_id, taxlot_view_id=taxlot_id) \
+        TaxLotProperty(primary=True, cycle_id=pv_cycle, property_view_id=property_id,
+                       taxlot_view_id=taxlot_id) \
             .save()
 
         success = True
     else:
         string = 'unpair'
 
-        if not TaxLotProperty.objects.filter(property_view_id=property_id, taxlot_view_id=taxlot_id).exists():
+        if not TaxLotProperty.objects.filter(property_view_id=property_id,
+                                             taxlot_view_id=taxlot_id).exists():
             return JsonResponse({
                 'status': 'success',
-                'message': 'taxlot {} and property {} are already {}ed'.format(taxlot_id, property_id, string)
+                'message': 'taxlot {} and property {} are already {}ed'.format(taxlot_id,
+                                                                               property_id, string)
             })
         TaxLotProperty.objects.filter(property_view_id=property_id, taxlot_view_id=taxlot_id) \
             .delete()
@@ -96,12 +105,14 @@ def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair):
     if success:
         return JsonResponse({
             'status': 'success',
-            'message': 'taxlot {} and property {} are now {}ed'.format(taxlot_id, property_id, string)
+            'message': 'taxlot {} and property {} are now {}ed'.format(taxlot_id, property_id,
+                                                                       string)
         })
     else:
         return JsonResponse({
             'status': 'error',
-            'message': 'Could not {} because reasons, maybe bad organization id={}'.format(string, organization_id)
+            'message': 'Could not {} because reasons, maybe bad organization id={}'.format(string,
+                                                                                           organization_id)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -116,8 +127,9 @@ class PropertyViewSet(GenericViewSet):
         org_id = request.query_params.get('organization_id', None)
         cycle_id = request.query_params.get('cycle')
         if not org_id:
-            return JsonResponse({'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
-                                status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
+                status=status.HTTP_400_BAD_REQUEST)
         if cycle_id:
             cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
         else:
@@ -170,7 +182,8 @@ class PropertyViewSet(GenericViewSet):
         taxlot_view_ids = [j.taxlot_view_id for j in joins]
 
         # Get all tax lot views that are related
-        taxlot_views = TaxLotView.objects.select_related('taxlot', 'state', 'cycle').filter(pk__in=taxlot_view_ids)
+        taxlot_views = TaxLotView.objects.select_related('taxlot', 'state', 'cycle').filter(
+            pk__in=taxlot_view_ids)
 
         # Map tax lot view id to tax lot view's state data, so we can reference these easily and save some queries.
         taxlot_map = {}
@@ -187,7 +200,8 @@ class PropertyViewSet(GenericViewSet):
                 taxlot_state_data[extra_data_field] = extra_data_value
 
             # Only return the requested rows. speeds up the json string time
-            taxlot_state_data = {key: value for key, value in taxlot_state_data.items() if key in columns}
+            taxlot_state_data = {key: value for key, value in taxlot_state_data.items() if
+                                 key in columns}
 
             taxlot_map[taxlot_view.pk] = taxlot_state_data
             # Replace taxlot_view id with taxlot id
@@ -366,8 +380,10 @@ class PropertyViewSet(GenericViewSet):
     @list_route(methods=['GET'])
     def columns(self, request):
         """
+        # TODO: Move this to the columns API as this is not really a properties API
+
         List all property columns
-        ---
+
         parameters:
             - name: organization_id
               description: The organization_id for this user's organization
@@ -504,7 +520,9 @@ class PropertyViewSet(GenericViewSet):
             }, {
                 'name': 'recent_sale_date',
                 'displayName': 'Recent Sale Date',
-                'related': False
+                'type': 'date',
+                'cellFilter': 'date:\'MM-dd-yyyy\'',
+                'related': False,
             }, {
                 'name': 'conditioned_floor_area',
                 'displayName': 'Conditioned Floor Area',
@@ -537,6 +555,8 @@ class PropertyViewSet(GenericViewSet):
             }, {
                 'name': 'generation_date',
                 'displayName': 'PM Generation Date',
+                'type': 'date',
+                'cellFilter': 'date:\'MM-dd-yyyy\'',
                 'related': False
             }, {
                 'name': 'release_date',
@@ -618,25 +638,28 @@ class PropertyViewSet(GenericViewSet):
             }
         ]
 
+        # don't return columns that have no table_name as these are the columns of the import files
         extra_data_columns = Column.objects.filter(
             organization_id=request.query_params['organization_id'],
             is_extra_data=True
-        )
+        ).exclude(table_name='').exclude(table_name=None)
 
         for c in extra_data_columns:
             name = c.column_name
             if name == 'id':
                 name += '_extra'
-            while any(col['name'] == name for col in columns):
+            while any(col['name'] == name and not col['related'] for col in columns):
                 name += '_extra'
 
-            columns.append({
-                'name': name,
-                # '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source])
-                'displayName': c.column_name,
-                'related': c.extra_data_source != Column.SOURCE_PROPERTY and c.table_name != 'PropertyState',
-                'extraData': True
-            })
+            display_name = c.column_name.title().replace('_', ' ')
+            columns.append(
+                {
+                    'name': name,
+                    'displayName': display_name,
+                    'related': c.table_name != 'PropertyState',
+                    'extraData': True
+                }
+            )
 
         return JsonResponse({'columns': columns})
 
@@ -702,12 +725,14 @@ class PropertyViewSet(GenericViewSet):
         """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         result = self._get_property_view(pk, cycle_pk)
         return JsonResponse(result)
 
     def _get_taxlots(self, pk):
-        lot_view_pks = TaxLotProperty.objects.filter(property_view_id=pk).values_list('taxlot_view_id', flat=True)
+        lot_view_pks = TaxLotProperty.objects.filter(property_view_id=pk).values_list(
+            'taxlot_view_id', flat=True)
         lot_views = TaxLotView.objects.filter(pk__in=lot_view_pks).select_related('cycle', 'state')
         lots = []
         for lot in lot_views:
@@ -726,25 +751,59 @@ class PropertyViewSet(GenericViewSet):
     def get_history(self, property_view):
         """Return history in reverse order."""
         history = []
-        current = None
-        audit_logs = PropertyAuditLog.objects.select_related('state').filter(
-            view=property_view
-        ).order_by('-created', '-state_id')
-        for log in audit_logs:
-            changed_fields = json.loads(log.description) \
-                if log.record_type == AUDIT_USER_EDIT else None
-            record = {
+
+        def record_dict(log):
+            filename = None if not log.import_filename else path.basename(log.import_filename)
+            if filename:
+                # Attempt to remove NamedTemporaryFile suffix
+                name, ext = path.splitext(filename)
+                pattern = re.compile('(.*?)(_[a-zA-Z0-9]{7})$')
+                match = pattern.match(name)
+                if match:
+                    filename = match.groups()[0] + ext
+            return {
                 'state': PropertyStateSerializer(log.state).data,
-                'date_edited': log.created.ctime(),
+                'date_edited': convert_to_js_timestamp(log.created),
                 'source': log.get_record_type_display(),
-                'filename': log.import_filename,
-                'changed_fields': changed_fields
+                'filename': filename,
+                'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
             }
-            if log.state_id == property_view.state_id:
-                current = record
-            else:
-                history.append(record)
-        return history, current
+
+        log = PropertyAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
+            state_id=property_view.state_id,
+            view_id__isnull=True
+        ).order_by('-id').first()
+        master = {
+            'state': PropertyStateSerializer(log.state).data,
+            'date_edited': convert_to_js_timestamp(log.created),
+        }
+
+        # Traverse parents and add to history
+        if log.name in ['Manual Match', 'System Match']:
+            done_searching = False
+            while not done_searching:
+                if log.parent1_id is None and log.parent2_id is None:
+                    done_searching = True
+                else:
+                    tree = None
+                    if log.parent2.name == 'Import Creation':
+                        record = record_dict(log.parent2)
+                        history.append(record)
+                    else:
+                        tree = log.parent2
+                    if log.parent1.name == 'Import Creation':
+                        record = record_dict(log.parent1)
+                        history.append(record)
+                    else:
+                        tree = log.parent1
+
+                    if not tree:
+                        done_searching = True
+        elif log.name == 'Import Creation':
+            record = record_dict(log)
+            history.append(record)
+
+        return history, master
 
     @api_endpoint_class
     @ajax_request_class
@@ -764,7 +823,8 @@ class PropertyViewSet(GenericViewSet):
         """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         result = self._get_property_view(pk, cycle_pk)
         if result.get('status', None) != 'error':
             property_view = result.pop('property_view')
@@ -773,8 +833,8 @@ class PropertyViewSet(GenericViewSet):
             result.pop('id')
             result['state'] = PropertyStateSerializer(property_view.state).data
             result['taxlots'] = self._get_taxlots(property_view.pk)
-            result['history'], current = self.get_history(property_view)
-            result = update_result_with_current(result, current)
+            result['history'], master = self.get_history(property_view)
+            result = update_result_with_master(result, master)
             status_code = status.HTTP_200_OK
         else:
             status_code = status.HTTP_404_NOT_FOUND
@@ -794,7 +854,8 @@ class PropertyViewSet(GenericViewSet):
         """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         data = request.data
         result = self._get_property_view(pk, cycle_pk)
         if result.get('status', None) != 'error':
@@ -859,8 +920,9 @@ class TaxLotViewSet(GenericViewSet):
         org_id = request.query_params.get('organization_id', None)
         cycle_id = request.query_params.get('cycle')
         if not org_id:
-            return JsonResponse({'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
-                                status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
+                status=status.HTTP_400_BAD_REQUEST)
 
         if cycle_id:
             cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
@@ -908,7 +970,8 @@ class TaxLotViewSet(GenericViewSet):
 
         # Ids of taxlotviews to look up in m2m
         lot_ids = [l.pk for l in taxlot_views]
-        joins = TaxLotProperty.objects.filter(taxlot_view_id__in=lot_ids).select_related('property_view')
+        joins = TaxLotProperty.objects.filter(taxlot_view_id__in=lot_ids).select_related(
+            'property_view')
 
         # Get all ids of properties on these joins
         property_view_ids = [j.property_view_id for j in joins]
@@ -943,15 +1006,16 @@ class TaxLotViewSet(GenericViewSet):
         join_map = {}
         # Get whole taxlotstate table:
         tuplePropToJurisdictionTL = tuple(
-            TaxLotProperty.objects.values_list('property_view_id', 'taxlot_view__state__jurisdiction_tax_lot_id'))
+            TaxLotProperty.objects.values_list('property_view_id',
+                                               'taxlot_view__state__jurisdiction_tax_lot_id'))
         from collections import defaultdict
 
         # create a mapping that defaults to an empty list
         propToJurisdictionTL = defaultdict(list)
 
         # populate the mapping
-        for name, path in tuplePropToJurisdictionTL:
-            propToJurisdictionTL[name].append(path)
+        for name, pth in tuplePropToJurisdictionTL:
+            propToJurisdictionTL[name].append(pth)
 
         for join in joins:
             jurisdiction_tax_lot_ids = propToJurisdictionTL[join.property_view_id]
@@ -961,8 +1025,6 @@ class TaxLotViewSet(GenericViewSet):
             jurisdiction_tax_lot_ids = filter(lambda x: x is not None, jurisdiction_tax_lot_ids)
 
             if none_in_jurisdiction_tax_lot_ids:
-                print "\nhere"
-                print jurisdiction_tax_lot_ids
                 jurisdiction_tax_lot_ids.append('Missing')
 
             # jurisdiction_tax_lot_ids = [""]
@@ -1293,7 +1355,8 @@ class TaxLotViewSet(GenericViewSet):
             }, {
                 'name': 'recent_sale_date',
                 'displayName': 'Recent Sale Date',
-                'related': True
+                'related': True,
+                'type': 'datetime'
             }, {
                 'name': 'conditioned_floor_area',
                 'displayName': 'Conditioned Floor Area',
@@ -1391,24 +1454,28 @@ class TaxLotViewSet(GenericViewSet):
             }
         ]
 
+        # don't return columns that have no table_name as these are the columns of the import files
         extra_data_columns = Column.objects.filter(
-            organization_id=request.GET['organization_id'],
+            organization_id=request.query_params['organization_id'],
             is_extra_data=True
-        )
+        ).exclude(table_name='').exclude(table_name=None)
 
         for c in extra_data_columns:
             name = c.column_name
             if name == 'id':
                 name += '_extra'
-            while any(col['name'] == name for col in columns):
+            while any(col['name'] == name and not col['related'] for col in columns):
                 name += '_extra'
 
-            columns.append({
-                'name': name,
-                'displayName': c.column_name,
-                'related': c.extra_data_source != Column.SOURCE_TAXLOT and c.table_name != 'TaxLotState',
-                'extraData': True
-            })
+            display_name = c.column_name.title().replace('_', ' ')
+            columns.append(
+                {
+                    'name': name,
+                    'displayName': display_name,
+                    'related': c.table_name != 'TaxLotState',
+                    'extraData': True
+                }
+            )
 
         return JsonResponse({'columns': columns})
 
@@ -1476,32 +1543,67 @@ class TaxLotViewSet(GenericViewSet):
         """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         result = self._get_taxlot_view(pk, cycle_pk)
         return JsonResponse(result)
 
     def get_history(self, taxlot_view):
         """Return history in reverse order."""
         history = []
-        current = None
-        audit_logs = TaxLotAuditLog.objects.select_related('state').filter(
-            view=taxlot_view
-        ).order_by('-created', '-state_id')
-        for log in audit_logs:
-            changed_fields = json.loads(log.description) \
-                if log.record_type == AUDIT_USER_EDIT else None
-            record = {
+
+        def record_dict(log):
+            filename = None if not log.import_filename else path.basename(log.import_filename)
+            if filename:
+                # Attempt to remove NamedTemporaryFile suffix
+                name, ext = path.splitext(filename)
+                pattern = re.compile('(.*?)(_[a-zA-Z0-9]{7})$')
+                match = pattern.match(name)
+                if match:
+                    filename = match.groups()[0] + ext
+            return {
                 'state': TaxLotStateSerializer(log.state).data,
-                'date_edited': log.created.ctime(),
+                'date_edited': convert_to_js_timestamp(log.created),
                 'source': log.get_record_type_display(),
-                'filename': log.import_filename,
-                'changed_fields': changed_fields
+                'filename': filename,
+                'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
             }
-            if log.state_id == taxlot_view.state_id:
-                current = record
-            else:
-                history.append(record)
-        return history, current
+
+        log = TaxLotAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
+            state_id=taxlot_view.state_id,
+            view_id__isnull=True
+        ).order_by('-id').first()
+        master = {
+            'state': TaxLotStateSerializer(log.state).data,
+            'date_edited': convert_to_js_timestamp(log.created),
+        }
+
+        # Traverse parents and add to history
+        if log.name in ['Manual Match', 'System Match']:
+            done_searching = False
+            while not done_searching:
+                if log.parent1_id is None and log.parent2_id is None:
+                    done_searching = True
+                else:
+                    tree = None
+                    if log.parent2.name == 'Import Creation':
+                        record = record_dict(log.parent2)
+                        history.append(record)
+                    else:
+                        tree = log.parent2
+                    if log.parent1.name == 'Import Creation':
+                        record = record_dict(log.parent1)
+                        history.append(record)
+                    else:
+                        tree = log.parent1
+
+                    if not tree:
+                        done_searching = True
+        elif log.name == 'Import Creation':
+            record = record_dict(log)
+            history.append(record)
+
+        return history, master
 
     def _get_properties(self, taxlot_view_pk):
         property_view_pks = TaxLotProperty.objects.filter(
@@ -1542,7 +1644,8 @@ class TaxLotViewSet(GenericViewSet):
         """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         result = self._get_taxlot_view(pk, cycle_pk)
         if result.get('status', None) != 'error':
             taxlot_view = result.pop('taxlot_view')
@@ -1551,8 +1654,8 @@ class TaxLotViewSet(GenericViewSet):
             result.pop('id')
             result['state'] = TaxLotStateSerializer(taxlot_view.state).data
             result['properties'] = self._get_properties(taxlot_view.pk)
-            result['history'], current = self.get_history(taxlot_view)
-            result = update_result_with_current(result, current)
+            result['history'], master = self.get_history(taxlot_view)
+            result = update_result_with_master(result, master)
             status_code = status.HTTP_200_OK
         else:
             status_code = status.HTTP_404_NOT_FOUND
@@ -1573,7 +1676,8 @@ class TaxLotViewSet(GenericViewSet):
         data = request.data
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         result = self._get_taxlot_view(pk, cycle_pk)
         if result.get('status', None) != 'error':
             taxlot_view = result.pop('taxlot_view')
@@ -1656,9 +1760,9 @@ def diffupdate(old, new):
     return changed_fields, changed_extra_data
 
 
-def update_result_with_current(result, cur):
-    result['changed_fields'] = cur.get('changed_fields', None) if cur else None
-    result['date_edited'] = cur.get('date_edited', None) if cur else None
-    result['source'] = cur.get('source', None) if cur else None
-    result['filename'] = cur.get('filename', None) if cur else None
+def update_result_with_master(result, master):
+    result['changed_fields'] = master.get('changed_fields', None) if master else None
+    result['date_edited'] = master.get('date_edited', None) if master else None
+    result['source'] = master.get('source', None) if master else None
+    result['filename'] = master.get('filename', None) if master else None
     return result

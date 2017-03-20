@@ -12,7 +12,8 @@ angular.module('BE.seed.controller.admin', [])
     'uploader_service',
     'user_profile_payload',
     'Notification',
-    function ($scope, $state, user_service, organization_service, column_mappings_service, uploader_service, user_profile_payload, Notification) {
+    '$window',
+    function ($scope, $state, user_service, organization_service, column_mappings_service, uploader_service, user_profile_payload, Notification, $window) {
       $scope.user = {};
       $scope.temp_users = [];
       $scope.org = {};
@@ -46,6 +47,7 @@ angular.module('BE.seed.controller.admin', [])
           // resolve promise
           $scope.org_form.invalid = false;
           get_organizations();
+          $scope.$emit('organization_list_updated');
           update_alert(true, 'Organization ' + org.name + ' created');
 
         }, function (data) {
@@ -217,10 +219,10 @@ angular.module('BE.seed.controller.admin', [])
                 org.remove_message = 'success';
                 if (parseInt(org.id) === parseInt(user_service.get_organization().id)) {
                   // Reload page if deleting current org.
-                  $state.reload();
+                  $window.location.reload();
                 } else {
                   get_organizations();
-                  $scope.$emit('organization_deleted');
+                  $scope.$emit('organization_list_updated');
                 }
               }, function (data) {  //failure fn
                 // Do nothing

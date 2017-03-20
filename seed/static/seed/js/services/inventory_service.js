@@ -536,13 +536,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.saveSettings = function (key, columns) {
       key += '.' + user_service.get_organization().id;
       var toSave = inventory_service.reorderSettings(_.map(columns, function (col) {
-        return _.pick(col, ['name', 'pinnedLeft', 'visible']);
+        return _.pick(col, ['name', 'pinnedLeft', 'related', 'visible']);
       }));
       localStorage.setItem(key, JSON.stringify(toSave));
     };
 
     inventory_service.loadSettings = function (key, columns) {
       key += '.' + user_service.get_organization().id;
+
+      var isDetailSetting = key.match(/^grid\.(properties|taxlots)\.detail\.\d+$/);
+
       // Hide extra data columns by default
       _.forEach(columns, function (col) {
         col.visible = !col.extraData;
@@ -552,13 +555,23 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       if (!_.isNull(localColumns)) {
         var existingColumnNames = _.map(columns, 'name');
         localColumns = JSON.parse(localColumns);
+
+        // Remove deprecated columns missing 'related' field
+        // NOT FOR DETAIL SETTINGS
+        if (!isDetailSetting) {
+          _.remove(localColumns, function (col) {
+            return !_.has(col, 'related');
+          });
+        }
+
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
           return !_.includes(existingColumnNames, col.name);
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
-          return _.defaults(col, _.remove(columns, {name: col.name})[0])
+          if (isDetailSetting) return _.defaults(col, _.remove(columns, {name: col.name})[0]);
+          else return _.defaults(col, _.remove(columns, {name: col.name, related: col.related})[0]);
         });
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {
@@ -620,11 +633,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return pinned.concat(selected).concat(columns);
     };
 
-    inventory_service.search_matching_inventory = function (query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, import_file_id) {
+    inventory_service.search_matching_inventory = function (import_file_id, options) {
       spinner_utility.show();
-      return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', {}).then(function (response) {
-        spinner_utility.hide();
+      return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', options, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
         return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
       });
     };
 
@@ -647,6 +665,28 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         target_inventory_id: target_taxlot_id,
         create_match: create_match,
         organization_id: user_service.get_organization().id
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    inventory_service.get_columns = function (all_fields) {
+      all_fields = all_fields || '';
+      return $http.get('/app/get_columns/', {
+        params: {
+          all_fields: all_fields,
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    inventory_service.get_matching_results = function (import_file_id) {
+      return $http.get('/api/v2/import_files/' + import_file_id + '/matching_results/', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
       }).then(function (response) {
         return response.data;
       });
