@@ -34,6 +34,8 @@ class NumberInFilter(BaseInFilter, NumberFilter):
 
 class GAPropertyFilterSet(FilterSet):
     assessment = CharFilter(name='assessment__name')
+    rating = CharFilter(name='_rating')
+    year = NumberFilter(name='date', lookup_expr='year')
 
     class Meta:
         model = GreenAssessmentProperty
