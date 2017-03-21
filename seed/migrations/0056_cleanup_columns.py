@@ -16,8 +16,7 @@ def forwards(apps, schema_editor):
         
         print "Column {}: {}.{}".format(c.id, c.table_name, c.column_name)
         
-        # check if the column isn't used again because the mapping clean up can 
-        # orphan columns
+        # check if the column isn't used and delete it if not
         if cm_raw.count() == 0 and cm_mapped.count() == 0:
             print "    deleting column: not used in any mappings"
             c.delete()
@@ -49,7 +48,7 @@ def forwards(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0056_split_multiple_mappings'),
+        ('seed', '0055_split_multiple_mappings'),
     ]
 
     operations = [

@@ -80,7 +80,7 @@ def forwards(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0055_delete_unused_columns'),
+        ('seed', '0054_remove_same_column_in_mappings'),
     ]
 
     operations = [
