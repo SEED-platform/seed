@@ -19,7 +19,6 @@ def forwards(apps, schema_editor):
         # check if the column isn't used again because the mapping clean up can 
         # orphan columns
         if cm_raw.count() == 0 and cm_mapped.count() == 0:
-            print "Column {}: {}.{}".format(c.id, c.table_name, c.column_name)
             print "    deleting column: not used in any mappings"
             c.delete()
             continue
