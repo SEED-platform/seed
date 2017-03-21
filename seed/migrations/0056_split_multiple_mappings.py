@@ -6,7 +6,6 @@ from django.db import migrations
 
 from seed.models.columns import Column, ColumnMapping
 
-
 def duplicate_column(column):
     new_c = Column.objects.get(pk=column.id)
     new_c.pk = None
@@ -37,34 +36,35 @@ def duplicate_mapping(mapping, column, raw_or_mapped):
 
 def forwards(apps, schema_editor):
     # find which columns are not used in column mappings
+    # for c in Column.objects.filter(column_name='Building Count'):
     for c in Column.objects.all():
         cm_raw = ColumnMapping.objects.filter(column_raw=c)
         cm_mapped = ColumnMapping.objects.filter(column_mapped=c)
 
+        print "Column {}: {}.{}".format(c.id, c.table_name, c.column_name)
+
         if cm_raw.count() > 1 or cm_mapped.count() > 1:
-            print "Column {}: {}.{}".format(c.id, c.table_name, c.column_name)
+            print "from_count: {}     to_count: {}".format(cm_raw.count(), cm_mapped.count())
 
             # go through the ones that are zeroed and is not extra data in the.
             # Also, split the mappings only if the mapped column is extra data.
             if cm_raw.count() == 0 and cm_mapped.count() > 1 and c.is_extra_data:
                 for idx, mapping in enumerate(cm_mapped):
                     print "        Duplicating columns for {}".format(idx)
-                    if idx == 0:
-                        print "            Skipping 0,0"
-                        continue
-
                     new_m, _new_c = duplicate_mapping(mapping, c, 'mapped')
                     print "            new mapping created {}".format(new_m)
+
+                for m in cm_mapped:
+                    m.delete()
 
             if cm_raw.count() > 1 and cm_mapped.count() == 0:
                 for idx, mapping in enumerate(cm_raw):
                     print "        Duplicating columns for {}".format(idx)
-                    if idx == 0:
-                        print "            Skipping 0,0"
-                        continue
-
                     new_m, _new_c = duplicate_mapping(mapping, c, 'raw')
                     print "            new mapping created {}".format(new_m)
+
+                for m in cm_raw:
+                    m.delete()
 
         elif cm_raw.count() > 1 and cm_mapped.count() > 1:
             # if there are any of the many raw to many mapped, handle those
@@ -76,10 +76,11 @@ def forwards(apps, schema_editor):
     print "-------------------------------------------------------------------"
     print "Total Columns: {}".format(Column.objects.all().count())
 
+    # exit()
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0054_delete_unused_columns'),
+        ('seed', '0055_delete_unused_columns'),
     ]
 
     operations = [

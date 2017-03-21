@@ -13,13 +13,23 @@ def forwards(apps, schema_editor):
     for c in Column.objects.all():
         cm_raw = ColumnMapping.objects.filter(column_raw=c)
         cm_mapped = ColumnMapping.objects.filter(column_mapped=c)
-
+        
         print "Column {}: {}.{}".format(c.id, c.table_name, c.column_name)
+        
+        # check if the column isn't used again because the mapping clean up can 
+        # orphan columns
+        if cm_raw.count() == 0 and cm_mapped.count() == 0:
+            print "Column {}: {}.{}".format(c.id, c.table_name, c.column_name)
+            print "    deleting column: not used in any mappings"
+            c.delete()
+            continue
+
         # Any cm_raw columns should not have a table_name and not be extra data
         if cm_raw.count() == 1:
             if c.table_name != '':
                 print "    raw column table name is not blank, making it ''"
                 c.table_name = ''
+                c.extra_data_source = ''
             if c.is_extra_data:
                 print "    raw column is set to extra_data, bad!, unsetting"
                 c.is_extra_data = False
@@ -29,6 +39,7 @@ def forwards(apps, schema_editor):
             if c.table_name == '':
                 print "    mapped column has table_name set to '', setting to PropertyState"
                 c.table_name = 'PropertyState'
+                c.extra_data_source = 'P'
                 c.save()
 
     print ""
@@ -39,7 +50,7 @@ def forwards(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0055_split_multipe_mappings'),
+        ('seed', '0056_split_multiple_mappings'),
     ]
 
     operations = [

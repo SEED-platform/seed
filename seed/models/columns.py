@@ -115,7 +115,7 @@ class Column(models.Model):
 
     class Meta:
         unique_together = (
-            'organization', 'column_name', 'is_extra_data', 'extra_data_source')
+            'organization', 'column_name', 'is_extra_data', 'table_name')
 
     def __unicode__(self):
         return u'{} - {}'.format(self.pk, self.column_name)
