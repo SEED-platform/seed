@@ -4,7 +4,7 @@ var EC = protractor.ExpectedConditions;
 
 
 // Older Jasmine unit tests:
-describe('When I go to jamine tests', function () {
+describe('When I go to jasmine tests', function () {
         browser.ignoreSynchronization = true;
      it('should run jasmine unit tests and pass', function () {
         browser.get("/app/angular_js_tests");
