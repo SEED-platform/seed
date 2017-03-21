@@ -19,7 +19,7 @@ from django_filters import BaseInFilter, NumberFilter, CharFilter
 # Imports from Django
 
 # Local Imports
-from seed.models import GreenAssessmentProperty
+from seed.models import GreenAssessment, GreenAssessmentProperty
 # Constants
 
 # Data Structure Definitions
@@ -32,9 +32,21 @@ class NumberInFilter(BaseInFilter, NumberFilter):
     pass
 
 
+class GreenAssessmentFilterSet(FilterSet):
+    name = CharFilter(name='name', lookup_expr='iexact')
+    award_body = CharFilter(name='award_body', lookup_expr='iexact')
+    recognition_type = CharFilter(
+        name='recognition_type', lookup_expr='iexact'
+    )
+
+    class Meta:
+        model = GreenAssessment
+        fields = ['name', 'award_body', 'recognition_type']
+
+
 class GAPropertyFilterSet(FilterSet):
-    assessment = CharFilter(name='assessment__name')
-    rating = CharFilter(name='_rating')
+    assessment = CharFilter(name='assessment__name', lookup_expr='iexact')
+    rating = CharFilter(name='_rating', lookup_expr='iexact')
     year = NumberFilter(name='date', lookup_expr='year')
 
     class Meta:
