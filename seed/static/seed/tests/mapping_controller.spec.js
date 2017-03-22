@@ -3,7 +3,7 @@
  */
 describe('controller: mapping_controller', function(){
     // globals set up and used in each test scenario
-    var mock_building_services, scope, controller, modal_state;
+    var mock_inventory_service, scope, controller, modal_state;
     var mapping_controller, mapping_controller_scope, modalInstance, labels;
     var timeout, mock_user_service, mock_search_service;
 
@@ -17,7 +17,7 @@ describe('controller: mapping_controller', function(){
 
     // inject AngularJS dependencies for the controller
     beforeEach(inject(
-        function($controller, $rootScope, $uibModal, urls, $q, building_services, $timeout, user_service, search_service) {
+        function($controller, $rootScope, $uibModal, urls, $q, inventory_service, $timeout, user_service, search_service) {
             controller = $controller;
             scope = $rootScope;
             mapping_controller_scope = $rootScope.$new();
@@ -169,6 +169,15 @@ describe('controller: mapping_controller', function(){
             'lot size': 45
         });
 
+        var mock_cycles = {
+            cycles: []
+        };
+
+        mock_cycles.cycles.push({
+            id: 2015,
+            name: 'my fake cycle'
+        })
+
         var raw_columns_payload = {
             status: 'success',
             raw_columns: mock_raw_column_names
@@ -186,8 +195,9 @@ describe('controller: mapping_controller', function(){
             taxlot_columns: mock_raw_column_names,
             first_five_rows_payload: first_five_rows_payload,
             all_columns: {fields: []},
-            building_services: mock_building_services,
-            $timeout: timeout
+            inventory_service: mock_inventory_service,
+            $timeout: timeout,
+            cycles: mock_cycles
         });
     }
 
@@ -279,34 +289,6 @@ describe('controller: mapping_controller', function(){
             tcm,
             tcm.raw_data[0]
         );
-
-        // First raw column is mapped up as pm_property_id <-> property_id
-        // Any kind of string will be valid.
-        expect(good_val).toBe('success');
-
-        // // Now set it to one that expects float values.
-        // // Only one of these will *not* validate.
-        // mapping_controller_scope.raw_columns[0].suggestion = 'gross_floor_area';
-        // mapping_controller_scope.validate_data(mapping_controller_scope.raw_columns[0]);
-
-        // tcm = mapping_controller_scope.raw_columns[0];
-        // var warning_val = mapping_controller_scope.set_td_class(
-        //     tcm,
-        //     tcm.raw_data[4]
-        // );
-
-        // expect(warning_val).toBe('warning');
-
-        // // We don't want the warning style to be applied to neighboring cells
-        // // in the same row. Check that the cell next to our invalid one is
-        // // unstyled (undefined).
-        // tcm = mapping_controller_scope.raw_columns[0];
-        // var adjacent_val = mapping_controller_scope.set_td_class(
-        //     tcm,
-        //     tcm.raw_data[3]
-        // );
-
-        // expect(adjacent_val).toBe(undefined);
 
         // Now we're saying the suggestion is to not map.
         // Check that we don't have any class set for this row now.
