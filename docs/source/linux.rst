@@ -44,7 +44,7 @@ Configure PostgreSQL
     $ createdb "seed-deploy"
     $ createuser -P DBUsername
     $ psql
-    postgres=# GRANT ALL PRIVILEGES ON DATABASE "seed-deploy" TO DBUsername;
+    postgres=# GRANT ALL PRIVILEGES ON DATABASE "seed-deploy" TO "DBUsername";
     postgres=# \q
     $ exit
 
