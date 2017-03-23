@@ -60,7 +60,7 @@ clone the **seed** repository from **github**
 
 .. code-block:: console
 
-    $ git clone git@github.com:SEED-platform/seed.git
+    $ git clone https://github.com/SEED-platform/seed.git
 
 enter the repo and install the python dependencies from `requirements`_
 
