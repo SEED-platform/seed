@@ -33,8 +33,10 @@ class NumberInFilter(BaseInFilter, NumberFilter):
 
 
 class GreenAssessmentFilterSet(FilterSet):
-    name = CharFilter(name='name', lookup_expr='iexact')
-    award_body = CharFilter(name='award_body', lookup_expr='iexact')
+    name = CharFilter(name='name', lookup_expr='exact')
+    award_body = CharFilter(name='award_body', lookup_expr='exact')
+    name_icontains = CharFilter(name='name', lookup_expr='icontains')
+    award_body_icontains = CharFilter(name='name', lookup_expr='icontains')
     recognition_type = CharFilter(
         name='recognition_type', lookup_expr='iexact'
     )
