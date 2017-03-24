@@ -86,39 +86,35 @@ class Column(models.Model):
 
     # We have two concepts of the SOURCE. The table_name, which is mostly used, and the
     # SOURCE_* fields. Need to converge on one or the other.
-    SOURCE_PROPERTY = 'P'
-    SOURCE_TAXLOT = 'T'
-    SOURCE_CHOICES = (
-        (SOURCE_PROPERTY, 'Property'),
-        (SOURCE_TAXLOT, 'Taxlot'),
-    )
-    SOURCE_CHOICES_MAP = {
-        SOURCE_PROPERTY: 'property',
-        SOURCE_TAXLOT: 'taxlot',
-    }
+    # SOURCE_PROPERTY = 'P'
+    # SOURCE_TAXLOT = 'T'
+    # SOURCE_CHOICES = (
+    #     (SOURCE_PROPERTY, 'Property'),
+    #     (SOURCE_TAXLOT, 'Taxlot'),
+    # )
+    # SOURCE_CHOICES_MAP = {
+    #     SOURCE_PROPERTY: 'property',
+    #     SOURCE_TAXLOT: 'taxlot',
+    # }
 
     organization = models.ForeignKey(SuperOrganization, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)
 
     # name of the table which the column name applies, if the column name
-    # is a db field
+    # is a db field. Options now are only PropertyState and TaxLotState
     table_name = models.CharField(max_length=512, blank=True, db_index=True, )
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
 
-    # The extra_data_source needs to be removed
-    extra_data_source = models.CharField(
-        max_length=1, null=True, blank=True,
-        db_index=True, choices=SOURCE_CHOICES
-    )
-
-    class Meta:
-        unique_together = (
-            'organization', 'column_name', 'is_extra_data', 'extra_data_source')
+    # Do not enable this until running through the database and merging the columns down.
+    # BUT first, make sure to add an import file ID into the column class.
+    # class Meta:
+    #     unique_together = (
+    #         'organization', 'column_name', 'is_extra_data', 'table_name')
 
     def __unicode__(self):
-        return u'{0}'.format(self.column_name)
+        return u'{} - {}'.format(self.pk, self.column_name)
 
     @staticmethod
     def create_mappings(mappings, organization, user):
