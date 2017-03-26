@@ -95,6 +95,9 @@ class GreenAssessment(models.Model):
         default=DEFAULT_GREEN_ASSESSEMENT_VALIDITY_DURATION
     )
 
+    class Meta:
+        unique_together = ("organization", "name", "award_body")
+
 
 class GreenAssessmentProperty(models.Model):
     """
