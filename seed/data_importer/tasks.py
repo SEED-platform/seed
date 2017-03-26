@@ -184,9 +184,21 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
 
     org = Organization.objects.get(pk=import_file.import_record.super_organization.pk)
 
+    # get all the table_mappings that exist for the organization
     table_mappings = ColumnMapping.get_column_mappings_by_table_name(org)
 
-    # TODO: **TOTAL TERRIBLE HACK HERE**
+    # TODO: **START TOTAL TERRIBLE HACK**
+    # Remove any of the mappings that are not in the current list of raw columns because this
+    # can really mess up the mapping of delimited_fields.
+    #
+    # Ideally the table_mapping method would be attached to the import_file_id
+    list_of_raw_columns = import_file.first_row_columns
+    if list_of_raw_columns:
+        for k, v in table_mappings.items():
+            for key2 in v.keys():
+                if key2 not in list_of_raw_columns:
+                    del table_mappings[k][key2]
+
     # For some reason the mappings that got created previously don't
     # always have the table class in them.  To get this working for
     # the demo this is an infix place, but is absolutely terrible and
@@ -195,6 +207,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
         _log.error('this code should not be running here...')
         debug_inferred_prop_state_mapping = table_mappings['']
         table_mappings['PropertyState'] = debug_inferred_prop_state_mapping
+    # TODO: *END TOTAL TERRIBLE HACK**
 
     map_cleaner = _build_cleaner(org)
 
@@ -219,8 +232,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # _log.debug("my table mappings are {}".format(table_mappings))
     _log.debug("delimited_field that will be expanded and normalized: {}".format(delimited_fields))
 
-    # Add custom mappings for cross-related data. Right now these are hard coded, but could
-    # be a setting if so desired.
+    # Add custom mappings for cross-related data. Right now these are hard coded.
     if delimited_fields and delimited_fields[
             'jurisdiction_tax_lot_id'] and 'PropertyState' in table_mappings.keys():
         table_mappings['PropertyState'][
@@ -1100,10 +1112,9 @@ class EquivalencePartitioner(object):
             identity_key = self.calculate_identity_key(obj)
 
             for class_key in equivalence_classes:
-                if self.calculate_key_equivalence(class_key, cmp_key) \
-                   and not \
-                   self.identities_are_different(identities_for_equivalence[class_key],
-                                                 identity_key):
+                if self.calculate_key_equivalence(class_key,
+                                                  cmp_key) and not self.identities_are_different(
+                        identities_for_equivalence[class_key], identity_key):
 
                     equivalence_classes[class_key].append(ndx)
 

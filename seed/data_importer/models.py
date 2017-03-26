@@ -775,7 +775,10 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def first_row_columns(self):
         if not hasattr(self, "_first_row_columns"):
-            self._first_row_columns = self.cached_first_row.split(ROW_DELIMITER)
+            if self.cached_first_row:
+                self._first_row_columns = self.cached_first_row.split(ROW_DELIMITER)
+            else:
+                return None
         return self._first_row_columns
 
     def save_cached_mapped_columns(self, columns):
