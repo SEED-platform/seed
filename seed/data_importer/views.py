@@ -67,6 +67,7 @@ from seed.models import (
     TaxLotView,
     USER_MATCH,
     AUDIT_IMPORT,
+    AUDIT_USER_EDIT,
     Property,
     TaxLot,
     TaxLotProperty)
@@ -613,6 +614,28 @@ class ImportFileViewSet(viewsets.ViewSet):
                 data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
                 merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
             ).values(*fields['TaxLotState'])
+
+            # If a record was manually edited then remove the edited version
+            properties = list(properties)
+            tax_lots = list(tax_lots)
+            properties_to_remove = list()
+            taxlots_to_remove = list()
+            for p in properties:
+                if PropertyAuditLog.objects.filter(
+                    state_id=p['id'],
+                    name='Manual Edit'
+                ).exists():
+                    properties_to_remove.append(p['id'])
+            for t in tax_lots:
+                if TaxLotAuditLog.objects.filter(
+                    state_id=t['id'],
+                    name='Manual Edit'
+                ).exists():
+                    taxlots_to_remove.append(t['id'])
+
+            properties = [p for p in properties if p['id'] not in properties_to_remove]
+            tax_lots = [t for t in tax_lots if t['id'] not in taxlots_to_remove]
+
             if get_coparents:
                 for state in properties:
                     state['matched'] = False
@@ -628,8 +651,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                         state['matched'] = True
                         state['coparent'] = coparent
 
-            properties = list(properties)
-            tax_lots = list(tax_lots)
+            # properties = list(properties)
+            # tax_lots = list(tax_lots)
 
             _log.debug('Found {} properties'.format(len(properties)))
             _log.debug('Found {} tax lots'.format(len(tax_lots)))
@@ -881,12 +904,12 @@ class ImportFileViewSet(viewsets.ViewSet):
         merged_state.save()
 
         # Change the merge_state of the individual states
-        if merged_record.parent1.name == 'Import Creation' and merged_record.parent1.import_filename is not None:
+        if merged_record.parent1.name in ['Import Creation', 'Manual Edit'] and merged_record.parent1.import_filename is not None:
             # State belongs to a new record
             state1.merge_state = MERGE_STATE_NEW
         else:
             state1.merge_state = MERGE_STATE_MERGED
-        if merged_record.parent2.name == 'Import Creation' and merged_record.parent2.import_filename is not None:
+        if merged_record.parent2.name in ['Import Creation', 'Manual Edit'] and merged_record.parent2.import_filename is not None:
             # State belongs to a new record
             state2.merge_state = MERGE_STATE_NEW
         else:
@@ -1433,17 +1456,30 @@ class ImportFileViewSet(viewsets.ViewSet):
             merge_state=MERGE_STATE_MERGED,
         ).values_list('id', flat=True))
 
-        # Check audit log in case PropertyStates are listed as "new" but were merged into a different tax lot
-        for state in PropertyState.objects.filter(
+        # Check audit log in case PropertyStates are listed as "new" but were merged into a different property
+        properties = list(PropertyState.objects.filter(
                 import_file__pk=import_file_id,
                 data_state=DATA_STATE_MATCHING,
                 merge_state=MERGE_STATE_NEW,
-        ):
+        ))
+        # If a record was manually edited then remove the edited version
+        properties_to_remove = list()
+        for p in properties:
+            if PropertyAuditLog.objects.filter(
+                state_id=p.id,
+                name='Manual Edit'
+            ).exists():
+                properties_to_remove.append(p.id)
+        properties = [p for p in properties if p.id not in properties_to_remove]
+
+        for state in properties:
             audit_creation_id = PropertyAuditLog.objects.only('id').exclude(import_filename=None).get(
                 state_id=state.id,
                 name='Import Creation'
             )
-            if PropertyAuditLog.objects.filter(parent1_id=audit_creation_id).exists():
+            if PropertyAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
+                parent1_id=audit_creation_id
+            ).exists():
                 properties_matched.append(state.id)
             else:
                 properties_new.append(state.id)
@@ -1456,16 +1492,29 @@ class ImportFileViewSet(viewsets.ViewSet):
         ).values_list('id', flat=True))
 
         # Check audit log in case TaxLotStates are listed as "new" but were merged into a different tax lot
-        for state in TaxLotState.objects.filter(
+        taxlots = list(TaxLotState.objects.filter(
                 import_file__pk=import_file_id,
                 data_state=DATA_STATE_MATCHING,
                 merge_state=MERGE_STATE_NEW,
-        ):
+        ))
+        # If a record was manually edited then remove the edited version
+        taxlots_to_remove = list()
+        for t in taxlots:
+            if TaxLotAuditLog.objects.filter(
+                state_id=t.id,
+                name='Manual Edit'
+            ).exists():
+                taxlots_to_remove.append(t.id)
+        taxlots = [t for t in taxlots if t.id not in taxlots_to_remove]
+
+        for state in taxlots:
             audit_creation_id = TaxLotAuditLog.objects.only('id').exclude(import_filename=None).get(
                 state_id=state.id,
                 name='Import Creation'
             )
-            if TaxLotAuditLog.objects.filter(parent1_id=audit_creation_id).exists():
+            if TaxLotAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
+                parent1_id=audit_creation_id
+            ).exists():
                 tax_lots_matched.append(state.id)
             else:
                 tax_lots_new.append(state.id)

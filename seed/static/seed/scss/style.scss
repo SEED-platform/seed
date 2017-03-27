@@ -2620,6 +2620,12 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
+#inventory-detail-buttons {
+  a[disabled] {
+    pointer-events: none;
+  }
+}
+
 // Pairing page:
 .pairing {
   padding-bottom: 20px;

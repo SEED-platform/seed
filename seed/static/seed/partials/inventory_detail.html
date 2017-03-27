@@ -26,8 +26,8 @@
             <div id="inventory-detail-edit" class="section_action_container right" ng-hide="edit_form_showing">
                 <a ng-click="on_edit()" ng-show="user_role !== 'viewer'"><i class="fa fa-pencil"></i> Edit </a>
             </div>
-            <div class="section_action_container right section_action_btn" ng-show="edit_form_showing">
-                <a roll="button" class="btn btn-primary btn-sm" ng-click="on_save()">Save Changes</a>
+            <div id="inventory-detail-buttons" class="section_action_container right section_action_btn" ng-show="edit_form_showing">
+                <a roll="button" class="btn btn-primary btn-sm" ng-click="on_save()" ng-disabled="!modified()">Save Changes</a>
                 <a roll="button" class="btn btn-default btn-sm" ng-click="on_cancel()">Cancel</a>
             </div>
         </div>
@@ -60,10 +60,9 @@
                             <th sd-resizable class="ellipsis-resizable">Master</th>
                             <!-- Historical values -->
                             <th ng-repeat="historical_item in historical_items" class="ellipsis">
-                                <div ng-if="historical_item.source=='ImportFile'" uib-popover="{$ historical_item.filename $}">
+                                <div ng-if="_.includes(['ImportFile', 'UserEdit'], historical_item.source)" uib-popover="{$ historical_item.filename $}">
                                     {$ historical_item.filename $}
                                 </div>
-                                <div ng-if="historical_item.source=='UserEdit'">(User Edit)</div>
                             </th>
                         </tr>
                     </thead>
@@ -72,7 +71,7 @@
                         <tr ng-repeat="field in columns" ng-if="field.visible">
 
                             <!-- Field name -->
-                            <td>{$ field.displayName $}</td>
+                            <td ng-attr-title="{$ field.name $}">{$ field.displayName $}</td>
 
                             <!-- Show read-only current 'regular' field value -->
                             <td ng-if="edit_form_showing===false && !field.extraData" ng-class="changed_fields.regular_fields.indexOf(field.name)>=0 ? 'highlight' : ''" class="ellipsis">
@@ -91,10 +90,10 @@
                             <!-- Show input form to edit current field value -->
                             <td ng-if="edit_form_showing" ng-class="(!field.extraData && changed_fields.extra_data_fields.indexOf(field.name)>=0) || changed_fields.regular_fields.indexOf(field.name)>=0 ? 'highlight' : ''">
                                 <div ng-if="!field.extraData">
-                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" name="tax_lot_id" ng-model="item_state[field.name]">
+                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_state[field.name]" ng-disabled="_.includes(['campus', 'associated_building_tax_lot_id', 'associated_tax_lot_ids', 'primary_tax_lot_id'], field.name)">
                                 </div>
                                 <div ng-if="field.extraData">
-                                    <input id="edit_property_attribute_id" class="form-control input-sm" type="text" name="tax_lot_id" ng-model="item_state.extra_data[field.name]">
+                                    <input id="edit_property_attribute_id" class="form-control input-sm" type="text" ng-model="item_state.extra_data[field.name]">
                                 </div>
                             </td>
 

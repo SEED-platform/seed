@@ -296,7 +296,7 @@ class Column(models.Model):
                                                    column_name=field['to_field'],
                                                    table_name=field['to_table_name'],
                                                    is_extra_data=is_extra_data).first()
-                _log.debug("Grabbing the first from_column")
+                _log.debug("Grabbing the first to_column")
 
             try:
                 # the from column is the field in the import file, thus the table_name needs to be

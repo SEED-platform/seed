@@ -158,6 +158,39 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
 
       /**
+       * Compare edits with original
+       */
+      $scope.diff = function () {
+        if (_.isEmpty($scope.item_copy)) return {};
+        // $scope.item_state, $scope.item_copy
+        var result = {};
+        _.forEach($scope.item_state, function (value, key) {
+          if (key === 'extra_data') return;
+          if (value === $scope.item_copy[key]) return;
+          if (_.isNull($scope.item_copy[key]) && _.isString(value) && _.isEmpty(value)) return;
+          if (_.isNumber($scope.item_copy[key]) && _.isString(value) && $scope.item_copy[key] === _.toNumber(value)) return;
+
+          _.set(result, key, value);
+        });
+        _.forEach($scope.item_state.extra_data, function (value, key) {
+          if (value === $scope.item_copy.extra_data[key]) return;
+          if (_.isNull($scope.item_copy.extra_data[key]) && _.isString(value) && _.isEmpty(value)) return;
+          if (_.isNumber($scope.item_copy.extra_data[key]) && _.isString(value) && $scope.item_copy.extra_data[key] === _.toNumber(value)) return;
+
+          _.set(result, 'extra_data.' + key, value);
+        });
+
+        return result;
+      };
+
+      /**
+       * Check if the edits are actually modified
+       */
+      $scope.modified = function () {
+        return !_.isEmpty($scope.diff());
+      };
+
+      /**
        * User clicked 'save' button
        */
       $scope.on_save = function () {
@@ -169,8 +202,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
        */
       $scope.save_item = function () {
         $scope.$emit('show_saving');
-        if ($scope.inventory_type == 'properties') {
-          inventory_service.update_property($scope.inventory.id, $scope.cycle.id, $scope.item_state)
+        if ($scope.inventory_type === 'properties') {
+          inventory_service.update_property($scope.inventory.id, $scope.cycle.id, $scope.diff())
             .then(function (data) {
                 // In the short term, we're just refreshing the page after a save so the table
                 // shows new history.
@@ -185,8 +218,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
             .catch(function (data) {
               $log.error(String(data));
             });
-        } else if ($scope.inventory_type == 'taxlots') {
-          inventory_service.update_taxlot($scope.inventory.id, $scope.cycle.id, $scope.item_state)
+        } else if ($scope.inventory_type === 'taxlots') {
+          inventory_service.update_taxlot($scope.inventory.id, $scope.cycle.id, $scope.diff())
             .then(function (data) {
               // In the short term, we're just refreshing the page after a save so the table
               // shows new history.

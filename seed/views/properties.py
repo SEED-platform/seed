@@ -766,7 +766,7 @@ class PropertyViewSet(GenericViewSet):
                 'date_edited': convert_to_js_timestamp(log.created),
                 'source': log.get_record_type_display(),
                 'filename': filename,
-                'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
+                # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
             }
 
         log = PropertyAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
@@ -782,16 +782,16 @@ class PropertyViewSet(GenericViewSet):
         if log.name in ['Manual Match', 'System Match']:
             done_searching = False
             while not done_searching:
-                if log.parent1_id is None and log.parent2_id is None:
+                if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                     done_searching = True
                 else:
                     tree = None
-                    if log.parent2.name == 'Import Creation':
+                    if log.parent2.name in ['Import Creation', 'Manual Edit']:
                         record = record_dict(log.parent2)
                         history.append(record)
                     else:
                         tree = log.parent2
-                    if log.parent1.name == 'Import Creation':
+                    if log.parent1.name in ['Import Creation', 'Manual Edit']:
                         record = record_dict(log.parent1)
                         history.append(record)
                     else:
@@ -799,6 +799,9 @@ class PropertyViewSet(GenericViewSet):
 
                     if not tree:
                         done_searching = True
+        elif log.name == 'Manual Edit':
+            record = record_dict(log.parent1)
+            history.append(record)
         elif log.name == 'Import Creation':
             record = record_dict(log)
             history.append(record)
@@ -864,8 +867,6 @@ class PropertyViewSet(GenericViewSet):
             new_property_state_data = data['state']
 
             changed = True
-            if new_property_state_data == property_state_data:
-                changed = False
             for key, val in new_property_state_data.iteritems():
                 if val == '':
                     new_property_state_data[key] = None
@@ -880,31 +881,69 @@ class PropertyViewSet(GenericViewSet):
                 )
                 status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
             else:
+                log = PropertyAuditLog.objects.select_related().filter(
+                    state=property_view.state,
+                    view_id__isnull=True
+                ).order_by('-id').first()
+
                 property_state_data.update(new_property_state_data)
-                property_state_data.pop('id')
 
-                new_property_state_serializer = PropertyStateSerializer(
-                    data=property_state_data
-                )
-
-                if new_property_state_serializer.is_valid():
-                    new_state = new_property_state_serializer.save()
-                    property_view.update_state(
-                        new_state, description=changed_fields
+                if log.name == 'Import Creation':
+                    # Add new state
+                    property_state_data.pop('id')
+                    new_property_state_serializer = PropertyStateSerializer(
+                        data=property_state_data
                     )
+                    if new_property_state_serializer.is_valid():
+                        new_state = new_property_state_serializer.save()
+                        property_view.state = new_state
+                        property_view.save()
+
+                        PropertyAuditLog.objects.create(organization=log.organization,
+                                                        parent1=log,
+                                                        parent2=None,
+                                                        parent_state1=log.state,
+                                                        parent_state2=None,
+                                                        state=new_state,
+                                                        name='Manual Edit',
+                                                        description=None,
+                                                        import_filename=log.import_filename,
+                                                        record_type=AUDIT_USER_EDIT)
+
+                        result.update(
+                            {'state': new_property_state_serializer.validated_data}
+                        )
+                        # Removing organization key AND import_file key because they're not JSON-serializable
+                        # TODO find better solution
+                        result['state'].pop('organization')
+                        result['state'].pop('import_file')
+                        status_code = status.HTTP_201_CREATED
+                    else:
+                        result.update(
+                            {'status': 'error', 'message': 'Invalid Data'}
+                        )
+                        status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match']:
+                    # Override previous edit state or merge state
+                    state = property_view.state
+                    for key, value in new_property_state_data.iteritems():
+                        setattr(state, key, value)
+                    state.save()
+
                     result.update(
-                        {'state': new_property_state_serializer.validated_data}
+                        {'state': PropertyStateSerializer(state).data}
                     )
                     # Removing organization key AND import_file key because they're not JSON-serializable
                     # TODO find better solution
                     result['state'].pop('organization')
                     result['state'].pop('import_file')
+
                     status_code = status.HTTP_201_CREATED
                 else:
-                    result.update(
-                        {'status': 'error', 'message': 'Invalid Data'}
-                    )
-                    status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+                    result = {'status': 'error', 'message': 'Unrecognized audit log name: ' + log.name}
+                    status_code = 422
+                    return JsonResponse(result, status=status_code)
+
         else:
             status_code = status.HTTP_404_NOT_FOUND
         return JsonResponse(result, status=status_code)
@@ -1566,7 +1605,7 @@ class TaxLotViewSet(GenericViewSet):
                 'date_edited': convert_to_js_timestamp(log.created),
                 'source': log.get_record_type_display(),
                 'filename': filename,
-                'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
+                # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
             }
 
         log = TaxLotAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
@@ -1582,16 +1621,16 @@ class TaxLotViewSet(GenericViewSet):
         if log.name in ['Manual Match', 'System Match']:
             done_searching = False
             while not done_searching:
-                if log.parent1_id is None and log.parent2_id is None:
+                if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                     done_searching = True
                 else:
                     tree = None
-                    if log.parent2.name == 'Import Creation':
+                    if log.parent2.name in ['Import Creation', 'Manual Edit']:
                         record = record_dict(log.parent2)
                         history.append(record)
                     else:
                         tree = log.parent2
-                    if log.parent1.name == 'Import Creation':
+                    if log.parent1.name in ['Import Creation', 'Manual Edit']:
                         record = record_dict(log.parent1)
                         history.append(record)
                     else:
@@ -1599,6 +1638,9 @@ class TaxLotViewSet(GenericViewSet):
 
                     if not tree:
                         done_searching = True
+        elif log.name == 'Manual Edit':
+            record = record_dict(log.parent1)
+            history.append(record)
         elif log.name == 'Import Creation':
             record = record_dict(log)
             history.append(record)
@@ -1685,8 +1727,6 @@ class TaxLotViewSet(GenericViewSet):
             new_taxlot_state_data = data['state']
 
             changed = True
-            if new_taxlot_state_data == taxlot_state_data:
-                changed = False
             for key, val in new_taxlot_state_data.iteritems():
                 if val == '':
                     new_taxlot_state_data[key] = None
@@ -1701,31 +1741,69 @@ class TaxLotViewSet(GenericViewSet):
                 )
                 status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
             else:
+                log = TaxLotAuditLog.objects.select_related().filter(
+                    state=taxlot_view.state,
+                    view_id__isnull=True
+                ).order_by('-id').first()
+
                 taxlot_state_data.update(new_taxlot_state_data)
-                taxlot_state_data.pop('id')
 
-                new_taxlot_state_serializer = TaxLotStateSerializer(
-                    data=taxlot_state_data
-                )
-
-                if new_taxlot_state_serializer.is_valid():
-                    new_state = new_taxlot_state_serializer.save()
-                    taxlot_view.update_state(
-                        new_state, description=changed_fields
+                if log.name == 'Import Creation':
+                    # Add new state
+                    taxlot_state_data.pop('id')
+                    new_taxlot_state_serializer = TaxLotStateSerializer(
+                        data=taxlot_state_data
                     )
+                    if new_taxlot_state_serializer.is_valid():
+                        new_state = new_taxlot_state_serializer.save()
+                        taxlot_view.state = new_state
+                        taxlot_view.save()
+
+                        TaxLotAuditLog.objects.create(organization=log.organization,
+                                                      parent1=log,
+                                                      parent2=None,
+                                                      parent_state1=log.state,
+                                                      parent_state2=None,
+                                                      state=new_state,
+                                                      name='Manual Edit',
+                                                      description=None,
+                                                      import_filename=log.import_filename,
+                                                      record_type=AUDIT_USER_EDIT)
+
+                        result.update(
+                            {'state': new_taxlot_state_serializer.validated_data}
+                        )
+                        # Removing organization key AND import_file key because they're not JSON-serializable
+                        # TODO find better solution
+                        result['state'].pop('organization')
+                        result['state'].pop('import_file')
+                        status_code = status.HTTP_201_CREATED
+                    else:
+                        result.update(
+                            {'status': 'error', 'message': 'Invalid Data'}
+                        )
+                        status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match']:
+                    # Override previous edit state or merge state
+                    state = taxlot_view.state
+                    for key, value in new_taxlot_state_data.iteritems():
+                        setattr(state, key, value)
+                    state.save()
+
                     result.update(
-                        {'state': new_taxlot_state_serializer.validated_data}
+                        {'state': TaxLotStateSerializer(state).data}
                     )
                     # Removing organization key AND import_file key because they're not JSON-serializable
                     # TODO find better solution
                     result['state'].pop('organization')
                     result['state'].pop('import_file')
+
                     status_code = status.HTTP_201_CREATED
                 else:
-                    result.update(
-                        {'status': 'error', 'message': 'Invalid Data'}
-                    )
-                    status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+                    result = {'status': 'error', 'message': 'Unrecognized audit log name: ' + log.name}
+                    status_code = 422
+                    return JsonResponse(result, status=status_code)
+
         else:
             status_code = status.HTTP_404_NOT_FOUND
         return JsonResponse(result, status=status_code)
