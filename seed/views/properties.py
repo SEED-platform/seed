@@ -770,8 +770,7 @@ class PropertyViewSet(GenericViewSet):
             }
 
         log = PropertyAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
-            state_id=property_view.state_id,
-            view_id__isnull=True
+            state_id=property_view.state_id
         ).order_by('-id').first()
         master = {
             'state': PropertyStateSerializer(log.state).data,
@@ -779,11 +778,19 @@ class PropertyViewSet(GenericViewSet):
         }
 
         # Traverse parents and add to history
-        if log.name in ['Manual Match', 'System Match']:
+        if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
             done_searching = False
             while not done_searching:
                 if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                     done_searching = True
+                elif log.name == 'Merge current state in migration':
+                    record = record_dict(log.parent1)
+                    history.append(record)
+                    if log.parent1.name == 'Import Creation':
+                        done_searching = True
+                    else:
+                        tree = log.parent1
+                        log = tree
                 else:
                     tree = None
                     if log.parent2.name in ['Import Creation', 'Manual Edit']:
@@ -799,6 +806,8 @@ class PropertyViewSet(GenericViewSet):
 
                     if not tree:
                         done_searching = True
+                    else:
+                        log = tree
         elif log.name == 'Manual Edit':
             record = record_dict(log.parent1)
             history.append(record)
@@ -882,8 +891,7 @@ class PropertyViewSet(GenericViewSet):
                 status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
             else:
                 log = PropertyAuditLog.objects.select_related().filter(
-                    state=property_view.state,
-                    view_id__isnull=True
+                    state=property_view.state
                 ).order_by('-id').first()
 
                 property_state_data.update(new_property_state_data)
@@ -923,7 +931,7 @@ class PropertyViewSet(GenericViewSet):
                             {'status': 'error', 'message': 'Invalid Data'}
                         )
                         status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match']:
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
                     # Override previous edit state or merge state
                     state = property_view.state
                     for key, value in new_property_state_data.iteritems():
@@ -1609,8 +1617,7 @@ class TaxLotViewSet(GenericViewSet):
             }
 
         log = TaxLotAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
-            state_id=taxlot_view.state_id,
-            view_id__isnull=True
+            state_id=taxlot_view.state_id
         ).order_by('-id').first()
         master = {
             'state': TaxLotStateSerializer(log.state).data,
@@ -1618,11 +1625,19 @@ class TaxLotViewSet(GenericViewSet):
         }
 
         # Traverse parents and add to history
-        if log.name in ['Manual Match', 'System Match']:
+        if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
             done_searching = False
             while not done_searching:
                 if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                     done_searching = True
+                elif log.name == 'Merge current state in migration':
+                    record = record_dict(log.parent1)
+                    history.append(record)
+                    if log.parent1.name == 'Import Creation':
+                        done_searching = True
+                    else:
+                        tree = log.parent1
+                        log = tree
                 else:
                     tree = None
                     if log.parent2.name in ['Import Creation', 'Manual Edit']:
@@ -1638,6 +1653,8 @@ class TaxLotViewSet(GenericViewSet):
 
                     if not tree:
                         done_searching = True
+                    else:
+                        log = tree
         elif log.name == 'Manual Edit':
             record = record_dict(log.parent1)
             history.append(record)
@@ -1742,8 +1759,7 @@ class TaxLotViewSet(GenericViewSet):
                 status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
             else:
                 log = TaxLotAuditLog.objects.select_related().filter(
-                    state=taxlot_view.state,
-                    view_id__isnull=True
+                    state=taxlot_view.state
                 ).order_by('-id').first()
 
                 taxlot_state_data.update(new_taxlot_state_data)
@@ -1783,7 +1799,7 @@ class TaxLotViewSet(GenericViewSet):
                             {'status': 'error', 'message': 'Invalid Data'}
                         )
                         status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match']:
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
                     # Override previous edit state or merge state
                     state = taxlot_view.state
                     for key, value in new_taxlot_state_data.iteritems():
