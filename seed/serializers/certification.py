@@ -334,6 +334,7 @@ class GreenAssessmentPropertyReadOnlySerializer(serializers.BaseSerializer):
             ),
             ('score', obj.score),
             ('metric', obj.metric),
+            ('rating', obj.rating),
             ('version', obj.version),
             (
                 'target_date',
