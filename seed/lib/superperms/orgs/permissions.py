@@ -107,7 +107,7 @@ class SEEDOrgPermissions(BasePermission):
         # pylint: disable=no-member
         has_perm = False
         # defaults to OWNER if not specified.
-        required_perm = self.perm_map.get(request.METHOD, ROLE_OWNER)
+        required_perm = self.perm_map.get(request.method, ROLE_OWNER)
         org_id = get_org_id(request)
         if not org_id:
             org_id = get_user_org(request.user).pk

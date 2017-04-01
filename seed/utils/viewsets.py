@@ -53,7 +53,7 @@ class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin,
     renderer_classes = RENDERER_CLASSES
     parser_classes = PARSER_CLASSES
     authentication_classes = AUTHENTICATION_CLASSES
-    permissions_classes = PERMISSIONS_CLASSES
+    permission_classes = PERMISSIONS_CLASSES
     pagination_class = None
 
 
