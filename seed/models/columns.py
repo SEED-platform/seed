@@ -500,7 +500,12 @@ class ColumnMapping(models.Model):
             key = cm.column_raw.all().values_list('table_name', 'column_name')
             value = cm.column_mapped.all().values_list('table_name', 'column_name')
 
-            # Should only have one value, if not, then we should probably catch the error
+            if len(key) != 1:
+                raise Exception("There is either none or more than one mapping raw column")
+
+            if len(value) != 1:
+                raise Exception("There is either none or more than one mapping dest column")
+
             key = key[0]
             value = value[0]
 
