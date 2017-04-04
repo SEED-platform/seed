@@ -1458,9 +1458,9 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         # Check audit log in case PropertyStates are listed as "new" but were merged into a different property
         properties = list(PropertyState.objects.filter(
-                import_file__pk=import_file_id,
-                data_state=DATA_STATE_MATCHING,
-                merge_state=MERGE_STATE_NEW,
+            import_file__pk=import_file_id,
+            data_state=DATA_STATE_MATCHING,
+            merge_state=MERGE_STATE_NEW,
         ))
         # If a record was manually edited then remove the edited version
         properties_to_remove = list()
@@ -1493,9 +1493,9 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         # Check audit log in case TaxLotStates are listed as "new" but were merged into a different tax lot
         taxlots = list(TaxLotState.objects.filter(
-                import_file__pk=import_file_id,
-                data_state=DATA_STATE_MATCHING,
-                merge_state=MERGE_STATE_NEW,
+            import_file__pk=import_file_id,
+            data_state=DATA_STATE_MATCHING,
+            merge_state=MERGE_STATE_NEW,
         ))
         # If a record was manually edited then remove the edited version
         taxlots_to_remove = list()
