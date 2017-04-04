@@ -648,7 +648,7 @@ class PropertyViewSet(GenericViewSet):
             name = c.column_name
             if name == 'id':
                 name += '_extra'
-            while any(col['name'] == name and not col['related'] for col in columns):
+            while any(col['name'] == name and col['related'] for col in columns):
                 name += '_extra'
 
             display_name = c.column_name.title().replace('_', ' ')
@@ -1397,8 +1397,8 @@ class TaxLotViewSet(GenericViewSet):
             }, {
                 'name': 'year_built',
                 'displayName': 'Year Built',
-                'type': 'number',
-                'related': True
+                'type': 'numberStr',
+                'related': True,
             }, {
                 'name': 'recent_sale_date',
                 'displayName': 'Recent Sale Date',
@@ -1511,7 +1511,7 @@ class TaxLotViewSet(GenericViewSet):
             name = c.column_name
             if name == 'id':
                 name += '_extra'
-            while any(col['name'] == name and not col['related'] for col in columns):
+            while any(col['name'] == name and col['related'] for col in columns):
                 name += '_extra'
 
             display_name = c.column_name.title().replace('_', ' ')

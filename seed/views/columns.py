@@ -126,6 +126,55 @@ class ColumnViewSet(viewsets.ViewSet):
             'column': c.to_dict(),
         })
 
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @require_organization_id_class
+    @list_route(methods=['POST'])
+    def delete_all(self, request):
+        """
+        Delete all columns for an organization. This method is typically not recommended if there
+        are data in the inventory as it will invalidate all extra_data fields. This also removes
+        all the column mappings that existed.
+
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id
+              required: true
+              paramType: query
+        type:
+            status:
+                description: success or error
+                type: string
+                required: true
+            column_mappings_deleted_count:
+                description: Number of column_mappings that were deleted
+                type: integer
+                required: true
+            columns_deleted_count:
+                description: Number of columns that were deleted
+                type: integer
+                required: true
+        """
+        org_id = int(request.query_params.get('organization_id', None))
+
+        try:
+            org = Organization.objects.get(pk=org_id)
+            c_count, cm_count = Column.delete_all(org)
+            return JsonResponse(
+                {
+                    'status': 'success',
+                    'column_mappings_deleted_count': cm_count,
+                    'columns_deleted_count': c_count,
+                }
+            )
+        except Organization.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'organization with with id {} does not exist'.format(org_id)
+            }, status=status.HTTP_404_NOT_FOUND)
+
 
 class ColumnMappingViewSet(viewsets.ViewSet):
     raise_exception = True

@@ -377,6 +377,19 @@ class Column(models.Model):
 
         return c
 
+    @staticmethod
+    def delete_all(organization):
+        """
+        Delete all the columns for an organization. Note that this will invalidate all the
+        data that is in the extra_data fields of the inventory and is irreversible.
+
+        :param organization: instance, Organization
+        :return: [int, int] Number of columns, column_mappings records that were deleted
+        """
+        cm_delete_count, _ = ColumnMapping.objects.filter(super_organization=organization).delete()
+        c_count, _ = Column.objects.filter(organization=organization).delete()
+        return [c_count, cm_delete_count]
+
 
 class ColumnMapping(models.Model):
     """Stores previous user-defined column mapping.
