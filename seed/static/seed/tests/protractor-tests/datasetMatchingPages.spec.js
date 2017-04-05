@@ -19,18 +19,18 @@ describe('When I go to the dataset options page', function () {
 
 	it('should have more than one mapped value', function () {
 		//Need this?
-		$('[ng-change="setAllInventoryTypes()"]').element(by.cssContainingText('option', 'Tax Lot')).click();
+		// $('[ng-change="setAllInventoryTypes()"]').element(by.cssContainingText('option', 'Tax Lot')).click();
 		var cusRow = element.all(by.repeater('tcm in valids')).filter(function (rows) {
 			expect(rows.length).not.toBeLessThan(1);
 			return rows.$('[ng-model="tcm.suggestion_table_name"]').getText().then(function (label) {
-				expect(label).toEqual('Tax Lot');
+				// expect(label).toEqual('Tax Lot');
 				return;
 			})
 		});
 	});
 
 	it('should go to mapping Validation', function () {
-		$$('[ng-click="get_mapped_buildings(true)"]').first().click();
+		$$('[ng-click="get_mapped_buildings()"]').first().click();
 		browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),30000);       
 		expect($('[heading="View by Property"]').isPresent()).toBe(true);
 		expect($('[heading="View by Tax Lot"]').isPresent()).toBe(true);
