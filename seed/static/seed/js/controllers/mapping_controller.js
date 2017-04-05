@@ -713,6 +713,9 @@ angular.module('BE.seed.controller.mapping', [])
             },
             dataset: function () {
               return ds;
+            },
+            organization: function () {
+              return $scope.menu.user.organization;
             }
           }
         });
