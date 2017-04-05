@@ -52,6 +52,9 @@ angular.module('BE.seed.controller.dataset_detail', [])
             },
             dataset: function () {
               return $scope.dataset;
+            },
+            organization: function () {
+              return $scope.menu.user.organization;
             }
           }
         });
@@ -69,7 +72,7 @@ angular.module('BE.seed.controller.dataset_detail', [])
 
       $scope.getCycleName = function (id) {
         var cycle = _.find(cycles.cycles, {id: id});
-        return cycle ? cycle.name : '';
+        return cycle ? cycle.name : undefined;
       };
 
       var init = function () {

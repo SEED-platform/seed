@@ -64,6 +64,9 @@ angular.module('BE.seed.controller.dataset', [])
             },
             dataset: function () {
               return dataset;
+            },
+            organization: function () {
+              return $scope.menu.user.organization;
             }
           }
         });
@@ -125,7 +128,7 @@ angular.module('BE.seed.controller.dataset', [])
         for (var i = 0; i < dataset.importfiles.length; i++) {
           var importfile = dataset.importfiles[i];
           if (importfile.source_type === 'Portfolio Raw') {
-            $state.go('matching', {importfile_id: importfile.id});
+            $state.go('matching_list', {importfile_id: importfile.id, inventory_type: 'properties'});
             break;
           }
         }

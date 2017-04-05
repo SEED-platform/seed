@@ -1,7 +1,7 @@
 /**
  * :copyright: (c) 2014 Building Energy Inc
  */
-describe('controller: create_organization_modal_controller', function(){
+describe('controller: create_sub_organization_modal_controller', function(){
     // globals set up and used in each test scenario
     var mock_organization_service, scope, controller, modal_state;
     var ctrl, ctrl_scope, modalInstance, timeout;
@@ -27,8 +27,8 @@ describe('controller: create_organization_modal_controller', function(){
     }));
 
     // this is outside the beforeEach so it can be configured by each unit test
-    function create_organization_modal_controller(){
-        ctrl = ctrl('create_organization_modal_controller', {
+    function create_sub_organization_modal_controller(){
+        ctrl = ctrl('create_sub_organization_modal_controller', {
             $scope: ctrl_scope,
             $uibModalInstance: {
                 close: function() {
@@ -49,7 +49,7 @@ describe('controller: create_organization_modal_controller', function(){
     it('should call the organization service to add a new sub_org',
         function() {
         // arrange
-        create_organization_modal_controller();
+        create_sub_organization_modal_controller();
 
         // act
         ctrl_scope.$digest();

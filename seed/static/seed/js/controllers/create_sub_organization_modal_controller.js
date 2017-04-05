@@ -2,14 +2,13 @@
  * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-angular.module('BE.seed.controller.create_organization_modal', [])
-.controller('create_organization_modal_controller', [
+angular.module('BE.seed.controller.create_sub_organization_modal', [])
+.controller('create_sub_organization_modal_controller', [
     '$scope',
     '$uibModalInstance',
     'organization_service',
     'organization',
-    '$timeout',
-    function ($scope, $uibModalInstance, organization_service, organization, $timeout) {
+    function ($scope, $uibModalInstance, organization_service, organization) {
         $scope.sub_org = {};
         $scope.error_message = '';
 
@@ -41,7 +40,7 @@ angular.module('BE.seed.controller.create_organization_modal', [])
     /**
      * set the focus on the first input box
      */
-    $timeout(function() {
+    _.delay(function() {
         angular.element('#createOrganizationName').focus();
     }, 50);
 

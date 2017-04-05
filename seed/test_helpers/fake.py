@@ -20,13 +20,14 @@ import os
 import re
 import string
 from collections import namedtuple
+from django.utils import timezone
 
 import mock
 from django.db.models.fields.files import FieldFile
 from faker import Factory
 
 from seed.models import (
-    BuildingSnapshot, Cycle, Column, Property, PropertyState, TaxLotState
+    BuildingSnapshot, Cycle, Column, Property, PropertyState, TaxLotState, TaxLotAuditLog, PropertyAuditLog
 )
 
 Owner = namedtuple(
@@ -173,8 +174,7 @@ class FakeCycleFactory(BaseFake):
         if 'start' in kw:
             start = kw.pop('start')
         else:
-            start = self.fake.date_time_this_decade()
-            start = datetime.datetime(start.year, 0o1, 0o1)
+            start = datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone())
         if 'end' in kw:
             end = kw.pop('end')
         else:
@@ -242,7 +242,11 @@ class FakePropertyStateFactory(BaseFake):
         """Return a property state populated with pseudo random data"""
         property_details = self.get_details()
         property_details.update(kw)
-        return PropertyState.objects.create(organization=org, **property_details)
+
+        ps = PropertyState.objects.create(organization=org, **property_details)
+        auditlog_detail = {}
+        PropertyAuditLog.objects.create(organization=org, state=ps, **auditlog_detail)
+        return ps
 
 
 class FakeTaxLotStateFactory(BaseFake):
@@ -266,7 +270,12 @@ class FakeTaxLotStateFactory(BaseFake):
         """Return a taxlot state populated with pseudo random data"""
         taxlot_details = self.get_details()
         taxlot_details.update(kw)
-        return TaxLotState.objects.create(organization=org, **taxlot_details)
+
+        tls = TaxLotState.objects.create(organization=org, **taxlot_details)
+        auditlog_detail = {}
+        TaxLotAuditLog.objects.create(organization=org, state=tls, **auditlog_detail)
+
+        return tls
 
 
 def mock_file_factory(name, size=None, url=None, path=None):
@@ -347,7 +356,7 @@ def mock_queryset_factory(model, flatten=False, **kwargs):
         else field.name for field in fields
     ]
     Instance = namedtuple(model.__name__, field_names)
-    count_name = field_names[0] if field_names[0] != auto_populate\
+    count_name = field_names[0] if field_names[0] != auto_populate \
         else field_names[1]
     queryset = []
     for i in range(len(kwargs[count_name])):

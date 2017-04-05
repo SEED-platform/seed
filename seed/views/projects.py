@@ -5,18 +5,18 @@
 :author
 """
 # system imports
-import datetime
 import logging
 
 from dateutil import parser
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
+from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import list_route
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-from rest_framework.decorators import list_route
 
 from seed import search
 from seed.authentication import SEEDAuthentication
@@ -1021,7 +1021,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
                     'missing inventory', key=inventory_type
                 )
         if not error:
-            view.approved_date = datetime.datetime.now()
+            view.approved_date = timezone.now()
             view.approver = request.user
             view.compliant = params['compliant']
             view.save()

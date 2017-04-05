@@ -8,7 +8,7 @@ describe('controller: inventory_detail_controller', function () {
   var scope, ngFilter, delete_called, ngLog, ngUrls;
   var inventory_detail_controller, inventory_detail_controller_scope;
   var mock_inventory_service, columns, state;
-  var mock_uib_modal, mock_label_helper_service, mock_label_payload;
+  var mock_uib_modal, mock_label_service, mock_label_payload;
 
   beforeEach(function () {
     module('BE.seed');
@@ -16,7 +16,7 @@ describe('controller: inventory_detail_controller', function () {
 
   // inject AngularJS dependencies for the controller
   beforeEach(inject(
-    function ($controller, $rootScope, $state, $uibModal, $log, $filter, $stateParams, $q, urls, label_helper_service, label_service,
+    function ($controller, $rootScope, $state, $uibModal, $log, $filter, $stateParams, $q, urls, label_service, label_service,
               inventory_service) {
       controller = $controller;
       state: $state;
@@ -24,7 +24,7 @@ describe('controller: inventory_detail_controller', function () {
       ngLog = $log;
       ngUrls = urls;
       mock_uib_modal = $uibModal;
-      mock_label_helper_service = label_helper_service;
+      mock_label_service = label_service;
       mock_label_service = label_service;
 
       inventory_detail_controller_scope = $rootScope.$new();
@@ -166,7 +166,7 @@ describe('controller: inventory_detail_controller', function () {
       $log: ngLog,
       $filter: ngFilter,
       urls: ngUrls,
-      label_helper_service: mock_label_helper_service,
+      label_service: mock_label_service,
       label_service: mock_label_service,
       inventory_service: mock_inventory_service,
       inventory_payload: fake_taxlot_payload,

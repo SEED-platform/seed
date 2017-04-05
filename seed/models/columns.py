@@ -8,6 +8,7 @@
 import logging
 
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
@@ -86,37 +87,35 @@ class Column(models.Model):
 
     # We have two concepts of the SOURCE. The table_name, which is mostly used, and the
     # SOURCE_* fields. Need to converge on one or the other.
-    SOURCE_PROPERTY = 'P'
-    SOURCE_TAXLOT = 'T'
-    SOURCE_CHOICES = (
-        (SOURCE_PROPERTY, 'Property'),
-        (SOURCE_TAXLOT, 'Taxlot'),
-    )
-    SOURCE_CHOICES_MAP = {
-        SOURCE_PROPERTY: 'property',
-        SOURCE_TAXLOT: 'taxlot',
-    }
+    # SOURCE_PROPERTY = 'P'
+    # SOURCE_TAXLOT = 'T'
+    # SOURCE_CHOICES = (
+    #     (SOURCE_PROPERTY, 'Property'),
+    #     (SOURCE_TAXLOT, 'Taxlot'),
+    # )
+    # SOURCE_CHOICES_MAP = {
+    #     SOURCE_PROPERTY: 'property',
+    #     SOURCE_TAXLOT: 'taxlot',
+    # }
 
     organization = models.ForeignKey(SuperOrganization, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)
 
     # name of the table which the column name applies, if the column name
-    # is a db field
+    # is a db field. Options now are only PropertyState and TaxLotState
     table_name = models.CharField(max_length=512, blank=True, db_index=True, )
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
-    extra_data_source = models.CharField(
-        max_length=1, null=True, blank=True,
-        db_index=True, choices=SOURCE_CHOICES
-    )
 
-    class Meta:
-        unique_together = (
-            'organization', 'column_name', 'is_extra_data', 'extra_data_source')
+    # Do not enable this until running through the database and merging the columns down.
+    # BUT first, make sure to add an import file ID into the column class.
+    # class Meta:
+    #     unique_together = (
+    #         'organization', 'column_name', 'is_extra_data', 'table_name')
 
     def __unicode__(self):
-        return u'{0}'.format(self.column_name)
+        return u'{} - {}'.format(self.pk, self.column_name)
 
     @staticmethod
     def create_mappings(mappings, organization, user):
@@ -290,8 +289,15 @@ class Column(models.Model):
             except Column.MultipleObjectsReturned:
                 _log.debug("More than one to_column found for {}.{}".format(field['to_table_name'],
                                                                             field['to_field']))
-                raise Exception("Cannot handle more than one to_column returned for {}.{}".format(
-                    field['to_field'], field['to_table_name']))
+                # raise Exception("Cannot handle more than one to_column returned for {}.{}".format(
+                #     field['to_field'], field['to_table_name']))
+
+                # TODO: write something to remove the duplicate columns
+                to_org_col = Column.objects.filter(organization=organization,
+                                                   column_name=field['to_field'],
+                                                   table_name=field['to_table_name'],
+                                                   is_extra_data=is_extra_data).first()
+                _log.debug("Grabbing the first to_column")
 
             try:
                 # the from column is the field in the import file, thus the table_name needs to be
@@ -341,13 +347,46 @@ class Column(models.Model):
             db_field = md.find_column(model_obj.__class__.__name__, key)
             is_extra_data = False if db_field else True  # yes i am a db column, thus I am not extra_data
 
-            # get the name of the model object as a string to save into the database
-            Column.objects.get_or_create(
-                column_name=key[:511],
-                is_extra_data=is_extra_data,
-                organization=model_obj.organization,
-                table_name=model_obj.__class__.__name__
-            )
+            # handle the special edge-case where an old organization may have duplicate columns
+            # in the database. We should make this a migration in the future and put a validation
+            # in the db.
+            for i in range(0, 5):
+                while True:
+                    try:
+                        Column.objects.get_or_create(
+                            column_name=key[:511],
+                            is_extra_data=is_extra_data,
+                            organization=model_obj.organization,
+                            table_name=model_obj.__class__.__name__
+                        )
+                    except Column.MultipleObjectsReturned:
+                        _log.debug(
+                            "Column.MultipleObjectsReturned for {} in save_column_names".format(
+                                key[:511]))
+
+                        columns = Column.objects.filter(column_name=key[:511],
+                                                        is_extra_data=is_extra_data,
+                                                        organization=model_obj.organization,
+                                                        table_name=model_obj.__class__.__name__)
+                        for c in columns:
+                            if not ColumnMapping.objects.filter(
+                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
+                                _log.debug("Deleting column object {}".format(c.column_name))
+                                c.delete()
+
+                        # Check if there are more than one column still
+                        if Column.objects.filter(
+                                column_name=key[:511],
+                                is_extra_data=is_extra_data,
+                                organization=model_obj.organization,
+                                table_name=model_obj.__class__.__name__).count() > 1:
+                            raise Exception(
+                                "Could not fix duplicate columns for {}. Contact dev team").format(
+                                key)
+
+                        continue
+
+                    break
 
     def to_dict(self):
         """
@@ -495,7 +534,12 @@ class ColumnMapping(models.Model):
             key = cm.column_raw.all().values_list('table_name', 'column_name')
             value = cm.column_mapped.all().values_list('table_name', 'column_name')
 
-            # Should only have one value, if not, then we should probably catch the error
+            if len(key) != 1:
+                raise Exception("There is either none or more than one mapping raw column")
+
+            if len(value) != 1:
+                raise Exception("There is either none or more than one mapping dest column")
+
             key = key[0]
             value = value[0]
 

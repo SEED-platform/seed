@@ -1,11 +1,10 @@
-# !/usr/bin/env python
 # encoding: utf-8
 """
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
-import datetime
+from django.utils import timezone
 import logging
 
 from django.http import JsonResponse
@@ -19,7 +18,6 @@ from seed.data_importer.models import ImportRecord
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from seed.models import BuildingSnapshot
 from seed.models import obj_to_dict
 from seed.utils.api import api_endpoint_class
 from seed.utils.time import convert_to_js_timestamp
@@ -65,10 +63,6 @@ class DatasetViewSet(viewsets.ViewSet):
             dataset['importfiles'] = importfiles
             if d.last_modified_by:
                 dataset['last_modified_by'] = d.last_modified_by.email
-            dataset['number_of_buildings'] = BuildingSnapshot.objects.filter(
-                import_file__in=d.files,
-                canonicalbuilding__active=True,
-            ).count()
             dataset['updated_at'] = convert_to_js_timestamp(d.updated_at)
             datasets.append(dataset)
 
@@ -150,7 +144,7 @@ class DatasetViewSet(viewsets.ViewSet):
                     required: true
                     type: dictionary
                     description: A dictionary of a full dataset structure, including
-                                 keys ''name'', ''number_of_buildings'', ''id'', ''updated_at'',
+                                 keys ''name'', ''id'', ''updated_at'',
                                  ''last_modified_by'', ''importfiles'', ...
             parameter_strategy: replace
             parameters:
@@ -211,9 +205,6 @@ class DatasetViewSet(viewsets.ViewSet):
         dataset['importfiles'] = importfiles
         if d.last_modified_by:
             dataset['last_modified_by'] = d.last_modified_by.email
-        dataset['number_of_buildings'] = BuildingSnapshot.objects.filter(
-            import_file__in=d.files
-        ).count()
         dataset['updated_at'] = convert_to_js_timestamp(d.updated_at)
 
         return JsonResponse({
@@ -301,9 +292,6 @@ class DatasetViewSet(viewsets.ViewSet):
         org_id = int(request.query_params.get('organization_id', None))
 
         try:
-            _log.info(
-                "create_dataset: getting Organization for id=({})".format(
-                    org_id))
             org = Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'organization_id not provided'},
@@ -311,8 +299,8 @@ class DatasetViewSet(viewsets.ViewSet):
         record = ImportRecord.objects.create(
             name=body['name'],
             app='seed',
-            start_time=datetime.datetime.now(),
-            created_at=datetime.datetime.now(),
+            start_time=timezone.now(),
+            created_at=timezone.now(),
             last_modified_by=request.user,
             super_organization=org,
             owner=request.user
@@ -346,13 +334,5 @@ class DatasetViewSet(viewsets.ViewSet):
         """
         org_id = int(request.query_params.get('organization_id', None))
 
-        # first make sure that the organization id exists
-        if Organization.objects.filter(pk=org_id).exists():
-            datasets_count = Organization.objects.get(pk=org_id).import_records. \
-                all().distinct().count()
-            return JsonResponse({'status': 'success', 'datasets_count': datasets_count})
-        else:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Could not find organization_id: {}'.format(org_id)
-            }, status=status.HTTP_400_BAD_REQUEST)
+        datasets_count = ImportRecord.objects.filter(super_organization_id=org_id).count()
+        return JsonResponse({'status': 'success', 'datasets_count': datasets_count})

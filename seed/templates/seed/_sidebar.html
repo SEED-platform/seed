@@ -12,13 +12,6 @@
                 <div ng-show="!is_initial_state" class="item_name">Projects</div>
                 <!--<div ng-show="!is_initial_state" class="badge badge_menu">{$ projects_count | number:0 $}</div>-->
             </a>
-            <!--
-            <a id="sidebar-buildings" ng-class="{item: true, active: is_active('/buildings')}" href="{% url "seed:home" %}#/buildings">
-                <div class="icon"><i class="fa fa-building-o"></i></div>
-                <div ng-show="!is_initial_state" class="item_name">Buildings</div>
-                <div ng-show="!is_initial_state" class="badge badge_menu">{$ buildings_count | number:0 $}</div>
-            </a>
-            -->
             <a id="sidebar-inventory"
                ng-class="{item: true, active: is_active('/properties') || is_active('/taxlots')}"
                href="{% url "seed:home" %}#/properties"

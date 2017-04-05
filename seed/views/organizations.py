@@ -50,7 +50,7 @@ def _dict_org(request, organizations):
 
     orgs = []
     for o in organizations:
-        org_cycles = Cycle.objects.filter(organization=o).order_by('name')
+        org_cycles = Cycle.objects.filter(organization=o).only('id', 'name').order_by('name')
         cycles = []
         for c in org_cycles:
             cycles.append({
@@ -60,7 +60,9 @@ def _dict_org(request, organizations):
             })
 
         # We don't wish to double count sub organization memberships.
-        org_users = OrganizationUser.objects.select_related('user').filter(organization=o)
+        org_users = OrganizationUser.objects.select_related('user').only(
+            'role_level', 'user__first_name', 'user__last_name', 'user__email', 'user__id'
+        ).filter(organization=o)
 
         owners = []
         role_level = None
@@ -71,7 +73,7 @@ def _dict_org(request, organizations):
                     'first_name': ou.user.first_name,
                     'last_name': ou.user.last_name,
                     'email': ou.user.email,
-                    'id': ou.user_id
+                    'id': ou.user.id
                 })
 
                 if ou.user == request.user:
@@ -82,8 +84,8 @@ def _dict_org(request, organizations):
 
         org = {
             'name': o.name,
-            'org_id': o.pk,
-            'id': o.pk,
+            'org_id': o.id,
+            'id': o.id,
             'number_of_users': len(org_users),
             'user_is_owner': user_is_owner,
             'user_role': role_level,
@@ -93,6 +95,36 @@ def _dict_org(request, organizations):
             'parent_id': o.parent_id,
             'cycles': cycles,
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
+        }
+        orgs.append(org)
+
+    return orgs
+
+
+def _dict_org_brief(request, organizations):
+    """returns a brief dictionary of an organization's data."""
+
+    organization_roles = list(OrganizationUser.objects.filter(user=request.user).values(
+        'organization_id', 'role_level'
+    ))
+
+    role_levels = {}
+    for r in organization_roles:
+        role_levels[r['organization_id']] = _get_js_role(r['role_level'])
+
+    orgs = []
+    for o in organizations:
+        user_role = None
+        try:
+            user_role = role_levels[o.id]
+        except KeyError:
+            pass
+
+        org = {
+            'name': o.name,
+            'org_id': o.id,
+            'id': o.id,
+            'user_role': user_role
         }
         orgs.append(org)
 
@@ -286,12 +318,22 @@ class OrganizationViewSet(viewsets.ViewSet):
                              keys ''name'', ''org_id'', ''number_of_users'', ''user_is_owner'',
                              ''user_role'', ''sub_orgs'', ...
         """
-        if request.user.is_superuser:
-            qs = Organization.objects.all()
-        else:
-            qs = request.user.orgs.all()
 
-        return JsonResponse({'organizations': _dict_org(request, qs)})
+        # if brief==true only return high-level organization details
+        brief = request.GET.get('brief', '') == 'true'
+
+        if brief:
+            if request.user.is_superuser:
+                qs = Organization.objects.only('id', 'name')
+            else:
+                qs = request.user.orgs.only('id', 'name')
+            return JsonResponse({'organizations': _dict_org_brief(request, qs)})
+        else:
+            if request.user.is_superuser:
+                qs = Organization.objects.all()
+            else:
+                qs = request.user.orgs.all()
+            return JsonResponse({'organizations': _dict_org(request, qs)})
 
     @method_decorator(permission_required('seed.can_access_admin'))
     @api_endpoint_class

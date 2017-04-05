@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 from datetime import date, datetime, timedelta
+from django.utils import timezone
 
 
 class Migration(migrations.Migration):
@@ -17,8 +18,8 @@ class Migration(migrations.Migration):
             else:
                 cycle = apps.get_model("seed", "Cycle").objects.create(
                     name=cycle_name,
-                    start=datetime(year, 1, 1),
-                    end=datetime(year + 1, 1, 1) - timedelta(seconds=1)
+                    start=datetime(year, 1, 1, tzinfo=timezone.get_current_timezone()),
+                    end=datetime(year + 1, 12, 31, tzinfo=timezone.get_current_timezone())
                 )
 
         # Go through the importfiles and add the default cycle

@@ -287,39 +287,6 @@ class PropertyView(models.Model):
         })
         return PropertyAuditLog.objects.create(**kwargs)
 
-    def update_state(self, new_state, **kwargs):
-        view_audit_log = PropertyAuditLog.objects.filter(
-            state=self.state
-        ).first()
-        if not view_audit_log:
-            view_audit_log = self.initialize_audit_logs(
-                description="Initial audit log added on update.",
-                record_type=AUDIT_IMPORT,
-            )
-        new_audit_log = PropertyAuditLog(
-            organization=self.property.organization,
-            parent1=view_audit_log,
-            state=new_state,
-            view=self,
-            **kwargs
-        )
-        self.state = new_state
-        self.save()
-        new_audit_log.save()
-        return
-
-    def save(self, *args, **kwargs):
-        # create audit log on creation
-        audit_log_initialized = True if self.id else False
-        import_filename = kwargs.pop('import_filename', self._import_filename)
-        super(PropertyView, self).save(*args, **kwargs)
-        if not audit_log_initialized:
-            self.initialize_audit_logs(
-                description="Initial audit log added on creation/save.",
-                record_type=AUDIT_IMPORT,
-                import_filename=import_filename
-            )
-
     def tax_lot_views(self):
         """
         Return a list of TaxLotViews that are associated with this PropertyView and Cycle
@@ -366,6 +333,14 @@ class PropertyAuditLog(models.Model):
                                 related_name='propertyauditlog__parent1')
     parent2 = models.ForeignKey('PropertyAuditLog', blank=True, null=True,
                                 related_name='propertyauditlog__parent2')
+
+    # store the parent states as well so that we can quickly return which state is associated
+    # with the parents of the audit log without having to query the parent audit log to grab
+    # the state
+    parent_state1 = models.ForeignKey(PropertyState, blank=True, null=True,
+                                      related_name='propertyauditlog__parent_state1')
+    parent_state2 = models.ForeignKey(PropertyState, blank=True, null=True,
+                                      related_name='propertyauditlog__parent_state2')
 
     state = models.ForeignKey('PropertyState',
                               related_name='propertyauditlog__state')

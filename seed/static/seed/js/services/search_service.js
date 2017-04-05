@@ -463,11 +463,8 @@ angular.module('BE.seed.service.search', [])
        * generate_columns: creates a list of column objects extended from column
        *   prototype by filtering the list of all possible columns
        */
-      search_service.generate_columns = function (all_columns,
-                                                  column_headers,
-                                                  column_prototype) {
-        var columns = [];
-        columns = all_columns.filter(function (c) {
+      search_service.generate_columns = function (all_columns, column_headers, column_prototype) {
+        var columns = all_columns.filter(function (c) {
           return _.includes(column_headers, c.sort_column) || c.checked;
         });
         // also apply the user sort order
