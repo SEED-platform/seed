@@ -390,7 +390,7 @@ class Column(models.Model):
 
     def to_dict(self):
         """
-        Convert the column object sto a dictionary
+        Convert the column object to a dictionary
 
         :return: dict
         """
