@@ -254,15 +254,15 @@ class TestColumnsByInventory(TestCase):
 
     def test_get_column_mapping(self):
         """Honor organizational bounds, get mapping data."""
-        org1 = Organization.objects.create()
+        # org1 = Organization.objects.create()
         org2 = Organization.objects.create()
 
         # Raw columns don't have a table name!
-        raw_column = seed_models.Column.objects.create(
+        seed_models.Column.objects.create(
             column_name=u'Some Weird City ID',
             organization=org2
         )
-        mapped_column = seed_models.Column.objects.create(
+        seed_models.Column.objects.create(
             table_name=u'PropertyState',
             column_name=u'custom_id_1',
             organization=org2
