@@ -240,3 +240,30 @@ class TestColumnMapping(TestCase):
     def test_is_concatenated(self):
         self.assertEqual(self.directMapping.is_concatenated(), False)
         self.assertEqual(self.concatenatedMapping.is_concatenated(), True)
+
+
+class TestColumnsByInventory(TestCase):
+
+    def setUp(self):
+        self.fake_user = User.objects.create(username='test')
+        self.fake_org = Organization.objects.create()
+        OrganizationUser.objects.create(
+            user=self.fake_user,
+            organization=self.fake_org
+        )
+
+    def test_get_column_mapping(self):
+        """Honor organizational bounds, get mapping data."""
+        org1 = Organization.objects.create()
+        org2 = Organization.objects.create()
+
+        # Raw columns don't have a table name!
+        raw_column = seed_models.Column.objects.create(
+            column_name=u'Some Weird City ID',
+            organization=org2
+        )
+        mapped_column = seed_models.Column.objects.create(
+            table_name=u'PropertyState',
+            column_name=u'custom_id_1',
+            organization=org2
+        )

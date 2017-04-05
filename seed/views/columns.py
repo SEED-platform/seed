@@ -63,6 +63,53 @@ class ColumnViewSet(viewsets.ViewSet):
             'columns': columns,
         })
 
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @list_route(methods=['GET'])
+    def tmp_new_list(self, request):
+        """
+        Retrieves all columns for the user's organization.
+
+        Example:
+            /api/v2/columns/?inventory_type=(property|taxlot)
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: Either success or error
+            columns:
+                required: true
+                type: array[column]
+                description: Returns an array where each item is a full column structure, including
+                             keys ''name'', ''id'', ''is_extra_data'', ''column_name'',
+                             ''table_name'',...
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: inventory_type
+              description: Which inventory type is being matched (for related fields and naming).
+                property or taxlot
+              required: true
+              paramType: query
+        """
+        org_id = request.query_params.get('organization_id', None)
+        inventory_type = request.query_params.get('inventory_type', 'property')
+
+        columns = Column.retrieve_all(org_id, inventory_type)
+
+        # for c in Column.objects.filter(organization=org).order_by('table_name', 'column_name'):
+        #     columns.append(c.to_dict())
+
+        return JsonResponse({
+            'status': 'success',
+            'columns': columns,
+        })
+
+    # TODO: 1295 - cleanup for require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk=None):

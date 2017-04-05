@@ -3441,6 +3441,7 @@ class InventoryViewTests(TestCase):
 
         pm_property_id_col = {
             'name': 'pm_property_id',
+            'table': 'PropertyState',
             'displayName': 'PM Property ID',
             'pinnedLeft': True,
             'type': 'number',
@@ -3451,6 +3452,7 @@ class InventoryViewTests(TestCase):
         expected_property_extra_data_column = {
             'extraData': True,
             'name': 'property_extra_data_column',
+            'table': 'PropertyState',
             'displayName': 'Property Extra Data Column',
             'related': False,
         }
@@ -3458,6 +3460,7 @@ class InventoryViewTests(TestCase):
 
         expected_taxlot_extra_data_column = {
             'extraData': True,
+            'table': 'TaxLotState',
             'name': 'taxlot_extra_data_column',
             'displayName': 'Taxlot Extra Data Column',
             'related': True,
@@ -3485,16 +3488,18 @@ class InventoryViewTests(TestCase):
 
         jurisdiction_tax_lot_id_col = {
             'name': 'jurisdiction_tax_lot_id',
+            'table': 'TaxLotState',
             'displayName': 'Jurisdiction Tax Lot ID',
             'pinnedLeft': True,
             'type': 'numberStr',
             'related': False,
         }
-        self.assertEqual(results[0], jurisdiction_tax_lot_id_col)
+        self.assertEqual(results[2], jurisdiction_tax_lot_id_col)
 
         expected_property_extra_data_column = {
             'extraData': True,
             'name': 'property_extra_data_column',
+            'table': 'PropertyState',
             'displayName': u'Property Extra Data Column',
             'related': True,
         }
@@ -3503,6 +3508,7 @@ class InventoryViewTests(TestCase):
         expected_taxlot_extra_data_column = {
             'extraData': True,
             'name': 'taxlot_extra_data_column',
+            'table': 'TaxLotState',
             'displayName': 'Taxlot Extra Data Column',
             'related': False,
         }
