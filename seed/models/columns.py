@@ -8,6 +8,7 @@
 import logging
 
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
@@ -346,13 +347,46 @@ class Column(models.Model):
             db_field = md.find_column(model_obj.__class__.__name__, key)
             is_extra_data = False if db_field else True  # yes i am a db column, thus I am not extra_data
 
-            # get the name of the model object as a string to save into the database
-            Column.objects.get_or_create(
-                column_name=key[:511],
-                is_extra_data=is_extra_data,
-                organization=model_obj.organization,
-                table_name=model_obj.__class__.__name__
-            )
+            # handle the special edge-case where an old organization may have duplicate columns
+            # in the database. We should make this a migration in the future and put a validation
+            # in the db.
+            for i in range(0, 5):
+                while True:
+                    try:
+                        Column.objects.get_or_create(
+                            column_name=key[:511],
+                            is_extra_data=is_extra_data,
+                            organization=model_obj.organization,
+                            table_name=model_obj.__class__.__name__
+                        )
+                    except Column.MultipleObjectsReturned:
+                        _log.debug(
+                            "Column.MultipleObjectsReturned for {} in save_column_names".format(
+                                key[:511]))
+
+                        columns = Column.objects.filter(column_name=key[:511],
+                                                        is_extra_data=is_extra_data,
+                                                        organization=model_obj.organization,
+                                                        table_name=model_obj.__class__.__name__)
+                        for c in columns:
+                            if not ColumnMapping.objects.filter(
+                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
+                                _log.debug("Deleting column object {}".format(c.column_name))
+                                c.delete()
+
+                        # Check if there are more than one column still
+                        if Column.objects.filter(
+                                column_name=key[:511],
+                                is_extra_data=is_extra_data,
+                                organization=model_obj.organization,
+                                table_name=model_obj.__class__.__name__).count() > 1:
+                            raise Exception(
+                                "Could not fix duplicate columns for {}. Contact dev team").format(
+                                key)
+
+                        continue
+
+                    break
 
     def to_dict(self):
         """
