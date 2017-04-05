@@ -56,10 +56,10 @@ describe('When I go to the dataset options page', function () {
 	it('should go to matching and have rows', function () {
 	 expect($('.page_title').getText()).toContain('Data Matching');
 		element(by.cssContainingText('#selected-cycle', browser.params.testOrg.cycle)).click();
-		var rows = element.all(by.repeater('b in inventory'));
+		var rows = element.all(by.repeater('i in inventory'));
 		expect(rows.count()).not.toBeLessThan(1);
-		$$('[ui-sref="matching({importfile_id: importfile_id, inventory_type: \'taxlots\'})"]').first().click();
-		rows = element.all(by.repeater('b in inventory'));
+		$$('[ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})"]').first().click();
+		rows = element.all(by.repeater('state in available_matches'));
 		expect(rows.count()).not.toBeLessThan(1);
 		//Need more stuff here....
 
