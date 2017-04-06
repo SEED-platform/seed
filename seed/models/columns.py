@@ -20,6 +20,7 @@ from seed.models.models import (
     Unit,
     SEED_DATA_SOURCES,
 )
+from seed.utils.constants import VIEW_COLUMNS_PROPERTY
 
 INVENTORY_MAP = {'property': 'PropertyState', 'taxlot': 'TaxLotState'}
 INVENTORY_MAP_PREPEND = {'property': 'tax', 'taxlot': 'property'}
@@ -373,7 +374,7 @@ class Column(models.Model):
                                                         table_name=model_obj.__class__.__name__)
                         for c in columns:
                             if not ColumnMapping.objects.filter(
-                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
+                                            Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
@@ -432,10 +433,8 @@ class Column(models.Model):
         # this method should retrieve the columns from MappingData and then have a method
         # to return for JavaScript (i.e. UI-Grid) or native (standard JSON)
 
-        from seed.utils.constants import VIEW_COLUMNS_PROPERTY
 
-        # Grab the default columns and their details
-        columns = copy.deepcopy(VIEW_COLUMNS_PROPERTY)
+        columns = copy.deepcopy(VIEW_COLUMNS_PROPERTY)  # Grab the default columns and their details
         for c in columns:
             if c['table'] == INVENTORY_MAP[inventory_type]:
                 c['related'] = False
