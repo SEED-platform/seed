@@ -487,7 +487,7 @@ class Column(models.Model):
 
         # Clean up the columns
         for c in columns:
-            if c['table'] == INVENTORY_MAP[inventory_type]:
+            if c['table'] != INVENTORY_MAP[inventory_type]:
                 c['related'] = False
                 if c.get('pinIfNative', False):
                     c['pinnedLeft'] = True
