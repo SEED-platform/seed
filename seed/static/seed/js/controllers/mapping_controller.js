@@ -168,44 +168,18 @@ angular.module('BE.seed.controller.mapping', [])
         value: 'TaxLotState'
       }];
       $scope.setAllInventoryTypes = function () {
-        _.forEach($scope.valids, function (valid) {
-          valid.suggestion_table_name = $scope.setAllFields.value;
-          $scope.change(valid);
-          // Check if the mapping button should be disabled.
-          $scope.check_fields();
-        });
-      };
-      $scope.setInventoryType = function (tcm) {
-        var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
-        if (chosenTypes.length == 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
-        else $scope.setAllFields = '';
-      };
-
-      $scope.find_duplicates = function (array, element) {
-        var indices = [];
-        var idx = array.indexOf(element);
-        while (idx !== -1) {
-          indices.push(idx);
-          idx = array.indexOf(element, idx + 1);
-        }
-        return indices;
-      };
-
-      /*
-       * Returns true if a TCM row is duplicated elsewhere.
-       */
-      $scope.is_tcm_duplicate = function (tcm) {
-        var suggestions = [];
-        for (var i = 0; i < $scope.raw_columns.length; i++) {
-
-          var potential = $scope.raw_columns[i].suggestion + '.' + $scope.raw_columns[i].suggestion_table_name;
-          if (_.isUndefined(potential) || _.isEmpty(potential) || !$scope.raw_columns[i].mapped_row) {
-            continue;
+        _.forEach($scope.valids, function (tcm) {
+          if (tcm.suggestion_table_name !== $scope.setAllFields.value) {
+            tcm.suggestion_table_name = $scope.setAllFields.value;
+            $scope.change(tcm, true);
           }
-          suggestions.push(potential);
-        }
-        var dups = $scope.find_duplicates(suggestions, tcm.suggestion + '.' + tcm.suggestion_table_name);
-        return dups.length > 1;
+        });
+        $scope.updateColDuplicateStatus();
+      };
+      $scope.updateInventoryTypeDropdown = function () {
+        var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
+        if (chosenTypes.length === 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
+        else $scope.setAllFields = '';
       };
 
       /*
@@ -251,14 +225,29 @@ angular.module('BE.seed.controller.mapping', [])
        * @param tcm: table column mapping object. Represents the database fields <-> raw
        *  relationship.
        */
-      $scope.change = function (tcm) {
+      $scope.change = function (tcm, checkingMultiple) {
         // Validate that the example data will convert.
         $scope.validate_data(tcm);
+
+        if (!checkingMultiple) $scope.updateColDuplicateStatus();
+      };
+
+      $scope.updateColDuplicateStatus = function () {
+        // Build suggestions with counts
+        var suggestions = {};
+        _.forEach($scope.raw_columns, function (col) {
+          if (!_.isUndefined(col.suggestion) && !_.isEmpty(col.suggestion) && col.mapped_row) {
+            var potential = col.suggestion + '.' + col.suggestion_table_name;
+            if (!_.has(suggestions, potential)) suggestions[potential] = 1;
+            else suggestions[potential]++;
+          }
+        });
+
         // Verify that we don't have any duplicate mappings.
-        for (var i = 0; i < $scope.raw_columns.length; i++) {
-          var inner_tcm = $scope.raw_columns[i];
-          inner_tcm.is_duplicate = $scope.is_tcm_duplicate(inner_tcm);
-        }
+        _.forEach($scope.raw_columns, function (col) {
+          var potential = col.suggestion + '.' + col.suggestion_table_name;
+          col.is_duplicate = _.get(suggestions, potential, 0) > 1;
+        });
       };
 
       /*
@@ -582,14 +571,7 @@ angular.module('BE.seed.controller.mapping', [])
        *   mappings' button.
        */
       $scope.duplicates_present = function () {
-        for (var i = 0; i < $scope.raw_columns.length; i++) {
-          var tcm = $scope.raw_columns[i];
-          $scope.change(tcm);
-          if (tcm.is_duplicate) {
-            return true;
-          }
-        }
-        return false;
+        return Boolean(_.find($scope.raw_columns, 'is_duplicate'));
       };
 
       /*
@@ -660,10 +642,12 @@ angular.module('BE.seed.controller.mapping', [])
       var init = function () {
         update_raw_columns();
 
-        $scope.duplicates_present();
+        $scope.updateColDuplicateStatus();
         $scope.duplicates = $filter('filter')($scope.raw_columns, {is_duplicate: true});
         $scope.duplicates = $filter('orderBy')($scope.duplicates, 'suggestion', false);
-        $scope.valids = $filter('filter')($scope.raw_columns, {is_duplicate: false});
+        $scope.valids = $filter('filter')($scope.raw_columns, function (col) {
+          return !col.is_duplicate;
+        });
 
         var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
         if (chosenTypes.length == 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});

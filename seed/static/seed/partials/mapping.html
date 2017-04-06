@@ -104,13 +104,13 @@
                             <th>Row 5</th>
                         </tr>
                     </thead>
-                    <tbody ng-show="duplicates.length > 0">
+                    <tbody ng-if="duplicates.length">
                         <tr>
                             <td></td>
                             <td colspan="8"><h3>Duplicates</h3></td>
                         </tr>
                     </tbody>
-                    <tbody id="duplicate-table">
+                    <tbody ng-if="duplicates.length" id="duplicate-table">
                         <tr ng-repeat="tcm in duplicates" ng-class="{'ignored_row': !tcm.mapped_row}">
                             <td class="check is_aligned_center">
                                 <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
@@ -170,10 +170,10 @@
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="!tcm.is_duplicate">{$ tcm.validity $}</label>
                             </td-->
                             <td>
-                                <strong id="mapped-header-{$ $index $}">{$tcm.name$}</strong>
+                                <strong id="mapped-header-{$ $index $}">{$ tcm.name $}</strong>
                             </td>
                             <td ng-class="{'danger': tcm.is_duplicate == true}" id="mapped-row-type-{$ $index $}">
-                                <select ng-model="tcm.suggestion_table_name" ng-change="setInventoryType(tcm); change(tcm)" ng-disabled="!tcm.mapped_row || import_file.matching_done">
+                                <select ng-model="tcm.suggestion_table_name" ng-change="updateInventoryTypeDropdown(); change(tcm)" ng-disabled="!tcm.mapped_row || import_file.matching_done">
                                     <option value="PropertyState">Property</option>
                                     <option value="TaxLotState">Tax Lot</option>
                                 </select>

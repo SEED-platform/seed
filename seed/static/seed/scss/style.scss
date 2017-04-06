@@ -1345,13 +1345,13 @@ a:not([href]) {
         }
       }
 
-      .table-striped tbody tr:nth-child(1) td {
-        background: url('../images/bg_first_td.png') repeat-x;
-
-        &.sorted {
-          background: url('../images/bg_first_td.png') repeat-x;
-        }
-      }
+      //.table-striped tbody tr:nth-child(1) td {
+      //  background: url('../images/bg_first_td.png') repeat-x;
+      //
+      //  &.sorted {
+      //    background: url('../images/bg_first_td.png') repeat-x;
+      //  }
+      //}
       .table-striped tbody tr td h3 {
         font-weight: 400;
         font-size: 20px;
@@ -2746,4 +2746,11 @@ table.import_results a[disabled] {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+#mapped-table td {
+  max-width: 350px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
