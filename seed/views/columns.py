@@ -32,7 +32,7 @@ class ColumnViewSet(viewsets.ViewSet):
     @ajax_request_class
     def list(self, request):
         """
-        Retrieves all columns for the user's organization directly from the database. It is 
+        Retrieves all columns for the user's organization directly from the database. It is
         typically recommended to use the retrieve_all API endpoint.
         ---
         type:

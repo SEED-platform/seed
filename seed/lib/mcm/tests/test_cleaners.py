@@ -6,8 +6,9 @@
 """
 import datetime
 from decimal import Decimal
-from django.utils import timezone
 from unittest import TestCase
+
+from django.utils import timezone
 
 from seed.lib.mcm import cleaners
 
@@ -23,7 +24,10 @@ class TestCleaners(TestCase):
             },
             'types': {
                 'heading_data1': 'float',
-                'heading2': 'date'
+                'heading2': 'date',
+                'heading3': 'datetime',
+                'str_1': 'string',
+                'int_1': 'integer',
             }
         })
 
@@ -50,7 +54,7 @@ class TestCleaners(TestCase):
         self.assertEqual(cleaners.float_cleaner('0'), 0.0)
         self.assertEqual(cleaners.float_cleaner('-55.0'), -55.0)
         self.assertEqual(cleaners.float_cleaner('-55'), -55.0)
-        self.assertEqual(cleaners.float_cleaner(u'-55'), -55.0)
+        self.assertEqual(cleaners.float_cleaner(u'-55.0'), -55.0)
         self.assertEqual(cleaners.float_cleaner(Decimal('20.00')), 20.0)
         self.assertTrue(isinstance(cleaners.float_cleaner(100), float))
         self.assertIsInstance(cleaners.float_cleaner(Decimal('20.00')), float)
@@ -63,7 +67,7 @@ class TestCleaners(TestCase):
         )
 
     def test_date_cleaner(self):
-        """We return the value if it's convertable to a python datetime."""
+        """We return the value if it's convertible to a python datetime."""
         self.assertEqual(
             cleaners.date_cleaner(u'2/12/2012'),
             datetime.datetime(2012, 2, 12, 0, 0, tzinfo=timezone.get_current_timezone())
@@ -73,6 +77,19 @@ class TestCleaners(TestCase):
         self.assertEqual(cleaners.date_cleaner(u'00'), None)
         now = datetime.datetime.now()
         self.assertEqual(cleaners.date_cleaner(now), now)
+
+    def test_int_cleaner(self):
+        self.assertEqual(cleaners.int_cleaner(u'1'), 1)
+        self.assertEqual(cleaners.int_cleaner(u'wut'), None)
+        self.assertEqual(cleaners.int_cleaner(u''), None)
+        self.assertEqual(cleaners.int_cleaner(None), None)
+        self.assertEqual(cleaners.int_cleaner(u'12,090'), 12090)
+        self.assertEqual(cleaners.int_cleaner(u'12,090 ?'), 12090)
+        self.assertEqual(cleaners.int_cleaner(0.825), 0)
+        self.assertEqual(cleaners.int_cleaner(0), 0)
+        self.assertEqual(cleaners.int_cleaner('-55'), -55)
+        self.assertEqual(cleaners.int_cleaner('55.0'), 55)
+        self.assertEqual(cleaners.int_cleaner('1.1'), 1)
 
     def test_clean_value(self):
         """Test that the ``Cleaner`` object properly routes cleaning."""
@@ -87,5 +104,7 @@ class TestCleaners(TestCase):
             float_expected
         )
 
-        self.assertEqual(self.cleaner.date_columns, ['heading2'])
+        self.assertEqual(self.cleaner.date_columns, ['heading2', 'heading3'])
         self.assertEqual(self.cleaner.float_columns, ['heading_data1'])
+        self.assertEqual(self.cleaner.string_columns, ['str_1'])
+        self.assertEqual(self.cleaner.int_columns, ['int_1'])

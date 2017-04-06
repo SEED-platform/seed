@@ -243,6 +243,7 @@ class TestColumnMapping(TestCase):
 
 
 class TestColumnsByInventory(TestCase):
+
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
         self.fake_org = Organization.objects.create()
@@ -284,8 +285,9 @@ class TestColumnsByInventory(TestCase):
             'table': u'PropertyState',
             'extraData': True,
             'displayName': u'Column A',
+            'dataType': 'string',
             'name': u'Column A',
-            'related': False
+            'related': False,
         }
         self.assertIn(c, columns)
 
@@ -294,19 +296,21 @@ class TestColumnsByInventory(TestCase):
             "table": "PropertyState",
             "extraData": True,
             "displayName": "Id",
+            'dataType': "string",
             "name": "id_extra",
-            "related": False
+            "related": False,
         }
         self.assertIn(c, columns)
 
         # check the 'pinIfNative' argument
         c = {
-            "displayName": "PM Property ID",
             "name": "pm_property_id",
             "related": False,
             "table": "PropertyState",
+            "displayName": "PM Property ID",
+            "dataType": "string",
             "type": "number",
-            "pinnedLeft": True
+            "pinnedLeft": True,
         }
         self.assertIn(c, columns)
 
@@ -315,7 +319,8 @@ class TestColumnsByInventory(TestCase):
             "related": True,
             "table": "TaxLotState",
             "displayName": "State (Tax Lot)",
-            "name": "tax_state"
+            "dataType": "string",
+            "name": "tax_state",
         }
         self.assertIn(c, columns)
         self.assertNotIn('not extra data', [c['name'] for c in columns])
@@ -331,3 +336,65 @@ class TestColumnsByInventory(TestCase):
 
         with self.assertRaisesRegexp(Exception, 'Duplicate name'):
             Column.retrieve_all(self.fake_org.pk, 'property')
+
+    def test_column_retrieve_schema(self):
+        schema = {
+            "types": {
+                "pm_property_id": "string",
+                "pm_parent_property_id": "string",
+                "jurisdiction_tax_lot_id": "string",
+                "jurisdiction_property_id": "string",
+                "custom_id_1": "string",
+                "address_line_1": "string",
+                "address_line_2": "string",
+                "city": "string",
+                "state": "string",
+                "postal_code": "string",
+                "primary_tax_lot_id": "string",
+                "calculated_taxlot_ids": "string",
+                "associated_building_tax_lot_id": "string",
+                "associated_tax_lot_ids": "string",
+                "lot_number": "string",
+                "primary": "boolean",
+                "property_name": "string",
+                "campus": "boolean",
+                "gross_floor_area": "float",
+                "use_description": "string",
+                "energy_score": "integer",
+                "site_eui": "float",
+                "property_notes": "string",
+                "property_type": "string",
+                "year_ending": "date",
+                "owner": "string",
+                "owner_email": "string",
+                "owner_telephone": "string",
+                "building_count": "integer",
+                "year_built": "integer",
+                "recent_sale_date": "datetime",
+                "conditioned_floor_area": "float",
+                "occupied_floor_area": "float",
+                "owner_address": "string",
+                "owner_city_state": "string",
+                "owner_postal_code": "string",
+                "home_energy_score_id": "string",
+                "generation_date": "datetime",
+                "release_date": "datetime",
+                "source_eui_weather_normalized": "float",
+                "site_eui_weather_normalized": "float",
+                "source_eui": "float",
+                "energy_alerts": "string",
+                "space_alerts": "string",
+                "building_certification": "string",
+                "number_properties": "integer",
+                "block_number": "string",
+                "district": "string"
+            }
+        }
+        columns = Column.retrieve_db_types()
+
+        # sort the data
+
+        import json
+        print json.dumps(columns, indent=2)
+
+        self.assertEqual(schema, columns)

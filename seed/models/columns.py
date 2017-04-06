@@ -7,6 +7,7 @@
 
 import copy
 import logging
+from collections import OrderedDict
 
 from django.db import models
 from django.db.models import Q
@@ -374,7 +375,7 @@ class Column(models.Model):
                                                         table_name=model_obj.__class__.__name__)
                         for c in columns:
                             if not ColumnMapping.objects.filter(
-                                            Q(column_raw=c) | Q(column_mapped=c)).exists():
+                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
@@ -429,12 +430,62 @@ class Column(models.Model):
         return [c_count, cm_delete_count]
 
     @staticmethod
+    def _retrieve_db_columns():
+        # Retrieve all the columns from the database, independent of the destination of the data,
+        # that is, there may be duplicate names, but the table_name.column_name will be unique.
+
+        # Grab the default columns and their details
+        columns = copy.deepcopy(VIEW_COLUMNS_PROPERTY)
+
+        # TODO: check to make sure that all the fields in the DB are in this list!
+
+        return columns
+
+    @staticmethod
+    def retrieve_db_types():
+        # return the data types for the database columns in the format of:
+        #
+        # {
+        #   "field_name": "data_type",
+        #   "field_name_2": "data_type_2",
+        #   "address_line_1": "string",
+        # }
+
+        columns = Column._retrieve_db_columns()
+
+        MAP_TYPES = {
+            'number': 'float',
+            'float': 'float',
+            'integer': 'integer',
+            'string': 'string',
+            'datetime': 'datetime',
+            'date': 'date',
+            'boolean': 'boolean',
+        }
+
+        types = OrderedDict()
+        for c in columns:
+            try:
+                types[c['name']] = MAP_TYPES[c['dataType']]
+            except KeyError:
+                types[c['name']] = ''
+
+        return {"types": types}
+
+    @staticmethod
     def retrieve_all(org_id, inventory_type):
-        # this method should retrieve the columns from MappingData and then have a method
+        # Retrieve all the columns for an organization. First, grab the columns from the
+        # VIEW_COLUMNS_PROPERTY schema which defines the database columns with added data for
+        # various reasons. Then query the database for all extra data columns and add in the
+        # data as appropriate ensuring that duplicates that are taken care of (albeit crudely).
+
+        # Note: this method should retrieve the columns from MappingData and then have a method
         # to return for JavaScript (i.e. UI-Grid) or native (standard JSON)
 
+        # Grab the default columns and their details
+        columns = Column._retrieve_db_columns()
 
-        columns = copy.deepcopy(VIEW_COLUMNS_PROPERTY)  # Grab the default columns and their details
+        # Clean up the columns
         for c in columns:
             if c['table'] == INVENTORY_MAP[inventory_type]:
                 c['related'] = False
@@ -481,6 +532,7 @@ class Column(models.Model):
                     'name': name,
                     'table': edc.table_name,
                     'displayName': display_name,
+                    'dataType': 'string',  # TODO: how to check dataTypes on extra_data!
                     'related': edc.table_name != INVENTORY_MAP[inventory_type],
                     'extraData': True
                 }

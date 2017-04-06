@@ -42,7 +42,6 @@ from seed.decorators import lock_and_track
 from seed.green_button import xml_importer
 from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.mcm import cleaners, mapper, reader
-from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
 from seed.lib.merging import merging
@@ -129,7 +128,7 @@ def finish_mapping(import_file_id, mark_as_done):
 
 def _translate_unit_to_type(unit):
     if unit is None or unit == 'String':
-        return 'str'
+        return 'string'
 
     return unit.lower()
 
@@ -140,23 +139,21 @@ def _build_cleaner(org):
     Basically, this just tells us how to try and cast types during cleaning
     based on the Column definition in the database.
 
-    :param org: superperms.orgs.Organization instance.
+    :param org: organization instance.
     :returns: dict of dicts. {'types': {'col_name': 'type'},}
     """
     units = {'types': {}}
-    for column in Column.objects.filter(
-            mapped_mappings__super_organization=org
-    ).select_related('unit'):
-        column_type = 'str'
+    for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related(
+            'unit'):
+        column_type = 'string'
         if column.unit:
             column_type = _translate_unit_to_type(
                 column.unit.get_unit_type_display()
             )
         units['types'][column.column_name] = column_type
 
-    # TODO(gavin): make this completely data-driven. # NL !!!
-    # Update with our predefined types for our BuildingSnapshot column types.
-    units['types'].update(seed_schema.schema['types'])
+    # Update with our predefined types for our database column types.
+    units['types'].update(Column.retrieve_db_types()['types'])
 
     return cleaners.Cleaner(units)
 

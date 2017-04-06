@@ -3443,17 +3443,19 @@ class InventoryViewTests(TestCase):
             'name': 'pm_property_id',
             'table': 'PropertyState',
             'displayName': 'PM Property ID',
+            'dataType': 'string',
             'pinnedLeft': True,
             'type': 'number',
             'related': False,
         }
-        self.assertEqual(results[0], pm_property_id_col)
+        self.assertIn(pm_property_id_col, results)
 
         expected_property_extra_data_column = {
             'extraData': True,
             'name': 'property_extra_data_column',
             'table': 'PropertyState',
             'displayName': 'Property Extra Data Column',
+            'dataType': 'string',
             'related': False,
         }
         self.assertIn(expected_property_extra_data_column, results)
@@ -3463,6 +3465,7 @@ class InventoryViewTests(TestCase):
             'table': 'TaxLotState',
             'name': 'taxlot_extra_data_column',
             'displayName': 'Taxlot Extra Data Column',
+            'dataType': 'string',
             'related': True,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
@@ -3490,17 +3493,19 @@ class InventoryViewTests(TestCase):
             'name': 'jurisdiction_tax_lot_id',
             'table': 'TaxLotState',
             'displayName': 'Jurisdiction Tax Lot ID',
+            'dataType': 'string',
             'pinnedLeft': True,
             'type': 'numberStr',
             'related': False,
         }
-        self.assertEqual(results[2], jurisdiction_tax_lot_id_col)
+        self.assertIn(jurisdiction_tax_lot_id_col, results)
 
         expected_property_extra_data_column = {
             'extraData': True,
             'name': 'property_extra_data_column',
             'table': 'PropertyState',
             'displayName': u'Property Extra Data Column',
+            'dataType': 'string',
             'related': True,
         }
         self.assertIn(expected_property_extra_data_column, results)
@@ -3510,6 +3515,7 @@ class InventoryViewTests(TestCase):
             'name': 'taxlot_extra_data_column',
             'table': 'TaxLotState',
             'displayName': 'Taxlot Extra Data Column',
+            'dataType': 'string',
             'related': False,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
