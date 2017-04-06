@@ -32,7 +32,8 @@ class ColumnViewSet(viewsets.ViewSet):
     @ajax_request_class
     def list(self, request):
         """
-        Retrieves all columns for the user's organization.
+        Retrieves all columns for the user's organization directly from the database. It is 
+        typically recommended to use the retrieve_all API endpoint.
         ---
         type:
             status:
@@ -67,12 +68,12 @@ class ColumnViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @list_route(methods=['GET'])
-    def tmp_new_list(self, request):
+    def retrieve_all(self, request):
         """
-        Retrieves all columns for the user's organization.
+        Retrieves all columns for the user's organization including the raw database columns
 
         Example:
-            /api/v2/columns/?inventory_type=(property|taxlot)
+            /api/v2/columns/retrieve_all/?inventory_type=(property|taxlot)
         ---
         type:
             status:
@@ -82,9 +83,7 @@ class ColumnViewSet(viewsets.ViewSet):
             columns:
                 required: true
                 type: array[column]
-                description: Returns an array where each item is a full column structure, including
-                             keys ''name'', ''id'', ''is_extra_data'', ''column_name'',
-                             ''table_name'',...
+                description: Returns an array where each item is a full column structure.
         parameters:
             - name: organization_id
               description: The organization_id for this user's organization
