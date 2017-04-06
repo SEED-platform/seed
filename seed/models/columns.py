@@ -373,8 +373,7 @@ class Column(models.Model):
                                                         organization=model_obj.organization,
                                                         table_name=model_obj.__class__.__name__)
                         for c in columns:
-                            if not ColumnMapping.objects.filter(
-                                            Q(column_raw=c) | Q(column_mapped=c)).exists():
+                            if not ColumnMapping.objects.filter(Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
@@ -432,7 +431,6 @@ class Column(models.Model):
     def retrieve_all(org_id, inventory_type):
         # this method should retrieve the columns from MappingData and then have a method
         # to return for JavaScript (i.e. UI-Grid) or native (standard JSON)
-
 
         columns = copy.deepcopy(VIEW_COLUMNS_PROPERTY)  # Grab the default columns and their details
         for c in columns:

@@ -318,8 +318,8 @@ class TestColumnsByInventory(TestCase):
             "name": "tax_state"
         }
         self.assertIn(c, columns)
-        self.assertNotIn('not extra data', [c['name'] for c in columns])
-        self.assertNotIn('not mapped data', [c['name'] for c in columns])
+        self.assertNotIn('not extra data', [col['name'] for col in columns])
+        self.assertNotIn('not mapped data', [col['name'] for col in columns])
 
     def test_column_retrieve_all_duplicate_error(self):
         seed_models.Column.objects.create(
