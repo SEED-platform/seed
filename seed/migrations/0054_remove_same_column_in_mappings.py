@@ -45,11 +45,11 @@ def forwards(apps, schema_editor):
                 double_usage_count += 1
                 split_duplicate_mapping(cm)
 
-    print ""
-    print ""
-    print "-------------------------------------------------------------------"
-    print "Total from/to used duplicate columns: {}".format(double_usage_count)
-    print "Total Columns: {}".format(Column.objects.all().count())
+    # print ""
+    # print ""
+    # print "-------------------------------------------------------------------"
+    # print "Total from/to used duplicate columns: {}".format(double_usage_count)
+    # print "Total Columns: {}".format(Column.objects.all().count())
 
 
 class Migration(migrations.Migration):

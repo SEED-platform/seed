@@ -5,6 +5,7 @@
 :author
 """
 
+import copy
 import logging
 
 from django.db import models
@@ -19,7 +20,10 @@ from seed.models.models import (
     Unit,
     SEED_DATA_SOURCES,
 )
+from seed.utils.constants import VIEW_COLUMNS_PROPERTY
 
+INVENTORY_MAP = {'property': 'PropertyState', 'taxlot': 'TaxLotState'}
+INVENTORY_MAP_PREPEND = {'property': 'tax', 'taxlot': 'property'}
 _log = logging.getLogger(__name__)
 
 
@@ -370,7 +374,7 @@ class Column(models.Model):
                                                         table_name=model_obj.__class__.__name__)
                         for c in columns:
                             if not ColumnMapping.objects.filter(
-                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
+                                            Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
@@ -410,6 +414,87 @@ class Column(models.Model):
             c['unit_type'] = None
 
         return c
+
+    @staticmethod
+    def delete_all(organization):
+        """
+        Delete all the columns for an organization. Note that this will invalidate all the
+        data that is in the extra_data fields of the inventory and is irreversible.
+
+        :param organization: instance, Organization
+        :return: [int, int] Number of columns, column_mappings records that were deleted
+        """
+        cm_delete_count, _ = ColumnMapping.objects.filter(super_organization=organization).delete()
+        c_count, _ = Column.objects.filter(organization=organization).delete()
+        return [c_count, cm_delete_count]
+
+    @staticmethod
+    def retrieve_all(org_id, inventory_type):
+        # this method should retrieve the columns from MappingData and then have a method
+        # to return for JavaScript (i.e. UI-Grid) or native (standard JSON)
+
+
+        columns = copy.deepcopy(VIEW_COLUMNS_PROPERTY)  # Grab the default columns and their details
+        for c in columns:
+            if c['table'] == INVENTORY_MAP[inventory_type]:
+                c['related'] = False
+                if c.get('pinIfNative', False):
+                    c['pinnedLeft'] = True
+            else:
+                c['related'] = True
+                # For now, a related field has a prepended value to make the columns unique.
+                if c.get('duplicateNameInOtherTable', False):
+                    c['name'] = "{}_{}".format(INVENTORY_MAP_PREPEND[inventory_type], c['name'])
+
+            # Remove some keys that are not needed for the API
+            try:
+                c.pop('pinIfNative')
+            except KeyError:
+                pass
+
+            try:
+                c.pop('duplicateNameInOtherTable')
+            except KeyError:
+                pass
+
+        # Add in all the extra columns
+        # don't return columns that have no table_name as these are the columns of the import files
+        extra_data_columns = Column.objects.filter(
+            organization_id=org_id, is_extra_data=True
+        ).exclude(table_name='').exclude(table_name=None)
+        for edc in extra_data_columns:
+            name = edc.column_name
+            table = edc.table_name
+            if name == 'id':
+                name += '_extra'
+
+            # add _extra if the column is already in the list and it is not the one of
+            while any(col['name'] == name and col['table'] != table for col in columns):
+                name += '_extra'
+
+            # TODO: need to check if the column name is already in the list and if it is then
+            # overwrite the data
+
+            display_name = edc.column_name.title().replace('_', ' ')
+            columns.append(
+                {
+                    'name': name,
+                    'table': edc.table_name,
+                    'displayName': display_name,
+                    'related': edc.table_name != INVENTORY_MAP[inventory_type],
+                    'extraData': True
+                }
+            )
+
+        # validate that the column names are unique
+        uniq = set()
+        for c in columns:
+            if c['name'] in uniq:
+                raise Exception("Duplicate name '{}' found in columns".format(c['name']))
+            else:
+                uniq.add(c['name'])
+
+        return columns
 
 
 class ColumnMapping(models.Model):

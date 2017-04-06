@@ -7,7 +7,6 @@
 import itertools
 import json
 import re
-
 from os import path
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -390,276 +389,8 @@ class PropertyViewSet(GenericViewSet):
               required: true
               paramType: query
         """
-
-        """TODO: These property columns should be merged with
-        constants.py:ASSESSOR_FIELDS"""
-
-        columns = [
-            {
-                'name': 'pm_property_id',
-                'displayName': 'PM Property ID',
-                'pinnedLeft': True,
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'jurisdiction_property_id',
-                'displayName': 'Jurisdiction Property ID',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'jurisdiction_tax_lot_id',
-                'displayName': 'Jurisdiction Tax Lot ID',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                'name': 'primary',
-                'displayName': 'Primary/Secondary',
-                'related': True
-            }, {
-                # INCOMPLETE, FIELD DOESN'T EXIST
-                'name': 'associated_tax_lot_ids',
-                'displayName': 'Associated TaxLot IDs',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'lot_number',
-                'displayName': 'Associated Building Tax Lot ID',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'address_line_1',
-                'displayName': 'Address Line 1 (Property)',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'city',
-                'displayName': 'City (Property)',
-                'related': False
-            }, {
-                'name': 'property_name',
-                'displayName': 'Property Name',
-                'related': False
-            }, {
-                'name': 'campus',
-                'displayName': 'Campus',
-                'type': 'boolean',
-                'related': False
-            }, {
-                # INCOMPLETE, FIELD DOESN'T EXIST
-                'name': 'pm_parent_property_id',
-                'displayName': 'PM Parent Property ID',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'gross_floor_area',
-                'displayName': 'Gross Floor Area',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'use_description',
-                'displayName': 'Use Description',
-                'related': False
-            }, {
-                'name': 'energy_score',
-                'displayName': 'ENERGY STAR Score',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'site_eui',
-                'displayName': 'Site EUI',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'property_notes',
-                'displayName': 'Property Notes',
-                'related': False
-            }, {
-                'name': 'property_type',
-                'displayName': 'Property Type',
-                'related': False
-            }, {
-                'name': 'year_ending',
-                'displayName': 'Year Ending',
-                'related': False
-            }, {
-                'name': 'owner',
-                'displayName': 'Owner',
-                'related': False
-            }, {
-                'name': 'owner_email',
-                'displayName': 'Owner Email',
-                'related': False
-            }, {
-                'name': 'owner_telephone',
-                'displayName': 'Owner Telephone',
-                'related': False
-            }, {
-                'name': 'address_line_2',
-                'displayName': 'Address Line 2 (Property)',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'state',
-                'displayName': 'State (Property)',
-                'related': False
-            }, {
-                'name': 'postal_code',
-                'displayName': 'Postal Code (Property)',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'building_count',
-                'displayName': 'Building Count',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'year_built',
-                'displayName': 'Year Built',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'recent_sale_date',
-                'displayName': 'Recent Sale Date',
-                'type': 'date',
-                'cellFilter': 'date:\'MM-dd-yyyy\'',
-                'related': False,
-            }, {
-                'name': 'conditioned_floor_area',
-                'displayName': 'Conditioned Floor Area',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'occupied_floor_area',
-                'displayName': 'Occupied Floor Area',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'owner_address',
-                'displayName': 'Owner Address',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'owner_city_state',
-                'displayName': 'Owner City/State',
-                'related': False
-            }, {
-                'name': 'owner_postal_code',
-                'displayName': 'Owner Postal Code',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'home_energy_score_id',
-                'displayName': 'Home Energy Score ID',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'generation_date',
-                'displayName': 'PM Generation Date',
-                'type': 'date',
-                'cellFilter': 'date:\'MM-dd-yyyy\'',
-                'related': False
-            }, {
-                'name': 'release_date',
-                'displayName': 'PM Release Date',
-                'related': False
-            }, {
-                'name': 'source_eui_weather_normalized',
-                'displayName': 'Source EUI Weather Normalized',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'site_eui_weather_normalized',
-                'displayName': 'Site EUI Weather Normalized',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'source_eui',
-                'displayName': 'Source EUI',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'energy_alerts',
-                'displayName': 'Energy Alerts',
-                'related': False
-            }, {
-                'name': 'space_alerts',
-                'displayName': 'Space Alerts',
-                'related': False
-            }, {
-                'name': 'building_certification',
-                'displayName': 'Building Certification',
-                'related': False
-            }, {
-                'name': 'custom_id_1',
-                'displayName': 'Custom ID 1',
-                'related': False
-            }, {
-                # Modified field name
-                'name': 'tax_address_line_1',
-                'displayName': 'Address Line 1 (Tax Lot)',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'tax_address_line_2',
-                'displayName': 'Address Line 2 (Tax Lot)',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'tax_city',
-                'displayName': 'City (Tax Lot)',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'tax_state',
-                'displayName': 'State (Tax Lot)',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'tax_postal_code',
-                'displayName': 'Postal Code (Tax Lot)',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'number_properties',
-                'displayName': 'Number Properties',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'block_number',
-                'displayName': 'Block Number',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'district',
-                'displayName': 'District',
-                'related': True
-            }
-        ]
-
-        # don't return columns that have no table_name as these are the columns of the import files
-        extra_data_columns = Column.objects.filter(
-            organization_id=request.query_params['organization_id'],
-            is_extra_data=True
-        ).exclude(table_name='').exclude(table_name=None)
-
-        for c in extra_data_columns:
-            name = c.column_name
-            if name == 'id':
-                name += '_extra'
-            while any(col['name'] == name and not col['related'] for col in columns):
-                name += '_extra'
-
-            display_name = c.column_name.title().replace('_', ' ')
-            columns.append(
-                {
-                    'name': name,
-                    'displayName': display_name,
-                    'related': c.table_name != 'PropertyState',
-                    'extraData': True
-                }
-            )
+        organization_id = int(request.query_params.get('organization_id'))
+        columns = Column.retrieve_all(organization_id, 'property')
 
         return JsonResponse({'columns': columns})
 
@@ -669,7 +400,7 @@ class PropertyViewSet(GenericViewSet):
     @list_route(methods=['DELETE'])
     def batch_delete(self, request):
         """
-        List all property columns
+        Batch delete several properties
         ---
         parameters:
             - name: selected
@@ -931,7 +662,8 @@ class PropertyViewSet(GenericViewSet):
                             {'status': 'error', 'message': 'Invalid Data'}
                         )
                         status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
+                                  'Merge current state in migration']:
                     # Override previous edit state or merge state
                     state = property_view.state
                     for key, value in new_property_state_data.iteritems():
@@ -948,7 +680,8 @@ class PropertyViewSet(GenericViewSet):
 
                     status_code = status.HTTP_201_CREATED
                 else:
-                    result = {'status': 'error', 'message': 'Unrecognized audit log name: ' + log.name}
+                    result = {'status': 'error',
+                              'message': 'Unrecognized audit log name: ' + log.name}
                     status_code = 422
                     return JsonResponse(result, status=status_code)
 
@@ -1244,7 +977,7 @@ class TaxLotViewSet(GenericViewSet):
     @list_route(methods=['GET'])
     def columns(self, request):
         """
-        List all property columns
+        List all tax lot columns
         ---
         parameters:
             - name: organization_id
@@ -1252,277 +985,8 @@ class TaxLotViewSet(GenericViewSet):
               required: true
               paramType: query
         """
-
-        # TODO: Merge this with other schemas. Check https://github.com/SEED-platform/seed/blob/d2bfe96e7503f670300448d5967a2bd6d5863634/seed/lib/mcm/data/SEED/seed.py and  https://github.com/SEED-platform/seed/blob/41c104cd105161c949e9cb379aac946ea9202c74/seed/lib/mappings/mapping_data.py  # noqa
-        columns = [
-            {
-                'name': 'jurisdiction_tax_lot_id',
-                'displayName': 'Jurisdiction Tax Lot ID',
-                'pinnedLeft': True,
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'primary',
-                'displayName': 'Primary/Secondary',
-                'related': True
-            }, {
-                # INCOMPLETE, FIELD DOESN'T EXIST
-                'name': 'primary_tax_lot_id',
-                'displayName': 'Primary Tax Lot ID',
-                'type': 'number',
-                'related': False
-            }, {
-                # FIELD DOESN'T EXIST
-                'name': 'calculated_taxlot_ids',
-                'displayName': 'Associated TaxLot IDs',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                # INCOMPLETE, FIELD DOESN'T EXIST
-                'name': 'associated_building_tax_lot_id',
-                'displayName': 'Associated Building Tax Lot ID',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'address_line_1',
-                'displayName': 'Address Line 1 (Tax Lot)',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'address_line_2',
-                'displayName': 'Address Line 2 (Tax Lot)',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'city',
-                'displayName': 'City (Tax Lot)',
-                'related': False
-            }, {
-                # Modified field name
-                'name': 'property_address_line_1',
-                'displayName': 'Address Line 1 (Property)',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'property_city',
-                'displayName': 'City (Property)',
-                'related': True
-            }, {
-                'name': 'property_name',
-                'displayName': 'Property Name',
-                'related': True
-            }, {
-                'name': 'jurisdiction_property_id',
-                'displayName': 'Jurisdiction Property ID',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                'name': 'pm_property_id',
-                'displayName': 'PM Property ID',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'campus',
-                'displayName': 'Campus',
-                'type': 'boolean',
-                'related': True
-            }, {
-                # INCOMPLETE, FIELD DOESN'T EXIST
-                'name': 'pm_parent_property_id',
-                'displayName': 'PM Parent Property ID',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                'name': 'gross_floor_area',
-                'displayName': 'Gross Floor Area',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'use_description',
-                'displayName': 'Use Description',
-                'related': True
-            }, {
-                'name': 'energy_score',
-                'displayName': 'ENERGY STAR Score',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'site_eui',
-                'displayName': 'Site EUI',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'property_notes',
-                'displayName': 'Property Notes',
-                'related': True
-            }, {
-                'name': 'year_ending',
-                'displayName': 'Year Ending',
-                'related': True
-            }, {
-                'name': 'owner',
-                'displayName': 'Owner',
-                'related': True
-            }, {
-                'name': 'owner_email',
-                'displayName': 'Owner Email',
-                'related': True
-            }, {
-                'name': 'owner_telephone',
-                'displayName': 'Owner Telephone',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'property_address_line_2',
-                'displayName': 'Address Line 2 (Property)',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'property_state',
-                'displayName': 'State (Property)',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'property_postal_code',
-                'displayName': 'Postal Code (Property)',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'building_count',
-                'displayName': 'Building Count',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'year_built',
-                'displayName': 'Year Built',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'recent_sale_date',
-                'displayName': 'Recent Sale Date',
-                'related': True,
-                'type': 'datetime'
-            }, {
-                'name': 'conditioned_floor_area',
-                'displayName': 'Conditioned Floor Area',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'occupied_floor_area',
-                'displayName': 'Occupied Floor Area',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'owner_address',
-                'displayName': 'Owner Address',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                'name': 'owner_city_state',
-                'displayName': 'Owner City/State',
-                'related': True
-            }, {
-                'name': 'owner_postal_code',
-                'displayName': 'Owner Postal Code',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'home_energy_score_id',
-                'displayName': 'Home Energy Score ID',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                'name': 'generation_date',
-                'displayName': 'PM Generation Date',
-                'related': True
-            }, {
-                'name': 'release_date',
-                'displayName': 'PM Release Date',
-                'related': True
-            }, {
-                'name': 'source_eui_weather_normalized',
-                'displayName': 'Source EUI Weather Normalized',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'site_eui_weather_normalized',
-                'displayName': 'Site EUI Weather Normalized',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'source_eui',
-                'displayName': 'Source EUI',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'energy_alerts',
-                'displayName': 'Energy Alerts',
-                'related': True
-            }, {
-                'name': 'space_alerts',
-                'displayName': 'Space Alerts',
-                'related': True
-            }, {
-                'name': 'building_certification',
-                'displayName': 'Building Certification',
-                'related': True
-            }, {
-                'name': 'state',
-                'displayName': 'State (Tax Lot)',
-                'related': False
-            }, {
-                'name': 'postal_code',
-                'displayName': 'Postal Code (Tax Lot)',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'number_properties',
-                'displayName': 'Number Properties',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'block_number',
-                'displayName': 'Block Number',
-                'related': False
-            }, {
-                'name': 'district',
-                'displayName': 'District',
-                'related': False
-            }, {
-                'name': 'lot_number',
-                'displayName': 'Associated Tax Lot ID',
-                'related': True
-            }, {
-                'name': 'custom_id_1',
-                'displayName': 'Custom ID 1',
-                'related': True
-            }
-        ]
-
-        # don't return columns that have no table_name as these are the columns of the import files
-        extra_data_columns = Column.objects.filter(
-            organization_id=request.query_params['organization_id'],
-            is_extra_data=True
-        ).exclude(table_name='').exclude(table_name=None)
-
-        for c in extra_data_columns:
-            name = c.column_name
-            if name == 'id':
-                name += '_extra'
-            while any(col['name'] == name and not col['related'] for col in columns):
-                name += '_extra'
-
-            display_name = c.column_name.title().replace('_', ' ')
-            columns.append(
-                {
-                    'name': name,
-                    'displayName': display_name,
-                    'related': c.table_name != 'TaxLotState',
-                    'extraData': True
-                }
-            )
+        organization_id = int(request.query_params.get('organization_id'))
+        columns = Column.retrieve_all(organization_id, 'taxlot')
 
         return JsonResponse({'columns': columns})
 
@@ -1532,7 +996,7 @@ class TaxLotViewSet(GenericViewSet):
     @list_route(methods=['DELETE'])
     def batch_delete(self, request):
         """
-        List all property columns
+        Batch delete several tax lots
         ---
         parameters:
             - name: selected
@@ -1799,7 +1263,8 @@ class TaxLotViewSet(GenericViewSet):
                             {'status': 'error', 'message': 'Invalid Data'}
                         )
                         status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
+                                  'Merge current state in migration']:
                     # Override previous edit state or merge state
                     state = taxlot_view.state
                     for key, value in new_taxlot_state_data.iteritems():
@@ -1816,7 +1281,8 @@ class TaxLotViewSet(GenericViewSet):
 
                     status_code = status.HTTP_201_CREATED
                 else:
-                    result = {'status': 'error', 'message': 'Unrecognized audit log name: ' + log.name}
+                    result = {'status': 'error',
+                              'message': 'Unrecognized audit log name: ' + log.name}
                     status_code = 422
                     return JsonResponse(result, status=status_code)
 

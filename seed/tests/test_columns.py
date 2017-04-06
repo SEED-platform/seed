@@ -240,3 +240,94 @@ class TestColumnMapping(TestCase):
     def test_is_concatenated(self):
         self.assertEqual(self.directMapping.is_concatenated(), False)
         self.assertEqual(self.concatenatedMapping.is_concatenated(), True)
+
+
+class TestColumnsByInventory(TestCase):
+    def setUp(self):
+        self.fake_user = User.objects.create(username='test')
+        self.fake_org = Organization.objects.create()
+        OrganizationUser.objects.create(
+            user=self.fake_user,
+            organization=self.fake_org
+        )
+
+    def test_column_retrieve_all(self):
+        seed_models.Column.objects.create(
+            column_name=u'Column A',
+            table_name=u'PropertyState',
+            organization=self.fake_org,
+            is_extra_data=True
+        )
+        seed_models.Column.objects.create(
+            column_name=u'id',
+            table_name=u'PropertyState',
+            organization=self.fake_org,
+            is_extra_data=True
+        )
+        seed_models.Column.objects.create(
+            column_name=u'not extra data',
+            table_name=u'PropertyState',
+            organization=self.fake_org,
+            is_extra_data=False
+        )
+        seed_models.Column.objects.create(
+            column_name=u'not mapped data',
+            organization=self.fake_org,
+        )
+
+        columns = Column.retrieve_all(self.fake_org.pk, 'property')
+        # import json
+        # print json.dumps(columns, indent=2)
+
+        # Check for new column
+        c = {
+            'table': u'PropertyState',
+            'extraData': True,
+            'displayName': u'Column A',
+            'name': u'Column A',
+            'related': False
+        }
+        self.assertIn(c, columns)
+
+        # Check 'id' field if extra_data
+        c = {
+            "table": "PropertyState",
+            "extraData": True,
+            "displayName": "Id",
+            "name": "id_extra",
+            "related": False
+        }
+        self.assertIn(c, columns)
+
+        # check the 'pinIfNative' argument
+        c = {
+            "displayName": "PM Property ID",
+            "name": "pm_property_id",
+            "related": False,
+            "table": "PropertyState",
+            "type": "number",
+            "pinnedLeft": True
+        }
+        self.assertIn(c, columns)
+
+        # verity that the 'duplicateNameInOtherTable' is working
+        c = {
+            "related": True,
+            "table": "TaxLotState",
+            "displayName": "State (Tax Lot)",
+            "name": "tax_state"
+        }
+        self.assertIn(c, columns)
+        self.assertNotIn('not extra data', [c['name'] for c in columns])
+        self.assertNotIn('not mapped data', [c['name'] for c in columns])
+
+    def test_column_retrieve_all_duplicate_error(self):
+        seed_models.Column.objects.create(
+            column_name=u'custom_id_1',
+            table_name=u'PropertyState',
+            organization=self.fake_org,
+            is_extra_data=True
+        )
+
+        with self.assertRaisesRegexp(Exception, 'Duplicate name'):
+            Column.retrieve_all(self.fake_org.pk, 'property')
