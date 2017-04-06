@@ -532,7 +532,7 @@ class Column(models.Model):
                     'name': name,
                     'table': edc.table_name,
                     'displayName': display_name,
-                    'dataType': 'string',  # TODO: how to check dataTypes on extra_data!
+                    # 'dataType': 'string',  # TODO: how to check dataTypes on extra_data!
                     'related': edc.table_name != INVENTORY_MAP[inventory_type],
                     'extraData': True
                 }
