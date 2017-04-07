@@ -431,8 +431,12 @@ class Column(models.Model):
 
     @staticmethod
     def _retrieve_db_columns():
+        """
         # Retrieve all the columns from the database, independent of the destination of the data,
         # that is, there may be duplicate names, but the table_name.column_name will be unique.
+
+        :return: dict
+        """
 
         # Grab the default columns and their details
         columns = copy.deepcopy(VIEW_COLUMNS_PROPERTY)
@@ -443,14 +447,18 @@ class Column(models.Model):
 
     @staticmethod
     def retrieve_db_types():
-        # return the data types for the database columns in the format of:
-        #
-        # {
-        #   "field_name": "data_type",
-        #   "field_name_2": "data_type_2",
-        #   "address_line_1": "string",
-        # }
+        """
+        return the data types for the database columns in the format of:
 
+        Example:
+        {
+          "field_name": "data_type",
+          "field_name_2": "data_type_2",
+          "address_line_1": "string",
+        }
+
+        :return: dict
+        """
         columns = Column._retrieve_db_columns()
 
         MAP_TYPES = {

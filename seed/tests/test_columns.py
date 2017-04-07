@@ -321,8 +321,8 @@ class TestColumnsByInventory(TestCase):
             "name": "tax_state",
         }
         self.assertIn(c, columns)
-        self.assertNotIn('not extra data', [c['name'] for c in columns])
-        self.assertNotIn('not mapped data', [c['name'] for c in columns])
+        self.assertNotIn('not extra data', [d['name'] for d in columns])
+        self.assertNotIn('not mapped data', [d['name'] for d in columns])
 
     def test_column_retrieve_all_duplicate_error(self):
         seed_models.Column.objects.create(
@@ -389,15 +389,20 @@ class TestColumnsByInventory(TestCase):
             }
         }
         columns = Column.retrieve_db_types()
-
-        # sort the data
-
-        import json
-        print json.dumps(columns, indent=2)
-
         self.assertEqual(schema, columns)
 
     def test_column_retrieve_db_fields(self):
         c = Column.retrieve_db_fields()
 
-        print c
+        data = ['address_line_1', 'address_line_2', 'block_number', 'building_certification',
+                'building_count', 'campus', 'city', 'conditioned_floor_area', 'custom_id_1', 'district',
+                'energy_alerts', 'energy_score', 'generation_date', 'gross_floor_area',
+                'home_energy_score_id', 'jurisdiction_property_id', 'jurisdiction_tax_lot_id',
+                'lot_number', 'number_properties', 'occupied_floor_area', 'owner', 'owner_address',
+                'owner_city_state', 'owner_email', 'owner_postal_code', 'owner_telephone',
+                'pm_parent_property_id', 'pm_property_id', 'postal_code', 'property_name',
+                'property_notes', 'property_type', 'recent_sale_date', 'release_date', 'site_eui',
+                'site_eui_weather_normalized', 'source_eui', 'source_eui_weather_normalized',
+                'space_alerts', 'state', 'use_description', 'year_built', 'year_ending']
+
+        self.assertItemsEqual(data, c)
