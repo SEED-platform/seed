@@ -285,7 +285,6 @@ class TestColumnsByInventory(TestCase):
             'table': u'PropertyState',
             'extraData': True,
             'displayName': u'Column A',
-            'dataType': 'string',
             'name': u'Column A',
             'related': False,
         }
