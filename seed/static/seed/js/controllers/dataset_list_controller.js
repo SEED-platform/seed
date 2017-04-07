@@ -64,6 +64,9 @@ angular.module('BE.seed.controller.dataset', [])
             },
             dataset: function () {
               return dataset;
+            },
+            organization: function () {
+              return $scope.menu.user.organization;
             }
           }
         });
