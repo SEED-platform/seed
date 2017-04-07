@@ -17,14 +17,14 @@ describe('When I go to the taxlot page', function () {
 		})
 	});
 
-	it('should filter semi colon and expand', function () {
-		var jurisTL = $$('[role="columnheader"]').filter(function(elm) {
-			return elm.getText().then(function (label) {
-				return label.includes('Associated TaxLot IDs');
-			});
-		}).first();
-		jurisTL.$$('[ng-model="colFilter.term"]').first().sendKeys(';');
-	});
+	// it('should filter semi colon and expand', function () {
+	// 	var jurisTL = $$('[role="columnheader"]').filter(function(elm) {
+	// 		return elm.getText().then(function (label) {
+	// 			return label.includes('Associated TaxLot IDs');
+	// 		});
+	// 	}).first();
+	// 	jurisTL.$$('[ng-model="colFilter.term"]').first().sendKeys(';');
+	// });
 
 	it('should filter', function () {
 		var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
