@@ -395,8 +395,6 @@ class PropertyViewSet(GenericViewSet):
     @list_route(methods=['GET'])
     def columns(self, request):
         """
-        # TODO: Move this to the columns API as this is not really a properties API
-
         List all property columns
 
         parameters:
