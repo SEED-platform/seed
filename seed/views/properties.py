@@ -641,7 +641,9 @@ class PropertyViewSet(GenericViewSet):
                     state=property_view.state
                 ).order_by('-id').first()
 
-                property_state_data.update(new_property_state_data)
+                if 'extra_data' in new_property_state_data.keys():
+                    property_state_data['extra_data'].update(new_property_state_data.pop('extra_data'))
+                    property_state_data.update(new_property_state_data)
 
                 if log.name == 'Import Creation':
                     # Add new state
@@ -1249,6 +1251,8 @@ class TaxLotViewSet(GenericViewSet):
                     state=taxlot_view.state
                 ).order_by('-id').first()
 
+                if 'extra_data' in new_taxlot_state_data.keys():
+                    taxlot_state_data['extra_data'].update(new_taxlot_state_data.pop('extra_data'))
                 taxlot_state_data.update(new_taxlot_state_data)
 
                 if log.name == 'Import Creation':

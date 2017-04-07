@@ -82,8 +82,8 @@
 
                             <!-- Show read-only current 'extra_data' field value -->
                             <td ng-if="edit_form_showing===false && field.extraData" ng-class="changed_fields.extra_data_fields.indexOf(field.name)>=0 ? 'highlight' : ''" class="ellipsis">
-                                <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state.extra_data[field.name] $}">
-                                    {$ item_state.extra_data[field.name] $}
+                                <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state.extra_data[field.name.replace('_extra', '')] $}">
+                                    {$ item_state.extra_data[field.name.replace('_extra', '')] $}
                                 </span>
                             </td>
 
@@ -93,7 +93,7 @@
                                     <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_state[field.name]" ng-disabled="_.includes(['campus', 'associated_building_tax_lot_id', 'associated_tax_lot_ids', 'primary_tax_lot_id'], field.name)">
                                 </div>
                                 <div ng-if="field.extraData">
-                                    <input id="edit_property_attribute_id" class="form-control input-sm" type="text" ng-model="item_state.extra_data[field.name]">
+                                    <input id="edit_property_attribute_id" class="form-control input-sm" type="text" ng-model="item_state.extra_data[field.name.replace('_extra', '')]">
                                 </div>
                             </td>
 
@@ -103,7 +103,7 @@
                                     {$ historical_item.state[field.name] $}
                                 </span>
                                 <span ng-if="field.extraData" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$ historical_item.state.extra_data[field.name]  $}">
-                                    {$ historical_item.state.extra_data[field.name] $}
+                                    {$ historical_item.state.extra_data[field.name.replace('_extra', '')] $}
                                 </span>
                             </td>
 
