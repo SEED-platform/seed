@@ -3503,7 +3503,6 @@ class InventoryViewTests(TestCase):
             'name': 'property_extra_data_column',
             'table': 'PropertyState',
             'displayName': u'Property Extra Data Column',
-            'dataType': 'string',
             'related': True,
         }
         self.assertIn(expected_property_extra_data_column, results)
@@ -3513,7 +3512,6 @@ class InventoryViewTests(TestCase):
             'name': 'taxlot_extra_data_column',
             'table': 'TaxLotState',
             'displayName': 'Taxlot Extra Data Column',
-            'dataType': 'string',
             'related': False,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)

@@ -295,7 +295,6 @@ class TestColumnsByInventory(TestCase):
             "table": "PropertyState",
             "extraData": True,
             "displayName": "Id",
-            'dataType': "string",
             "name": "id_extra",
             "related": False,
         }
@@ -397,3 +396,8 @@ class TestColumnsByInventory(TestCase):
         print json.dumps(columns, indent=2)
 
         self.assertEqual(schema, columns)
+
+    def test_column_retrieve_db_fields(self):
+        c = Column.retrieve_db_fields()
+
+        print c
