@@ -90,10 +90,6 @@ describe('controller: inventory_detail_controller', function(){
                 'some other key': 12344,
                 'some other key that is not in a parent': 223
             },
-            extra_data_sources: {
-                'some other key': 2,
-                'some other key that is not in a parent': 3
-            },
             created: 'at some point'
         };
         // var fake_imported_buildings = [
@@ -276,12 +272,14 @@ describe('controller: inventory_detail_controller', function(){
 
         // act
         inventory_detail_controller_scope.$digest();
+        inventory_detail_controller_scope.make_copy_before_edit();
         inventory_detail_controller_scope.item_state.gross_floor_area = 43214;
         inventory_detail_controller_scope.on_save();
+        inventory_detail_controller_scope.$digest();
 
         // assertions
         expect(mock_building_services.update_property)
-        .toHaveBeenCalledWith(1, 2017, inventory_detail_controller_scope.item_state);
+        .toHaveBeenCalledWith(1, 2017,{ gross_floor_area : 43214 });
         expect(mock_building.gross_floor_area).toEqual(43214);
     });
 

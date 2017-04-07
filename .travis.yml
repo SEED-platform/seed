@@ -27,7 +27,7 @@ env:
   - TOX_ENV=python
   - TOX_ENV=flake8
   - TOX_ENV=spelling
-#  - TOX_ENV=functional
+  - TOX_ENV=functional
 install:
 - pip install --upgrade pip
 - pip install tox==2.3.2
