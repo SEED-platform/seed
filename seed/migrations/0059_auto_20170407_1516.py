@@ -32,7 +32,6 @@ def forwards(apps, schema_editor):
 
             multiples = Column.objects.filter(**check_c)
             if multiples.count() > 1:
-                print check_c
                 print "Found {} duplicate column".format(multiples.count())
 
                 pointer_column = None
