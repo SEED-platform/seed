@@ -112,12 +112,13 @@ class Column(models.Model):
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
+    import_file = models.ForeignKey('data_importer.ImportFile', blank=True, null=True)
 
     # Do not enable this until running through the database and merging the columns down.
     # BUT first, make sure to add an import file ID into the column class.
     # class Meta:
     #     unique_together = (
-    #         'organization', 'column_name', 'is_extra_data', 'table_name')
+    #         'organization', 'column_name', 'is_extra_data', 'table_name', 'import_file')
 
     def __unicode__(self):
         return u'{} - {}'.format(self.pk, self.column_name)
