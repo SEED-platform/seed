@@ -40,10 +40,10 @@ def forwards(apps, schema_editor):
                 c.extra_data_source = 'P'
                 c.save()
 
-    print ""
-    print ""
-    print "-------------------------------------------------------------------"
-    print "Total Columns: {}".format(Column.objects.all().count())
+    # print ""
+    # print ""
+    # print "-------------------------------------------------------------------"
+    # print "Total Columns: {}".format(Column.objects.all().count())
 
 
 class Migration(migrations.Migration):

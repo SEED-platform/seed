@@ -7,6 +7,7 @@
 
 import copy
 import logging
+from collections import OrderedDict
 
 from django.db import models
 from django.db.models import Q
@@ -111,12 +112,13 @@ class Column(models.Model):
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
+    import_file = models.ForeignKey('data_importer.ImportFile', blank=True, null=True)
 
     # Do not enable this until running through the database and merging the columns down.
     # BUT first, make sure to add an import file ID into the column class.
     # class Meta:
     #     unique_together = (
-    #         'organization', 'column_name', 'is_extra_data', 'table_name')
+    #         'organization', 'column_name', 'is_extra_data', 'table_name', 'import_file')
 
     def __unicode__(self):
         return u'{} - {}'.format(self.pk, self.column_name)
@@ -373,7 +375,8 @@ class Column(models.Model):
                                                         organization=model_obj.organization,
                                                         table_name=model_obj.__class__.__name__)
                         for c in columns:
-                            if not ColumnMapping.objects.filter(Q(column_raw=c) | Q(column_mapped=c)).exists():
+                            if not ColumnMapping.objects.filter(
+                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
@@ -428,11 +431,95 @@ class Column(models.Model):
         return [c_count, cm_delete_count]
 
     @staticmethod
+    def _retrieve_db_columns():
+        """
+        # Retrieve all the columns from the database, independent of the destination of the data,
+        # that is, there may be duplicate names, but the table_name.column_name will be unique.
+
+        :return: dict
+        """
+
+        # Grab the default columns and their details
+        columns = copy.deepcopy(VIEW_COLUMNS_PROPERTY)
+
+        # TODO: check to make sure that all the fields in the DB are in this list!
+
+        return columns
+
+    @staticmethod
+    def retrieve_db_types():
+        """
+        return the data types for the database columns in the format of:
+
+        Example:
+        {
+          "field_name": "data_type",
+          "field_name_2": "data_type_2",
+          "address_line_1": "string",
+        }
+
+        :return: dict
+        """
+        columns = Column._retrieve_db_columns()
+
+        MAP_TYPES = {
+            'number': 'float',
+            'float': 'float',
+            'integer': 'integer',
+            'string': 'string',
+            'datetime': 'datetime',
+            'date': 'date',
+            'boolean': 'boolean',
+        }
+
+        types = OrderedDict()
+        for c in columns:
+            try:
+                types[c['name']] = MAP_TYPES[c['dataType']]
+            except KeyError:
+                types[c['name']] = ''
+
+        return {"types": types}
+
+    @staticmethod
+    def retrieve_db_fields():
+        """
+        return the fields in the database regardless of properties or taxlots
+
+        [ "address_line_1", "gross_floor_area", ... ]
+        :return: list
+        """
+
+        columns = Column._retrieve_db_columns()
+
+        fields = set()
+        for c in columns:
+            if 'dbField' in c.keys() and c['dbField']:
+                fields.add(c['name'])
+
+        return list(fields)
+
+    @staticmethod
     def retrieve_all(org_id, inventory_type):
-        # this method should retrieve the columns from MappingData and then have a method
+        """
+        # Retrieve all the columns for an organization. First, grab the columns from the
+        # VIEW_COLUMNS_PROPERTY schema which defines the database columns with added data for
+        # various reasons. Then query the database for all extra data columns and add in the
+        # data as appropriate ensuring that duplicates that are taken care of (albeit crudely).
+
+        # Note: this method should retrieve the columns from MappingData and then have a method
         # to return for JavaScript (i.e. UI-Grid) or native (standard JSON)
 
-        columns = copy.deepcopy(VIEW_COLUMNS_PROPERTY)  # Grab the default columns and their details
+        :param org_id: Organization ID
+        :param inventory_type: Inventory Type (property|taxlot)
+
+        :return: dict
+        """
+
+        # Grab the default columns and their details
+        columns = Column._retrieve_db_columns()
+
+        # Clean up the columns
         for c in columns:
             if c['table'] == INVENTORY_MAP[inventory_type]:
                 c['related'] = False
@@ -455,16 +542,29 @@ class Column(models.Model):
             except KeyError:
                 pass
 
+            try:
+                c.pop('dbField')
+            except KeyError:
+                pass
+
         # Add in all the extra columns
         # don't return columns that have no table_name as these are the columns of the import files
         extra_data_columns = Column.objects.filter(
             organization_id=org_id, is_extra_data=True
         ).exclude(table_name='').exclude(table_name=None)
+
         for edc in extra_data_columns:
             name = edc.column_name
             table = edc.table_name
+
+            # MAKE NOTE ABOUT HOW IMPORTANT THIS IN
             if name == 'id':
                 name += '_extra'
+
+            # check if the column name is already defined in the list. For example, gross_floor_area
+            # is a core field, but can be an extra field in taxlot, meaning that the other one
+            # needs to be tagged something else.
+            # for col in columns:
 
             # add _extra if the column is already in the list and it is not the one of
             while any(col['name'] == name and col['table'] != table for col in columns):
@@ -479,6 +579,7 @@ class Column(models.Model):
                     'name': name,
                     'table': edc.table_name,
                     'displayName': display_name,
+                    # 'dataType': 'string',  # TODO: how to check dataTypes on extra_data!
                     'related': edc.table_name != INVENTORY_MAP[inventory_type],
                     'extraData': True
                 }

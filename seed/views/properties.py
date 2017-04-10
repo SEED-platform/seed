@@ -7,6 +7,7 @@
 import itertools
 import json
 import re
+from collections import defaultdict
 from os import path
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -185,24 +186,38 @@ class PropertyViewSet(GenericViewSet):
             pk__in=taxlot_view_ids)
 
         # Map tax lot view id to tax lot view's state data, so we can reference these easily and save some queries.
+        db_columns = Column.retrieve_db_fields()
+        for lot in taxlot_views:
+            # Each object in the response is built from the state data, with related data added on.
+            l = model_to_dict(lot.state, exclude=['extra_data'])
+
+            for extra_data_field, extra_data_value in lot.state.extra_data.items():
+                if extra_data_field == 'id':
+                    extra_data_field += '_extra'
+
+                # Check if the extra data field is already a database field
+                while extra_data_field in db_columns:
+                    extra_data_field += '_extra'
+
         taxlot_map = {}
         for taxlot_view in taxlot_views:
-            taxlot_state_data = model_to_dict(taxlot_view.state, exclude=['extra_data'])
-            taxlot_state_data['taxlot_state_id'] = taxlot_view.state.id
+            l = model_to_dict(taxlot_view.state, exclude=['extra_data'])
+            l['taxlot_state_id'] = taxlot_view.state.id
 
             # Add extra data fields right to this object.
             for extra_data_field, extra_data_value in taxlot_view.state.extra_data.items():
                 if extra_data_field == 'id':
                     extra_data_field += '_extra'
-                while extra_data_field in taxlot_state_data:
+
+                while extra_data_field in db_columns:
                     extra_data_field += '_extra'
-                taxlot_state_data[extra_data_field] = extra_data_value
+
+                l[extra_data_field] = extra_data_value
 
             # Only return the requested rows. speeds up the json string time
-            taxlot_state_data = {key: value for key, value in taxlot_state_data.items() if
-                                 key in columns}
+            l = {key: value for key, value in l.items() if key in columns}
 
-            taxlot_map[taxlot_view.pk] = taxlot_state_data
+            taxlot_map[taxlot_view.pk] = l
             # Replace taxlot_view id with taxlot id
             taxlot_map[taxlot_view.pk]['id'] = taxlot_view.taxlot.id
 
@@ -226,7 +241,8 @@ class PropertyViewSet(GenericViewSet):
             for extra_data_field, extra_data_value in prop.state.extra_data.items():
                 if extra_data_field == 'id':
                     extra_data_field += '_extra'
-                while extra_data_field in p:
+
+                while extra_data_field in db_columns:
                     extra_data_field += '_extra'
 
                 p[extra_data_field] = extra_data_value
@@ -379,8 +395,6 @@ class PropertyViewSet(GenericViewSet):
     @list_route(methods=['GET'])
     def columns(self, request):
         """
-        # TODO: Move this to the columns API as this is not really a properties API
-
         List all property columns
 
         parameters:
@@ -625,7 +639,9 @@ class PropertyViewSet(GenericViewSet):
                     state=property_view.state
                 ).order_by('-id').first()
 
-                property_state_data.update(new_property_state_data)
+                if 'extra_data' in new_property_state_data.keys():
+                    property_state_data['extra_data'].update(new_property_state_data.pop('extra_data'))
+                    property_state_data.update(new_property_state_data)
 
                 if log.name == 'Import Creation':
                     # Add new state
@@ -760,25 +776,30 @@ class TaxLotViewSet(GenericViewSet):
         property_views = PropertyView.objects.select_related('property', 'state', 'cycle').filter(
             pk__in=property_view_ids)
 
-        # Map property view id to property view's state data, so we can reference these easily and save some queries.
+        db_columns = Column.retrieve_db_fields()
+
+        # Map property view id to property view's state data, so we can reference these easily and
+        # save some queries.
         property_map = {}
         for property_view in property_views:
-            property_data = model_to_dict(property_view.state, exclude=['extra_data'])
-            property_data['property_state_id'] = property_view.state.id
-            property_data['campus'] = property_view.property.campus
+            p = model_to_dict(property_view.state, exclude=['extra_data'])
+            p['property_state_id'] = property_view.state.id
+            p['campus'] = property_view.property.campus
 
             # Add extra data fields right to this object.
             for extra_data_field, extra_data_value in property_view.state.extra_data.items():
                 if extra_data_field == 'id':
                     extra_data_field += '_extra'
-                while extra_data_field in property_data:
+
+                while extra_data_field in db_columns:
                     extra_data_field += '_extra'
-                property_data[extra_data_field] = extra_data_value
+
+                p[extra_data_field] = extra_data_value
 
             # Only return the requested rows. speeds up the json string time
-            property_data = {key: value for key, value in property_data.items() if key in columns}
+            p = {key: value for key, value in p.items() if key in columns}
 
-            property_map[property_view.pk] = property_data
+            property_map[property_view.pk] = p
             # Replace property_view id with property id
             property_map[property_view.pk]['id'] = property_view.property.id
 
@@ -788,7 +809,6 @@ class TaxLotViewSet(GenericViewSet):
         tuplePropToJurisdictionTL = tuple(
             TaxLotProperty.objects.values_list('property_view_id',
                                                'taxlot_view__state__jurisdiction_tax_lot_id'))
-        from collections import defaultdict
 
         # create a mapping that defaults to an empty list
         propToJurisdictionTL = defaultdict(list)
@@ -823,12 +843,15 @@ class TaxLotViewSet(GenericViewSet):
             # Each object in the response is built from the state data, with related data added on.
             l = model_to_dict(lot.state, exclude=['extra_data'])
 
-            # TODO - can we just return the "extra_data" json string and do this in JS which has faster loops?
             for extra_data_field, extra_data_value in lot.state.extra_data.items():
                 if extra_data_field == 'id':
                     extra_data_field += '_extra'
-                while extra_data_field in l:
+
+                # Check if the extra data field is already a database field
+                while extra_data_field in db_columns:
                     extra_data_field += '_extra'
+
+                # save to dictionary
                 l[extra_data_field] = extra_data_value
 
             # Use taxlot_id instead of default (state_id)
@@ -1226,6 +1249,8 @@ class TaxLotViewSet(GenericViewSet):
                     state=taxlot_view.state
                 ).order_by('-id').first()
 
+                if 'extra_data' in new_taxlot_state_data.keys():
+                    taxlot_state_data['extra_data'].update(new_taxlot_state_data.pop('extra_data'))
                 taxlot_state_data.update(new_taxlot_state_data)
 
                 if log.name == 'Import Creation':
