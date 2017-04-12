@@ -547,4 +547,4 @@ class Cleansing(object):
         existing_results = existing_results + l
 
         z = sorted(existing_results, key=lambda k: k['id'])
-        set_cache_raw(Cleansing.cache_key(file_pk), z, 3600)  # save the results for 1 hour
+        set_cache_raw(Cleansing.cache_key(file_pk), z, 86400)  # save the results for 24 hours
