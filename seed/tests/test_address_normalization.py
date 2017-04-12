@@ -74,4 +74,6 @@ class NormalizeStreetAddressTests(TestCase):
         ('end of range leaves off common prefix', '300-22 S Green St', '300-322 s green st'),
         # Odd characters
         ('unicode characters', u'123 Main St\uFFFD', '123 main st'),
+        # Straight numbers
+        ('straight numbers', 56195600100, '56195600100'),
     ]
