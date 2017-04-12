@@ -199,7 +199,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
             if not table_mappings[k]:
                 del table_mappings[k]
 
-
     # TODO: **START TOTAL TERRIBLE HACK**
     # For some reason the mappings that got created previously don't
     # always have the table class in them.  To get this working for
